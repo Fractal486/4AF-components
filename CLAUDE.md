@@ -25,8 +25,13 @@ _incoming/    Raw downloads, gitignored. Staging only — never imported.
 Every component in `registry/ui/` must satisfy all of this. It's the reason the library is
 worth reusing; a component that skips a line here is a component we'll rewrite later.
 
-- **Behaviour comes from a primitive.** Never hand-roll a focus trap, roving tabindex, or
-  dismiss logic. Anything with real behaviour is built on Base UI or Radix.
+- **Behaviour comes from a primitive, and the primitive is Base UI.** Never hand-roll a
+  focus trap, roving tabindex, or dismiss logic. Base UI is the *canonical* layer: a
+  component that arrives on Radix or Headless UI gets ported during refinement, not kept.
+  Shipping two behaviour layers means two focus traps, two portal strategies, and two
+  subtly different `data-state` vocabularies — invisible at three components, miserable at
+  twenty. (`registry/lib/slot.tsx` is ours only because `asChild` is too small to import a
+  primitive for.)
 - **Composable.** `ref` forwarded, props spread, `asChild` wherever an element swap is
   plausible (use `registry/lib/slot.tsx`).
 - **Variants in a sibling `.variants.ts`** via CVA. That file is the "versions" axis.
@@ -56,6 +61,18 @@ Every duration is `<base> * var(--motion-scale)`. The toolbar writes `data-motio
   forever.
 - Looping indicators (spinners) must **not** be scaled. A 1s spin at 0.01 is a strobe —
   worse than the motion it was avoiding. Set their duration directly.
+
+## Sources
+
+All three are shadcn-compatible registries, so they all land in `_incoming/` automatically.
+
+| Source | Built on | Expect to fix |
+| --- | --- | --- |
+| [Animate UI](https://animate-ui.com) | Multi-primitive; **take the Base UI variant** | Motion used for everything, including hovers and simple fades that should be CSS |
+| [beUI](https://beui.dev) | Its own | Port behaviour to Base UI. Has machine-readable endpoints: `beui.dev/r/{slug}.json` and `/raw` |
+| [basecn](https://basecn.dev) | Base UI ✅ | Closest to the contract already — mostly tokens and motion |
+
+Plus one-off sources for specific jobs (loaders, charts). Same loop applies.
 
 ## Adding a component (the ingestion loop)
 
