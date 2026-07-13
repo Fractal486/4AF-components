@@ -1,0 +1,354 @@
+@import "tailwindcss";
+
+/*
+ * ============================================================================
+ * 4AF — design foundation
+ * ============================================================================
+ *
+ * Direction: "instrument". The library is a set of precise tools, so the shell
+ * is quiet and the components are loud. Warm-neutral greys (H 70, chroma held
+ * under 0.01) rather than the cold slate every Tailwind project defaults to,
+ * with a single amber accent that the neutrals were tuned to sit beside.
+ *
+ * Everything is OKLCH: equal lightness steps read as equal brightness steps,
+ * and hue stays put as lightness moves, so the ramps below don't drift.
+ *
+ * Three layers, in order:
+ *   1. Ramps      — raw scales. Components never touch these directly.
+ *   2. Semantics  — what components consume (`--color-surface`, `--color-ring`…).
+ *                   Swapping the theme = repointing these. That's the whole job.
+ *   3. Motion     — durations/easings as vars, so the inspector can scale time.
+ */
+
+/* Theme is set by an inline script on <html> before paint, so there's no flash
+   and no need to duplicate every value inside a prefers-color-scheme query. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ---------------------------------------------------------------------------
+ * 1. Ramps
+ * ------------------------------------------------------------------------ */
+
+@theme {
+  /* Warm neutral. Chroma peaks in the mid-tones where the eye can actually see
+     it and tapers at both ends, so white stays white and black stays black. */
+  --color-neutral-50: oklch(0.985 0.002 70);
+  --color-neutral-100: oklch(0.968 0.004 70);
+  --color-neutral-200: oklch(0.928 0.006 70);
+  --color-neutral-300: oklch(0.874 0.008 70);
+  --color-neutral-400: oklch(0.716 0.01 70);
+  --color-neutral-500: oklch(0.582 0.011 70);
+  --color-neutral-600: oklch(0.472 0.01 70);
+  --color-neutral-700: oklch(0.396 0.009 70);
+  --color-neutral-800: oklch(0.288 0.008 70);
+  --color-neutral-900: oklch(0.216 0.007 70);
+  --color-neutral-950: oklch(0.155 0.006 70);
+  --color-neutral-1000: oklch(0.118 0.005 70);
+
+  /* Amber. `-600` sits at L 0.50 deliberately: that's the highest lightness that
+     still clears WCAG AA against white text, so it can carry a solid button. */
+  --color-accent-50: oklch(0.977 0.017 75);
+  --color-accent-100: oklch(0.954 0.038 75);
+  --color-accent-200: oklch(0.907 0.076 72);
+  --color-accent-300: oklch(0.849 0.116 68);
+  --color-accent-400: oklch(0.774 0.153 60);
+  --color-accent-500: oklch(0.702 0.176 52);
+  --color-accent-600: oklch(0.5 0.145 45);
+  --color-accent-700: oklch(0.44 0.126 42);
+  --color-accent-800: oklch(0.371 0.101 40);
+  --color-accent-900: oklch(0.31 0.08 40);
+  --color-accent-950: oklch(0.22 0.056 40);
+
+  /* Red. Same L 0.52 ceiling for the same reason. */
+  --color-danger-50: oklch(0.971 0.014 20);
+  --color-danger-100: oklch(0.943 0.031 20);
+  --color-danger-200: oklch(0.892 0.062 20);
+  --color-danger-300: oklch(0.816 0.108 21);
+  --color-danger-400: oklch(0.71 0.166 23);
+  --color-danger-500: oklch(0.62 0.208 25);
+  --color-danger-600: oklch(0.52 0.19 26);
+  --color-danger-700: oklch(0.448 0.164 26);
+  --color-danger-800: oklch(0.38 0.135 26);
+  --color-danger-900: oklch(0.32 0.108 26);
+  --color-danger-950: oklch(0.22 0.075 26);
+
+  /* Green, for confirmation states. */
+  --color-success-500: oklch(0.68 0.16 152);
+  --color-success-600: oklch(0.53 0.13 152);
+  --color-success-700: oklch(0.45 0.11 152);
+
+  /* ---- Type ------------------------------------------------------------ */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  /* A ~1.2 scale. Each step pairs a size with the line-height it should
+     actually use — tight for display sizes, generous for body copy. */
+  --text-2xs: 0.6875rem; /* 11px — mono labels, badges */
+  --text-2xs--line-height: 1.0909;
+  --text-2xs--letter-spacing: 0.02em;
+  --text-xs: 0.75rem; /* 12px */
+  --text-xs--line-height: 1.3333;
+  --text-xs--letter-spacing: 0.01em;
+  --text-sm: 0.8125rem; /* 13px — the library's default UI size */
+  --text-sm--line-height: 1.5385;
+  --text-base: 0.9375rem; /* 15px — body copy */
+  --text-base--line-height: 1.6;
+  --text-lg: 1.125rem; /* 18px */
+  --text-lg--line-height: 1.4444;
+  --text-lg--letter-spacing: -0.01em;
+  --text-xl: 1.375rem; /* 22px */
+  --text-xl--line-height: 1.2727;
+  --text-xl--letter-spacing: -0.015em;
+  --text-2xl: 1.75rem; /* 28px */
+  --text-2xl--line-height: 1.2143;
+  --text-2xl--letter-spacing: -0.02em;
+  --text-3xl: 2.25rem; /* 36px */
+  --text-3xl--line-height: 1.1111;
+  --text-3xl--letter-spacing: -0.025em;
+
+  /* ---- Radius ----------------------------------------------------------- */
+  /* Nested surfaces are concentric: outer = inner + padding. With 4px of padding,
+     an `rounded-lg` (10px) shell wraps an `rounded-md` (6px) child. Don't reach
+     for the same radius twice — mismatched nesting is the single most common
+     reason an interface feels subtly wrong. */
+  --radius-xs: 3px;
+  --radius-sm: 5px;
+  --radius-md: 7px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-2xl: 20px;
+  --radius-3xl: 28px;
+
+  /* ---- Motion ----------------------------------------------------------- */
+  /* Overriding Tailwind's own `--ease-*` means the plain `ease-out` utility
+     picks these up — no bespoke class names needed. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --animate-spin-slow: spin 1.2s linear infinite;
+}
+
+/* ---------------------------------------------------------------------------
+ * 2. Semantic tokens
+ * ------------------------------------------------------------------------ */
+
+/* `inline` makes the utilities compile to `var(--surface)` rather than baking in
+   the literal colour — which is what lets one attribute on <html> reskin the app. */
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-muted: var(--muted);
+
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-subtle-foreground: var(--subtle-foreground);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-ring: var(--ring);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-hover: var(--brand-hover);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-hover: var(--destructive-hover);
+}
+
+:root {
+  color-scheme: light;
+
+  --background: var(--color-neutral-50);
+  --surface: oklch(1 0 0);
+  --surface-raised: oklch(1 0 0);
+  --muted: var(--color-neutral-100);
+
+  --foreground: var(--color-neutral-950);
+  --muted-foreground: var(--color-neutral-600);
+  --subtle-foreground: var(--color-neutral-500);
+
+  --border: var(--color-neutral-200);
+  --border-strong: var(--color-neutral-300);
+  --ring: var(--color-accent-500);
+
+  /* Primary is ink, not colour. Colour is a signal — spend it on the one action
+     that matters, and let the accent variant be the thing that stands out. */
+  --primary: var(--color-neutral-900);
+  --primary-foreground: var(--color-neutral-50);
+  --primary-hover: var(--color-neutral-800);
+
+  --brand: var(--color-accent-600);
+  --brand-foreground: oklch(1 0 0);
+  --brand-hover: var(--color-accent-700);
+
+  --destructive: var(--color-danger-600);
+  --destructive-foreground: oklch(1 0 0);
+  --destructive-hover: var(--color-danger-700);
+
+  /* Depth as three layered shadows: a hairline ring that behaves like a border
+     but adapts to any background, then lift, then ambient spread. */
+  --elevation-border:
+    0 0 0 1px oklch(0 0 0 / 0.06), 0 1px 2px -1px oklch(0 0 0 / 0.06),
+    0 2px 4px 0 oklch(0 0 0 / 0.04);
+  --elevation-border-hover:
+    0 0 0 1px oklch(0 0 0 / 0.08), 0 1px 2px -1px oklch(0 0 0 / 0.08),
+    0 2px 4px 0 oklch(0 0 0 / 0.06);
+  --elevation-raised:
+    0 0 0 1px oklch(0 0 0 / 0.06), 0 2px 4px -2px oklch(0 0 0 / 0.06),
+    0 6px 12px -3px oklch(0 0 0 / 0.08);
+  --elevation-overlay:
+    0 0 0 1px oklch(0 0 0 / 0.06), 0 8px 16px -6px oklch(0 0 0 / 0.1),
+    0 16px 32px -8px oklch(0 0 0 / 0.12);
+
+  --image-outline: oklch(0 0 0 / 0.1);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --background: var(--color-neutral-1000);
+  --surface: var(--color-neutral-950);
+  --surface-raised: var(--color-neutral-900);
+  --muted: var(--color-neutral-900);
+
+  --foreground: var(--color-neutral-50);
+  --muted-foreground: var(--color-neutral-400);
+  --subtle-foreground: var(--color-neutral-500);
+
+  --border: oklch(1 0 0 / 0.09);
+  --border-strong: oklch(1 0 0 / 0.16);
+  --ring: var(--color-accent-500);
+
+  --primary: var(--color-neutral-100);
+  --primary-foreground: var(--color-neutral-950);
+  --primary-hover: oklch(1 0 0);
+
+  /* The dark surface can carry a brighter amber than white ever could, and it
+     needs to — `accent-600` on near-black is muddy. Text flips to ink. */
+  --brand: var(--color-accent-500);
+  --brand-foreground: var(--color-neutral-950);
+  --brand-hover: var(--color-accent-400);
+
+  /* Amber is a light hue — dark text on it is correct, and is what the eye
+     expects. Red is not: `danger-500` is bright enough that it would also need
+     dark ink to pass contrast, and dark-on-red reads as a warning label, not a
+     button. So dark mode holds destructive at the same L 0.52 as light mode,
+     where white text clears AA and the button still reads as a button. */
+  --destructive: var(--color-danger-600);
+  --destructive-foreground: oklch(1 0 0);
+  --destructive-hover: var(--color-danger-500);
+
+  /* Layered depth is invisible against black — a single luminous ring does the
+     work instead. Fighting for drop shadows here just produces grey smudge. */
+  --elevation-border: 0 0 0 1px oklch(1 0 0 / 0.08);
+  --elevation-border-hover: 0 0 0 1px oklch(1 0 0 / 0.13);
+  --elevation-raised: 0 0 0 1px oklch(1 0 0 / 0.1), 0 8px 16px -8px oklch(0 0 0 / 0.6);
+  --elevation-overlay:
+    0 0 0 1px oklch(1 0 0 / 0.12), 0 16px 32px -12px oklch(0 0 0 / 0.7);
+
+  --image-outline: oklch(1 0 0 / 0.1);
+}
+
+/* Exposed as `shadow-border`, `shadow-raised`, `shadow-overlay` utilities. */
+@theme inline {
+  --shadow-border: var(--elevation-border);
+  --shadow-border-hover: var(--elevation-border-hover);
+  --shadow-raised: var(--elevation-raised);
+  --shadow-overlay: var(--elevation-overlay);
+}
+
+/* ---------------------------------------------------------------------------
+ * 3. Motion
+ * ------------------------------------------------------------------------ */
+
+/*
+ * Every duration in the library is `<base> * var(--motion-scale)`. One variable
+ * therefore controls all time in the app, which buys two things:
+ *
+ *   slow-motion — scale to 4x and watch an animation at quarter speed. This is
+ *     the only reliable way to judge whether motion is well built; at 1x, a bad
+ *     ease and a good ease both just look like "a thing moved".
+ *
+ *   reduced-motion — scale to ~0. Note it's 0.01 and not 0: components that
+ *     unmount on `transitionend`/`animationend` need the event to still fire, and
+ *     a genuinely zero-length transition never fires one. 1.5ms is imperceptible
+ *     and keeps those components from wedging open forever.
+ */
+:root {
+  --motion-scale: 1;
+
+  --duration-fast: calc(150ms * var(--motion-scale));
+  --duration-base: calc(200ms * var(--motion-scale));
+  --duration-slow: calc(300ms * var(--motion-scale));
+  --duration-slower: calc(450ms * var(--motion-scale));
+}
+
+/* The OS preference wins unless the inspector has explicitly overridden it. */
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion]) {
+    --motion-scale: 0.01;
+  }
+}
+
+[data-motion="reduced"] {
+  --motion-scale: 0.01;
+}
+[data-motion="normal"] {
+  --motion-scale: 1;
+}
+[data-motion="slow"] {
+  --motion-scale: 4;
+}
+
+/* ---------------------------------------------------------------------------
+ * Base
+ * ------------------------------------------------------------------------ */
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
+
+    /* Contextual alternates and kerning on; slashed zero and tabular figures are
+       opt-in per component rather than global — proportional figures are correct
+       for prose, tabular only for numbers in columns. */
+    font-feature-settings: "kern", "calt";
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Numbers that update in place must not reflow the text around them. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "kern", "calt", "tnum", "zero";
+  }
+
+  img {
+    outline: 1px solid var(--image-outline);
+    outline-offset: -1px;
+  }
+
+  ::selection {
+    background-color: var(--color-accent-200);
+    color: var(--color-neutral-950);
+  }
+
+  [data-theme="dark"] ::selection {
+    background-color: var(--color-accent-900);
+    color: var(--color-neutral-50);
+  }
+}

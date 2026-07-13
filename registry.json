@@ -1,0 +1,35 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "4af",
+  "homepage": "https://github.com/4af/components",
+  "items": [
+    {
+      "name": "cn",
+      "type": "registry:lib",
+      "dependencies": ["clsx", "tailwind-merge"],
+      "files": [{ "path": "registry/lib/cn.ts", "type": "registry:lib" }]
+    },
+    {
+      "name": "slot",
+      "type": "registry:lib",
+      "registryDependencies": ["cn"],
+      "files": [{ "path": "registry/lib/slot.tsx", "type": "registry:lib" }]
+    },
+    {
+      "name": "motion",
+      "type": "registry:lib",
+      "files": [{ "path": "registry/lib/motion.ts", "type": "registry:lib" }]
+    },
+    {
+      "name": "button",
+      "type": "registry:ui",
+      "description": "Button with six variants, optical icon alignment, and a loading state that doesn't resize.",
+      "dependencies": ["class-variance-authority"],
+      "registryDependencies": ["cn", "slot"],
+      "files": [
+        { "path": "registry/ui/button/button.tsx", "type": "registry:ui" },
+        { "path": "registry/ui/button/button.variants.ts", "type": "registry:ui" }
+      ]
+    }
+  ]
+}
