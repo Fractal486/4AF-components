@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Link from "next/link";
 import { Toolbar } from "@/inspector/toolbar";
 import "./globals.css";
 
@@ -43,13 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="antialiased">
         <div className="mx-auto flex min-h-dvh max-w-5xl flex-col px-6">
-          <header className="flex h-14 shrink-0 items-center justify-between">
-            <Link
-              href="/"
-              className="rounded-sm font-mono text-2xs tracking-widest text-foreground uppercase transition-[opacity] duration-(--duration-fast) ease-out hover:opacity-70 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              4AF / components
-            </Link>
+          <header className="flex h-14 shrink-0 items-center justify-end">
             <Toolbar />
           </header>
           <main className="flex-1 pb-24">{children}</main>

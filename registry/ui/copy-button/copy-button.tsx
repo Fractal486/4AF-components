@@ -33,9 +33,9 @@ export interface CopyButtonProps
  * and the only thing about copying that's hard is `navigator.clipboard` not existing
  * half the time.
  *
- * The spinner never appears in practice: a clipboard write resolves in a millisecond,
- * well inside ActionButton's `pendingDelay`, so the button goes straight from copy to
- * check — which is what actually happened.
+ * The spinner never appears: a clipboard write resolves in about a millisecond, and the
+ * `pendingDelay` below outlives it, so the button goes straight from copy to check —
+ * which is what actually happened.
  */
 export function CopyButton({
   value,
@@ -53,6 +53,11 @@ export function CopyButton({
       icon={<Copy />}
       variant={variant}
       size={size ?? (children ? "md" : "icon")}
+      // ActionButton shows `pending` on the press frame by default, and it should — a
+      // slow action that doesn't answer the click feels broken. Copying isn't slow. This
+      // is the exception the option exists for: without it, the spinner would appear and
+      // vanish inside a single frame, which reads as a glitch rather than as progress.
+      pendingDelay={250}
       // With a label, the label names the button. Without one there's no text at all,
       // so it needs an aria-label — and adding one *as well as* a label would override
       // and silence the visible text.

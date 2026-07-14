@@ -166,10 +166,6 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-hover: var(--primary-hover);
 
-  --color-brand: var(--brand);
-  --color-brand-foreground: var(--brand-foreground);
-  --color-brand-hover: var(--brand-hover);
-
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-destructive-hover: var(--destructive-hover);
@@ -196,10 +192,6 @@
   --primary: var(--color-neutral-900);
   --primary-foreground: var(--color-neutral-50);
   --primary-hover: var(--color-neutral-800);
-
-  --brand: var(--color-accent-600);
-  --brand-foreground: oklch(1 0 0);
-  --brand-hover: var(--color-accent-700);
 
   --destructive: var(--color-danger-600);
   --destructive-foreground: oklch(1 0 0);
@@ -250,10 +242,6 @@
 
   /* The dark surface can carry a brighter amber than white ever could, and it
      needs to — `accent-600` on near-black is muddy. Text flips to ink. */
-  --brand: var(--color-accent-500);
-  --brand-foreground: var(--color-neutral-950);
-  --brand-hover: var(--color-accent-400);
-
   /* Amber is a light hue — dark text on it is correct, and is what the eye
      expects. Red is not: `danger-500` is bright enough that it would also need
      dark ink to pass contrast, and dark-on-red reads as a warning label, not a

@@ -21,7 +21,6 @@ export function Inspector({ slug }: { slug: string }) {
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-1">
         <h1 className="text-xl font-medium text-foreground">{group.name}</h1>
-        <p className="text-sm text-muted-foreground">{group.summary}</p>
       </header>
 
       {single && group.entries[0] ? (
@@ -57,13 +56,6 @@ function EntryView({ entry }: { entry: Entry }) {
 
   return (
     <div className="flex flex-col gap-10">
-      <div className="flex flex-col gap-1">
-        <p className="text-sm text-muted-foreground">{entry.summary}</p>
-        {entry.source && (
-          <p className="font-mono text-2xs text-subtle-foreground">{entry.source}</p>
-        )}
-      </div>
-
       <div className="grid gap-4 md:grid-cols-[1fr_15rem] md:items-start">
         {/* The canvas. Deliberately tall and empty: the component should be the only
             thing you can look at, and centred so its optical alignment is judged
@@ -86,32 +78,6 @@ function EntryView({ entry }: { entry: Entry }) {
         </aside>
       </div>
 
-      {entry.notes && entry.notes.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <h2 className="font-mono text-2xs tracking-widest text-subtle-foreground uppercase">
-            What to look at
-          </h2>
-          <ul className="flex flex-col gap-2">
-            {entry.notes.map((note) => (
-              <li
-                key={note}
-                className="flex gap-3 text-sm text-muted-foreground before:mt-2 before:size-1 before:shrink-0 before:rounded-full before:bg-border-strong"
-              >
-                {note}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {entry.matrix && (
-        <section className="flex flex-col gap-3">
-          <h2 className="font-mono text-2xs tracking-widest text-subtle-foreground uppercase">
-            Every variant
-          </h2>
-          <div className="rounded-xl bg-surface p-6 shadow-border">{entry.matrix()}</div>
-        </section>
-      )}
     </div>
   );
 }

@@ -8,7 +8,7 @@ you keep ownership of the source instead of installing a public npm package.
 
 ```text
 registry/     Reusable components, utilities, and motion presets
-inspector/    Demos, settings, variant matrices, and review notes
+inspector/    Demos and settings for reviewing components
 app/          The small Next.js site that renders the inspector
 _incoming/    Temporary staging for downloaded components; never imported
 ```
@@ -23,6 +23,9 @@ pnpm dev                 # Open the inspector
 pnpm typecheck           # Check TypeScript
 pnpm lint                # Check code conventions and portability
 pnpm test                # Run component and registry tests
+pnpm 4af list            # List installable components
+pnpm 4af doctor --project <path>
+pnpm 4af install button --project <path>
 pnpm registry:validate   # Validate registry.json and its files
 pnpm registry:build      # Generate private install files in public/r
 ```
@@ -33,21 +36,25 @@ pnpm registry:build      # Generate private install files in public/r
 
 ## Install a component in another project
 
-1. In this repository, run:
+1. From this repository, run:
 
    ```bash
-   pnpm registry:build
-   pnpm dev
+   pnpm 4af install button --project C:\Projects\my-app
    ```
 
-2. In the project receiving the component, run:
+   Replace `button` with `toggle`, `morph`, `action-button`, `copy-button`, or `tabs`.
+   The command builds the registry, starts a temporary local registry server, and
+   installs the component non-interactively. Add `--overwrite` only when replacing
+   existing files is intentional.
+
+2. To check a target project before installing:
 
    ```bash
-   pnpm dlx shadcn@latest add http://localhost:3000/r/button.json
+   pnpm 4af doctor --project C:\Projects\my-app
    ```
 
-Replace `button` with `toggle`, `morph`, `action-button`, `copy-button`, or `tabs`.
-Dependencies and the 4AF theme are included automatically.
+Dependencies and the 4AF theme are included automatically. Agents should use this CLI
+instead of manually copying files or running the lower-level shadcn command.
 
 ## Component families
 

@@ -8,12 +8,38 @@ registry/     THE LIBRARY. Portable. Must never import from app/ or inspector/.
   lib/        cn, slot, motion presets — shared by components.
   ui/<name>/  <name>.tsx + <name>.variants.ts
 inspector/    THE SITE. Imports registry. The reverse is a lint error, on purpose.
-  entries/    One file per component: demo, settings schema, variant matrix, notes.
+  entries/    One file per component: demo and settings schema.
 app/          Two routes and globals.css. That's the whole site.
 _incoming/    Raw downloads, gitignored. Staging only — never imported.
 ```
 
 `pnpm dev` · `pnpm typecheck` · `pnpm lint` · `pnpm build`
+
+## Using the library from another project
+
+Agents should use the CLI instead of manually copying files or guessing registry URLs.
+From this repository:
+
+```text
+pnpm 4af list
+pnpm 4af doctor --project <absolute-target-project>
+pnpm 4af install <component> --project <absolute-target-project>
+```
+
+`install` builds and serves the private registry automatically, invokes shadcn
+non-interactively, and brings in the 4AF theme plus shared utilities. Add `--overwrite`
+only when replacing files is intentional. Use `--dry-run` to inspect an install without
+writing to the target project.
+
+The installable component names are `button`, `toggle`, `morph`, `action-button`,
+`copy-button`, and `tabs`. The target project must already have a `package.json` and
+shadcn `components.json` with `ui` and `lib` aliases. Run `pnpm 4af doctor` first when
+an agent is unsure whether the target is ready.
+
+`AGENTS.md` is the always-on contract: it explains architecture and non-negotiable
+rules. The CLI is the deterministic tool that performs the workflow. When the
+`$4af-components` skill is available, invoke it for richer guidance; it must call the CLI
+rather than reimplementing installation logic.
 
 > **Never run `pnpm build` while `pnpm dev` is running.** They share `.next/`, and the
 > build empties the CSS chunks the dev server is serving — the page keeps working but
@@ -108,12 +134,11 @@ amber accent. Three layers: **ramps** (raw scales, components never touch them) 
 
 Two colour decisions worth not re-litigating:
 
-- **Primary is ink, not colour.** Colour is a signal; spend it on the one action that
-  matters. That's what `brand` is for.
+- **Primary is ink, not colour.** Colour is a signal; the neutral action is the default,
+  while amber is reserved for the ring and other focused signals.
 - **`accent-600` and `danger-600` sit at L 0.50–0.52** because that's the lightest a hue can
-  be while still carrying white text at WCAG AA. In dark mode `brand` brightens (amber is a
-  light hue — dark ink on it is correct), but `destructive` does *not*: dark-on-red reads as
-  a warning label rather than a button, so it stays at L 0.52 with white text in both themes.
+  be while still carrying white text at WCAG AA. `destructive` stays at L 0.52 with white
+  text in both themes: dark-on-red reads as a warning label rather than a button.
 
 Radii are **concentric**: `outer = inner + padding`. An `rounded-xl` (14px) card with
 `p-1` (4px) holds `rounded-lg` (10px) children. Reusing the same radius on both is the most

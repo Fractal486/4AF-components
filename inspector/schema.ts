@@ -83,18 +83,10 @@ export function num(
 export interface Entry<S extends ControlSchema = ControlSchema> {
   slug: string;
   name: string;
-  /** One line. Shown on the index card and under the title. */
-  summary: string;
-  /** Where the original came from, if it was refined rather than written here. */
-  source?: string;
   controls: S;
   /** Method syntax, not a property — bivariance is what lets entries with
       different schemas live in one array without an `any` in sight. */
   render(values: ControlValues<S>): ReactNode;
-  /** Every variant at once. The fastest way to spot one that's drifted. */
-  matrix?(): ReactNode;
-  /** What to look at. Especially: what the motion is doing and why. */
-  notes?: readonly string[];
 }
 
 export function defineEntry<S extends ControlSchema>(entry: Entry<S>): Entry<S> {

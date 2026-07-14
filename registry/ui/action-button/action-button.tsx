@@ -3,7 +3,7 @@
 import { Check, TriangleAlert } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Button, Spinner, type ButtonProps } from "@/registry/ui/button/button";
-import { Morph, type MorphFeel, type MorphStyle } from "@/registry/ui/morph/morph";
+import { Morph } from "@/registry/ui/morph/morph";
 
 export type ActionStatus = "idle" | "pending" | "success" | "error";
 
@@ -22,17 +22,15 @@ export interface ActionButtonProps
   /**
    * Don't show `pending` until the action has been running this long, in ms.
    *
-   * An action that finishes in 10ms — writing to the clipboard, hitting a warm cache —
-   * would otherwise flash a spinner for a single frame on its way to the check mark.
-   * That flicker reads as a glitch, not as progress. Below this threshold the button
-   * goes straight from idle to its outcome, which is what actually happened.
+   * Defaults to 0 — the press must be answered on the frame it happens, or the button
+   * feels broken. Raise it only when the action is genuinely near-instant (a clipboard
+   * write, a warm cache), where a spinner would flash for a single frame on its way to
+   * the check mark and read as a glitch rather than as progress.
    */
   pendingDelay?: number;
   /** Announced to screen readers. A state change they can't see is a state change
       they don't know about. */
   announce?: { pending?: string; success?: string; error?: string };
-  morph?: MorphStyle;
-  feel?: MorphFeel;
   onSuccess?: () => void;
   onError?: (error: unknown) => void;
 }
@@ -51,10 +49,8 @@ export function ActionButton({
   icon,
   labels,
   revertAfter = 2000,
-  pendingDelay = 120,
+  pendingDelay = 0,
   announce,
-  morph = "pop",
-  feel = "clean",
   disabled,
   variant,
   size,
@@ -85,7 +81,11 @@ export function ActionButton({
   const scheduleRevert = useCallback(() => {
     clearTimeout(revertTimer.current ?? undefined);
     revertTimer.current = setTimeout(() => {
-      if (alive.current) setStatus("idle");
+      // `!running.current` as well as `alive`: a revert must never land on an action
+      // that's in flight. Belt and braces — `run` already cancels this timer — but the
+      // failure mode is a button that says "Deploy" while it's still deploying, which
+      // is worth two lines to make impossible.
+      if (alive.current && !running.current) setStatus("idle");
     }, revertAfter);
   }, [revertAfter]);
 
@@ -95,12 +95,26 @@ export function ActionButton({
     if (running.current) return;
     running.current = true;
 
-    // Pending is announced on a delay, not immediately — a 10ms action would otherwise
-    // flash a spinner for one frame on its way to the check mark.
+    // Cancel the previous outcome's teardown. Press again while "Deployed" is still
+    // showing and its revert is already scheduled — leave it running and it fires on the
+    // *old* clock: mid-way through the new action it flips the button back to idle, or it
+    // cuts the second confirmation short. Each run owns its own revert, so the last one's
+    // has to be dropped the moment a new one starts.
+    clearTimeout(revertTimer.current ?? undefined);
+
+    // Instant by default. A button that swallows a press and does nothing for a beat
+    // reads as broken, and no amount of correctness later makes up for that first
+    // moment. Deferring is opt-in, for actions that finish so fast the spinner would be
+    // a flicker rather than progress — and even a `setTimeout(…, 0)` is a frame too
+    // late, so zero means synchronous, not "very soon".
     clearTimeout(pendingTimer.current ?? undefined);
-    pendingTimer.current = setTimeout(() => {
-      if (alive.current && running.current) setStatus("pending");
-    }, pendingDelay);
+    if (pendingDelay <= 0) {
+      setStatus("pending");
+    } else {
+      pendingTimer.current = setTimeout(() => {
+        if (alive.current && running.current) setStatus("pending");
+      }, pendingDelay);
+    }
 
     try {
       await action();
@@ -143,8 +157,6 @@ export function ActionButton({
             cursor is still on it, waiting. */}
         <Morph
           activeKey={status}
-          style={morph}
-          feel={feel}
           className="gap-2"
           items={{
             idle: (

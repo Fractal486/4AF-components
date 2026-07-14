@@ -61,7 +61,7 @@ function Control({
           type="checkbox"
           checked={value as boolean}
           onChange={(e) => onChange(e.target.checked)}
-          className="size-4 accent-brand focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className="size-4 accent-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         />
       </label>
     );
@@ -125,7 +125,7 @@ function Control({
           step={def.step}
           value={value as number}
           onChange={(e) => onChange(e.target.valueAsNumber)}
-          className="h-1 w-full cursor-pointer appearance-none rounded-full bg-muted accent-brand focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className="h-1 w-full cursor-pointer appearance-none rounded-full bg-muted accent-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         />
       </div>
     );

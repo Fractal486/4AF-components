@@ -8,10 +8,10 @@ import type { Entry } from "./schema";
 /**
  * The index lists *groups*, not entries.
  *
- * Button, Toggle, Morph and Copy Button are four separately installable pieces — Copy
- * Button is built from two of the others — but they're one family, and listing them as
- * four peers on the home screen would imply four unrelated components. So they share a
- * card, and the page tabs between them.
+ * Button, Toggle, Morph, Action Button and Copy Button are five separately installable
+ * pieces — the two action buttons are built from the others — but they're one family,
+ * and listing them as five peers on the home screen would imply five unrelated
+ * components. So they share a card, and the page tabs between them.
  *
  * A group with one entry renders without tabs.
  */

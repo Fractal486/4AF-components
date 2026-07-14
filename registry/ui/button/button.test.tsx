@@ -9,10 +9,18 @@ describe("Button", () => {
     expect(screen.getByRole("button", { name: "Save" })).toHaveAttribute("type", "button");
   });
 
+  it("supports a plain variant with no background in either state", () => {
+    render(<Button variant="plain">Text only</Button>);
+
+    const button = screen.getByRole("button", { name: "Text only" });
+    expect(button.className).toContain("bg-transparent");
+    expect(button.className).toContain("hover:bg-transparent");
+  });
+
   it("keeps the child link and its semantics with asChild", () => {
     const onClick = vi.fn();
     render(
-      <Button asChild variant="brand">
+      <Button asChild variant="primary">
         <a
           href="/docs"
           onClick={(event) => {
@@ -27,7 +35,7 @@ describe("Button", () => {
 
     const link = screen.getByRole("link", { name: "Read docs" });
     expect(link).toHaveAttribute("href", "/docs");
-    expect(link).toHaveAttribute("data-variant", "brand");
+    expect(link).toHaveAttribute("data-variant", "primary");
     fireEvent.click(link);
     expect(onClick).toHaveBeenCalledOnce();
   });

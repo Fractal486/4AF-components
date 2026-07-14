@@ -5,9 +5,6 @@ import type { ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
 import { spring } from "@/registry/lib/motion";
 
-export type MorphStyle = "pop" | "fade" | "lift";
-export type MorphFeel = keyof typeof spring;
-
 /**
  * Swaps one piece of content for another, animating the change.
  *
@@ -22,26 +19,10 @@ export type MorphFeel = keyof typeof spring;
  *   <Morph activeKey={copied ? "done" : "idle"}
  *          items={{ idle: <CopyIcon />, done: <CheckIcon /> }} />
  */
-const MORPHS: Record<MorphStyle, Variants> = {
-  /** Scale up from small with a blur. The content feels like it resolves into focus. */
-  pop: {
-    initial: { opacity: 0, scale: 0.25, filter: "blur(4px)" },
-    animate: { opacity: 1, scale: 1, filter: "blur(0px)" },
-    exit: { opacity: 0, scale: 0.25, filter: "blur(4px)" },
-  },
-  /** No movement at all. The restrained choice, and the right one in dense UI. */
-  fade: {
-    initial: { opacity: 0 },
-    animate: { opacity: 1 },
-    exit: { opacity: 0 },
-  },
-  /** New content rises from below as the old leaves upward — a slot machine. Implies
-      direction, so it suits sequences (next/previous) more than toggles. */
-  lift: {
-    initial: { opacity: 0, y: "70%" },
-    animate: { opacity: 1, y: "0%" },
-    exit: { opacity: 0, y: "-70%" },
-  },
+const morph: Variants = {
+  initial: { opacity: 0, scale: 0.25, filter: "blur(4px)" },
+  animate: { opacity: 1, scale: 1, filter: "blur(0px)" },
+  exit: { opacity: 0, scale: 0.25, filter: "blur(4px)" },
 };
 
 export interface MorphProps<K extends string> {
@@ -55,18 +36,14 @@ export interface MorphProps<K extends string> {
    * target out from under it; animating that width only makes it move smoothly, which
    * is still moving. "Follow" and "Following" are different widths, and the button
    * should be the width of "Following" in both states.
-   */
+  */
   items: Record<K, ReactNode>;
-  style?: MorphStyle;
-  feel?: MorphFeel;
   className?: string;
 }
 
 export function Morph<K extends string>({
   activeKey,
   items,
-  style = "pop",
-  feel = "clean",
   className,
 }: MorphProps<K>) {
   // The CSS `prefers-reduced-motion` rule can't reach Motion — the cascade doesn't
@@ -74,8 +51,7 @@ export function Morph<K extends string>({
   // near-zero duration doesn't settle instantly, it settles *violently*. The content
   // still swaps; it just stops being animated, which is what the preference asks for.
   const reduceMotion = useReducedMotion();
-  const transition = reduceMotion ? { duration: 0 } : spring[feel];
-  const morph = MORPHS[style];
+  const transition = reduceMotion ? { duration: 0 } : spring.clean;
   const keys = Object.keys(items) as K[];
 
   return (

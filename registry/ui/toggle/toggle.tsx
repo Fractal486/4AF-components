@@ -28,9 +28,9 @@ const pressedVariants = cva("", {
   variants: {
     variant: {
       ghost: "data-[pressed]:text-foreground",
+      plain: "data-[pressed]:text-foreground",
       outline: "",
       primary: "",
-      brand: "",
       destructive: "",
       link: "",
     },
