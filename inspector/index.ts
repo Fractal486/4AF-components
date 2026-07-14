@@ -1,6 +1,7 @@
 import { actionButtonEntry } from "./entries/action-button";
 import { buttonEntry } from "./entries/button";
 import { copyButtonEntry } from "./entries/copy-button";
+import { inputEntry } from "./entries/input";
 import { morphEntry } from "./entries/morph";
 import { toggleEntry } from "./entries/toggle";
 import type { Entry } from "./schema";
@@ -28,6 +29,12 @@ export const groups: Group[] = [
     summary:
       "The action, the toggle that holds a state, the content swap inside them, and the two buttons built from those.",
     entries: [buttonEntry, toggleEntry, morphEntry, copyButtonEntry, actionButtonEntry],
+  },
+  {
+    slug: "input",
+    name: "Input",
+    summary: "A native text field backed by Base UI.",
+    entries: [inputEntry],
   },
 ];
 

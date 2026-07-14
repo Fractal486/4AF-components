@@ -147,6 +147,20 @@
       ]
     },
     {
+      "name": "input",
+      "type": "registry:ui",
+      "description": "A Base UI input with token-based surfaces, focus states, custom number steppers, and default, plain, and underline variants.",
+      "dependencies": ["@base-ui/react", "class-variance-authority"],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        { "path": "registry/ui/input/input.tsx", "type": "registry:ui", "target": "@ui/input.tsx" },
+        { "path": "registry/ui/input/input.variants.ts", "type": "registry:ui", "target": "@ui/input.variants.ts" }
+      ]
+    },
+    {
       "name": "toggle",
       "type": "registry:ui",
       "description": "A button that holds a state. Fills its icon rather than swapping it.",

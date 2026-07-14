@@ -42,7 +42,8 @@ pnpm registry:build      # Generate private install files in public/r
    pnpm 4af install button --project C:\Projects\my-app
    ```
 
-   Replace `button` with `toggle`, `morph`, `action-button`, `copy-button`, or `tabs`.
+   Replace `button` with `input`, `toggle`, `morph`, `action-button`, `copy-button`, or
+   `tabs`.
    The command builds the registry, starts a temporary local registry server, and
    installs the component non-interactively. Add `--overwrite` only when replacing
    existing files is intentional.
@@ -59,11 +60,12 @@ instead of manually copying files or running the lower-level shadcn command.
 ## Component families
 
 - **Button** — a standard action with variants, sizes, loading, and `asChild`.
+- **Input** — a Base UI text field with default, plain, and underline variants plus custom number steppers.
 - **Toggle** — a pressed/unpressed control backed by Base UI.
 - **Morph** — an animated content swap used by status-driven controls.
 - **Action Button** — runs asynchronous work and displays pending/success/error states.
 - **Copy Button** — an Action Button specialized for clipboard writes.
 - **Tabs** — accessible Base UI tabs with a travelling Motion indicator.
 
-The five tabs shown on the Button inspector page are five related installable pieces, not
-five components nested inside Button.
+The Button family is shown together in the sidebar, while standalone components such as
+Input have their own inspector route.
