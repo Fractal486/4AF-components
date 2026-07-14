@@ -1,50 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { Tabs, TabsList, TabsPanel, TabsTab } from "@/registry/ui/tabs/tabs";
 import { Controls } from "./controls";
 import { getGroup } from "./index";
 import { initialValues, type ControlSchema, type ControlValues, type Entry } from "./schema";
 
 /**
- * Takes a slug, not a group: entries carry `render` functions, and functions don't
- * cross the server/client boundary. The page stays a server component and the lookup
- * happens here.
+ * Takes a group slug plus an optional entry slug: entries carry `render` functions, and
+ * functions don't cross the server/client boundary. The sidebar owns navigation; this
+ * client component only renders the selected entry and its controls.
  */
-export function Inspector({ slug }: { slug: string }) {
+export function Inspector({ slug, entrySlug }: { slug: string; entrySlug?: string }) {
   const group = getGroup(slug);
   if (!group) return null;
 
-  const single = group.entries.length === 1;
+  const entry = group.entries.find((candidate) => candidate.slug === entrySlug) ?? group.entries[0];
+  if (!entry) return null;
 
   return (
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-1">
-        <h1 className="text-xl font-medium text-foreground">{group.name}</h1>
+        <h1 className="text-xl font-medium text-foreground">{entry.name}</h1>
       </header>
-
-      {single && group.entries[0] ? (
-        <EntryView entry={group.entries[0]} />
-      ) : (
-        <Tabs defaultValue={group.entries[0]?.slug} variant="underline">
-          <TabsList>
-            {group.entries.map((entry) => (
-              <TabsTab key={entry.slug} value={entry.slug}>
-                {entry.name}
-              </TabsTab>
-            ))}
-          </TabsList>
-
-          {group.entries.map((entry) => (
-            <TabsPanel key={entry.slug} value={entry.slug}>
-              {/* Keyed on the slug so control state resets when you switch component
-                  — otherwise the `size` you picked for Button would leak into
-                  Copy Button's panel, which has a different set of sizes. */}
-              <EntryView key={entry.slug} entry={entry} />
-            </TabsPanel>
-          ))}
-        </Tabs>
-      )}
+      <EntryView key={entry.slug} entry={entry} />
     </div>
   );
 }

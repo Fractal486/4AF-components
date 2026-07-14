@@ -9,9 +9,8 @@ import type { Entry } from "./schema";
  * The index lists *groups*, not entries.
  *
  * Button, Toggle, Morph, Action Button and Copy Button are five separately installable
- * pieces — the two action buttons are built from the others — but they're one family,
- * and listing them as five peers on the home screen would imply five unrelated
- * components. So they share a card, and the page tabs between them.
+ * pieces — the two action buttons are built from the others — but they're one family.
+ * The sidebar lists them while the main pane shows one at a time.
  *
  * A group with one entry renders without tabs.
  */
