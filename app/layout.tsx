@@ -26,8 +26,6 @@ const themeScript = `
       theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     }
     d.dataset.theme = theme;
-    var motion = localStorage.getItem("4af-motion");
-    if (motion) d.dataset.motion = motion;
   } catch (e) {}
 })();
 `;

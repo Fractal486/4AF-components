@@ -1,34 +1,224 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "4af",
-  "homepage": "https://github.com/4af/components",
+  "homepage": "https://github.com/Fractal486/4AF-components",
   "items": [
+    {
+      "name": "4af-theme",
+      "type": "registry:theme",
+      "title": "4AF Theme",
+      "description": "The semantic colors, radii, shadows, typography, and motion tokens used by 4AF components.",
+      "cssVars": {
+        "theme": {
+          "color-background": "var(--background)",
+          "color-surface": "var(--surface)",
+          "color-surface-raised": "var(--surface-raised)",
+          "color-muted": "var(--muted)",
+          "color-foreground": "var(--foreground)",
+          "color-muted-foreground": "var(--muted-foreground)",
+          "color-subtle-foreground": "var(--subtle-foreground)",
+          "color-border": "var(--border)",
+          "color-border-strong": "var(--border-strong)",
+          "color-ring": "var(--ring)",
+          "color-primary": "var(--primary)",
+          "color-primary-foreground": "var(--primary-foreground)",
+          "color-primary-hover": "var(--primary-hover)",
+          "color-brand": "var(--brand)",
+          "color-brand-foreground": "var(--brand-foreground)",
+          "color-brand-hover": "var(--brand-hover)",
+          "color-destructive": "var(--destructive)",
+          "color-destructive-foreground": "var(--destructive-foreground)",
+          "color-destructive-hover": "var(--destructive-hover)",
+          "radius-md": "7px",
+          "radius-lg": "10px",
+          "radius-xl": "14px",
+          "text-xs": "0.75rem",
+          "text-xs--line-height": "1.3333",
+          "text-sm": "0.8125rem",
+          "text-sm--line-height": "1.5385",
+          "text-base": "0.9375rem",
+          "text-base--line-height": "1.6",
+          "ease-out": "cubic-bezier(0.16, 1, 0.3, 1)",
+          "ease-in": "cubic-bezier(0.7, 0, 0.84, 0)",
+          "ease-in-out": "cubic-bezier(0.65, 0, 0.35, 1)",
+          "duration-fast": "150ms",
+          "duration-base": "200ms",
+          "duration-slow": "300ms",
+          "duration-slower": "450ms",
+          "shadow-border": "var(--elevation-border)",
+          "shadow-raised": "var(--elevation-raised)",
+          "shadow-overlay": "var(--elevation-overlay)",
+          "animate-icon-pop": "icon-pop var(--duration-slow) var(--ease-out)"
+        },
+        "light": {
+          "background": "oklch(0.985 0.002 70)",
+          "surface": "oklch(1 0 0)",
+          "surface-raised": "oklch(1 0 0)",
+          "muted": "oklch(0.968 0.004 70)",
+          "foreground": "oklch(0.155 0.006 70)",
+          "muted-foreground": "oklch(0.472 0.01 70)",
+          "subtle-foreground": "oklch(0.582 0.011 70)",
+          "border": "oklch(0.928 0.006 70)",
+          "border-strong": "oklch(0.874 0.008 70)",
+          "ring": "oklch(0.702 0.176 52)",
+          "primary": "oklch(0.216 0.007 70)",
+          "primary-foreground": "oklch(0.985 0.002 70)",
+          "primary-hover": "oklch(0.288 0.008 70)",
+          "brand": "oklch(0.5 0.145 45)",
+          "brand-foreground": "oklch(1 0 0)",
+          "brand-hover": "oklch(0.44 0.126 42)",
+          "destructive": "oklch(0.52 0.19 26)",
+          "destructive-foreground": "oklch(1 0 0)",
+          "destructive-hover": "oklch(0.448 0.164 26)",
+          "elevation-border": "0 0 0 1px oklch(0 0 0 / 0.06), 0 1px 2px -1px oklch(0 0 0 / 0.06), 0 2px 4px 0 oklch(0 0 0 / 0.04)",
+          "elevation-raised": "0 0 0 1px oklch(0 0 0 / 0.06), 0 2px 4px -2px oklch(0 0 0 / 0.06), 0 6px 12px -3px oklch(0 0 0 / 0.08)",
+          "elevation-overlay": "0 0 0 1px oklch(0 0 0 / 0.06), 0 8px 16px -6px oklch(0 0 0 / 0.1), 0 16px 32px -8px oklch(0 0 0 / 0.12)"
+        },
+        "dark": {
+          "background": "oklch(0.15 0 0)",
+          "surface": "oklch(0.178 0 0)",
+          "surface-raised": "oklch(0.2 0 0)",
+          "muted": "oklch(0.205 0 0)",
+          "foreground": "oklch(0.985 0.002 70)",
+          "muted-foreground": "oklch(0.716 0.01 70)",
+          "subtle-foreground": "oklch(0.582 0.011 70)",
+          "border": "oklch(0.235 0 0)",
+          "border-strong": "oklch(0.285 0 0)",
+          "ring": "oklch(0.702 0.176 52)",
+          "primary": "oklch(0.968 0.004 70)",
+          "primary-foreground": "oklch(0.155 0.006 70)",
+          "primary-hover": "oklch(1 0 0)",
+          "brand": "oklch(0.702 0.176 52)",
+          "brand-foreground": "oklch(0.155 0.006 70)",
+          "brand-hover": "oklch(0.774 0.153 60)",
+          "destructive": "oklch(0.52 0.19 26)",
+          "destructive-foreground": "oklch(1 0 0)",
+          "destructive-hover": "oklch(0.62 0.208 25)",
+          "elevation-border": "0 0 0 1px oklch(1 0 0 / 0.08)",
+          "elevation-raised": "0 0 0 1px oklch(1 0 0 / 0.1), 0 8px 16px -8px oklch(0 0 0 / 0.6)",
+          "elevation-overlay": "0 0 0 1px oklch(1 0 0 / 0.12), 0 16px 32px -12px oklch(0 0 0 / 0.7)"
+        }
+      },
+      "css": {
+        "@keyframes icon-pop": {
+          "0%": { "scale": "1" },
+          "40%": { "scale": "1.25" },
+          "100%": { "scale": "1" }
+        },
+        "@media (prefers-reduced-motion: reduce)": {
+          ":root": {
+            "--duration-fast": "1ms",
+            "--duration-base": "1ms",
+            "--duration-slow": "1ms",
+            "--duration-slower": "1ms"
+          }
+        }
+      }
+    },
     {
       "name": "cn",
       "type": "registry:lib",
       "dependencies": ["clsx", "tailwind-merge"],
-      "files": [{ "path": "registry/lib/cn.ts", "type": "registry:lib" }]
+      "files": [
+        { "path": "registry/lib/cn.ts", "type": "registry:lib", "target": "@lib/cn.ts" }
+      ]
     },
     {
       "name": "slot",
       "type": "registry:lib",
-      "registryDependencies": ["cn"],
-      "files": [{ "path": "registry/lib/slot.tsx", "type": "registry:lib" }]
+      "registryDependencies": ["http://localhost:3000/r/cn.json"],
+      "files": [
+        { "path": "registry/lib/slot.tsx", "type": "registry:lib", "target": "@lib/slot.tsx" }
+      ]
     },
     {
       "name": "motion",
       "type": "registry:lib",
-      "files": [{ "path": "registry/lib/motion.ts", "type": "registry:lib" }]
+      "description": "Spring and easing presets, mirroring the CSS motion tokens.",
+      "dependencies": ["motion"],
+      "files": [
+        { "path": "registry/lib/motion.ts", "type": "registry:lib", "target": "@lib/motion.ts" }
+      ]
     },
     {
       "name": "button",
       "type": "registry:ui",
-      "description": "Button with six variants, optical icon alignment, and a loading state that doesn't resize.",
-      "dependencies": ["class-variance-authority"],
-      "registryDependencies": ["cn", "slot"],
+      "description": "Six variants, six sizes, optical icon alignment, and a loading state that doesn't resize.",
+      "dependencies": ["@base-ui/react", "class-variance-authority", "motion"],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/motion.json"
+      ],
       "files": [
-        { "path": "registry/ui/button/button.tsx", "type": "registry:ui" },
-        { "path": "registry/ui/button/button.variants.ts", "type": "registry:ui" }
+        { "path": "registry/ui/button/button.tsx", "type": "registry:ui", "target": "@ui/button.tsx" },
+        { "path": "registry/ui/button/button.variants.ts", "type": "registry:ui", "target": "@ui/button.variants.ts" }
+      ]
+    },
+    {
+      "name": "toggle",
+      "type": "registry:ui",
+      "description": "A button that holds a state. Fills its icon rather than swapping it.",
+      "dependencies": ["@base-ui/react", "class-variance-authority", "motion"],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/motion.json",
+        "http://localhost:3000/r/button.json"
+      ],
+      "files": [
+        { "path": "registry/ui/toggle/toggle.tsx", "type": "registry:ui", "target": "@ui/toggle.tsx" }
+      ]
+    },
+    {
+      "name": "morph",
+      "type": "registry:ui",
+      "description": "Animated content swap — icons or text. Copy to check, Follow to Following.",
+      "dependencies": ["motion"],
+      "registryDependencies": [
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/motion.json"
+      ],
+      "files": [
+        { "path": "registry/ui/morph/morph.tsx", "type": "registry:ui", "target": "@ui/morph.tsx" }
+      ]
+    },
+    {
+      "name": "copy-button",
+      "type": "registry:ui",
+      "description": "Copies to the clipboard and confirms it — visually, and to screen readers.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["http://localhost:3000/r/action-button.json"],
+      "files": [
+        { "path": "registry/ui/copy-button/copy-button.tsx", "type": "registry:ui", "target": "@ui/copy-button.tsx" }
+      ]
+    },
+    {
+      "name": "action-button",
+      "type": "registry:ui",
+      "description": "Runs an async action, shows pending/success/error, and reverts. Never resizes.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "http://localhost:3000/r/button.json",
+        "http://localhost:3000/r/morph.json"
+      ],
+      "files": [
+        { "path": "registry/ui/action-button/action-button.tsx", "type": "registry:ui", "target": "@ui/action-button.tsx" }
+      ]
+    },
+    {
+      "name": "tabs",
+      "type": "registry:ui",
+      "description": "Tabs with a travelling indicator. Base UI behaviour, Motion layout animation.",
+      "dependencies": ["@base-ui/react", "class-variance-authority", "motion"],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/motion.json"
+      ],
+      "files": [
+        { "path": "registry/ui/tabs/tabs.tsx", "type": "registry:ui", "target": "@ui/tabs.tsx" },
+        { "path": "registry/ui/tabs/tabs.variants.ts", "type": "registry:ui", "target": "@ui/tabs.variants.ts" }
       ]
     }
   ]

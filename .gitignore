@@ -3,6 +3,7 @@ node_modules/
 out/
 build/
 dist/
+public/r/
 
 # Raw components downloaded from public libraries, kept only for diffing during
 # the refinement pass. Never shipped.

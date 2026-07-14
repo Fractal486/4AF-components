@@ -19,9 +19,9 @@ export const buttonEntry = defineEntry({
     asChild: bool(false, "asChild (render as link)"),
   },
   notes: [
-    "Press and hold: the button scales to 0.97 and stays there. Set motion to SLOW to see the ease — it decelerates in, and springs back out on release.",
-    "Toggle `loading` on: the width doesn't change. The label stays in the layout and fades; the spinner sits on top of it.",
-    "The spinner keeps spinning under REDUCED motion. Scaling it to zero would turn a 1s rotation into a strobe.",
+    "Press and hold: the button scales to 0.97 and stays there. Small enough to feel the give under the cursor, not large enough to read as an animation.",
+    "Toggle `loading` on: the width doesn't change. The label stays in the layout and fades; the spinner sits on top of it. A button that resizes mid-press moves the target out from under the cursor.",
+    "`loading` is disabled — you can't click it twice — but it doesn't *look* disabled. Compare it against `disabled`: 'working' and 'unavailable' are different states.",
     "With an icon, the padding on the icon's side is 2px tighter — optical, not geometric, centring.",
     "Turn on `asChild`: the styles move onto a real <a>. Right-click it — it offers 'Open link in new tab', because it *is* a link.",
   ],

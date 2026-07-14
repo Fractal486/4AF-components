@@ -15,14 +15,30 @@ export const buttonVariants = cva(
     // named — `transition-all` would have the browser watch every property, and
     // would animate things like padding on variant switches, which looks broken.
     // Scale composites on the GPU: no layout, no paint, no jank.
-    "transition-[scale,background-color,box-shadow,color,opacity]",
+    //
+    // Colour only. `scale` is deliberately absent: the press is a spring, driven by
+    // Motion in button.tsx, because no cubic-bezier has weight. Leaving `scale` in this
+    // list would put CSS and Motion in a fight over the same property.
+    //
+    // Hover keeps the fast expo curve, and should: a hover is a response to the cursor
+    // and wants to feel immediate. Only the press wants mass.
+    "transition-[background-color,box-shadow,color,opacity]",
     "duration-(--duration-fast) ease-out",
 
-    // The press. 0.97 is deliberately small — enough to feel the button give
-    // under the cursor, not enough to read as an animation. Pointer-down to
-    // pixels-moving is ~1 frame, which is what makes it feel physical rather
-    // than delayed.
-    "enabled:active:scale-[0.97]",
+    // Hold every button on its own compositing layer, permanently.
+    //
+    // Motion promotes the element when the press starts and demotes it on release.
+    // *Creating* a layer snaps the element's origin to whole device pixels, and
+    // destroying it snaps back — so each press begins and ends with an instant ~1px
+    // jump that no animation covers, worst at the edge furthest from the centre. It's
+    // invisible on a bare label and obvious once there's an icon, because a glyph's
+    // crisp strokes re-rasterize against the pixel grid.
+    //
+    // Promoting up front means that snap happens once, before first paint, and never
+    // again. The cost is that text is antialiased in grayscale rather than subpixel for
+    // the element's life — a hair lighter, but *consistently*, which is the whole point:
+    // a permanent, invisible difference beats a transient, visible one.
+    "will-change-transform",
 
     // Focus is a ring offset from the button, not a colour change: it stays
     // legible on every variant, including the ones that are already amber.
@@ -44,10 +60,12 @@ export const buttonVariants = cva(
         primary: "bg-primary text-primary-foreground hover:bg-primary-hover",
         /** The one action on the page worth spending the accent on. */
         brand: "bg-brand text-brand-foreground hover:bg-brand-hover",
-        /** A shadow, not a border: it sits correctly on any background, including
-            images and coloured surfaces, because it's built from transparency. */
-        outline:
-          "bg-surface text-foreground shadow-border hover:bg-muted hover:shadow-border-hover",
+        /** A shadow, not a border: no layout cost, and being built from transparency
+            it sits correctly on any background rather than only the one it was
+            picked against. Hover moves the fill only — the outline holds still,
+            because the fill already says "you're on it", and moving both is two
+            signals for one event. */
+        outline: "bg-surface text-foreground shadow-border hover:bg-muted",
         ghost: "text-muted-foreground hover:bg-muted hover:text-foreground",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive-hover",

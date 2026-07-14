@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { entries } from "@/inspector";
+import { groups } from "@/inspector";
 
 export default function IndexPage() {
   return (
@@ -15,16 +15,21 @@ export default function IndexPage() {
       </header>
 
       <ul className="grid gap-3 sm:grid-cols-2">
-        {entries.map((entry) => (
-          <li key={entry.slug}>
+        {groups.map((group) => (
+          <li key={group.slug}>
             <Link
-              href={`/c/${entry.slug}`}
-              className="group flex h-full flex-col gap-1 rounded-xl bg-surface p-5 shadow-border transition-[box-shadow,scale] duration-(--duration-fast) ease-out hover:shadow-border-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-[0.99]"
+              href={`/c/${group.slug}`}
+              className="group flex h-full flex-col gap-1 rounded-xl bg-surface p-5 shadow-border transition-[background-color,box-shadow,scale] duration-(--duration-fast) ease-out hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-[0.99]"
             >
-              <span className="text-sm font-medium text-foreground">{entry.name}</span>
+              <span className="text-sm font-medium text-foreground">{group.name}</span>
               <span className="text-sm text-pretty text-muted-foreground">
-                {entry.summary}
+                {group.summary}
               </span>
+              {group.entries.length > 1 && (
+                <span className="mt-2 font-mono text-2xs tracking-widest text-subtle-foreground uppercase">
+                  {group.entries.map((entry) => entry.name).join(" · ")}
+                </span>
+              )}
             </Link>
           </li>
         ))}

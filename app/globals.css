@@ -125,7 +125,21 @@
   --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
-  --animate-spin-slow: spin 1.2s linear infinite;
+  /* A toggled icon swelling and settling. Duration comes from the token, so the
+     reduced-motion rule collapses it to 1ms along with everything else. */
+  --animate-icon-pop: icon-pop var(--duration-slow) var(--ease-out);
+
+  @keyframes icon-pop {
+    0% {
+      scale: 1;
+    }
+    40% {
+      scale: 1.25;
+    }
+    100% {
+      scale: 1;
+    }
+  }
 }
 
 /* ---------------------------------------------------------------------------
@@ -192,13 +206,15 @@
   --destructive-hover: var(--color-danger-700);
 
   /* Depth as three layered shadows: a hairline ring that behaves like a border
-     but adapts to any background, then lift, then ambient spread. */
+     but adapts to any background, then lift, then ambient spread.
+
+     The ring does not change on hover. Moving the fill *and* the outline at once
+     is two signals for one event — the fill already says "you're on it", and an
+     outline that brightens under the cursor reads as the element getting closer,
+     which it isn't. */
   --elevation-border:
     0 0 0 1px oklch(0 0 0 / 0.06), 0 1px 2px -1px oklch(0 0 0 / 0.06),
     0 2px 4px 0 oklch(0 0 0 / 0.04);
-  --elevation-border-hover:
-    0 0 0 1px oklch(0 0 0 / 0.08), 0 1px 2px -1px oklch(0 0 0 / 0.08),
-    0 2px 4px 0 oklch(0 0 0 / 0.06);
   --elevation-raised:
     0 0 0 1px oklch(0 0 0 / 0.06), 0 2px 4px -2px oklch(0 0 0 / 0.06),
     0 6px 12px -3px oklch(0 0 0 / 0.08);
@@ -212,17 +228,20 @@
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --background: var(--color-neutral-1000);
-  --surface: var(--color-neutral-950);
-  --surface-raised: var(--color-neutral-900);
-  --muted: var(--color-neutral-900);
+  /* Fixed values, not ramp steps: these three are specified exactly. Pure neutral
+     (chroma 0), so the warm cast of the ramp doesn't apply to the dark surfaces —
+     only to the text sitting on them, where it's imperceptible. */
+  --background: oklch(0.15 0 0); /* #0B0B0B — the page, and every component's ground */
+  --surface: oklch(0.178 0 0); /* #111111 — component fill */
+  --surface-raised: oklch(0.2 0 0); /* #161616 — overlays, a step above the fill */
+  --muted: oklch(0.205 0 0); /* #171717 — hover ground, segmented-control track */
 
   --foreground: var(--color-neutral-50);
   --muted-foreground: var(--color-neutral-400);
   --subtle-foreground: var(--color-neutral-500);
 
-  --border: oklch(1 0 0 / 0.09);
-  --border-strong: oklch(1 0 0 / 0.16);
+  --border: oklch(0.235 0 0); /* #1E1E1E — component outline */
+  --border-strong: oklch(0.285 0 0); /* #2A2A2A */
   --ring: var(--color-accent-500);
 
   --primary: var(--color-neutral-100);
@@ -244,10 +263,14 @@
   --destructive-foreground: oklch(1 0 0);
   --destructive-hover: var(--color-danger-500);
 
-  /* Layered depth is invisible against black — a single luminous ring does the
-     work instead. Fighting for drop shadows here just produces grey smudge. */
+  /* Layered depth is invisible against black — a single luminous ring does the work
+     instead. Fighting for drop shadows here just produces grey smudge.
+
+     Translucent, not a flat #1E1E1E: 8% white over the #0B0B0B ground composites to
+     almost exactly #1E1E1E anyway (11 + 0.08 × 244 ≈ 30), so it costs nothing to
+     keep — and unlike a fixed colour it still reads correctly if an outlined element
+     ever lands on a surface that isn't the page background. */
   --elevation-border: 0 0 0 1px oklch(1 0 0 / 0.08);
-  --elevation-border-hover: 0 0 0 1px oklch(1 0 0 / 0.13);
   --elevation-raised: 0 0 0 1px oklch(1 0 0 / 0.1), 0 8px 16px -8px oklch(0 0 0 / 0.6);
   --elevation-overlay:
     0 0 0 1px oklch(1 0 0 / 0.12), 0 16px 32px -12px oklch(0 0 0 / 0.7);
@@ -258,7 +281,6 @@
 /* Exposed as `shadow-border`, `shadow-raised`, `shadow-overlay` utilities. */
 @theme inline {
   --shadow-border: var(--elevation-border);
-  --shadow-border-hover: var(--elevation-border-hover);
   --shadow-raised: var(--elevation-raised);
   --shadow-overlay: var(--elevation-overlay);
 }
@@ -268,42 +290,33 @@
  * ------------------------------------------------------------------------ */
 
 /*
- * Every duration in the library is `<base> * var(--motion-scale)`. One variable
- * therefore controls all time in the app, which buys two things:
- *
- *   slow-motion — scale to 4x and watch an animation at quarter speed. This is
- *     the only reliable way to judge whether motion is well built; at 1x, a bad
- *     ease and a good ease both just look like "a thing moved".
- *
- *   reduced-motion — scale to ~0. Note it's 0.01 and not 0: components that
- *     unmount on `transitionend`/`animationend` need the event to still fire, and
- *     a genuinely zero-length transition never fires one. 1.5ms is imperceptible
- *     and keeps those components from wedging open forever.
+ * Every duration in the library comes from one of these four. A component that
+ * hardcodes `duration-150` opts itself out of the reduced-motion rule below and
+ * will keep animating for a user who asked it not to.
  */
 :root {
-  --motion-scale: 1;
-
-  --duration-fast: calc(150ms * var(--motion-scale));
-  --duration-base: calc(200ms * var(--motion-scale));
-  --duration-slow: calc(300ms * var(--motion-scale));
-  --duration-slower: calc(450ms * var(--motion-scale));
+  --duration-fast: 150ms; /* hover, press, focus ring */
+  --duration-base: 200ms; /* dropdowns, tooltips, small enter/exit */
+  --duration-slow: 300ms; /* dialogs, popovers — further to travel */
+  --duration-slower: 450ms; /* sheets, drawers */
 }
 
-/* The OS preference wins unless the inspector has explicitly overridden it. */
+/*
+ * Collapse all motion, but not to zero: components that unmount on `transitionend`
+ * or `animationend` need the event to still fire, and a genuinely zero-length
+ * transition never fires one — the component would wedge open forever. 1ms is
+ * imperceptible and keeps the event loop honest.
+ *
+ * Motion-driven components handle this separately, via `useReducedMotion()` — the
+ * cascade doesn't reach JS.
+ */
 @media (prefers-reduced-motion: reduce) {
-  :root:not([data-motion]) {
-    --motion-scale: 0.01;
+  :root {
+    --duration-fast: 1ms;
+    --duration-base: 1ms;
+    --duration-slow: 1ms;
+    --duration-slower: 1ms;
   }
-}
-
-[data-motion="reduced"] {
-  --motion-scale: 0.01;
-}
-[data-motion="normal"] {
-  --motion-scale: 1;
-}
-[data-motion="slow"] {
-  --motion-scale: 4;
 }
 
 /* ---------------------------------------------------------------------------

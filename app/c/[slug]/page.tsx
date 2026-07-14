@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
-import { entries, getEntry } from "@/inspector";
+import { getGroup, groups } from "@/inspector";
 import { Inspector } from "@/inspector/inspector";
 
 export function generateStaticParams() {
-  return entries.map((entry) => ({ slug: entry.slug }));
+  return groups.map((group) => ({ slug: group.slug }));
 }
 
 export async function generateMetadata({
@@ -12,8 +12,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const entry = getEntry(slug);
-  return { title: entry ? `${entry.name} — 4AF` : "Not found" };
+  const group = getGroup(slug);
+  return { title: group ? `${group.name} — 4AF` : "Not found" };
 }
 
 export default async function ComponentPage({
@@ -22,7 +22,7 @@ export default async function ComponentPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  if (!getEntry(slug)) notFound();
+  if (!getGroup(slug)) notFound();
 
   return (
     <div className="pt-8">

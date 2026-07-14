@@ -1,28 +1,47 @@
 "use client";
 
+import { Button as BaseButton } from "@base-ui/react/button";
+import { motion, useReducedMotion, type HTMLMotionProps } from "motion/react";
 import {
   Children,
+  cloneElement,
   Fragment,
   isValidElement,
-  type ButtonHTMLAttributes,
+  type ComponentProps,
+  type MouseEvent,
+  type ReactElement,
   type ReactNode,
   type Ref,
 } from "react";
 import { cn } from "@/registry/lib/cn";
-import { Slot } from "@/registry/lib/slot";
+import { PRESS_SCALE, spring } from "@/registry/lib/motion";
 import { buttonVariants, type ButtonVariants } from "./button.variants";
 
+/**
+ * These collide with Motion's own props of the same names, which are gesture and
+ * animation callbacks rather than DOM events. Dropping them from the public type is
+ * the standard cost of putting a motion component behind a native-looking API.
+ */
 export interface ButtonProps
-  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "color">,
+  extends Omit<
+      ComponentProps<typeof BaseButton>,
+      "children" | "className" | "nativeButton" | "render"
+    >,
     ButtonVariants {
+  className?: string;
   /** Render the styles onto the child element instead of a <button>. */
   asChild?: boolean;
   /** Swaps in a spinner and blocks interaction, without changing the button's size. */
   loading?: boolean;
   /** Announced while `loading`, since the visible label is hidden from sight. */
   loadingLabel?: string;
-  ref?: Ref<HTMLButtonElement>;
+  children?: ReactNode;
+  ref?: Ref<HTMLElement>;
 }
+
+// Created once at module scope: doing it inside the component would mint a new
+// component type on every render and remount the child.
+const MotionButton = motion.button;
 
 export function Button({
   className,
@@ -36,15 +55,55 @@ export function Button({
   ref,
   ...props
 }: ButtonProps) {
-  const Comp = asChild ? Slot : "button";
   const isDisabled = disabled || loading;
   const icons = iconEdges(children, asChild);
+  const reduceMotion = useReducedMotion();
+  const innerContent =
+    asChild && isValidElement<{ children?: ReactNode }>(children)
+      ? children.props.children
+      : children;
+  const content = loading ? (
+    <ButtonLoading label={loadingLabel}>{innerContent}</ButtonLoading>
+  ) : (
+    innerContent
+  );
+
+  if (asChild && !isValidElement(children)) {
+    throw new Error("Button expects a single React element child when using `asChild`.");
+  }
+
+  const childElement = children as ReactElement<{
+    children?: ReactNode;
+    onClick?: (event: MouseEvent<HTMLElement>) => void;
+    role?: string;
+  }>;
+  const child = asChild
+    ? cloneElement(
+        childElement,
+        {
+          // Base UI correctly guards the Button's own handler. The child's handler is
+          // composed later, so suppress it here as well while disabled/loading.
+          onClick: isDisabled ? (event) => event.preventDefault() : childElement.props.onClick,
+          // `asChild` is visual composition: an anchor must remain a link, not be
+          // announced as a button merely because it wears Button's styles.
+          role: undefined,
+        },
+        content,
+      )
+    : null;
 
   return (
-    <Comp
+    <BaseButton
+      {...props}
       ref={ref}
-      className={cn(buttonVariants({ variant, size }), className)}
+      className={cn(
+        buttonVariants({ variant, size }),
+        asChild &&
+          "transition-[background-color,box-shadow,color,opacity,scale] active:scale-[0.95] motion-reduce:active:scale-100",
+        className,
+      )}
       disabled={isDisabled}
+      nativeButton={!asChild}
       // State on the element, not just in the closure. Anything downstream — a
       // parent's CSS, a test, a screenshot diff — can now see what this button is
       // doing without reaching into React.
@@ -54,10 +113,23 @@ export function Button({
       data-icon-start={icons.start || undefined}
       data-icon-end={icons.end || undefined}
       aria-busy={loading || undefined}
-      {...props}
-    >
-      {loading ? <ButtonLoading label={loadingLabel}>{children}</ButtonLoading> : children}
-    </Comp>
+      render={asChild ? child! : (buttonProps) => {
+        // Base UI owns the button semantics and disabled behavior. Motion only owns
+        // the native button's press spring. `asChild` uses CSS press feedback because
+        // Motion cannot wrap an arbitrary child without creating invalid nested DOM.
+        const motionProps = buttonProps as HTMLMotionProps<"button">;
+        const pressProps = {
+          whileTap: reduceMotion || isDisabled ? undefined : { scale: PRESS_SCALE },
+          transition: spring.press,
+        };
+
+        return (
+          <MotionButton {...motionProps} {...pressProps}>
+            {content}
+          </MotionButton>
+        );
+      }}
+    />
   );
 }
 
@@ -121,15 +193,15 @@ function ButtonLoading({ label, children }: { label: string; children: ReactNode
   );
 }
 
-function Spinner() {
+export function Spinner() {
   return (
     <svg
       viewBox="0 0 16 16"
       fill="none"
       aria-hidden="true"
-      // Deliberately *not* scaled by --motion-scale. Reduced-motion would drive a
-      // 1s spin down to 10ms and produce a strobe, which is worse than the motion
-      // it was trying to avoid. A spinner isn't a transition; it's a status.
+      // Deliberately exempt from the reduced-motion rule. Collapsing a 1s spin to
+      // ~0 produces a strobe, which is worse than the motion it was avoiding. A
+      // spinner isn't a transition; it's a status, and it has to keep reading as one.
       className="animate-spin"
       style={{ animationDuration: "0.7s" }}
     >

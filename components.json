@@ -12,9 +12,12 @@
   "iconLibrary": "lucide",
   "aliases": {
     "components": "@/_incoming",
+    "utils": "@/registry/lib/cn",
     "ui": "@/_incoming/ui",
     "lib": "@/_incoming/lib",
-    "hooks": "@/_incoming/hooks",
-    "utils": "@/registry/lib/cn"
+    "hooks": "@/_incoming/hooks"
+  },
+  "registries": {
+    "@beui": "https://beui.dev/r/{name}.json"
   }
 }

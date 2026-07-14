@@ -49,18 +49,29 @@ worth reusing; a component that skips a line here is a component we'll rewrite l
   compositing layer.
 - **`"use client"` only when interactive.**
 
-## Motion: one variable controls all time
+## Motion
 
-Every duration is `<base> * var(--motion-scale)`. The toolbar writes `data-motion` on
-`<html>` and the whole app changes speed.
+CSS-first. Reach for Motion only when CSS genuinely can't do the job:
 
-- `SLOW` (4x) is the review tool. At 1x a lazy ease and a considered one look identical.
-  Judge every animation at 4x before calling it done.
-- `REDUCED` (~0) is the a11y path. It's `0.01`, not `0` — a zero-length transition never
-  fires `transitionend`, and any component that unmounts on that event would hang open
-  forever.
-- Looping indicators (spinners) must **not** be scaled. A 1s spin at 0.01 is a strobe —
-  worse than the motion it was avoiding. Set their duration directly.
+- **An element must animate while leaving.** React unmounts it immediately; only
+  `AnimatePresence` can hold it on screen long enough to exit. (This is what `IconMorph`
+  is for, and it's the most common honest reason.)
+- **Drag / swipe**, and anything that follows a finger and then settles.
+- **Spring physics** — a spring absorbs a new target mid-flight, a tween restarts.
+- **Layout animation** (FLIP): a tab indicator sliding between tabs.
+
+Hover, press, focus and simple fades are CSS. They don't need a runtime.
+
+**Reduced motion is handled twice, because the cascade doesn't reach JS.**
+
+- CSS components: durations come from `--duration-*`, which a media query collapses to
+  `1ms`. Never hardcode `duration-150` — that opts the component out of the rule.
+  It's `1ms` and not `0` because a zero-length transition never fires `transitionend`,
+  and any component that unmounts on that event would hang open forever.
+- Motion components: `useReducedMotion()` → `{ duration: 0 }`. Not a very short spring —
+  a spring with a near-zero duration doesn't settle, it snaps.
+- Looping indicators (spinners) are exempt from both. A 1s spin collapsed to ~0 is a
+  strobe, which is worse than the motion it was avoiding. Set their duration directly.
 
 ## Sources
 
@@ -107,6 +118,14 @@ Two colour decisions worth not re-litigating:
 Radii are **concentric**: `outer = inner + padding`. An `rounded-xl` (14px) card with
 `p-1` (4px) holds `rounded-lg` (10px) children. Reusing the same radius on both is the most
 common reason an interface feels subtly wrong.
+
+**Optical alignment belongs in the SVG, not in margins.** Icon-only buttons centre
+*geometrically*, and that's correct — Lucide already balances its glyphs inside the 24×24
+box (the play triangle, whose mass sits left of its bounding box, ships pre-shifted 1 unit
+right). Measure the ink with `getBBox()` before "fixing" anything; a blanket optical offset
+would push the correctly-centred glyphs off. What *does* need correcting is an icon sitting
+**beside** something: a leading or trailing icon in a text button shaves 2px off its side,
+driven by `data-icon-start` / `data-icon-end`.
 
 Buttons and cards get depth from **`shadow-border`**, not `border`. A shadow is built from
 transparency, so it sits correctly on any background. Keep real borders for dividers and
