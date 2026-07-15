@@ -21,6 +21,7 @@ export interface InputProps
 export function Input({
   className,
   variant = "default",
+  tone = "neutral",
   type,
   disabled,
   readOnly,
@@ -28,7 +29,8 @@ export function Input({
   ...props
 }: InputProps) {
   const resolvedVariant = variant ?? "default";
-  const baseClassName = inputVariants({ variant: resolvedVariant });
+  const resolvedTone = tone ?? "neutral";
+  const baseClassName = inputVariants({ variant: resolvedVariant, tone: resolvedTone });
   const isNumber = type === "number";
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -66,6 +68,7 @@ export function Input({
       autoComplete="off"
       data-slot="input"
       data-variant={resolvedVariant}
+      data-tone={resolvedTone}
       data-number-stepper={isNumber || undefined}
       className={mergedClassName}
       disabled={disabled}

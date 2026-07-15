@@ -268,6 +268,22 @@
       "files": [
         { "path": "registry/ui/tooltip/tooltip.tsx", "type": "registry:ui", "target": "@ui/tooltip.tsx" }
       ]
+    },
+    {
+      "name": "sheet",
+      "type": "registry:ui",
+      "description": "A dialog that slides in from an edge. Base UI Dialog behaviour, Motion enter/exit.",
+      "dependencies": ["@base-ui/react", "class-variance-authority", "lucide-react", "motion"],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/motion.json",
+        "http://localhost:3000/r/button.json"
+      ],
+      "files": [
+        { "path": "registry/ui/sheet/sheet.tsx", "type": "registry:ui", "target": "@ui/sheet.tsx" },
+        { "path": "registry/ui/sheet/sheet.variants.ts", "type": "registry:ui", "target": "@ui/sheet.variants.ts" }
+      ]
     }
   ]
 }

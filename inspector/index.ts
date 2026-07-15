@@ -4,6 +4,7 @@ import { checkboxEntry } from "./entries/checkbox";
 import { copyButtonEntry } from "./entries/copy-button";
 import { inputEntry } from "./entries/input";
 import { morphEntry } from "./entries/morph";
+import { sheetEntry } from "./entries/sheet";
 import { switchEntry } from "./entries/switch";
 import { tabsEntry } from "./entries/tabs";
 import { toggleEntry } from "./entries/toggle";
@@ -64,6 +65,12 @@ export const groups: Group[] = [
     name: "Tooltip",
     summary: "Base UI positioning and timing, a CSS scale-and-blur enter.",
     entries: [tooltipEntry],
+  },
+  {
+    slug: "sheet",
+    name: "Sheet",
+    summary: "A dialog that slides in from an edge. Focus-trapped, scroll-locked.",
+    entries: [sheetEntry],
   },
 ];
 

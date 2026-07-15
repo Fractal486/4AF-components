@@ -18,16 +18,37 @@ export const inputVariants = cva(
   ],
   {
     variants: {
+      // Structure: how the field is bordered. Focus *colour* is a separate axis
+      // (`tone`) so either border shape can wear either focus colour.
       variant: {
-        default:
-          "border border-[oklch(0.297_0_0)] hover:border-[oklch(0.390_0_0)] focus:border-[oklch(0.719_0_0)] focus:shadow-[0_0_0_3px_oklch(0.390_0_0_/_0.502)]",
-        plain:
-          "border-0 shadow-none hover:border-0 focus:border-0 focus:shadow-none hover:bg-transparent",
+        default: "border border-[oklch(0.297_0_0)] hover:border-[oklch(0.390_0_0)]",
+        plain: "border-0 shadow-none hover:border-0 focus:border-0 focus:shadow-none hover:bg-transparent",
         underline:
-          "rounded-none border-0 border-b border-b-[oklch(0.297_0_0)] px-0 shadow-none hover:border-b-[oklch(0.390_0_0)] focus:border-b-[oklch(0.719_0_0)] focus:shadow-none",
+          "rounded-none border-0 border-b border-b-[oklch(0.297_0_0)] px-0 shadow-none hover:border-b-[oklch(0.390_0_0)]",
+      },
+      // The focus colour. `neutral` is a grey ring that stands apart from the accent;
+      // `accent` uses the `--ring` token, so it matches every other focusable control
+      // in the app and follows the theme.
+      tone: {
+        neutral: "",
+        accent: "",
       },
     },
-    defaultVariants: { variant: "default" },
+    compoundVariants: [
+      {
+        variant: "default",
+        tone: "neutral",
+        class: "focus:border-[oklch(0.719_0_0)] focus:shadow-[0_0_0_3px_oklch(0.390_0_0_/_0.502)]",
+      },
+      {
+        variant: "default",
+        tone: "accent",
+        class: "focus:border-ring focus:ring-[3px] focus:ring-ring/25",
+      },
+      { variant: "underline", tone: "neutral", class: "focus:border-b-[oklch(0.719_0_0)]" },
+      { variant: "underline", tone: "accent", class: "focus:border-b-ring" },
+    ],
+    defaultVariants: { variant: "default", tone: "neutral" },
   },
 );
 
