@@ -225,6 +225,21 @@
         { "path": "registry/ui/tabs/tabs.tsx", "type": "registry:ui", "target": "@ui/tabs.tsx" },
         { "path": "registry/ui/tabs/tabs.variants.ts", "type": "registry:ui", "target": "@ui/tabs.variants.ts" }
       ]
+    },
+    {
+      "name": "switch",
+      "type": "registry:ui",
+      "description": "A switch that slides and squishes when pressed. Adaptive or fixed thumb tone.",
+      "dependencies": ["@base-ui/react", "class-variance-authority", "motion"],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/motion.json"
+      ],
+      "files": [
+        { "path": "registry/ui/switch/switch.tsx", "type": "registry:ui", "target": "@ui/switch.tsx" },
+        { "path": "registry/ui/switch/switch.variants.ts", "type": "registry:ui", "target": "@ui/switch.variants.ts" }
+      ]
     }
   ]
 }

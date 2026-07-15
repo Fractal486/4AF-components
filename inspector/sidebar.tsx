@@ -11,7 +11,11 @@ export function Sidebar() {
               <li key={entry.slug}>
                 <Link
                   href={`/c/${group.slug}?component=${entry.slug}`}
-                  className="block rounded-md px-3 py-2 text-sm text-muted-foreground transition-[background-color,color] duration-(--duration-fast) ease-out hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  // Hover as an overlay relative to the foreground, not `bg-muted`.
+                  // The sidebar sits on the page background, and `muted` is one faint
+                  // step off it — invisible in light mode (near-white on near-white).
+                  // A translucent foreground tint has real contrast in both themes.
+                  className="block rounded-md px-3 py-2 text-sm text-muted-foreground transition-[background-color,color] duration-(--duration-fast) ease-out hover:bg-foreground/[0.07] hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 >
                   {entry.name}
                 </Link>

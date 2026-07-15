@@ -3,6 +3,7 @@ import { buttonEntry } from "./entries/button";
 import { copyButtonEntry } from "./entries/copy-button";
 import { inputEntry } from "./entries/input";
 import { morphEntry } from "./entries/morph";
+import { switchEntry } from "./entries/switch";
 import { tabsEntry } from "./entries/tabs";
 import { toggleEntry } from "./entries/toggle";
 import type { Entry } from "./schema";
@@ -43,6 +44,12 @@ export const groups: Group[] = [
     summary:
       "Base UI behaviour with a travelling indicator. Segment, pill, and underline.",
     entries: [tabsEntry],
+  },
+  {
+    slug: "switch",
+    name: "Switch",
+    summary: "It slides, and squishes wider while held. Adaptive or fixed thumb.",
+    entries: [switchEntry],
   },
 ];
 
