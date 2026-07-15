@@ -5,6 +5,7 @@ import { copyButtonEntry } from "./entries/copy-button";
 import { inputEntry } from "./entries/input";
 import { morphEntry } from "./entries/morph";
 import { sheetEntry } from "./entries/sheet";
+import { sliderEntry } from "./entries/slider";
 import { switchEntry } from "./entries/switch";
 import { tabsEntry } from "./entries/tabs";
 import { toggleEntry } from "./entries/toggle";
@@ -59,6 +60,12 @@ export const groups: Group[] = [
     name: "Checkbox",
     summary: "The tick draws itself in. Presses on click, not on hover.",
     entries: [checkboxEntry],
+  },
+  {
+    slug: "slider",
+    name: "Slider",
+    summary: "A spring-glided thumb — a thin bar or a round knob — that grabs while held.",
+    entries: [sliderEntry],
   },
   {
     slug: "tooltip",
