@@ -3,6 +3,7 @@ import { buttonEntry } from "./entries/button";
 import { copyButtonEntry } from "./entries/copy-button";
 import { inputEntry } from "./entries/input";
 import { morphEntry } from "./entries/morph";
+import { tabsEntry } from "./entries/tabs";
 import { toggleEntry } from "./entries/toggle";
 import type { Entry } from "./schema";
 
@@ -35,6 +36,13 @@ export const groups: Group[] = [
     name: "Input",
     summary: "A native text field backed by Base UI.",
     entries: [inputEntry],
+  },
+  {
+    slug: "tabs",
+    name: "Tabs",
+    summary:
+      "Base UI behaviour with a travelling indicator. Segment, pill, and underline.",
+    entries: [tabsEntry],
   },
 ];
 

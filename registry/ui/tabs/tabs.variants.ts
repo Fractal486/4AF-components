@@ -20,13 +20,11 @@ export const tabsListVariants = cva("relative flex items-center", {
 
 export const tabVariants = cva(
   [
-    // `isolate` is load-bearing, not decoration. The indicator sits at `-z-10` so it
-    // paints under the label — but a `relative` element with `z-index: auto` is not a
-    // stacking context, so a negative-z child escapes it and paints behind the
-    // *list's* background instead, and the pill vanishes. `isolate` makes the tab a
-    // stacking context, which traps the indicator between the tab's background and
-    // its text, exactly where it belongs.
-    "relative isolate inline-flex cursor-pointer items-center justify-center",
+    // `relative z-10` lifts the tab above the indicator. The indicator is an earlier
+    // sibling at `z-0`; without a stacking order the tab's transparent box would still
+    // let the indicator (a positioned element) paint over the label. z-10 keeps the
+    // text on top of the chip, which is the whole point of a chip.
+    "relative z-10 inline-flex cursor-pointer items-center justify-center",
     "text-sm font-medium whitespace-nowrap select-none",
     // Only the colour changes on hover — the indicator is a separate element and
     // moves under Motion, so naming `color` keeps the browser from watching the rest.
@@ -53,13 +51,19 @@ export const tabVariants = cva(
   },
 );
 
-/** The travelling indicator. Rendered only under the selected tab. */
-export const tabIndicatorVariants = cva("absolute", {
+/**
+ * The travelling indicator. One per list, positioned over the selected tab.
+ *
+ * Only the vertical placement and the look live here — `left` and `width` are measured
+ * from the active tab and animated inline, so they must not be set in these classes.
+ * `inset-y-*` matches the list's padding so the chip lines up with the tab it sits under.
+ */
+export const tabIndicatorVariants = cva("pointer-events-none absolute z-0", {
   variants: {
     variant: {
-      segment: "inset-0 -z-10 rounded-md bg-surface shadow-border",
-      pill: "inset-0 -z-10 rounded-full bg-surface shadow-border",
-      underline: "-bottom-px left-0 h-px w-full bg-foreground",
+      segment: "inset-y-0.5 rounded-md bg-surface shadow-border",
+      pill: "inset-y-1 rounded-full bg-surface shadow-border",
+      underline: "bottom-0 h-px bg-foreground",
     },
   },
   defaultVariants: { variant: "segment" },

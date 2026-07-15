@@ -1,12 +1,14 @@
 "use client";
 
 import { Tabs as BaseTabs } from "@base-ui/react/tabs";
-import { motion, MotionConfig, useReducedMotion, type Transition } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import {
   createContext,
   useContext,
-  useId,
+  useLayoutEffect,
   useMemo,
+  useRef,
+  useState,
   type ComponentProps,
   type ReactNode,
 } from "react";
@@ -27,20 +29,18 @@ import {
  * is optional — a `role="tablist"` you can't drive with the arrow keys is a worse lie
  * than no ARIA at all, because it promises a screen reader behaviour that isn't there.
  *
- * The travelling indicator is Motion's, via a shared `layoutId`. This is one of the
- * few things CSS genuinely cannot do: the pill has to measure where it was and where
- * it's going across two different DOM nodes. That's FLIP, and it has no declarative
- * CSS equivalent.
+ * The travelling indicator is a single measured element that animates only its `left`
+ * and `width`. The obvious approach — one `layoutId` span per tab, letting Motion FLIP
+ * between them — looks right and animates wrong: the shared-element projection measures
+ * both axes, and under the panel tree it picks up a spurious vertical delta, so the
+ * indicator jumps down a frame and then slides in diagonally. Tabs sit in a row; the
+ * indicator only ever moves sideways. Measuring the active tab and animating x/width
+ * makes vertical movement structurally impossible rather than something to correct.
  */
 
 type Variant = NonNullable<TabsVariants["variant"]>;
 
-interface TabsContextValue {
-  variant: Variant;
-  layoutId: string;
-}
-
-const TabsContext = createContext<TabsContextValue | null>(null);
+const TabsContext = createContext<{ variant: Variant } | null>(null);
 
 function useTabsContext() {
   const context = useContext(TabsContext);
@@ -60,37 +60,79 @@ export function Tabs({ variant = "segment", className, children, ...props }: Tab
   // its job. Mirroring the value here was a bug: Base UI registers its tabs in an
   // effect, so on the first render nothing matches the value yet and it emits an
   // `initial` fallback. A mirror accepts that fallback and lands on the wrong tab.
-  // Each Tab reads its own selected state below instead.
-  const layoutId = useId();
-  const reduceMotion = useReducedMotion();
-
-  const context = useMemo(() => ({ variant, layoutId }), [variant, layoutId]);
+  const context = useMemo(() => ({ variant }), [variant]);
 
   return (
     <TabsContext.Provider value={context}>
-      <MotionConfig
-        transition={reduceMotion ? ({ duration: 0 } as Transition) : spring.snappy}
-      >
-        {/* layoutRoot scopes layout projection to this subtree. Without it the
-            indicator measures in page coordinates, so inside a scrolled or fixed
-            container it replays the scroll offset as movement and the pill lurches. */}
-        <motion.div layoutRoot className={cn("flex flex-col gap-4", className)}>
-          <BaseTabs.Root className="flex flex-col gap-4" {...props}>
-            {children}
-          </BaseTabs.Root>
-        </motion.div>
-      </MotionConfig>
+      <BaseTabs.Root className={cn("flex flex-col gap-4", className)} {...props}>
+        {children}
+      </BaseTabs.Root>
     </TabsContext.Provider>
   );
 }
 
 export function TabsList({
   className,
+  children,
   ...props
-}: Omit<ComponentProps<typeof BaseTabs.List>, "className"> & { className?: string }) {
+}: Omit<ComponentProps<typeof BaseTabs.List>, "className"> & {
+  className?: string;
+  children?: ReactNode;
+}) {
   const { variant } = useTabsContext();
+  const listRef = useRef<HTMLDivElement>(null);
+  const [box, setBox] = useState<{ left: number; width: number } | null>(null);
+  const reduceMotion = useReducedMotion();
+
+  // Track the selected tab's horizontal box, relative to the list. Base UI owns the
+  // selection, so rather than duplicate its state we watch the attribute it sets and
+  // measure — which also means the indicator can never disagree with what's selected.
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+
+    const measure = () => {
+      const active = list.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
+      if (!active) return;
+      // getBoundingClientRect, not offsetLeft: offsetLeft rounds to whole pixels and
+      // the indicator would jitter by 1px between tabs of fractional width.
+      const listRect = list.getBoundingClientRect();
+      const tabRect = active.getBoundingClientRect();
+      setBox({ left: tabRect.left - listRect.left, width: tabRect.width });
+    };
+
+    measure();
+    // Selection changes flip `aria-selected` on the tabs; a resize (or a font finally
+    // loading) changes their widths. Both need a re-measure.
+    const mo = new MutationObserver(measure);
+    mo.observe(list, { subtree: true, attributes: true, attributeFilter: ["aria-selected"] });
+    const ro = new ResizeObserver(measure);
+    ro.observe(list);
+    return () => {
+      mo.disconnect();
+      ro.disconnect();
+    };
+  }, [variant]);
+
   return (
-    <BaseTabs.List className={cn(tabsListVariants({ variant }), className)} {...props} />
+    <BaseTabs.List
+      ref={listRef}
+      className={cn(tabsListVariants({ variant }), className)}
+      {...props}
+    >
+      {box && (
+        <motion.div
+          aria-hidden
+          className={tabIndicatorVariants({ variant })}
+          // No animation on first appearance — it should already be under the selected
+          // tab, not fly in from the origin on load.
+          initial={false}
+          animate={{ left: box.left, width: box.width }}
+          transition={reduceMotion ? { duration: 0 } : spring.snappy}
+        />
+      )}
+      {children}
+    </BaseTabs.List>
   );
 }
 
@@ -98,36 +140,15 @@ export function TabsTab({
   className,
   children,
   ...props
-}: Omit<ComponentProps<typeof BaseTabs.Tab>, "className" | "render"> & {
+}: Omit<ComponentProps<typeof BaseTabs.Tab>, "className"> & {
   className?: string;
+  children?: ReactNode;
 }) {
-  const { variant, layoutId } = useTabsContext();
-
+  const { variant } = useTabsContext();
   return (
-    <BaseTabs.Tab
-      className={cn(tabVariants({ variant }), className)}
-      {...props}
-      // `render` is how Base UI hands out the state it owns. Asking it whether this
-      // tab is selected beats deducing it from a value we'd have to keep in sync.
-      render={(tabProps, state) => (
-        <button type="button" {...tabProps}>
-          {/* The indicator exists only under the selected tab. Motion sees the same
-              layoutId vanish here and appear there, and animates between the two —
-              which is what makes it slide rather than cut. */}
-          {state.active && (
-            <motion.span
-              layoutId={layoutId}
-              className={tabIndicatorVariants({ variant })}
-              // A style, not a class: the projection scales the box during the slide,
-              // and a scaled border-radius smears. Motion only corrects for that when
-              // it owns the value.
-              style={{ borderRadius: variant === "pill" ? 9999 : undefined }}
-            />
-          )}
-          {children}
-        </button>
-      )}
-    />
+    <BaseTabs.Tab className={cn(tabVariants({ variant }), className)} {...props}>
+      {children}
+    </BaseTabs.Tab>
   );
 }
 
