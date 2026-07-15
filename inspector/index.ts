@@ -7,6 +7,7 @@ import { morphEntry } from "./entries/morph";
 import { switchEntry } from "./entries/switch";
 import { tabsEntry } from "./entries/tabs";
 import { toggleEntry } from "./entries/toggle";
+import { tooltipEntry } from "./entries/tooltip";
 import type { Entry } from "./schema";
 
 /**
@@ -57,6 +58,12 @@ export const groups: Group[] = [
     name: "Checkbox",
     summary: "The tick draws itself in. Presses on click, not on hover.",
     entries: [checkboxEntry],
+  },
+  {
+    slug: "tooltip",
+    name: "Tooltip",
+    summary: "Base UI positioning and timing, a CSS scale-and-blur enter.",
+    entries: [tooltipEntry],
   },
 ];
 

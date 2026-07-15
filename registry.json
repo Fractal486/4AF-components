@@ -255,6 +255,19 @@
         { "path": "registry/ui/checkbox/checkbox.tsx", "type": "registry:ui", "target": "@ui/checkbox.tsx" },
         { "path": "registry/ui/checkbox/checkbox.variants.ts", "type": "registry:ui", "target": "@ui/checkbox.variants.ts" }
       ]
+    },
+    {
+      "name": "tooltip",
+      "type": "registry:ui",
+      "description": "Base UI positioning and timing with a CSS scale-and-blur enter. Opens on hover and focus, flips at the viewport edge.",
+      "dependencies": ["@base-ui/react"],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        { "path": "registry/ui/tooltip/tooltip.tsx", "type": "registry:ui", "target": "@ui/tooltip.tsx" }
+      ]
     }
   ]
 }
