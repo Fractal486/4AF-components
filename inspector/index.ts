@@ -1,5 +1,6 @@
 import { actionButtonEntry } from "./entries/action-button";
 import { buttonEntry } from "./entries/button";
+import { checkboxEntry } from "./entries/checkbox";
 import { copyButtonEntry } from "./entries/copy-button";
 import { inputEntry } from "./entries/input";
 import { morphEntry } from "./entries/morph";
@@ -50,6 +51,12 @@ export const groups: Group[] = [
     name: "Switch",
     summary: "It slides, and squishes wider while held. Adaptive or fixed thumb.",
     entries: [switchEntry],
+  },
+  {
+    slug: "checkbox",
+    name: "Checkbox",
+    summary: "The tick draws itself in. Presses on click, not on hover.",
+    entries: [checkboxEntry],
   },
 ];
 

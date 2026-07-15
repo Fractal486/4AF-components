@@ -240,6 +240,21 @@
         { "path": "registry/ui/switch/switch.tsx", "type": "registry:ui", "target": "@ui/switch.tsx" },
         { "path": "registry/ui/switch/switch.variants.ts", "type": "registry:ui", "target": "@ui/switch.variants.ts" }
       ]
+    },
+    {
+      "name": "checkbox",
+      "type": "registry:ui",
+      "description": "A checkbox whose tick draws itself in. Presses on click, not on hover.",
+      "dependencies": ["@base-ui/react", "class-variance-authority", "motion"],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/motion.json"
+      ],
+      "files": [
+        { "path": "registry/ui/checkbox/checkbox.tsx", "type": "registry:ui", "target": "@ui/checkbox.tsx" },
+        { "path": "registry/ui/checkbox/checkbox.variants.ts", "type": "registry:ui", "target": "@ui/checkbox.variants.ts" }
+      ]
     }
   ]
 }
