@@ -79,7 +79,10 @@ export function Slider({
   const current = controlled ? value : internal;
   const percent = ((current - min) / (max - min)) * 100;
 
-  // Spring-smoothed position drives both the thumb's `left` and the fill's `width`.
+  const atEdge = current <= min || current >= max;
+  const thumbWidthPx = isCircle ? 20 : 6; // size-5 vs w-1.5
+
+  // Spring-smoothed position drives the thumb's `left`.
   const target = useMotionValue(percent);
   useEffect(() => {
     target.set(percent);
@@ -88,8 +91,23 @@ export function Slider({
   const pos = reduceMotion ? target : smooth;
   const left = useMotionTemplate`${pos}%`;
   // Self-offset the thumb from 0% (flush left) to -100% (flush right) of its own width,
-  // so the thin bar stays fully inside the track at both ends.
+  // so the thumb stays fully inside the track, sitting exactly on the tick dots.
   const thumbX = useTransform(pos, (p) => `${-p}%`);
+
+  // The fill ends at the thumb's *centre*. `pos%` alone would lag the (edge-aligned)
+  // thumb on the left and overrun it on the right — off by up to half a thumb — so the
+  // fill carries a correction of `thumbWidth·(0.5 − pos/100)`. That correction is kept in
+  // full for every real value (perfect alignment), and only zeroed *at the extremes*, so
+  // the fill sits flush to the rail there: no sliver at the left, no gap at the right.
+  // The offset is sprung on its own so that endpoint snap eases in rather than jumping.
+  const offsetTargetValue = atEdge ? 0 : thumbWidthPx * (0.5 - percent / 100);
+  const offsetTarget = useMotionValue(offsetTargetValue);
+  useEffect(() => {
+    offsetTarget.set(offsetTargetValue);
+  }, [offsetTargetValue, offsetTarget]);
+  const offsetSmooth = useSpring(offsetTarget, SPRING_GLIDE);
+  const offset = reduceMotion ? offsetTarget : offsetSmooth;
+  const fillWidth = useMotionTemplate`calc(${pos}% + ${offset}px)`;
 
   const stepCount = Math.floor((max - min) / step);
   const ticks =
@@ -155,15 +173,23 @@ export function Slider({
             isCircle ? "rounded-full" : "rounded-lg",
           )}
         >
-          {/* Fill — left edge to the thumb. */}
+          {/* Fill — left edge to the thumb's centre, easing to the rail edges at the ends. */}
           <motion.div
             aria-hidden
             className="absolute inset-y-0 left-0 bg-foreground/15"
-            style={{ width: left }}
+            style={{ width: fillWidth }}
           />
 
-          {/* Ticks, inset so the end dots don't sit under the thumb's travel. */}
-          <div aria-hidden className="pointer-events-none absolute inset-x-2 inset-y-0">
+          {/* Ticks inset by exactly half the thumb width, so each dot lands where the
+              (edge-aligned) thumb's centre lands at that value — otherwise the dots and
+              the thumb drift apart toward the ends. */}
+          <div
+            aria-hidden
+            className={cn(
+              "pointer-events-none absolute inset-y-0",
+              isCircle ? "inset-x-2.5" : "inset-x-[3px]",
+            )}
+          >
             {ticks.map((tp, i) => (
               <span
                 key={i}
