@@ -35,7 +35,16 @@ export const sheetEntry = defineEntry({
           </SheetHeader>
 
           <SheetBody className="flex flex-col gap-3 py-2">
-            {["Name", "Username", "Email"].map((label) => (
+            {[
+              "Name",
+              "Username",
+              "Email",
+              "Bio",
+              "Location",
+              "Website",
+              "Company",
+              "Phone",
+            ].map((label) => (
               <label key={label} className="flex flex-col gap-1.5">
                 <span className="text-sm text-muted-foreground">{label}</span>
                 <Input tone="accent" defaultValue={label} />

@@ -122,7 +122,7 @@ export function SheetContent({
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+                exit={{ opacity: 0, transition: { duration: reduceMotion ? 0 : 0.18 } }}
                 transition={{ duration: reduceMotion ? 0 : 0.25, ease: ease.out }}
                 className={backdropClassName}
               />
@@ -139,7 +139,7 @@ export function SheetContent({
                 exit={
                   reduceMotion
                     ? { opacity: 0, transition: { duration: 0 } }
-                    : { ...exitTo[resolvedSide], transition: { duration: 0.4, ease: ease.out } }
+                    : { ...exitTo[resolvedSide], transition: { duration: 0.28, ease: ease.out } }
                 }
                 transition={reduceMotion ? { duration: 0 } : spring.smooth}
               />
@@ -173,7 +173,23 @@ export function SheetHeader({ className, ...props }: ComponentProps<"div">) {
 }
 
 export function SheetBody({ className, ...props }: ComponentProps<"div">) {
-  return <div className={cn("flex-1 overflow-y-auto px-5", className)} {...props} />;
+  return (
+    <div
+      className={cn(
+        "flex-1 overflow-y-auto px-5",
+        // A thin custom scrollbar, shown only when content overflows. Firefox uses the
+        // standard properties; WebKit/Blink need the pseudo-elements. Colours are tokens,
+        // so it stays subtle in both themes.
+        "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent]",
+        "[&::-webkit-scrollbar]:w-1.5",
+        "[&::-webkit-scrollbar-track]:bg-transparent",
+        "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong",
+        "[&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground",
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 export function SheetFooter({ className, ...props }: ComponentProps<"div">) {
