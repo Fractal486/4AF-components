@@ -76,6 +76,9 @@ interface SelectContextValue {
   register: (value: string, label: string) => void;
   unregister: (value: string) => void;
   labelFor: (value: string | undefined) => string | undefined;
+  registerIcon: (value: string, icon: ReactNode | undefined) => void;
+  unregisterIcon: (value: string) => void;
+  iconFor: (value: string | undefined) => ReactNode | undefined;
   reduce: boolean;
   triggerId: string;
   listId: string;
@@ -95,6 +98,8 @@ function useSelectContext(component: string) {
 interface SelectBaseProps {
   disabled?: boolean;
   className?: string;
+  /** Resolves the icon shown in the closed single-select value. */
+  iconForValue?: (value: string) => ReactNode | undefined;
   children: ReactNode;
 }
 
@@ -121,6 +126,7 @@ export function Select({
   onValueChange,
   disabled = false,
   className,
+  iconForValue,
   children,
 }: SelectProps) {
   const reduce = useReducedMotion() ?? false;
@@ -137,6 +143,7 @@ export function Select({
         : undefined,
   );
   const [labels, setLabels] = useState<Map<string, string>>(new Map());
+  const [icons, setIcons] = useState<Map<string, ReactNode>>(new Map());
   const [placement, setPlacement] = useState<Placement>("bottom");
 
   const controlled = value !== undefined;
@@ -184,6 +191,27 @@ export function Select({
       return next;
     });
   }, []);
+  const registerIcon = useCallback((v: string, icon: ReactNode | undefined) => {
+    setIcons((m) => {
+      if (icon == null) {
+        if (!m.has(v)) return m;
+        const next = new Map(m);
+        next.delete(v);
+        return next;
+      }
+
+      if (Object.is(m.get(v), icon)) return m;
+      return new Map(m).set(v, icon);
+    });
+  }, []);
+  const unregisterIcon = useCallback((v: string) => {
+    setIcons((m) => {
+      if (!m.has(v)) return m;
+      const next = new Map(m);
+      next.delete(v);
+      return next;
+    });
+  }, []);
 
   // Close on outside pointer / Escape.
   useEffect(() => {
@@ -211,6 +239,10 @@ export function Select({
       register,
       unregister,
       labelFor: (v) => (v === undefined ? undefined : labels.get(v)),
+      registerIcon,
+      unregisterIcon,
+      iconFor: (v) =>
+        v === undefined ? undefined : icons.get(v) ?? iconForValue?.(v),
       reduce,
       triggerId: `${baseId}-trigger`,
       listId: `${baseId}-list`,
@@ -227,6 +259,10 @@ export function Select({
       register,
       unregister,
       labels,
+      registerIcon,
+      unregisterIcon,
+      icons,
+      iconForValue,
       reduce,
       baseId,
       disabled,
@@ -311,6 +347,7 @@ export interface SelectValueProps {
 export function SelectValue({ placeholder, className }: SelectValueProps) {
   const ctx = useSelectContext("SelectValue");
   const label = ctx.labelFor(ctx.value);
+  const icon = ctx.multiple ? undefined : ctx.iconFor(ctx.value);
   const hasValue = ctx.multiple ? ctx.values.length > 0 : label !== undefined;
   const displayValue = ctx.multiple
     ? ctx.values.length === 0
@@ -319,8 +356,15 @@ export function SelectValue({ placeholder, className }: SelectValueProps) {
     : (label ?? placeholder ?? "Select");
 
   return (
-    <span className={cn(hasValue ? "text-foreground" : "text-muted-foreground", className)}>
-      {displayValue}
+    <span
+      className={cn(
+        "flex min-w-0 items-center gap-2 truncate",
+        hasValue ? "text-foreground" : "text-muted-foreground",
+        className,
+      )}
+    >
+      <SelectItemIcon icon={icon} />
+      <span className="truncate">{displayValue}</span>
     </span>
   );
 }
@@ -449,15 +493,36 @@ export interface SelectItemProps {
   value: string;
   disabled?: boolean;
   className?: string;
+  /** An optional leading icon. It is inert and hidden from assistive technology. */
+  icon?: ReactNode;
   children: ReactNode;
 }
 
-export function SelectItem({ value, disabled = false, className, children }: SelectItemProps) {
+function SelectItemIcon({ icon }: { icon?: ReactNode }) {
+  if (icon == null) return null;
+
+  return (
+    <span
+      aria-hidden="true"
+      className="pointer-events-none flex size-4 shrink-0 items-center justify-center [&>svg]:size-4"
+    >
+      {icon}
+    </span>
+  );
+}
+
+export function SelectItem({ value, disabled = false, className, icon, children }: SelectItemProps) {
   const ctx = useSelectContext("SelectItem");
   const { register, unregister } = ctx;
+  const { registerIcon, unregisterIcon } = ctx;
   const [pointerHighlighted, setPointerHighlighted] = useState(false);
   const selected = ctx.values.includes(value);
   const label = typeof children === "string" ? children : value;
+
+  useEffect(() => {
+    registerIcon(value, icon);
+    return () => unregisterIcon(value);
+  }, [icon, registerIcon, unregisterIcon, value]);
 
   useLayoutEffect(() => {
     register(value, label);
@@ -508,6 +573,7 @@ export function SelectItem({ value, disabled = false, className, children }: Sel
           tabIndex={-1}
           className="pointer-events-none shrink-0"
         />
+        <SelectItemIcon icon={icon} />
         <span className="flex-1 truncate">{children}</span>
       </motion.li>
     );
@@ -525,7 +591,10 @@ export function SelectItem({ value, disabled = false, className, children }: Sel
         onClick={() => ctx.select(value)}
         className={cn("justify-between", itemClassName)}
       >
-        {children}
+        <span className="flex min-w-0 flex-1 items-center gap-2">
+          <SelectItemIcon icon={icon} />
+          <span className="truncate">{children}</span>
+        </span>
         {selected ? <Check className="size-3.5 shrink-0" /> : null}
       </button>
     </motion.li>

@@ -67,7 +67,8 @@ describe("Motion Select", () => {
       </Select>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Pick a fruit" }));
+    const trigger = screen.getByRole("button", { name: "Pick a fruit" });
+    fireEvent.click(trigger);
     const apple = screen.getByRole("option", { name: "Apple" });
 
     fireEvent.pointerEnter(apple);
@@ -75,5 +76,29 @@ describe("Motion Select", () => {
 
     fireEvent.pointerLeave(apple);
     expect(apple).not.toHaveAttribute("data-highlighted");
+  });
+
+  it("renders an optional icon as an inert leading part", () => {
+    render(
+      <Select defaultValue="apple">
+        <SelectTrigger>
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="apple" icon={<span data-testid="fruit-icon" />}>
+            Apple
+          </SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("button", { name: "Apple" });
+    expect(trigger.querySelector('[data-testid="fruit-icon"]')).toBeInTheDocument();
+    fireEvent.click(trigger);
+
+    expect(trigger.querySelector('[data-testid="fruit-icon"]')?.parentElement).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
   });
 });

@@ -5,6 +5,7 @@ import {
   SearchSelectInput,
   SearchSelectItem,
 } from "@/registry/ui/select/select-search";
+import { FruitIcon } from "./select-fruit-icons";
 import { bool, defineEntry, select } from "../schema";
 
 const FRUITS = [
@@ -27,8 +28,9 @@ export const selectSearchEntry = defineEntry({
     tone: select(["neutral", "accent"], "neutral", "Focus"),
     disabled: bool(false),
     multiple: bool(false),
+    icons: bool(true),
   },
-  render({ tone, disabled, multiple }) {
+  render({ tone, disabled, multiple, icons }) {
     return (
       <div className="w-full max-w-56">
         {multiple ? (
@@ -42,18 +44,31 @@ export const selectSearchEntry = defineEntry({
             <SearchSelectInput placeholder="Search fruits…" tone={tone} />
             <SearchSelectContent emptyMessage="No fruit found.">
               {(item: Fruit) => (
-                <SearchMultiSelectItem key={item.value} value={item}>
+                <SearchMultiSelectItem
+                  key={item.value}
+                  value={item}
+                  icon={icons ? <FruitIcon value={item.value} /> : undefined}
+                >
                   {item.label}
                 </SearchMultiSelectItem>
               )}
             </SearchSelectContent>
           </SearchSelect>
         ) : (
-          <SearchSelect key="single" items={FRUITS} disabled={disabled}>
+          <SearchSelect<Fruit>
+            key="single"
+            items={FRUITS}
+            disabled={disabled}
+            iconForValue={icons ? (value) => <FruitIcon value={value.value} /> : undefined}
+          >
             <SearchSelectInput placeholder="Search a fruit…" tone={tone} />
             <SearchSelectContent emptyMessage="No fruit found.">
               {(item: Fruit) => (
-                <SearchSelectItem key={item.value} value={item}>
+                <SearchSelectItem
+                  key={item.value}
+                  value={item}
+                  icon={icons ? <FruitIcon value={item.value} /> : undefined}
+                >
                   {item.label}
                 </SearchSelectItem>
               )}

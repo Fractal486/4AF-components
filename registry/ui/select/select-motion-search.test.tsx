@@ -28,11 +28,18 @@ function FruitSearch({
       items={FRUITS}
       defaultValue={defaultValue}
       onValueChange={onValueChange}
+      iconForValue={(value) =>
+        value.value === "apple" ? <span data-testid="fruit-icon" /> : undefined
+      }
     >
       <MotionSearchSelectInput aria-label="Fruit" placeholder="Search fruit" />
       <MotionSearchSelectContent emptyMessage="No fruit found.">
         {(item: Fruit) => (
-          <MotionSearchSelectItem key={item.value} value={item}>
+          <MotionSearchSelectItem
+            key={item.value}
+            value={item}
+            icon={item.value === "apple" ? <span data-testid="fruit-icon" /> : undefined}
+          >
             {item.label}
           </MotionSearchSelectItem>
         )}
@@ -221,5 +228,15 @@ describe("Motion Search Select", () => {
 
     await user.tab();
     await waitFor(() => expect(input).toHaveAttribute("placeholder", "2 selected"));
+  });
+
+  it("renders an optional icon as an inert leading part", async () => {
+    const user = userEvent.setup();
+    render(<FruitSearch defaultValue={FRUITS[0]} />);
+
+    const input = screen.getByRole("combobox", { name: "Fruit" });
+    expect(input.parentElement?.querySelector('[data-testid="fruit-icon"]')).toBeInTheDocument();
+    await user.click(input);
+    expect(input.parentElement?.querySelector('[data-testid="fruit-icon"]')).not.toBeInTheDocument();
   });
 });

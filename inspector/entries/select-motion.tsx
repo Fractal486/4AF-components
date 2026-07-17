@@ -5,6 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/registry/ui/select/select-motion";
+import { FruitIcon } from "./select-fruit-icons";
 import { bool, defineEntry } from "../schema";
 
 const FRUITS = {
@@ -24,8 +25,9 @@ export const selectMotionEntry = defineEntry({
   controls: {
     disabled: bool(false),
     multiple: bool(false),
+    icons: bool(true),
   },
-  render({ disabled, multiple }) {
+  render({ disabled, multiple, icons }) {
     return (
       <div className="w-full max-w-56">
         {multiple ? (
@@ -35,20 +37,33 @@ export const selectMotionEntry = defineEntry({
             </SelectTrigger>
             <SelectContent>
               {Object.entries(FRUITS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
+                <SelectItem
+                  key={value}
+                  value={value}
+                  icon={icons ? <FruitIcon value={value} /> : undefined}
+                >
                   {label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         ) : (
-          <Select key="single" defaultValue="banana" disabled={disabled}>
+          <Select
+            key="single"
+            defaultValue="banana"
+            disabled={disabled}
+            iconForValue={icons ? (value) => <FruitIcon value={value} /> : undefined}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Pick a fruit" />
             </SelectTrigger>
             <SelectContent>
               {Object.entries(FRUITS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
+                <SelectItem
+                  key={value}
+                  value={value}
+                  icon={icons ? <FruitIcon value={value} /> : undefined}
+                >
                   {label}
                 </SelectItem>
               ))}

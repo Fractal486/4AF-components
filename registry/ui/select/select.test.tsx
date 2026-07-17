@@ -76,4 +76,34 @@ describe("Base UI Select", () => {
     expect(checkbox).toHaveAttribute("data-checked");
     expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
   });
+
+  it("renders an optional icon as an inert leading part", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Select
+        items={{ apple: "Apple" }}
+        defaultValue="apple"
+        iconForValue={() => <span data-testid="fruit-icon" />}
+      >
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="apple" icon={<span data-testid="fruit-icon" />}>
+            Apple
+          </SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("combobox", { name: "Fruit" });
+    expect(trigger.querySelector('[data-testid="fruit-icon"]')).toBeInTheDocument();
+    await user.click(trigger);
+
+    expect(screen.getByRole("option", { name: "Apple" }).querySelector('[data-testid="fruit-icon"]')?.parentElement).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
+  });
 });

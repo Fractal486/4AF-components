@@ -42,12 +42,28 @@ const EMPTY_ITEMS: readonly never[] = [];
 const PANEL_HIDDEN = { opacity: 0, scale: 0.98, filter: "blur(3px)" };
 const PANEL_VISIBLE = { opacity: 1, scale: 1, filter: "blur(0px)" };
 
-const MotionSearchOpenContext = createContext(false);
+interface MotionSearchContextValue {
+  open: boolean;
+  multiple: boolean;
+  registerIcon: (value: unknown, icon: ReactNode | undefined) => void;
+  unregisterIcon: (value: unknown) => void;
+  iconFor: (value: unknown) => ReactNode | undefined;
+}
+
+const MotionSearchContext = createContext<MotionSearchContextValue>({
+  open: false,
+  multiple: false,
+  registerIcon: () => {},
+  unregisterIcon: () => {},
+  iconFor: () => undefined,
+});
 
 export interface MotionSearchSelectProps<
   Value,
   Multiple extends boolean | undefined = false,
 > extends Omit<ComponentProps<typeof Combobox.Root<Value, Multiple>>, "children"> {
+  /** Resolves the icon shown in the closed single-select value. */
+  iconForValue?: (value: Value) => ReactNode | undefined;
   children: ReactNode;
 }
 
@@ -59,11 +75,40 @@ export function MotionSearchSelect<Value, Multiple extends boolean | undefined =
   children,
   multiple,
   items,
+  iconForValue,
   ...props
 }: MotionSearchSelectProps<Value, Multiple>) {
   const [uncontrolled, setUncontrolled] = useState(defaultOpen ?? false);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : uncontrolled;
+  const [icons, setIcons] = useState<Map<unknown, ReactNode>>(() => new Map());
+  const registerIcon = useCallback((value: unknown, icon: ReactNode | undefined) => {
+    setIcons((current) => {
+      if (icon == null) {
+        if (!current.has(value)) return current;
+        const next = new Map(current);
+        next.delete(value);
+        return next;
+      }
+
+      if (Object.is(current.get(value), icon)) return current;
+      return new Map(current).set(value, icon);
+    });
+  }, []);
+  const unregisterIcon = useCallback((value: unknown) => {
+    setIcons((current) => {
+      if (!current.has(value)) return current;
+      const next = new Map(current);
+      next.delete(value);
+      return next;
+    });
+  }, []);
+  const iconFor = useCallback(
+    (value: unknown) =>
+      icons.get(value) ??
+      (value == null ? undefined : iconForValue?.(value as Value)),
+    [iconForValue, icons],
+  );
   const [closedRegistryCleared, setClosedRegistryCleared] = useState(
     () => !isOpen && items !== undefined,
   );
@@ -109,7 +154,15 @@ export function MotionSearchSelect<Value, Multiple extends boolean | undefined =
   );
 
   return (
-    <MotionSearchOpenContext.Provider value={isOpen}>
+    <MotionSearchContext.Provider
+      value={{
+        open: isOpen,
+        multiple: Boolean(multiple),
+        registerIcon,
+        unregisterIcon,
+        iconFor,
+      }}
+    >
       <Combobox.Root<Value, Multiple>
         open={isOpen}
         onOpenChange={handleOpenChange}
@@ -124,7 +177,7 @@ export function MotionSearchSelect<Value, Multiple extends boolean | undefined =
       >
         {children}
       </Combobox.Root>
-    </MotionSearchOpenContext.Provider>
+    </MotionSearchContext.Provider>
   );
 }
 
@@ -146,41 +199,54 @@ export function MotionSearchSelectInput({
   onBlur,
   ...props
 }: MotionSearchSelectInputProps) {
-  const open = useContext(MotionSearchOpenContext);
+  const { open, multiple, iconFor } = useContext(MotionSearchContext);
   const [focused, setFocused] = useState(false);
   const reduceMotion = useReducedMotion();
 
   return (
     <div className="relative">
       <Combobox.Value>
-        {(selectedValue) => (
-          <Combobox.Input
-            className={cn(
-              "h-10 w-full rounded-md border border-border bg-surface pr-9 pl-3.5 text-sm text-foreground",
-              "outline-none placeholder:text-muted-foreground",
-              "transition-[border-color,box-shadow,color] duration-(--duration-fast) ease-out",
-              "hover:border-border-strong disabled:cursor-not-allowed disabled:opacity-50",
-              tone === "accent"
-                ? "focus:border-ring focus:ring-[3px] focus:ring-ring/25"
-                : "focus:border-[oklch(0.719_0_0)] focus:shadow-[0_0_0_3px_oklch(0.390_0_0_/_0.502)]",
-              className,
-            )}
-            placeholder={
-              !focused && Array.isArray(selectedValue) && selectedValue.length > 0
-                ? `${selectedValue.length} selected`
-                : placeholder
-            }
-            onFocus={(event) => {
-              setFocused(true);
-              onFocus?.(event);
-            }}
-            onBlur={(event) => {
-              setFocused(false);
-              onBlur?.(event);
-            }}
-            {...props}
-          />
-        )}
+        {(selectedValue) => {
+          const selectedIcon = !focused && !multiple
+            ? iconFor(selectedValue)
+            : undefined;
+
+          return (
+            <>
+              <MotionSearchSelectItemIcon
+                icon={selectedIcon}
+                className="absolute top-1/2 left-3.5 -translate-y-1/2"
+              />
+              <Combobox.Input
+                className={cn(
+                  "h-10 w-full rounded-md border border-border bg-surface pr-9 pl-3.5 text-sm text-foreground",
+                  "outline-none placeholder:text-muted-foreground",
+                  "transition-[border-color,box-shadow,color] duration-(--duration-fast) ease-out",
+                  "hover:border-border-strong disabled:cursor-not-allowed disabled:opacity-50",
+                  selectedIcon && "pl-10",
+                  tone === "accent"
+                    ? "focus:border-ring focus:ring-[3px] focus:ring-ring/25"
+                    : "focus:border-[oklch(0.719_0_0)] focus:shadow-[0_0_0_3px_oklch(0.390_0_0_/_0.502)]",
+                  className,
+                )}
+                placeholder={
+                  !focused && multiple && Array.isArray(selectedValue) && selectedValue.length > 0
+                    ? `${selectedValue.length} selected`
+                    : placeholder
+                }
+                onFocus={(event) => {
+                  setFocused(true);
+                  onFocus?.(event);
+                }}
+                onBlur={(event) => {
+                  setFocused(false);
+                  onBlur?.(event);
+                }}
+                {...props}
+              />
+            </>
+          );
+        }}
       </Combobox.Value>
       <Combobox.Trigger
         aria-label="Toggle list"
@@ -217,7 +283,7 @@ export function MotionSearchSelectContent({
   const reduceMotion = useReducedMotion();
 
   return (
-    <Combobox.Portal>
+    <Combobox.Portal keepMounted>
       <Combobox.Positioner
         sideOffset={sideOffset}
         side="bottom"
@@ -278,17 +344,51 @@ export function MotionSearchSelectContent({
 
 export interface MotionSearchSelectItemProps
   extends Omit<ComponentProps<typeof Combobox.Item>, "className"> {
+  /** An optional leading icon. It is inert and hidden from assistive technology. */
+  icon?: ReactNode;
   className?: string;
   children?: ReactNode;
 }
 
+function MotionSearchSelectItemIcon({
+  icon,
+  className,
+}: {
+  icon?: ReactNode;
+  className?: string;
+}) {
+  if (icon == null) return null;
+
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "pointer-events-none flex size-4 shrink-0 items-center justify-center [&>svg]:size-4",
+        className,
+      )}
+    >
+      {icon}
+    </span>
+  );
+}
+
 export function MotionSearchSelectItem({
   className,
+  icon,
   children,
+  value,
   ...props
 }: MotionSearchSelectItemProps) {
+  const { registerIcon, unregisterIcon } = useContext(MotionSearchContext);
+
+  useEffect(() => {
+    registerIcon(value, icon);
+    return () => unregisterIcon(value);
+  }, [icon, registerIcon, unregisterIcon, value]);
+
   return (
     <Combobox.Item
+      value={value}
       className={cn(
         "flex cursor-pointer items-center gap-2 rounded-xs px-2.5 py-1.5 text-sm outline-none select-none",
         "text-muted-foreground",
@@ -298,6 +398,7 @@ export function MotionSearchSelectItem({
       )}
       {...props}
     >
+      <MotionSearchSelectItemIcon icon={icon} />
       <span className="flex-1 truncate">{children}</span>
       <Combobox.ItemIndicator className="shrink-0 text-foreground">
         <Check className="size-3.5" />
@@ -315,17 +416,28 @@ export function MotionSearchSelectItem({
  */
 export interface MotionSearchMultiSelectItemProps
   extends Omit<ComponentProps<typeof Combobox.Item>, "className"> {
+  /** An optional icon shown after the checkbox and before the label. */
+  icon?: ReactNode;
   className?: string;
   children?: ReactNode;
 }
 
 export function MotionSearchMultiSelectItem({
   className,
+  icon,
   children,
+  value,
   ...props
 }: MotionSearchMultiSelectItemProps) {
+  const { registerIcon } = useContext(MotionSearchContext);
+
+  useEffect(() => {
+    registerIcon(value, icon);
+  }, [icon, registerIcon, value]);
+
   return (
     <Combobox.Item
+      value={value}
       className={cn(
         "flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-sm outline-none select-none",
         "text-muted-foreground",
@@ -351,6 +463,7 @@ export function MotionSearchMultiSelectItem({
           </span>
         )}
       />
+      <MotionSearchSelectItemIcon icon={icon} />
       <span className="flex-1 truncate">{children}</span>
     </Combobox.Item>
   );

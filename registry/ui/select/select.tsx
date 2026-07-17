@@ -7,6 +7,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
   type ComponentProps,
   type ReactNode,
@@ -33,9 +34,18 @@ import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 interface SelectContextValue {
   open: boolean;
   multiple: boolean;
+  registerIcon: (value: unknown, icon: ReactNode | undefined) => void;
+  unregisterIcon: (value: unknown) => void;
+  iconFor: (value: unknown) => ReactNode | undefined;
 }
 
-const SelectContext = createContext<SelectContextValue>({ open: false, multiple: false });
+const SelectContext = createContext<SelectContextValue>({
+  open: false,
+  multiple: false,
+  registerIcon: () => {},
+  unregisterIcon: () => {},
+  iconFor: () => undefined,
+});
 
 const EASE_OUT = [0.16, 1, 0.3, 1] as const;
 // The pane blurs and scales in as one piece — no height unfold, no per-item stagger.
@@ -50,6 +60,8 @@ const SCROLLBAR =
 
 export interface SelectProps<Value, Multiple extends boolean | undefined = false>
   extends Omit<ComponentProps<typeof BaseSelect.Root<Value, Multiple>>, "children"> {
+  /** Resolves the icon shown in the closed single-select value. */
+  iconForValue?: (value: Value) => ReactNode | undefined;
   children: ReactNode;
 }
 
@@ -59,11 +71,40 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   onOpenChange,
   children,
   multiple,
+  iconForValue,
   ...props
 }: SelectProps<Value, Multiple>) {
   const [uncontrolled, setUncontrolled] = useState(defaultOpen ?? false);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : uncontrolled;
+  const [icons, setIcons] = useState<Map<unknown, ReactNode>>(() => new Map());
+  const registerIcon = useCallback((value: unknown, icon: ReactNode | undefined) => {
+    setIcons((current) => {
+      if (icon == null) {
+        if (!current.has(value)) return current;
+        const next = new Map(current);
+        next.delete(value);
+        return next;
+      }
+
+      if (Object.is(current.get(value), icon)) return current;
+      return new Map(current).set(value, icon);
+    });
+  }, []);
+  const unregisterIcon = useCallback((value: unknown) => {
+    setIcons((current) => {
+      if (!current.has(value)) return current;
+      const next = new Map(current);
+      next.delete(value);
+      return next;
+    });
+  }, []);
+  const iconFor = useCallback(
+    (value: unknown) =>
+      icons.get(value) ??
+      (value == null ? undefined : iconForValue?.(value as Value)),
+    [iconForValue, icons],
+  );
 
   const handleOpenChange = useCallback<
     NonNullable<SelectProps<Value, Multiple>["onOpenChange"]>
@@ -76,7 +117,15 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   );
 
   return (
-    <SelectContext.Provider value={{ open: isOpen, multiple: Boolean(multiple) }}>
+    <SelectContext.Provider
+      value={{
+        open: isOpen,
+        multiple: Boolean(multiple),
+        registerIcon,
+        unregisterIcon,
+        iconFor,
+      }}
+    >
       <BaseSelect.Root
         open={isOpen}
         onOpenChange={handleOpenChange}
@@ -94,20 +143,39 @@ export function SelectValue({
   className,
   children,
   placeholder,
+  render,
   ...props
 }: ComponentProps<typeof BaseSelect.Value>) {
-  const { multiple } = useContext(SelectContext);
+  const { multiple, iconFor } = useContext(SelectContext);
 
-  if (!multiple) {
+  if (!multiple && render == null) {
     return (
-      <BaseSelect.Value className={cn("truncate", className)} placeholder={placeholder} {...props}>
+      <BaseSelect.Value
+        className={cn("truncate", className)}
+        placeholder={placeholder}
+        render={(valueProps, state) => (
+          <span
+            {...valueProps}
+            className={cn("flex min-w-0 items-center gap-2 truncate", valueProps.className)}
+          >
+            <SelectItemIcon icon={iconFor(state.value)} />
+            <span className="truncate">{valueProps.children}</span>
+          </span>
+        )}
+        {...props}
+      >
         {children}
       </BaseSelect.Value>
     );
   }
 
   return (
-    <BaseSelect.Value className={cn("truncate", className)} placeholder={placeholder} {...props}>
+    <BaseSelect.Value
+      className={cn("truncate", className)}
+      placeholder={placeholder}
+      render={render}
+      {...props}
+    >
       {children ?? ((value: unknown) => {
         const count = Array.isArray(value) ? value.length : 0;
 
@@ -226,19 +294,44 @@ export function SelectContent({
   );
 }
 
-export function SelectItem({
-  className,
-  children,
-  ...props
-}: Omit<ComponentProps<typeof BaseSelect.Item>, "className"> & {
+export type SelectItemProps = Omit<ComponentProps<typeof BaseSelect.Item>, "className"> & {
+  /** An optional leading icon. It is inert and hidden from assistive technology. */
+  icon?: ReactNode;
   className?: string;
   children?: ReactNode;
-}) {
-  const { multiple } = useContext(SelectContext);
+};
+
+function SelectItemIcon({ icon }: { icon?: ReactNode }) {
+  if (icon == null) return null;
+
+  return (
+    <span
+      aria-hidden="true"
+      className="pointer-events-none flex size-4 shrink-0 items-center justify-center [&>svg]:size-4"
+    >
+      {icon}
+    </span>
+  );
+}
+
+export function SelectItem({
+  className,
+  icon,
+  children,
+  value,
+  ...props
+}: SelectItemProps) {
+  const { multiple, registerIcon, unregisterIcon } = useContext(SelectContext);
+
+  useEffect(() => {
+    registerIcon(value, icon);
+    return () => unregisterIcon(value);
+  }, [icon, registerIcon, unregisterIcon, value]);
 
   if (multiple) {
     return (
       <BaseSelect.Item
+        value={value}
         className={cn(
           "flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-sm outline-none select-none",
           "text-muted-foreground",
@@ -264,6 +357,7 @@ export function SelectItem({
             </span>
           )}
         />
+        <SelectItemIcon icon={icon} />
         <BaseSelect.ItemText className="flex-1 truncate">{children}</BaseSelect.ItemText>
       </BaseSelect.Item>
     );
@@ -271,6 +365,7 @@ export function SelectItem({
 
   return (
     <BaseSelect.Item
+      value={value}
       className={cn(
         "flex cursor-pointer items-center gap-2 rounded-xs px-2.5 py-1.5 text-sm outline-none select-none",
         "text-muted-foreground",
@@ -283,6 +378,7 @@ export function SelectItem({
       )}
       {...props}
     >
+      <SelectItemIcon icon={icon} />
       <BaseSelect.ItemText className="flex-1 truncate">{children}</BaseSelect.ItemText>
       <BaseSelect.ItemIndicator className="shrink-0 text-foreground">
         <Check className="size-3.5" />
