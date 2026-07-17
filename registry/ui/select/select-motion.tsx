@@ -16,6 +16,7 @@ import {
 } from "react";
 import { cn } from "@/registry/lib/cn";
 import { ease } from "@/registry/lib/motion";
+import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 
 /**
  * A select whose panel is hand-animated with Motion — the original beUI feel.
@@ -26,6 +27,10 @@ import { ease } from "@/registry/lib/motion";
  * `height` from zero and *pinch* off the trigger. The trade is real: no typeahead,
  * no roving focus into the list, a hand-rolled outside-click and Escape. For the
  * accessible version, see the sibling `select.tsx`.
+ *
+ * Pass `multiple` for a checkbox multi-select. It keeps this same unfold but leaves the
+ * panel open as options are toggled and shows a count in the trigger. The checkboxes are
+ * visual only: each listbox option owns the interaction and ARIA state.
  *
  * The signature move: the panel starts flush against the trigger (height 0, no gap,
  * facing corners flat — reading as one shape), then springs its height open while a
@@ -63,6 +68,8 @@ type Placement = "bottom" | "top";
 
 interface SelectContextValue {
   value: string | undefined;
+  values: readonly string[];
+  multiple: boolean;
   open: boolean;
   setOpen: (open: boolean) => void;
   select: (value: string) => void;
@@ -85,16 +92,30 @@ function useSelectContext(component: string) {
   return ctx;
 }
 
-export interface SelectProps {
-  value?: string;
-  defaultValue?: string;
-  onValueChange?: (value: string) => void;
+interface SelectBaseProps {
   disabled?: boolean;
   className?: string;
   children: ReactNode;
 }
 
+export interface SingleSelectProps extends SelectBaseProps {
+  value?: string;
+  defaultValue?: string;
+  onValueChange?: (value: string) => void;
+  multiple?: false | undefined;
+}
+
+export interface MultiSelectProps extends SelectBaseProps {
+  value?: string[];
+  defaultValue?: string[];
+  onValueChange?: (value: string[]) => void;
+  multiple: true;
+}
+
+export type SelectProps = SingleSelectProps | MultiSelectProps;
+
 export function Select({
+  multiple = false,
   value,
   defaultValue,
   onValueChange,
@@ -106,20 +127,50 @@ export function Select({
   const baseId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
-  const [internal, setInternal] = useState(defaultValue);
+  const [internal, setInternal] = useState<string | string[] | undefined>(() =>
+    multiple
+      ? Array.isArray(defaultValue)
+        ? defaultValue
+        : []
+      : typeof defaultValue === "string"
+        ? defaultValue
+        : undefined,
+  );
   const [labels, setLabels] = useState<Map<string, string>>(new Map());
   const [placement, setPlacement] = useState<Placement>("bottom");
 
   const controlled = value !== undefined;
   const current = controlled ? value : internal;
+  const values = useMemo(
+    () =>
+      multiple
+        ? Array.isArray(current)
+          ? current
+          : []
+        : typeof current === "string"
+          ? [current]
+          : [],
+    [current, multiple],
+  );
+  const selectedValue = multiple ? undefined : values[0];
 
   const select = useCallback(
     (next: string) => {
+      if (multiple) {
+        const nextValues = values.includes(next)
+          ? values.filter((value) => value !== next)
+          : [...values, next];
+
+        if (!controlled) setInternal(nextValues);
+        (onValueChange as MultiSelectProps["onValueChange"])?.(nextValues);
+        return;
+      }
+
       if (!controlled) setInternal(next);
-      onValueChange?.(next);
+      (onValueChange as SingleSelectProps["onValueChange"])?.(next);
       setOpen(false);
     },
-    [controlled, onValueChange],
+    [controlled, multiple, onValueChange, values],
   );
 
   const register = useCallback((v: string, label: string) => {
@@ -151,7 +202,9 @@ export function Select({
 
   const ctx = useMemo<SelectContextValue>(
     () => ({
-      value: current,
+      value: selectedValue,
+      values,
+      multiple,
       open,
       setOpen,
       select,
@@ -165,7 +218,20 @@ export function Select({
       placement,
       setPlacement,
     }),
-    [current, open, select, register, unregister, labels, reduce, baseId, disabled, placement],
+    [
+      selectedValue,
+      values,
+      multiple,
+      open,
+      select,
+      register,
+      unregister,
+      labels,
+      reduce,
+      baseId,
+      disabled,
+      placement,
+    ],
   );
 
   return (
@@ -245,9 +311,16 @@ export interface SelectValueProps {
 export function SelectValue({ placeholder, className }: SelectValueProps) {
   const ctx = useSelectContext("SelectValue");
   const label = ctx.labelFor(ctx.value);
+  const hasValue = ctx.multiple ? ctx.values.length > 0 : label !== undefined;
+  const displayValue = ctx.multiple
+    ? ctx.values.length === 0
+      ? (placeholder ?? "Select")
+      : `${ctx.values.length} selected`
+    : (label ?? placeholder ?? "Select");
+
   return (
-    <span className={cn(label ? "text-foreground" : "text-muted-foreground", className)}>
-      {label ?? placeholder ?? "Select"}
+    <span className={cn(hasValue ? "text-foreground" : "text-muted-foreground", className)}>
+      {displayValue}
     </span>
   );
 }
@@ -310,6 +383,7 @@ export function SelectContent({ className, children }: SelectContentProps) {
       id={ctx.listId}
       role="listbox"
       aria-labelledby={ctx.triggerId}
+      aria-multiselectable={ctx.multiple || undefined}
       aria-hidden={!open}
       initial={false}
       animate={
@@ -381,7 +455,7 @@ export interface SelectItemProps {
 export function SelectItem({ value, disabled = false, className, children }: SelectItemProps) {
   const ctx = useSelectContext("SelectItem");
   const { register, unregister } = ctx;
-  const selected = ctx.value === value;
+  const selected = ctx.values.includes(value);
   const label = typeof children === "string" ? children : value;
 
   useLayoutEffect(() => {
@@ -389,22 +463,58 @@ export function SelectItem({ value, disabled = false, className, children }: Sel
     return () => unregister(value);
   }, [register, unregister, value, label]);
 
+  const itemClassName = cn(
+    "flex w-full cursor-pointer items-center rounded-xs px-2.5 py-1.5 text-left text-sm outline-none",
+    ctx.multiple ? "gap-2.5" : "gap-2",
+    ctx.multiple
+      ? "text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:bg-muted data-[selected]:text-foreground"
+      : selected
+        ? "bg-muted text-foreground"
+        : "text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:bg-muted",
+    "disabled:pointer-events-none disabled:opacity-50",
+    className,
+  );
+
+  if (ctx.multiple) {
+    return (
+      <motion.li
+        variants={ctx.reduce ? undefined : ITEM_VARIANTS}
+        role="option"
+        aria-selected={selected}
+        aria-disabled={disabled || undefined}
+        data-selected={selected ? "" : undefined}
+        tabIndex={disabled ? -1 : 0}
+        onClick={disabled ? undefined : () => ctx.select(value)}
+        onKeyDown={(event) => {
+          if (disabled || (event.key !== "Enter" && event.key !== " ")) return;
+          event.preventDefault();
+          ctx.select(value);
+        }}
+        className={itemClassName}
+      >
+        {/* The real Checkbox is inert: this option owns the click and listbox ARIA. */}
+        <Checkbox
+          checked={selected}
+          size="sm"
+          aria-hidden
+          tabIndex={-1}
+          className="pointer-events-none shrink-0"
+        />
+        <span className="flex-1 truncate">{children}</span>
+      </motion.li>
+    );
+  }
+
   return (
     <motion.li variants={ctx.reduce ? undefined : ITEM_VARIANTS}>
       <button
         type="button"
         role="option"
         aria-selected={selected}
+        data-selected={selected ? "" : undefined}
         disabled={disabled}
         onClick={() => ctx.select(value)}
-        className={cn(
-          "flex w-full cursor-pointer items-center justify-between gap-2 rounded-xs px-2.5 py-1.5 text-left text-sm outline-none",
-          selected
-            ? "bg-muted text-foreground"
-            : "text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:bg-muted",
-          "disabled:pointer-events-none disabled:opacity-50",
-          className,
-        )}
+        className={cn("justify-between", itemClassName)}
       >
         {children}
         {selected ? <Check className="size-3.5 shrink-0" /> : null}

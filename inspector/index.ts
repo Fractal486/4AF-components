@@ -80,7 +80,7 @@ export const groups: Group[] = [
     slug: "select",
     name: "Select",
     summary:
-      "A panel of options off a trigger. Base UI fades a panel in; Motion unfolds one; Morph grows the trigger into the menu; Search filters as you type; Multi checks off several.",
+      "A panel of options off a trigger. Base UI fades a panel in; Motion unfolds one or checks several; Morph grows the trigger into the menu; Search filters as you type; Multi checks off several.",
     entries: [
       selectEntry,
       selectMotionEntry,

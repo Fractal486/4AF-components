@@ -285,12 +285,13 @@
     {
       "name": "select-motion",
       "type": "registry:ui",
-      "description": "A hand-animated select: the panel springs its height open and pinches off the trigger, gooey corners and all. No behaviour primitive — reach for it when the entrance is the point.",
+      "description": "A hand-animated select: the panel springs its height open and pinches off the trigger, gooey corners and all. Optional multi-select keeps the panel open and uses checkboxes. No behaviour primitive — reach for it when the entrance is the point.",
       "dependencies": ["lucide-react", "motion"],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json"
+        "http://localhost:3000/r/motion.json",
+        "http://localhost:3000/r/checkbox.json"
       ],
       "files": [
         { "path": "registry/ui/select/select-motion.tsx", "type": "registry:ui", "target": "@ui/select-motion.tsx" }
