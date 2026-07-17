@@ -2,6 +2,7 @@ import { actionButtonEntry } from "./entries/action-button";
 import { buttonEntry } from "./entries/button";
 import { checkboxEntry } from "./entries/checkbox";
 import { copyButtonEntry } from "./entries/copy-button";
+import { dialogEntry } from "./entries/dialog";
 import { inputEntry } from "./entries/input";
 import { morphEntry } from "./entries/morph";
 import { radioEntry } from "./entries/radio";
@@ -96,6 +97,12 @@ export const groups: Group[] = [
     name: "Tooltip",
     summary: "Base UI positioning and timing, a CSS scale-and-blur enter.",
     entries: [tooltipEntry],
+  },
+  {
+    slug: "dialog",
+    name: "Dialog",
+    summary: "A modal centred over the page. Scales in from a blur, fades out. Focus-trapped.",
+    entries: [dialogEntry],
   },
   {
     slug: "sheet",

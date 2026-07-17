@@ -370,6 +370,21 @@
         { "path": "registry/ui/sheet/sheet.tsx", "type": "registry:ui", "target": "@ui/sheet.tsx" },
         { "path": "registry/ui/sheet/sheet.variants.ts", "type": "registry:ui", "target": "@ui/sheet.variants.ts" }
       ]
+    },
+    {
+      "name": "dialog",
+      "type": "registry:ui",
+      "description": "A modal centred over the page. Base UI Dialog behaviour; scales in from a blur and fades out with Motion.",
+      "dependencies": ["@base-ui/react", "lucide-react", "motion"],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/motion.json",
+        "http://localhost:3000/r/button.json"
+      ],
+      "files": [
+        { "path": "registry/ui/dialog/dialog.tsx", "type": "registry:ui", "target": "@ui/dialog.tsx" }
+      ]
     }
   ]
 }

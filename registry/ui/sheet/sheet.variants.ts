@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 // because Base UI's CSS-transition exit for Dialog is unreliable — it re-applies the
 // starting-style on close, so the panel jumps off-screen instead of animating out.
 export const sheetContentVariants = cva(
-  "fixed z-50 flex flex-col bg-surface shadow-overlay outline-none",
+  "fixed z-50 flex flex-col border border-border bg-background shadow-overlay-drop outline-none",
   {
     variants: {
       side: {
