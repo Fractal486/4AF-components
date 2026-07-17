@@ -7,17 +7,26 @@ export function Sidebar() {
       <nav aria-label="Components">
         <ul className="flex flex-wrap gap-1 md:flex-col">
           {groups.flatMap((group) =>
-            group.entries.map((entry) => (
-              <li key={entry.slug}>
+            // A stacked group is one line (its whole page renders every entry); the rest
+            // list each entry, since those pages show one at a time.
+            (group.stacked
+              ? [{ slug: group.slug, name: group.name, href: `/c/${group.slug}` }]
+              : group.entries.map((entry) => ({
+                  slug: entry.slug,
+                  name: entry.name,
+                  href: `/c/${group.slug}?component=${entry.slug}`,
+                }))
+            ).map((link) => (
+              <li key={link.slug}>
                 <Link
-                  href={`/c/${group.slug}?component=${entry.slug}`}
+                  href={link.href}
                   // Hover as an overlay relative to the foreground, not `bg-muted`.
                   // The sidebar sits on the page background, and `muted` is one faint
                   // step off it — invisible in light mode (near-white on near-white).
                   // A translucent foreground tint has real contrast in both themes.
                   className="block rounded-md px-3 py-2 text-sm text-muted-foreground transition-[background-color,color] duration-(--duration-fast) ease-out hover:bg-foreground/[0.07] hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 >
-                  {entry.name}
+                  {link.name}
                 </Link>
               </li>
             )),

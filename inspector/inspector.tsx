@@ -14,9 +14,27 @@ export function Inspector({ slug, entrySlug }: { slug: string; entrySlug?: strin
   const group = getGroup(slug);
   if (!group) return null;
 
+  // A stacked group renders every entry, one full section under the next; otherwise the
+  // sidebar picks a single entry to show.
+  if (group.stacked) {
+    // Trailing space so the last section's dropdown has room to open *downward* — without
+    // it, a popup on the final demo hits the viewport bottom and Base UI flips it upward.
+    return (
+      <div className="flex flex-col gap-16 pb-80">
+        {group.entries.map((entry) => (
+          <EntrySection key={entry.slug} entry={entry} />
+        ))}
+      </div>
+    );
+  }
+
   const entry = group.entries.find((candidate) => candidate.slug === entrySlug) ?? group.entries[0];
   if (!entry) return null;
 
+  return <EntrySection entry={entry} />;
+}
+
+function EntrySection({ entry }: { entry: Entry }) {
   return (
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-1">

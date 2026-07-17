@@ -4,6 +4,11 @@ import { checkboxEntry } from "./entries/checkbox";
 import { copyButtonEntry } from "./entries/copy-button";
 import { inputEntry } from "./entries/input";
 import { morphEntry } from "./entries/morph";
+import { selectEntry } from "./entries/select";
+import { selectMorphEntry } from "./entries/select-morph";
+import { selectMotionEntry } from "./entries/select-motion";
+import { selectMultiEntry } from "./entries/select-multi";
+import { selectSearchEntry } from "./entries/select-search";
 import { sheetEntry } from "./entries/sheet";
 import { sliderEntry } from "./entries/slider";
 import { switchEntry } from "./entries/switch";
@@ -19,13 +24,17 @@ import type { Entry } from "./schema";
  * pieces — the two action buttons are built from the others — but they're one family.
  * The sidebar lists them while the main pane shows one at a time.
  *
- * A group with one entry renders without tabs.
+ * A `stacked` group inverts that: it's one line in the sidebar and one page that renders
+ * every entry, full section by full section (title, demo box, settings). Use it when the
+ * entries are variations on a single component you want to compare side by side — the
+ * four Select animations, say — rather than distinct pieces to visit one at a time.
  */
 export interface Group {
   slug: string;
   name: string;
   summary: string;
   entries: Entry[];
+  stacked?: boolean;
 }
 
 export const groups: Group[] = [
@@ -66,6 +75,20 @@ export const groups: Group[] = [
     name: "Slider",
     summary: "A spring-glided thumb — a thin bar or a round knob — that grabs while held.",
     entries: [sliderEntry],
+  },
+  {
+    slug: "select",
+    name: "Select",
+    summary:
+      "A panel of options off a trigger. Base UI fades a panel in; Motion unfolds one; Morph grows the trigger into the menu; Search filters as you type; Multi checks off several.",
+    entries: [
+      selectEntry,
+      selectMotionEntry,
+      selectMorphEntry,
+      selectSearchEntry,
+      selectMultiEntry,
+    ],
+    stacked: true,
   },
   {
     slug: "tooltip",

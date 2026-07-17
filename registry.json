@@ -270,6 +270,73 @@
       ]
     },
     {
+      "name": "select",
+      "type": "registry:ui",
+      "description": "A select on Base UI — keyboard, typeahead and collision-aware positioning — whose panel blurs and scales in from the trigger.",
+      "dependencies": ["@base-ui/react", "lucide-react", "motion"],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        { "path": "registry/ui/select/select.tsx", "type": "registry:ui", "target": "@ui/select.tsx" }
+      ]
+    },
+    {
+      "name": "select-motion",
+      "type": "registry:ui",
+      "description": "A hand-animated select: the panel springs its height open and pinches off the trigger, gooey corners and all. No behaviour primitive — reach for it when the entrance is the point.",
+      "dependencies": ["lucide-react", "motion"],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/motion.json"
+      ],
+      "files": [
+        { "path": "registry/ui/select/select-motion.tsx", "type": "registry:ui", "target": "@ui/select-motion.tsx" }
+      ]
+    },
+    {
+      "name": "select-morph",
+      "type": "registry:ui",
+      "description": "A hand-animated select whose trigger morphs into the panel via a shared layoutId — one continuous surface that grows open and shrinks back, never detaching.",
+      "dependencies": ["lucide-react", "motion"],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        { "path": "registry/ui/select/select-morph.tsx", "type": "registry:ui", "target": "@ui/select-morph.tsx" }
+      ]
+    },
+    {
+      "name": "select-search",
+      "type": "registry:ui",
+      "description": "A searchable select on Base UI's Combobox — type to filter the list, full keyboard and ARIA, with a fade-in panel matching the Base UI select.",
+      "dependencies": ["@base-ui/react", "lucide-react", "motion"],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        { "path": "registry/ui/select/select-search.tsx", "type": "registry:ui", "target": "@ui/select-search.tsx" }
+      ]
+    },
+    {
+      "name": "select-multi",
+      "type": "registry:ui",
+      "description": "A multi-select on Base UI's Select — pick several items, each with a checkbox that draws itself in; the panel stays open as you toggle, and the trigger shows the count.",
+      "dependencies": ["@base-ui/react", "lucide-react", "motion"],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/checkbox.json"
+      ],
+      "files": [
+        { "path": "registry/ui/select/select-multi.tsx", "type": "registry:ui", "target": "@ui/select-multi.tsx" }
+      ]
+    },
+    {
       "name": "tooltip",
       "type": "registry:ui",
       "description": "Base UI positioning and timing with a CSS scale-and-blur enter. Opens on hover and focus, flips at the viewport edge.",
