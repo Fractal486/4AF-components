@@ -1,10 +1,8 @@
 "use client";
 
-import { Radio } from "@base-ui/react/radio";
-import { RadioGroup } from "@base-ui/react/radio-group";
-import { cn } from "@/registry/lib/cn";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Input } from "@/registry/ui/input/input";
+import { Radio, RadioGroup } from "@/registry/ui/radio/radio";
 import { Slider } from "@/registry/ui/slider/slider";
 import type { ControlDef, ControlSchema, ControlValues } from "./schema";
 
@@ -73,37 +71,19 @@ function Control({
     const labelId = `${id}-label`;
 
     return (
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2">
         <span id={labelId} className="text-sm text-muted-foreground">
           {label}
         </span>
-        {/* Radio-style segments rather than a <select>: with ≤5 options, seeing all
-            the variants at once is worth more than the space a dropdown saves. */}
+        {/* The Radio group itself — dogfooding the component as the enum control. */}
         <RadioGroup
+          size="sm"
           value={value as string}
-          onValueChange={onChange}
+          onValueChange={(next) => onChange(next)}
           aria-labelledby={labelId}
-          className="flex flex-wrap items-center gap-0.5 rounded-lg bg-muted p-0.5"
         >
           {def.options.map((option) => (
-            <Radio.Root
-              key={option}
-              value={option}
-              nativeButton
-              render={<button type="button" />}
-              className={(state) =>
-                cn(
-                  "rounded-md px-2 py-1 font-mono text-2xs",
-                  "transition-[color,background-color,box-shadow] duration-(--duration-fast) ease-out",
-                  "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-                  state.checked
-                    ? "bg-surface text-foreground shadow-border"
-                    : "text-subtle-foreground hover:text-foreground",
-                )
-              }
-            >
-              {option}
-            </Radio.Root>
+            <Radio key={option} value={option} label={option} />
           ))}
         </RadioGroup>
       </div>
