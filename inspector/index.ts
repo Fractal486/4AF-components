@@ -4,6 +4,7 @@ import { checkboxEntry } from "./entries/checkbox";
 import { copyButtonEntry } from "./entries/copy-button";
 import { inputEntry } from "./entries/input";
 import { morphEntry } from "./entries/morph";
+import { radioEntry } from "./entries/radio";
 import { selectEntry } from "./entries/select";
 import { selectMotionEntry } from "./entries/select-motion";
 import { selectMotionSearchEntry } from "./entries/select-motion-search";
@@ -69,6 +70,12 @@ export const groups: Group[] = [
     name: "Checkbox",
     summary: "The tick draws itself in. Presses on click, not on hover.",
     entries: [checkboxEntry],
+  },
+  {
+    slug: "radio",
+    name: "Radio",
+    summary: "The Checkbox's sibling — same well, but a single choice with a dot.",
+    entries: [radioEntry],
   },
   {
     slug: "slider",

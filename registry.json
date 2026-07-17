@@ -257,6 +257,21 @@
       ]
     },
     {
+      "name": "radio",
+      "type": "registry:ui",
+      "description": "A radio group — the Checkbox's sibling, a single choice with a dot that scales in.",
+      "dependencies": ["@base-ui/react", "class-variance-authority", "motion"],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/motion.json"
+      ],
+      "files": [
+        { "path": "registry/ui/radio/radio.tsx", "type": "registry:ui", "target": "@ui/radio.tsx" },
+        { "path": "registry/ui/radio/radio.variants.ts", "type": "registry:ui", "target": "@ui/radio.variants.ts" }
+      ]
+    },
+    {
       "name": "slider",
       "type": "registry:ui",
       "description": "A slider whose thumb springs between steps and grabs while held. Bar or circle thumb. Base UI behaviour.",
