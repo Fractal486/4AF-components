@@ -56,4 +56,24 @@ describe("Motion Select", () => {
     expect(trigger).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByRole("button", { name: "Apple" })).toBeInTheDocument();
   });
+
+  it("highlights a row while the pointer is over it", () => {
+    render(
+      <Select>
+        <SelectTrigger>
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <FruitOptions />
+      </Select>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Pick a fruit" }));
+    const apple = screen.getByRole("option", { name: "Apple" });
+
+    fireEvent.pointerEnter(apple);
+    expect(apple).toHaveAttribute("data-highlighted", "");
+
+    fireEvent.pointerLeave(apple);
+    expect(apple).not.toHaveAttribute("data-highlighted");
+  });
 });

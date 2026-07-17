@@ -272,11 +272,12 @@
     {
       "name": "select",
       "type": "registry:ui",
-      "description": "A select on Base UI — keyboard, typeahead and collision-aware positioning — whose panel blurs and scales in from the trigger.",
+      "description": "A single or multi-select on Base UI — keyboard, typeahead and collision-aware positioning — whose panel blurs and scales in from the trigger. Multi-select keeps the panel open while animated checkbox rows are toggled.",
       "dependencies": ["@base-ui/react", "lucide-react", "motion"],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/checkbox.json"
       ],
       "files": [
         { "path": "registry/ui/select/select.tsx", "type": "registry:ui", "target": "@ui/select.tsx" }
@@ -298,35 +299,24 @@
       ]
     },
     {
-      "name": "select-morph",
+      "name": "select-motion-search",
       "type": "registry:ui",
-      "description": "A hand-animated select whose trigger morphs into the panel via a shared layoutId — one continuous surface that grows open and shrinks back, never detaching.",
-      "dependencies": ["lucide-react", "motion"],
+      "description": "A searchable single or multi-select on Base UI's Combobox. Its panel unfolds from the input; filtering and result-size changes are immediate, while multi-select keeps its checkbox list open as choices are toggled.",
+      "dependencies": ["@base-ui/react", "lucide-react", "motion"],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/motion.json",
+        "http://localhost:3000/r/checkbox.json"
       ],
       "files": [
-        { "path": "registry/ui/select/select-morph.tsx", "type": "registry:ui", "target": "@ui/select-morph.tsx" }
+        { "path": "registry/ui/select/select-motion-search.tsx", "type": "registry:ui", "target": "@ui/select-motion-search.tsx" }
       ]
     },
     {
       "name": "select-search",
       "type": "registry:ui",
-      "description": "A searchable select on Base UI's Combobox — type to filter the list, full keyboard and ARIA, with a fade-in panel matching the Base UI select.",
-      "dependencies": ["@base-ui/react", "lucide-react", "motion"],
-      "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
-      ],
-      "files": [
-        { "path": "registry/ui/select/select-search.tsx", "type": "registry:ui", "target": "@ui/select-search.tsx" }
-      ]
-    },
-    {
-      "name": "select-multi",
-      "type": "registry:ui",
-      "description": "A multi-select on Base UI's Select — pick several items, each with a checkbox that draws itself in; the panel stays open as you toggle, and the trigger shows the count.",
+      "description": "A searchable single or multi-select on Base UI's Combobox — type to filter the list, with full keyboard and ARIA support. Multi-select keeps its animated checkbox list open while choices are toggled.",
       "dependencies": ["@base-ui/react", "lucide-react", "motion"],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
@@ -334,7 +324,7 @@
         "http://localhost:3000/r/checkbox.json"
       ],
       "files": [
-        { "path": "registry/ui/select/select-multi.tsx", "type": "registry:ui", "target": "@ui/select-multi.tsx" }
+        { "path": "registry/ui/select/select-search.tsx", "type": "registry:ui", "target": "@ui/select-search.tsx" }
       ]
     },
     {

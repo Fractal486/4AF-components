@@ -455,6 +455,7 @@ export interface SelectItemProps {
 export function SelectItem({ value, disabled = false, className, children }: SelectItemProps) {
   const ctx = useSelectContext("SelectItem");
   const { register, unregister } = ctx;
+  const [pointerHighlighted, setPointerHighlighted] = useState(false);
   const selected = ctx.values.includes(value);
   const label = typeof children === "string" ? children : value;
 
@@ -467,13 +468,19 @@ export function SelectItem({ value, disabled = false, className, children }: Sel
     "flex w-full cursor-pointer items-center rounded-xs px-2.5 py-1.5 text-left text-sm outline-none",
     ctx.multiple ? "gap-2.5" : "gap-2",
     ctx.multiple
-      ? "text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:bg-muted data-[selected]:text-foreground"
+      ? "text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:bg-muted data-[highlighted]:bg-muted data-[highlighted]:text-foreground data-[selected]:text-foreground"
       : selected
-        ? "bg-muted text-foreground"
-        : "text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:bg-muted",
+        ? "bg-muted text-foreground data-[highlighted]:bg-muted data-[highlighted]:text-foreground"
+        : "text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:bg-muted data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
     "disabled:pointer-events-none disabled:opacity-50",
     className,
   );
+
+  const pointerHighlightProps = {
+    "data-highlighted": pointerHighlighted ? "" : undefined,
+    onPointerEnter: () => setPointerHighlighted(true),
+    onPointerLeave: () => setPointerHighlighted(false),
+  };
 
   if (ctx.multiple) {
     return (
@@ -484,6 +491,7 @@ export function SelectItem({ value, disabled = false, className, children }: Sel
         aria-disabled={disabled || undefined}
         data-selected={selected ? "" : undefined}
         tabIndex={disabled ? -1 : 0}
+        {...pointerHighlightProps}
         onClick={disabled ? undefined : () => ctx.select(value)}
         onKeyDown={(event) => {
           if (disabled || (event.key !== "Enter" && event.key !== " ")) return;
@@ -513,6 +521,7 @@ export function SelectItem({ value, disabled = false, className, children }: Sel
         aria-selected={selected}
         data-selected={selected ? "" : undefined}
         disabled={disabled}
+        {...pointerHighlightProps}
         onClick={() => ctx.select(value)}
         className={cn("justify-between", itemClassName)}
       >

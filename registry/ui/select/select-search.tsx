@@ -7,14 +7,17 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
   type ComponentProps,
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
+import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 
 /**
- * A searchable select — type to filter the list, then pick one. On Base UI's Combobox.
+ * A searchable single or multi-select — type to filter the list, then pick one or more.
+ * On Base UI's Combobox.
  *
  * The behaviour is the combobox ARIA pattern done right: the input filters the `items`
  * as you type (Base UI matches against each item's label), the arrows and Enter move and
@@ -24,6 +27,10 @@ import { cn } from "@/registry/lib/cn";
  *
  * It looks like the Base UI `select.tsx` — same field, chevron and fade-in panel — but
  * the trigger is an editable input rather than a button, because searching is the point.
+ * Pass `multiple` for an open checkbox list; whenever its input is not focused, the field
+ * summarizes the current choice as “N selected”.
+ * With an `items` collection, every search select opens, reopens, and filters from the
+ * first visible row so Enter immediately chooses it.
  */
 
 const EASE_OUT = [0.16, 1, 0.3, 1] as const;
@@ -37,39 +44,86 @@ const FADE_SHOW = { opacity: 1, scale: 1, filter: "blur(0px)" };
 const SCROLLBAR =
   "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground";
 
+const EMPTY_ITEMS: readonly never[] = [];
+
 const SearchOpenContext = createContext(false);
 
-export interface SearchSelectProps<Value>
-  extends Omit<ComponentProps<typeof Combobox.Root<Value>>, "children"> {
+export interface SearchSelectProps<
+  Value,
+  Multiple extends boolean | undefined = false,
+> extends Omit<ComponentProps<typeof Combobox.Root<Value, Multiple>>, "children"> {
   children: ReactNode;
 }
 
-export function SearchSelect<Value>({
+export function SearchSelect<Value, Multiple extends boolean | undefined = false>({
   open,
   defaultOpen,
   onOpenChange,
+  onOpenChangeComplete,
   children,
+  multiple,
+  items,
   ...props
-}: SearchSelectProps<Value>) {
+}: SearchSelectProps<Value, Multiple>) {
   const [uncontrolled, setUncontrolled] = useState(defaultOpen ?? false);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : uncontrolled;
+  const [closedRegistryCleared, setClosedRegistryCleared] = useState(
+    () => !isOpen && items !== undefined,
+  );
 
-  const handleOpenChange = useCallback<NonNullable<SearchSelectProps<Value>["onOpenChange"]>>(
+  // Base UI normally restores the selected item as the active row. Search selects instead
+  // start at the first visible match, so clear that lookup after the close transition. The
+  // actual items remain available to the exiting panel and return in the same render that
+  // opens the list.
+  const visibleItems =
+    !isOpen && closedRegistryCleared && items !== undefined ? EMPTY_ITEMS : items;
+
+  useEffect(() => {
+    if (isOpen) setClosedRegistryCleared(false);
+  }, [isOpen]);
+
+  const handleOpenChange = useCallback<
+    NonNullable<SearchSelectProps<Value, Multiple>["onOpenChange"]>
+  >(
     (next, details) => {
-      if (!isControlled) setUncontrolled(next);
+      // A multi-combobox otherwise closes after every item press. Keeping it open lets a
+      // keyboard or pointer user choose several filtered results in one pass.
+      if (multiple && !next && details.reason === "item-press") {
+        details.cancel();
+        return;
+      }
+
       onOpenChange?.(next, details);
+      if (!isControlled && !details.isCanceled) setUncontrolled(next);
     },
-    [isControlled, onOpenChange],
+    [isControlled, multiple, onOpenChange],
+  );
+
+  const handleOpenChangeComplete = useCallback(
+    (next: boolean) => {
+      if (!next && !isOpen && items !== undefined) {
+        setClosedRegistryCleared(true);
+      }
+
+      onOpenChangeComplete?.(next);
+    },
+    [isOpen, items, onOpenChangeComplete],
   );
 
   return (
     <SearchOpenContext.Provider value={isOpen}>
-      <Combobox.Root
+      <Combobox.Root<Value, Multiple>
         open={isOpen}
         onOpenChange={handleOpenChange}
+        onOpenChangeComplete={handleOpenChangeComplete}
         defaultOpen={defaultOpen}
+        multiple={multiple}
+        items={visibleItems}
         {...props}
+        // Base UI exposes this richer mode on its lower-level Combobox API. It keeps the
+        // first visible row active on open and after a search changes, so Enter is direct.
+        autoHighlight={"always" as never}
       >
         {children}
       </Combobox.Root>
@@ -80,6 +134,9 @@ export function SearchSelect<Value>({
 export function SearchSelectInput({
   className,
   tone = "neutral",
+  placeholder,
+  onFocus,
+  onBlur,
   ...props
 }: Omit<ComponentProps<typeof Combobox.Input>, "className"> & {
   className?: string;
@@ -91,23 +148,41 @@ export function SearchSelectInput({
   tone?: "neutral" | "accent";
 }) {
   const open = useContext(SearchOpenContext);
+  const [focused, setFocused] = useState(false);
   const reduceMotion = useReducedMotion();
 
   return (
     <div className="relative">
-      <Combobox.Input
-        className={cn(
-          "h-10 w-full rounded-md border border-border bg-surface pr-9 pl-3.5 text-sm text-foreground",
-          "outline-none placeholder:text-muted-foreground",
-          "transition-[border-color,box-shadow,color] duration-(--duration-fast) ease-out",
-          "hover:border-border-strong disabled:cursor-not-allowed disabled:opacity-50",
-          tone === "accent"
-            ? "focus:border-ring focus:ring-[3px] focus:ring-ring/25"
-            : "focus:border-[oklch(0.719_0_0)] focus:shadow-[0_0_0_3px_oklch(0.390_0_0_/_0.502)]",
-          className,
+      <Combobox.Value>
+        {(selectedValue) => (
+          <Combobox.Input
+            className={cn(
+              "h-10 w-full rounded-md border border-border bg-surface pr-9 pl-3.5 text-sm text-foreground",
+              "outline-none placeholder:text-muted-foreground",
+              "transition-[border-color,box-shadow,color] duration-(--duration-fast) ease-out",
+              "hover:border-border-strong disabled:cursor-not-allowed disabled:opacity-50",
+              tone === "accent"
+                ? "focus:border-ring focus:ring-[3px] focus:ring-ring/25"
+                : "focus:border-[oklch(0.719_0_0)] focus:shadow-[0_0_0_3px_oklch(0.390_0_0_/_0.502)]",
+              className,
+            )}
+            placeholder={
+              !focused && Array.isArray(selectedValue) && selectedValue.length > 0
+                ? `${selectedValue.length} selected`
+                : placeholder
+            }
+            onFocus={(event) => {
+              setFocused(true);
+              onFocus?.(event);
+            }}
+            onBlur={(event) => {
+              setFocused(false);
+              onBlur?.(event);
+            }}
+            {...props}
+          />
         )}
-        {...props}
-      />
+      </Combobox.Value>
       {/* Opens/closes the list; the input itself opens it on focus/typing too. */}
       <Combobox.Trigger
         aria-label="Toggle list"
@@ -180,12 +255,12 @@ export function SearchSelectContent({
           {/* Base UI keeps this div mounted and only nulls its children when there are
               matches; `empty:hidden` collapses it then, so it doesn't reserve blank space
               above the results. */}
-          <Combobox.Empty className="flex items-center justify-center px-3 py-3 text-center text-sm text-muted-foreground empty:hidden">
+          <Combobox.Empty className="m-1 flex h-8 items-center justify-center px-2.5 text-center text-sm text-muted-foreground empty:hidden">
             {emptyMessage}
           </Combobox.Empty>
           <Combobox.List
             className={cn(
-              "max-h-[min(var(--available-height),18rem)] overflow-y-auto p-1",
+              "max-h-[min(var(--available-height),18rem)] overflow-y-auto p-1 empty:hidden",
               SCROLLBAR,
             )}
           >
@@ -222,6 +297,52 @@ export function SearchSelectItem({
       <Combobox.ItemIndicator className="shrink-0 text-foreground">
         <Check className="size-3.5" />
       </Combobox.ItemIndicator>
+    </Combobox.Item>
+  );
+}
+
+/**
+ * A checkbox row for `SearchSelect` in `multiple` mode.
+ *
+ * The option remains the interactive listbox element. The shared Checkbox is inert and
+ * mirrors its selected state, preserving one keyboard and screen-reader interaction model.
+ */
+export function SearchMultiSelectItem({
+  className,
+  children,
+  ...props
+}: Omit<ComponentProps<typeof Combobox.Item>, "className"> & {
+  className?: string;
+  children?: ReactNode;
+}) {
+  return (
+    <Combobox.Item
+      className={cn(
+        "flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-sm outline-none select-none",
+        "text-muted-foreground",
+        "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
+        "data-[selected]:text-foreground",
+        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        className,
+      )}
+      {...props}
+    >
+      <Combobox.ItemIndicator
+        keepMounted
+        className="shrink-0"
+        render={(indicatorProps, state) => (
+          <span {...indicatorProps}>
+            <Checkbox
+              checked={state.selected}
+              size="sm"
+              aria-hidden
+              tabIndex={-1}
+              className="pointer-events-none shrink-0"
+            />
+          </span>
+        )}
+      />
+      <span className="flex-1 truncate">{children}</span>
     </Combobox.Item>
   );
 }

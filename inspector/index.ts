@@ -5,9 +5,8 @@ import { copyButtonEntry } from "./entries/copy-button";
 import { inputEntry } from "./entries/input";
 import { morphEntry } from "./entries/morph";
 import { selectEntry } from "./entries/select";
-import { selectMorphEntry } from "./entries/select-morph";
 import { selectMotionEntry } from "./entries/select-motion";
-import { selectMultiEntry } from "./entries/select-multi";
+import { selectMotionSearchEntry } from "./entries/select-motion-search";
 import { selectSearchEntry } from "./entries/select-search";
 import { sheetEntry } from "./entries/sheet";
 import { sliderEntry } from "./entries/slider";
@@ -27,7 +26,7 @@ import type { Entry } from "./schema";
  * A `stacked` group inverts that: it's one line in the sidebar and one page that renders
  * every entry, full section by full section (title, demo box, settings). Use it when the
  * entries are variations on a single component you want to compare side by side — the
- * four Select animations, say — rather than distinct pieces to visit one at a time.
+ * Select variations, say — rather than distinct pieces to visit one at a time.
  */
 export interface Group {
   slug: string;
@@ -80,14 +79,8 @@ export const groups: Group[] = [
     slug: "select",
     name: "Select",
     summary:
-      "A panel of options off a trigger. Base UI fades a panel in; Motion unfolds one or checks several; Morph grows the trigger into the menu; Search filters as you type; Multi checks off several.",
-    entries: [
-      selectEntry,
-      selectMotionEntry,
-      selectMorphEntry,
-      selectSearchEntry,
-      selectMultiEntry,
-    ],
+      "A panel of options off a trigger. BaseUI fades a panel in and can check several; BaseUI Search filters as you type and can check several; Motion unfolds one or checks several; Motion Search unfolds from the field and can check several.",
+    entries: [selectEntry, selectSearchEntry, selectMotionEntry, selectMotionSearchEntry],
     stacked: true,
   },
   {

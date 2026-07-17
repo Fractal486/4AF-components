@@ -1,4 +1,5 @@
 import {
+  SearchMultiSelectItem,
   SearchSelect,
   SearchSelectContent,
   SearchSelectInput,
@@ -21,24 +22,44 @@ type Fruit = (typeof FRUITS)[number];
 
 export const selectSearchEntry = defineEntry({
   slug: "select-search",
-  name: "Search",
+  name: "BaseUI Search",
   controls: {
     tone: select(["neutral", "accent"], "neutral", "Focus"),
     disabled: bool(false),
+    multiple: bool(false),
   },
-  render({ tone, disabled }) {
+  render({ tone, disabled, multiple }) {
     return (
       <div className="w-full max-w-56">
-        <SearchSelect items={FRUITS} disabled={disabled}>
-          <SearchSelectInput placeholder="Search a fruit…" tone={tone} />
-          <SearchSelectContent emptyMessage="No fruit found.">
-            {(item: Fruit) => (
-              <SearchSelectItem key={item.value} value={item}>
-                {item.label}
-              </SearchSelectItem>
-            )}
-          </SearchSelectContent>
-        </SearchSelect>
+        {multiple ? (
+          <SearchSelect
+            key="multiple"
+            multiple
+            items={FRUITS}
+            defaultValue={[FRUITS[1], FRUITS[4]]}
+            disabled={disabled}
+          >
+            <SearchSelectInput placeholder="Search fruits…" tone={tone} />
+            <SearchSelectContent emptyMessage="No fruit found.">
+              {(item: Fruit) => (
+                <SearchMultiSelectItem key={item.value} value={item}>
+                  {item.label}
+                </SearchMultiSelectItem>
+              )}
+            </SearchSelectContent>
+          </SearchSelect>
+        ) : (
+          <SearchSelect key="single" items={FRUITS} disabled={disabled}>
+            <SearchSelectInput placeholder="Search a fruit…" tone={tone} />
+            <SearchSelectContent emptyMessage="No fruit found.">
+              {(item: Fruit) => (
+                <SearchSelectItem key={item.value} value={item}>
+                  {item.label}
+                </SearchSelectItem>
+              )}
+            </SearchSelectContent>
+          </SearchSelect>
+        )}
       </div>
     );
   },

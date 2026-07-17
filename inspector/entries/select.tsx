@@ -20,25 +20,47 @@ const FRUITS = {
 
 export const selectEntry = defineEntry({
   slug: "select",
-  name: "Base UI",
+  name: "BaseUI",
   controls: {
     disabled: bool(false),
+    multiple: bool(false),
   },
-  render({ disabled }) {
+  render({ disabled, multiple }) {
     return (
       <div className="w-full max-w-56">
-        <Select items={FRUITS} defaultValue="banana" disabled={disabled}>
-          <SelectTrigger aria-label="Fruit">
-            <SelectValue placeholder="Pick a fruit" />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(FRUITS).map(([value, label]) => (
-              <SelectItem key={value} value={value}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {multiple ? (
+          <Select
+            key="multiple"
+            multiple
+            items={FRUITS}
+            defaultValue={["banana", "mango"]}
+            disabled={disabled}
+          >
+            <SelectTrigger aria-label="Fruits">
+              <SelectValue placeholder="Pick fruits" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(FRUITS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <Select key="single" items={FRUITS} defaultValue="banana" disabled={disabled}>
+            <SelectTrigger aria-label="Fruit">
+              <SelectValue placeholder="Pick a fruit" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(FRUITS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
     );
   },

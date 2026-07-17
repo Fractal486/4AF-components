@@ -12,22 +12,30 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
+import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 
 /**
- * A select — the accessible version, on Base UI.
+ * A single or multi-select — the accessible version, on Base UI.
  *
  * Base UI drives the behaviour — keyboard navigation, typeahead, focus into the list and
  * back, collision-aware placement, the hidden form input, full ARIA — which is exactly
  * what a hand-rolled dropdown gets wrong. The panel simply blurs and scales in from the
  * trigger's edge (a gap opens off it), the chevron flips, and it fades back out on close.
  *
- * The trade against the hand-rolled siblings: Base UI portals the popup, so there's no
- * gooey height *unfold* (`select-motion.tsx`) or trigger *morph* (`select-morph.tsx`) —
- * but every keyboard and focus behaviour is real rather than approximated. That's the
- * right default; the Motion ones are what you reach for when the entrance is the point.
+ * The trade against the hand-rolled sibling: Base UI portals the popup, so there's no
+ * gooey height *unfold* (`select-motion.tsx`) — but every keyboard and focus behaviour is
+ * real rather than approximated. Pass `multiple` to keep the panel open while several
+ * checkbox rows are toggled; the same value and item parts automatically switch to their
+ * count and checkbox forms. That's the right default; the Motion one is what you reach
+ * for when the entrance is the point.
  */
 
-const SelectOpenContext = createContext(false);
+interface SelectContextValue {
+  open: boolean;
+  multiple: boolean;
+}
+
+const SelectContext = createContext<SelectContextValue>({ open: false, multiple: false });
 
 const EASE_OUT = [0.16, 1, 0.3, 1] as const;
 // The pane blurs and scales in as one piece — no height unfold, no per-item stagger.
@@ -40,49 +48,77 @@ const FADE_SHOW = { opacity: 1, scale: 1, filter: "blur(0px)" };
 const SCROLLBAR =
   "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground";
 
-export interface SelectProps<Value>
-  extends Omit<ComponentProps<typeof BaseSelect.Root<Value>>, "children"> {
+export interface SelectProps<Value, Multiple extends boolean | undefined = false>
+  extends Omit<ComponentProps<typeof BaseSelect.Root<Value, Multiple>>, "children"> {
   children: ReactNode;
 }
 
-export function Select<Value>({
+export function Select<Value, Multiple extends boolean | undefined = false>({
   open,
   defaultOpen,
   onOpenChange,
   children,
+  multiple,
   ...props
-}: SelectProps<Value>) {
+}: SelectProps<Value, Multiple>) {
   const [uncontrolled, setUncontrolled] = useState(defaultOpen ?? false);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : uncontrolled;
 
-  const handleOpenChange = useCallback<NonNullable<SelectProps<Value>["onOpenChange"]>>(
+  const handleOpenChange = useCallback<
+    NonNullable<SelectProps<Value, Multiple>["onOpenChange"]>
+  >(
     (next, details) => {
-      if (!isControlled) setUncontrolled(next);
       onOpenChange?.(next, details);
+      if (!isControlled && !details.isCanceled) setUncontrolled(next);
     },
     [isControlled, onOpenChange],
   );
 
   return (
-    <SelectOpenContext.Provider value={isOpen}>
+    <SelectContext.Provider value={{ open: isOpen, multiple: Boolean(multiple) }}>
       <BaseSelect.Root
         open={isOpen}
         onOpenChange={handleOpenChange}
         defaultOpen={defaultOpen}
+        multiple={multiple}
         {...props}
       >
         {children}
       </BaseSelect.Root>
-    </SelectOpenContext.Provider>
+    </SelectContext.Provider>
   );
 }
 
 export function SelectValue({
   className,
+  children,
+  placeholder,
   ...props
 }: ComponentProps<typeof BaseSelect.Value>) {
-  return <BaseSelect.Value className={cn("truncate", className)} {...props} />;
+  const { multiple } = useContext(SelectContext);
+
+  if (!multiple) {
+    return (
+      <BaseSelect.Value className={cn("truncate", className)} placeholder={placeholder} {...props}>
+        {children}
+      </BaseSelect.Value>
+    );
+  }
+
+  return (
+    <BaseSelect.Value className={cn("truncate", className)} placeholder={placeholder} {...props}>
+      {children ?? ((value: unknown) => {
+        const count = Array.isArray(value) ? value.length : 0;
+
+        return count === 0 ? (
+          <span className="text-muted-foreground">{placeholder}</span>
+        ) : (
+          `${count} selected`
+        );
+      })}
+    </BaseSelect.Value>
+  );
 }
 
 export function SelectTrigger({
@@ -93,7 +129,7 @@ export function SelectTrigger({
   className?: string;
   children?: ReactNode;
 }) {
-  const open = useContext(SelectOpenContext);
+  const { open } = useContext(SelectContext);
   const reduceMotion = useReducedMotion();
 
   return (
@@ -135,7 +171,7 @@ export function SelectContent({
   sideOffset?: number;
 }) {
   const reduceMotion = useReducedMotion();
-  const open = useContext(SelectOpenContext);
+  const { open } = useContext(SelectContext);
 
   return (
     <BaseSelect.Portal>
@@ -198,6 +234,41 @@ export function SelectItem({
   className?: string;
   children?: ReactNode;
 }) {
+  const { multiple } = useContext(SelectContext);
+
+  if (multiple) {
+    return (
+      <BaseSelect.Item
+        className={cn(
+          "flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-sm outline-none select-none",
+          "text-muted-foreground",
+          "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
+          "data-[selected]:text-foreground",
+          "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+          className,
+        )}
+        {...props}
+      >
+        <BaseSelect.ItemIndicator
+          keepMounted
+          className="shrink-0"
+          render={(indicatorProps, state) => (
+            <span {...indicatorProps}>
+              <Checkbox
+                checked={state.selected}
+                size="sm"
+                aria-hidden
+                tabIndex={-1}
+                className="pointer-events-none shrink-0"
+              />
+            </span>
+          )}
+        />
+        <BaseSelect.ItemText className="flex-1 truncate">{children}</BaseSelect.ItemText>
+      </BaseSelect.Item>
+    );
+  }
+
   return (
     <BaseSelect.Item
       className={cn(
