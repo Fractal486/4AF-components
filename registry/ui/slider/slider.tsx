@@ -49,11 +49,34 @@ export interface SliderProps
   /** Text shown above the track on the left, opposite the value. */
   label?: ReactNode;
   /**
-   * The thumb shape. `bar` is the thin vertical handle; `circle` is the normal round
-   * knob, on a fully-rounded track.
+   * The thumb shape. `bar` is the thin vertical handle; `circle` is a round knob that
+   * fills a fully-rounded track; `knob` is that same round knob on a thin rail (about half
+   * the knob's diameter), so it overhangs — the classic slider look.
    */
-  thumb?: "bar" | "circle";
+  thumb?: "bar" | "circle" | "knob";
+  /** Overall scale. `sm` is a more compact rail — useful in dense panels. */
+  size?: "sm" | "md";
 }
+
+// Every size-dependent value in one place, keyed by shape then size, so the rail height
+// and rounding, the thumb, the pixel width the fill/tick maths needs, and the tick inset
+// (half that width) never drift out of step. `rail` positions the track within the
+// control — `inset-0` fills it (thumb == rail height); a fixed height centres a thin rail
+// the thumb overhangs.
+const DIMS = {
+  circle: {
+    md: { control: "h-5", rail: "inset-0", thumb: "size-5 rounded-full", thumbPx: 20, tickInset: "inset-x-2.5" },
+    sm: { control: "h-4", rail: "inset-0", thumb: "size-4 rounded-full", thumbPx: 16, tickInset: "inset-x-2" },
+  },
+  knob: {
+    md: { control: "h-5", rail: "inset-x-0 top-1/2 h-2.5 -translate-y-1/2", thumb: "size-5 rounded-full", thumbPx: 20, tickInset: "inset-x-2.5" },
+    sm: { control: "h-4", rail: "inset-x-0 top-1/2 h-2 -translate-y-1/2", thumb: "size-4 rounded-full", thumbPx: 16, tickInset: "inset-x-2" },
+  },
+  bar: {
+    md: { control: "h-10", rail: "inset-0", thumb: "h-5 w-1.5 rounded-sm", thumbPx: 6, tickInset: "inset-x-[3px]" },
+    sm: { control: "h-8", rail: "inset-0", thumb: "h-4 w-1.5 rounded-sm", thumbPx: 6, tickInset: "inset-x-[3px]" },
+  },
+} as const;
 
 export function Slider({
   value,
@@ -66,11 +89,13 @@ export function Slider({
   showValue = true,
   label,
   thumb = "bar",
+  size = "md",
   disabled,
   className,
   ...props
 }: SliderProps) {
-  const isCircle = thumb === "circle";
+  const isBar = thumb === "bar";
+  const dims = DIMS[thumb][size];
   const reduceMotion = useReducedMotion();
   const [internal, setInternal] = useState(defaultValue);
   const [dragging, setDragging] = useState(false);
@@ -80,7 +105,7 @@ export function Slider({
   const percent = ((current - min) / (max - min)) * 100;
 
   const atEdge = current <= min || current >= max;
-  const thumbWidthPx = isCircle ? 20 : 6; // size-5 vs w-1.5
+  const thumbWidthPx = dims.thumbPx;
 
   // Spring-smoothed position drives the thumb's `left`.
   const target = useMotionValue(percent);
@@ -156,12 +181,12 @@ export function Slider({
           "group relative flex w-full touch-none items-center select-none",
           // The circle variant is half as thick; its round thumb is sized to the rail
           // height, so it matches the rail's rounded end-caps.
-          isCircle ? "h-5" : "h-10",
+          dims.control,
           disabled
             ? "cursor-not-allowed opacity-50"
-            : isCircle
-              ? "cursor-e-resize"
-              : "cursor-grab active:cursor-grabbing",
+            : isBar
+              ? "cursor-grab active:cursor-grabbing"
+              : "cursor-e-resize",
         )}
       >
         {/* The rail — clipped to its own shape so the fill rounds with it. The thumb
@@ -169,8 +194,9 @@ export function Slider({
             edges when grabbed rather than being flattened against them. */}
         <div
           className={cn(
-            "absolute inset-0 overflow-hidden bg-muted",
-            isCircle ? "rounded-full" : "rounded-lg",
+            "absolute overflow-hidden bg-muted",
+            dims.rail,
+            isBar ? "rounded-lg" : "rounded-full",
           )}
         >
           {/* Fill — left edge to the thumb's centre, easing to the rail edges at the ends. */}
@@ -187,7 +213,7 @@ export function Slider({
             aria-hidden
             className={cn(
               "pointer-events-none absolute inset-y-0",
-              isCircle ? "inset-x-2.5" : "inset-x-[3px]",
+              dims.tickInset,
             )}
           >
             {ticks.map((tp, i) => (
@@ -212,18 +238,18 @@ export function Slider({
           className={cn(
             "pointer-events-none absolute top-1/2 bg-foreground shadow-sm",
             // A thin vertical handle, or a round knob the height of the rail.
-            isCircle ? "size-5 rounded-full" : "h-5 w-1.5 rounded-sm",
+            dims.thumb,
             "group-has-[:focus-visible]:ring-4 group-has-[:focus-visible]:ring-ring/40",
           )}
           style={{ left, x: thumbX, y: "-50%" }}
-          // The bar grabs by stretching taller; a circle can't stretch one axis without
-          // going oval, so it grabs by growing evenly.
+          // The bar grabs by stretching taller; a round knob can't stretch one axis
+          // without going oval, so it grabs by growing evenly.
           animate={
             reduceMotion
               ? undefined
-              : isCircle
-                ? { scale: dragging ? 1.12 : 1 }
-                : { scaleY: dragging ? 1.35 : 1 }
+              : isBar
+                ? { scaleY: dragging ? 1.35 : 1 }
+                : { scale: dragging ? 1.12 : 1 }
           }
           transition={SPRING_GRAB}
         />

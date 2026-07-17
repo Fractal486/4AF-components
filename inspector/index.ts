@@ -43,6 +43,7 @@ export const groups: Group[] = [
     summary:
       "The action, the toggle that holds a state, the content swap inside them, and the two buttons built from those.",
     entries: [buttonEntry, toggleEntry, morphEntry, copyButtonEntry, actionButtonEntry],
+    stacked: true,
   },
   {
     slug: "input",

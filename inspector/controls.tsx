@@ -3,6 +3,9 @@
 import { Radio } from "@base-ui/react/radio";
 import { RadioGroup } from "@base-ui/react/radio-group";
 import { cn } from "@/registry/lib/cn";
+import { Checkbox } from "@/registry/ui/checkbox/checkbox";
+import { Input } from "@/registry/ui/input/input";
+import { Slider } from "@/registry/ui/slider/slider";
 import type { ControlDef, ControlSchema, ControlValues } from "./schema";
 
 interface ControlsProps<S extends ControlSchema> {
@@ -52,16 +55,15 @@ function Control({
   const label = def.label ?? id;
 
   if (def.kind === "boolean") {
-    // The label is the click target, so the whole row is the hit area rather than
-    // a 16px square you have to aim at.
+    // The whole row is the hit area (wrapping <label>), not a 16px square you aim at —
+    // this mirrors the Checkbox's own label structure, so a row click toggles it.
     return (
       <label className="flex cursor-pointer items-center justify-between gap-4">
         <span className="text-sm text-muted-foreground select-none">{label}</span>
-        <input
-          type="checkbox"
+        <Checkbox
+          size="sm"
           checked={value as boolean}
-          onChange={(e) => onChange(e.target.checked)}
-          className="size-4 accent-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          onCheckedChange={(checked) => onChange(checked)}
         />
       </label>
     );
@@ -109,43 +111,32 @@ function Control({
   }
 
   if (def.kind === "number") {
+    // The circle Slider owns its own label and value readout, with a dot at each step
+    // (the Slider hides them automatically once there are more than 50).
     return (
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-baseline justify-between">
-          <Label htmlFor={id}>{label}</Label>
-          <span className="tabular font-mono text-2xs text-subtle-foreground">
-            {String(value)}
-          </span>
-        </div>
-        <input
-          id={id}
-          type="range"
-          min={def.min}
-          max={def.max}
-          step={def.step}
-          value={value as number}
-          onChange={(e) => onChange(e.target.valueAsNumber)}
-          className="h-1 w-full cursor-pointer appearance-none rounded-full bg-muted accent-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        />
-      </div>
+      <Slider
+        thumb="knob"
+        size="sm"
+        showTicks={false}
+        label={label}
+        min={def.min}
+        max={def.max}
+        step={def.step}
+        value={value as number}
+        onValueChange={onChange}
+      />
     );
   }
 
   return (
     <div className="flex flex-col gap-1.5">
       <Label htmlFor={id}>{label}</Label>
-      <input
+      <Input
         id={id}
-        type="text"
+        tone="accent"
         value={value as string}
         placeholder={def.placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className={cn(
-          "rounded-md bg-surface px-2.5 py-1.5 text-sm text-foreground shadow-border",
-          "placeholder:text-subtle-foreground",
-          "transition-[box-shadow] duration-(--duration-fast) ease-out",
-          "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-        )}
       />
     </div>
   );
