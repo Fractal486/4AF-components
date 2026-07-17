@@ -24,7 +24,7 @@ import { checkboxVariants, type CheckboxVariants } from "./checkbox.variants";
  * different depending on what you're pointing with.
  */
 export interface CheckboxProps
-  extends Omit<ComponentProps<typeof BaseCheckbox.Root>, "className" | "render">,
+  extends Omit<ComponentProps<typeof BaseCheckbox.Root>, "className" | "render" | "nativeButton">,
     CheckboxVariants {
   className?: string;
   /**
@@ -58,6 +58,9 @@ export function Checkbox({
   const box = (
     <BaseCheckbox.Root
       disabled={disabled}
+      // The render below is a native <button>, so tell Base UI as much — otherwise it
+      // warns and would add synthetic button attributes on top of the native ones.
+      nativeButton
       className={cn(checkboxVariants({ size }), className)}
       // Element form, not a function: Base UI clones this and injects its own props,
       // so there's no explicit spread to collide with Motion's gesture props.
