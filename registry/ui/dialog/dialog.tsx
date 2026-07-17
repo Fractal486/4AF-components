@@ -4,9 +4,11 @@ import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { X } from "lucide-react";
 import {
+  Children,
   createContext,
   useCallback,
   useContext,
+  useMemo,
   useState,
   type ComponentProps,
   type ReactNode,
@@ -185,5 +187,173 @@ export function DialogDescription({
       className={cn("text-sm text-pretty text-muted-foreground", className)}
       {...props}
     />
+  );
+}
+
+function clampStep(step: number, count: number) {
+  const normalized = Number.isFinite(step) ? Math.trunc(step) : 0;
+  return Math.min(Math.max(normalized, 0), Math.max(count - 1, 0));
+}
+
+export interface DialogStepProps extends ComponentProps<"div"> {
+  children?: ReactNode;
+}
+
+/** A single phase passed as a child to `DialogSteps`. */
+export function DialogStep({ className, ...props }: DialogStepProps) {
+  return <div className={cn("min-w-0 space-y-4", className)} {...props} />;
+}
+
+export type DialogStepValidationDirection = "forward" | "submit";
+
+export interface DialogStepsProps extends Omit<ComponentProps<"div">, "children"> {
+  /** One child per phase. The active phase is the only one exposed in the dialog. */
+  children: ReactNode;
+  /** The active phase when the component is controlled. */
+  step?: number;
+  /** The initially active phase when the component is uncontrolled. */
+  defaultStep?: number;
+  /** Called whenever navigation changes the active phase. */
+  onStepChange?: (step: number) => void;
+  /** Return false to block forward navigation or the final Save action. */
+  validateStep?: (step: number, direction: DialogStepValidationDirection) => boolean;
+  /** Accessible names for the dots. Defaults to “Step 1”, “Step 2”, and so on. */
+  labels?: readonly string[];
+}
+
+/**
+ * A phased dialog body with clickable progress dots and previous/next arrows. The phases
+ * swap instantly — no transition between them; only the dots and arrows react. It's a
+ * composition inside DialogContent: Base UI still owns the modal focus trap, dismissal,
+ * and title/description relationships.
+ */
+export function DialogSteps({
+  children,
+  step,
+  defaultStep = 0,
+  onStepChange,
+  validateStep,
+  labels,
+  className,
+  ...props
+}: DialogStepsProps) {
+  const phases = useMemo(() => Children.toArray(children), [children]);
+  const [uncontrolledStep, setUncontrolledStep] = useState(() =>
+    clampStep(defaultStep, phases.length),
+  );
+  const isControlled = step !== undefined;
+  const activeStep = clampStep(isControlled ? step : uncontrolledStep, phases.length);
+
+  const goToStep = useCallback(
+    (nextStep: number) => {
+      const next = clampStep(nextStep, phases.length);
+      if (next === activeStep) return;
+
+      if (next > activeStep && validateStep && !validateStep(activeStep, "forward")) {
+        return;
+      }
+
+      if (!isControlled) setUncontrolledStep(next);
+      onStepChange?.(next);
+    },
+    [activeStep, isControlled, onStepChange, phases.length, validateStep],
+  );
+
+  if (phases.length === 0) return null;
+
+  return (
+    <div className={cn("min-w-0", className)} {...props}>
+      {phases[activeStep]}
+
+      <DialogStepsNavigation
+        activeStep={activeStep}
+        count={phases.length}
+        labels={labels}
+        onStepChange={goToStep}
+        validateStep={validateStep}
+      />
+    </div>
+  );
+}
+
+interface DialogStepsNavigationProps {
+  activeStep: number;
+  count: number;
+  labels?: readonly string[];
+  onStepChange: (step: number) => void;
+  validateStep?: DialogStepsProps["validateStep"];
+}
+
+function DialogStepsNavigation({
+  activeStep,
+  count,
+  labels,
+  onStepChange,
+  validateStep,
+}: DialogStepsNavigationProps) {
+  const labelFor = (index: number) => labels?.[index] ?? `Step ${index + 1}`;
+
+  const isLast = activeStep === count - 1;
+
+  return (
+    // Three columns so the dots stay centred whatever width Back and Next take.
+    <nav aria-label="Dialog steps" className="mt-6 grid grid-cols-3 items-center gap-3">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="justify-self-start"
+        onClick={() => onStepChange(activeStep - 1)}
+        disabled={activeStep === 0}
+      >
+        Back
+      </Button>
+
+      <div
+        role="group"
+        className="flex items-center justify-center gap-1.5 justify-self-center"
+        aria-label="Choose dialog step"
+      >
+        {Array.from({ length: count }, (_, index) => {
+          const active = index === activeStep;
+          const label = labelFor(index);
+
+          return (
+            <button
+              key={label + index}
+              type="button"
+              className={cn(
+                "block size-1.5 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "transition-[background-color,scale] duration-(--duration-fast)",
+                active
+                  ? "bg-foreground"
+                  : "bg-border-strong hover:scale-125 hover:bg-muted-foreground",
+              )}
+              onClick={() => onStepChange(index)}
+              aria-label={`Go to ${label}`}
+              aria-current={active ? "step" : undefined}
+            />
+          );
+        })}
+      </div>
+
+      {isLast ? (
+        <DialogClose
+          onClick={(event) => {
+            if (validateStep && !validateStep(activeStep, "submit")) {
+              event.preventDefault();
+            }
+          }}
+          render={<Button size="sm" className="justify-self-end">Save changes</Button>}
+        />
+      ) : (
+        <Button
+          size="sm"
+          className="justify-self-end"
+          onClick={() => onStepChange(activeStep + 1)}
+        >
+          Next
+        </Button>
+      )}
+    </nav>
   );
 }

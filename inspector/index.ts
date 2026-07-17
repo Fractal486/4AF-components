@@ -101,7 +101,8 @@ export const groups: Group[] = [
   {
     slug: "dialog",
     name: "Dialog",
-    summary: "A modal centred over the page. Scales in from a blur, fades out. Focus-trapped.",
+    summary:
+      "A modal centred over the page. Scales in from a blur, fades out, and can optionally be phased with step navigation.",
     entries: [dialogEntry],
   },
   {

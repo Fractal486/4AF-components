@@ -1,0 +1,89 @@
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { vi } from "vitest";
+import { Dialog, DialogStep, DialogSteps } from "./dialog";
+
+describe("DialogSteps", () => {
+  it("navigates phases with arrows and clickable dots", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Dialog open>
+        <DialogSteps labels={["Profile", "Preferences", "Review"]}>
+          <DialogStep>Profile phase</DialogStep>
+          <DialogStep>Preferences phase</DialogStep>
+          <DialogStep>Review phase</DialogStep>
+        </DialogSteps>
+      </Dialog>,
+    );
+
+    expect(screen.getByText("Profile phase")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Back" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Go to Profile" })).toHaveAttribute(
+      "aria-current",
+      "step",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Go to Preferences" })).toHaveAttribute(
+        "aria-current",
+        "step",
+      ),
+    );
+    expect(screen.getByRole("button", { name: "Back" })).toBeEnabled();
+
+    await user.click(screen.getByRole("button", { name: "Go to Review" }));
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Go to Review" })).toHaveAttribute(
+        "aria-current",
+        "step",
+      ),
+    );
+    expect(screen.queryByRole("button", { name: "Next" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Save changes" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Go to Review" })).toHaveAttribute(
+      "aria-current",
+      "step",
+    );
+  });
+
+  it("blocks forward navigation when the current phase is invalid", async () => {
+    const user = userEvent.setup();
+    const validateStep = vi.fn(() => false);
+
+    render(
+      <Dialog open>
+        <DialogSteps labels={["Profile", "Review"]} validateStep={validateStep}>
+          <DialogStep>Profile phase</DialogStep>
+          <DialogStep>Review phase</DialogStep>
+        </DialogSteps>
+      </Dialog>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Next" }));
+
+    expect(screen.getByText("Profile phase")).toBeInTheDocument();
+    expect(validateStep).toHaveBeenCalledWith(0, "forward");
+  });
+
+  it("blocks the final Save action when submission is invalid", async () => {
+    const user = userEvent.setup();
+    const validateStep = vi.fn(() => false);
+
+    render(
+      <Dialog defaultOpen>
+        <DialogSteps defaultStep={1} labels={["Profile", "Review"]} validateStep={validateStep}>
+          <DialogStep>Profile phase</DialogStep>
+          <DialogStep>Review phase</DialogStep>
+        </DialogSteps>
+      </Dialog>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Save changes" }));
+
+    expect(screen.getByRole("button", { name: "Save changes" })).toBeInTheDocument();
+    expect(validateStep).toHaveBeenCalledWith(1, "submit");
+  });
+});
