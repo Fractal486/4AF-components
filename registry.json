@@ -92,9 +92,15 @@
       },
       "css": {
         "@keyframes icon-pop": {
-          "0%": { "scale": "1" },
-          "40%": { "scale": "1.25" },
-          "100%": { "scale": "1" }
+          "0%": {
+            "scale": "1"
+          },
+          "40%": {
+            "scale": "1.25"
+          },
+          "100%": {
+            "scale": "1"
+          }
         },
         "@media (prefers-reduced-motion: reduce)": {
           ":root": {
@@ -109,62 +115,108 @@
     {
       "name": "cn",
       "type": "registry:lib",
-      "dependencies": ["clsx", "tailwind-merge"],
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ],
       "files": [
-        { "path": "registry/lib/cn.ts", "type": "registry:lib", "target": "@lib/cn.ts" }
+        {
+          "path": "registry/lib/cn.ts",
+          "type": "registry:lib",
+          "target": "@lib/cn.ts"
+        }
       ]
     },
     {
       "name": "slot",
       "type": "registry:lib",
-      "registryDependencies": ["http://localhost:3000/r/cn.json"],
+      "registryDependencies": [
+        "http://localhost:3000/r/cn.json"
+      ],
       "files": [
-        { "path": "registry/lib/slot.tsx", "type": "registry:lib", "target": "@lib/slot.tsx" }
+        {
+          "path": "registry/lib/slot.tsx",
+          "type": "registry:lib",
+          "target": "@lib/slot.tsx"
+        }
       ]
     },
     {
       "name": "motion",
       "type": "registry:lib",
       "description": "Spring and easing presets, mirroring the CSS motion tokens.",
-      "dependencies": ["motion"],
+      "dependencies": [
+        "motion"
+      ],
       "files": [
-        { "path": "registry/lib/motion.ts", "type": "registry:lib", "target": "@lib/motion.ts" }
+        {
+          "path": "registry/lib/motion.ts",
+          "type": "registry:lib",
+          "target": "@lib/motion.ts"
+        }
       ]
     },
     {
       "name": "button",
       "type": "registry:ui",
       "description": "Six variants, six sizes, optical icon alignment, and a loading state that doesn't resize.",
-      "dependencies": ["@base-ui/react", "class-variance-authority", "motion"],
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "motion"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/motion.json"
       ],
       "files": [
-        { "path": "registry/ui/button/button.tsx", "type": "registry:ui", "target": "@ui/button.tsx" },
-        { "path": "registry/ui/button/button.variants.ts", "type": "registry:ui", "target": "@ui/button.variants.ts" }
+        {
+          "path": "registry/ui/button/button.tsx",
+          "type": "registry:ui",
+          "target": "@ui/button.tsx"
+        },
+        {
+          "path": "registry/ui/button/button.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/button.variants.ts"
+        }
       ]
     },
     {
       "name": "input",
       "type": "registry:ui",
       "description": "A Base UI input with token-based surfaces, focus states, custom number steppers, and default, plain, and underline variants.",
-      "dependencies": ["@base-ui/react", "class-variance-authority"],
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json"
       ],
       "files": [
-        { "path": "registry/ui/input/input.tsx", "type": "registry:ui", "target": "@ui/input.tsx" },
-        { "path": "registry/ui/input/input.variants.ts", "type": "registry:ui", "target": "@ui/input.variants.ts" }
+        {
+          "path": "registry/ui/input/input.tsx",
+          "type": "registry:ui",
+          "target": "@ui/input.tsx"
+        },
+        {
+          "path": "registry/ui/input/input.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/input.variants.ts"
+        }
       ]
     },
     {
       "name": "toggle",
       "type": "registry:ui",
       "description": "A button that holds a state. Fills its icon rather than swapping it.",
-      "dependencies": ["@base-ui/react", "class-variance-authority", "motion"],
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "motion"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
@@ -172,137 +224,227 @@
         "http://localhost:3000/r/button.json"
       ],
       "files": [
-        { "path": "registry/ui/toggle/toggle.tsx", "type": "registry:ui", "target": "@ui/toggle.tsx" }
+        {
+          "path": "registry/ui/toggle/toggle.tsx",
+          "type": "registry:ui",
+          "target": "@ui/toggle.tsx"
+        }
       ]
     },
     {
       "name": "morph",
       "type": "registry:ui",
-      "description": "Animated content swap — icons or text. Copy to check, Follow to Following.",
-      "dependencies": ["motion"],
+      "description": "Animated content swap \u00e2\u20ac\u201d icons or text. Copy to check, Follow to Following.",
+      "dependencies": [
+        "motion"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/motion.json"
       ],
       "files": [
-        { "path": "registry/ui/morph/morph.tsx", "type": "registry:ui", "target": "@ui/morph.tsx" }
+        {
+          "path": "registry/ui/morph/morph.tsx",
+          "type": "registry:ui",
+          "target": "@ui/morph.tsx"
+        }
       ]
     },
     {
       "name": "copy-button",
       "type": "registry:ui",
-      "description": "Copies to the clipboard and confirms it — visually, and to screen readers.",
-      "dependencies": ["lucide-react"],
-      "registryDependencies": ["http://localhost:3000/r/action-button.json"],
+      "description": "Copies to the clipboard and confirms it \u00e2\u20ac\u201d visually, and to screen readers.",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/action-button.json"
+      ],
       "files": [
-        { "path": "registry/ui/copy-button/copy-button.tsx", "type": "registry:ui", "target": "@ui/copy-button.tsx" }
+        {
+          "path": "registry/ui/copy-button/copy-button.tsx",
+          "type": "registry:ui",
+          "target": "@ui/copy-button.tsx"
+        }
       ]
     },
     {
       "name": "action-button",
       "type": "registry:ui",
       "description": "Runs an async action, shows pending/success/error, and reverts. Never resizes.",
-      "dependencies": ["lucide-react"],
+      "dependencies": [
+        "lucide-react"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/button.json",
         "http://localhost:3000/r/morph.json"
       ],
       "files": [
-        { "path": "registry/ui/action-button/action-button.tsx", "type": "registry:ui", "target": "@ui/action-button.tsx" }
+        {
+          "path": "registry/ui/action-button/action-button.tsx",
+          "type": "registry:ui",
+          "target": "@ui/action-button.tsx"
+        }
       ]
     },
     {
       "name": "tabs",
       "type": "registry:ui",
       "description": "Tabs with a travelling indicator. Base UI behaviour, Motion layout animation.",
-      "dependencies": ["@base-ui/react", "class-variance-authority", "motion"],
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "motion"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/motion.json"
       ],
       "files": [
-        { "path": "registry/ui/tabs/tabs.tsx", "type": "registry:ui", "target": "@ui/tabs.tsx" },
-        { "path": "registry/ui/tabs/tabs.variants.ts", "type": "registry:ui", "target": "@ui/tabs.variants.ts" }
+        {
+          "path": "registry/ui/tabs/tabs.tsx",
+          "type": "registry:ui",
+          "target": "@ui/tabs.tsx"
+        },
+        {
+          "path": "registry/ui/tabs/tabs.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/tabs.variants.ts"
+        }
       ]
     },
     {
       "name": "switch",
       "type": "registry:ui",
       "description": "A switch that slides and squishes when pressed. Adaptive or fixed thumb tone.",
-      "dependencies": ["@base-ui/react", "class-variance-authority", "motion"],
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "motion"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/motion.json"
       ],
       "files": [
-        { "path": "registry/ui/switch/switch.tsx", "type": "registry:ui", "target": "@ui/switch.tsx" },
-        { "path": "registry/ui/switch/switch.variants.ts", "type": "registry:ui", "target": "@ui/switch.variants.ts" }
+        {
+          "path": "registry/ui/switch/switch.tsx",
+          "type": "registry:ui",
+          "target": "@ui/switch.tsx"
+        },
+        {
+          "path": "registry/ui/switch/switch.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/switch.variants.ts"
+        }
       ]
     },
     {
       "name": "checkbox",
       "type": "registry:ui",
       "description": "A checkbox whose tick draws itself in. Presses on click, not on hover.",
-      "dependencies": ["@base-ui/react", "class-variance-authority", "motion"],
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "motion"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/motion.json"
       ],
       "files": [
-        { "path": "registry/ui/checkbox/checkbox.tsx", "type": "registry:ui", "target": "@ui/checkbox.tsx" },
-        { "path": "registry/ui/checkbox/checkbox.variants.ts", "type": "registry:ui", "target": "@ui/checkbox.variants.ts" }
+        {
+          "path": "registry/ui/checkbox/checkbox.tsx",
+          "type": "registry:ui",
+          "target": "@ui/checkbox.tsx"
+        },
+        {
+          "path": "registry/ui/checkbox/checkbox.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/checkbox.variants.ts"
+        }
       ]
     },
     {
       "name": "radio",
       "type": "registry:ui",
-      "description": "A radio group — the Checkbox's sibling, a single choice with a dot that scales in.",
-      "dependencies": ["@base-ui/react", "class-variance-authority", "motion"],
+      "description": "A radio group \u00e2\u20ac\u201d the Checkbox's sibling, a single choice with a dot that scales in.",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "motion"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/motion.json"
       ],
       "files": [
-        { "path": "registry/ui/radio/radio.tsx", "type": "registry:ui", "target": "@ui/radio.tsx" },
-        { "path": "registry/ui/radio/radio.variants.ts", "type": "registry:ui", "target": "@ui/radio.variants.ts" }
+        {
+          "path": "registry/ui/radio/radio.tsx",
+          "type": "registry:ui",
+          "target": "@ui/radio.tsx"
+        },
+        {
+          "path": "registry/ui/radio/radio.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/radio.variants.ts"
+        }
       ]
     },
     {
       "name": "slider",
       "type": "registry:ui",
       "description": "A slider whose thumb springs between steps and grabs while held. Bar or circle thumb. Base UI behaviour.",
-      "dependencies": ["@base-ui/react", "motion"],
+      "dependencies": [
+        "@base-ui/react",
+        "motion"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json"
       ],
       "files": [
-        { "path": "registry/ui/slider/slider.tsx", "type": "registry:ui", "target": "@ui/slider.tsx" }
+        {
+          "path": "registry/ui/slider/slider.tsx",
+          "type": "registry:ui",
+          "target": "@ui/slider.tsx"
+        }
       ]
     },
     {
       "name": "select",
       "type": "registry:ui",
-      "description": "A single or multi-select on Base UI — keyboard, typeahead and collision-aware positioning — whose panel blurs and scales in from the trigger. Multi-select keeps the panel open while animated checkbox rows are toggled.",
-      "dependencies": ["@base-ui/react", "lucide-react", "motion"],
+      "description": "A single or multi-select on Base UI \u00e2\u20ac\u201d keyboard, typeahead and collision-aware positioning \u00e2\u20ac\u201d whose panel blurs and scales in from the trigger. Multi-select keeps the panel open while animated checkbox rows are toggled.",
+      "dependencies": [
+        "@base-ui/react",
+        "lucide-react",
+        "motion"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/checkbox.json"
       ],
       "files": [
-        { "path": "registry/ui/select/select.tsx", "type": "registry:ui", "target": "@ui/select.tsx" }
+        {
+          "path": "registry/ui/select/select.tsx",
+          "type": "registry:ui",
+          "target": "@ui/select.tsx"
+        }
       ]
     },
     {
       "name": "select-motion",
       "type": "registry:ui",
-      "description": "A hand-animated select: the panel springs its height open and pinches off the trigger, gooey corners and all. Optional multi-select keeps the panel open and uses checkboxes. No behaviour primitive — reach for it when the entrance is the point.",
-      "dependencies": ["lucide-react", "motion"],
+      "description": "A hand-animated select: the panel springs its height open and pinches off the trigger, gooey corners and all. Optional multi-select keeps the panel open and uses checkboxes. No behaviour primitive \u00e2\u20ac\u201d reach for it when the entrance is the point.",
+      "dependencies": [
+        "lucide-react",
+        "motion"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
@@ -310,14 +452,22 @@
         "http://localhost:3000/r/checkbox.json"
       ],
       "files": [
-        { "path": "registry/ui/select/select-motion.tsx", "type": "registry:ui", "target": "@ui/select-motion.tsx" }
+        {
+          "path": "registry/ui/select/select-motion.tsx",
+          "type": "registry:ui",
+          "target": "@ui/select-motion.tsx"
+        }
       ]
     },
     {
       "name": "select-motion-search",
       "type": "registry:ui",
       "description": "A searchable single or multi-select on Base UI's Combobox. Its panel unfolds from the input; filtering and result-size changes are immediate, while multi-select keeps its checkbox list open as choices are toggled.",
-      "dependencies": ["@base-ui/react", "lucide-react", "motion"],
+      "dependencies": [
+        "@base-ui/react",
+        "lucide-react",
+        "motion"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
@@ -325,41 +475,64 @@
         "http://localhost:3000/r/checkbox.json"
       ],
       "files": [
-        { "path": "registry/ui/select/select-motion-search.tsx", "type": "registry:ui", "target": "@ui/select-motion-search.tsx" }
+        {
+          "path": "registry/ui/select/select-motion-search.tsx",
+          "type": "registry:ui",
+          "target": "@ui/select-motion-search.tsx"
+        }
       ]
     },
     {
       "name": "select-search",
       "type": "registry:ui",
-      "description": "A searchable single or multi-select on Base UI's Combobox — type to filter the list, with full keyboard and ARIA support. Multi-select keeps its animated checkbox list open while choices are toggled.",
-      "dependencies": ["@base-ui/react", "lucide-react", "motion"],
+      "description": "A searchable single or multi-select on Base UI's Combobox \u00e2\u20ac\u201d type to filter the list, with full keyboard and ARIA support. Multi-select keeps its animated checkbox list open while choices are toggled.",
+      "dependencies": [
+        "@base-ui/react",
+        "lucide-react",
+        "motion"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/checkbox.json"
       ],
       "files": [
-        { "path": "registry/ui/select/select-search.tsx", "type": "registry:ui", "target": "@ui/select-search.tsx" }
+        {
+          "path": "registry/ui/select/select-search.tsx",
+          "type": "registry:ui",
+          "target": "@ui/select-search.tsx"
+        }
       ]
     },
     {
       "name": "tooltip",
       "type": "registry:ui",
       "description": "Base UI positioning and timing with a CSS scale-and-blur enter. Opens on hover and focus, flips at the viewport edge.",
-      "dependencies": ["@base-ui/react"],
+      "dependencies": [
+        "@base-ui/react"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json"
       ],
       "files": [
-        { "path": "registry/ui/tooltip/tooltip.tsx", "type": "registry:ui", "target": "@ui/tooltip.tsx" }
+        {
+          "path": "registry/ui/tooltip/tooltip.tsx",
+          "type": "registry:ui",
+          "target": "@ui/tooltip.tsx"
+        }
       ]
     },
     {
       "name": "sheet",
       "type": "registry:ui",
       "description": "A dialog that slides in from an edge. Base UI Dialog behaviour, Motion enter/exit.",
-      "dependencies": ["@base-ui/react", "class-variance-authority", "lucide-react", "motion"],
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "lucide-react",
+        "motion"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
@@ -367,15 +540,27 @@
         "http://localhost:3000/r/button.json"
       ],
       "files": [
-        { "path": "registry/ui/sheet/sheet.tsx", "type": "registry:ui", "target": "@ui/sheet.tsx" },
-        { "path": "registry/ui/sheet/sheet.variants.ts", "type": "registry:ui", "target": "@ui/sheet.variants.ts" }
+        {
+          "path": "registry/ui/sheet/sheet.tsx",
+          "type": "registry:ui",
+          "target": "@ui/sheet.tsx"
+        },
+        {
+          "path": "registry/ui/sheet/sheet.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/sheet.variants.ts"
+        }
       ]
     },
     {
       "name": "dialog",
       "type": "registry:ui",
       "description": "A modal centred over the page. Base UI Dialog behaviour; scales in from a blur and fades out with Motion.",
-      "dependencies": ["@base-ui/react", "lucide-react", "motion"],
+      "dependencies": [
+        "@base-ui/react",
+        "lucide-react",
+        "motion"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
@@ -383,7 +568,30 @@
         "http://localhost:3000/r/button.json"
       ],
       "files": [
-        { "path": "registry/ui/dialog/dialog.tsx", "type": "registry:ui", "target": "@ui/dialog.tsx" }
+        {
+          "path": "registry/ui/dialog/dialog.tsx",
+          "type": "registry:ui",
+          "target": "@ui/dialog.tsx"
+        }
+      ]
+    },
+    {
+      "name": "popover",
+      "type": "registry:ui",
+      "description": "An interactive panel anchored to a trigger. Base UI Popover behaviour with a CSS scale-and-blur enter from the trigger edge.",
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/popover/popover.tsx",
+          "type": "registry:ui",
+          "target": "@ui/popover.tsx"
+        }
       ]
     }
   ]

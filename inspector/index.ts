@@ -5,6 +5,7 @@ import { copyButtonEntry } from "./entries/copy-button";
 import { dialogEntry } from "./entries/dialog";
 import { inputEntry } from "./entries/input";
 import { morphEntry } from "./entries/morph";
+import { popoverEntry } from "./entries/popover";
 import { radioEntry } from "./entries/radio";
 import { selectEntry } from "./entries/select";
 import { selectMotionEntry } from "./entries/select-motion";
@@ -104,6 +105,13 @@ export const groups: Group[] = [
     summary:
       "A modal centred over the page. Scales in from a blur, fades out, and can optionally be phased with step navigation.",
     entries: [dialogEntry],
+  },
+  {
+    slug: "popover",
+    name: "Popover",
+    summary:
+      "An interactive panel anchored to a trigger. Scales in from the trigger edge; not modal unless asked.",
+    entries: [popoverEntry],
   },
   {
     slug: "sheet",
