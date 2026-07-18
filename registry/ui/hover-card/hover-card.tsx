@@ -28,7 +28,7 @@ const popupClassName = cn(
   // The same floating-panel material as the Popover and Select panels: the border, plus
   // the ring-less overlay lift (shadow-overlay's hairline over a real border reads as a
   // doubled edge).
-  "z-50 w-72 max-w-[calc(100vw-2rem)] rounded-md border border-border bg-background p-4 text-sm text-foreground shadow-overlay-drop outline-none",
+  "z-50 w-72 max-w-[calc(100vw-2rem)] rounded-md border border-border bg-surface p-4 text-sm text-foreground shadow-overlay-drop outline-none",
   // Scale grows from the anchor side; `blur-0` is the resting filter so it interpolates
   // from blur(4px) rather than from `none`, which some browsers won't tween. Only these
   // properties change, so only these are named.

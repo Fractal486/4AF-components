@@ -185,6 +185,9 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-destructive-hover: var(--destructive-hover);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
 }
 
 :root {
@@ -217,6 +220,12 @@
   --destructive: var(--color-danger-600);
   --destructive-foreground: oklch(1 0 0);
   --destructive-hover: var(--color-danger-700);
+
+  /* Green sits at L 0.52 like danger/accent-600 — the lightest a hue carries white at AA,
+     so a white glyph reads on the success chip. The one non-neutral, non-amber, non-red
+     signal in the system; spent only on a genuine success confirmation. */
+  --success: oklch(0.52 0.13 152);
+  --success-foreground: oklch(1 0 0);
 
   /* Depth as three layered shadows: a hairline ring that behaves like a border
      but adapts to any background, then lift, then ambient spread.
@@ -280,6 +289,10 @@
   --destructive: var(--color-danger-600);
   --destructive-foreground: oklch(1 0 0);
   --destructive-hover: var(--color-danger-500);
+
+  /* Same green as light: like destructive, it holds one value across themes. */
+  --success: oklch(0.52 0.13 152);
+  --success-foreground: oklch(1 0 0);
 
   /* Layered depth is invisible against black — a single luminous ring does the work
      instead. Fighting for drop shadows here just produces grey smudge.

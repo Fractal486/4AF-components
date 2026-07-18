@@ -18,6 +18,7 @@ import { sheetEntry } from "./entries/sheet";
 import { sliderEntry } from "./entries/slider";
 import { switchEntry } from "./entries/switch";
 import { tabsEntry } from "./entries/tabs";
+import { toastEntry } from "./entries/toast";
 import { toggleEntry } from "./entries/toggle";
 import { tooltipEntry } from "./entries/tooltip";
 import type { Entry } from "./schema";
@@ -129,6 +130,13 @@ export const groups: Group[] = [
     summary:
       "A rich preview of what's behind a link, on hover and focus. Base UI PreviewCard, a CSS scale-and-blur enter.",
     entries: [hoverCardEntry],
+  },
+  {
+    slug: "toast",
+    name: "Toast",
+    summary:
+      "A stacking toast. Collapsed cards fan out on hover and swipe to dismiss — the whole stack is one CSS transform off Base UI's vars.",
+    entries: [toastEntry],
   },
   {
     slug: "sheet",

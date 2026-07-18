@@ -670,6 +670,36 @@
           "target": "@ui/hover-card.tsx"
         }
       ]
+    },
+    {
+      "name": "toast",
+      "type": "registry:ui",
+      "description": "A stacking toast. Base UI Toast behaviour (queue, timers, swipe-to-dismiss, F6 focus); the collapsed stack, hover-expand, and swipe are one CSS transform reading Base UI's --toast-* vars.",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "lucide-react",
+        "motion"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/motion.json",
+        "http://localhost:3000/r/button.json",
+        "http://localhost:3000/r/morph.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/toast/toast.tsx",
+          "type": "registry:ui",
+          "target": "@ui/toast.tsx"
+        },
+        {
+          "path": "registry/ui/toast/toast.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/toast.variants.ts"
+        }
+      ]
     }
   ]
 }
