@@ -1,11 +1,13 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
 /**
- * `status` sets the ink — the glyph and text colour — and it's the same in both variants.
- * `solid` wraps that in a translucent pill (a ~10% wash of the same hue plus a hairline
- * border); `bare` drops the box entirely and leaves just the coloured glyph and text.
- * `warning` spends the amber accent (that's what amber is *for*, a caution signal) and
- * `success` the green token. Tints are translucent so a `solid` badge sits on any surface.
+ * `status` sets the ink — the glyph and text colour — and it's the same across variants.
+ * `solid` wraps it in a translucent pill (a ~10% wash of the same hue plus a hairline
+ * border, fully rounded); `outline` is a hollow chip with the Button's `rounded-md`
+ * corners and a border but no fill; `bare` drops the box entirely, leaving just the
+ * coloured glyph and text. `warning` spends the amber accent (that's what amber is *for*,
+ * a caution signal) and `success` the green token; tints are translucent so a boxed badge
+ * sits on any surface.
  */
 export const badgeVariants = cva(
   "relative inline-flex shrink-0 items-center overflow-hidden font-medium whitespace-nowrap tabular-nums",
@@ -13,6 +15,7 @@ export const badgeVariants = cva(
     variants: {
       variant: {
         solid: "rounded-full border",
+        outline: "rounded-md border",
         bare: "",
       },
       status: {
@@ -29,16 +32,23 @@ export const badgeVariants = cva(
       },
     },
     compoundVariants: [
-      // The box (border + wash) is `solid`-only; `bare` keeps just the ink above.
+      // Height and padding shape the boxed variants; `bare` stays box-less.
+      { variant: ["solid", "outline"], size: "sm", class: "h-6 px-2" },
+      { variant: ["solid", "outline"], size: "md", class: "h-8 px-3" },
+      // `solid`: border + translucent wash.
       { variant: "solid", status: "neutral", class: "border-border bg-surface" },
       { variant: "solid", status: "info", class: "border-primary/20 bg-primary/[0.06]" },
       { variant: "solid", status: "success", class: "border-success/30 bg-success/10" },
       { variant: "solid", status: "warning", class: "border-accent-500/30 bg-accent-500/10" },
       { variant: "solid", status: "danger", class: "border-destructive/30 bg-destructive/10" },
       { variant: "solid", status: "loading", class: "border-primary/20 bg-primary/[0.06]" },
-      // Height and padding shape the pill, so they're `solid`-only too.
-      { variant: "solid", size: "sm", class: "h-6 px-2" },
-      { variant: "solid", size: "md", class: "h-8 px-3" },
+      // `outline`: border only, a touch stronger since there's no fill behind it.
+      { variant: "outline", status: "neutral", class: "border-border-strong" },
+      { variant: "outline", status: "info", class: "border-primary/25" },
+      { variant: "outline", status: "success", class: "border-success/40" },
+      { variant: "outline", status: "warning", class: "border-accent-500/40" },
+      { variant: "outline", status: "danger", class: "border-destructive/40" },
+      { variant: "outline", status: "loading", class: "border-primary/25" },
     ],
     defaultVariants: { variant: "solid", status: "neutral", size: "md" },
   },

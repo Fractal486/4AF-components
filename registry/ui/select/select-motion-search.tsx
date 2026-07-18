@@ -14,7 +14,7 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
-import { duration, spring } from "@/registry/lib/motion";
+import { duration, ease, spring } from "@/registry/lib/motion";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 
 /**
@@ -22,9 +22,10 @@ import { Checkbox } from "@/registry/ui/checkbox/checkbox";
  *
  * The behaviour stays entirely with Base UI's Combobox: filtering, typeahead, arrow-key
  * navigation, Enter/Escape, focus management, collision-aware positioning, form values,
- * and listbox ARIA. Motion only owns opening and closing: the panel reveals from the
- * input's edge, while filtering swaps rows and changes the panel size immediately.
- * With an `items` collection, Base UI keeps the first visible option highlighted on open,
+ * and listbox ARIA. Motion only owns opening and closing: the panel *unfolds its height*
+ * from the input's edge — the Motion Select's signature move, not a generic scale — while
+ * filtering resizes it (the same height spring, so results settle rather than jump). With
+ * an `items` collection, Base UI keeps the first visible option highlighted on open,
  * reopen, and after the query changes, so Enter chooses it immediately.
  *
  * It deliberately remains a Base UI portal. An inline Combobox list is always visible and
@@ -36,11 +37,6 @@ const SCROLLBAR =
   "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground";
 
 const EMPTY_ITEMS: readonly never[] = [];
-
-// Base UI updates --transform-origin to the final collision-resolved edge. Scaling from that
-// point lets the panel unfold away from the input whether it ends up above or below it.
-const PANEL_HIDDEN = { opacity: 0, scale: 0.98, filter: "blur(3px)" };
-const PANEL_VISIBLE = { opacity: 1, scale: 1, filter: "blur(0px)" };
 
 interface MotionSearchContextValue {
   open: boolean;
@@ -298,27 +294,29 @@ export function MotionSearchSelectContent({
           render={(popupProps, state) => (
             <motion.div
               {...(popupProps as unknown as HTMLMotionProps<"div">)}
-              // Base UI's positioning styles still apply; its collision-aware origin is the
-              // only positional input Motion needs for the reveal.
-              style={{
-                ...(popupProps.style as CSSProperties),
-                transformOrigin: "var(--transform-origin)",
+              // `height: auto` lets Motion measure the list itself and spring open from 0 —
+              // the Motion Select's unfold, without a manual ResizeObserver. Base UI keeps
+              // the popup below the input (side "bottom"), so its top is anchored and the
+              // height grows downward, unfolding away from the input. Height and opacity are
+              // separate from Base UI's positioning transform, so the placement is untouched.
+              style={{ ...(popupProps.style as CSSProperties), overflow: "hidden" }}
+              initial={false}
+              animate={{
+                height: state.open ? "auto" : 0,
+                opacity: state.open ? 1 : 0,
               }}
-              initial={reduceMotion ? { opacity: 0 } : PANEL_HIDDEN}
-              animate={
-                reduceMotion
-                  ? { opacity: state.open ? 1 : 0 }
-                  : state.open
-                    ? PANEL_VISIBLE
-                    : PANEL_HIDDEN
-              }
               transition={
                 reduceMotion
                   ? { duration: 0 }
                   : {
-                      opacity: { duration: duration.fast },
-                      scale: spring.clean,
-                      filter: { duration: duration.fast },
+                      // Spring on open and on every filter resize (both `open`), so results
+                      // settle smoothly; fold quickly on close.
+                      height: state.open
+                        ? { type: "spring", duration: 0.24, bounce: 0 }
+                        : { duration: 0.16, ease: ease.out, delay: 0.02 },
+                      opacity: state.open
+                        ? { duration: duration.fast }
+                        : { duration: duration.fast, delay: 0.04 },
                     }
               }
             />

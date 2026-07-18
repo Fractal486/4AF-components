@@ -91,6 +91,11 @@ export interface BadgeProps
   /** Overrides the status glyph. Pass `null` with `showIcon` to render text only. */
   icon?: ReactNode;
   showIcon?: boolean;
+  /**
+   * Show a small status-coloured circle on the left instead of the icon — the quiet,
+   * dashboard-style indicator (available on every variant). Wins over `icon`/`showIcon`.
+   */
+  dot?: boolean;
   /** Forces a label roll when the text stays the same object but should re-animate. */
   contentKey?: string | number;
 }
@@ -102,6 +107,7 @@ export function Badge({
   children,
   icon,
   showIcon = true,
+  dot = false,
   contentKey,
   className,
   ...rest
@@ -124,27 +130,37 @@ export function Badge({
       className={cn(badgeVariants({ variant, status, size }), "transition-colors duration-(--duration-base)", className)}
       {...rest}
     >
-      {showIcon && (icon !== null) && (
-        <span className="relative z-10 inline-flex items-center justify-center overflow-hidden">
-          <AnimatePresence mode="popLayout" initial={false}>
-            <motion.span
-              key={resolvedStatus}
-              aria-hidden
-              variants={ICON_ROLL}
-              initial={reduce ? false : "initial"}
-              animate={reduce ? { opacity: 1 } : "animate"}
-              exit={reduce ? undefined : "exit"}
-              className="inline-flex"
-            >
-              {icon ??
-                (resolvedStatus === "loading" ? (
-                  <LoaderCircle className={cn(ICON_SIZE[resolvedSize], "animate-spin")} />
-                ) : (
-                  <Icon className={ICON_SIZE[resolvedSize]} />
-                ))}
-            </motion.span>
-          </AnimatePresence>
-        </span>
+      {dot ? (
+        // A plain status dot — same shape whatever the status, so it doesn't roll; only
+        // its colour crosses over (it rides the badge's `transition-colors`).
+        <span
+          aria-hidden
+          className="relative z-10 size-1.5 shrink-0 rounded-full bg-current transition-[background-color] duration-(--duration-base)"
+        />
+      ) : (
+        showIcon &&
+        icon !== null && (
+          <span className="relative z-10 inline-flex items-center justify-center overflow-hidden">
+            <AnimatePresence mode="popLayout" initial={false}>
+              <motion.span
+                key={resolvedStatus}
+                aria-hidden
+                variants={ICON_ROLL}
+                initial={reduce ? false : "initial"}
+                animate={reduce ? { opacity: 1 } : "animate"}
+                exit={reduce ? undefined : "exit"}
+                className="inline-flex"
+              >
+                {icon ??
+                  (resolvedStatus === "loading" ? (
+                    <LoaderCircle className={cn(ICON_SIZE[resolvedSize], "animate-spin")} />
+                  ) : (
+                    <Icon className={ICON_SIZE[resolvedSize]} />
+                  ))}
+              </motion.span>
+            </AnimatePresence>
+          </span>
+        )
       )}
 
       {children != null && (
