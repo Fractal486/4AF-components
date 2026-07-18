@@ -435,6 +435,33 @@
       ]
     },
     {
+      "name": "badge",
+      "type": "registry:ui",
+      "description": "A status badge that rolls its glyph and label over on change, and springs to the new width. Motion for the exit/roll and layout; tokens for the status tints (amber warning, green success).",
+      "dependencies": [
+        "class-variance-authority",
+        "lucide-react",
+        "motion"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/motion.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/badge/badge.tsx",
+          "type": "registry:ui",
+          "target": "@ui/badge.tsx"
+        },
+        {
+          "path": "registry/ui/badge/badge.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/badge.variants.ts"
+        }
+      ]
+    },
+    {
       "name": "text-shimmer",
       "type": "registry:ui",
       "description": "Text with a highlight sweeping across it \u2014 a looping working-in-progress affordance. Gradient clipped to the glyphs, switched off (not sped up) under reduced motion.",

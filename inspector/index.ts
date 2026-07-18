@@ -1,5 +1,6 @@
 import { actionButtonEntry } from "./entries/action-button";
 import { alertDialogEntry } from "./entries/alert-dialog";
+import { badgeEntry } from "./entries/badge";
 import { buttonEntry } from "./entries/button";
 import { checkboxEntry } from "./entries/checkbox";
 import { copyButtonEntry } from "./entries/copy-button";
@@ -94,6 +95,12 @@ export const groups: Group[] = [
     name: "Progress",
     summary: "A determinate bar whose fill slides on transform, never width.",
     entries: [progressEntry],
+  },
+  {
+    slug: "badge",
+    name: "Badge",
+    summary: "A status label that rolls its glyph and text over when the status changes.",
+    entries: [badgeEntry],
   },
   {
     slug: "select",

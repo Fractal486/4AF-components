@@ -12,19 +12,21 @@ export const sliderEntry = defineEntry({
     thumb: select(THUMBS, "bar", "Thumb"),
     size: select(SIZES, "md", "Size"),
     label: text("Volume", "Label"),
+    max: num(100, { min: 10, max: 500, step: 10, label: "Max" }),
     step: num(10, { min: 1, max: 25, step: 1, label: "Step" }),
     showTicks: bool(true, "Show ticks"),
     disabled: bool(false),
   },
-  render({ thumb, size, label, step, showTicks, disabled }) {
+  render({ thumb, size, label, max, step, showTicks, disabled }) {
     return (
       <div className="w-full max-w-sm">
         <Slider
-          key={`${thumb}-${size}-${step}-${showTicks}-${disabled}`}
+          key={`${thumb}-${size}-${max}-${step}-${showTicks}-${disabled}`}
           thumb={thumb}
           size={size}
           label={label.trim() || undefined}
           defaultValue={DEFAULT_VALUE}
+          max={max}
           step={step}
           showTicks={showTicks}
           disabled={disabled}
