@@ -1,4 +1,5 @@
 import { actionButtonEntry } from "./entries/action-button";
+import { alertDialogEntry } from "./entries/alert-dialog";
 import { buttonEntry } from "./entries/button";
 import { checkboxEntry } from "./entries/checkbox";
 import { copyButtonEntry } from "./entries/copy-button";
@@ -103,8 +104,9 @@ export const groups: Group[] = [
     slug: "dialog",
     name: "Dialog",
     summary:
-      "A modal centred over the page. Scales in from a blur, fades out, and can optionally be phased with step navigation.",
-    entries: [dialogEntry],
+      "A modal centred over the page. The plain dialog scales in from a blur and can be phased with step navigation; the alert dialog is its decision-forcing sibling — same surface, but it can't be dismissed by clicking away.",
+    entries: [dialogEntry, alertDialogEntry],
+    stacked: true,
   },
   {
     slug: "popover",
