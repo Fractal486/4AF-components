@@ -33,6 +33,14 @@ export interface ButtonProps
   asChild?: boolean;
   /** Swaps in a spinner and blocks interaction, without changing the button's size. */
   loading?: boolean;
+  /**
+   * Holds the button in its pressed state — e.g. while a popover or menu it triggers is
+   * open, so the trigger reads as "held down" for as long as its surface is showing. It's
+   * the same spring as the tap press, and it *replaces* the tap press while held (rather
+   * than layering on top), so pressing an already-held button to dismiss doesn't compound
+   * the scale or fight a second timing curve on the way back up.
+   */
+  pressed?: boolean;
   /** Announced while `loading`, since the visible label is hidden from sight. */
   loadingLabel?: string;
   children?: ReactNode;
@@ -50,6 +58,7 @@ export function Button({
   asChild = false,
   loading = false,
   loadingLabel = "Loading",
+  pressed = false,
   disabled,
   children,
   ref,
@@ -100,6 +109,10 @@ export function Button({
         buttonVariants({ variant, size }),
         asChild &&
           "transition-[background-color,box-shadow,color,opacity,scale] active:scale-[0.95] motion-reduce:active:scale-100",
+        // Held state for the CSS-press (`asChild`) path. `scale` is a single CSS
+        // property, so this and `active:scale-[0.95]` resolve to one value (0.95) rather
+        // than multiplying — no compounding when a held button is pressed to dismiss.
+        asChild && pressed && "scale-[0.95] motion-reduce:scale-100",
         className,
       )}
       disabled={isDisabled}
@@ -110,6 +123,7 @@ export function Button({
       data-variant={variant ?? "primary"}
       data-size={size ?? "md"}
       data-loading={loading || undefined}
+      data-pressed={pressed || undefined}
       data-icon-start={icons.start || undefined}
       data-icon-end={icons.end || undefined}
       aria-busy={loading || undefined}
@@ -119,7 +133,11 @@ export function Button({
         // Motion cannot wrap an arbitrary child without creating invalid nested DOM.
         const motionProps = buttonProps as HTMLMotionProps<"button">;
         const pressProps = {
-          whileTap: reduceMotion || isDisabled ? undefined : { scale: PRESS_SCALE },
+          // While `pressed`, the tap is suppressed and the hold owns the scale — one
+          // property (Motion's transform), one spring — so pressing to dismiss doesn't
+          // stack a second 0.95 or hand the scale-back-up to a different timing curve.
+          whileTap: reduceMotion || isDisabled || pressed ? undefined : { scale: PRESS_SCALE },
+          animate: reduceMotion ? undefined : { scale: pressed ? PRESS_SCALE : 1 },
           transition: spring.press,
         };
 

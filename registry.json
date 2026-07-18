@@ -615,6 +615,25 @@
           "target": "@ui/popover.tsx"
         }
       ]
+    },
+    {
+      "name": "hover-card",
+      "type": "registry:ui",
+      "description": "A rich preview of what is behind a link, on hover and focus. Base UI PreviewCard behaviour with a CSS scale-and-blur enter from the trigger edge.",
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/hover-card/hover-card.tsx",
+          "type": "registry:ui",
+          "target": "@ui/hover-card.tsx"
+        }
+      ]
     }
   ]
 }

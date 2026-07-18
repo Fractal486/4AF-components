@@ -23,19 +23,16 @@ export const popoverEntry = defineEntry({
   render({ side, modal }) {
     return (
       <Popover modal={modal}>
+        {/* `pressed` holds the trigger down for as long as the panel is open — the
+            trigger's render function hands us Base UI's open state, so it's driven by the
+            same source that controls the popover. One Motion spring owns the scale, so
+            pressing the held button to dismiss doesn't compound or hitch on the way up. */}
         <PopoverTrigger
-          render={
-            <Button
-              variant="outline"
-              // Stay pressed while the panel is open: `scale-95` sets the CSS `scale`
-              // property (Tailwind v4), which composes with the transform Motion's press
-              // writes — so it settles into the held depth as the press releases and
-              // springs back on close. `PRESS_SCALE` is 0.95, so the two depths match.
-              className="transition-[scale] duration-(--duration-base) ease-out data-[popup-open]:scale-95"
-            >
+          render={(props, state) => (
+            <Button {...props} variant="outline" pressed={state.open}>
               Dimensions
             </Button>
-          }
+          )}
         />
         <PopoverContent side={side}>
           <PopoverHeader>

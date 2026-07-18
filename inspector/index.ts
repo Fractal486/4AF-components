@@ -4,6 +4,7 @@ import { buttonEntry } from "./entries/button";
 import { checkboxEntry } from "./entries/checkbox";
 import { copyButtonEntry } from "./entries/copy-button";
 import { dialogEntry } from "./entries/dialog";
+import { hoverCardEntry } from "./entries/hover-card";
 import { inputEntry } from "./entries/input";
 import { morphEntry } from "./entries/morph";
 import { popoverEntry } from "./entries/popover";
@@ -114,6 +115,13 @@ export const groups: Group[] = [
     summary:
       "An interactive panel anchored to a trigger. Scales in from the trigger edge; not modal unless asked.",
     entries: [popoverEntry],
+  },
+  {
+    slug: "hover-card",
+    name: "Hover Card",
+    summary:
+      "A rich preview of what's behind a link, on hover and focus. Base UI PreviewCard, a CSS scale-and-blur enter.",
+    entries: [hoverCardEntry],
   },
   {
     slug: "sheet",
