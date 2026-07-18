@@ -16,6 +16,7 @@ import { selectEntry } from "./entries/select";
 import { selectMotionEntry } from "./entries/select-motion";
 import { selectMotionSearchEntry } from "./entries/select-motion-search";
 import { selectSearchEntry } from "./entries/select-search";
+import { selectSortEntry } from "./entries/select-sort";
 import { sheetEntry } from "./entries/sheet";
 import { sliderEntry } from "./entries/slider";
 import { switchEntry } from "./entries/switch";
@@ -107,8 +108,14 @@ export const groups: Group[] = [
     slug: "select",
     name: "Select",
     summary:
-      "A panel of options off a trigger. BaseUI fades a panel in and can check several; BaseUI Search filters as you type and can check several; Motion unfolds one or checks several; Motion Search unfolds from the field and can check several.",
-    entries: [selectEntry, selectSearchEntry, selectMotionEntry, selectMotionSearchEntry],
+      "A panel of options off a trigger. BaseUI fades a panel in and can check several; BaseUI Search filters as you type and can check several; Motion unfolds one or checks several; Motion Search unfolds from the field and can check several; Sort is a compact chip that shows its picks and dashes its border until you choose.",
+    entries: [
+      selectEntry,
+      selectSearchEntry,
+      selectMotionEntry,
+      selectMotionSearchEntry,
+      selectSortEntry,
+    ],
     stacked: true,
   },
   {

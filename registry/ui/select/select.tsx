@@ -5,14 +5,17 @@ import { Check, ChevronDown } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import {
   createContext,
+  Fragment,
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
   type ComponentProps,
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
+import { Button } from "@/registry/ui/button/button";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 
 /**
@@ -34,17 +37,29 @@ import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 interface SelectContextValue {
   open: boolean;
   multiple: boolean;
+  /** The current selection, always as an array (one entry for single-select). */
+  values: unknown[];
   registerIcon: (value: unknown, icon: ReactNode | undefined) => void;
   unregisterIcon: (value: unknown) => void;
   iconFor: (value: unknown) => ReactNode | undefined;
+  registerLabel: (value: unknown, label: ReactNode) => void;
+  unregisterLabel: (value: unknown) => void;
+  labelFor: (value: unknown) => ReactNode | undefined;
+  /** Reset the selection to none (single → null, multiple → empty). */
+  clear: () => void;
 }
 
 const SelectContext = createContext<SelectContextValue>({
   open: false,
   multiple: false,
+  values: [],
   registerIcon: () => {},
   unregisterIcon: () => {},
   iconFor: () => undefined,
+  registerLabel: () => {},
+  unregisterLabel: () => {},
+  labelFor: () => undefined,
+  clear: () => {},
 });
 
 const EASE_OUT = [0.16, 1, 0.3, 1] as const;
@@ -69,6 +84,9 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   open,
   defaultOpen,
   onOpenChange,
+  value,
+  defaultValue,
+  onValueChange,
   children,
   multiple,
   iconForValue,
@@ -77,6 +95,69 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   const [uncontrolled, setUncontrolled] = useState(defaultOpen ?? false);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : uncontrolled;
+
+  // Mirror the selection so a trigger can read it for its own display and styling — a
+  // filter chip that shows its picks and dashes its border while nothing is chosen. Base
+  // UI stays the source of truth via `value`/`onValueChange`; this just tracks a copy.
+  const isValueControlled = value !== undefined;
+  // `null` (not `undefined`) for an empty single-select, so Base UI stays controlled from
+  // the first render rather than flipping controlled↔uncontrolled when a value lands.
+  const [uncontrolledValue, setUncontrolledValue] = useState<Value | Value[] | null>(
+    () => (defaultValue ?? (multiple ? ([] as Value[]) : null)) as Value | Value[] | null,
+  );
+  const currentValue = isValueControlled ? value : uncontrolledValue;
+  const values = useMemo<unknown[]>(
+    () =>
+      multiple
+        ? Array.isArray(currentValue)
+          ? currentValue
+          : []
+        : currentValue == null
+          ? []
+          : [currentValue],
+    [currentValue, multiple],
+  );
+  const handleValueChange = useCallback<
+    NonNullable<SelectProps<Value, Multiple>["onValueChange"]>
+  >(
+    (next, details) => {
+      onValueChange?.(next, details);
+      if (!isValueControlled) setUncontrolledValue(next as Value | Value[]);
+    },
+    [isValueControlled, onValueChange],
+  );
+
+  const [labels, setLabels] = useState<Map<unknown, ReactNode>>(() => new Map());
+  const registerLabel = useCallback((v: unknown, label: ReactNode) => {
+    setLabels((current) => {
+      if (label == null) {
+        if (!current.has(v)) return current;
+        const next = new Map(current);
+        next.delete(v);
+        return next;
+      }
+
+      if (Object.is(current.get(v), label)) return current;
+      return new Map(current).set(v, label);
+    });
+  }, []);
+  const unregisterLabel = useCallback((v: unknown) => {
+    setLabels((current) => {
+      if (!current.has(v)) return current;
+      const next = new Map(current);
+      next.delete(v);
+      return next;
+    });
+  }, []);
+  const labelFor = useCallback((v: unknown) => labels.get(v), [labels]);
+
+  const clear = useCallback(() => {
+    const empty = (multiple ? ([] as Value[]) : null) as Value | Value[] | null;
+    if (!isValueControlled) setUncontrolledValue(empty);
+    // Notify a controlled consumer. A manual clear has no Base UI event details.
+    (onValueChange as ((v: never, d?: never) => void) | undefined)?.(empty as never);
+  }, [isValueControlled, multiple, onValueChange]);
+
   const [icons, setIcons] = useState<Map<unknown, ReactNode>>(() => new Map());
   const registerIcon = useCallback((value: unknown, icon: ReactNode | undefined) => {
     setIcons((current) => {
@@ -121,9 +202,14 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
       value={{
         open: isOpen,
         multiple: Boolean(multiple),
+        values,
         registerIcon,
         unregisterIcon,
         iconFor,
+        registerLabel,
+        unregisterLabel,
+        labelFor,
+        clear,
       }}
     >
       <BaseSelect.Root
@@ -131,6 +217,8 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
         onOpenChange={handleOpenChange}
         defaultOpen={defaultOpen}
         multiple={multiple}
+        value={currentValue as never}
+        onValueChange={handleValueChange as never}
         {...props}
       >
         {children}
@@ -228,18 +316,154 @@ export function SelectTrigger({
   );
 }
 
+export interface SelectSortTriggerProps
+  extends Omit<ComponentProps<typeof BaseSelect.Trigger>, "className" | "children"> {
+  className?: string;
+  /** A leading icon. Optional — omit for a text-only chip. */
+  icon?: ReactNode;
+  /** A prefix, e.g. "Sort" or "Status", shown before the value(s). Optional. */
+  label?: ReactNode;
+  /** Draw the border and fill. Off makes it a borderless text button. */
+  outline?: boolean;
+  /** Append the selected value(s) after the label — "Status: Active, Paused". */
+  showValue?: boolean;
+  /** Shown (muted) in place of the value(s) while nothing is selected. */
+  placeholder?: ReactNode;
+}
+
+/**
+ * A sort / filter chip trigger — the toolbar counterpart to the full-width `SelectTrigger`.
+ *
+ * It sizes to its content and reads its own selection from context, so it can show the
+ * picked value(s) after an optional label ("Status: Active, Paused"), and — while the
+ * selection is empty (no active sort/filter) — dash its border to read as "unset". A
+ * brighter fill marks the open panel. Every part is optional: with just `icon` and the
+ * chevron and label/value off, it collapses to the plain icon button. Works in `multiple`
+ * mode for filters, where the value list is what's shown.
+ */
+export function SelectSortTrigger({
+  className,
+  icon,
+  label,
+  outline = true,
+  showValue = true,
+  placeholder = "Any",
+  ...props
+}: SelectSortTriggerProps) {
+  const { open, values, labelFor } = useContext(SelectContext);
+  const reduceMotion = useReducedMotion();
+  const selected = values.map((v) => labelFor(v) ?? (typeof v === "string" ? v : String(v)));
+  const isUnset = selected.length === 0;
+  // With no label and no value shown, the chip is a bare icon button — the chevron would
+  // be the only text-ish thing, so drop it and let the icon stand alone.
+  const iconOnly = !label && !showValue;
+  const showChevron = !iconOnly;
+
+  return (
+    <BaseSelect.Trigger
+      data-unset={isUnset || undefined}
+      className={cn(
+        "group inline-flex h-9 max-w-full cursor-pointer items-center gap-2 rounded-md px-3 text-sm text-foreground outline-none select-none",
+        "transition-[background-color,border-color] duration-(--duration-base) ease-out",
+        "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
+        outline
+          ? cn(
+              "border hover:border-border-strong",
+              // Unset: dashed border on the plain surface. Set: solid border and a brighter
+              // fill that persists (the chip reads as "active"). Open keeps that fill too.
+              isUnset
+                ? "border-dashed border-border-strong bg-surface"
+                : "border-border bg-muted",
+              "data-[popup-open]:border-border-strong data-[popup-open]:bg-muted",
+            )
+          : "hover:bg-muted data-[popup-open]:bg-muted",
+        className,
+      )}
+      {...props}
+    >
+      {icon && (
+        <span
+          aria-hidden
+          className={cn(
+            "shrink-0 [&>svg]:size-4",
+            // Icon-only chip: the glyph carries the state, so it brightens to the
+            // foreground once something's selected. Otherwise it stays a muted adornment.
+            iconOnly && !isUnset ? "text-foreground" : "text-muted-foreground",
+          )}
+        >
+          {icon}
+        </span>
+      )}
+      {(label || showValue) && (
+        <span className="min-w-0 truncate">
+          {label && (
+            <span className={isUnset && !showValue ? "text-muted-foreground" : undefined}>
+              {label}
+            </span>
+          )}
+          {showValue &&
+            (isUnset ? (
+              <span className="text-muted-foreground">
+                {label ? ": " : null}
+                {placeholder}
+              </span>
+            ) : (
+              <span className="text-foreground">
+                {label ? <span className="text-muted-foreground">: </span> : null}
+                {selected.map((item, index) => (
+                  <Fragment key={index}>
+                    {index > 0 ? ", " : null}
+                    {item}
+                  </Fragment>
+                ))}
+              </span>
+            ))}
+        </span>
+      )}
+      {showChevron && (
+        // Same Motion spring as `SelectTrigger`, so the two chevrons flip identically.
+        <motion.span
+          aria-hidden
+          className="shrink-0 text-muted-foreground"
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={
+            reduceMotion ? { duration: 0 } : { type: "spring", duration: 0.4, bounce: 0 }
+          }
+        >
+          <ChevronDown className="size-4" />
+        </motion.span>
+      )}
+    </BaseSelect.Trigger>
+  );
+}
+
 export function SelectContent({
   className,
   children,
   sideOffset = 6,
+  align = "start",
+  width = "trigger",
+  clearable = false,
+  clearLabel = "Clear",
   ...props
 }: Omit<ComponentProps<typeof BaseSelect.Popup>, "className"> & {
   className?: string;
   children?: ReactNode;
   sideOffset?: number;
+  align?: ComponentProps<typeof BaseSelect.Positioner>["align"];
+  /**
+   * `trigger` locks the panel to the trigger's width (the default full-width select);
+   * `content` lets it size to its rows with a min — for a narrow trigger like the sort chip.
+   */
+  width?: "trigger" | "content";
+  /** A full-width footer button that resets the selection to none. */
+  clearable?: boolean;
+  /** Text for the clear button. */
+  clearLabel?: ReactNode;
 }) {
   const reduceMotion = useReducedMotion();
-  const { open } = useContext(SelectContext);
+  const { open, values, clear } = useContext(SelectContext);
 
   return (
     <BaseSelect.Portal>
@@ -248,9 +472,13 @@ export function SelectContent({
           lands on. */}
       <BaseSelect.Positioner
         sideOffset={sideOffset}
+        align={align}
         alignItemWithTrigger={false}
         side="bottom"
-        className="z-50 w-[var(--anchor-width)] outline-none"
+        className={cn(
+          "z-50 outline-none",
+          width === "trigger" ? "w-[var(--anchor-width)]" : "min-w-36",
+        )}
       >
         {/* The animation is driven off the `open` state, not Motion's mount: Base UI keeps
             the popup mounted in the DOM after the first open, so a mount-time
@@ -288,6 +516,23 @@ export function SelectContent({
           >
             <BaseSelect.List>{children}</BaseSelect.List>
           </div>
+          {clearable && (
+            // A footer, not a listbox row — pinned below the scroll area, and disabled
+            // while there's nothing to clear. Clearing leaves the panel open so a new
+            // choice can follow immediately.
+            <div className="p-1">
+              <Button
+                variant="outline"
+                disabled={values.length === 0}
+                onClick={() => clear()}
+                // Match a row's highlight box exactly (`rounded-xs px-2.5 py-1.5 text-sm`),
+                // so the clear button lines up with the options above it.
+                className="h-auto w-full rounded-xs px-2.5 py-1.5 text-sm"
+              >
+                {clearLabel}
+              </Button>
+            </div>
+          )}
         </BaseSelect.Popup>
       </BaseSelect.Positioner>
     </BaseSelect.Portal>
@@ -321,12 +566,19 @@ export function SelectItem({
   value,
   ...props
 }: SelectItemProps) {
-  const { multiple, registerIcon, unregisterIcon } = useContext(SelectContext);
+  const { multiple, registerIcon, unregisterIcon, registerLabel, unregisterLabel } =
+    useContext(SelectContext);
 
   useEffect(() => {
     registerIcon(value, icon);
     return () => unregisterIcon(value);
   }, [icon, registerIcon, unregisterIcon, value]);
+
+  // Register the label so a chip trigger can render the selected value(s) by name.
+  useEffect(() => {
+    registerLabel(value, children);
+    return () => unregisterLabel(value);
+  }, [children, registerLabel, unregisterLabel, value]);
 
   if (multiple) {
     return (
