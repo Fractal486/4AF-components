@@ -5,6 +5,7 @@ import { buttonEntry } from "./entries/button";
 import { checkboxEntry } from "./entries/checkbox";
 import { copyButtonEntry } from "./entries/copy-button";
 import { dialogEntry } from "./entries/dialog";
+import { dropdownMenuEntry } from "./entries/dropdown-menu";
 import { hoverCardEntry } from "./entries/hover-card";
 import { inputEntry } from "./entries/input";
 import { morphEntry } from "./entries/morph";
@@ -137,6 +138,13 @@ export const groups: Group[] = [
     summary:
       "A rich preview of what's behind a link, on hover and focus. Base UI PreviewCard, a CSS scale-and-blur enter.",
     entries: [hoverCardEntry],
+  },
+  {
+    slug: "dropdown-menu",
+    name: "Dropdown Menu",
+    summary:
+      "A menu off a trigger, with a highlight that slides between items. Checkbox and radio items, submenus, shortcuts.",
+    entries: [dropdownMenuEntry],
   },
   {
     slug: "toast",
