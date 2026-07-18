@@ -114,25 +114,59 @@ export function DropdownMenuItem({
   );
 }
 
+export interface DropdownMenuCheckboxItemProps
+  extends Omit<ComponentProps<typeof BaseMenu.CheckboxItem>, "render" | "children"> {
+  /**
+   * `children` may be a function of the checked state — return a different icon and label
+   * for each, so a `menuitemcheckbox` can read as a toggle button (Bookmark ⇄ Bookmarked)
+   * rather than a ticked row.
+   */
+  children?: ReactNode | ((checked: boolean) => ReactNode);
+  /**
+   * The built-in left tick and its `pl-8` indent. Turn it off when the toggle state is
+   * carried by the label/icon instead (the bookmark case).
+   */
+  indicator?: boolean;
+  /**
+   * Fill the item's icon when checked instead of morphing it — the same glyph, only its
+   * weight changing (bookmark, star, heart). It's a `fill` transition on the one element
+   * (no swap), which is the honest choice when there's nothing to morph *to*. This is the
+   * Toggle's `fillIcon`. Pair with `indicator={false}` so the fill *is* the state.
+   */
+  fillIcon?: boolean;
+}
+
 export function DropdownMenuCheckboxItem({
   className,
   children,
+  indicator = true,
+  fillIcon = false,
   ...props
-}: Omit<ComponentProps<typeof BaseMenu.CheckboxItem>, "render" | "children"> & { children?: ReactNode }) {
+}: DropdownMenuCheckboxItemProps) {
   return (
     <BaseMenu.CheckboxItem
-      className={cn(itemBase, "pr-2 pl-8", className)}
-      // Render function to read `checked`, so the tick can Morph in and out (draw itself
-      // in, blur out) instead of snapping — the same swap the copy button uses.
+      className={cn(
+        itemBase,
+        indicator && "pr-2 pl-8",
+        fillIcon && [
+          "[&_svg]:transition-[fill] [&_svg]:duration-(--duration-fast) [&_svg]:ease-out",
+          "data-[checked]:[&_svg]:fill-current",
+        ],
+        className,
+      )}
+      // Render function to read `checked`: the tick can Morph in and out (draw itself in,
+      // blur out) instead of snapping, and `children` can swap on it.
       render={(itemProps, state) => (
         <div {...itemProps}>
-          <span className="pointer-events-none absolute left-2 flex size-4 items-center justify-center">
-            <Morph
-              activeKey={state.checked ? "on" : "off"}
-              items={{ on: <Check className="size-4" />, off: null }}
-            />
-          </span>
-          {children}
+          {indicator && (
+            <span className="pointer-events-none absolute left-2 flex size-4 items-center justify-center">
+              <Morph
+                activeKey={state.checked ? "on" : "off"}
+                items={{ on: <Check className="size-4" />, off: null }}
+              />
+            </span>
+          )}
+          {typeof children === "function" ? children(state.checked) : children}
         </div>
       )}
       {...props}

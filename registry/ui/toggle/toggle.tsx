@@ -97,10 +97,6 @@ export function Toggle({
           // on a 16px glyph, so it's cheap, and there's no transform that fakes it.
           "[&_svg]:transition-[fill] [&_svg]:duration-(--duration-fast) [&_svg]:ease-out",
           "data-[pressed]:[&_svg]:fill-current",
-          // The pop is what sells it. A fill that just appears reads as a re-render;
-          // a fill that swells and settles reads as a thing you did. It runs on the
-          // state change because the class only exists while pressed.
-          "data-[pressed]:[&_svg]:animate-icon-pop",
         ],
         className,
       )}

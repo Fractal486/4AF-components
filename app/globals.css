@@ -217,7 +217,10 @@
   --primary-foreground: var(--color-neutral-50);
   --primary-hover: var(--color-neutral-800);
 
-  --destructive: var(--color-danger-600);
+  /* A touch brighter than danger-600 (the AA-for-white floor): lighter L and a hair more
+     chroma so the button reads more vivid. White text now sits a little under AA 4.5 —
+     the deliberate trade for the brighter red. */
+  --destructive: oklch(0.6 0.225 26);
   --destructive-foreground: oklch(1 0 0);
   --destructive-hover: var(--color-danger-700);
 
@@ -286,7 +289,10 @@
      dark ink to pass contrast, and dark-on-red reads as a warning label, not a
      button. So dark mode holds destructive at the same L 0.52 as light mode,
      where white text clears AA and the button still reads as a button. */
-  --destructive: var(--color-danger-600);
+  /* A touch brighter than danger-600 (the AA-for-white floor): lighter L and a hair more
+     chroma so the button reads more vivid. White text now sits a little under AA 4.5 —
+     the deliberate trade for the brighter red. */
+  --destructive: oklch(0.6 0.225 26);
   --destructive-foreground: oklch(1 0 0);
   --destructive-hover: var(--color-danger-500);
 

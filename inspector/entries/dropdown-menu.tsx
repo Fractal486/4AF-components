@@ -1,5 +1,6 @@
-import { CreditCard, Download, LogOut, Settings, Trash2, Upload, User } from "lucide-react";
+import { Bookmark, CreditCard, Download, LogOut, Settings, Trash2, Upload, User } from "lucide-react";
 import { Button } from "@/registry/ui/button/button";
+import { Morph } from "@/registry/ui/morph/morph";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -50,6 +51,25 @@ export const dropdownMenuEntry = defineEntry({
               Settings
             </DropdownMenuItem>
           </DropdownMenuGroup>
+
+          <DropdownMenuSeparator />
+
+          {/* A toggle button: no left tick. `fillIcon` fills the one bookmark glyph on
+              check (a fill transition, not a morph); the label text-morphs between states. */}
+          <DropdownMenuCheckboxItem fillIcon indicator={false}>
+            {(checked) => (
+              <>
+                <Bookmark />
+                <Morph
+                  // Left-align both states (the shorter one would otherwise sit centred
+                  // in the reserved width of the longer).
+                  className="place-items-start"
+                  activeKey={checked ? "on" : "off"}
+                  items={{ on: "Bookmarked", off: "Bookmark" }}
+                />
+              </>
+            )}
+          </DropdownMenuCheckboxItem>
 
           <DropdownMenuSeparator />
 
