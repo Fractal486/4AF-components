@@ -42,7 +42,7 @@ export function Controls<S extends ControlSchema>({
 function Control({
   id,
   def,
-  value,
+  value: rawValue,
   onChange,
 }: {
   id: string;
@@ -50,6 +50,12 @@ function Control({
   value: unknown;
   onChange: (value: unknown) => void;
 }) {
+  // Fall back to the def's own default when the stored value is missing. This keeps every
+  // control *controlled* from its first render even if the persisted `values` predates
+  // this key — which is what happens when a new control is added to a schema mid-session
+  // and Fast Refresh keeps the old state around. Without it, the field flips from
+  // uncontrolled to controlled and Base UI (rightly) warns.
+  const value = rawValue === undefined ? def.defaultValue : rawValue;
   const label = def.label ?? id;
 
   if (def.kind === "boolean") {

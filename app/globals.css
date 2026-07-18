@@ -140,6 +140,22 @@
       scale: 1;
     }
   }
+
+  /* A highlight sweeping across text — a looping "working…" affordance. The duration is
+     a literal, not a --duration-* token: those collapse to 1ms under reduced motion, and
+     a 1ms loop is a strobe. Reduced-motion users get it switched off instead
+     (motion-reduce:animate-none), leaving a legible static gradient. The per-instance
+     `duration` prop feeds --text-shimmer-duration. */
+  --animate-text-shimmer: text-shimmer var(--text-shimmer-duration, 2.5s) linear infinite;
+
+  @keyframes text-shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
 }
 
 /* ---------------------------------------------------------------------------
@@ -182,6 +198,11 @@
   --foreground: var(--color-neutral-950);
   --muted-foreground: var(--color-neutral-600);
   --subtle-foreground: var(--color-neutral-500);
+
+  /* The text-shimmer sweep. A "brighter highlight" means *lighter* in light mode, so the
+     base is full-strength ink and the highlight is a pale sheen passing over it. */
+  --text-shimmer-base: var(--foreground);
+  --text-shimmer-highlight: var(--color-neutral-400);
 
   --border: var(--color-neutral-200);
   --border-strong: var(--color-neutral-300);
@@ -235,6 +256,11 @@
   --foreground: var(--color-neutral-50);
   --muted-foreground: var(--color-neutral-400);
   --subtle-foreground: var(--color-neutral-500);
+
+  /* On black there's nothing brighter than the foreground, so the base is *dimmed* to a
+     muted grey and the highlight is pure white — the sweep reads as the text brightening. */
+  --text-shimmer-base: var(--muted-foreground);
+  --text-shimmer-highlight: oklch(1 0 0);
 
   --border: oklch(0.235 0 0); /* #1E1E1E — component outline */
   --border-strong: oklch(0.285 0 0); /* #2A2A2A */

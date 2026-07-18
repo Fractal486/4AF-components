@@ -416,6 +416,42 @@
       ]
     },
     {
+      "name": "progress",
+      "type": "registry:ui",
+      "description": "A determinate progress bar. Base UI Progress behaviour; the fill slides on transform (translateX), never width, so it stays off the layout path.",
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/progress/progress.tsx",
+          "type": "registry:ui",
+          "target": "@ui/progress.tsx"
+        }
+      ]
+    },
+    {
+      "name": "text-shimmer",
+      "type": "registry:ui",
+      "description": "Text with a highlight sweeping across it \u2014 a looping working-in-progress affordance. Gradient clipped to the glyphs, switched off (not sped up) under reduced motion.",
+      "dependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/text-shimmer/text-shimmer.tsx",
+          "type": "registry:ui",
+          "target": "@ui/text-shimmer.tsx"
+        }
+      ]
+    },
+    {
       "name": "select",
       "type": "registry:ui",
       "description": "A single or multi-select on Base UI \u00e2\u20ac\u201d keyboard, typeahead and collision-aware positioning \u00e2\u20ac\u201d whose panel blurs and scales in from the trigger. Multi-select keeps the panel open while animated checkbox rows are toggled.",

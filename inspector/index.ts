@@ -8,6 +8,7 @@ import { hoverCardEntry } from "./entries/hover-card";
 import { inputEntry } from "./entries/input";
 import { morphEntry } from "./entries/morph";
 import { popoverEntry } from "./entries/popover";
+import { progressEntry } from "./entries/progress";
 import { radioEntry } from "./entries/radio";
 import { selectEntry } from "./entries/select";
 import { selectMotionEntry } from "./entries/select-motion";
@@ -86,6 +87,12 @@ export const groups: Group[] = [
     name: "Slider",
     summary: "A spring-glided thumb — a thin bar or a round knob — that grabs while held.",
     entries: [sliderEntry],
+  },
+  {
+    slug: "progress",
+    name: "Progress",
+    summary: "A determinate bar whose fill slides on transform, never width.",
+    entries: [progressEntry],
   },
   {
     slug: "select",
