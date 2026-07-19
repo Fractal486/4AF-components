@@ -559,7 +559,7 @@
     {
       "name": "select",
       "type": "registry:ui",
-      "description": "A single or multi-select on Base UI \u00e2\u20ac\u201d keyboard, typeahead and collision-aware positioning \u00e2\u20ac\u201d whose panel blurs and scales in from the trigger. Multi-select keeps the panel open while animated checkbox rows are toggled.",
+      "description": "A single or multi-select on Base UI \u00e2\u20ac\u201d keyboard, typeahead and collision-aware positioning \u00e2\u20ac\u201d whose panel blurs and scales in from the trigger. Multi-select keeps the panel open while animated checkbox rows are toggled; an optional plain panel search filters options in place.",
       "dependencies": [
         "@base-ui/react",
         "lucide-react",
@@ -569,7 +569,8 @@
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/checkbox.json",
-        "http://localhost:3000/r/button.json"
+        "http://localhost:3000/r/button.json",
+        "http://localhost:3000/r/input.json"
       ],
       "files": [
         {
@@ -582,7 +583,7 @@
     {
       "name": "select-motion",
       "type": "registry:ui",
-      "description": "A hand-animated select: the panel springs its height open and pinches off the trigger, gooey corners and all. Optional multi-select keeps the panel open and uses checkboxes. No behaviour primitive \u00e2\u20ac\u201d reach for it when the entrance is the point.",
+      "description": "A hand-animated select: the panel springs its height open and pinches off the trigger, gooey corners and all. Optional multi-select keeps the panel open and uses checkboxes; an optional plain panel search filters options in place. No behaviour primitive \u00e2\u20ac\u201d reach for it when the entrance is the point.",
       "dependencies": [
         "lucide-react",
         "motion"
@@ -591,7 +592,8 @@
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/motion.json",
-        "http://localhost:3000/r/checkbox.json"
+        "http://localhost:3000/r/checkbox.json",
+        "http://localhost:3000/r/input.json"
       ],
       "files": [
         {

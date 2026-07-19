@@ -101,4 +101,27 @@ describe("Motion Select", () => {
       "true",
     );
   });
+
+  it("filters options from an optional plain panel search", () => {
+    render(
+      <Select defaultValue="banana">
+        <SelectTrigger>
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <SelectContent searchable searchPlaceholder="Search fruit">
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectItem value="banana">Banana</SelectItem>
+          <SelectItem value="mango">Mango</SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Banana" }));
+    const input = screen.getByRole("textbox", { name: "Search options" });
+    expect(input).toHaveAttribute("placeholder", "Search fruit");
+
+    fireEvent.change(input, { target: { value: "man" } });
+    expect(screen.queryByRole("option", { name: "Apple" })).not.toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Mango" })).toBeInTheDocument();
+  });
 });

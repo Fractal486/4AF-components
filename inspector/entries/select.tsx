@@ -26,11 +26,12 @@ export const selectEntry = defineEntry({
   controls: {
     disabled: bool(false),
     multiple: bool(false),
+    searchable: bool(false, "Search in panel"),
     icons: bool(true),
     outline: bool(true),
     invalid: bool(false),
   },
-  render({ disabled, multiple, icons, outline, invalid }) {
+  render({ disabled, multiple, searchable, icons, outline, invalid }) {
     return (
       <div className="w-full max-w-56">
         {multiple ? (
@@ -49,7 +50,11 @@ export const selectEntry = defineEntry({
             >
               <SelectValue placeholder="Pick fruits" />
             </SelectTrigger>
-            <SelectContent width={outline ? "trigger" : "content"}>
+            <SelectContent
+              width={outline ? "trigger" : "content"}
+              searchable={searchable}
+              searchPlaceholder="Search fruits…"
+            >
               {Object.entries(FRUITS).map(([value, label]) => (
                 <SelectItem
                   key={value}
@@ -77,7 +82,11 @@ export const selectEntry = defineEntry({
             >
               <SelectValue placeholder="Pick a fruit" />
             </SelectTrigger>
-            <SelectContent width={outline ? "trigger" : "content"}>
+            <SelectContent
+              width={outline ? "trigger" : "content"}
+              searchable={searchable}
+              searchPlaceholder="Search fruits…"
+            >
               {Object.entries(FRUITS).map(([value, label]) => (
                 <SelectItem
                   key={value}

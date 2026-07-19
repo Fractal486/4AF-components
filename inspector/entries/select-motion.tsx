@@ -26,10 +26,11 @@ export const selectMotionEntry = defineEntry({
   controls: {
     disabled: bool(false),
     multiple: bool(false),
+    searchable: bool(false, "Search in panel"),
     icons: bool(true),
     invalid: bool(false),
   },
-  render({ disabled, multiple, icons, invalid }) {
+  render({ disabled, multiple, searchable, icons, invalid }) {
     return (
       <div className="w-full max-w-56">
         {multiple ? (
@@ -40,7 +41,7 @@ export const selectMotionEntry = defineEntry({
             >
               <SelectValue placeholder="Pick fruits" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent searchable={searchable} searchPlaceholder="Search fruits…">
               {Object.entries(FRUITS).map(([value, label]) => (
                 <SelectItem
                   key={value}
@@ -65,7 +66,7 @@ export const selectMotionEntry = defineEntry({
             >
               <SelectValue placeholder="Pick a fruit" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent searchable={searchable} searchPlaceholder="Search fruits…">
               {Object.entries(FRUITS).map(([value, label]) => (
                 <SelectItem
                   key={value}

@@ -106,4 +106,29 @@ describe("Base UI Select", () => {
       "true",
     );
   });
+
+  it("filters options from an optional plain panel search", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Select items={FRUITS} defaultValue="banana">
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <SelectContent searchable searchPlaceholder="Search fruit">
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectItem value="banana">Banana</SelectItem>
+          <SelectItem value="mango">Mango</SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    const input = screen.getByRole("textbox", { name: "Search options" });
+    expect(input).toHaveAttribute("placeholder", "Search fruit");
+
+    await user.type(input, "man");
+    expect(screen.queryByRole("option", { name: "Apple" })).not.toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Mango" })).toBeInTheDocument();
+  });
 });

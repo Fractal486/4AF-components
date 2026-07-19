@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Search } from "lucide-react";
 import { motion, type Transition, useReducedMotion, type Variants } from "motion/react";
 import {
   createContext,
@@ -17,6 +17,7 @@ import {
 import { cn } from "@/registry/lib/cn";
 import { ease } from "@/registry/lib/motion";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
+import { Input } from "@/registry/ui/input/input";
 
 /**
  * A select whose panel is hand-animated with Motion — the original beUI feel.
@@ -85,6 +86,8 @@ interface SelectContextValue {
   disabled: boolean;
   placement: Placement;
   setPlacement: (p: Placement) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
 }
 
 const SelectContext = createContext<SelectContextValue | null>(null);
@@ -145,6 +148,7 @@ export function Select({
   const [labels, setLabels] = useState<Map<string, string>>(new Map());
   const [icons, setIcons] = useState<Map<string, ReactNode>>(new Map());
   const [placement, setPlacement] = useState<Placement>("bottom");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const controlled = value !== undefined;
   const current = controlled ? value : internal;
@@ -160,6 +164,11 @@ export function Select({
     [current, multiple],
   );
   const selectedValue = multiple ? undefined : values[0];
+
+  // A panel filter belongs to this open session only. Reopening shows the full list.
+  useEffect(() => {
+    if (!open) setSearchQuery("");
+  }, [open]);
 
   const select = useCallback(
     (next: string) => {
@@ -249,6 +258,8 @@ export function Select({
       disabled,
       placement,
       setPlacement,
+      searchQuery,
+      setSearchQuery,
     }),
     [
       selectedValue,
@@ -267,6 +278,7 @@ export function Select({
       baseId,
       disabled,
       placement,
+      searchQuery,
     ],
   );
 
@@ -378,9 +390,18 @@ export function SelectValue({ placeholder, className }: SelectValueProps) {
 export interface SelectContentProps {
   className?: string;
   children: ReactNode;
+  /** Adds a plain filter field above the options, separated by a hairline. */
+  searchable?: boolean;
+  /** Placeholder for the optional panel filter field. */
+  searchPlaceholder?: string;
 }
 
-export function SelectContent({ className, children }: SelectContentProps) {
+export function SelectContent({
+  className,
+  children,
+  searchable = false,
+  searchPlaceholder = "Search…",
+}: SelectContentProps) {
   const ctx = useSelectContext("SelectContent");
   const innerRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(0);
@@ -430,10 +451,6 @@ export function SelectContent({ className, children }: SelectContentProps) {
   // panel closed.
   return (
     <motion.div
-      id={ctx.listId}
-      role="listbox"
-      aria-labelledby={ctx.triggerId}
-      aria-multiselectable={ctx.multiple || undefined}
       aria-hidden={!open}
       initial={false}
       animate={
@@ -482,14 +499,42 @@ export function SelectContent({ className, children }: SelectContentProps) {
     >
       <motion.div
         ref={innerRef}
-        variants={ctx.reduce ? undefined : LIST_VARIANTS}
-        initial={false}
-        animate={open ? "show" : "hidden"}
-        // Capped so a long list scrolls (the panel unfolds to this height) rather than
-        // growing without bound. Not portaled, so `--available-height` isn't set — 18rem.
-        className={cn("max-h-72 overflow-y-auto p-1", SCROLLBAR)}
+        // The header sits outside the listbox: an input cannot be a listbox child.
+        // `innerRef` still measures both parts, so the panel's unfold includes it.
       >
-        {children}
+        {searchable && (
+          <div className="relative border-b border-border px-2 py-1">
+            <Search
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 left-4 size-3.5 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              aria-label="Search options"
+              variant="plain"
+              value={ctx.searchQuery}
+              onChange={(event) => ctx.setSearchQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key !== "Escape") event.stopPropagation();
+              }}
+              placeholder={searchPlaceholder}
+              className="h-8 pl-8"
+            />
+          </div>
+        )}
+        <motion.div
+          id={ctx.listId}
+          role="listbox"
+          aria-labelledby={ctx.triggerId}
+          aria-multiselectable={ctx.multiple || undefined}
+          variants={ctx.reduce ? undefined : LIST_VARIANTS}
+          initial={false}
+          animate={open ? "show" : "hidden"}
+          // Capped so a long list scrolls (the panel unfolds to this height) rather than
+          // growing without bound. Not portaled, so `--available-height` isn't set — 18rem.
+          className={cn("max-h-72 overflow-y-auto p-1", SCROLLBAR)}
+        >
+          {children}
+        </motion.div>
       </motion.div>
     </motion.div>
   );
@@ -502,6 +547,8 @@ export interface SelectItemProps {
   /** An optional leading icon. It is inert and hidden from assistive technology. */
   icon?: ReactNode;
   children: ReactNode;
+  /** Text used by an ancestor searchable `SelectContent` to match this option. */
+  searchValue?: string;
 }
 
 function SelectItemIcon({ icon }: { icon?: ReactNode }) {
@@ -517,13 +564,25 @@ function SelectItemIcon({ icon }: { icon?: ReactNode }) {
   );
 }
 
-export function SelectItem({ value, disabled = false, className, icon, children }: SelectItemProps) {
+export function SelectItem({
+  value,
+  disabled = false,
+  className,
+  icon,
+  children,
+  searchValue,
+}: SelectItemProps) {
   const ctx = useSelectContext("SelectItem");
   const { register, unregister } = ctx;
   const { registerIcon, unregisterIcon } = ctx;
   const [pointerHighlighted, setPointerHighlighted] = useState(false);
   const selected = ctx.values.includes(value);
   const label = typeof children === "string" ? children : value;
+  const optionText = searchValue ?? label;
+  const hiddenBySearch =
+    ctx.searchQuery.trim() !== "" &&
+    !optionText.toLocaleLowerCase().includes(ctx.searchQuery.trim().toLocaleLowerCase());
+  const itemDisabled = disabled || hiddenBySearch;
 
   useEffect(() => {
     registerIcon(value, icon);
@@ -559,13 +618,14 @@ export function SelectItem({ value, disabled = false, className, icon, children 
         variants={ctx.reduce ? undefined : ITEM_VARIANTS}
         role="option"
         aria-selected={selected}
-        aria-disabled={disabled || undefined}
+        aria-disabled={itemDisabled || undefined}
         data-selected={selected ? "" : undefined}
-        tabIndex={disabled ? -1 : 0}
+        hidden={hiddenBySearch}
+        tabIndex={itemDisabled ? -1 : 0}
         {...pointerHighlightProps}
-        onClick={disabled ? undefined : () => ctx.select(value)}
+        onClick={itemDisabled ? undefined : () => ctx.select(value)}
         onKeyDown={(event) => {
-          if (disabled || (event.key !== "Enter" && event.key !== " ")) return;
+          if (itemDisabled || (event.key !== "Enter" && event.key !== " ")) return;
           event.preventDefault();
           ctx.select(value);
         }}
@@ -592,7 +652,8 @@ export function SelectItem({ value, disabled = false, className, icon, children 
         role="option"
         aria-selected={selected}
         data-selected={selected ? "" : undefined}
-        disabled={disabled}
+        disabled={itemDisabled}
+        hidden={hiddenBySearch}
         {...pointerHighlightProps}
         onClick={() => ctx.select(value)}
         className={cn("justify-between", itemClassName)}

@@ -1,7 +1,7 @@
 "use client";
 
 import { Select as BaseSelect } from "@base-ui/react/select";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Search } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import {
   createContext,
@@ -17,6 +17,7 @@ import {
 import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
+import { Input } from "@/registry/ui/input/input";
 
 /**
  * A single or multi-select — the accessible version, on Base UI.
@@ -45,6 +46,8 @@ interface SelectContextValue {
   registerLabel: (value: unknown, label: ReactNode) => void;
   unregisterLabel: (value: unknown) => void;
   labelFor: (value: unknown) => ReactNode | undefined;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
   /** Reset the selection to none (single → null, multiple → empty). */
   clear: () => void;
 }
@@ -59,6 +62,8 @@ const SelectContext = createContext<SelectContextValue>({
   registerLabel: () => {},
   unregisterLabel: () => {},
   labelFor: () => undefined,
+  searchQuery: "",
+  setSearchQuery: () => {},
   clear: () => {},
 });
 
@@ -95,6 +100,13 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   const [uncontrolled, setUncontrolled] = useState(defaultOpen ?? false);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : uncontrolled;
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // A panel search is transient: opening the list always starts with its full set of
+  // choices, rather than retaining a filter from a previous visit.
+  useEffect(() => {
+    if (!isOpen) setSearchQuery("");
+  }, [isOpen]);
 
   // Mirror the selection so a trigger can read it for its own display and styling — a
   // filter chip that shows its picks and dashes its border while nothing is chosen. Base
@@ -209,6 +221,8 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
         registerLabel,
         unregisterLabel,
         labelFor,
+        searchQuery,
+        setSearchQuery,
         clear,
       }}
     >
@@ -458,6 +472,8 @@ export function SelectContent({
   sideOffset = 6,
   align = "start",
   width = "trigger",
+  searchable = false,
+  searchPlaceholder = "Search…",
   clearable = false,
   clearLabel = "Clear",
   ...props
@@ -471,13 +487,17 @@ export function SelectContent({
    * sizes it to its own rows — for a narrow, borderless trigger or the sort chip.
    */
   width?: "trigger" | "content";
+  /** Adds a plain filter field above the list, separated from the options by a hairline. */
+  searchable?: boolean;
+  /** Placeholder for the optional panel filter field. */
+  searchPlaceholder?: string;
   /** A full-width footer button that resets the selection to none. */
   clearable?: boolean;
   /** Text for the clear button. */
   clearLabel?: ReactNode;
 }) {
   const reduceMotion = useReducedMotion();
-  const { open, values, clear } = useContext(SelectContext);
+  const { open, values, clear, searchQuery, setSearchQuery } = useContext(SelectContext);
 
   return (
     <BaseSelect.Portal>
@@ -525,6 +545,26 @@ export function SelectContent({
           }
           {...props}
         >
+          {searchable && (
+            <div className="relative border-b border-border px-2 py-1">
+              <Search
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 left-4 size-3.5 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                aria-label="Search options"
+                variant="plain"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  // Keep Select's typeahead from treating input keystrokes as option jumps.
+                  if (event.key !== "Escape") event.stopPropagation();
+                }}
+                placeholder={searchPlaceholder}
+                className="h-8 pl-8"
+              />
+            </div>
+          )}
           <div
             className={cn(
               "max-h-[min(var(--available-height),18rem)] overflow-y-auto p-1",
@@ -556,11 +596,17 @@ export function SelectContent({
   );
 }
 
-export type SelectItemProps = Omit<ComponentProps<typeof BaseSelect.Item>, "className"> & {
+export type SelectItemProps = Omit<
+  ComponentProps<typeof BaseSelect.Item>,
+  "className" | "disabled"
+> & {
   /** An optional leading icon. It is inert and hidden from assistive technology. */
   icon?: ReactNode;
   className?: string;
   children?: ReactNode;
+  disabled?: boolean;
+  /** Text used by an ancestor searchable `SelectContent` to match this option. */
+  searchValue?: string;
 };
 
 function SelectItemIcon({ icon }: { icon?: ReactNode }) {
@@ -581,10 +627,22 @@ export function SelectItem({
   icon,
   children,
   value,
+  disabled = false,
+  searchValue,
   ...props
 }: SelectItemProps) {
-  const { multiple, registerIcon, unregisterIcon, registerLabel, unregisterLabel } =
-    useContext(SelectContext);
+  const {
+    multiple,
+    registerIcon,
+    unregisterIcon,
+    registerLabel,
+    unregisterLabel,
+    searchQuery,
+  } = useContext(SelectContext);
+  const optionText = searchValue ?? (typeof children === "string" ? children : String(value));
+  const hiddenBySearch =
+    searchQuery.trim() !== "" && !optionText.toLocaleLowerCase().includes(searchQuery.trim().toLocaleLowerCase());
+  const itemDisabled = disabled || hiddenBySearch;
 
   useEffect(() => {
     registerIcon(value, icon);
@@ -601,6 +659,8 @@ export function SelectItem({
     return (
       <BaseSelect.Item
         value={value}
+        disabled={itemDisabled}
+        hidden={hiddenBySearch}
         className={cn(
           "flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-sm outline-none select-none",
           "text-muted-foreground",
@@ -635,6 +695,8 @@ export function SelectItem({
   return (
     <BaseSelect.Item
       value={value}
+      disabled={itemDisabled}
+      hidden={hiddenBySearch}
       className={cn(
         "flex cursor-pointer items-center gap-2 rounded-xs px-2.5 py-1.5 text-sm outline-none select-none",
         "text-muted-foreground",
