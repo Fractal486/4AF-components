@@ -14,16 +14,16 @@ import { duration, ease, spring } from "@/registry/lib/motion";
 import { badgeVariants, type BadgeVariants } from "./badge.variants";
 
 /**
- * A status badge that *rolls* when it changes.
+ * A status badge that fades directionally when it changes.
  *
- * On a status or content change the outgoing glyph and label roll up and out of the top
- * while the new ones roll in from the bottom — a slot-machine flip — and the pill springs
- * to the new width. This is a real Motion case, not decoration: the roll needs the
- * outgoing content to keep animating *after* React would unmount it (only AnimatePresence
- * holds it), and the width change is a layout animation (FLIP). Everything animated is
- * compositor-only — `y` as a percentage, `scale`, `rotate`, `opacity`, `blur`.
+ * On a status or content change the outgoing glyph and label lift up and fade out while
+ * the new ones rise into place from just below, and the pill springs to the new width.
+ * This is a real Motion case, not decoration: the fade needs the outgoing content to keep
+ * animating *after* React would unmount it (only AnimatePresence holds it), and the width
+ * change is a layout animation (FLIP). Everything animated is compositor-only — `y` as a
+ * percentage and `opacity`.
  *
- * Under reduced motion the rolls are dropped for a plain swap. The loading glyph spins
+ * Under reduced motion the movement is dropped for a plain swap. The loading glyph spins
  * with CSS `animate-spin`, deliberately exempt — a status that has to keep reading as
  * "working", like every other spinner.
  */
@@ -39,49 +39,15 @@ const ICONS: Record<NonNullable<BadgeVariants["status"]>, LucideIcon> = {
 
 const ICON_SIZE = { sm: "size-3", md: "size-3.5" } as const;
 
-// The roll. `y` is a percentage of the element, so it clips cleanly inside the pill's
-// `overflow-hidden` whatever the glyph's size. Springs carry the travel; the fade and
-// blur are short tweens on our `ease.out` (no overshoot on opacity/filter — an overshoot
-// there reads as a stall, since you can't be more than opaque or less than un-blurred).
-const ICON_ROLL: Variants = {
-  initial: { opacity: 0.7, y: "80%", scale: 0.92, rotate: -8, filter: "blur(6px)" },
-  animate: {
-    opacity: 1,
-    y: "0%",
-    scale: 1,
-    rotate: 0,
-    filter: "blur(0px)",
-    transition: {
-      y: { type: "spring", stiffness: 210, damping: 24, mass: 0.85 },
-      scale: { type: "spring", stiffness: 250, damping: 24, mass: 0.75 },
-      rotate: { duration: duration.slow, ease: ease.out },
-      opacity: { duration: duration.slow, ease: ease.out },
-      filter: { duration: duration.slower, ease: ease.out },
-    },
-  },
-  exit: {
-    opacity: 0,
-    y: "-80%",
-    scale: 0.96,
-    rotate: 8,
-    filter: "blur(6px)",
-    transition: { duration: duration.base, ease: ease.out },
-  },
-};
-
-const TEXT_ROLL: Variants = {
-  initial: { opacity: 0.7, y: "85%", filter: "blur(6px)" },
-  animate: {
-    opacity: 1,
-    y: "0%",
-    filter: "blur(0px)",
-    transition: {
-      y: { type: "spring", stiffness: 210, damping: 24, mass: 0.85 },
-      opacity: { duration: duration.slow, ease: ease.out },
-      filter: { duration: duration.slower, ease: ease.out },
-    },
-  },
-  exit: { opacity: 0, y: "-85%", filter: "blur(6px)", transition: { duration: duration.base, ease: ease.out } },
+// A directional fade — the same swap the icon and label both use. The outgoing content
+// lifts up and fades out while the new content rises into place from just below, so the
+// change reads as *advancing* rather than reversing. `y` is a small percentage, so it
+// scales with the glyph and any movement clips cleanly inside the pill's `overflow-hidden`.
+// Only compositor properties animate — `y` and `opacity`.
+const FADE: Variants = {
+  initial: { opacity: 0, y: "40%" },
+  animate: { opacity: 1, y: "0%" },
+  exit: { opacity: 0, y: "-40%" },
 };
 
 export interface BadgeProps
@@ -145,10 +111,11 @@ export function Badge({
               <motion.span
                 key={resolvedStatus}
                 aria-hidden
-                variants={ICON_ROLL}
+                variants={FADE}
                 initial={reduce ? false : "initial"}
                 animate={reduce ? { opacity: 1 } : "animate"}
                 exit={reduce ? undefined : "exit"}
+                transition={reduce ? { duration: 0 } : { duration: duration.fast, ease: ease.out }}
                 className="inline-flex"
               >
                 {icon ??
@@ -168,10 +135,11 @@ export function Badge({
           <AnimatePresence mode="popLayout" initial={false}>
             <motion.span
               key={labelKey}
-              variants={TEXT_ROLL}
+              variants={FADE}
               initial={reduce ? false : "initial"}
               animate={reduce ? { opacity: 1 } : "animate"}
               exit={reduce ? undefined : "exit"}
+              transition={reduce ? { duration: 0 } : { duration: duration.fast, ease: ease.out }}
               className="inline-block"
             >
               {children}
