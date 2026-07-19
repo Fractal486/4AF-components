@@ -6,6 +6,7 @@ import { checkboxEntry } from "./entries/checkbox";
 import { copyButtonEntry } from "./entries/copy-button";
 import { dialogEntry } from "./entries/dialog";
 import { dropdownMenuEntry } from "./entries/dropdown-menu";
+import { emptyEntry } from "./entries/empty";
 import { hoverCardEntry } from "./entries/hover-card";
 import { inputEntry } from "./entries/input";
 import { morphEntry } from "./entries/morph";
@@ -112,6 +113,12 @@ export const groups: Group[] = [
     name: "Skeleton",
     summary: "A muted placeholder that pulses while content loads. Sized with utilities.",
     entries: [skeletonEntry],
+  },
+  {
+    slug: "empty",
+    name: "Empty",
+    summary: "An empty state — media, title, description and an action, centred in a placeholder.",
+    entries: [emptyEntry],
   },
   {
     slug: "select",

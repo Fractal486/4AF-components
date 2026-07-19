@@ -516,6 +516,30 @@
       ]
     },
     {
+      "name": "empty",
+      "type": "registry:ui",
+      "description": "An empty state \u2014 a centred column of media, title, description and an action. Composable parts; borderless by default with an optional dashed placeholder outline.",
+      "dependencies": [
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/empty/empty.tsx",
+          "type": "registry:ui",
+          "target": "@ui/empty.tsx"
+        },
+        {
+          "path": "registry/ui/empty/empty.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/empty.variants.ts"
+        }
+      ]
+    },
+    {
       "name": "text-shimmer",
       "type": "registry:ui",
       "description": "Text with a highlight sweeping across it \u2014 a looping working-in-progress affordance. Gradient clipped to the glyphs, switched off (not sped up) under reduced motion.",
