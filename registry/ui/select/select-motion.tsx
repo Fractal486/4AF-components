@@ -429,6 +429,8 @@ export interface SelectContentProps {
   searchable?: boolean;
   /** Placeholder for the optional panel filter field. */
   searchPlaceholder?: string;
+  /** Message shown when a panel search has no matching options. */
+  emptyMessage?: ReactNode;
 }
 
 export function SelectContent({
@@ -436,12 +438,14 @@ export function SelectContent({
   children,
   searchable = false,
   searchPlaceholder = "Search…",
+  emptyMessage = "No results.",
 }: SelectContentProps) {
   const ctx = useSelectContext("SelectContent");
   const innerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const [height, setHeight] = useState(0);
+  const [noResults, setNoResults] = useState(false);
   const open = ctx.open;
   const { setActiveItem, setPlacement, searchQuery } = ctx;
 
@@ -454,6 +458,18 @@ export function SelectContent({
     setActiveItem(option?.dataset.selectValue);
     if (searchable) searchRef.current?.focus();
   }, [open, searchable, searchQuery, setActiveItem]);
+
+  useLayoutEffect(() => {
+    if (!searchable || searchQuery.trim() === "") {
+      setNoResults(false);
+      return;
+    }
+
+    const hasVisibleOption = Array.from(
+      listRef.current?.querySelectorAll<HTMLElement>('[role="option"]') ?? [],
+    ).some((option) => !option.hidden);
+    setNoResults(!hasVisibleOption);
+  }, [searchQuery, searchable]);
 
   useLayoutEffect(() => {
     const node = innerRef.current;
@@ -589,10 +605,15 @@ export function SelectContent({
           animate={open ? "show" : "hidden"}
           // Capped so a long list scrolls (the panel unfolds to this height) rather than
           // growing without bound. Not portaled, so `--available-height` isn't set — 18rem.
-          className={cn("max-h-72 overflow-y-auto p-1", SCROLLBAR)}
+          className={cn("max-h-72 overflow-y-auto p-1", SCROLLBAR, noResults && "hidden")}
         >
           {children}
         </motion.div>
+        {noResults && (
+          <div className="m-1 flex h-8 items-center justify-center px-2.5 text-center text-sm text-muted-foreground">
+            {emptyMessage}
+          </div>
+        )}
       </motion.div>
     </motion.div>
   );

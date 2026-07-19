@@ -54,6 +54,7 @@ export const selectEntry = defineEntry({
               width={outline ? "trigger" : "content"}
               searchable={searchable}
               searchPlaceholder="Search fruits…"
+              emptyMessage="No fruit found."
             >
               {Object.entries(FRUITS).map(([value, label]) => (
                 <SelectItem
@@ -86,6 +87,7 @@ export const selectEntry = defineEntry({
               width={outline ? "trigger" : "content"}
               searchable={searchable}
               searchPlaceholder="Search fruits…"
+              emptyMessage="No fruit found."
             >
               {Object.entries(FRUITS).map(([value, label]) => (
                 <SelectItem

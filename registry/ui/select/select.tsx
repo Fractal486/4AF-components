@@ -513,6 +513,7 @@ export function SelectContent({
   width = "trigger",
   searchable = false,
   searchPlaceholder = "Search…",
+  emptyMessage = "No results.",
   autoFocusFirstItem = true,
   clearable = false,
   clearLabel = "Clear",
@@ -531,6 +532,8 @@ export function SelectContent({
   searchable?: boolean;
   /** Placeholder for the optional panel filter field. */
   searchPlaceholder?: string;
+  /** Message shown when a panel search has no matching options. */
+  emptyMessage?: ReactNode;
   /** Focus the first option when the panel opens. Turn this off for menu-like uses. */
   autoFocusFirstItem?: boolean;
   /** A full-width footer button that resets the selection to none. */
@@ -550,11 +553,24 @@ export function SelectContent({
     setSearchQuery,
   } = useContext(SelectContext);
   const listRef = useRef<HTMLDivElement>(null);
+  const [noResults, setNoResults] = useState(false);
 
   useEffect(() => {
     setPanelSearch(searchable);
     return () => setPanelSearch(false);
   }, [searchable, setPanelSearch]);
+
+  useEffect(() => {
+    if (!searchable || searchQuery.trim() === "") {
+      setNoResults(false);
+      return;
+    }
+
+    const hasVisibleOption = Array.from(
+      listRef.current?.querySelectorAll<HTMLElement>('[role="option"]') ?? [],
+    ).some((option) => !option.hidden);
+    setNoResults(!hasVisibleOption);
+  }, [searchQuery, searchable]);
 
   // Every non-sort select begins on its first row, even when another value is selected.
   // Searchable panels retain DOM focus in their field, but carry the same active-row state.
@@ -648,10 +664,16 @@ export function SelectContent({
             className={cn(
               "max-h-[min(var(--available-height),18rem)] overflow-y-auto p-1",
               SCROLLBAR,
+              noResults && "hidden",
             )}
           >
             <BaseSelect.List ref={listRef}>{children}</BaseSelect.List>
           </div>
+          {noResults && (
+            <div className="m-1 flex h-8 items-center justify-center px-2.5 text-center text-sm text-muted-foreground">
+              {emptyMessage}
+            </div>
+          )}
           {clearable && (
             // A footer, not a listbox row — pinned below the scroll area, and disabled
             // while there's nothing to clear. Clearing leaves the panel open so a new

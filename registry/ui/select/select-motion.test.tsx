@@ -153,5 +153,8 @@ describe("Motion Select", () => {
     fireEvent.change(input, { target: { value: "man" } });
     expect(screen.queryByRole("option", { name: "Apple" })).not.toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Mango" })).toBeInTheDocument();
+
+    fireEvent.change(input, { target: { value: "zzz" } });
+    expect(screen.getByText("No results.")).toBeInTheDocument();
   });
 });

@@ -153,6 +153,10 @@ describe("Base UI Select", () => {
     await user.type(input, "man");
     expect(screen.queryByRole("option", { name: "Apple" })).not.toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Mango" })).toBeInTheDocument();
+
+    await user.clear(input);
+    await user.type(input, "zzz");
+    expect(await screen.findByText("No results.")).toBeInTheDocument();
   });
 
   it("starts panel-search selects on the first row instead of selected rows", async () => {

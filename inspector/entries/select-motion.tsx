@@ -41,7 +41,11 @@ export const selectMotionEntry = defineEntry({
             >
               <SelectValue placeholder="Pick fruits" />
             </SelectTrigger>
-            <SelectContent searchable={searchable} searchPlaceholder="Search fruits…">
+            <SelectContent
+              searchable={searchable}
+              searchPlaceholder="Search fruits…"
+              emptyMessage="No fruit found."
+            >
               {Object.entries(FRUITS).map(([value, label]) => (
                 <SelectItem
                   key={value}
@@ -66,7 +70,11 @@ export const selectMotionEntry = defineEntry({
             >
               <SelectValue placeholder="Pick a fruit" />
             </SelectTrigger>
-            <SelectContent searchable={searchable} searchPlaceholder="Search fruits…">
+            <SelectContent
+              searchable={searchable}
+              searchPlaceholder="Search fruits…"
+              emptyMessage="No fruit found."
+            >
               {Object.entries(FRUITS).map(([value, label]) => (
                 <SelectItem
                   key={value}
