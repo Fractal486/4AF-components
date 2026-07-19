@@ -59,6 +59,8 @@ export interface CommandItem {
   description?: string;
   /** An optional leading glyph. A Lucide icon at `size-4` sits right. */
   icon?: ReactNode;
+  /** Optional trailing content, typically a `Badge`, shown beside the shortcut or chevron. */
+  badge?: ReactNode;
   /** A shortcut hint shown trailing, e.g. `⌘P`. Display only — bind it yourself. */
   shortcut?: string;
   /** Extra terms the query should match beyond the label ("prefs" → "Settings"). */
@@ -621,6 +623,8 @@ export interface CommandPanelRowProps
   /** A leading icon rendered in the standard 16px palette icon slot. */
   icon?: ReactNode;
   children?: ReactNode;
+  /** Optional trailing content, typically a `Badge`, aligned with the checkbox slot. */
+  badge?: ReactNode;
   /** Persistent selection state shown by the optional checkbox indicator. */
   selected?: boolean;
   /** Select the row when it is clicked or activated with Enter/Space. */
@@ -641,6 +645,7 @@ export function CommandPanelRow({
   className,
   icon,
   children,
+  badge,
   selected = false,
   onSelect,
   checkbox = false,
@@ -665,7 +670,8 @@ export function CommandPanelRow({
         }
       }}
         className={cn(
-          "group flex items-center gap-2.5 rounded-sm px-2.5 py-2 text-sm text-muted-foreground outline-none select-none",
+          "group flex min-h-9 items-center gap-2.5 rounded-sm px-2.5 text-sm text-muted-foreground outline-none select-none",
+          badge ? "py-1.5" : "py-2",
           interactive ? "cursor-pointer" : "cursor-default",
         "hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground",
         className,
@@ -677,14 +683,19 @@ export function CommandPanelRow({
         </CommandIcon>
       )}
       <span className="min-w-0 flex-1 truncate">{children}</span>
-      {checkbox && (
-        <Checkbox
-          size="sm"
-          checked={selected}
-          tabIndex={-1}
-          aria-hidden="true"
-              className="pointer-events-none ml-auto -mr-1"
-        />
+      {(badge || checkbox) && (
+        <span className="ml-auto -mr-1 flex shrink-0 items-center gap-1.5">
+          {badge && <span className="shrink-0">{badge}</span>}
+          {checkbox && (
+            <Checkbox
+              size="sm"
+              checked={selected}
+              tabIndex={-1}
+              aria-hidden="true"
+              className="pointer-events-none"
+            />
+          )}
+        </span>
       )}
     </div>
   );
@@ -948,6 +959,7 @@ function CommandRow({
   // it keeps item identity stable (cloning items per keystroke would reset the highlight).
   const positions = !isCreate && query ? (fuzzyMatch(item.label, query)?.positions ?? []) : [];
   const hasChildren = item.panel != null || (item.items != null && item.items.length > 0);
+  const compactRow = Boolean(item.badge) && !item.description;
 
   return (
     <Autocomplete.Item
@@ -958,7 +970,8 @@ function CommandRow({
       // same attribute), applied instantly with no transition so it keeps up with a fast
       // ↑↓ and doesn't smear across rows under the pointer.
       className={cn(
-        "group flex cursor-pointer items-center gap-2.5 rounded-sm px-2.5 py-2 text-sm text-muted-foreground outline-none select-none",
+        "group flex min-h-9 cursor-pointer items-center gap-2.5 rounded-sm px-2.5 text-sm text-muted-foreground outline-none select-none",
+        compactRow ? "py-1.5" : "py-2",
         "data-highlighted:bg-muted data-highlighted:text-foreground",
         "data-disabled:pointer-events-none data-disabled:opacity-50",
       )}
@@ -978,15 +991,22 @@ function CommandRow({
         )}
       </span>
 
-      {hasChildren ? (
-        <ChevronRight
-          className="size-4 shrink-0 text-subtle-foreground group-data-highlighted:text-foreground"
-          aria-hidden
-        />
-      ) : (
-        item.shortcut && (
-          <kbd className="shrink-0 font-mono text-2xs text-subtle-foreground">{item.shortcut}</kbd>
-        )
+      {(item.badge || hasChildren || item.shortcut) && (
+        <span className="ml-auto flex shrink-0 items-center gap-2.5">
+          {item.badge && <span className="shrink-0">{item.badge}</span>}
+          {hasChildren ? (
+            <ChevronRight
+              className="size-4 shrink-0 text-subtle-foreground group-data-highlighted:text-foreground"
+              aria-hidden
+            />
+          ) : (
+            item.shortcut && (
+              <kbd className="shrink-0 font-mono text-2xs text-subtle-foreground">
+                {item.shortcut}
+              </kbd>
+            )
+          )}
+        </span>
       )}
     </Autocomplete.Item>
   );

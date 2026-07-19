@@ -59,7 +59,23 @@ export function CommandPaletteDemo({
 
   const navigation: CommandGroup["items"] = [
     { id: "home", label: "Go to Home", description: "Your dashboard overview", icon: <Home />, shortcut: "G H", keywords: ["dashboard"], onSelect: run("Go to Home") },
-    { id: "docs", label: "Open Documentation", icon: <FileText />, keywords: ["help", "guide"], onSelect: run("Open Documentation") },
+    {
+      id: "docs",
+      label: "Open Documentation",
+      icon: <FileText />,
+      badge: (
+        <Badge
+          variant="outline"
+          size="sm"
+          status="info"
+          showIcon={false}
+        >
+          Beta
+        </Badge>
+      ),
+      keywords: ["help", "guide"],
+      onSelect: run("Open Documentation"),
+    },
     { id: "settings", label: "Open Settings", icon: <Settings />, shortcut: "⌘,", keywords: ["preferences", "prefs"], onSelect: run("Open Settings") },
   ];
 
@@ -229,6 +245,18 @@ function ProjectsPanel({
             <CommandPanelRow
               key={project}
               icon={<FolderOpen />}
+              badge={
+                project === selected ? (
+                  <Badge
+                    variant="outline"
+                    size="sm"
+                    status="success"
+                    showIcon={false}
+                  >
+                    Current
+                  </Badge>
+                ) : undefined
+              }
               selected={project === selected}
               onSelect={() => setSelected(project)}
               checkbox
