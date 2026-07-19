@@ -47,6 +47,11 @@ interface SelectContextValue {
   registerLabel: (value: unknown, label: ReactNode) => void;
   unregisterLabel: (value: unknown) => void;
   labelFor: (value: unknown) => ReactNode | undefined;
+  firstItem: unknown;
+  activeItem: unknown;
+  setActiveItem: (value: unknown) => void;
+  panelSearch: boolean;
+  setPanelSearch: (enabled: boolean) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   /** Reset the selection to none (single → null, multiple → empty). */
@@ -63,6 +68,11 @@ const SelectContext = createContext<SelectContextValue>({
   registerLabel: () => {},
   unregisterLabel: () => {},
   labelFor: () => undefined,
+  firstItem: undefined,
+  activeItem: undefined,
+  setActiveItem: () => {},
+  panelSearch: false,
+  setPanelSearch: () => {},
   searchQuery: "",
   setSearchQuery: () => {},
   clear: () => {},
@@ -179,6 +189,13 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
     });
   }, []);
   const labelFor = useCallback((v: unknown) => labels.get(v), [labels]);
+  const firstItem = useMemo(() => labels.keys().next().value, [labels]);
+  const [activeItem, setActiveItem] = useState<unknown>(undefined);
+  const [panelSearch, setPanelSearch] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) setActiveItem(undefined);
+  }, [isOpen]);
 
   const clear = useCallback(() => {
     const empty = (multiple ? ([] as Value[]) : null) as Value | Value[] | null;
@@ -238,6 +255,11 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
         registerLabel,
         unregisterLabel,
         labelFor,
+        firstItem,
+        activeItem,
+        setActiveItem,
+        panelSearch,
+        setPanelSearch,
         searchQuery,
         setSearchQuery,
         clear,
@@ -491,6 +513,7 @@ export function SelectContent({
   width = "trigger",
   searchable = false,
   searchPlaceholder = "Search…",
+  autoFocusFirstItem = true,
   clearable = false,
   clearLabel = "Clear",
   ...props
@@ -508,14 +531,44 @@ export function SelectContent({
   searchable?: boolean;
   /** Placeholder for the optional panel filter field. */
   searchPlaceholder?: string;
+  /** Focus the first option when the panel opens. Turn this off for menu-like uses. */
+  autoFocusFirstItem?: boolean;
   /** A full-width footer button that resets the selection to none. */
   clearable?: boolean;
   /** Text for the clear button. */
   clearLabel?: ReactNode;
 }) {
   const reduceMotion = useReducedMotion();
-  const { open, values, clear, searchQuery, setSearchQuery } = useContext(SelectContext);
+  const {
+    open,
+    values,
+    clear,
+    firstItem,
+    setActiveItem,
+    setPanelSearch,
+    searchQuery,
+    setSearchQuery,
+  } = useContext(SelectContext);
   const listRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setPanelSearch(searchable);
+    return () => setPanelSearch(false);
+  }, [searchable, setPanelSearch]);
+
+  // Every non-sort select begins on its first row, even when another value is selected.
+  // Searchable panels retain DOM focus in their field, but carry the same active-row state.
+  useEffect(() => {
+    if (!open || !autoFocusFirstItem || firstItem === undefined) return;
+
+    setActiveItem(firstItem);
+    if (searchable) return;
+
+    const frame = requestAnimationFrame(() => {
+      focusPanelOption(listRef.current, "next");
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [autoFocusFirstItem, firstItem, open, searchable, setActiveItem]);
 
   return (
     <BaseSelect.Portal>
@@ -663,12 +716,17 @@ export function SelectItem({
     unregisterIcon,
     registerLabel,
     unregisterLabel,
+    open,
+    activeItem,
+    panelSearch,
+    setActiveItem,
     searchQuery,
   } = useContext(SelectContext);
   const optionText = searchValue ?? (typeof children === "string" ? children : String(value));
   const hiddenBySearch =
     searchQuery.trim() !== "" && !optionText.toLocaleLowerCase().includes(searchQuery.trim().toLocaleLowerCase());
   const itemDisabled = disabled || hiddenBySearch;
+  const panelActive = open && Object.is(activeItem, value);
 
   useEffect(() => {
     registerIcon(value, icon);
@@ -687,10 +745,13 @@ export function SelectItem({
         value={value}
         disabled={itemDisabled}
         hidden={hiddenBySearch}
+        data-panel-active={panelActive || undefined}
+        onFocusCapture={() => setActiveItem(value)}
         className={cn(
           "flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-sm outline-none select-none",
           "text-muted-foreground",
-          "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
+          !panelSearch && "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
+          "data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
           "data-[selected]:text-foreground",
           "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
           className,
@@ -723,12 +784,15 @@ export function SelectItem({
       value={value}
       disabled={itemDisabled}
       hidden={hiddenBySearch}
+      data-panel-active={panelActive || undefined}
+      onFocusCapture={() => setActiveItem(value)}
       className={cn(
         "flex cursor-pointer items-center gap-2 rounded-xs px-2.5 py-1.5 text-sm outline-none select-none",
         "text-muted-foreground",
         // Base UI moves this highlight with the keyboard as well as the pointer; it snaps
         // (no transition) so it keeps up with arrow-key navigation rather than lagging.
-        "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
+        !panelSearch && "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
+        "data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
         "data-[selected]:text-foreground",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className,

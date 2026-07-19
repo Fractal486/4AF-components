@@ -37,7 +37,7 @@ export const selectSortEntry = defineEntry({
       />
     );
     const content = (
-      <SelectContent width="content" clearable className="min-w-40">
+      <SelectContent width="content" clearable autoFocusFirstItem={false} className="min-w-40">
         {STATUS.map((status) => (
           <SelectItem key={status.value} value={status.value}>
             {status.label}

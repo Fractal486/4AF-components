@@ -40,6 +40,22 @@ describe("Base UI Select", () => {
     expect(trigger).toHaveTextContent("Apple");
   });
 
+  it("starts a normal select on its first option instead of the selected one", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Select items={FRUITS} defaultValue="banana">
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <FruitOptions />
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    await waitFor(() => expect(screen.getByRole("option", { name: "Apple" })).toHaveFocus());
+  });
+
   it("uses the same parts for checkbox multi-select without closing the panel", async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
@@ -137,5 +153,46 @@ describe("Base UI Select", () => {
     await user.type(input, "man");
     expect(screen.queryByRole("option", { name: "Apple" })).not.toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Mango" })).toBeInTheDocument();
+  });
+
+  it("starts panel-search selects on the first row instead of selected rows", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <>
+        <Select items={FRUITS} defaultValue="banana">
+          <SelectTrigger aria-label="Single fruit">
+            <SelectValue placeholder="Pick a fruit" />
+          </SelectTrigger>
+          <SelectContent searchable>
+            <SelectItem value="apple">Apple</SelectItem>
+            <SelectItem value="banana">Banana</SelectItem>
+            <SelectItem value="mango">Mango</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select multiple items={FRUITS} defaultValue={["banana", "mango"]}>
+          <SelectTrigger aria-label="Multiple fruits">
+            <SelectValue placeholder="Pick fruits" />
+          </SelectTrigger>
+          <SelectContent searchable>
+            <SelectItem value="apple">Apple</SelectItem>
+            <SelectItem value="banana">Banana</SelectItem>
+            <SelectItem value="mango">Mango</SelectItem>
+          </SelectContent>
+        </Select>
+      </>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Single fruit" }));
+    await waitFor(() =>
+      expect(screen.getByRole("option", { name: "Apple" })).toHaveAttribute("data-panel-active"),
+    );
+    expect(screen.getByRole("option", { name: "Banana" })).not.toHaveAttribute("data-panel-active");
+
+    await user.click(screen.getByRole("combobox", { name: "Multiple fruits" }));
+    await waitFor(() =>
+      expect(screen.getByRole("option", { name: "Apple" })).toHaveAttribute("data-panel-active"),
+    );
+    expect(screen.getByRole("option", { name: "Mango" })).not.toHaveAttribute("data-panel-active");
   });
 });

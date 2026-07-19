@@ -29,6 +29,10 @@ describe("Motion Select", () => {
     fireEvent.click(trigger);
 
     expect(screen.getByRole("listbox")).toHaveAttribute("aria-multiselectable", "true");
+    expect(screen.getByRole("option", { name: "Apple" })).toHaveAttribute("data-panel-active");
+    expect(screen.getByRole("option", { name: "Banana" })).not.toHaveAttribute(
+      "data-panel-active",
+    );
 
     const apple = screen.getByRole("option", { name: "Apple" });
     fireEvent.click(apple);
@@ -55,6 +59,20 @@ describe("Motion Select", () => {
 
     expect(trigger).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByRole("button", { name: "Apple" })).toBeInTheDocument();
+  });
+
+  it("starts a normal select on its first option instead of the selected one", () => {
+    render(
+      <Select defaultValue="banana">
+        <SelectTrigger>
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <FruitOptions />
+      </Select>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Banana" }));
+    expect(screen.getByRole("option", { name: "Apple" })).toHaveFocus();
   });
 
   it("highlights a row while the pointer is over it", () => {

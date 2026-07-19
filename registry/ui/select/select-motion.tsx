@@ -86,6 +86,8 @@ interface SelectContextValue {
   disabled: boolean;
   placement: Placement;
   setPlacement: (p: Placement) => void;
+  activeItem: string | undefined;
+  setActiveItem: (value: string | undefined) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
 }
@@ -103,7 +105,7 @@ function focusPanelOption(
   current: HTMLElement | null,
   direction: "next" | "previous",
 ) {
-  if (!list) return;
+  if (!list) return undefined;
 
   const options = Array.from(list.querySelectorAll<HTMLElement>('[role="option"]')).filter(
     (option) =>
@@ -119,7 +121,9 @@ function focusPanelOption(
         ? options.length - 1
         : Math.max(currentIndex - 1, 0);
 
-  options[nextIndex]?.focus();
+  const option = options[nextIndex];
+  option?.focus();
+  return option;
 }
 
 interface SelectBaseProps {
@@ -172,6 +176,7 @@ export function Select({
   const [labels, setLabels] = useState<Map<string, string>>(new Map());
   const [icons, setIcons] = useState<Map<string, ReactNode>>(new Map());
   const [placement, setPlacement] = useState<Placement>("bottom");
+  const [activeItem, setActiveItem] = useState<string | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState("");
 
   const controlled = value !== undefined;
@@ -191,7 +196,10 @@ export function Select({
 
   // A panel filter belongs to this open session only. Reopening shows the full list.
   useEffect(() => {
-    if (!open) setSearchQuery("");
+    if (!open) {
+      setSearchQuery("");
+      setActiveItem(undefined);
+    }
   }, [open]);
 
   const select = useCallback(
@@ -282,6 +290,8 @@ export function Select({
       disabled,
       placement,
       setPlacement,
+      activeItem,
+      setActiveItem,
       searchQuery,
       setSearchQuery,
     }),
@@ -302,6 +312,7 @@ export function Select({
       baseId,
       disabled,
       placement,
+      activeItem,
       searchQuery,
     ],
   );
@@ -432,13 +443,17 @@ export function SelectContent({
   const searchRef = useRef<HTMLInputElement>(null);
   const [height, setHeight] = useState(0);
   const open = ctx.open;
-  const { setPlacement } = ctx;
+  const { setActiveItem, setPlacement, searchQuery } = ctx;
 
-  // Unlike the Base UI popup, this inline panel does not manage focus for us. Put the
-  // cursor straight into the optional panel search on every open, ready for typing.
+  // Unlike the Base UI popup, this inline panel does not manage an active row for us.
+  // Always mark the first visible option active; searchable panels then return DOM focus
+  // to their input so typing remains immediate.
   useLayoutEffect(() => {
-    if (open && searchable) searchRef.current?.focus();
-  }, [open, searchable]);
+    if (!open) return;
+    const option = focusPanelOption(listRef.current, null, "next");
+    setActiveItem(option?.dataset.selectValue);
+    if (searchable) searchRef.current?.focus();
+  }, [open, searchable, searchQuery, setActiveItem]);
 
   useLayoutEffect(() => {
     const node = innerRef.current;
@@ -626,6 +641,7 @@ export function SelectItem({
     ctx.searchQuery.trim() !== "" &&
     !optionText.toLocaleLowerCase().includes(ctx.searchQuery.trim().toLocaleLowerCase());
   const itemDisabled = disabled || hiddenBySearch;
+  const panelActive = ctx.open && ctx.activeItem === value;
 
   useEffect(() => {
     registerIcon(value, icon);
@@ -643,15 +659,19 @@ export function SelectItem({
     ctx.multiple
       ? "text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:bg-muted data-[highlighted]:bg-muted data-[highlighted]:text-foreground data-[selected]:text-foreground"
       : selected
-        ? "bg-muted text-foreground data-[highlighted]:bg-muted data-[highlighted]:text-foreground"
+        ? "text-foreground data-[highlighted]:bg-muted data-[highlighted]:text-foreground"
         : "text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:bg-muted data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
+    "data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
     "disabled:pointer-events-none disabled:opacity-50",
     className,
   );
 
   const pointerHighlightProps = {
     "data-highlighted": pointerHighlighted ? "" : undefined,
-    onPointerEnter: () => setPointerHighlighted(true),
+    onPointerEnter: () => {
+      setPointerHighlighted(true);
+      ctx.setActiveItem(value);
+    },
     onPointerLeave: () => setPointerHighlighted(false),
   };
 
@@ -663,9 +683,12 @@ export function SelectItem({
         aria-selected={selected}
         aria-disabled={itemDisabled || undefined}
         data-selected={selected ? "" : undefined}
+        data-panel-active={panelActive || undefined}
+        data-select-value={value}
         hidden={hiddenBySearch}
         tabIndex={itemDisabled ? -1 : 0}
         {...pointerHighlightProps}
+        onFocus={() => ctx.setActiveItem(value)}
         onClick={itemDisabled ? undefined : () => ctx.select(value)}
         onKeyDown={(event) => {
           if (event.key === "ArrowDown" || event.key === "ArrowUp") {
@@ -704,9 +727,12 @@ export function SelectItem({
         role="option"
         aria-selected={selected}
         data-selected={selected ? "" : undefined}
+        data-panel-active={panelActive || undefined}
+        data-select-value={value}
         disabled={itemDisabled}
         hidden={hiddenBySearch}
         {...pointerHighlightProps}
+        onFocus={() => ctx.setActiveItem(value)}
         onClick={() => ctx.select(value)}
         onKeyDown={(event) => {
           if (event.key === "ArrowDown" || event.key === "ArrowUp") {
