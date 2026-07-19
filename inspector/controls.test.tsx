@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { Controls } from "./controls";
@@ -22,17 +22,17 @@ function ControlsHarness() {
 }
 
 describe("Controls select", () => {
-  it("uses the complete radio keyboard pattern", async () => {
+  it("renders the enum as a combobox and updates the selection on pick", async () => {
     const user = userEvent.setup();
     render(<ControlsHarness />);
 
-    const primary = screen.getByRole("radio", { name: "primary" });
-    const outline = screen.getByRole("radio", { name: "outline" });
-    primary.focus();
+    const trigger = screen.getByRole("combobox", { name: /variant/i });
+    expect(trigger).toHaveTextContent("primary");
 
-    await user.keyboard("{ArrowRight}");
+    await user.click(trigger);
+    await user.click(screen.getByRole("option", { name: "outline" }));
 
-    expect(outline).toHaveFocus();
-    expect(outline).toBeChecked();
+    await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "false"));
+    expect(trigger).toHaveTextContent("outline");
   });
 });

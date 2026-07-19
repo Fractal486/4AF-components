@@ -25,10 +25,12 @@ export const inputVariants = cva(
       // Structure: how the field is bordered. Focus *colour* is a separate axis
       // (`tone`) so either border shape can wear either focus colour.
       variant: {
-        default: "border border-[oklch(0.297_0_0)] hover:border-[oklch(0.390_0_0)]",
+        // Border tokens (not fixed greys), so rest/hover/focus match the Select trigger
+        // exactly and follow the theme: `border` at rest, `border-strong` on hover.
+        default: "border border-border hover:border-border-strong",
         plain: "border-0 shadow-none hover:border-0 focus:border-0 focus:shadow-none hover:bg-transparent",
         underline:
-          "rounded-none border-0 border-b border-b-[oklch(0.297_0_0)] px-0 shadow-none hover:border-b-[oklch(0.390_0_0)]",
+          "rounded-none border-0 border-b border-b-border px-0 shadow-none hover:border-b-border-strong",
       },
       // The focus colour. `neutral` is a grey ring that stands apart from the accent;
       // `accent` uses the `--ring` token, so it matches every other focusable control
@@ -46,6 +48,9 @@ export const inputVariants = cva(
         class: "aria-invalid:ring-[3px] aria-invalid:ring-destructive/25 aria-invalid:shadow-none",
       },
       {
+        // Rest/hover borders match the Select (tokens above). The *focus* border stays a
+        // lighter grey than its ring so the thin border and the thick ring read as two tones
+        // instead of merging — matching it to `border-strong` blends it into the ring.
         variant: "default",
         tone: "neutral",
         class: "focus:border-[oklch(0.719_0_0)] focus:shadow-[0_0_0_3px_oklch(0.390_0_0_/_0.502)]",

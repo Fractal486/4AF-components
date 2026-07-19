@@ -2,7 +2,13 @@
 
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Input } from "@/registry/ui/input/input";
-import { Radio, RadioGroup } from "@/registry/ui/radio/radio";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/registry/ui/select/select";
 import { Slider } from "@/registry/ui/slider/slider";
 import type { ControlDef, ControlSchema, ControlValues } from "./schema";
 
@@ -75,23 +81,36 @@ function Control({
 
   if (def.kind === "select") {
     const labelId = `${id}-label`;
+    // A record of value → label so Base UI can resolve the closed trigger's text from the
+    // selected value (options are a bare string array; the record gives it the pairings).
+    const items = Object.fromEntries(def.options.map((option) => [option, option]));
 
     return (
-      <div className="flex flex-col gap-2">
+      // Inline, so the row reads as one phrase — "Variant: default ⌄". The trigger is the
+      // borderless (`outline={false}`) one sized to its content; `h-auto` drops the field
+      // height so the row sits on the label's baseline rather than a 40px hit box.
+      <div className="flex items-baseline gap-1">
         <span id={labelId} className="text-sm text-muted-foreground">
-          {label}
+          {label}:
         </span>
-        {/* The Radio group itself — dogfooding the component as the enum control. */}
-        <RadioGroup
-          size="sm"
+        <Select
+          items={items}
           value={value as string}
           onValueChange={(next) => onChange(next)}
-          aria-labelledby={labelId}
         >
-          {def.options.map((option) => (
-            <Radio key={option} value={option} label={option} />
-          ))}
-        </RadioGroup>
+          <SelectTrigger outline={false} className="h-auto" aria-labelledby={labelId}>
+            <SelectValue />
+          </SelectTrigger>
+          {/* `content` sizes the panel to its rows rather than the narrow borderless
+              trigger, which would clip the longest option. */}
+          <SelectContent width="content">
+            {def.options.map((option) => (
+              <SelectItem key={option} value={option}>
+                {option}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     );
   }
@@ -114,24 +133,23 @@ function Control({
     );
   }
 
+  const labelId = `${id}-label`;
+
   return (
     <div className="flex flex-col gap-1.5">
-      <Label htmlFor={id}>{label}</Label>
+      {/* A `<span>`, not a `<label htmlFor>`: it still names the field via `aria-labelledby`,
+          but clicking the text no longer focuses the input. */}
+      <span id={labelId} className="text-sm text-muted-foreground">
+        {label}
+      </span>
       <Input
         id={id}
+        aria-labelledby={labelId}
         tone="accent"
         value={value as string}
         placeholder={def.placeholder}
         onChange={(e) => onChange(e.target.value)}
       />
     </div>
-  );
-}
-
-function Label({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) {
-  return (
-    <label htmlFor={htmlFor} className="text-sm text-muted-foreground">
-      {children}
-    </label>
   );
 }
