@@ -467,8 +467,8 @@ export function SelectContent({
   sideOffset?: number;
   align?: ComponentProps<typeof BaseSelect.Positioner>["align"];
   /**
-   * `trigger` locks the panel to the trigger's width (the default full-width select);
-   * `content` lets it size to its rows with a min — for a narrow trigger like the sort chip.
+   * `trigger` keeps the panel the trigger's width (a bordered field select); `content`
+   * sizes it to its own rows — for a narrow, borderless trigger or the sort chip.
    */
   width?: "trigger" | "content";
   /** A full-width footer button that resets the selection to none. */
@@ -490,11 +490,11 @@ export function SelectContent({
         alignItemWithTrigger={false}
         side="bottom"
         className={cn(
-          // No width tie to the trigger — the panel sizes to its own rows (the longest
-          // label plus the reserved check slot), so it's neither clipped to a narrow
-          // trigger nor stretched to a wide one. `content` just adds a sensible minimum.
-          "z-50 w-max outline-none",
-          width === "content" && "min-w-36",
+          "z-50 outline-none",
+          // `trigger` keeps the panel the button's width (the default field select);
+          // `content` sizes it to its own rows — the longest label plus the reserved check
+          // slot — for a narrow, borderless trigger.
+          width === "trigger" ? "w-[var(--anchor-width)]" : "w-max",
         )}
       >
         {/* The animation is driven off the `open` state, not Motion's mount: Base UI keeps

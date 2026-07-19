@@ -49,7 +49,7 @@ export const selectEntry = defineEntry({
             >
               <SelectValue placeholder="Pick fruits" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent width={outline ? "trigger" : "content"}>
               {Object.entries(FRUITS).map(([value, label]) => (
                 <SelectItem
                   key={value}
@@ -77,7 +77,7 @@ export const selectEntry = defineEntry({
             >
               <SelectValue placeholder="Pick a fruit" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent width={outline ? "trigger" : "content"}>
               {Object.entries(FRUITS).map(([value, label]) => (
                 <SelectItem
                   key={value}
