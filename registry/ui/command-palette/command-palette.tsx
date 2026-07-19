@@ -17,6 +17,7 @@ import {
 } from "react";
 import { cn } from "@/registry/lib/cn";
 import { ease, spring } from "@/registry/lib/motion";
+import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import {
   Select,
   SelectContent,
@@ -71,6 +72,10 @@ export interface CommandItem {
    * precedence over `items`.
    */
   panel?: (helpers: CommandPanelHelpers) => ReactNode;
+  /** Render a search field in the custom panel header instead of the panel title. */
+  panelSearch?: boolean;
+  /** Placeholder for the custom panel search field. Falls back to the palette placeholder. */
+  panelSearchPlaceholder?: string;
   /** Run when a leaf item is chosen (click or Enter). The palette closes around it. */
   onSelect?: () => void;
 }
@@ -86,6 +91,8 @@ export interface CommandPanelHelpers {
   close: () => void;
   /** Step back to the page that opened the panel, keeping the palette open. */
   back: () => void;
+  /** The current custom-panel search query, when its header search is enabled. */
+  query: string;
 }
 
 export interface CommandPaletteProps {
@@ -197,6 +204,8 @@ interface Page {
   groups?: CommandGroup[];
   /** A drilled-in custom panel (form). Rendered instead of the list. */
   panel?: (helpers: CommandPanelHelpers) => ReactNode;
+  panelSearch?: boolean;
+  panelSearchPlaceholder?: string;
 }
 
 export function CommandPalette({
@@ -255,7 +264,15 @@ export function CommandPalette({
       if (item.disabled) return;
       // A panel or a sub-list drills in rather than running; a leaf runs and closes.
       if (item.panel) {
-        setPages((prev) => [...prev, { title: item.label, panel: item.panel }]);
+        setPages((prev) => [
+          ...prev,
+          {
+            title: item.label,
+            panel: item.panel,
+            panelSearch: item.panelSearch,
+            panelSearchPlaceholder: item.panelSearchPlaceholder,
+          },
+        ]);
         setQuery("");
         return;
       }
@@ -286,6 +303,7 @@ export function CommandPalette({
     ? activePage.panel({
         close: () => setOpen(false),
         back: () => goToDepth(pages.length - 1),
+        query,
       })
     : null;
   // Filter + rank ourselves, drop groups that empty out, and append the create row on the
@@ -360,7 +378,7 @@ export function CommandPalette({
               // (Tailwind keeps `translate` and Motion's `transform` separate). No
               // y-translate — the vertical offset is a plain `top`, which nothing animates.
               className={cn(
-                "fixed top-[14vh] left-1/2 z-50 flex max-h-[min(34rem,calc(100dvh-16vh))] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 flex-col overflow-hidden rounded-md border border-border bg-background shadow-overlay-drop",
+                "fixed top-[14vh] left-1/2 z-50 flex max-h-[min(34rem,calc(100dvh-16vh))] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 flex-col overflow-hidden rounded-md border border-border bg-background shadow-overlay-drop outline-none",
                 className,
               )}
               render={
@@ -388,23 +406,68 @@ export function CommandPalette({
 
               <PaletteControlsContext.Provider value={controls}>
               {panelNode ? (
-                // A panel page: a Back button and title, the form body, and a slim footer.
-                // No search input or Autocomplete here — the form owns its own fields, and
-                // Backspace belongs to whichever input has focus. Escape still closes via the
-                // Dialog; stepping back is the Back button (or the form's own `back` helper).
+                // A panel page: a Back button and either a title or an opt-in search field,
+                // then the form body and a slim footer.
+                // Searchable panels use the header field to drive `helpers.query`; regular
+                // panels leave their own fields in charge. Escape and Backspace step back,
+                // while the Back button and the panel's own `back` helper remain available.
                 <>
-                  <div className="flex items-center gap-1.5 border-b border-border px-2.5 py-2">
+                  <div
+                    className={cn(
+                      "flex h-12 shrink-0 items-center gap-2.5 border-b border-border",
+                      activePage?.panelSearch ? "pl-4 pr-3" : "px-4",
+                    )}
+                  >
                     <button
                       type="button"
                       onClick={() => goToDepth(pages.length - 1)}
                       aria-label="Back"
-                      className="flex size-8 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors duration-(--duration-fast) hover:bg-muted hover:text-foreground"
+                      className={cn(
+                        "relative flex shrink-0 items-center rounded-sm text-muted-foreground transition-colors duration-(--duration-fast)",
+                        activePage?.panelSearch
+                          ? "size-4 justify-center before:absolute before:-inset-y-2 before:-left-2.5 before:w-9 before:rounded-sm before:content-[''] hover:text-foreground focus-visible:text-foreground"
+                          : "size-8 justify-start hover:bg-muted hover:text-foreground",
+                      )}
                     >
-                      <ChevronLeft className="size-4" />
+                      <CommandIcon>
+                        <ChevronLeft />
+                      </CommandIcon>
                     </button>
-                    <span className="truncate text-sm font-medium text-foreground">
-                      {activePage?.title}
-                    </span>
+                    {activePage?.panelSearch ? (
+                      <>
+                        <input
+                          autoFocus
+                          aria-label={`Search ${activePage.title}`}
+                          value={query}
+                          onChange={(event) => setQuery(event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Escape") {
+                              if (query !== "") {
+                                event.preventDefault();
+                                setQuery("");
+                                return;
+                              }
+                              event.preventDefault();
+                              goToDepth(pages.length - 1);
+                              return;
+                            }
+                            if (event.key === "Backspace" && query === "") {
+                              event.preventDefault();
+                              goToDepth(pages.length - 1);
+                            }
+                          }}
+                          placeholder={activePage.panelSearchPlaceholder ?? placeholder}
+                          className="h-12 min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-subtle-foreground"
+                        />
+                        <kbd className="hidden shrink-0 rounded-xs bg-muted px-1.5 py-0.5 font-mono text-2xs text-subtle-foreground select-none sm:block">
+                          Esc
+                        </kbd>
+                      </>
+                    ) : (
+                      <span className="truncate text-sm font-medium text-foreground">
+                        {activePage?.title}
+                      </span>
+                    )}
                   </div>
                   {/* Just a column — the panel owns its own body/footer split, so a pinned
                       footer can sit outside the scroll area rather than sticky inside it. */}
@@ -425,8 +488,10 @@ export function CommandPalette({
                 // Keep the top match ready so Enter runs it without an arrow press first.
                 autoHighlight
               >
-                <div className="flex items-center gap-2 border-b border-border px-3.5">
-                  <Search className="size-4 shrink-0 text-subtle-foreground" aria-hidden />
+                <div className="flex items-center gap-2.5 border-b border-border pl-4 pr-3">
+                  <CommandIcon className="text-subtle-foreground" aria-hidden>
+                    <Search />
+                  </CommandIcon>
 
                   {/* Breadcrumb: one pill per drilled-in page, click to jump back. */}
                   {pages.map((page, index) => (
@@ -482,7 +547,7 @@ export function CommandPalette({
                       className="mb-1 last:mb-0"
                     >
                       {group.heading && (
-                        <Autocomplete.GroupLabel className="px-2 pt-2 pb-1 text-xs font-medium text-subtle-foreground">
+                        <Autocomplete.GroupLabel className="px-2.5 pt-2 pb-1 text-xs font-medium text-subtle-foreground">
                           {group.heading}
                         </Autocomplete.GroupLabel>
                       )}
@@ -504,7 +569,7 @@ export function CommandPalette({
                 </Autocomplete.Empty>
 
                 {footer && (
-                  <div className="flex shrink-0 items-center gap-3 border-t border-border px-3.5 py-2">
+                  <div className="flex shrink-0 items-center gap-3 border-t border-border px-1.5 py-2">
                     <Hint keys={["↑", "↓"]}>Navigate</Hint>
                     <Hint keys={[<CornerDownLeft key="enter" className="size-2.5" />]}>Select</Hint>
                     <EscapeHint />
@@ -551,6 +616,80 @@ export function CommandPanelBody({
   );
 }
 
+export interface CommandPanelRowProps
+  extends Omit<ComponentProps<"div">, "children" | "onClick" | "onKeyDown"> {
+  /** A leading icon rendered in the standard 16px palette icon slot. */
+  icon?: ReactNode;
+  children?: ReactNode;
+  /** Persistent selection state shown by the optional checkbox indicator. */
+  selected?: boolean;
+  /** Select the row when it is clicked or activated with Enter/Space. */
+  onSelect?: () => void;
+  /** Show a trailing checkbox indicator for the row's selection state. */
+  checkbox?: boolean;
+  onKeyDown?: ComponentProps<"div">["onKeyDown"];
+}
+
+/**
+ * A list row for custom panel content.
+ *
+ * Its inset, row height, hover treatment and icon slot match the main command list. The
+ * checkbox is intentionally presentational — the row owns selection, so the whole row
+ * remains one keyboard target and `selected` is the only persistent state signal.
+ */
+export function CommandPanelRow({
+  className,
+  icon,
+  children,
+  selected = false,
+  onSelect,
+  checkbox = false,
+  onKeyDown,
+  ...props
+}: CommandPanelRowProps) {
+  const interactive = onSelect != null;
+
+  return (
+    <div
+      {...props}
+      role={interactive ? "button" : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      aria-pressed={interactive ? selected : undefined}
+      onClick={interactive ? onSelect : undefined}
+      onKeyDown={(event) => {
+        onKeyDown?.(event);
+        if (event.defaultPrevented || !onSelect) return;
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onSelect();
+        }
+      }}
+        className={cn(
+          "group flex items-center gap-2.5 rounded-sm px-2.5 py-2 text-sm text-muted-foreground outline-none select-none",
+          interactive ? "cursor-pointer" : "cursor-default",
+        "hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground",
+        className,
+      )}
+    >
+      {icon && (
+        <CommandIcon className="text-subtle-foreground group-hover:text-foreground group-focus-within:text-foreground">
+          {icon}
+        </CommandIcon>
+      )}
+      <span className="min-w-0 flex-1 truncate">{children}</span>
+      {checkbox && (
+        <Checkbox
+          size="sm"
+          checked={selected}
+          tabIndex={-1}
+          aria-hidden="true"
+              className="pointer-events-none ml-auto -mr-1"
+        />
+      )}
+    </div>
+  );
+}
+
 /** The action bar for a panel page — see `CommandPanelBody` for the expected structure. */
 export function CommandPanelFooter({
   className,
@@ -567,7 +706,7 @@ export function CommandPanelFooter({
       className={cn(
         // Same px/py as the list's hint bar, so both footers are exactly the same height.
         // `text-2xs` sets the scale for whatever children get passed in.
-        "flex shrink-0 items-center justify-between gap-3 border-t border-border px-3.5 py-2 text-2xs",
+        "flex shrink-0 items-center justify-between gap-3 border-t border-border px-1.5 py-2 text-2xs",
         className,
       )}
     >
@@ -683,6 +822,19 @@ const ACTION_CLASS = cn(
   "disabled:pointer-events-none disabled:opacity-50",
 );
 
+const INERT_HINT_CLASS =
+  "flex items-center gap-1 rounded-xs -my-1 px-1.5 py-1 text-2xs text-subtle-foreground";
+
+/** A standard 16px icon slot for palette rows and custom panel content. */
+export function CommandIcon({ className, ...props }: ComponentProps<"span">) {
+  return (
+    <span
+      className={cn("flex size-4 shrink-0 items-center justify-center [&_svg]:size-4", className)}
+      {...props}
+    />
+  );
+}
+
 /** Lets the footer parts drive the palette without threading props through the panel. */
 interface PaletteControls {
   close: () => void;
@@ -745,7 +897,7 @@ function Hint({
   // an inert span rather than a button that lies about being pressable.
   if (!onClick) {
     return (
-      <span className="flex items-center gap-1 text-2xs text-subtle-foreground">{content}</span>
+      <span className={INERT_HINT_CLASS}>{content}</span>
     );
   }
 
@@ -812,9 +964,9 @@ function CommandRow({
       )}
     >
       {item.icon && (
-        <span className="flex size-4 shrink-0 items-center justify-center text-subtle-foreground group-data-highlighted:text-foreground [&_svg]:size-4">
+        <CommandIcon className="text-subtle-foreground group-data-highlighted:text-foreground">
           {item.icon}
-        </span>
+        </CommandIcon>
       )}
 
       <span className="flex min-w-0 flex-1 flex-col">

@@ -9,10 +9,8 @@ export const commandPaletteEntry = defineEntry({
     shortcut: bool(true, "⌘K shortcut"),
     // Section the commands under headings, or run them as one flat list.
     grouped: bool(true, "Grouped"),
-    // Offer a "Create <query>" row at the foot of the list while typing.
-    create: bool(true, "Create action"),
   },
-  render({ shortcut, grouped, create }) {
-    return <CommandPaletteDemo shortcut={shortcut} grouped={grouped} create={create} />;
+  render({ shortcut, grouped }) {
+    return <CommandPaletteDemo shortcut={shortcut} grouped={grouped} />;
   },
 });

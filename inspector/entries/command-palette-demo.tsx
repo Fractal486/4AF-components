@@ -3,7 +3,6 @@
 import {
   ArrowRight,
   Bell,
-  Check,
   Copy,
   CornerDownLeft,
   FileText,
@@ -22,12 +21,12 @@ import {
   Trash2,
 } from "lucide-react";
 import { useState } from "react";
-import { cn } from "@/registry/lib/cn";
 import { Badge, type BadgeProps } from "@/registry/ui/badge/badge";
 import { Button } from "@/registry/ui/button/button";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import {
   CommandPalette,
+  CommandPanelRow,
   CommandPanelAction,
   CommandPanelActions,
   CommandPanelBody,
@@ -49,11 +48,9 @@ import { Switch } from "@/registry/ui/switch/switch";
 export function CommandPaletteDemo({
   shortcut,
   grouped,
-  create,
 }: {
   shortcut: boolean;
   grouped: boolean;
-  create: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [lastRun, setLastRun] = useState<string | null>(null);
@@ -98,6 +95,8 @@ export function CommandPaletteDemo({
       panel: (helpers) => (
         <ProjectsPanel helpers={helpers} onDone={(summary) => setLastRun(summary)} />
       ),
+      panelSearch: true,
+      panelSearchPlaceholder: "Search projects…",
     },
     {
       id: "theme",
@@ -145,10 +144,9 @@ export function CommandPaletteDemo({
 
       <CommandPalette
         // Remounted per toggle so the demo rebuilds cleanly.
-        key={`${shortcut}-${grouped}-${create}`}
+        key={`${shortcut}-${grouped}`}
         groups={groups}
         shortcut={shortcut}
-        onCreate={create ? (query) => setLastRun(`Create “${query}”`) : undefined}
         open={open}
         onOpenChange={setOpen}
       />
@@ -207,6 +205,11 @@ function ProjectsPanel({
   onDone: (summary: string) => void;
 }) {
   const [selected, setSelected] = useState<string>(PROJECTS[0]);
+  const query = helpers.query.trim();
+  const normalizedQuery = query.toLowerCase();
+  const visibleProjects = PROJECTS.filter((project) =>
+    project.toLowerCase().includes(normalizedQuery),
+  );
 
   // Contextual actions for whichever project is highlighted — the ⌘J menu in the footer.
   const actions = [
@@ -220,26 +223,34 @@ function ProjectsPanel({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <CommandPanelBody className="flex flex-col gap-1">
-        {PROJECTS.map((project) => (
-          <button
-            key={project}
-            type="button"
-            onClick={() => setSelected(project)}
-            aria-current={project === selected}
-            className={cn(
-              "flex cursor-pointer items-center gap-2.5 rounded-sm px-2.5 py-2 text-sm outline-none",
-              "focus-visible:ring-2 focus-visible:ring-ring",
-              project === selected
-                ? "bg-muted text-foreground"
-                : "text-muted-foreground hover:text-foreground",
-            )}
+      <CommandPanelBody className="flex flex-col gap-0 p-1.5">
+        {visibleProjects.length > 0 ? (
+          visibleProjects.map((project) => (
+            <CommandPanelRow
+              key={project}
+              icon={<FolderOpen />}
+              selected={project === selected}
+              onSelect={() => setSelected(project)}
+              checkbox
+            >
+              {project}
+            </CommandPanelRow>
+          ))
+        ) : query ? (
+          <CommandPanelRow
+            icon={<Plus />}
+            onSelect={() => {
+              onDone(`Created “${query}”`);
+              helpers.close();
+            }}
           >
-            <FolderOpen className="size-4 shrink-0 text-subtle-foreground" />
-            <span className="flex-1 text-left">{project}</span>
-            {project === selected && <Check className="size-4 shrink-0 text-subtle-foreground" />}
-          </button>
-        ))}
+            Create “{query}”
+          </CommandPanelRow>
+        ) : (
+          <p className="px-2.5 py-8 text-center text-sm text-muted-foreground">
+            No projects found.
+          </p>
+        )}
       </CommandPanelBody>
 
       <CommandPanelFooter>
