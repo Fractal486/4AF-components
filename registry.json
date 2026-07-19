@@ -209,6 +209,43 @@
       ]
     },
     {
+      "name": "textarea",
+      "type": "registry:ui",
+      "description": "A multi-line field sharing the Input treatment (border, focus ring, variant/tone), plus a custom drag-to-resize corner grip in place of the native handle.",
+      "dependencies": [
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/input.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/textarea/textarea.tsx",
+          "type": "registry:ui",
+          "target": "@ui/textarea.tsx"
+        }
+      ]
+    },
+    {
+      "name": "field-error",
+      "type": "registry:ui",
+      "description": "A field error message \u2014 the hexagon alert glyph plus the reason, in destructive red. role=alert, sits below the control.",
+      "dependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/field-error/field-error.tsx",
+          "type": "registry:ui",
+          "target": "@ui/field-error.tsx"
+        }
+      ]
+    },
+    {
       "name": "toggle",
       "type": "registry:ui",
       "description": "A button that holds a state. Fills its icon rather than swapping it.",

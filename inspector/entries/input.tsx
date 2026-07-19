@@ -1,3 +1,4 @@
+import { FieldError } from "@/registry/ui/field-error/field-error";
 import { Input } from "@/registry/ui/input/input";
 import { bool, defineEntry, select, text } from "../schema";
 
@@ -26,8 +27,10 @@ export const inputEntry = defineEntry({
           placeholder={placeholder}
           disabled={disabled}
           aria-invalid={invalid ? true : undefined}
+          aria-describedby={invalid ? "input-error" : undefined}
           aria-label="Input preview"
         />
+        {invalid && <FieldError id="input-error">Please enter a valid value.</FieldError>}
       </div>
     );
   },

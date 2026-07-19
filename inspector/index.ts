@@ -21,6 +21,7 @@ import { sheetEntry } from "./entries/sheet";
 import { sliderEntry } from "./entries/slider";
 import { switchEntry } from "./entries/switch";
 import { tabsEntry } from "./entries/tabs";
+import { textareaEntry } from "./entries/textarea";
 import { toastEntry } from "./entries/toast";
 import { toggleEntry } from "./entries/toggle";
 import { tooltipEntry } from "./entries/tooltip";
@@ -58,8 +59,9 @@ export const groups: Group[] = [
   {
     slug: "input",
     name: "Input",
-    summary: "A native text field backed by Base UI.",
-    entries: [inputEntry],
+    summary: "A native text field backed by Base UI, and the taller textarea that shares its treatment.",
+    entries: [inputEntry, textareaEntry],
+    stacked: true,
   },
   {
     slug: "tabs",

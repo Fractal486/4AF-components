@@ -12,7 +12,11 @@ export const inputVariants = cva(
     "outline-none",
     "transition-[border-color,box-shadow,color,opacity] duration-(--duration-fast) ease-out",
     "disabled:cursor-not-allowed disabled:opacity-50",
-    "aria-invalid:ring-2 aria-invalid:ring-destructive/20",
+    // Invalid mirrors the `accent` focus treatment in destructive red, persisting whether
+    // or not the field is focused. The red border is shared by every variant (on
+    // `underline` it colours the single bottom border); the 3px ring is added only to the
+    // boxed `default` variant below.
+    "aria-invalid:border-destructive",
     "file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium",
     "selection:bg-primary selection:text-primary-foreground",
   ],
@@ -35,6 +39,12 @@ export const inputVariants = cva(
       },
     },
     compoundVariants: [
+      {
+        // The invalid ring, boxed variant only — matches `accent`'s 3px ring but red.
+        // `shadow-none` clears the neutral tone's grey focus shadow so only the red reads.
+        variant: "default",
+        class: "aria-invalid:ring-[3px] aria-invalid:ring-destructive/25 aria-invalid:shadow-none",
+      },
       {
         variant: "default",
         tone: "neutral",
