@@ -119,6 +119,18 @@ describe("Motion Select", () => {
     fireEvent.click(screen.getByRole("button", { name: "Banana" }));
     const input = screen.getByRole("textbox", { name: "Search options" });
     expect(input).toHaveAttribute("placeholder", "Search fruit");
+    expect(input).toHaveFocus();
+
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    const apple = screen.getByRole("option", { name: "Apple" });
+    const banana = screen.getByRole("option", { name: "Banana" });
+    expect(apple).toHaveFocus();
+    fireEvent.keyDown(apple, { key: "ArrowDown" });
+    expect(banana).toHaveFocus();
+    fireEvent.keyDown(banana, { key: "ArrowUp" });
+    expect(apple).toHaveFocus();
+
+    fireEvent.focus(input);
 
     fireEvent.change(input, { target: { value: "man" } });
     expect(screen.queryByRole("option", { name: "Apple" })).not.toBeInTheDocument();

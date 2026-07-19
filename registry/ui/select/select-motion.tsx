@@ -98,6 +98,30 @@ function useSelectContext(component: string) {
   return ctx;
 }
 
+function focusPanelOption(
+  list: HTMLElement | null,
+  current: HTMLElement | null,
+  direction: "next" | "previous",
+) {
+  if (!list) return;
+
+  const options = Array.from(list.querySelectorAll<HTMLElement>('[role="option"]')).filter(
+    (option) =>
+      !option.hidden &&
+      option.getAttribute("aria-disabled") !== "true" &&
+      !(option instanceof HTMLButtonElement && option.disabled),
+  );
+  const currentIndex = current ? options.indexOf(current) : -1;
+  const nextIndex =
+    direction === "next"
+      ? Math.min(currentIndex + 1, options.length - 1)
+      : currentIndex < 0
+        ? options.length - 1
+        : Math.max(currentIndex - 1, 0);
+
+  options[nextIndex]?.focus();
+}
+
 interface SelectBaseProps {
   disabled?: boolean;
   className?: string;
@@ -404,9 +428,17 @@ export function SelectContent({
 }: SelectContentProps) {
   const ctx = useSelectContext("SelectContent");
   const innerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
   const [height, setHeight] = useState(0);
   const open = ctx.open;
   const { setPlacement } = ctx;
+
+  // Unlike the Base UI popup, this inline panel does not manage focus for us. Put the
+  // cursor straight into the optional panel search on every open, ready for typing.
+  useLayoutEffect(() => {
+    if (open && searchable) searchRef.current?.focus();
+  }, [open, searchable]);
 
   useLayoutEffect(() => {
     const node = innerRef.current;
@@ -509,11 +541,21 @@ export function SelectContent({
               className="pointer-events-none absolute top-1/2 left-4 size-3.5 -translate-y-1/2 text-muted-foreground"
             />
             <Input
+              ref={searchRef}
               aria-label="Search options"
               variant="plain"
               value={ctx.searchQuery}
               onChange={(event) => ctx.setSearchQuery(event.target.value)}
               onKeyDown={(event) => {
+                if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                  event.preventDefault();
+                  focusPanelOption(
+                    listRef.current,
+                    null,
+                    event.key === "ArrowDown" ? "next" : "previous",
+                  );
+                  return;
+                }
                 if (event.key !== "Escape") event.stopPropagation();
               }}
               placeholder={searchPlaceholder}
@@ -522,6 +564,7 @@ export function SelectContent({
           </div>
         )}
         <motion.div
+          ref={listRef}
           id={ctx.listId}
           role="listbox"
           aria-labelledby={ctx.triggerId}
@@ -625,6 +668,15 @@ export function SelectItem({
         {...pointerHighlightProps}
         onClick={itemDisabled ? undefined : () => ctx.select(value)}
         onKeyDown={(event) => {
+          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            focusPanelOption(
+              document.getElementById(ctx.listId),
+              event.currentTarget,
+              event.key === "ArrowDown" ? "next" : "previous",
+            );
+            return;
+          }
           if (itemDisabled || (event.key !== "Enter" && event.key !== " ")) return;
           event.preventDefault();
           ctx.select(value);
@@ -656,6 +708,16 @@ export function SelectItem({
         hidden={hiddenBySearch}
         {...pointerHighlightProps}
         onClick={() => ctx.select(value)}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            focusPanelOption(
+              document.getElementById(ctx.listId),
+              event.currentTarget,
+              event.key === "ArrowDown" ? "next" : "previous",
+            );
+          }
+        }}
         className={cn("justify-between", itemClassName)}
       >
         <span className="flex min-w-0 flex-1 items-center gap-2">

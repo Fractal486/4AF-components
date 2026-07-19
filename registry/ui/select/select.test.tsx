@@ -127,6 +127,13 @@ describe("Base UI Select", () => {
     const input = screen.getByRole("textbox", { name: "Search options" });
     expect(input).toHaveAttribute("placeholder", "Search fruit");
 
+    await user.keyboard("{ArrowDown}");
+    expect(screen.getByRole("option", { name: "Apple" })).toHaveFocus();
+    await user.keyboard("{ArrowDown}");
+    expect(screen.getByRole("option", { name: "Mango" })).toHaveFocus();
+
+    await user.click(input);
+
     await user.type(input, "man");
     expect(screen.queryByRole("option", { name: "Apple" })).not.toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Mango" })).toBeInTheDocument();

@@ -10,6 +10,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ComponentProps,
   type ReactNode,
@@ -77,6 +78,22 @@ const FADE_SHOW = { opacity: 1, scale: 1, filter: "blur(0px)" };
 // two properties; WebKit the pseudo-element rules.
 const SCROLLBAR =
   "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground";
+
+function focusPanelOption(
+  list: HTMLElement | null,
+  direction: "next" | "previous",
+) {
+  if (!list) return;
+
+  const options = Array.from(list.querySelectorAll<HTMLElement>('[role="option"]')).filter(
+    (option) =>
+      !option.hidden &&
+      option.getAttribute("aria-disabled") !== "true" &&
+      !(option instanceof HTMLButtonElement && option.disabled),
+  );
+  const option = direction === "next" ? options[0] : options.at(-1);
+  option?.focus();
+}
 
 export interface SelectProps<Value, Multiple extends boolean | undefined = false>
   extends Omit<ComponentProps<typeof BaseSelect.Root<Value, Multiple>>, "children"> {
@@ -498,6 +515,7 @@ export function SelectContent({
 }) {
   const reduceMotion = useReducedMotion();
   const { open, values, clear, searchQuery, setSearchQuery } = useContext(SelectContext);
+  const listRef = useRef<HTMLDivElement>(null);
 
   return (
     <BaseSelect.Portal>
@@ -557,6 +575,14 @@ export function SelectContent({
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 onKeyDown={(event) => {
+                  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                    event.preventDefault();
+                    focusPanelOption(
+                      listRef.current,
+                      event.key === "ArrowDown" ? "next" : "previous",
+                    );
+                    return;
+                  }
                   // Keep Select's typeahead from treating input keystrokes as option jumps.
                   if (event.key !== "Escape") event.stopPropagation();
                 }}
@@ -571,7 +597,7 @@ export function SelectContent({
               SCROLLBAR,
             )}
           >
-            <BaseSelect.List>{children}</BaseSelect.List>
+            <BaseSelect.List ref={listRef}>{children}</BaseSelect.List>
           </div>
           {clearable && (
             // A footer, not a listbox row — pinned below the scroll area, and disabled
