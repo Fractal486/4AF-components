@@ -350,7 +350,9 @@ export function SelectTrigger({
   return (
     <BaseSelect.Trigger
       className={cn(
-        "group flex h-10 items-center gap-2 rounded-md text-sm text-foreground",
+        // h-9 matches Button's default `md` size and the Input — a select sat beside
+        // either in a form row has to line up with it.
+        "group flex h-9 items-center gap-2 rounded-md text-sm text-foreground",
         "cursor-pointer outline-none select-none",
         "transition-[background-color,border-color] duration-(--duration-base) ease-out",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",

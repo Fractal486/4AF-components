@@ -215,7 +215,7 @@ export function MotionSearchSelectInput({
               />
               <Combobox.Input
                 className={cn(
-                  "h-10 w-full rounded-md border border-border bg-surface pr-9 pl-3.5 text-sm text-foreground",
+                  "h-9 w-full rounded-md border border-border bg-surface pr-9 pl-3.5 text-sm text-foreground",
                   "outline-none placeholder:text-muted-foreground",
                   "transition-[border-color,box-shadow,color] duration-(--duration-fast) ease-out",
                   "hover:border-border-strong disabled:cursor-not-allowed disabled:opacity-50",

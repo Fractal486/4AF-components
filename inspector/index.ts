@@ -3,6 +3,7 @@ import { alertDialogEntry } from "./entries/alert-dialog";
 import { badgeEntry } from "./entries/badge";
 import { buttonEntry } from "./entries/button";
 import { checkboxEntry } from "./entries/checkbox";
+import { commandPaletteEntry } from "./entries/command-palette";
 import { copyButtonEntry } from "./entries/copy-button";
 import { dialogEntry } from "./entries/dialog";
 import { dropdownMenuEntry } from "./entries/dropdown-menu";
@@ -175,6 +176,13 @@ export const groups: Group[] = [
     summary:
       "A menu off a trigger, with a highlight that slides between items. Checkbox and radio items, submenus, shortcuts.",
     entries: [dropdownMenuEntry],
+  },
+  {
+    slug: "command-palette",
+    name: "Command Palette",
+    summary:
+      "The ⌘K overlay. Base UI Autocomplete filtering and keyboard nav inside a focus-trapped Dialog; grouped commands, icons and shortcut hints.",
+    entries: [commandPaletteEntry],
   },
   {
     slug: "toast",
