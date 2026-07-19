@@ -26,8 +26,9 @@ export const selectEntry = defineEntry({
     disabled: bool(false),
     multiple: bool(false),
     icons: bool(true),
+    outline: bool(true),
   },
-  render({ disabled, multiple, icons }) {
+  render({ disabled, multiple, icons, outline }) {
     return (
       <div className="w-full max-w-56">
         {multiple ? (
@@ -38,7 +39,7 @@ export const selectEntry = defineEntry({
             defaultValue={["banana", "mango"]}
             disabled={disabled}
           >
-            <SelectTrigger aria-label="Fruits">
+            <SelectTrigger aria-label="Fruits" outline={outline}>
               <SelectValue placeholder="Pick fruits" />
             </SelectTrigger>
             <SelectContent>
@@ -61,7 +62,7 @@ export const selectEntry = defineEntry({
             disabled={disabled}
             iconForValue={icons ? (value) => <FruitIcon value={String(value)} /> : undefined}
           >
-            <SelectTrigger aria-label="Fruit">
+            <SelectTrigger aria-label="Fruit" outline={outline}>
               <SelectValue placeholder="Pick a fruit" />
             </SelectTrigger>
             <SelectContent>

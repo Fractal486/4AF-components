@@ -280,10 +280,16 @@ export function SelectValue({
 export function SelectTrigger({
   className,
   children,
+  outline = true,
   ...props
 }: Omit<ComponentProps<typeof BaseSelect.Trigger>, "className"> & {
   className?: string;
   children?: ReactNode;
+  /**
+   * The bordered field box. Off leaves just the value and the chevron — a borderless,
+   * fit-to-content trigger for a toolbar or inline label.
+   */
+  outline?: boolean;
 }) {
   const { open } = useContext(SelectContext);
   const reduceMotion = useReducedMotion();
@@ -291,12 +297,14 @@ export function SelectTrigger({
   return (
     <BaseSelect.Trigger
       className={cn(
-        "group flex h-10 w-full items-center justify-between gap-2 rounded-md border border-border bg-surface px-3.5 text-sm text-foreground",
+        "group flex h-10 items-center gap-2 rounded-md text-sm text-foreground",
         "cursor-pointer outline-none select-none",
         "transition-[background-color,border-color] duration-(--duration-base) ease-out",
-        "hover:border-border-strong data-[popup-open]:border-border-strong",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
+        outline
+          ? "w-full justify-between border border-border bg-surface px-3.5 hover:border-border-strong data-[popup-open]:border-border-strong"
+          : "w-auto justify-between gap-1.5 px-0",
         className,
       )}
       {...props}
@@ -476,8 +484,11 @@ export function SelectContent({
         alignItemWithTrigger={false}
         side="bottom"
         className={cn(
-          "z-50 outline-none",
-          width === "trigger" ? "w-[var(--anchor-width)]" : "min-w-36",
+          // No width tie to the trigger — the panel sizes to its own rows (the longest
+          // label plus the reserved check slot), so it's neither clipped to a narrow
+          // trigger nor stretched to a wide one. `content` just adds a sensible minimum.
+          "z-50 w-max outline-none",
+          width === "content" && "min-w-36",
         )}
       >
         {/* The animation is driven off the `open` state, not Motion's mount: Base UI keeps
@@ -632,9 +643,13 @@ export function SelectItem({
     >
       <SelectItemIcon icon={icon} />
       <BaseSelect.ItemText className="flex-1 truncate">{children}</BaseSelect.ItemText>
-      <BaseSelect.ItemIndicator className="shrink-0 text-foreground">
-        <Check className="size-3.5" />
-      </BaseSelect.ItemIndicator>
+      {/* A fixed slot so the check's width is reserved on every row (selected or not),
+          keeping the panel a stable "longest label + check" wide. */}
+      <span className="flex size-3.5 shrink-0 items-center justify-center">
+        <BaseSelect.ItemIndicator className="text-foreground">
+          <Check className="size-3.5" />
+        </BaseSelect.ItemIndicator>
+      </span>
     </BaseSelect.Item>
   );
 }
