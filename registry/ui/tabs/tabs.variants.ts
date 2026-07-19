@@ -6,16 +6,25 @@ export const tabsListVariants = cva("relative flex items-center", {
       /* A track wraps its tabs, so it must not stretch: the list is a flex child of a
          column, and would otherwise become a page-wide bar.
          rounded-md (7px) tabs inside a rounded-lg (10px) track with 2px of padding —
-         concentric, so the inner corners sit parallel to the outer ones. */
-      segment: "w-fit self-start gap-0.5 rounded-lg bg-muted p-0.5",
-      pill: "w-fit self-start gap-1 rounded-full bg-muted p-1",
+         concentric, so the inner corners sit parallel to the outer ones. The fill is set
+         per `solid` below. */
+      segment: "w-fit self-start gap-0.5 rounded-lg p-0.5",
+      pill: "w-fit self-start gap-1 rounded-full p-1",
       /* The opposite: a rule *should* run the full width, so the tabs read as sitting
          on a line rather than in a box. A real border, not a shadow — its job here is
          separation, not elevation. */
       underline: "w-full gap-1 border-b border-border",
     },
+    // The pill treatment (segment/pill only). `false` is the raised surface chip with a
+    // hairline; `true` drops the hairline for a dark fill on a brighter track.
+    solid: { false: "", true: "" },
   },
-  defaultVariants: { variant: "segment" },
+  compoundVariants: [
+    { variant: ["segment", "pill"], solid: false, class: "bg-muted" },
+    // Brighter track so the dark, borderless pill reads against it.
+    { variant: ["segment", "pill"], solid: true, class: "bg-border" },
+  ],
+  defaultVariants: { variant: "segment", solid: false },
 });
 
 export const tabVariants = cva(
@@ -34,7 +43,9 @@ export const tabVariants = cva(
     "disabled:cursor-not-allowed disabled:opacity-50",
     // Base UI drives selection, and the attribute it actually sets is `aria-selected`
     // — not `data-selected`. Styling off the ARIA attribute has the nice property that
-    // the styling can't drift from what a screen reader is told.
+    // the styling can't drift from what a screen reader is told. `text-foreground` reads
+    // on both pills: light ink on the surface chip, and the flipped light-on-dark on the
+    // solid one (the background fill is dark in dark mode, near-white in light).
     "text-muted-foreground hover:text-foreground aria-selected:text-foreground",
   ],
   {
@@ -61,12 +72,18 @@ export const tabVariants = cva(
 export const tabIndicatorVariants = cva("pointer-events-none absolute z-0", {
   variants: {
     variant: {
-      segment: "inset-y-0.5 rounded-md bg-surface shadow-border",
-      pill: "inset-y-1 rounded-full bg-surface shadow-border",
+      segment: "inset-y-0.5 rounded-md",
+      pill: "inset-y-1 rounded-full",
       underline: "bottom-0 h-px bg-foreground",
     },
+    solid: { false: "", true: "" },
   },
-  defaultVariants: { variant: "segment" },
+  compoundVariants: [
+    // Raised surface chip with a hairline, vs. a dark borderless fill.
+    { variant: ["segment", "pill"], solid: false, class: "bg-surface shadow-border" },
+    { variant: ["segment", "pill"], solid: true, class: "bg-background" },
+  ],
+  defaultVariants: { variant: "segment", solid: false },
 });
 
 export type TabsVariants = VariantProps<typeof tabsListVariants>;

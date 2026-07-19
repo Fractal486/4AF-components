@@ -1,5 +1,5 @@
 import { Tabs, TabsList, TabsTab } from "@/registry/ui/tabs/tabs";
-import { defineEntry, select } from "../schema";
+import { bool, defineEntry, select } from "../schema";
 
 const VARIANTS = ["segment", "pill", "underline"] as const;
 
@@ -14,8 +14,11 @@ export const tabsEntry = defineEntry({
   name: "Tabs",
   controls: {
     variant: select(VARIANTS, "segment"),
+    // A dark, borderless pill on a brighter track — segment/pill only, so it's disabled
+    // for underline (which has no pill to fill).
+    solid: bool(false, "Solid", (v) => v.variant === "underline"),
   },
-  render({ variant }) {
+  render({ variant, solid }) {
     return (
       <div className="w-full max-w-md">
         <Tabs
@@ -23,6 +26,7 @@ export const tabsEntry = defineEntry({
           // from a clean slate rather than animating between two variants' shapes.
           key={variant}
           variant={variant}
+          solid={solid}
           defaultValue="account"
         >
           <TabsList>

@@ -40,7 +40,7 @@ import {
 
 type Variant = NonNullable<TabsVariants["variant"]>;
 
-const TabsContext = createContext<{ variant: Variant } | null>(null);
+const TabsContext = createContext<{ variant: Variant; solid: boolean } | null>(null);
 
 function useTabsContext() {
   const context = useContext(TabsContext);
@@ -51,16 +51,21 @@ function useTabsContext() {
 export interface TabsProps
   extends Omit<ComponentProps<typeof BaseTabs.Root>, "className" | "children"> {
   variant?: Variant;
+  /**
+   * A dark, borderless pill on a brighter track instead of the raised surface chip.
+   * `segment`/`pill` only — the `underline` variant ignores it.
+   */
+  solid?: boolean;
   className?: string;
   children: ReactNode;
 }
 
-export function Tabs({ variant = "segment", className, children, ...props }: TabsProps) {
+export function Tabs({ variant = "segment", solid = false, className, children, ...props }: TabsProps) {
   // Selection state stays entirely inside Base UI — controlled *and* uncontrolled are
   // its job. Mirroring the value here was a bug: Base UI registers its tabs in an
   // effect, so on the first render nothing matches the value yet and it emits an
   // `initial` fallback. A mirror accepts that fallback and lands on the wrong tab.
-  const context = useMemo(() => ({ variant }), [variant]);
+  const context = useMemo(() => ({ variant, solid }), [variant, solid]);
 
   return (
     <TabsContext.Provider value={context}>
@@ -79,7 +84,7 @@ export function TabsList({
   className?: string;
   children?: ReactNode;
 }) {
-  const { variant } = useTabsContext();
+  const { variant, solid } = useTabsContext();
   const listRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState<{ left: number; width: number } | null>(null);
   const reduceMotion = useReducedMotion();
@@ -117,13 +122,13 @@ export function TabsList({
   return (
     <BaseTabs.List
       ref={listRef}
-      className={cn(tabsListVariants({ variant }), className)}
+      className={cn(tabsListVariants({ variant, solid }), className)}
       {...props}
     >
       {box && (
         <motion.div
           aria-hidden
-          className={tabIndicatorVariants({ variant })}
+          className={tabIndicatorVariants({ variant, solid })}
           // No animation on first appearance — it should already be under the selected
           // tab, not fly in from the origin on load.
           initial={false}

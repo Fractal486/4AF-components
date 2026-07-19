@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/registry/ui/select/select";
 import { Slider } from "@/registry/ui/slider/slider";
+import { cn } from "@/registry/lib/cn";
 import type { ControlDef, ControlSchema, ControlValues } from "./schema";
 
 interface ControlsProps<S extends ControlSchema> {
@@ -37,6 +38,7 @@ export function Controls<S extends ControlSchema>({
             id={key}
             def={def}
             value={values[key]}
+            values={values as Record<string, unknown>}
             onChange={(v) => onChange(key, v)}
           />
         ))}
@@ -49,11 +51,13 @@ function Control({
   id,
   def,
   value: rawValue,
+  values,
   onChange,
 }: {
   id: string;
   def: ControlDef;
   value: unknown;
+  values: Record<string, unknown>;
   onChange: (value: unknown) => void;
 }) {
   // Fall back to the def's own default when the stored value is missing. This keeps every
@@ -65,14 +69,21 @@ function Control({
   const label = def.label ?? id;
 
   if (def.kind === "boolean") {
+    const disabled = def.disabledWhen?.(values) ?? false;
     // The whole row is the hit area (wrapping <label>), not a 16px square you aim at —
     // this mirrors the Checkbox's own label structure, so a row click toggles it.
     return (
-      <label className="flex cursor-pointer items-center justify-between gap-4">
+      <label
+        className={cn(
+          "flex items-center justify-between gap-4",
+          disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
+        )}
+      >
         <span className="text-sm text-muted-foreground select-none">{label}</span>
         <Checkbox
           size="sm"
           checked={value as boolean}
+          disabled={disabled}
           onCheckedChange={(checked) => onChange(checked)}
         />
       </label>

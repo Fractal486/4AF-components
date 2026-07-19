@@ -7,9 +7,12 @@ import type { ReactNode } from "react";
  * bespoke page.
  */
 
+/** Grey a control out based on the other controls' current values. */
+export type DisabledWhen = (values: Record<string, unknown>) => boolean;
+
 export type ControlDef =
   | { kind: "select"; options: readonly string[]; defaultValue: string; label?: string }
-  | { kind: "boolean"; defaultValue: boolean; label?: string }
+  | { kind: "boolean"; defaultValue: boolean; label?: string; disabledWhen?: DisabledWhen }
   | { kind: "text"; defaultValue: string; label?: string; placeholder?: string }
   | {
       kind: "number";
@@ -54,8 +57,9 @@ export function select<const O extends readonly string[]>(
 export function bool(
   defaultValue: boolean,
   label?: string,
-): { kind: "boolean"; defaultValue: boolean; label?: string } {
-  return { kind: "boolean", defaultValue, label };
+  disabledWhen?: DisabledWhen,
+): { kind: "boolean"; defaultValue: boolean; label?: string; disabledWhen?: DisabledWhen } {
+  return { kind: "boolean", defaultValue, label, disabledWhen };
 }
 
 export function text(
