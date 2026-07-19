@@ -1,3 +1,4 @@
+import { FieldError } from "@/registry/ui/field-error/field-error";
 import {
   Select,
   SelectContent,
@@ -27,8 +28,9 @@ export const selectEntry = defineEntry({
     multiple: bool(false),
     icons: bool(true),
     outline: bool(true),
+    invalid: bool(false),
   },
-  render({ disabled, multiple, icons, outline }) {
+  render({ disabled, multiple, icons, outline, invalid }) {
     return (
       <div className="w-full max-w-56">
         {multiple ? (
@@ -39,7 +41,12 @@ export const selectEntry = defineEntry({
             defaultValue={["banana", "mango"]}
             disabled={disabled}
           >
-            <SelectTrigger aria-label="Fruits" outline={outline}>
+            <SelectTrigger
+              aria-label="Fruits"
+              outline={outline}
+              aria-invalid={invalid ? true : undefined}
+              aria-describedby={invalid ? "select-error" : undefined}
+            >
               <SelectValue placeholder="Pick fruits" />
             </SelectTrigger>
             <SelectContent>
@@ -62,7 +69,12 @@ export const selectEntry = defineEntry({
             disabled={disabled}
             iconForValue={icons ? (value) => <FruitIcon value={String(value)} /> : undefined}
           >
-            <SelectTrigger aria-label="Fruit" outline={outline}>
+            <SelectTrigger
+              aria-label="Fruit"
+              outline={outline}
+              aria-invalid={invalid ? true : undefined}
+              aria-describedby={invalid ? "select-error" : undefined}
+            >
               <SelectValue placeholder="Pick a fruit" />
             </SelectTrigger>
             <SelectContent>
@@ -78,6 +90,7 @@ export const selectEntry = defineEntry({
             </SelectContent>
           </Select>
         )}
+        {invalid && <FieldError id="select-error">Please choose an option.</FieldError>}
       </div>
     );
   },

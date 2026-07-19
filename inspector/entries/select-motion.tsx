@@ -1,3 +1,4 @@
+import { FieldError } from "@/registry/ui/field-error/field-error";
 import {
   Select,
   SelectContent,
@@ -26,13 +27,17 @@ export const selectMotionEntry = defineEntry({
     disabled: bool(false),
     multiple: bool(false),
     icons: bool(true),
+    invalid: bool(false),
   },
-  render({ disabled, multiple, icons }) {
+  render({ disabled, multiple, icons, invalid }) {
     return (
       <div className="w-full max-w-56">
         {multiple ? (
           <Select key="multiple" multiple defaultValue={["banana", "mango"]} disabled={disabled}>
-            <SelectTrigger>
+            <SelectTrigger
+              aria-invalid={invalid ? true : undefined}
+              aria-describedby={invalid ? "select-motion-error" : undefined}
+            >
               <SelectValue placeholder="Pick fruits" />
             </SelectTrigger>
             <SelectContent>
@@ -54,7 +59,10 @@ export const selectMotionEntry = defineEntry({
             disabled={disabled}
             iconForValue={icons ? (value) => <FruitIcon value={value} /> : undefined}
           >
-            <SelectTrigger>
+            <SelectTrigger
+              aria-invalid={invalid ? true : undefined}
+              aria-describedby={invalid ? "select-motion-error" : undefined}
+            >
               <SelectValue placeholder="Pick a fruit" />
             </SelectTrigger>
             <SelectContent>
@@ -70,6 +78,7 @@ export const selectMotionEntry = defineEntry({
             </SelectContent>
           </Select>
         )}
+        {invalid && <FieldError id="select-motion-error">Please choose an option.</FieldError>}
       </div>
     );
   },

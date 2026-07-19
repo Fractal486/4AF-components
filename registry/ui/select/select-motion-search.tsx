@@ -219,6 +219,9 @@ export function MotionSearchSelectInput({
                   "outline-none placeholder:text-muted-foreground",
                   "transition-[border-color,box-shadow,color] duration-(--duration-fast) ease-out",
                   "hover:border-border-strong disabled:cursor-not-allowed disabled:opacity-50",
+                  // Invalid mirrors the Input's treatment; `shadow-none` clears the neutral
+                  // tone's grey focus shadow so only the red reads through. Pair with `FieldError`.
+                  "aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/25 aria-invalid:shadow-none",
                   selectedIcon && "pl-10",
                   tone === "accent"
                     ? "focus:border-ring focus:ring-[3px] focus:ring-ring/25"

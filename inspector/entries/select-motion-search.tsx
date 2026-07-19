@@ -1,3 +1,4 @@
+import { FieldError } from "@/registry/ui/field-error/field-error";
 import {
   MotionSearchSelect,
   MotionSearchSelectContent,
@@ -29,8 +30,9 @@ export const selectMotionSearchEntry = defineEntry({
     disabled: bool(false),
     multiple: bool(false),
     icons: bool(true),
+    invalid: bool(false),
   },
-  render({ tone, disabled, multiple, icons }) {
+  render({ tone, disabled, multiple, icons, invalid }) {
     return (
       <div className="w-full max-w-56">
         {multiple ? (
@@ -41,7 +43,12 @@ export const selectMotionSearchEntry = defineEntry({
             defaultValue={[FRUITS[1], FRUITS[4]]}
             disabled={disabled}
           >
-            <MotionSearchSelectInput placeholder="Search fruits…" tone={tone} />
+            <MotionSearchSelectInput
+              placeholder="Search fruits…"
+              tone={tone}
+              aria-invalid={invalid ? true : undefined}
+              aria-describedby={invalid ? "select-motion-search-error" : undefined}
+            />
             <MotionSearchSelectContent emptyMessage="No fruit found.">
               {(item: Fruit) => (
                 <MotionSearchMultiSelectItem
@@ -61,7 +68,12 @@ export const selectMotionSearchEntry = defineEntry({
             disabled={disabled}
             iconForValue={icons ? (value) => <FruitIcon value={value.value} /> : undefined}
           >
-            <MotionSearchSelectInput placeholder="Search a fruit…" tone={tone} />
+            <MotionSearchSelectInput
+              placeholder="Search a fruit…"
+              tone={tone}
+              aria-invalid={invalid ? true : undefined}
+              aria-describedby={invalid ? "select-motion-search-error" : undefined}
+            />
             <MotionSearchSelectContent emptyMessage="No fruit found.">
               {(item: Fruit) => (
                 <MotionSearchSelectItem
@@ -74,6 +86,9 @@ export const selectMotionSearchEntry = defineEntry({
               )}
             </MotionSearchSelectContent>
           </MotionSearchSelect>
+        )}
+        {invalid && (
+          <FieldError id="select-motion-search-error">Please choose an option.</FieldError>
         )}
       </div>
     );

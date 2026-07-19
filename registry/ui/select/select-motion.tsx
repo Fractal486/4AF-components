@@ -282,9 +282,12 @@ export function Select({
 export interface SelectTriggerProps {
   className?: string;
   children: ReactNode;
+  "aria-label"?: string;
+  "aria-describedby"?: string;
+  "aria-invalid"?: boolean;
 }
 
-export function SelectTrigger({ className, children }: SelectTriggerProps) {
+export function SelectTrigger({ className, children, ...aria }: SelectTriggerProps) {
   const ctx = useSelectContext("SelectTrigger");
   const isTop = ctx.placement === "top";
   // The edge facing the panel flattens then rounds; the far edge stays rounded. All
@@ -297,6 +300,7 @@ export function SelectTrigger({ className, children }: SelectTriggerProps) {
       : { duration: 0.42, times: [0, 0.5, 1], ease: ease.out };
   return (
     <motion.button
+      {...aria}
       type="button"
       id={ctx.triggerId}
       disabled={ctx.disabled}
@@ -322,6 +326,8 @@ export function SelectTrigger({ className, children }: SelectTriggerProps) {
       className={cn(
         "relative z-10 flex w-full cursor-pointer items-center justify-between gap-2 rounded-md border border-border bg-surface px-3.5 py-2 text-sm text-foreground outline-none transition-colors",
         "hover:border-border-strong focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        // Invalid mirrors the Input's treatment — red border + 3px red ring. Pair with `FieldError`.
+        "aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",
         "disabled:pointer-events-none disabled:opacity-50",
         className,
       )}
