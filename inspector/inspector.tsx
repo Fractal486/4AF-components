@@ -49,10 +49,19 @@ function EntryView({ entry }: { entry: Entry }) {
   const [values, setValues] = useState<ControlValues<ControlSchema>>(() =>
     initialValues(entry.controls),
   );
+  // An entry with no controls (e.g. Skeleton) drops the settings panel and the canvas
+  // takes the full width — an empty panel is just clutter.
+  const hasControls = Object.keys(entry.controls).length > 0;
 
   return (
     <div className="flex flex-col gap-10">
-      <div className="grid gap-4 md:grid-cols-[1fr_15rem] md:items-start">
+      <div
+        className={
+          hasControls
+            ? "grid gap-4 md:grid-cols-[1fr_15rem] md:items-start"
+            : "grid gap-4"
+        }
+      >
         {/* The canvas. Deliberately tall and empty: the component should be the only
             thing you can look at, and centred so its optical alignment is judged
             against nothing but space. */}
@@ -61,19 +70,20 @@ function EntryView({ entry }: { entry: Entry }) {
         </div>
 
         {/* rounded-lg (10px) inside rounded-xl (14px) with 4px padding: concentric. */}
-        <aside className="rounded-xl bg-surface p-4 shadow-border">
-          <Controls
-            schema={entry.controls}
-            values={values}
-            onChange={(key, value) =>
-              setValues(
-                (prev) => ({ ...prev, [key]: value }) as ControlValues<ControlSchema>,
-              )
-            }
-          />
-        </aside>
+        {hasControls && (
+          <aside className="rounded-xl bg-surface p-4 shadow-border">
+            <Controls
+              schema={entry.controls}
+              values={values}
+              onChange={(key, value) =>
+                setValues(
+                  (prev) => ({ ...prev, [key]: value }) as ControlValues<ControlSchema>,
+                )
+              }
+            />
+          </aside>
+        )}
       </div>
-
     </div>
   );
 }

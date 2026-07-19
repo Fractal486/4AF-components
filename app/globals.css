@@ -260,7 +260,7 @@
   /* Fixed values, not ramp steps: these three are specified exactly. Pure neutral
      (chroma 0), so the warm cast of the ramp doesn't apply to the dark surfaces —
      only to the text sitting on them, where it's imperceptible. */
-  --background: oklch(0.15 0 0); /* #0B0B0B — the page, and every component's ground */
+  --background: oklch(0.1448 0 0); /* the page, and every component's ground */
   --surface: oklch(0.178 0 0); /* #111111 — component fill */
   --surface-raised: oklch(0.2 0 0); /* #161616 — overlays, a step above the fill */
   --muted: oklch(0.205 0 0); /* #171717 — hover ground, segmented-control track */

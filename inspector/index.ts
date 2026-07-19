@@ -17,6 +17,7 @@ import { selectMotionEntry } from "./entries/select-motion";
 import { selectMotionSearchEntry } from "./entries/select-motion-search";
 import { selectSearchEntry } from "./entries/select-search";
 import { selectSortEntry } from "./entries/select-sort";
+import { skeletonEntry } from "./entries/skeleton";
 import { sheetEntry } from "./entries/sheet";
 import { sliderEntry } from "./entries/slider";
 import { switchEntry } from "./entries/switch";
@@ -105,6 +106,12 @@ export const groups: Group[] = [
     name: "Badge",
     summary: "A status label that rolls its glyph and text over when the status changes.",
     entries: [badgeEntry],
+  },
+  {
+    slug: "skeleton",
+    name: "Skeleton",
+    summary: "A muted placeholder that pulses while content loads. Sized with utilities.",
+    entries: [skeletonEntry],
   },
   {
     slug: "select",

@@ -41,7 +41,7 @@ export const dropdownMenuEntry = defineEntry({
               Profile
               <DropdownMenuShortcut>⌘P</DropdownMenuShortcut>
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem disabled>
               <CreditCard />
               Billing
               <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>

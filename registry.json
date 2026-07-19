@@ -499,6 +499,23 @@
       ]
     },
     {
+      "name": "skeleton",
+      "type": "registry:ui",
+      "description": "A loading placeholder \u2014 a muted block that pulses while content loads; reduced motion switches the pulse off rather than strobing.",
+      "dependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/skeleton/skeleton.tsx",
+          "type": "registry:ui",
+          "target": "@ui/skeleton.tsx"
+        }
+      ]
+    },
+    {
       "name": "text-shimmer",
       "type": "registry:ui",
       "description": "Text with a highlight sweeping across it \u2014 a looping working-in-progress affordance. Gradient clipped to the glyphs, switched off (not sped up) under reduced motion.",
