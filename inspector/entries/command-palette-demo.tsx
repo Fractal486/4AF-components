@@ -3,9 +3,11 @@
 import {
   ArrowRight,
   Bell,
+  Check,
   Copy,
   CornerDownLeft,
   FileText,
+  FolderOpen,
   Home,
   Lock,
   Monitor,
@@ -20,12 +22,14 @@ import {
   Trash2,
 } from "lucide-react";
 import { useState } from "react";
+import { cn } from "@/registry/lib/cn";
 import { Badge, type BadgeProps } from "@/registry/ui/badge/badge";
 import { Button } from "@/registry/ui/button/button";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import {
   CommandPalette,
   CommandPanelAction,
+  CommandPanelActions,
   CommandPanelBody,
   CommandPanelFooter,
   type CommandGroup,
@@ -83,6 +87,16 @@ export function CommandPaletteDemo({
       keywords: ["visibility", "storage", "notifications"],
       panel: (helpers) => (
         <SettingsPanel helpers={helpers} onDone={(summary) => setLastRun(summary)} />
+      ),
+    },
+    {
+      id: "projects",
+      label: "Projects…",
+      description: "A list panel with its own ⌘J actions menu",
+      icon: <FolderOpen />,
+      keywords: ["switch", "workspace"],
+      panel: (helpers) => (
+        <ProjectsPanel helpers={helpers} onDone={(summary) => setLastRun(summary)} />
       ),
     },
     {
@@ -180,6 +194,68 @@ function RenamePanel({
         </CommandPanelAction>
       </CommandPanelFooter>
     </form>
+  );
+}
+
+const PROJECTS = ["Aurora", "Basecamp", "Cartography", "Deep Field", "Eventide"] as const;
+
+function ProjectsPanel({
+  helpers,
+  onDone,
+}: {
+  helpers: CommandPanelHelpers;
+  onDone: (summary: string) => void;
+}) {
+  const [selected, setSelected] = useState<string>(PROJECTS[0]);
+
+  // Contextual actions for whichever project is highlighted — the ⌘J menu in the footer.
+  const actions = [
+    { id: "open", label: `Open ${selected}`, onSelect: () => { onDone(`Opened ${selected}`); helpers.close(); } },
+    { id: "rename", label: "Rename project", onSelect: () => onDone(`Rename ${selected}`) },
+    { id: "duplicate", label: "Duplicate project", onSelect: () => onDone(`Duplicated ${selected}`) },
+    { id: "copy", label: "Copy project link", onSelect: () => onDone(`Copied link to ${selected}`) },
+    { id: "archive", label: "Archive project", onSelect: () => onDone(`Archived ${selected}`) },
+    { id: "delete", label: "Delete project", onSelect: () => onDone(`Deleted ${selected}`) },
+  ];
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <CommandPanelBody className="flex flex-col gap-1">
+        {PROJECTS.map((project) => (
+          <button
+            key={project}
+            type="button"
+            onClick={() => setSelected(project)}
+            aria-current={project === selected}
+            className={cn(
+              "flex cursor-pointer items-center gap-2.5 rounded-sm px-2.5 py-2 text-sm outline-none",
+              "focus-visible:ring-2 focus-visible:ring-ring",
+              project === selected
+                ? "bg-muted text-foreground"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <FolderOpen className="size-4 shrink-0 text-subtle-foreground" />
+            <span className="flex-1 text-left">{project}</span>
+            {project === selected && <Check className="size-4 shrink-0 text-subtle-foreground" />}
+          </button>
+        ))}
+      </CommandPanelBody>
+
+      <CommandPanelFooter>
+        <CommandPanelAction
+          onClick={() => {
+            onDone(`Opened ${selected}`);
+            helpers.close();
+          }}
+          keys={[<CornerDownLeft key="enter" className="size-2.5" />]}
+        >
+          Open
+        </CommandPanelAction>
+        {/* Rightmost, so the menu hangs off the bottom-right corner. */}
+        <CommandPanelActions items={actions} />
+      </CommandPanelFooter>
+    </div>
   );
 }
 

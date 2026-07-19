@@ -48,6 +48,12 @@ interface SelectContextValue {
   unregisterLabel: (value: unknown) => void;
   labelFor: (value: unknown) => ReactNode | undefined;
   firstItem: unknown;
+  registerOptionText: (value: unknown, text: string) => void;
+  unregisterOptionText: (value: unknown) => void;
+  /** True when the text passes the current panel-search query (or there is none). */
+  matchesQuery: (text: string) => boolean;
+  /** The first item still visible under the current query — what the panel highlights. */
+  firstVisibleItem: unknown;
   activeItem: unknown;
   setActiveItem: (value: unknown) => void;
   panelSearch: boolean;
@@ -69,6 +75,10 @@ const SelectContext = createContext<SelectContextValue>({
   unregisterLabel: () => {},
   labelFor: () => undefined,
   firstItem: undefined,
+  registerOptionText: () => {},
+  unregisterOptionText: () => {},
+  matchesQuery: () => true,
+  firstVisibleItem: undefined,
   activeItem: undefined,
   setActiveItem: () => {},
   panelSearch: false,
@@ -131,8 +141,13 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
 
   // A panel search is transient: opening the list always starts with its full set of
   // choices, rather than retaining a filter from a previous visit.
+  //
+  // Reset on *open*, not on close. Clearing as the panel closes un-hides every option
+  // while the exit animation is still running, so a filtered panel visibly grows back to
+  // full height on its way out. Holding the query until the next open means the panel
+  // fades out exactly as it looked, and the stale query is invisible in between.
   useEffect(() => {
-    if (!isOpen) setSearchQuery("");
+    if (isOpen) setSearchQuery("");
   }, [isOpen]);
 
   // Mirror the selection so a trigger can read it for its own display and styling — a
@@ -190,6 +205,39 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   }, []);
   const labelFor = useCallback((v: unknown) => labels.get(v), [labels]);
   const firstItem = useMemo(() => labels.keys().next().value, [labels]);
+
+  // Items register the text a panel search matches against, so the panel can work out
+  // which row is first *after* filtering. One predicate, used by both the item deciding
+  // whether it's hidden and the panel deciding what to highlight — otherwise the two
+  // drift and the highlight lands on a row that isn't there.
+  const [optionTexts, setOptionTexts] = useState<Map<unknown, string>>(() => new Map());
+  const registerOptionText = useCallback((v: unknown, text: string) => {
+    setOptionTexts((current) => {
+      if (current.get(v) === text) return current;
+      return new Map(current).set(v, text);
+    });
+  }, []);
+  const unregisterOptionText = useCallback((v: unknown) => {
+    setOptionTexts((current) => {
+      if (!current.has(v)) return current;
+      const next = new Map(current);
+      next.delete(v);
+      return next;
+    });
+  }, []);
+  const matchesQuery = useCallback(
+    (text: string) => {
+      const q = searchQuery.trim().toLocaleLowerCase();
+      return q === "" || text.toLocaleLowerCase().includes(q);
+    },
+    [searchQuery],
+  );
+  const firstVisibleItem = useMemo(() => {
+    for (const [value, text] of optionTexts) {
+      if (matchesQuery(text)) return value;
+    }
+    return undefined;
+  }, [optionTexts, matchesQuery]);
   const [activeItem, setActiveItem] = useState<unknown>(undefined);
   const [panelSearch, setPanelSearch] = useState(false);
 
@@ -256,6 +304,10 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
         unregisterLabel,
         labelFor,
         firstItem,
+        registerOptionText,
+        unregisterOptionText,
+        matchesQuery,
+        firstVisibleItem,
         activeItem,
         setActiveItem,
         panelSearch,
@@ -334,6 +386,7 @@ export function SelectTrigger({
   className,
   children,
   outline = true,
+  chevron = true,
   ...props
 }: Omit<ComponentProps<typeof BaseSelect.Trigger>, "className"> & {
   className?: string;
@@ -343,6 +396,11 @@ export function SelectTrigger({
    * fit-to-content trigger for a toolbar or inline label.
    */
   outline?: boolean;
+  /**
+   * The trailing chevron. Off when the trigger already reads as openable on its own — a
+   * keyboard-hinted menu affordance, say, where a chevron would just be noise.
+   */
+  chevron?: boolean;
 }) {
   const { open } = useContext(SelectContext);
   const reduceMotion = useReducedMotion();
@@ -371,16 +429,18 @@ export function SelectTrigger({
       {...props}
     >
       {children}
-      <motion.span
-        aria-hidden
-        className="shrink-0 text-muted-foreground"
-        animate={{ rotate: open ? 180 : 0 }}
-        transition={
-          reduceMotion ? { duration: 0 } : { type: "spring", duration: 0.4, bounce: 0 }
-        }
-      >
-        <ChevronDown className="size-4" />
-      </motion.span>
+      {chevron && (
+        <motion.span
+          aria-hidden
+          className="shrink-0 text-muted-foreground"
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={
+            reduceMotion ? { duration: 0 } : { type: "spring", duration: 0.4, bounce: 0 }
+          }
+        >
+          <ChevronDown className="size-4" />
+        </motion.span>
+      )}
     </BaseSelect.Trigger>
   );
 }
@@ -511,9 +571,11 @@ export function SelectContent({
   className,
   children,
   sideOffset = 6,
+  side = "bottom",
   align = "start",
   width = "trigger",
   searchable = false,
+  searchPosition = "top",
   searchPlaceholder = "Search…",
   emptyMessage = "No results.",
   autoFocusFirstItem = true,
@@ -524,14 +586,21 @@ export function SelectContent({
   className?: string;
   children?: ReactNode;
   sideOffset?: number;
+  /** Which side of the trigger to open on. Base UI still collision-flips from here. */
+  side?: ComponentProps<typeof BaseSelect.Positioner>["side"];
   align?: ComponentProps<typeof BaseSelect.Positioner>["align"];
   /**
    * `trigger` keeps the panel the trigger's width (a bordered field select); `content`
    * sizes it to its own rows — for a narrow, borderless trigger or the sort chip.
    */
   width?: "trigger" | "content";
-  /** Adds a plain filter field above the list, separated from the options by a hairline. */
+  /** Adds a plain filter field beside the list, separated from the options by a hairline. */
   searchable?: boolean;
+  /**
+   * Which end of the panel the filter field sits at. `bottom` suits a panel that opens
+   * upward off a footer, where the field then lands next to the trigger it came from.
+   */
+  searchPosition?: "top" | "bottom";
   /** Placeholder for the optional panel filter field. */
   searchPlaceholder?: string;
   /** Message shown when a panel search has no matching options. */
@@ -548,13 +617,14 @@ export function SelectContent({
     open,
     values,
     clear,
-    firstItem,
+    firstVisibleItem,
     setActiveItem,
     setPanelSearch,
     searchQuery,
     setSearchQuery,
   } = useContext(SelectContext);
   const listRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [noResults, setNoResults] = useState(false);
 
   useEffect(() => {
@@ -576,17 +646,58 @@ export function SelectContent({
 
   // Every non-sort select begins on its first row, even when another value is selected.
   // Searchable panels retain DOM focus in their field, but carry the same active-row state.
+  // Keyed on the first *visible* item, so as a query narrows the list the highlight moves
+  // to the new top row rather than being stranded on one the filter just hid.
   useEffect(() => {
-    if (!open || !autoFocusFirstItem || firstItem === undefined) return;
+    if (!open || !autoFocusFirstItem || firstVisibleItem === undefined) return;
 
-    setActiveItem(firstItem);
+    setActiveItem(firstVisibleItem);
     if (searchable) return;
 
     const frame = requestAnimationFrame(() => {
       focusPanelOption(listRef.current, "next");
     });
     return () => cancelAnimationFrame(frame);
-  }, [autoFocusFirstItem, firstItem, open, searchable, setActiveItem]);
+  }, [autoFocusFirstItem, firstVisibleItem, open, searchable, setActiveItem]);
+
+  // Built once and placed at whichever end `searchPosition` names, so the two layouts
+  // can't drift apart. The hairline goes on the side facing the options.
+  const searchField = searchable ? (
+    <div
+      className={cn(
+        "relative px-2 py-1",
+        searchPosition === "bottom" ? "border-t border-border" : "border-b border-border",
+      )}
+    >
+      <Search
+        aria-hidden="true"
+        className="pointer-events-none absolute top-1/2 left-4 size-3.5 -translate-y-1/2 text-muted-foreground"
+      />
+      <Input
+        ref={searchInputRef}
+        aria-label="Search options"
+        variant="plain"
+        value={searchQuery}
+        onChange={(event) => setSearchQuery(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            focusPanelOption(listRef.current, event.key === "ArrowDown" ? "next" : "previous");
+            return;
+          }
+          // Keep Select's typeahead from treating input keystrokes as option jumps — but
+          // only plain typing. A modifier chord is never typeahead, and swallowing it here
+          // would stop app-level shortcuts (the chord that opened this panel, say) from
+          // ever reaching their listener while the field has focus.
+          if (event.key !== "Escape" && !event.metaKey && !event.ctrlKey) {
+            event.stopPropagation();
+          }
+        }}
+        placeholder={searchPlaceholder}
+        className="h-8 pl-8"
+      />
+    </div>
+  ) : null;
 
   return (
     <BaseSelect.Portal>
@@ -597,7 +708,7 @@ export function SelectContent({
         sideOffset={sideOffset}
         align={align}
         alignItemWithTrigger={false}
-        side="bottom"
+        side={side}
         className={cn(
           "z-50 outline-none",
           // `trigger` keeps the panel the button's width (the default field select);
@@ -632,36 +743,18 @@ export function SelectContent({
               transition={reduceMotion ? { duration: 0 } : { duration: 0.2, ease: EASE_OUT }}
             />
           }
+          // When a panel search filters everything out there's no option left to keep
+          // active, so Base UI falls back to focusing the popup itself — which yanks the
+          // caret out of the field mid-word. Bounce it straight back. Guarded on the popup
+          // being the actual target, so focus landing on a child is left alone.
+          onFocus={(event) => {
+            if (searchable && event.target === event.currentTarget) {
+              searchInputRef.current?.focus();
+            }
+          }}
           {...props}
         >
-          {searchable && (
-            <div className="relative border-b border-border px-2 py-1">
-              <Search
-                aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 left-4 size-3.5 -translate-y-1/2 text-muted-foreground"
-              />
-              <Input
-                aria-label="Search options"
-                variant="plain"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-                    event.preventDefault();
-                    focusPanelOption(
-                      listRef.current,
-                      event.key === "ArrowDown" ? "next" : "previous",
-                    );
-                    return;
-                  }
-                  // Keep Select's typeahead from treating input keystrokes as option jumps.
-                  if (event.key !== "Escape") event.stopPropagation();
-                }}
-                placeholder={searchPlaceholder}
-                className="h-8 pl-8"
-              />
-            </div>
-          )}
+          {searchable && searchPosition === "top" && searchField}
           <div
             className={cn(
               "max-h-[min(var(--available-height),18rem)] overflow-y-auto p-1",
@@ -676,6 +769,7 @@ export function SelectContent({
               {emptyMessage}
             </div>
           )}
+          {searchable && searchPosition === "bottom" && searchField}
           {clearable && (
             // A footer, not a listbox row — pinned below the scroll area, and disabled
             // while there's nothing to clear. Clearing leaves the panel open so a new
@@ -744,12 +838,18 @@ export function SelectItem({
     activeItem,
     panelSearch,
     setActiveItem,
-    searchQuery,
+    matchesQuery,
+    registerOptionText,
+    unregisterOptionText,
   } = useContext(SelectContext);
   const optionText = searchValue ?? (typeof children === "string" ? children : String(value));
-  const hiddenBySearch =
-    searchQuery.trim() !== "" && !optionText.toLocaleLowerCase().includes(searchQuery.trim().toLocaleLowerCase());
+  const hiddenBySearch = !matchesQuery(optionText);
   const itemDisabled = disabled || hiddenBySearch;
+
+  useEffect(() => {
+    registerOptionText(value, optionText);
+    return () => unregisterOptionText(value);
+  }, [optionText, registerOptionText, unregisterOptionText, value]);
   const panelActive = open && Object.is(activeItem, value);
 
   useEffect(() => {

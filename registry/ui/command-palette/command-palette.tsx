@@ -6,7 +6,9 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ChevronLeft, ChevronRight, CornerDownLeft, Plus, Search } from "lucide-react";
 import {
   Fragment,
+  createContext,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useState,
@@ -15,6 +17,12 @@ import {
 } from "react";
 import { cn } from "@/registry/lib/cn";
 import { ease, spring } from "@/registry/lib/motion";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/registry/ui/select/select";
 
 /**
  * A command / search palette — the ⌘K overlay.
@@ -262,6 +270,15 @@ export function CommandPalette({
     [setOpen],
   );
 
+  const controls = useMemo<PaletteControls>(
+    () => ({
+      close: () => setOpen(false),
+      back: () => goToDepth(pages.length - 1),
+      canGoBack: pages.length > 0,
+    }),
+    [setOpen, goToDepth, pages.length],
+  );
+
   const activePage = pages.length > 0 ? pages[pages.length - 1]! : null;
   // A panel page renders its form instead of the list. Called each render so its `close`
   // and `back` helpers always target the current stack depth.
@@ -312,8 +329,17 @@ export function CommandPalette({
       {isOpen && (
         <BaseDialog.Root
           open
-          onOpenChange={(next) => {
-            if (!next) setOpen(false);
+          onOpenChange={(next, details) => {
+            if (next) return;
+            // Escape inside a drilled-in page steps back out of it instead of dismissing
+            // the whole palette — cancelling Base UI's close is what keeps it open. Only
+            // the root level actually closes on Escape.
+            if (details.reason === "escape-key" && pages.length > 0) {
+              details.cancel();
+              goToDepth(pages.length - 1);
+              return;
+            }
+            setOpen(false);
           }}
         >
           {/* keepMounted so AnimatePresence, not Base UI, decides when the tree unmounts. */}
@@ -360,6 +386,7 @@ export function CommandPalette({
             >
               <BaseDialog.Title className="sr-only">Command palette</BaseDialog.Title>
 
+              <PaletteControlsContext.Provider value={controls}>
               {panelNode ? (
                 // A panel page: a Back button and title, the form body, and a slim footer.
                 // No search input or Autocomplete here — the form owns its own fields, and
@@ -420,7 +447,18 @@ export function CommandPalette({
                     // close). Drive navigation ourselves: Escape clears a non-empty query then
                     // closes; Backspace on an empty query steps back up the page stack.
                     onKeyDown={(event) => {
-                      if (event.key === "Escape" && query === "") setOpen(false);
+                      if (event.key === "Escape") {
+                        // A query clears first; then Escape steps back out of a sub-page;
+                        // only at the root does it dismiss the palette.
+                        if (query !== "") return;
+                        if (pages.length > 0) {
+                          event.preventDefault();
+                          goToDepth(pages.length - 1);
+                          return;
+                        }
+                        setOpen(false);
+                        return;
+                      }
                       if (event.key === "Backspace" && query === "" && pages.length > 0) {
                         event.preventDefault();
                         goToDepth(pages.length - 1);
@@ -469,12 +507,12 @@ export function CommandPalette({
                   <div className="flex shrink-0 items-center gap-3 border-t border-border px-3.5 py-2">
                     <Hint keys={["↑", "↓"]}>Navigate</Hint>
                     <Hint keys={[<CornerDownLeft key="enter" className="size-2.5" />]}>Select</Hint>
-                    <Hint keys={["esc"]}>Close</Hint>
-                    {pages.length > 0 && <Hint keys={["⌫"]}>Back</Hint>}
+                    <EscapeHint />
                   </div>
                 )}
               </Autocomplete.Root>
               )}
+              </PaletteControlsContext.Provider>
             </BaseDialog.Popup>
           </BaseDialog.Portal>
         </BaseDialog.Root>
@@ -516,9 +554,12 @@ export function CommandPanelBody({
 /** The action bar for a panel page — see `CommandPanelBody` for the expected structure. */
 export function CommandPanelFooter({
   className,
+  start,
   children,
 }: {
   className?: string;
+  /** Extra affordances on the left, beside the `esc Close` hint — e.g. `CommandPanelActions`. */
+  start?: ReactNode;
   children?: ReactNode;
 }) {
   return (
@@ -530,9 +571,144 @@ export function CommandPanelFooter({
         className,
       )}
     >
-      <Hint keys={["esc"]}>Close</Hint>
+      <div className="flex items-center gap-3">
+        <EscapeHint />
+        {start}
+      </div>
       <div className="flex items-center gap-2">{children}</div>
     </div>
+  );
+}
+
+export interface CommandPanelActionsProps {
+  /** The contextual actions. Choosing one runs its `onSelect`. */
+  items: CommandItem[];
+  /** Trigger label. @default "Actions" */
+  label?: string;
+  /** A single key, combined with ⌘/Ctrl, that opens the menu. @default "j" */
+  hotkey?: string;
+  searchPlaceholder?: string;
+  emptyMessage?: ReactNode;
+}
+
+/**
+ * A palette *inside* the palette — the contextual action menu for a panel page.
+ *
+ * It's the Select with its in-panel search field, not a bespoke popup: `searchable` gives
+ * the filter field, `width="content"` sizes the panel to its rows rather than the tiny
+ * trigger, and `autoFocusFirstItem={false}` is the documented switch for menu-like uses.
+ * Base UI owns the anchoring, the dismiss, and the collision flip — the menu hangs off a
+ * trigger sitting in the footer, so `side="top"` opens it upward into the panel.
+ *
+ * Nothing stays selected: `value` is pinned to `null` and the choice is handled as an
+ * action, which is the difference between a menu and a select.
+ */
+export function CommandPanelActions({
+  items,
+  label = "Actions",
+  hotkey = "j",
+  searchPlaceholder = "Search actions…",
+  emptyMessage = "No actions found.",
+}: CommandPanelActionsProps) {
+  const [open, setOpen] = useState(false);
+
+  // ⌘/Ctrl + hotkey. Deliberately not `k` — that's the palette's own global toggle, and
+  // one chord can't mean both "close the palette" and "open this menu".
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() === hotkey.toLowerCase() && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        setOpen((current) => !current);
+      }
+    };
+    // Capture phase: once the menu is open, focus is inside the Select's popup, and
+    // anything there that stops propagation would otherwise keep the chord from reaching
+    // this listener — so the same chord could open the menu but never close it.
+    window.addEventListener("keydown", onKeyDown, true);
+    return () => window.removeEventListener("keydown", onKeyDown, true);
+  }, [hotkey]);
+
+  return (
+    <Select<CommandItem | null>
+      open={open}
+      onOpenChange={setOpen}
+      value={null}
+      onValueChange={(item) => item?.onSelect?.()}
+    >
+      <SelectTrigger outline={false} chevron={false} className={cn(ACTION_CLASS, "h-auto")}>
+        {label}
+        <span className="flex items-center gap-0.5">
+          <Kbd>⌘</Kbd>
+          <Kbd>{hotkey.toUpperCase()}</Kbd>
+        </span>
+      </SelectTrigger>
+      <SelectContent
+        // Opens upward off the footer and hangs from its right edge, so the panel grows
+        // into the palette from the bottom-right corner. The search field sits at the
+        // bottom, landing right next to the trigger it was opened from.
+        side="top"
+        align="end"
+        width="content"
+        searchable
+        searchPosition="bottom"
+        // The top action is highlighted the moment the menu opens, while the caret stays
+        // in the search field — so Enter runs it without an arrow press first.
+        autoFocusFirstItem
+        searchPlaceholder={searchPlaceholder}
+        emptyMessage={emptyMessage}
+        className="min-w-56"
+      >
+        {items.map((item) => (
+          <SelectItem key={item.id} value={item}>
+            {item.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+/**
+ * Every footer affordance — the escape hint, the panel actions, the actions-menu trigger —
+ * shares this, so the bar can't end up with two different-looking buttons.
+ *
+ * `py-1 -my-1` is the trick that lets a hover background exist without the bar growing:
+ * the padding gives the highlight a box to fill, and the negative margin hands the height
+ * back, so the key chip still sets the row height exactly as it does in a static hint.
+ */
+const ACTION_CLASS = cn(
+  "flex cursor-pointer items-center gap-1.5 rounded-xs -my-1 px-1.5 py-1 text-2xs text-subtle-foreground",
+  "outline-none transition-colors duration-(--duration-fast)",
+  "hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
+  "disabled:pointer-events-none disabled:opacity-50",
+);
+
+/** Lets the footer parts drive the palette without threading props through the panel. */
+interface PaletteControls {
+  close: () => void;
+  back: () => void;
+  /** True whenever a page has been drilled into, so Escape means "back", not "close". */
+  canGoBack: boolean;
+}
+
+const PaletteControlsContext = createContext<PaletteControls | null>(null);
+
+/**
+ * The escape affordance. Escape steps back out of a drilled-in page and only dismisses the
+ * palette from the root, so the hint has to say which one it currently does.
+ */
+function EscapeHint() {
+  const controls = useContext(PaletteControlsContext);
+  if (!controls) return null;
+
+  return controls.canGoBack ? (
+    <Hint keys={["esc"]} onClick={controls.back}>
+      Back
+    </Hint>
+  ) : (
+    <Hint keys={["esc"]} onClick={controls.close}>
+      Close
+    </Hint>
   );
 }
 
@@ -544,16 +720,39 @@ function Kbd({ children }: { children: ReactNode }) {
   );
 }
 
-function Hint({ keys, children }: { keys: ReactNode[]; children: ReactNode }) {
-  return (
-    <span className="flex items-center gap-1 text-2xs text-subtle-foreground">
+function Hint({
+  keys,
+  children,
+  onClick,
+}: {
+  keys: ReactNode[];
+  children: ReactNode;
+  /** Given one, the hint becomes a real button that performs what it describes. */
+  onClick?: () => void;
+}) {
+  const content = (
+    <>
       <span className="flex items-center gap-0.5">
         {keys.map((key, i) => (
           <Kbd key={i}>{key}</Kbd>
         ))}
       </span>
       {children}
-    </span>
+    </>
+  );
+
+  // Without an action it's documentation (↑↓ Navigate has nothing to click), so it stays
+  // an inert span rather than a button that lies about being pressable.
+  if (!onClick) {
+    return (
+      <span className="flex items-center gap-1 text-2xs text-subtle-foreground">{content}</span>
+    );
+  }
+
+  return (
+    <button type="button" onClick={onClick} className={cn(ACTION_CLASS, "gap-1")}>
+      {content}
+    </button>
   );
 }
 
@@ -570,19 +769,7 @@ export function CommandPanelAction({
   ...props
 }: ComponentProps<"button"> & { keys?: ReactNode[] }) {
   return (
-    <button
-      type="button"
-      className={cn(
-        // No vertical padding: the key chip has to set the row height here exactly as it
-        // does in `Hint`, or this bar sits taller than the list's.
-        "flex cursor-pointer items-center gap-1.5 rounded-xs px-1 text-2xs text-subtle-foreground",
-        "outline-none transition-colors duration-(--duration-fast)",
-        "hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
-        "disabled:pointer-events-none disabled:opacity-50",
-        className,
-      )}
-      {...props}
-    >
+    <button type="button" className={cn(ACTION_CLASS, className)} {...props}>
       {children}
       {keys && keys.length > 0 && (
         <span className="flex items-center gap-0.5">
