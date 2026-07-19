@@ -516,6 +516,26 @@
       ]
     },
     {
+      "name": "table-of-contents",
+      "type": "registry:ui",
+      "description": "A table of contents that tracks the reader \u2014 an IntersectionObserver lights the active heading and a Motion layoutId marker slides to it; smooth-scroll on click.",
+      "dependencies": [
+        "motion"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/motion.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/table-of-contents/table-of-contents.tsx",
+          "type": "registry:ui",
+          "target": "@ui/table-of-contents.tsx"
+        }
+      ]
+    },
+    {
       "name": "empty",
       "type": "registry:ui",
       "description": "An empty state \u2014 a centred column of media, title, description and an action. Composable parts; borderless by default with an optional dashed placeholder outline.",

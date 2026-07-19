@@ -22,6 +22,7 @@ import { skeletonEntry } from "./entries/skeleton";
 import { sheetEntry } from "./entries/sheet";
 import { sliderEntry } from "./entries/slider";
 import { switchEntry } from "./entries/switch";
+import { tableOfContentsEntry } from "./entries/table-of-contents";
 import { tabsEntry } from "./entries/tabs";
 import { textareaEntry } from "./entries/textarea";
 import { toastEntry } from "./entries/toast";
@@ -119,6 +120,12 @@ export const groups: Group[] = [
     name: "Empty",
     summary: "An empty state — media, title, description and an action, centred in a placeholder.",
     entries: [emptyEntry],
+  },
+  {
+    slug: "table-of-contents",
+    name: "Table of Contents",
+    summary: "Headings as a nav that tracks the reader — the active entry lit, a rail marker sliding to it.",
+    entries: [tableOfContentsEntry],
   },
   {
     slug: "select",
