@@ -1,19 +1,21 @@
 "use client";
 
 import { Menu as BaseMenu } from "@base-ui/react/menu";
-import { Check, ChevronRight } from "lucide-react";
+import { Check, ChevronRight, Search } from "lucide-react";
 import {
   createContext,
   useCallback,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ComponentProps,
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
+import { Input } from "@/registry/ui/input/input";
 import { Morph } from "@/registry/ui/morph/morph";
 
 /**
@@ -45,12 +47,19 @@ interface DropdownMenuSelectContextValue {
   disabled: boolean;
   multiple: boolean;
   values: unknown[];
+  open: boolean;
   setOpen: (open: boolean) => void;
   selectSingle: (value: unknown) => void;
   toggleValue: (value: unknown, checked: boolean) => void;
   registerLabel: (value: unknown, label: ReactNode) => void;
   unregisterLabel: (value: unknown) => void;
   labelFor: (value: unknown) => ReactNode | undefined;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  matchesQuery: (text: string) => boolean;
+  registerOptionText: (value: unknown, text: string) => void;
+  unregisterOptionText: (value: unknown) => void;
+  visibleOptionCount: number;
 }
 
 const DropdownMenuSelectContext = createContext<DropdownMenuSelectContextValue | null>(null);
@@ -106,6 +115,7 @@ export function DropdownMenuSelect<Value, Multiple extends boolean | undefined =
   const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
   const currentValue = isValueControlled ? value : uncontrolledValue;
   const currentOpen = isOpenControlled ? open : uncontrolledOpen;
+  const [searchQuery, setSearchQuery] = useState("");
   const values = useMemo<unknown[]>(
     () =>
       isMultiple
@@ -117,6 +127,10 @@ export function DropdownMenuSelect<Value, Multiple extends boolean | undefined =
           : [currentValue],
     [currentValue, isMultiple],
   );
+
+  useEffect(() => {
+    if (currentOpen) setSearchQuery("");
+  }, [currentOpen]);
 
   const setOpen = useCallback(
     (nextOpen: boolean) => {
@@ -169,27 +183,68 @@ export function DropdownMenuSelect<Value, Multiple extends boolean | undefined =
   }, []);
   const labelFor = useCallback((valueToRead: unknown) => labels.get(valueToRead), [labels]);
 
+  const [optionTexts, setOptionTexts] = useState<Map<unknown, string>>(() => new Map());
+  const registerOptionText = useCallback((valueToRegister: unknown, text: string) => {
+    setOptionTexts((current) => {
+      if (current.get(valueToRegister) === text) return current;
+      return new Map(current).set(valueToRegister, text);
+    });
+  }, []);
+  const unregisterOptionText = useCallback((valueToUnregister: unknown) => {
+    setOptionTexts((current) => {
+      if (!current.has(valueToUnregister)) return current;
+      const next = new Map(current);
+      next.delete(valueToUnregister);
+      return next;
+    });
+  }, []);
+  const matchesQuery = useCallback(
+    (text: string) => {
+      const query = searchQuery.trim().toLocaleLowerCase();
+      return query === "" || text.toLocaleLowerCase().includes(query);
+    },
+    [searchQuery],
+  );
+  const visibleOptionCount = useMemo(
+    () => Array.from(optionTexts.values()).filter(matchesQuery).length,
+    [matchesQuery, optionTexts],
+  );
+
   const context = useMemo<DropdownMenuSelectContextValue>(
     () => ({
       disabled,
       multiple: isMultiple,
       values,
+      open: currentOpen,
       setOpen,
       selectSingle,
       toggleValue,
       registerLabel,
       unregisterLabel,
       labelFor,
+      searchQuery,
+      setSearchQuery,
+      matchesQuery,
+      registerOptionText,
+      unregisterOptionText,
+      visibleOptionCount,
     }),
     [
+      currentOpen,
       disabled,
       isMultiple,
       labelFor,
+      matchesQuery,
       registerLabel,
+      registerOptionText,
       selectSingle,
       setOpen,
+      searchQuery,
+      setSearchQuery,
       toggleValue,
       unregisterLabel,
+      unregisterOptionText,
+      visibleOptionCount,
       values,
     ],
   );
@@ -206,7 +261,7 @@ export function DropdownMenuSelect<Value, Multiple extends boolean | undefined =
 const itemBase = cn(
   "relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-foreground outline-none select-none",
   // Instant — no transition, so the highlight tracks the keyboard rather than trailing it.
-  "data-[highlighted]:bg-muted",
+  "data-[highlighted]:bg-muted data-[popup-open]:bg-muted",
   "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
   // Size/inert every glyph, but only mute the *leading* icons (direct children) — the
   // nested check/dot indicators keep the item's foreground ink.
@@ -222,6 +277,24 @@ const selectItemBase = cn(
 
 const selectItemIcon =
   "pointer-events-none flex size-4 shrink-0 items-center justify-center text-muted-foreground [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-muted-foreground";
+
+function focusDropdownMenuSelectItem(
+  list: HTMLElement | null,
+  direction: "next" | "previous",
+) {
+  if (!list) return;
+
+  const items = Array.from(
+    list.querySelectorAll<HTMLElement>('[role="menuitemradio"], [role="menuitemcheckbox"]'),
+  ).filter(
+    (item) =>
+      !item.hidden &&
+      !item.closest("[hidden]") &&
+      item.getAttribute("aria-disabled") !== "true",
+  );
+  const item = direction === "next" ? items[0] : items.at(-1);
+  item?.focus();
+}
 
 const popupClassName = cn(
   // Same floating-panel material as the Select/Popover panels.
@@ -480,30 +553,129 @@ export function DropdownMenuSelectTrigger({
   );
 }
 
-export type DropdownMenuSelectContentProps = DropdownMenuContentProps;
+export interface DropdownMenuSelectContentProps extends DropdownMenuContentProps {
+  /** Adds the same optional in-panel filter field as the standalone Select. */
+  searchable?: boolean;
+  /** Which end of the panel the filter field sits at. */
+  searchPosition?: "top" | "bottom";
+  /** Placeholder for the optional panel filter field. */
+  searchPlaceholder?: string;
+  /** Message shown when the filter has no matching options. */
+  emptyMessage?: ReactNode;
+  /** Focus the search field when the panel opens. */
+  autoFocusFirstItem?: boolean;
+}
 
 /** The select panel opened by a `DropdownMenuSelectTrigger`, positioned as a submenu. */
 export function DropdownMenuSelectContent({
   children,
+  className,
   side = "right",
   align = "start",
   keepMounted = true,
+  searchable = false,
+  searchPosition = "top",
+  searchPlaceholder = "Search…",
+  emptyMessage = "No results.",
+  autoFocusFirstItem = true,
+  onFocus,
   ...props
 }: DropdownMenuSelectContentProps) {
   const context = useDropdownMenuSelectContext();
+  const listRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const noResults =
+    searchable && context.searchQuery.trim() !== "" && context.visibleOptionCount === 0;
+
+  useEffect(() => {
+    if (!searchable || !autoFocusFirstItem || !context.open) return;
+
+    const frame = requestAnimationFrame(() => searchInputRef.current?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, [autoFocusFirstItem, context.open, searchable]);
+
+  const items = context.multiple ? (
+    children
+  ) : (
+    <DropdownMenuRadioGroup
+      value={context.values[0] ?? null}
+      onValueChange={context.selectSingle}
+    >
+      {children}
+    </DropdownMenuRadioGroup>
+  );
+
+  const searchField = searchable ? (
+    <div
+      className={cn(
+        "relative px-2 py-1",
+        searchPosition === "bottom" ? "border-t border-border" : "border-b border-border",
+      )}
+    >
+      <Search
+        aria-hidden="true"
+        className="pointer-events-none absolute top-1/2 left-4 size-3.5 -translate-y-1/2 text-muted-foreground"
+      />
+      <Input
+        ref={searchInputRef}
+        aria-label="Search options"
+        variant="plain"
+        value={context.searchQuery}
+        onChange={(event) => context.setSearchQuery(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            event.stopPropagation();
+            focusDropdownMenuSelectItem(
+              listRef.current,
+              event.key === "ArrowDown" ? "next" : "previous",
+            );
+            return;
+          }
+
+          if (!event.metaKey && !event.ctrlKey && event.key !== "Escape") {
+            event.stopPropagation();
+          }
+        }}
+        placeholder={searchPlaceholder}
+        className="h-8 pl-8"
+      />
+    </div>
+  ) : null;
 
   return (
-    <DropdownMenuSubContent side={side} align={align} keepMounted={keepMounted} {...props}>
-      {context.multiple ? (
-        children
-      ) : (
-        <DropdownMenuRadioGroup
-          value={context.values[0] ?? null}
-          onValueChange={context.selectSingle}
-        >
-          {children}
-        </DropdownMenuRadioGroup>
+    <DropdownMenuSubContent
+      side={side}
+      align={align}
+      keepMounted={keepMounted}
+      className={cn(searchable && "overflow-hidden", className)}
+      onFocus={(event) => {
+        onFocus?.(event);
+        if (searchable && event.target === event.currentTarget) {
+          searchInputRef.current?.focus();
+        }
+      }}
+      {...props}
+    >
+      {searchable && searchPosition === "top" && searchField}
+      <div
+        ref={listRef}
+        className={cn(
+          "max-h-[min(var(--available-height),18rem)] overflow-y-auto p-1",
+          "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent]",
+          "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent",
+          "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong",
+          noResults && "hidden",
+        )}
+      >
+        {items}
+      </div>
+      {noResults && (
+        <div className="m-1 flex h-8 items-center justify-center px-2.5 text-center text-sm text-muted-foreground">
+          {emptyMessage}
+        </div>
       )}
+      {searchable && searchPosition === "bottom" && searchField}
     </DropdownMenuSubContent>
   );
 }
@@ -515,6 +687,8 @@ export interface DropdownMenuSelectItemProps {
   label?: string;
   disabled?: boolean;
   className?: string;
+  /** Text used by an ancestor searchable select panel to match this option. */
+  searchValue?: string;
 }
 
 export function DropdownMenuSelectItem({
@@ -524,23 +698,36 @@ export function DropdownMenuSelectItem({
   label,
   disabled,
   className,
+  searchValue,
 }: DropdownMenuSelectItemProps) {
   const context = useDropdownMenuSelectContext();
   const itemLabel = label ?? (typeof children === "string" ? children : String(value));
+  const optionText = searchValue ?? (typeof children === "string" ? children : itemLabel);
+  const hiddenBySearch = !context.matchesQuery(optionText);
   const checked = context.values.some((current) => Object.is(current, value));
-  const { registerLabel, unregisterLabel } = context;
+  const {
+    registerLabel,
+    unregisterLabel,
+    registerOptionText,
+    unregisterOptionText,
+  } = context;
 
   useEffect(() => {
     registerLabel(value, itemLabel);
     return () => unregisterLabel(value);
   }, [itemLabel, registerLabel, unregisterLabel, value]);
+  useEffect(() => {
+    registerOptionText(value, optionText);
+    return () => unregisterOptionText(value);
+  }, [optionText, registerOptionText, unregisterOptionText, value]);
 
   if (context.multiple) {
     return (
       <BaseMenu.CheckboxItem
         checked={checked}
         onCheckedChange={(nextChecked) => context.toggleValue(value, nextChecked)}
-        disabled={disabled || context.disabled}
+        disabled={disabled || context.disabled || hiddenBySearch}
+        hidden={hiddenBySearch}
         label={itemLabel}
         className={cn(
           selectItemBase,
@@ -570,7 +757,8 @@ export function DropdownMenuSelectItem({
   return (
     <BaseMenu.RadioItem
       value={value}
-      disabled={disabled || context.disabled}
+      disabled={disabled || context.disabled || hiddenBySearch}
+      hidden={hiddenBySearch}
       label={itemLabel}
       className={cn(selectItemBase, className)}
     >

@@ -96,7 +96,7 @@ export const dropdownMenuEntry = defineEntry({
               <Upload />
               Transfer (menu)
             </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
+            <DropdownMenuSubContent className="w-56">
               <DropdownMenuItem>
                 <Download />
                 Import
@@ -114,7 +114,11 @@ export const dropdownMenuEntry = defineEntry({
               placeholder="Transfer"
               aria-label="Transfer"
             />
-            <DropdownMenuSelectContent>
+            <DropdownMenuSelectContent
+              className="w-56"
+              searchable
+              searchPlaceholder="Search transfers"
+            >
               <DropdownMenuSelectItem value="import" icon={<Upload />}>
                 Import
               </DropdownMenuSelectItem>
@@ -130,7 +134,11 @@ export const dropdownMenuEntry = defineEntry({
               placeholder="Formats"
               aria-label="Transfer formats"
             />
-            <DropdownMenuSelectContent>
+            <DropdownMenuSelectContent
+              className="w-56"
+              searchable
+              searchPlaceholder="Search formats"
+            >
               <DropdownMenuSelectItem value="pdf">PDF</DropdownMenuSelectItem>
               <DropdownMenuSelectItem value="csv">CSV</DropdownMenuSelectItem>
               <DropdownMenuSelectItem value="json">JSON</DropdownMenuSelectItem>
