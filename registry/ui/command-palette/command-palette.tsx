@@ -103,6 +103,8 @@ export interface CommandItem {
   panel?: (helpers: CommandPanelHelpers) => ReactNode;
   /** Render a configurable text field in the custom panel header instead of the panel title. */
   panelInput?: CommandPanelInputProps;
+  /** Render arbitrary controls at the right side of this item's header when it opens a page. */
+  headerActions?: ReactNode;
   /** Run when a leaf item is chosen (click or Enter). The palette closes around it. */
   onSelect?: () => void;
 }
@@ -113,7 +115,12 @@ export interface CommandGroup {
   items: CommandItem[];
 }
 
-export interface CommandPanelOptions {
+export interface CommandPanelHeaderOptions {
+  /** Render arbitrary controls at the right side of this panel's header. */
+  headerActions?: ReactNode;
+}
+
+export interface CommandPanelOptions extends CommandPanelHeaderOptions {
   /** The title shown when this panel is opened without a header input. */
   title: string;
   /** Render the panel body and footer. Receives a fresh helper scope for the new depth. */
@@ -419,6 +426,8 @@ interface Page {
   /** A drilled-in custom panel (form). Rendered instead of the list. */
   panel?: (helpers: CommandPanelHelpers) => ReactNode;
   panelInput?: CommandPanelInputProps;
+  /** Controls rendered at the right side of this page's header. */
+  headerActions?: ReactNode;
 }
 
 export function CommandPalette({
@@ -480,6 +489,7 @@ export function CommandPalette({
         title: options.title,
         panel: options.panel,
         panelInput: options.panelInput,
+        headerActions: options.headerActions,
       },
     ]);
     setQuery(options.panelInput?.value ?? options.panelInput?.defaultValue ?? "");
@@ -498,13 +508,22 @@ export function CommandPalette({
             itemId: item.id,
             panel: item.panel,
             panelInput,
+            headerActions: item.headerActions,
           },
         ]);
         setQuery(panelInput?.value ?? panelInput?.defaultValue ?? "");
         return;
       }
       if (item.items && item.items.length > 0) {
-        setPages((prev) => [...prev, { title: item.label, groups: [{ items: item.items! }] }]);
+        setPages((prev) => [
+          ...prev,
+          {
+            title: item.label,
+            itemId: item.id,
+            groups: [{ items: item.items! }],
+            headerActions: item.headerActions,
+          },
+        ]);
         setQuery("");
         return;
       }
@@ -531,6 +550,9 @@ export function CommandPalette({
   const panelInput = activePanelItem
     ? activePanelItem.panelInput
     : activePage?.panelInput;
+  const activeHeaderActions = activePanelItem
+    ? activePanelItem.headerActions
+    : activePage?.headerActions;
   const panelInputValue = panelInput?.value ?? query;
   const setPanelInputValue = useCallback(
     (value: string) => {
@@ -724,14 +746,21 @@ export function CommandPalette({
                             panelInput.className,
                           )}
                         />
-                        <kbd className="hidden shrink-0 rounded-xs bg-muted px-1.5 py-0.5 font-mono text-2xs text-subtle-foreground select-none sm:block">
-                          Esc
-                        </kbd>
+                        {activeHeaderActions && (
+                          <div className="-mr-1.5 flex shrink-0 items-center gap-1.5">
+                            {activeHeaderActions}
+                          </div>
+                        )}
                       </>
                     ) : (
-                      <span className="truncate text-sm font-medium text-foreground">
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
                         {activePage?.title}
                       </span>
+                    )}
+                    {!panelInput && activeHeaderActions && (
+                      <div className="-mr-1.5 flex shrink-0 items-center gap-1.5">
+                        {activeHeaderActions}
+                      </div>
                     )}
                   </div>
                   {/* Just a column — the panel owns its own body/footer split, so a pinned

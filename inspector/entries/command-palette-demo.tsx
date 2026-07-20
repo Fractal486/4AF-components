@@ -3,6 +3,7 @@
 import {
   Archive,
   ArrowRight,
+  ArrowUpDown,
   Bell,
   Copy,
   CornerDownLeft,
@@ -10,6 +11,7 @@ import {
   FolderOpen,
   Home,
   Lock,
+  ListFilter,
   Monitor,
   Moon,
   Palette,
@@ -40,11 +42,43 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSortTrigger,
   SelectTrigger,
   SelectValue,
 } from "@/registry/ui/select/select";
 import { Slider } from "@/registry/ui/slider/slider";
 import { Switch } from "@/registry/ui/switch/switch";
+
+function PaletteHeaderActions() {
+  return (
+    <>
+      <Select<string, true> multiple defaultValue={[]}>
+        <SelectSortTrigger
+          icon={<ListFilter />}
+          showValue={false}
+          aria-label="Filter by status"
+        />
+        <SelectContent width="content" clearable autoFocusFirstItem={false} className="min-w-36">
+          <SelectItem value="active">Active</SelectItem>
+          <SelectItem value="paused">Paused</SelectItem>
+          <SelectItem value="archived">Archived</SelectItem>
+        </SelectContent>
+      </Select>
+
+      <Select<string> defaultValue="updated">
+        <SelectSortTrigger
+          icon={<ArrowUpDown />}
+          aria-label="Sort projects"
+        />
+        <SelectContent width="content" autoFocusFirstItem={false} className="min-w-40">
+          <SelectItem value="updated">Recently updated</SelectItem>
+          <SelectItem value="name">Name</SelectItem>
+          <SelectItem value="created">Recently created</SelectItem>
+        </SelectContent>
+      </Select>
+    </>
+  );
+}
 
 export function CommandPaletteDemo({
   shortcut,
@@ -118,6 +152,7 @@ export function CommandPaletteDemo({
       description: "A list panel with its own ⌘J actions menu",
       icon: <FolderOpen />,
       keywords: ["switch", "workspace"],
+      headerActions: <PaletteHeaderActions />,
       panel: (helpers) => (
         <ProjectsPanel helpers={helpers} onDone={(summary) => setLastRun(summary)} />
       ),
