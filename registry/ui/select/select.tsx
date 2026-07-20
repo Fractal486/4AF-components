@@ -802,6 +802,8 @@ export type SelectItemProps = Omit<
   className?: string;
   children?: ReactNode;
   disabled?: boolean;
+  /** Optional trailing content in place of the single-select indicator. */
+  end?: ReactNode;
   /** Text used by an ancestor searchable `SelectContent` to match this option. */
   searchValue?: string;
 };
@@ -825,6 +827,7 @@ export function SelectItem({
   children,
   value,
   disabled = false,
+  end,
   searchValue,
   ...props
 }: SelectItemProps) {
@@ -925,13 +928,15 @@ export function SelectItem({
     >
       <SelectItemIcon icon={icon} />
       <BaseSelect.ItemText className="flex-1 truncate">{children}</BaseSelect.ItemText>
-      {/* A fixed slot so the check's width is reserved on every row (selected or not),
-          keeping the panel a stable "longest label + check" wide. */}
-      <span className="flex size-3.5 shrink-0 items-center justify-center">
-        <BaseSelect.ItemIndicator className="text-foreground">
-          <Check className="size-3.5" />
-        </BaseSelect.ItemIndicator>
-      </span>
+      {/* A fixed check slot keeps ordinary selects stable; `end` replaces it for custom
+          trailing content such as an action's keybind hint. */}
+      {end ?? (
+        <span className="flex size-3.5 shrink-0 items-center justify-center">
+          <BaseSelect.ItemIndicator className="text-foreground">
+            <Check className="size-3.5" />
+          </BaseSelect.ItemIndicator>
+        </span>
+      )}
     </BaseSelect.Item>
   );
 }

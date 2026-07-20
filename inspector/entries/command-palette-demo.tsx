@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Archive,
   ArrowRight,
   Bell,
   Copy,
@@ -31,10 +32,10 @@ import {
   CommandPanelActions,
   CommandPanelBody,
   CommandPanelFooter,
+  CommandPanelList,
   type CommandGroup,
   type CommandPanelHelpers,
 } from "@/registry/ui/command-palette/command-palette";
-import { Input } from "@/registry/ui/input/input";
 import {
   Select,
   SelectContent,
@@ -87,6 +88,15 @@ export function CommandPaletteDemo({
       label: "Rename Project…",
       description: "A single-field form panel",
       icon: <Pencil />,
+      panelInput: {
+        type: "text",
+        label: "Project name",
+        placeholder: "Enter a project name…",
+        defaultValue: "Untitled project",
+        form: "rename-project-form",
+        name: "name",
+        required: true,
+      },
       // A panel item: drills into a form with its own fields and action bar.
       panel: (helpers) => (
         <RenamePanel helpers={helpers} onDone={(name) => setLastRun(`Renamed to “${name}”`)} />
@@ -111,8 +121,11 @@ export function CommandPaletteDemo({
       panel: (helpers) => (
         <ProjectsPanel helpers={helpers} onDone={(summary) => setLastRun(summary)} />
       ),
-      panelSearch: true,
-      panelSearchPlaceholder: "Search projects…",
+      panelInput: {
+        type: "search",
+        label: "Search projects",
+        placeholder: "Search projects…",
+      },
     },
     {
       id: "theme",
@@ -127,7 +140,14 @@ export function CommandPaletteDemo({
         { id: "theme-system", label: "System", icon: <Monitor />, onSelect: run("Theme: System") },
       ],
     },
-    { id: "delete", label: "Delete Project", icon: <Trash2 />, keywords: ["remove"], onSelect: run("Delete Project") },
+    {
+      id: "delete",
+      label: "Delete Project",
+      icon: <Trash2 />,
+      keywords: ["remove"],
+      destructive: true,
+      onSelect: run("Delete Project"),
+    },
   ];
 
   const groups: CommandGroup[] = grouped
@@ -177,29 +197,22 @@ function RenamePanel({
   helpers: CommandPanelHelpers;
   onDone: (name: string) => void;
 }) {
-  const [name, setName] = useState("Untitled project");
-
   return (
     // The form fills the panel and splits into a scrolling body and a pinned footer, so
     // the action bar sits outside the scroll area while `type="submit"` still submits.
     <form
+      id="rename-project-form"
       className="flex min-h-0 flex-1 flex-col"
       onSubmit={(event) => {
         event.preventDefault();
-        onDone(name.trim() || "Untitled project");
+        onDone(helpers.inputValue.trim());
         helpers.close();
       }}
     >
       <CommandPanelBody className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1.5">
-          <span className="text-sm text-muted-foreground">Project name</span>
-          <Input
-            autoFocus
-            tone="accent"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
-        </label>
+        <p className="text-sm text-muted-foreground">
+          Enter the new project name in the text field above.
+        </p>
       </CommandPanelBody>
 
       <CommandPanelFooter>
@@ -228,42 +241,116 @@ function ProjectsPanel({
   );
 
   // Contextual actions for whichever project is highlighted — the ⌘J menu in the footer.
-  const actions = [
-    { id: "open", label: `Open ${selected}`, onSelect: () => { onDone(`Opened ${selected}`); helpers.close(); } },
-    { id: "rename", label: "Rename project", onSelect: () => onDone(`Rename ${selected}`) },
-    { id: "duplicate", label: "Duplicate project", onSelect: () => onDone(`Duplicated ${selected}`) },
-    { id: "copy", label: "Copy project link", onSelect: () => onDone(`Copied link to ${selected}`) },
-    { id: "archive", label: "Archive project", onSelect: () => onDone(`Archived ${selected}`) },
-    { id: "delete", label: "Delete project", onSelect: () => onDone(`Deleted ${selected}`) },
+  // Their keybinds also work while this panel is open, without opening the menu first.
+  const actionGroups: CommandGroup[] = [
+    {
+      heading: "Project",
+      items: [
+        {
+          id: "open",
+          label: `Open ${selected}`,
+          icon: <FolderOpen />,
+          keybind: "mod+o",
+          onSelect: () => {
+            onDone(`Opened ${selected}`);
+            helpers.close();
+          },
+        },
+        {
+          id: "rename",
+          label: "Rename project",
+          icon: <Pencil />,
+          keybind: "mod+r",
+          onSelect: () => onDone(`Rename ${selected}`),
+        },
+        {
+          id: "duplicate",
+          label: "Duplicate project",
+          icon: <Copy />,
+          keybind: "mod+d",
+          onSelect: () => onDone(`Duplicated ${selected}`),
+        },
+      ],
+    },
+    {
+      heading: "Sharing",
+      items: [
+        {
+          id: "copy",
+          label: "Copy project link",
+          icon: <Copy />,
+          keybind: "mod+l",
+          onSelect: () => onDone(`Copied link to ${selected}`),
+        },
+      ],
+    },
+    {
+      heading: "Danger zone",
+      items: [
+        {
+          id: "archive",
+          label: "Archive project",
+          icon: <Archive />,
+          keybind: "mod+shift+a",
+          onSelect: () => onDone(`Archived ${selected}`),
+        },
+        {
+          id: "delete",
+          label: "Delete project",
+          icon: <Trash2 />,
+          keybind: "mod+shift+backspace",
+          destructive: true,
+          onSelect: () => {
+            onDone(`Deleted ${selected}`);
+            helpers.close();
+          },
+        },
+      ],
+    },
   ];
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <CommandPanelBody className="flex flex-col gap-0 p-1.5">
+      <CommandPanelList autoFocus={false} className="flex flex-col gap-0">
         {visibleProjects.length > 0 ? (
-          visibleProjects.map((project) => (
-            <CommandPanelRow
-              key={project}
-              icon={<FolderOpen />}
-              badge={
-                project === selected ? (
-                  <Badge
-                    variant="outline"
-                    size="sm"
-                    status="success"
-                    showIcon={false}
-                  >
-                    Current
-                  </Badge>
-                ) : undefined
-              }
-              selected={project === selected}
-              onSelect={() => setSelected(project)}
-              checkbox
-            >
-              {project}
-            </CommandPanelRow>
-          ))
+          <>
+            {visibleProjects.map((project) => (
+              <CommandPanelRow
+                key={project}
+                icon={<FolderOpen />}
+                badge={
+                  project === selected ? (
+                    <Badge
+                      variant="outline"
+                      size="sm"
+                      status="success"
+                      showIcon={false}
+                    >
+                      Current
+                    </Badge>
+                  ) : undefined
+                }
+                selected={project === selected}
+                onSelect={() => setSelected(project)}
+                checkbox
+              >
+                {project}
+              </CommandPanelRow>
+            ))}
+            {!query && (
+              <CommandPanelRow
+                value="delete-selected-project"
+                icon={<Trash2 />}
+                destructive
+                onSelect={() => {
+                  onDone(`Deleted ${selected}`);
+                  helpers.close();
+                }}
+              >
+                Delete {selected}
+              </CommandPanelRow>
+            )}
+          </>
         ) : query ? (
           <CommandPanelRow
             icon={<Plus />}
@@ -279,7 +366,7 @@ function ProjectsPanel({
             No projects found.
           </p>
         )}
-      </CommandPanelBody>
+      </CommandPanelList>
 
       <CommandPanelFooter>
         <CommandPanelAction
@@ -292,7 +379,7 @@ function ProjectsPanel({
           Open
         </CommandPanelAction>
         {/* Rightmost, so the menu hangs off the bottom-right corner. */}
-        <CommandPanelActions items={actions} />
+        <CommandPanelActions groups={actionGroups} />
       </CommandPanelFooter>
     </div>
   );
