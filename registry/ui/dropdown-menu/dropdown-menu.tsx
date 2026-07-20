@@ -2,8 +2,18 @@
 
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 import { Check, ChevronRight } from "lucide-react";
-import type { ComponentProps, ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+} from "react";
 import { cn } from "@/registry/lib/cn";
+import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Morph } from "@/registry/ui/morph/morph";
 
 /**
@@ -27,6 +37,172 @@ export const DropdownMenuGroup = BaseMenu.Group;
 export const DropdownMenuRadioGroup = BaseMenu.RadioGroup;
 export const DropdownMenuSub = BaseMenu.SubmenuRoot;
 
+type DropdownMenuSelectValue<Value, Multiple extends boolean | undefined> = Multiple extends true
+  ? Value[]
+  : Value | null;
+
+interface DropdownMenuSelectContextValue {
+  disabled: boolean;
+  multiple: boolean;
+  values: unknown[];
+  setOpen: (open: boolean) => void;
+  selectSingle: (value: unknown) => void;
+  toggleValue: (value: unknown, checked: boolean) => void;
+  registerLabel: (value: unknown, label: ReactNode) => void;
+  unregisterLabel: (value: unknown) => void;
+  labelFor: (value: unknown) => ReactNode | undefined;
+}
+
+const DropdownMenuSelectContext = createContext<DropdownMenuSelectContextValue | null>(null);
+
+function useDropdownMenuSelectContext() {
+  const context = useContext(DropdownMenuSelectContext);
+
+  if (!context) {
+    throw new Error(
+      "DropdownMenuSelectTrigger, DropdownMenuSelectContent, and DropdownMenuSelectItem must be used inside DropdownMenuSelect.",
+    );
+  }
+
+  return context;
+}
+
+export interface DropdownMenuSelectProps<Value, Multiple extends boolean | undefined = false> {
+  children: ReactNode;
+  multiple?: Multiple;
+  disabled?: boolean;
+  open?: boolean;
+  defaultOpen?: boolean;
+  value?: DropdownMenuSelectValue<Value, Multiple>;
+  defaultValue?: DropdownMenuSelectValue<Value, Multiple>;
+  onOpenChange?: (open: boolean) => void;
+  onValueChange?: (value: DropdownMenuSelectValue<Value, Multiple>) => void;
+}
+
+/**
+ * A select panel that participates in the dropdown's real submenu tree.
+ *
+ * Using the menu submenu primitive here is important: it gives the nested select the same
+ * safe hover path as every other submenu, so moving from the row to the panel doesn't close
+ * it while the pointer crosses the gap.
+ */
+export function DropdownMenuSelect<Value, Multiple extends boolean | undefined = false>({
+  children,
+  multiple,
+  disabled = false,
+  open,
+  defaultOpen = false,
+  value,
+  defaultValue,
+  onOpenChange,
+  onValueChange,
+}: DropdownMenuSelectProps<Value, Multiple>) {
+  const isMultiple = Boolean(multiple);
+  const isValueControlled = value !== undefined;
+  const isOpenControlled = open !== undefined;
+  const [uncontrolledValue, setUncontrolledValue] = useState<Value | Value[] | null>(
+    () => (defaultValue ?? (isMultiple ? [] : null)) as Value | Value[] | null,
+  );
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
+  const currentValue = isValueControlled ? value : uncontrolledValue;
+  const currentOpen = isOpenControlled ? open : uncontrolledOpen;
+  const values = useMemo<unknown[]>(
+    () =>
+      isMultiple
+        ? Array.isArray(currentValue)
+          ? currentValue
+          : []
+        : currentValue == null
+          ? []
+          : [currentValue],
+    [currentValue, isMultiple],
+  );
+
+  const setOpen = useCallback(
+    (nextOpen: boolean) => {
+      if (!isOpenControlled) setUncontrolledOpen(nextOpen);
+      onOpenChange?.(nextOpen);
+    },
+    [isOpenControlled, onOpenChange],
+  );
+
+  const setSelection = useCallback(
+    (nextValue: Value | Value[] | null) => {
+      if (!isValueControlled) setUncontrolledValue(nextValue);
+      onValueChange?.(nextValue as DropdownMenuSelectValue<Value, Multiple>);
+    },
+    [isValueControlled, onValueChange],
+  );
+
+  const selectSingle = useCallback(
+    (nextValue: unknown) => {
+      setSelection(nextValue as Value);
+      setOpen(false);
+    },
+    [setOpen, setSelection],
+  );
+
+  const toggleValue = useCallback(
+    (nextValue: unknown, checked: boolean) => {
+      const nextValues = checked
+        ? [...values, nextValue]
+        : values.filter((current) => !Object.is(current, nextValue));
+      setSelection(nextValues as Value[]);
+    },
+    [setSelection, values],
+  );
+
+  const [labels, setLabels] = useState<Map<unknown, ReactNode>>(() => new Map());
+  const registerLabel = useCallback((valueToRegister: unknown, label: ReactNode) => {
+    setLabels((current) => {
+      if (Object.is(current.get(valueToRegister), label)) return current;
+      return new Map(current).set(valueToRegister, label);
+    });
+  }, []);
+  const unregisterLabel = useCallback((valueToUnregister: unknown) => {
+    setLabels((current) => {
+      if (!current.has(valueToUnregister)) return current;
+      const next = new Map(current);
+      next.delete(valueToUnregister);
+      return next;
+    });
+  }, []);
+  const labelFor = useCallback((valueToRead: unknown) => labels.get(valueToRead), [labels]);
+
+  const context = useMemo<DropdownMenuSelectContextValue>(
+    () => ({
+      disabled,
+      multiple: isMultiple,
+      values,
+      setOpen,
+      selectSingle,
+      toggleValue,
+      registerLabel,
+      unregisterLabel,
+      labelFor,
+    }),
+    [
+      disabled,
+      isMultiple,
+      labelFor,
+      registerLabel,
+      selectSingle,
+      setOpen,
+      toggleValue,
+      unregisterLabel,
+      values,
+    ],
+  );
+
+  return (
+    <DropdownMenuSelectContext.Provider value={context}>
+      <DropdownMenuSub open={currentOpen} onOpenChange={setOpen} disabled={disabled}>
+        {children}
+      </DropdownMenuSub>
+    </DropdownMenuSelectContext.Provider>
+  );
+}
+
 const itemBase = cn(
   "relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-foreground outline-none select-none",
   // Instant — no transition, so the highlight tracks the keyboard rather than trailing it.
@@ -36,6 +212,16 @@ const itemBase = cn(
   // nested check/dot indicators keep the item's foreground ink.
   "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&>svg]:text-muted-foreground",
 );
+
+const selectItemBase = cn(
+  "relative flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-sm outline-none select-none",
+  "text-muted-foreground data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
+  "data-[checked]:text-foreground",
+  "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+);
+
+const selectItemIcon =
+  "pointer-events-none flex size-4 shrink-0 items-center justify-center text-muted-foreground [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-muted-foreground";
 
 const popupClassName = cn(
   // Same floating-panel material as the Select/Popover panels.
@@ -58,6 +244,8 @@ export interface DropdownMenuContentProps
   align?: ComponentProps<typeof BaseMenu.Positioner>["align"];
   sideOffset?: number;
   alignOffset?: number;
+  /** Keep the popup mounted while closed when its contents need to register state early. */
+  keepMounted?: boolean;
 }
 
 export function DropdownMenuContent({
@@ -67,10 +255,11 @@ export function DropdownMenuContent({
   align = "start",
   sideOffset = 6,
   alignOffset,
+  keepMounted = false,
   ...props
 }: DropdownMenuContentProps) {
   return (
-    <BaseMenu.Portal>
+    <BaseMenu.Portal keepMounted={keepMounted}>
       <BaseMenu.Positioner
         side={side}
         align={align}
@@ -221,12 +410,187 @@ export function DropdownMenuSeparator({ className, ...props }: ComponentProps<ty
   return <BaseMenu.Separator className={cn("-mx-1 my-1 h-px bg-border", className)} {...props} />;
 }
 
-export function DropdownMenuShortcut({ className, ...props }: ComponentProps<"span">) {
+export function DropdownMenuShortcut({ className, ...props }: ComponentProps<"kbd">) {
   return (
-    <span
-      className={cn("ml-auto pl-4 text-xs tracking-widest text-muted-foreground", className)}
+    <kbd
+      className={cn(
+        "ml-auto flex min-w-4 shrink-0 items-center justify-center rounded-xs bg-muted px-1 py-0.5 font-mono text-2xs text-subtle-foreground",
+        className,
+      )}
       {...props}
     />
+  );
+}
+
+export interface DropdownMenuSelectTriggerProps
+  extends Omit<ComponentProps<typeof BaseMenu.SubmenuTrigger>, "children" | "className"> {
+  /** An optional leading icon for the menu row. */
+  icon?: ReactNode;
+  /** Shown until a single value is selected, or until a multiple select has picks. */
+  placeholder?: ReactNode;
+  className?: string;
+}
+
+/**
+ * The row that opens a select panel from inside a dropdown menu.
+ *
+ * It is a real submenu trigger for arrow-key navigation and hover-safe pointer movement.
+ * Single selects show their selected label; multiple selects show the selected count.
+ */
+export function DropdownMenuSelectTrigger({
+  icon,
+  placeholder = "Select",
+  className,
+  disabled,
+  label,
+  ...props
+}: DropdownMenuSelectTriggerProps) {
+  const context = useDropdownMenuSelectContext();
+  const hasSelection = context.values.length > 0;
+  const selectedValue = context.values[0];
+  const summary = context.multiple
+    ? hasSelection
+      ? `${context.values.length} selected`
+      : placeholder
+    : hasSelection
+      ? (context.labelFor(selectedValue) ?? placeholder)
+      : placeholder;
+
+  return (
+    <DropdownMenuSubTrigger
+      {...props}
+      disabled={disabled || context.disabled}
+      label={label ?? (typeof placeholder === "string" ? placeholder : undefined)}
+      className={cn("min-w-0", className)}
+    >
+      {icon && (
+        <span aria-hidden="true" className={selectItemIcon}>
+          {icon}
+        </span>
+      )}
+      <span
+        className={cn(
+          "min-w-0 flex-1 truncate",
+          !hasSelection && "text-muted-foreground",
+        )}
+      >
+        {summary}
+      </span>
+    </DropdownMenuSubTrigger>
+  );
+}
+
+export type DropdownMenuSelectContentProps = DropdownMenuContentProps;
+
+/** The select panel opened by a `DropdownMenuSelectTrigger`, positioned as a submenu. */
+export function DropdownMenuSelectContent({
+  children,
+  side = "right",
+  align = "start",
+  keepMounted = true,
+  ...props
+}: DropdownMenuSelectContentProps) {
+  const context = useDropdownMenuSelectContext();
+
+  return (
+    <DropdownMenuSubContent side={side} align={align} keepMounted={keepMounted} {...props}>
+      {context.multiple ? (
+        children
+      ) : (
+        <DropdownMenuRadioGroup
+          value={context.values[0] ?? null}
+          onValueChange={context.selectSingle}
+        >
+          {children}
+        </DropdownMenuRadioGroup>
+      )}
+    </DropdownMenuSubContent>
+  );
+}
+
+export interface DropdownMenuSelectItemProps {
+  value: unknown;
+  children?: ReactNode;
+  icon?: ReactNode;
+  label?: string;
+  disabled?: boolean;
+  className?: string;
+}
+
+export function DropdownMenuSelectItem({
+  value,
+  children,
+  icon,
+  label,
+  disabled,
+  className,
+}: DropdownMenuSelectItemProps) {
+  const context = useDropdownMenuSelectContext();
+  const itemLabel = label ?? (typeof children === "string" ? children : String(value));
+  const checked = context.values.some((current) => Object.is(current, value));
+  const { registerLabel, unregisterLabel } = context;
+
+  useEffect(() => {
+    registerLabel(value, itemLabel);
+    return () => unregisterLabel(value);
+  }, [itemLabel, registerLabel, unregisterLabel, value]);
+
+  if (context.multiple) {
+    return (
+      <BaseMenu.CheckboxItem
+        checked={checked}
+        onCheckedChange={(nextChecked) => context.toggleValue(value, nextChecked)}
+        disabled={disabled || context.disabled}
+        label={itemLabel}
+        className={cn(
+          selectItemBase,
+          className,
+        )}
+        render={(itemProps, state) => (
+          <div {...itemProps}>
+            <Checkbox
+              checked={state.checked}
+              size="sm"
+              aria-hidden
+              tabIndex={-1}
+              className="pointer-events-none shrink-0"
+            />
+            {icon && (
+              <span aria-hidden="true" className={selectItemIcon}>
+                {icon}
+              </span>
+            )}
+            <span className="min-w-0 flex-1 truncate">{children}</span>
+          </div>
+        )}
+      />
+    );
+  }
+
+  return (
+    <BaseMenu.RadioItem
+      value={value}
+      disabled={disabled || context.disabled}
+      label={itemLabel}
+      className={cn(selectItemBase, className)}
+    >
+      {icon && (
+        <span aria-hidden="true" className={selectItemIcon}>
+          {icon}
+        </span>
+      )}
+      <span className="min-w-0 flex-1 truncate">{children}</span>
+      <BaseMenu.RadioItemIndicator
+        keepMounted
+        className={cn(
+          "ml-auto flex size-4 shrink-0 items-center justify-center text-foreground",
+          "scale-0 opacity-0 transition-[opacity,scale] duration-(--duration-fast) ease-out",
+          "data-[checked]:scale-100 data-[checked]:opacity-100",
+        )}
+      >
+        <Check className="size-3.5" />
+      </BaseMenu.RadioItemIndicator>
+    </BaseMenu.RadioItem>
   );
 }
 
@@ -251,13 +615,14 @@ export function DropdownMenuSubContent({
   side = "right",
   align = "start",
   sideOffset = 4,
+  keepMounted = false,
   // Pull up by the popup's own top padding (`p-1`) so the first item lines up with the
   // trigger row rather than sitting a few pixels low.
   alignOffset = -4,
   ...props
 }: DropdownMenuContentProps) {
   return (
-    <BaseMenu.Portal>
+    <BaseMenu.Portal keepMounted={keepMounted}>
       <BaseMenu.Positioner
         side={side}
         align={align}

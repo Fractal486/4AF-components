@@ -10,6 +10,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuSelect,
+  DropdownMenuSelectContent,
+  DropdownMenuSelectItem,
+  DropdownMenuSelectTrigger,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuSub,
@@ -90,7 +94,7 @@ export const dropdownMenuEntry = defineEntry({
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
               <Upload />
-              Transfer
+              Transfer (menu)
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
               <DropdownMenuItem>
@@ -103,6 +107,35 @@ export const dropdownMenuEntry = defineEntry({
               </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
+
+          <DropdownMenuSelect<string> defaultValue="import">
+            <DropdownMenuSelectTrigger
+              icon={<Upload />}
+              placeholder="Transfer"
+              aria-label="Transfer"
+            />
+            <DropdownMenuSelectContent>
+              <DropdownMenuSelectItem value="import" icon={<Upload />}>
+                Import
+              </DropdownMenuSelectItem>
+              <DropdownMenuSelectItem value="export" icon={<Download />}>
+                Export
+              </DropdownMenuSelectItem>
+            </DropdownMenuSelectContent>
+          </DropdownMenuSelect>
+
+          <DropdownMenuSelect<string, true> multiple defaultValue={["pdf", "csv"]}>
+            <DropdownMenuSelectTrigger
+              icon={<Download />}
+              placeholder="Formats"
+              aria-label="Transfer formats"
+            />
+            <DropdownMenuSelectContent>
+              <DropdownMenuSelectItem value="pdf">PDF</DropdownMenuSelectItem>
+              <DropdownMenuSelectItem value="csv">CSV</DropdownMenuSelectItem>
+              <DropdownMenuSelectItem value="json">JSON</DropdownMenuSelectItem>
+            </DropdownMenuSelectContent>
+          </DropdownMenuSelect>
 
           <DropdownMenuSeparator />
 
