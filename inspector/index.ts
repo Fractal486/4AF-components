@@ -5,6 +5,7 @@ import { buttonEntry } from "./entries/button";
 import { checkboxEntry } from "./entries/checkbox";
 import { commandPaletteEntry } from "./entries/command-palette";
 import { copyButtonEntry } from "./entries/copy-button";
+import { deleteButtonEntry } from "./entries/delete-button";
 import { dialogEntry } from "./entries/dialog";
 import { dropdownMenuEntry } from "./entries/dropdown-menu";
 import { emptyEntry } from "./entries/empty";
@@ -56,8 +57,15 @@ export const groups: Group[] = [
     slug: "button",
     name: "Button",
     summary:
-      "The action, the toggle that holds a state, the content swap inside them, and the two buttons built from those.",
-    entries: [buttonEntry, toggleEntry, morphEntry, copyButtonEntry, actionButtonEntry],
+      "The action, the toggle that holds a state, the content swap inside them, and the three buttons built from those — one that reports how it went, one that copies, and one that asks before it deletes.",
+    entries: [
+      buttonEntry,
+      toggleEntry,
+      morphEntry,
+      copyButtonEntry,
+      actionButtonEntry,
+      deleteButtonEntry,
+    ],
     stacked: true,
   },
   {
