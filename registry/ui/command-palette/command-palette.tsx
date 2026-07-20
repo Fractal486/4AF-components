@@ -46,6 +46,8 @@ import {
  *
  * Items can nest: an item carrying its own `items` drills into a sub-page instead of
  * running, Backspace on an empty query pops back, and a breadcrumb tracks the trail.
+ * Custom panels can push another panel with `helpers.openPanel` when a flow needs a
+ * second form step.
  *
  * The enter/exit are Motion's, matching the Dialog: it scales up out of a blur and leaves
  * by fading and blurring rather than playing the entrance backwards. `keepMounted` hands
@@ -95,7 +97,7 @@ export interface CommandItem {
   items?: CommandItem[];
   /**
    * Drill into a custom panel — a form with its own inputs and buttons — instead of a
-   * sub-list. Receives helpers to close the palette or step back up once done. Takes
+   * sub-list. Receives helpers to close, step back, or open another custom panel. Takes
    * precedence over `items`.
    */
   panel?: (helpers: CommandPanelHelpers) => ReactNode;
@@ -111,11 +113,22 @@ export interface CommandGroup {
   items: CommandItem[];
 }
 
+export interface CommandPanelOptions {
+  /** The title shown when this panel is opened without a header input. */
+  title: string;
+  /** Render the panel body and footer. Receives a fresh helper scope for the new depth. */
+  panel: (helpers: CommandPanelHelpers) => ReactNode;
+  /** Optional configurable input rendered in the new panel's header. */
+  panelInput?: CommandPanelInputProps;
+}
+
 export interface CommandPanelHelpers {
   /** Close the whole palette — call it once the form is submitted. */
   close: () => void;
   /** Step back to the page that opened the panel, keeping the palette open. */
   back: () => void;
+  /** Push another custom panel on top of the current one. */
+  openPanel: (options: CommandPanelOptions) => void;
   /** The current value of the custom-panel header field, when it is enabled. */
   query: string;
   /** Alias for `query` that is clearer when the header field is used as a text field. */
@@ -460,6 +473,18 @@ export function CommandPalette({
     setQuery("");
   }, []);
 
+  const openPanel = useCallback((options: CommandPanelOptions) => {
+    setPages((prev) => [
+      ...prev,
+      {
+        title: options.title,
+        panel: options.panel,
+        panelInput: options.panelInput,
+      },
+    ]);
+    setQuery(options.panelInput?.value ?? options.panelInput?.defaultValue ?? "");
+  }, []);
+
   const runItem = useCallback(
     (item: CommandItem) => {
       if (item.disabled) return;
@@ -520,6 +545,7 @@ export function CommandPalette({
     ? activePanel({
         close: () => setOpen(false),
         back: () => goToDepth(pages.length - 1),
+        openPanel,
         query: panelInputValue,
         inputValue: panelInputValue,
         setInputValue: setPanelInputValue,

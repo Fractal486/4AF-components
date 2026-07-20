@@ -314,6 +314,36 @@ function ProjectsPanel({
       <CommandPanelList autoFocus={false} className="flex flex-col gap-0">
         {visibleProjects.length > 0 ? (
           <>
+            {!query && (
+              <CommandPanelRow
+                value="new-project"
+                icon={<Plus />}
+                onSelect={() =>
+                  helpers.openPanel({
+                    title: "New project",
+                    panelInput: {
+                      type: "text",
+                      label: "Project name",
+                      placeholder: "Enter a project name…",
+                      defaultValue: "Untitled project",
+                      form: "new-project-form",
+                      name: "name",
+                      required: true,
+                    },
+                    panel: (panelHelpers) => (
+                      <NewProjectPanel
+                        helpers={panelHelpers}
+                        onDone={(name, visibility) => {
+                          onDone(`Created “${name}” · ${VISIBILITY[visibility]}`);
+                        }}
+                      />
+                    ),
+                  })
+                }
+              >
+                New project
+              </CommandPanelRow>
+            )}
             {visibleProjects.map((project) => (
               <CommandPanelRow
                 key={project}
@@ -398,6 +428,65 @@ const VISIBILITY_STATUS: Record<Visibility, BadgeProps["status"]> = {
   team: "info",
   public: "success",
 };
+
+function NewProjectPanel({
+  helpers,
+  onDone,
+}: {
+  helpers: CommandPanelHelpers;
+  onDone: (name: string, visibility: Visibility) => void;
+}) {
+  const [visibility, setVisibility] = useState<Visibility>("private");
+  const [notifications, setNotifications] = useState(true);
+
+  return (
+    <form
+      id="new-project-form"
+      className="flex min-h-0 flex-1 flex-col"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onDone(helpers.inputValue.trim(), visibility);
+        helpers.close();
+      }}
+    >
+      <CommandPanelBody className="flex flex-col gap-5">
+        <div className="flex flex-col gap-1.5">
+          <span className="text-sm text-muted-foreground">Visibility</span>
+          <Select
+            items={VISIBILITY}
+            value={visibility}
+            onValueChange={(value) => setVisibility(value as Visibility)}
+          >
+            <SelectTrigger className="w-44">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {(Object.keys(VISIBILITY) as Visibility[]).map((value) => (
+                <SelectItem key={value} value={value}>
+                  {VISIBILITY[value]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-sm text-foreground">Notifications</span>
+            <span className="text-xs text-muted-foreground">Send project updates</span>
+          </div>
+          <Switch checked={notifications} onCheckedChange={setNotifications} />
+        </div>
+      </CommandPanelBody>
+
+      <CommandPanelFooter>
+        <CommandPanelAction type="submit" keys={[<CornerDownLeft key="enter" className="size-2.5" />]}>
+          Create
+        </CommandPanelAction>
+      </CommandPanelFooter>
+    </form>
+  );
+}
 
 const FEATURES = [
   { key: "favorite", label: "Favorite", icon: <Star className="size-4 text-subtle-foreground" /> },
