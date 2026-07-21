@@ -17,13 +17,13 @@ import { popoverEntry } from "./entries/popover";
 import { progressEntry } from "./entries/progress";
 import { radioEntry } from "./entries/radio";
 import { selectEntry } from "./entries/select";
+import { selectMotionEntry } from "./entries/select-motion";
 import { selectMotionSearchEntry } from "./entries/select-motion-search";
 import { selectSearchEntry } from "./entries/select-search";
 import { selectSortEntry } from "./entries/select-sort";
 import { skeletonEntry } from "./entries/skeleton";
 import { sheetEntry } from "./entries/sheet";
 import { sidebarEntry } from "./entries/sidebar";
-import { sidebarLayoutEntry } from "./entries/sidebar-layout";
 import { sliderEntry } from "./entries/slider";
 import { switchEntry } from "./entries/switch";
 import { tableOfContentsEntry } from "./entries/table-of-contents";
@@ -149,10 +149,11 @@ export const groups: Group[] = [
     slug: "select",
     name: "Select",
     summary:
-      "A panel of options off a trigger. Base UI fades a panel in and can check several; Base UI Search filters as you type and can check several; Motion Search unfolds from the field and can check several; Sort is a compact chip that shows its picks and dashes its border until you choose.",
+      "A panel of options off a trigger. Base UI fades a panel in and can check several; Motion pinches and unfolds from its trigger; Base UI Search filters as you type and can check several; Motion Search unfolds from the field and can check several; Sort is a compact chip that shows its picks and dashes its border until you choose.",
     entries: [
       selectEntry,
       selectSearchEntry,
+      selectMotionEntry,
       selectMotionSearchEntry,
       selectSortEntry,
     ],
@@ -213,12 +214,6 @@ export const groups: Group[] = [
     summary:
       "An application shell: a collapsible nav rail that becomes a drawer on mobile. Groups, sub-menus, badges and row actions, with tooltips once it collapses to icons.",
     entries: [sidebarEntry],
-  },
-  {
-    slug: "sidebar-layout",
-    name: "Sidebar Layout",
-    summary: "The optional page frame around a Sidebar: inset content, title, and collapse control.",
-    entries: [sidebarLayoutEntry],
   },
   {
     slug: "sheet",

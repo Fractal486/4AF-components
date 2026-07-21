@@ -65,8 +65,8 @@ export const tabVariants = cva(
 /**
  * The travelling indicator. One per list, positioned over the selected tab.
  *
- * Only the vertical placement and the look live here — the measured horizontal position
- * and size are applied as transform-only `x` and `scaleX` inline.
+ * Only the vertical placement and the look live here — `left` and `width` are measured
+ * from the active tab and animated inline, so they must not be set in these classes.
  * `inset-y-*` matches the list's padding so the chip lines up with the tab it sits under.
  */
 export const tabIndicatorVariants = cva("pointer-events-none absolute z-0", {

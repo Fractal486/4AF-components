@@ -703,6 +703,29 @@
       ]
     },
     {
+      "name": "select-motion",
+      "type": "registry:ui",
+      "description": "A hand-animated select with an unfolding panel. It supports single or multiple selection and optional in-panel search.",
+      "dependencies": [
+        "lucide-react",
+        "motion"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/motion.json",
+        "http://localhost:3000/r/checkbox.json",
+        "http://localhost:3000/r/input.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/select/select-motion.tsx",
+          "type": "registry:ui",
+          "target": "@ui/select-motion.tsx"
+        }
+      ]
+    },
+    {
       "name": "select-motion-search",
       "type": "registry:ui",
       "description": "A searchable single or multi-select on Base UI's Combobox. Its panel unfolds from the input; filtering and result-size changes are immediate, while multi-select keeps its checkbox list open as choices are toggled.",

@@ -168,8 +168,11 @@ export function Slider({
   }, [offsetTargetValue, offsetTarget]);
   const offsetSmooth = useSpring(offsetTarget, SPRING_GLIDE);
   const offset = reduceMotion ? offsetTarget : offsetSmooth;
-  const ltrFillClip = useMotionTemplate`inset(0 calc(100% - ${pos}% - ${offset}px) 0 0)`;
-  const rtlFillClip = useMotionTemplate`inset(0 0 0 calc(100% - ${pos}% - ${offset}px))`;
+  // `pos` is a physical left-to-right position for the thumb. In RTL the fill still
+  // grows from the inline start (the right edge), so it needs the inverse progress.
+  const fillProgress = useTransform(pos, (position) => (isRtl ? 100 - position : position));
+  const ltrFillClip = useMotionTemplate`inset(0 calc(100% - ${fillProgress}% - ${offset}px) 0 0)`;
+  const rtlFillClip = useMotionTemplate`inset(0 0 0 calc(100% - ${fillProgress}% - ${offset}px))`;
   const fillClip = isRtl ? rtlFillClip : ltrFillClip;
 
   const stepCount = Math.floor((normalizedMax - normalizedMin) / normalizedStep);
@@ -245,7 +248,7 @@ export function Slider({
           <motion.div
             aria-hidden
             data-slot="slider-fill"
-            className={cn("absolute inset-y-0 bg-foreground/15", isRtl ? "right-0" : "left-0")}
+            className="absolute inset-0 bg-foreground/15"
             style={{ clipPath: fillClip }}
           />
 

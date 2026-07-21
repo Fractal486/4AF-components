@@ -199,6 +199,7 @@ The following 34 names are accepted by `pnpm 4af install <name>`.
 | `slider` | `Slider` | Controlled or uncontrolled numeric slider with a spring-gliding fill and three thumb variants: `bar` (thin handle), `circle` (round thumb filling the rail), and `knob` (round thumb over a thin rail). |
 | `select` | `Select`, `SelectTrigger`, `SelectSortTrigger`, `SelectValue`, `SelectContent`, `SelectItem` | Accessible Base UI single/multi select with icons, optional in-panel search, clear footer, content sizing, and the compact sort/filter trigger. |
 | `select-search` | `SearchSelect`, `SearchSelectInput`, `SearchSelectContent`, item parts | Editable Combobox-style trigger with live filtering, single or checkbox-based multi-selection, icons, and full keyboard/ARIA behaviour. |
+| `select-motion` | `Select`, `SelectTrigger`, `SelectValue`, `SelectContent`, `SelectItem` | Hand-animated unfolding Select with single/multi selection and optional in-panel search. |
 | `select-motion-search` | `MotionSearchSelect`, input/content/item parts | Editable Base UI Combobox whose panel unfolds from the field; supports single and checkbox-based multi-selection. |
 
 ### Feedback and status
@@ -316,6 +317,7 @@ This is why the Web UI has a “Select · Sort” demo while the registry has no
 | --- | --- | --- | --- |
 | `select` | Button/field trigger | Scale, blur, and fade | Optional search inside the panel |
 | `select-search` | Editable Combobox input | Standard positioned panel entrance | The trigger itself is the search field |
+| `select-motion` | Button/field trigger | Hand-animated unfolding panel | Optional search inside the panel |
 | `select-motion-search` | Editable Combobox input | Unfolds from the field | The trigger itself is the search field |
 
 Single and multi-selection are supported across the family. Multi-selection uses the
@@ -368,9 +370,11 @@ The inspector is a visual review site, not the registry itself.
 
 ### Registry items and inspector entries
 
-Every installable UI item has a dedicated inspector entry. Shared foundation items such as
-the theme, `cn`, `slot`, and motion presets are installed as dependencies and intentionally
-do not appear as standalone demos.
+Every installable UI item except `sidebar-layout` has a dedicated inspector entry.
+`sidebar-layout` is intentionally represented within the Sidebar demo because it is a
+page-frame companion, not a standalone primitive. Shared foundation items such as the theme,
+`cn`, `slot`, and motion presets are installed as dependencies and intentionally do not appear
+as standalone demos.
 
 ### Inspector entry without a separate registry item
 

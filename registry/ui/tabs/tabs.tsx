@@ -143,10 +143,7 @@ export function TabsList({
           // No animation on first appearance — it should already be under the selected
           // tab, not fly in from the origin on load.
           initial={false}
-          // A 1px base is positioned at the list origin; x and scaleX produce the
-          // measured horizontal box without animating left or width.
-          style={{ left: 0, width: 1, transformOrigin: "left" }}
-          animate={{ x: box.left, scaleX: box.width }}
+          animate={{ left: box.left, width: box.width }}
           transition={reduceMotion ? { duration: 0 } : spring.snappy}
         />
       )}

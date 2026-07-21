@@ -11,7 +11,7 @@ describe("Slider", () => {
     expect(slider).toHaveAttribute("aria-valuenow", "10");
   });
 
-  it("keeps its visual thumb and fill aligned with Base UI in RTL without layout animation", async () => {
+  it("keeps its visual thumb and full-width fill aligned with Base UI in RTL without layout animation", async () => {
     const { container } = render(
       <DirectionProvider direction="rtl">
         <Slider aria-label="Volume" value={20} />
@@ -20,7 +20,7 @@ describe("Slider", () => {
 
     await waitFor(() => expect(container.querySelector('[data-slot="slider-thumb"]')).toBeInTheDocument());
     expect(container.querySelector('[data-slot="slider-thumb"]')).toHaveStyle({ left: "0px" });
-    expect(container.querySelector('[data-slot="slider-fill"]')).toHaveClass("right-0");
+    expect(container.querySelector('[data-slot="slider-fill"]')).toHaveClass("inset-0");
     expect(container.querySelector('[data-slot="slider-fill"]')).toHaveStyle({
       clipPath: expect.stringContaining("inset"),
     });
