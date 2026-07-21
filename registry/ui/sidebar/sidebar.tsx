@@ -212,7 +212,13 @@ export function SidebarProvider({
 export interface SidebarProps extends ComponentProps<"div"> {
   side?: "left" | "right";
   /** `split` adds a fixed icon rail beside the regular sidebar panel. */
-  variant?: "sidebar" | "floating" | "inset" | "split";
+  variant?:
+    | "sidebar"
+    | "floating"
+    | "inset"
+    | "split"
+    | "split-floating"
+    | "split-inset";
   /** `offcanvas` slides away entirely; `icon` leaves a rail; `none` never collapses. */
   collapsible?: "offcanvas" | "icon" | "none";
   /** Icon-only content for the fixed rail shown by the `split` variant. */
@@ -252,8 +258,20 @@ export function Sidebar({
     () => ({ activePanel: currentActivePanel, setActivePanel }),
     [currentActivePanel, setActivePanel],
   );
+  const isSplit =
+    variant === "split" || variant === "split-floating" || variant === "split-inset";
+  const splitFloating = variant === "split-floating";
+  const splitInset = variant === "split-inset";
+  const splitFramed = splitFloating || splitInset;
+  const splitExpandedWidth = splitFramed
+    ? "w-[calc(var(--sidebar-width)+var(--sidebar-width-icon)+(--spacing(4)))]"
+    : "w-[calc(var(--sidebar-width)+var(--sidebar-width-icon))]";
+  const splitCollapsedWidth = splitFramed
+    ? "group-data-[state=collapsed]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]"
+    : "group-data-[state=collapsed]:w-(--sidebar-width-icon)";
+  const splitCollapsed = isSplit && collapsible !== "none" && state === "collapsed";
 
-  if (collapsible === "none" && variant !== "split") {
+  if (collapsible === "none" && !isSplit) {
     return (
       <div
         data-slot="sidebar"
@@ -277,7 +295,7 @@ export function Sidebar({
           data-slot="sidebar"
           data-mobile="true"
           className={cn(
-            variant === "split"
+            isSplit
               ? "w-[calc(var(--sidebar-width)+var(--sidebar-width-icon))]"
               : "w-(--sidebar-width)",
             "bg-surface p-0",
@@ -285,7 +303,7 @@ export function Sidebar({
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-              ...(variant === "split"
+              ...(isSplit
                 ? { "--sidebar-width-icon": SIDEBAR_WIDTH_SPLIT_RAIL }
                 : {}),
             } as CSSProperties
@@ -296,7 +314,7 @@ export function Sidebar({
             <SheetTitle>Sidebar</SheetTitle>
             <SheetDescription>Site navigation.</SheetDescription>
           </SheetHeader>
-          {variant === "split" ? (
+          {isSplit ? (
             <div className="flex h-full w-full">
               <div
                 data-slot="sidebar-rail-column"
@@ -317,7 +335,7 @@ export function Sidebar({
       </Sheet>
     );
 
-    return variant === "split" ? (
+    return isSplit ? (
       <SidebarSplitContext.Provider value={splitContextValue}>
         {mobileSidebar}
       </SidebarSplitContext.Provider>
@@ -326,45 +344,72 @@ export function Sidebar({
     );
   }
 
-  if (variant === "split") {
+  if (isSplit) {
     const splitSidebar = (
       <div
         className="group peer hidden text-foreground md:block"
         style={{ "--sidebar-width-icon": SIDEBAR_WIDTH_SPLIT_RAIL } as CSSProperties}
-        data-state="expanded"
-        data-collapsible="none"
-        data-variant="split"
+        data-state={splitCollapsed ? "collapsed" : "expanded"}
+        data-collapsible={splitCollapsed ? "icon" : ""}
+        data-variant={variant}
         data-side={side}
         data-slot="sidebar"
       >
         <div
           data-slot="sidebar-gap"
-          className="relative w-[calc(var(--sidebar-width)+var(--sidebar-width-icon))] bg-transparent"
+          className={cn(
+            "relative bg-transparent transition-[width] duration-(--duration-slow) ease-out",
+            splitExpandedWidth,
+            splitCollapsedWidth,
+          )}
         />
         <div
           data-slot="sidebar-container"
           className={cn(
-            "fixed inset-y-0 z-10 hidden h-svh w-[calc(var(--sidebar-width)+var(--sidebar-width-icon))] md:flex",
-            side === "left" ? "left-0" : "right-0",
+            "fixed inset-y-0 z-10 hidden h-svh md:flex border-border transition-[width,border-color] duration-(--duration-slow) ease-out",
+            splitExpandedWidth,
+            splitCollapsedWidth,
+            splitFloating && "p-2",
+            splitInset && "inset-y-2 h-auto! px-2",
+            side === "left"
+              ? splitInset
+                ? "left-0 border-r-0 after:pointer-events-none after:absolute after:inset-y-3 after:right-0 after:w-px after:bg-border after:content-[''] after:transition-[background-color] after:duration-(--duration-fast) after:ease-out [&:has(>[data-slot=sidebar-rail]:hover)]:after:bg-border-strong"
+                : "left-0 border-r [&:has(>[data-slot=sidebar-rail]:hover)]:border-r-border-strong"
+              : splitInset
+                ? "right-0 border-l-0 after:pointer-events-none after:absolute after:inset-y-3 after:left-0 after:w-px after:bg-border after:content-[''] after:transition-[background-color] after:duration-(--duration-fast) after:ease-out [&:has(>[data-slot=sidebar-rail]:hover)]:after:bg-border-strong"
+                : "right-0 border-l [&:has(>[data-slot=sidebar-rail]:hover)]:border-l-border-strong",
             className,
           )}
           {...props}
         >
           <div
-            data-slot="sidebar-rail-column"
             className={cn(
-              "flex h-full w-(--sidebar-width-icon) shrink-0 flex-col items-center gap-2 overflow-y-auto bg-surface p-2",
-              SIDEBAR_SCROLLBAR,
-              "border-r border-border",
+              "flex h-full w-full min-w-0 overflow-hidden",
+              splitFramed && "rounded-lg shadow-border",
             )}
           >
-            {rail}
-          </div>
-          <div className="flex h-full min-w-0 flex-1 flex-col bg-surface">
-            <div data-slot="sidebar-inner" className="flex h-full w-full flex-col text-foreground">
-              {children}
+            <div
+              data-slot="sidebar-rail-column"
+              className={cn(
+                "flex h-full w-(--sidebar-width-icon) shrink-0 flex-col items-center gap-2 overflow-y-auto bg-surface p-2",
+                SIDEBAR_SCROLLBAR,
+                "border-r border-border",
+              )}
+            >
+              {rail}
+            </div>
+            <div
+              className={cn(
+                "flex h-full w-(--sidebar-width) shrink-0 flex-col overflow-hidden bg-surface transition-[width] duration-(--duration-slow) ease-out",
+                "group-data-[state=collapsed]:pointer-events-none group-data-[state=collapsed]:invisible group-data-[state=collapsed]:w-0",
+              )}
+            >
+              <div data-slot="sidebar-inner" className="flex h-full w-full flex-col text-foreground">
+                {children}
+              </div>
             </div>
           </div>
+          <SidebarRail />
         </div>
       </div>
     );
@@ -410,7 +455,14 @@ export function Sidebar({
             ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
             : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
           variant === "floating" || variant === "inset"
-            ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
+            ? variant === "inset"
+              ? cn(
+                  "inset-y-2 h-auto! px-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]",
+                  side === "left"
+                    ? "border-r-0 after:pointer-events-none after:absolute after:inset-y-3 after:right-0 after:w-px after:bg-border after:content-[''] after:transition-[background-color] after:duration-(--duration-fast) after:ease-out [&:has([data-slot=sidebar-rail]:hover)]:after:bg-border-strong"
+                    : "border-l-0 after:pointer-events-none after:absolute after:inset-y-3 after:left-0 after:w-px after:bg-border after:content-[''] after:transition-[background-color] after:duration-(--duration-fast) after:ease-out [&:has([data-slot=sidebar-rail]:hover)]:after:bg-border-strong",
+                )
+              : "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
             : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l border-border",
           className,
         )}
@@ -420,8 +472,9 @@ export function Sidebar({
           data-slot="sidebar-inner"
           className={cn(
             "flex h-full w-full flex-col bg-surface",
-            // Floating lifts off the page, so it gets the border and the radius.
+            // Floating and inset surfaces both need a bounded, rounded edge.
             "group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-border",
+            "group-data-[variant=inset]:rounded-lg group-data-[variant=inset]:shadow-border",
           )}
         >
           {children}
@@ -564,7 +617,7 @@ export function SidebarRail({ className, ...props }: ComponentProps<"button">) {
         "hover:group-data-[collapsible=offcanvas]:bg-surface",
         "[[data-side=left][data-collapsible=offcanvas]_&]:-right-2",
         "[[data-side=right][data-collapsible=offcanvas]_&]:-left-2",
-        "group-data-[variant=split]:hidden",
+        "group-data-[variant=inset]:after:hidden group-data-[variant=split]:after:hidden group-data-[variant=split-floating]:after:hidden group-data-[variant=split-inset]:after:hidden",
         className,
       )}
       {...props}
@@ -579,9 +632,10 @@ export function SidebarInset({ className, ...props }: ComponentProps<"main">) {
       data-slot="sidebar-inset"
       className={cn(
         "relative flex w-full flex-1 flex-col bg-background",
-        "md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl",
-        "md:peer-data-[variant=inset]:shadow-border",
-        "md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",
+        "md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=split-inset]:m-2",
+        "md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=split-inset]:ml-0",
+        "md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=split-inset]:rounded-xl",
+        "md:peer-data-[variant=inset]:shadow-border md:peer-data-[variant=split-inset]:shadow-border",
         className,
       )}
       {...props}
@@ -720,7 +774,7 @@ export function SidebarGroupAction({
         // The 14px inset centers this 16px glyph on the same vertical line as a menu
         // row's trailing icon inside its 8px right padding.
         "absolute top-3.5 right-3.5 flex aspect-square w-5 cursor-pointer items-center justify-center rounded-md p-0",
-        "text-muted-foreground outline-none hover:bg-muted hover:text-foreground",
+        "text-muted-foreground outline-none hover:bg-transparent hover:text-white",
         "focus-visible:ring-2 focus-visible:ring-ring",
         // A 20px control is under the comfortable touch target, so the hit area is
         // widened on pointer-coarse devices without moving the glyph.

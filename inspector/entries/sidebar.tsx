@@ -2,7 +2,7 @@ import { bool, defineEntry, select } from "../schema";
 import { SidebarDemo } from "./sidebar-demo";
 
 const SIDES = ["left", "right"] as const;
-const VARIANTS = ["sidebar", "floating", "inset", "split"] as const;
+const VARIANTS = ["sidebar", "floating", "inset", "split", "split-floating", "split-inset"] as const;
 const COLLAPSIBLE = ["offcanvas", "icon", "none"] as const;
 
 export const sidebarEntry = defineEntry({

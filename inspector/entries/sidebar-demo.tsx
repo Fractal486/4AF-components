@@ -60,7 +60,7 @@ export function SidebarDemo({
   loading,
 }: {
   side: "left" | "right";
-  variant: "sidebar" | "floating" | "inset" | "split";
+  variant: "sidebar" | "floating" | "inset" | "split" | "split-floating" | "split-inset";
   collapsible: "offcanvas" | "icon" | "none";
   loading: boolean;
 }) {
@@ -70,7 +70,7 @@ export function SidebarDemo({
   const [filesSelection, setFilesSelection] = useState("browse");
   const [teamSelection, setTeamSelection] = useState("members");
   const [settingsSelection, setSettingsSelection] = useState("preferences");
-  const split = variant === "split";
+  const split = variant === "split" || variant === "split-floating" || variant === "split-inset";
   // Full screen *is* the document root, near enough — so the framing that makes this fit
   // a preview pane is exactly what has to come off.
   const full = useIsFullscreen();
@@ -96,7 +96,7 @@ export function SidebarDemo({
         <Sidebar
           side={side}
           variant={variant}
-          collapsible={split ? "none" : collapsible}
+          collapsible={collapsible}
           defaultActivePanel={split ? "mail" : undefined}
           className="h-full"
           rail={
@@ -530,7 +530,7 @@ export function SidebarDemo({
 
         <SidebarInset>
           <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-3">
-            {!split && <SidebarTrigger />}
+            <SidebarTrigger />
             <span className="text-sm text-muted-foreground">
               {active[0]!.toUpperCase() + active.slice(1)}
             </span>
