@@ -288,6 +288,27 @@
       ]
     },
     {
+      "name": "delete-button",
+      "type": "registry:ui",
+      "description": "A destructive button that arms on the first press and confirms on the second, with Escape, blur, and timeout exits.",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/button.json",
+        "http://localhost:3000/r/morph.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/delete-button/delete-button.tsx",
+          "type": "registry:ui",
+          "target": "@ui/delete-button.tsx"
+        }
+      ]
+    },
+    {
       "name": "copy-button",
       "type": "registry:ui",
       "description": "Copies to the clipboard and confirms it \u00e2\u20ac\u201d visually, and to screen readers.",
@@ -597,6 +618,30 @@
           "path": "registry/ui/select/select.tsx",
           "type": "registry:ui",
           "target": "@ui/select.tsx"
+        }
+      ]
+    },
+    {
+      "name": "command-palette",
+      "type": "registry:ui",
+      "description": "A keyboard-first command and search palette with nested panels, custom panel content, fuzzy filtering, keybind hints, and Base UI dialog/autocomplete behavior.",
+      "dependencies": [
+        "@base-ui/react",
+        "lucide-react",
+        "motion"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/motion.json",
+        "http://localhost:3000/r/checkbox.json",
+        "http://localhost:3000/r/select.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/command-palette/command-palette.tsx",
+          "type": "registry:ui",
+          "target": "@ui/command-palette.tsx"
         }
       ]
     },
