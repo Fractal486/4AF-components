@@ -15,6 +15,21 @@ _incoming/    Raw downloads, gitignored. Staging only — never imported.
 
 `pnpm dev` · `pnpm typecheck` · `pnpm lint` · `pnpm build`
 
+## Using the library from another project
+
+Use the deterministic CLI from this repository rather than copying source files manually:
+
+```text
+pnpm 4af list
+pnpm 4af doctor --project <absolute-target-project>
+pnpm 4af install <component> --project <absolute-target-project> --dry-run
+pnpm 4af install <component> --project <absolute-target-project>
+```
+
+`--dry-run` lists every target file, theme CSS merge, dependency addition, and conflict
+before it writes anything. The target must already contain `package.json` and shadcn
+`components.json` with `ui` and `lib` aliases.
+
 > **Never run `pnpm build` while `pnpm dev` is running.** They share `.next/`, and the
 > build empties the CSS chunks the dev server is serving — the page keeps working but
 > arrives with no styles, which looks exactly like a broken stylesheet. Stop dev first, or
@@ -70,7 +85,7 @@ Hover, press, focus and simple fades are CSS. They don't need a runtime.
   and any component that unmounts on that event would hang open forever.
 - Motion components: `useReducedMotion()` → `{ duration: 0 }`. Not a very short spring —
   a spring with a near-zero duration doesn't settle, it snaps.
-- Looping indicators (spinners) are exempt from both. A 1s spin collapsed to ~0 is a
+- Looping progress indicators (spinners) are exempt from both. A 1s spin collapsed to ~0 is a
   strobe, which is worse than the motion it was avoiding. Set their duration directly.
 
 ## Sources
@@ -87,9 +102,9 @@ Plus one-off sources for specific jobs (loaders, charts). Same loop applies.
 
 ## Adding a component (the ingestion loop)
 
-1. **Download.** `npx shadcn@latest add <url>` — `components.json` aliases point at
+1. **Download.** `pnpm dlx shadcn@4.13.1 add <url>` — `components.json` aliases point at
    `_incoming/`, so anything from any public registry lands in staging, never in the
-   library. Note the source on the entry's `source` field.
+   library.
 2. **Rebuild to the contract.** Don't polish the download; rewrite it. Most public
    components fail on `transition: all`, hardcoded durations, hex colours, and missing
    `asChild`.

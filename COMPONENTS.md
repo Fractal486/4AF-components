@@ -61,7 +61,8 @@ separate `select-sort` registry item.
 - CSS durations come from `--duration-fast`, `--duration-base`, `--duration-slow`, and
   `--duration-slower`.
 - Reduced-motion users receive collapsed CSS durations and zero-duration JavaScript
-  transitions. Looping indicators are stopped rather than accelerated into a strobe.
+  transitions. Essential looping progress indicators retain their deliberate duration;
+  decorative loops such as Text Shimmer stop rather than becoming a strobe.
 
 ## Repository layout
 
@@ -83,6 +84,10 @@ The dependency direction is always `app` → `inspector` → `registry`.
 
 Run the CLI from the 4AF Components repository. Use an absolute path for the target
 project so there is no ambiguity about where files will be written.
+
+The repository toolchain is pinned to Node 25.9.0 and pnpm 11.13.1 (`.node-version` and
+`package.json`). The registry commands use shadcn 4.13.1, so validation, build, and install
+behave consistently across machines.
 
 ### Target project requirements
 
@@ -119,8 +124,8 @@ the project.
 pnpm 4af install select --project C:\Projects\my-app --dry-run
 ```
 
-The dry run reports which files would be installed and whether any target files already
-exist.
+The dry run lists every target file, theme CSS merge, package dependency addition, existing
+dependency, and target-file conflict. It does not write to the target project.
 
 ### Install a component
 
@@ -168,7 +173,7 @@ transitively rather than requested directly through `pnpm 4af install`.
 
 ## Full installable UI registry
 
-The following 35 names are accepted by `pnpm 4af install <name>`.
+The following 34 names are accepted by `pnpm 4af install <name>`.
 
 ### Actions
 
@@ -194,7 +199,6 @@ The following 35 names are accepted by `pnpm 4af install <name>`.
 | `slider` | `Slider` | Controlled or uncontrolled numeric slider with a spring-gliding fill and three thumb variants: `bar` (thin handle), `circle` (round thumb filling the rail), and `knob` (round thumb over a thin rail). |
 | `select` | `Select`, `SelectTrigger`, `SelectSortTrigger`, `SelectValue`, `SelectContent`, `SelectItem` | Accessible Base UI single/multi select with icons, optional in-panel search, clear footer, content sizing, and the compact sort/filter trigger. |
 | `select-search` | `SearchSelect`, `SearchSelectInput`, `SearchSelectContent`, item parts | Editable Combobox-style trigger with live filtering, single or checkbox-based multi-selection, icons, and full keyboard/ARIA behaviour. |
-| `select-motion` | `Select`, `SelectTrigger`, `SelectValue`, `SelectContent`, `SelectItem` | Hand-animated unfolding Select with single/multi selection and optional in-panel search. Use when the unfolding entrance is the reason for choosing it. |
 | `select-motion-search` | `MotionSearchSelect`, input/content/item parts | Editable Base UI Combobox whose panel unfolds from the field; supports single and checkbox-based multi-selection. |
 
 ### Feedback and status
@@ -306,13 +310,12 @@ import {
 This is why the Web UI has a “Select · Sort” demo while the registry has no
 `select-sort` item.
 
-### The four installable Select implementations
+### The three installable Select implementations
 
 | Install name | Trigger model | Panel motion | Search |
 | --- | --- | --- | --- |
 | `select` | Button/field trigger | Scale, blur, and fade | Optional search inside the panel |
 | `select-search` | Editable Combobox input | Standard positioned panel entrance | The trigger itself is the search field |
-| `select-motion` | Button/field trigger | Hand-animated unfolding panel | Optional search inside the panel |
 | `select-motion-search` | Editable Combobox input | Unfolds from the field | The trigger itself is the search field |
 
 Single and multi-selection are supported across the family. Multi-selection uses the
@@ -363,13 +366,11 @@ actions.
 
 The inspector is a visual review site, not the registry itself.
 
-### Registry items without their own inspector entry
+### Registry items and inspector entries
 
-| Registry item | Where it is represented |
-| --- | --- |
-| `field-error` | Installable and documented here; currently no visual inspector entry. |
-| `text-shimmer` | Installable and documented here; currently no visual inspector entry. |
-| `sidebar-layout` | Installable companion used by the Sidebar layout concept; currently no separate inspector entry. |
+Every installable UI item has a dedicated inspector entry. Shared foundation items such as
+the theme, `cn`, `slot`, and motion presets are installed as dependencies and intentionally
+do not appear as standalone demos.
 
 ### Inspector entry without a separate registry item
 

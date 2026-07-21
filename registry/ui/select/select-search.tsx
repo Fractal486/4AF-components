@@ -424,11 +424,12 @@ export function SearchMultiSelectItem({
   value,
   ...props
 }: SearchMultiSelectItemProps) {
-  const { registerIcon } = useContext(SearchContext);
+  const { registerIcon, unregisterIcon } = useContext(SearchContext);
 
   useEffect(() => {
     registerIcon(value, icon);
-  }, [icon, registerIcon, value]);
+    return () => unregisterIcon(value);
+  }, [icon, registerIcon, unregisterIcon, value]);
 
   return (
     <Combobox.Item

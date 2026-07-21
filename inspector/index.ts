@@ -9,6 +9,7 @@ import { deleteButtonEntry } from "./entries/delete-button";
 import { dialogEntry } from "./entries/dialog";
 import { dropdownMenuEntry } from "./entries/dropdown-menu";
 import { emptyEntry } from "./entries/empty";
+import { fieldErrorEntry } from "./entries/field-error";
 import { hoverCardEntry } from "./entries/hover-card";
 import { inputEntry } from "./entries/input";
 import { morphEntry } from "./entries/morph";
@@ -16,16 +17,17 @@ import { popoverEntry } from "./entries/popover";
 import { progressEntry } from "./entries/progress";
 import { radioEntry } from "./entries/radio";
 import { selectEntry } from "./entries/select";
-import { selectMotionEntry } from "./entries/select-motion";
 import { selectMotionSearchEntry } from "./entries/select-motion-search";
 import { selectSearchEntry } from "./entries/select-search";
 import { selectSortEntry } from "./entries/select-sort";
 import { skeletonEntry } from "./entries/skeleton";
 import { sheetEntry } from "./entries/sheet";
 import { sidebarEntry } from "./entries/sidebar";
+import { sidebarLayoutEntry } from "./entries/sidebar-layout";
 import { sliderEntry } from "./entries/slider";
 import { switchEntry } from "./entries/switch";
 import { tableOfContentsEntry } from "./entries/table-of-contents";
+import { textShimmerEntry } from "./entries/text-shimmer";
 import { tabsEntry } from "./entries/tabs";
 import { textareaEntry } from "./entries/textarea";
 import { toastEntry } from "./entries/toast";
@@ -73,7 +75,7 @@ export const groups: Group[] = [
     slug: "input",
     name: "Input",
     summary: "A native text field backed by Base UI, and the taller textarea that shares its treatment.",
-    entries: [inputEntry, textareaEntry],
+    entries: [inputEntry, textareaEntry, fieldErrorEntry],
     stacked: true,
   },
   {
@@ -132,6 +134,12 @@ export const groups: Group[] = [
     entries: [emptyEntry],
   },
   {
+    slug: "text-shimmer",
+    name: "Text Shimmer",
+    summary: "A lightweight moving highlight for a label while background work is in progress.",
+    entries: [textShimmerEntry],
+  },
+  {
     slug: "table-of-contents",
     name: "Table of Contents",
     summary: "Headings as a nav that tracks the reader — the active entry lit, a rail marker sliding to it.",
@@ -141,11 +149,10 @@ export const groups: Group[] = [
     slug: "select",
     name: "Select",
     summary:
-      "A panel of options off a trigger. BaseUI fades a panel in and can check several; BaseUI Search filters as you type and can check several; Motion unfolds one or checks several; Motion Search unfolds from the field and can check several; Sort is a compact chip that shows its picks and dashes its border until you choose.",
+      "A panel of options off a trigger. Base UI fades a panel in and can check several; Base UI Search filters as you type and can check several; Motion Search unfolds from the field and can check several; Sort is a compact chip that shows its picks and dashes its border until you choose.",
     entries: [
       selectEntry,
       selectSearchEntry,
-      selectMotionEntry,
       selectMotionSearchEntry,
       selectSortEntry,
     ],
@@ -206,6 +213,12 @@ export const groups: Group[] = [
     summary:
       "An application shell: a collapsible nav rail that becomes a drawer on mobile. Groups, sub-menus, badges and row actions, with tooltips once it collapses to icons.",
     entries: [sidebarEntry],
+  },
+  {
+    slug: "sidebar-layout",
+    name: "Sidebar Layout",
+    summary: "The optional page frame around a Sidebar: inset content, title, and collapse control.",
+    entries: [sidebarLayoutEntry],
   },
   {
     slug: "sheet",

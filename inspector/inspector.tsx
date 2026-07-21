@@ -99,6 +99,7 @@ function EntryView({ entry, groupSlug }: { entry: Entry; groupSlug: string }) {
         {hasControls && (
           <aside className="rounded-xl bg-surface p-4 shadow-border">
             <Controls
+              idPrefix={`${groupSlug}-${entry.slug}`}
               schema={entry.controls}
               values={values}
               onChange={(key, value) =>

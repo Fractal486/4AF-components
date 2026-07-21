@@ -24,7 +24,7 @@ import { spring } from "@/registry/lib/motion";
  *
  * Because the marker mirrors what's actually visible rather than a clicked target, it stays
  * in lockstep with the scroll — no racing ahead of a smooth scroll and stuttering back. The
- * span is a `transform`/height animation (one element, off the layout path). Clicking an
+ * span is a transform-only animation (one element, off the layout path). Clicking an
  * entry scrolls its heading to the top (smoothly, or instantly under reduced motion).
  *
  * Pass `rootRef` when the content scrolls inside a container rather than the page.
@@ -116,7 +116,8 @@ export function TableOfContents({ items, rootRef, className, ...props }: TableOf
             aria-hidden
             className="absolute top-0 -left-px w-0.5 rounded-full bg-foreground"
             initial={false}
-            animate={{ y: marker.y, height: marker.height }}
+            style={{ height: 1, transformOrigin: "top" }}
+            animate={{ y: marker.y, scaleY: marker.height }}
             transition={reduceMotion ? { duration: 0 } : spring.snappy}
           />
         )}

@@ -40,7 +40,7 @@ These entries install transitively:
 
 ## Installable catalog
 
-The catalog currently contains 35 installable UI items. Verify the count and names with
+The catalog currently contains 34 installable UI items. Verify the count and names with
 `pnpm 4af list` before making registry-wide claims.
 
 ### Actions
@@ -67,7 +67,6 @@ The catalog currently contains 35 installable UI items. Verify the count and nam
 | `slider` | `Slider` | Numeric input with `bar`, `circle`, and `knob` thumb variants. |
 | `select` | `Select`, trigger/content/item parts, `SelectSortTrigger` | Base UI single/multi select, optional panel search and clear footer, compact sort/filter trigger. |
 | `select-search` | `SearchSelect` and input/content/item parts | Editable Combobox trigger with filtering and single/multi selection. |
-| `select-motion` | `Select` and trigger/content/item parts | Button-triggered select with a hand-animated unfolding panel and optional panel search. |
 | `select-motion-search` | `MotionSearchSelect` and parts | Editable Combobox whose panel unfolds from the field. |
 
 ### Feedback and status
@@ -130,10 +129,9 @@ clear footer with `clearable` on `SelectContent`.
 | --- | --- | --- | --- |
 | `select` | Button/field | Standard scale, blur, fade | Optional inside panel |
 | `select-search` | Editable Combobox | Standard positioned panel | Trigger field |
-| `select-motion` | Button/field | Unfolding panel | Optional inside panel |
 | `select-motion-search` | Editable Combobox | Unfolds from field | Trigger field |
 
-All four support single and multi selection. Multi selection uses Checkbox. Only base
+All three support single and multi selection. Multi selection uses Checkbox. Only base
 `select` bundles `SelectSortTrigger`.
 
 ### Command Palette is a component family
@@ -170,12 +168,6 @@ option remains available for one action.
 ## Inspector and registry parity
 
 The inspector is a review site, not the installable catalog.
-
-Registry items currently lacking dedicated inspector entries:
-
-- `field-error`
-- `text-shimmer`
-- `sidebar-layout`
 
 The inspector's “Select · Sort” / `select-sort` entry demonstrates `SelectSortTrigger`;
 install `select`.

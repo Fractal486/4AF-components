@@ -1,5 +1,6 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { vi } from "vitest";
 import {
   SearchMultiSelectItem,
@@ -69,6 +70,32 @@ function FruitSearchMulti({
             {item.label}
           </SearchMultiSelectItem>
         )}
+      </SearchSelectContent>
+    </SearchSelect>
+  );
+}
+
+function DynamicMultiIcon() {
+  const [showItem, setShowItem] = useState(true);
+
+  return (
+    <SearchSelect<Fruit> items={FRUITS} defaultOpen defaultValue={FRUITS[0]}>
+      <button type="button" onClick={() => setShowItem(false)}>
+        Remove item
+      </button>
+      <SearchSelectInput aria-label="Dynamic fruit" placeholder="Search fruit" />
+      <SearchSelectContent emptyMessage="No fruit found.">
+        {(item: Fruit) =>
+          showItem ? (
+            <SearchMultiSelectItem
+              key={item.value}
+              value={item}
+              icon={item.value === "apple" ? <span data-testid="dynamic-fruit-icon" /> : undefined}
+            >
+              {item.label}
+            </SearchMultiSelectItem>
+          ) : null
+        }
       </SearchSelectContent>
     </SearchSelect>
   );
@@ -204,5 +231,19 @@ describe("Search Select", () => {
     expect(input.parentElement?.querySelector('[data-testid="fruit-icon"]')).toBeInTheDocument();
     await user.click(input);
     expect(input.parentElement?.querySelector('[data-testid="fruit-icon"]')).not.toBeInTheDocument();
+  });
+
+  it("unregisters icons when dynamic multi-select items unmount", async () => {
+    render(<DynamicMultiIcon />);
+
+    const input = screen.getByRole("combobox", { name: "Dynamic fruit" });
+    await waitFor(() =>
+      expect(input.parentElement?.querySelector('[data-testid="dynamic-fruit-icon"]')).toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getByText("Remove item", { selector: "button" }));
+    await waitFor(() =>
+      expect(input.parentElement?.querySelector('[data-testid="dynamic-fruit-icon"]')).not.toBeInTheDocument(),
+    );
   });
 });

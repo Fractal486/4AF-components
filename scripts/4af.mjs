@@ -10,6 +10,7 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const registryPath = resolve(repoRoot, "registry.json");
 const publicRoot = resolve(repoRoot, "public");
 const pnpm = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+const SHADCN_VERSION = "4.13.1";
 
 const registry = JSON.parse(readFileSync(registryPath, "utf8"));
 const components = registry.items.filter((item) => item.type === "registry:ui");
@@ -90,7 +91,7 @@ async function doctor(options) {
   if (!existsSync(componentsConfigPath)) {
     errors.push("components.json is missing; initialize shadcn in the target project first.");
   } else {
-    const config = JSON.parse(readFileSync(componentsConfigPath, "utf8"));
+    const config = readJson(componentsConfigPath);
     for (const alias of ["ui", "lib"]) {
       if (!config.aliases?.[alias]) errors.push(`components.json is missing the ${alias} alias.`);
     }
@@ -104,7 +105,7 @@ async function doctor(options) {
   if (errors.length) throw new Error("Target project is not ready for 4AF components.");
   console.log("status\tok");
   return existsSync(componentsConfigPath)
-    ? JSON.parse(readFileSync(componentsConfigPath, "utf8"))
+    ? readJson(componentsConfigPath)
     : null;
 }
 
@@ -117,19 +118,22 @@ async function installComponent(name, options) {
 
   const project = requireProject(options);
   const config = await doctor({ project });
-  const files = targetFiles(component, config, project);
-  const conflicts = files.filter((filePath) => existsSync(filePath));
+  const plan = installPlan(component, config, project);
+  const conflicts = plan.files.filter(({ target }) => existsSync(target));
 
   const overwrite = Boolean(options.overwrite);
   const dryRun = Boolean(options["dry-run"]);
-  const args = ["dlx", "shadcn@latest", "add", "REGISTRY_URL", "--yes"];
+  const args = ["dlx", `shadcn@${SHADCN_VERSION}`, "add", "REGISTRY_URL", "--yes"];
   if (overwrite) args.push("--overwrite");
 
   if (dryRun) {
     console.log(`component\t${component.name}`);
     console.log(`project\t${project}`);
-    console.log(`files\t${files.length}`);
-    if (conflicts.length) console.log(`conflicts\t${conflicts.join(", ")}`);
+    for (const file of plan.files) console.log(`write\t${file.target}\t(${file.source})`);
+    for (const cssPath of plan.cssMerges) console.log(`merge-css\t${cssPath}\t(4AF theme)`);
+    for (const dependency of plan.dependencies.add) console.log(`package-add\t${dependency}`);
+    for (const dependency of plan.dependencies.existing) console.log(`package-existing\t${dependency}`);
+    for (const conflict of conflicts) console.log(`conflict\t${conflict.target}`);
     console.log(`overwrite\t${overwrite}`);
     console.log("status\tdry-run");
     return;
@@ -137,7 +141,7 @@ async function installComponent(name, options) {
 
   if (conflicts.length && !overwrite) {
     throw new Error(
-      `These target files already exist: ${conflicts.join(", ")}. Re-run with --overwrite only if replacement is intentional.`,
+      `These target files already exist: ${conflicts.map(({ target }) => target).join(", ")}. Re-run with --overwrite only if replacement is intentional.`,
     );
   }
 
@@ -155,23 +159,45 @@ async function installComponent(name, options) {
   }
 }
 
-function targetFiles(component, config, project) {
-  const names = new Set();
-  collectRegistryFiles(component.name, names);
-  return [...names].map((target) => resolveTarget(target, config, project));
+function installPlan(component, config, project) {
+  const items = collectRegistryItems(component.name);
+  const files = items.flatMap((item) =>
+    (item.files ?? []).map((file) => ({
+      source: file.path,
+      target: resolveTarget(file.target, config, project),
+    })),
+  );
+  const requestedDependencies = [...new Set(items.flatMap((item) => item.dependencies ?? []))].sort();
+  const packageJson = readJson(resolve(project, "package.json"));
+  const installedDependencies = {
+    ...(packageJson.dependencies ?? {}),
+    ...(packageJson.devDependencies ?? {}),
+  };
+  const themeIncluded = items.some((item) => item.type === "registry:theme");
+  const cssPath = config.tailwind?.css;
+
+  return {
+    files,
+    cssMerges: themeIncluded && typeof cssPath === "string" ? [resolve(project, cssPath)] : [],
+    dependencies: {
+      add: requestedDependencies.filter((name) => !installedDependencies[name]),
+      existing: requestedDependencies.filter((name) => installedDependencies[name]),
+    },
+  };
 }
 
-function collectRegistryFiles(name, targets, visited = new Set()) {
+function collectRegistryItems(name, visited = new Set(), items = []) {
   if (visited.has(name)) return;
   visited.add(name);
   const item = registry.items.find((entry) => entry.name === name);
   if (!item) return;
 
-  for (const file of item.files ?? []) targets.add(file.target);
+  items.push(item);
   for (const dependency of item.registryDependencies ?? []) {
     const dependencyName = dependency.split("/").pop()?.replace(/\.json$/, "");
-    if (dependencyName) collectRegistryFiles(dependencyName, targets, visited);
+    if (dependencyName) collectRegistryItems(dependencyName, visited, items);
   }
+  return items;
 }
 
 function resolveTarget(target, config, project) {
@@ -180,14 +206,74 @@ function resolveTarget(target, config, project) {
   const alias = config.aliases?.[match[1]];
   if (!alias) throw new Error(`components.json is missing the ${match[1]} alias required by ${target}.`);
 
-  const tsconfigPath = ["tsconfig.json", "tsconfig.app.json"]
-    .map((name) => resolve(project, name))
-    .find((path) => existsSync(path));
-  const tsconfig = tsconfigPath ? JSON.parse(readFileSync(tsconfigPath, "utf8")) : null;
-  const pathPattern = tsconfig?.compilerOptions?.paths?.["@/*"]?.[0] ?? "./*";
-  const sourceRoot = pathPattern.replace(/\*.*$/, "").replace(/^\.\//, "");
-  const aliasPath = alias.replace(/^@\//, "");
-  return resolve(project, sourceRoot, aliasPath, match[2]);
+  return resolve(resolveProjectAlias(alias, project), match[2]);
+}
+
+function readJson(path) {
+  return JSON.parse(readFileSync(path, "utf8"));
+}
+
+function resolveProjectAlias(alias, project) {
+  const matches = [];
+
+  for (const { path, config } of projectTsconfigs(project)) {
+    for (const [pattern, targets] of Object.entries(config.compilerOptions?.paths ?? {})) {
+      const wildcard = matchPathPattern(alias, pattern);
+      if (wildcard === null || !Array.isArray(targets) || typeof targets[0] !== "string") continue;
+      matches.push({
+        pattern,
+        target: targets[0].replace("*", wildcard),
+        path,
+      });
+    }
+  }
+
+  matches.sort((a, b) => b.pattern.length - a.pattern.length);
+  const match = matches[0];
+  if (match) return resolve(dirname(match.path), match.target);
+
+  if (alias.startsWith("./") || alias.startsWith("../")) return resolve(project, alias);
+  throw new Error(
+    `Could not resolve the ${alias} alias from components.json. Add a matching compilerOptions.paths entry to the target project's tsconfig.`,
+  );
+}
+
+function matchPathPattern(value, pattern) {
+  const star = pattern.indexOf("*");
+  if (star < 0) return value === pattern ? "" : null;
+
+  const prefix = pattern.slice(0, star);
+  const suffix = pattern.slice(star + 1);
+  if (!value.startsWith(prefix) || !value.endsWith(suffix)) return null;
+  return value.slice(prefix.length, value.length - suffix.length);
+}
+
+function projectTsconfigs(project) {
+  const configs = [];
+  const visited = new Set();
+
+  const visit = (path) => {
+    if (visited.has(path) || !existsSync(path)) return;
+    visited.add(path);
+
+    const config = readJson(path);
+    configs.push({ path, config });
+
+    for (const reference of config.references ?? []) {
+      if (typeof reference?.path !== "string") continue;
+      const referencePath = resolve(dirname(path), reference.path);
+      visit(existsSync(referencePath) ? referencePath : `${referencePath}.json`);
+    }
+
+    if (typeof config.extends === "string" && config.extends.startsWith(".")) {
+      const extendsPath = resolve(dirname(path), config.extends);
+      visit(existsSync(extendsPath) ? extendsPath : `${extendsPath}.json`);
+    }
+  };
+
+  visit(resolve(project, "tsconfig.json"));
+  visit(resolve(project, "tsconfig.app.json"));
+  return configs;
 }
 
 function runCommand(command, args, cwd) {
@@ -282,6 +368,6 @@ Commands:
   pnpm 4af install <component> --project <path> [--overwrite] [--dry-run]
 
 The install command builds and serves the private registry automatically, then invokes
-shadcn non-interactively in the target project. The 4AF theme is included by dependencies.
+shadcn ${SHADCN_VERSION} non-interactively in the target project. The 4AF theme is included by dependencies.
 `);
 }

@@ -29,7 +29,7 @@ import { Input } from "@/registry/ui/input/input";
  * trigger's edge (a gap opens off it), the chevron flips, and it fades back out on close.
  *
  * The trade against the hand-rolled sibling: Base UI portals the popup, so there's no
- * gooey height *unfold* (`select-motion.tsx`) — but every keyboard and focus behaviour is
+ * height unfold — but every keyboard and focus behaviour is
  * real rather than approximated. Pass `multiple` to keep the panel open while several
  * checkbox rows are toggled; the same value and item parts automatically switch to their
  * count and checkbox forms. That's the right default; the Motion one is what you reach
@@ -829,6 +829,7 @@ export function SelectItem({
   disabled = false,
   end,
   searchValue,
+  onFocusCapture,
   ...props
 }: SelectItemProps) {
   const {
@@ -873,7 +874,10 @@ export function SelectItem({
         disabled={itemDisabled}
         hidden={hiddenBySearch}
         data-panel-active={panelActive || undefined}
-        onFocusCapture={() => setActiveItem(value)}
+        onFocusCapture={(event) => {
+          onFocusCapture?.(event);
+          if (!event.defaultPrevented) setActiveItem(value);
+        }}
         className={cn(
           "flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-sm outline-none select-none",
           "text-muted-foreground",
@@ -912,7 +916,10 @@ export function SelectItem({
       disabled={itemDisabled}
       hidden={hiddenBySearch}
       data-panel-active={panelActive || undefined}
-      onFocusCapture={() => setActiveItem(value)}
+        onFocusCapture={(event) => {
+          onFocusCapture?.(event);
+          if (!event.defaultPrevented) setActiveItem(value);
+        }}
       className={cn(
         "flex cursor-pointer items-center gap-2 rounded-xs px-2.5 py-1.5 text-sm outline-none select-none",
         "text-muted-foreground",

@@ -9,6 +9,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ComponentProps,
   type CSSProperties,
@@ -137,19 +138,26 @@ export function SidebarProvider({
   const [uncontrolled, setUncontrolled] = useState(defaultOpen);
   const isControlled = openProp !== undefined;
   const open = isControlled ? openProp : uncontrolled;
+  const previousOpen = useRef(open);
 
   const setOpen = useCallback(
     (next: boolean) => {
       if (!isControlled) setUncontrolled(next);
       onOpenChange?.(next);
-      // Opt-out, because a component reaching for `document.cookie` on its own is a
-      // side effect the host may not want.
-      if (persist) {
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${next}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
-      }
     },
-    [isControlled, onOpenChange, persist],
+    [isControlled, onOpenChange],
   );
+
+  useEffect(() => {
+    const changed = previousOpen.current !== open;
+    previousOpen.current = open;
+
+    // A controlled owner may reject a toggle request. Persist only the state that was
+    // actually rendered, never the requested state, so server and client stay aligned.
+    if (persist && changed) {
+      document.cookie = `${SIDEBAR_COOKIE_NAME}=${open}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+    }
+  }, [open, persist]);
 
   const toggleSidebar = useCallback(() => {
     if (isMobile) setOpenMobile(!openMobile);
@@ -594,7 +602,7 @@ export function SidebarPanel({ value, className, children, ...props }: SidebarPa
  * shortcut for the trigger, and a second tab stop that does the same thing is noise for
  * anyone navigating by keyboard.
  */
-export function SidebarRail({ className, ...props }: ComponentProps<"button">) {
+export function SidebarRail({ className, onClick, ...props }: ComponentProps<"button">) {
   const { toggleSidebar } = useSidebar();
 
   return (
@@ -604,7 +612,6 @@ export function SidebarRail({ className, ...props }: ComponentProps<"button">) {
       aria-label="Toggle sidebar"
       tabIndex={-1}
       title="Toggle sidebar"
-      onClick={toggleSidebar}
       className={cn(
         "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 sm:flex",
         "transition-[background-color] duration-(--duration-fast) ease-out",
@@ -621,6 +628,10 @@ export function SidebarRail({ className, ...props }: ComponentProps<"button">) {
         className,
       )}
       {...props}
+      onClick={(event) => {
+        onClick?.(event);
+        if (!event.defaultPrevented) toggleSidebar();
+      }}
     />
   );
 }

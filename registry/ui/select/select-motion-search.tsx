@@ -22,8 +22,8 @@ import { Checkbox } from "@/registry/ui/checkbox/checkbox";
  *
  * The behaviour stays entirely with Base UI's Combobox: filtering, typeahead, arrow-key
  * navigation, Enter/Escape, focus management, collision-aware positioning, form values,
- * and listbox ARIA. Motion only owns opening and closing: the panel *unfolds its height*
- * from the input's edge — the Motion Select's signature move, not a generic scale — while
+ * and listbox ARIA. Motion only owns opening and closing: the panel clips from the input's
+ * edge — the Motion Select's signature move, not a generic scale — while
  * filtering resizes it (the same height spring, so results settle rather than jump). With
  * an `items` collection, Base UI keeps the first visible option highlighted on open,
  * reopen, and after the query changes, so Enter chooses it immediately.
@@ -297,29 +297,24 @@ export function MotionSearchSelectContent({
           render={(popupProps, state) => (
             <motion.div
               {...(popupProps as unknown as HTMLMotionProps<"div">)}
-              // `height: auto` lets Motion measure the list itself and spring open from 0 —
-              // the Motion Select's unfold, without a manual ResizeObserver. Base UI keeps
-              // the popup below the input (side "bottom"), so its top is anchored and the
-              // height grows downward, unfolding away from the input. Height and opacity are
-              // separate from Base UI's positioning transform, so the placement is untouched.
+              // Clip the fully laid-out list from the trigger edge. Unlike a height spring,
+              // this stays on the compositor and does not reflow every row on each frame.
               style={{ ...(popupProps.style as CSSProperties), overflow: "hidden" }}
               initial={false}
               animate={{
-                height: state.open ? "auto" : 0,
                 opacity: state.open ? 1 : 0,
+                clipPath: state.open ? "inset(0 0 0 0)" : "inset(0 0 100% 0)",
               }}
               transition={
                 reduceMotion
                   ? { duration: 0 }
                   : {
-                      // Spring on open and on every filter resize (both `open`), so results
-                      // settle smoothly; fold quickly on close.
-                      height: state.open
-                        ? { type: "spring", duration: 0.24, bounce: 0 }
-                        : { duration: 0.16, ease: ease.out, delay: 0.02 },
                       opacity: state.open
                         ? { duration: duration.fast }
                         : { duration: duration.fast, delay: 0.04 },
+                      clipPath: state.open
+                        ? { duration: duration.base, ease: ease.out }
+                        : { duration: duration.fast, ease: ease.in },
                     }
               }
             />
@@ -430,11 +425,12 @@ export function MotionSearchMultiSelectItem({
   value,
   ...props
 }: MotionSearchMultiSelectItemProps) {
-  const { registerIcon } = useContext(MotionSearchContext);
+  const { registerIcon, unregisterIcon } = useContext(MotionSearchContext);
 
   useEffect(() => {
     registerIcon(value, icon);
-  }, [icon, registerIcon, value]);
+    return () => unregisterIcon(value);
+  }, [icon, registerIcon, unregisterIcon, value]);
 
   return (
     <Combobox.Item

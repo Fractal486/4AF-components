@@ -22,6 +22,27 @@ function ControlsHarness() {
 }
 
 describe("Controls select", () => {
+  it("prefixes field ids when settings panels share control keys", () => {
+    render(
+      <>
+        <Controls idPrefix="button" schema={schema} values={{ variant: "primary" }} onChange={() => {}} />
+        <Controls idPrefix="input" schema={schema} values={{ variant: "primary" }} onChange={() => {}} />
+      </>,
+    );
+
+    expect(document.getElementById("button-variant-label")).toHaveTextContent("Variant:");
+    expect(document.getElementById("input-variant-label")).toHaveTextContent("Variant:");
+    const [buttonTrigger, inputTrigger] = screen.getAllByRole("combobox");
+    expect(buttonTrigger).toHaveAttribute(
+      "aria-labelledby",
+      "button-variant-label",
+    );
+    expect(inputTrigger).toHaveAttribute(
+      "aria-labelledby",
+      "input-variant-label",
+    );
+  });
+
   it("renders the enum as a combobox and updates the selection on pick", async () => {
     const user = userEvent.setup();
     render(<ControlsHarness />);

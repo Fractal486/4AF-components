@@ -34,6 +34,7 @@ describe("Base UI Select", () => {
 
     const trigger = screen.getByRole("combobox", { name: "Fruit" });
     await user.click(trigger);
+    await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "true"));
     await user.click(screen.getByRole("option", { name: "Apple" }));
 
     await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "false"));
@@ -54,6 +55,32 @@ describe("Base UI Select", () => {
 
     await user.click(screen.getByRole("combobox", { name: "Fruit" }));
     await waitFor(() => expect(screen.getByRole("option", { name: "Apple" })).toHaveFocus());
+  });
+
+  it("runs a consumer focus handler without losing the active-row synchronization", async () => {
+    const user = userEvent.setup();
+    const onFocusCapture = vi.fn();
+
+    render(
+      <Select items={FRUITS}>
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectItem value="banana" onFocusCapture={onFocusCapture}>
+            Banana
+          </SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    const banana = await screen.findByRole("option", { name: "Banana" });
+    await user.keyboard("{ArrowDown}");
+
+    await waitFor(() => expect(onFocusCapture).toHaveBeenCalled());
+    await waitFor(() => expect(banana).toHaveAttribute("data-panel-active"));
   });
 
   it("uses the same parts for checkbox multi-select without closing the panel", async () => {

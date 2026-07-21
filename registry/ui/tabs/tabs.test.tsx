@@ -1,8 +1,23 @@
+import { createRef } from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "./tabs";
 
 describe("Tabs", () => {
+  it("keeps its internal measurement ref when a consumer supplies one", () => {
+    const ref = createRef<HTMLDivElement>();
+
+    render(
+      <Tabs defaultValue="one">
+        <TabsList ref={ref} aria-label="Examples">
+          <TabsTab value="one">One</TabsTab>
+        </TabsList>
+      </Tabs>,
+    );
+
+    expect(ref.current).toHaveAttribute("role", "tablist");
+  });
+
   it("keeps inactive panels mounted and switches with keyboard navigation", async () => {
     const user = userEvent.setup();
     render(
@@ -28,6 +43,6 @@ describe("Tabs", () => {
       ),
     );
     expect(screen.getByText("First panel")).toBeInTheDocument();
-    expect(screen.getByText("Second panel")).toBeVisible();
+    await waitFor(() => expect(screen.getByText("Second panel")).toBeVisible());
   });
 });

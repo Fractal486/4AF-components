@@ -53,8 +53,8 @@ export function Sheet({ open, defaultOpen, onOpenChange, children, ...props }: S
 
   const handleOpenChange = useCallback<NonNullable<SheetProps["onOpenChange"]>>(
     (next, details) => {
-      if (!isControlled) setUncontrolled(next);
       onOpenChange?.(next, details);
+      if (!isControlled && !details.isCanceled) setUncontrolled(next);
     },
     [isControlled, onOpenChange],
   );

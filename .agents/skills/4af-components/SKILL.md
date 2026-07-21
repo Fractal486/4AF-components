@@ -40,8 +40,8 @@ pnpm --dir C:\Files\Development\4AF-components 4af install button --project C:\P
 ```
 
 Run `doctor` whenever the target is unfamiliar. The target must contain `package.json`,
-shadcn `components.json`, and `ui` and `lib` aliases. Use `--dry-run` to inspect files
-and conflicts. Installation refuses existing target files by default; pass `--overwrite`
+shadcn `components.json`, and `ui` and `lib` aliases. Use `--dry-run` to inspect the complete
+mutation plan: target files, theme CSS merge, package changes, and conflicts. Installation refuses existing target files by default; pass `--overwrite`
 only when replacement is intentional.
 
 The install command builds and serves the private registry temporarily, invokes shadcn

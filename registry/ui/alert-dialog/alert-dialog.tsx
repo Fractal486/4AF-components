@@ -54,8 +54,8 @@ export function AlertDialog({
 
   const handleOpenChange = useCallback<NonNullable<AlertDialogProps["onOpenChange"]>>(
     (next, details) => {
-      if (!isControlled) setUncontrolled(next);
       onOpenChange?.(next, details);
+      if (!isControlled && !details.isCanceled) setUncontrolled(next);
     },
     [isControlled, onOpenChange],
   );

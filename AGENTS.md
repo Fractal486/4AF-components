@@ -28,8 +28,8 @@ pnpm 4af install <component> --project <absolute-target-project>
 
 `install` builds and serves the private registry automatically, invokes shadcn
 non-interactively, and brings in the 4AF theme plus shared utilities. Add `--overwrite`
-only when replacing files is intentional. Use `--dry-run` to inspect an install without
-writing to the target project.
+only when replacing files is intentional. Use `--dry-run` to inspect the complete mutation
+plan without writing to the target project.
 
 The installable component names include `button`, `input`, `toggle`, `morph`, `action-button`,
 `copy-button`, `tabs`, `sidebar`, and `sidebar-layout`. The target project must already have a `package.json` and
@@ -96,7 +96,7 @@ Hover, press, focus and simple fades are CSS. They don't need a runtime.
   and any component that unmounts on that event would hang open forever.
 - Motion components: `useReducedMotion()` → `{ duration: 0 }`. Not a very short spring —
   a spring with a near-zero duration doesn't settle, it snaps.
-- Looping indicators (spinners) are exempt from both. A 1s spin collapsed to ~0 is a
+- Looping progress indicators (spinners) are exempt from both. A 1s spin collapsed to ~0 is a
   strobe, which is worse than the motion it was avoiding. Set their duration directly.
 
 ## Sources
@@ -113,9 +113,9 @@ Plus one-off sources for specific jobs (loaders, charts). Same loop applies.
 
 ## Adding a component (the ingestion loop)
 
-1. **Download.** `npx shadcn@latest add <url>` — `components.json` aliases point at
+1. **Download.** `pnpm dlx shadcn@4.13.1 add <url>` — `components.json` aliases point at
    `_incoming/`, so anything from any public registry lands in staging, never in the
-   library. Note the source on the entry's `source` field.
+   library.
 2. **Rebuild to the contract.** Don't polish the download; rewrite it. Most public
    components fail on `transition: all`, hardcoded durations, hex colours, and missing
    `asChild`.

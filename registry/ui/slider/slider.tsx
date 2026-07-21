@@ -1,6 +1,7 @@
 "use client";
 
 import { Slider as BaseSlider } from "@base-ui/react/slider";
+import { useDirection } from "@base-ui/react/direction-provider";
 import {
   motion,
   useMotionTemplate,
@@ -9,7 +10,14 @@ import {
   useSpring,
   useTransform,
 } from "motion/react";
-import { useEffect, useState, type ComponentProps, type ReactNode } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+} from "react";
 import { cn } from "@/registry/lib/cn";
 
 /**
@@ -32,6 +40,10 @@ const SPRING_GLIDE = { stiffness: 700, damping: 50, mass: 0.5 } as const;
 // Grab stretch — quick, and no overshoot (bounce 0), so it settles cleanly rather than
 // wobbling.
 const SPRING_GRAB = { type: "spring", visualDuration: 0.2, bounce: 0 } as const;
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
 
 export interface SliderProps
   extends Omit<
@@ -97,27 +109,51 @@ export function Slider({
   const isBar = thumb === "bar";
   const dims = DIMS[thumb][size];
   const reduceMotion = useReducedMotion();
+  const direction = useDirection();
+  const isRtl = direction === "rtl";
+  const normalizedMin = Number.isFinite(min) ? min : 0;
+  const normalizedMax = Number.isFinite(max) && max > normalizedMin ? max : normalizedMin + 1;
+  const normalizedStep = Number.isFinite(step) && step > 0 ? step : 1;
   const [internal, setInternal] = useState(defaultValue);
   const [dragging, setDragging] = useState(false);
+  const controlRef = useRef<HTMLDivElement>(null);
+  const [controlWidth, setControlWidth] = useState(0);
 
   const controlled = value !== undefined;
   const current = controlled ? value : internal;
-  const percent = ((current - min) / (max - min)) * 100;
+  const normalizedCurrent = clamp(
+    Number.isFinite(current) ? current : normalizedMin,
+    normalizedMin,
+    normalizedMax,
+  );
+  const percent = ((normalizedCurrent - normalizedMin) / (normalizedMax - normalizedMin)) * 100;
+  const visualPercent = isRtl ? 100 - percent : percent;
 
-  const atEdge = current <= min || current >= max;
+  const atEdge = normalizedCurrent <= normalizedMin || normalizedCurrent >= normalizedMax;
   const thumbWidthPx = dims.thumbPx;
 
-  // Spring-smoothed position drives the thumb's `left`.
-  const target = useMotionValue(percent);
+  // Spring-smoothed position drives transform-only visual layers.
+  const target = useMotionValue(visualPercent);
   useEffect(() => {
-    target.set(percent);
-  }, [percent, target]);
+    target.set(visualPercent);
+  }, [target, visualPercent]);
   const smooth = useSpring(target, SPRING_GLIDE);
   const pos = reduceMotion ? target : smooth;
-  const left = useMotionTemplate`${pos}%`;
-  // Self-offset the thumb from 0% (flush left) to -100% (flush right) of its own width,
-  // so the thumb stays fully inside the track, sitting exactly on the tick dots.
-  const thumbX = useTransform(pos, (p) => `${-p}%`);
+  // Translate in pixels rather than changing `left` every animation frame. The control is
+  // measured only when its size changes; the spring itself stays on the compositor.
+  useLayoutEffect(() => {
+    const control = controlRef.current;
+    if (!control) return;
+    const measure = () => setControlWidth(control.getBoundingClientRect().width);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(control);
+    return () => observer.disconnect();
+  }, []);
+  const thumbX = useTransform(
+    pos,
+    (p) => (p / 100) * Math.max(controlWidth - dims.thumbPx, 0),
+  );
 
   // The fill ends at the thumb's *centre*. `pos%` alone would lag the (edge-aligned)
   // thumb on the left and overrun it on the right — off by up to half a thumb — so the
@@ -132,26 +168,29 @@ export function Slider({
   }, [offsetTargetValue, offsetTarget]);
   const offsetSmooth = useSpring(offsetTarget, SPRING_GLIDE);
   const offset = reduceMotion ? offsetTarget : offsetSmooth;
-  const fillWidth = useMotionTemplate`calc(${pos}% + ${offset}px)`;
+  const ltrFillClip = useMotionTemplate`inset(0 calc(100% - ${pos}% - ${offset}px) 0 0)`;
+  const rtlFillClip = useMotionTemplate`inset(0 0 0 calc(100% - ${pos}% - ${offset}px))`;
+  const fillClip = isRtl ? rtlFillClip : ltrFillClip;
 
-  const stepCount = Math.floor((max - min) / step);
+  const stepCount = Math.floor((normalizedMax - normalizedMin) / normalizedStep);
   const ticks =
     showTicks && stepCount > 0 && stepCount <= 50
       ? Array.from({ length: stepCount + 1 }, (_, i) => (i / stepCount) * 100)
       : [];
 
   const handleValueChange = (next: number) => {
-    if (!controlled) setInternal(next);
-    onValueChange?.(next);
+    const nextValue = clamp(next, normalizedMin, normalizedMax);
+    if (!controlled) setInternal(nextValue);
+    onValueChange?.(nextValue);
   };
 
   return (
     <BaseSlider.Root
-      value={current}
+      value={normalizedCurrent}
       onValueChange={handleValueChange as never}
-      min={min}
-      max={max}
-      step={step}
+      min={normalizedMin}
+      max={normalizedMax}
+      step={normalizedStep}
       disabled={disabled}
       className={cn("relative w-full", className)}
       {...props}
@@ -174,6 +213,7 @@ export function Slider({
       )}
 
       <BaseSlider.Control
+        ref={controlRef}
         onPointerDown={() => !disabled && setDragging(true)}
         onPointerUp={() => setDragging(false)}
         onLostPointerCapture={() => setDragging(false)}
@@ -186,7 +226,9 @@ export function Slider({
             ? "cursor-not-allowed opacity-50"
             : isBar
               ? "cursor-grab active:cursor-grabbing"
-              : "cursor-e-resize",
+              : isRtl
+                ? "cursor-w-resize"
+                : "cursor-e-resize",
         )}
       >
         {/* The rail — clipped to its own shape so the fill rounds with it. The thumb
@@ -199,11 +241,12 @@ export function Slider({
             isBar ? "rounded-lg" : "rounded-full",
           )}
         >
-          {/* Fill — left edge to the thumb's centre, easing to the rail edges at the ends. */}
+          {/* Fill — inline start to the thumb's centre, easing to the rail edges at the ends. */}
           <motion.div
             aria-hidden
-            className="absolute inset-y-0 left-0 bg-foreground/15"
-            style={{ width: fillWidth }}
+            data-slot="slider-fill"
+            className={cn("absolute inset-y-0 bg-foreground/15", isRtl ? "right-0" : "left-0")}
+            style={{ clipPath: fillClip }}
           />
 
           {/* Ticks inset by exactly half the thumb width, so each dot lands where the
@@ -220,7 +263,7 @@ export function Slider({
               <span
                 key={i}
                 className="absolute top-1/2 size-1 -translate-1/2 rounded-full bg-foreground/25"
-                style={{ left: `${tp}%` }}
+                style={{ left: `${isRtl ? 100 - tp : tp}%` }}
               />
             ))}
           </div>
@@ -235,13 +278,14 @@ export function Slider({
             on the thing you can actually see. */}
         <motion.div
           aria-hidden
+          data-slot="slider-thumb"
           className={cn(
             "pointer-events-none absolute top-1/2 bg-foreground shadow-sm",
             // A thin vertical handle, or a round knob the height of the rail.
             dims.thumb,
             "group-has-[:focus-visible]:ring-4 group-has-[:focus-visible]:ring-ring/40",
           )}
-          style={{ left, x: thumbX, y: "-50%" }}
+          style={{ left: 0, x: thumbX, y: "-50%" }}
           // The bar grabs by stretching taller; a round knob can't stretch one axis
           // without going oval, so it grabs by growing evenly.
           animate={

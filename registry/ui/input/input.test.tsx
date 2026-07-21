@@ -9,7 +9,7 @@ describe("Input", () => {
     expect(input).toHaveAttribute("data-slot", "input");
     expect(input).toHaveAttribute("data-variant", "default");
     expect(input).toHaveAttribute("autocomplete", "off");
-    expect(input.className).toContain("border-[oklch(0.297_0_0)]");
+    expect(input.className).toContain("border-border");
     expect(input.className).not.toContain("ring-ring");
   });
 
@@ -28,7 +28,7 @@ describe("Input", () => {
 
     const input = screen.getByRole("textbox", { name: "Title" });
     expect(input.className).toContain("border-b");
-    expect(input.className).toContain("border-b-[oklch(0.297_0_0)]");
+    expect(input.className).toContain("border-b-border");
     expect(input.className).toContain("cursor-not-allowed");
     expect(input).toBeDisabled();
   });

@@ -452,16 +452,20 @@ export function CommandPalette({
 
   const setOpen = useCallback(
     (next: boolean) => {
-      // Closing resets the drill-down and the query so the palette always reopens clean.
-      if (!next) {
-        setPages([]);
-        setQuery("");
-      }
       if (!isControlled) setUncontrolled(next);
       onOpenChange?.(next);
     },
     [isControlled, onOpenChange],
   );
+
+  // A controlled owner can reject a close request by leaving `open` true. Reset only after
+  // the rendered state actually closes, otherwise an Escape key would erase its query/page.
+  useEffect(() => {
+    if (!isOpen) {
+      setPages((current) => (current.length === 0 ? current : []));
+      setQuery((current) => (current === "" ? current : ""));
+    }
+  }, [isOpen]);
 
   // Global ⌘K / Ctrl-K. Toggling is deliberate — the same chord that summons the palette
   // dismisses it, which is what every palette that owns the shortcut does.

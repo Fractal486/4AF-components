@@ -5,6 +5,7 @@ import { motion, useReducedMotion } from "motion/react";
 import {
   createContext,
   useContext,
+  useCallback,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -79,6 +80,7 @@ export function Tabs({ variant = "segment", solid = false, className, children, 
 export function TabsList({
   className,
   children,
+  ref: forwardedRef,
   ...props
 }: Omit<ComponentProps<typeof BaseTabs.List>, "className"> & {
   className?: string;
@@ -119,11 +121,20 @@ export function TabsList({
     };
   }, [variant]);
 
+  const composeRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      listRef.current = node;
+      if (typeof forwardedRef === "function") forwardedRef(node);
+      else if (forwardedRef) forwardedRef.current = node;
+    },
+    [forwardedRef],
+  );
+
   return (
     <BaseTabs.List
-      ref={listRef}
       className={cn(tabsListVariants({ variant, solid }), className)}
       {...props}
+      ref={composeRef}
     >
       {box && (
         <motion.div
@@ -132,7 +143,10 @@ export function TabsList({
           // No animation on first appearance — it should already be under the selected
           // tab, not fly in from the origin on load.
           initial={false}
-          animate={{ left: box.left, width: box.width }}
+          // A 1px base is positioned at the list origin; x and scaleX produce the
+          // measured horizontal box without animating left or width.
+          style={{ left: 0, width: 1, transformOrigin: "left" }}
+          animate={{ x: box.left, scaleX: box.width }}
           transition={reduceMotion ? { duration: 0 } : spring.snappy}
         />
       )}

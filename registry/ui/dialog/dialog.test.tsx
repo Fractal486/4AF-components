@@ -1,9 +1,23 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
-import { Dialog, DialogStep, DialogSteps } from "./dialog";
+import { Dialog, DialogClose, DialogContent, DialogStep, DialogSteps } from "./dialog";
 
 describe("DialogSteps", () => {
+  it("keeps an uncontrolled dialog open when its close is canceled", async () => {
+    const user = userEvent.setup();
+    render(
+      <Dialog defaultOpen onOpenChange={(_, details) => details.cancel()}>
+        <DialogContent showClose={false}>
+          <DialogClose>Close dialog</DialogClose>
+        </DialogContent>
+      </Dialog>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Close dialog" }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+
   it("navigates phases with arrows and clickable dots", async () => {
     const user = userEvent.setup();
 

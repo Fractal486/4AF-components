@@ -125,8 +125,12 @@ export function ActionButton({
       clearTimeout(pendingTimer.current ?? undefined);
       if (!alive.current) return;
       setStatus("error");
-      onError?.(error);
-      scheduleRevert();
+      try {
+        onError?.(error);
+      } finally {
+        // Consumer notifications may throw, but must not strand the state machine.
+        scheduleRevert();
+      }
       return;
     }
 
@@ -134,8 +138,11 @@ export function ActionButton({
     clearTimeout(pendingTimer.current ?? undefined);
     if (!alive.current) return;
     setStatus("success");
-    onSuccess?.();
-    scheduleRevert();
+    try {
+      onSuccess?.();
+    } finally {
+      scheduleRevert();
+    }
   }, [action, pendingDelay, onError, onSuccess, scheduleRevert]);
 
   const label = (override: ReactNode | undefined) => override ?? children;

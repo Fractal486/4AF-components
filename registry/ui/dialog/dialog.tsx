@@ -46,8 +46,8 @@ export function Dialog({ open, defaultOpen, onOpenChange, children, ...props }: 
 
   const handleOpenChange = useCallback<NonNullable<DialogProps["onOpenChange"]>>(
     (next, details) => {
-      if (!isControlled) setUncontrolled(next);
       onOpenChange?.(next, details);
+      if (!isControlled && !details.isCanceled) setUncontrolled(next);
     },
     [isControlled, onOpenChange],
   );

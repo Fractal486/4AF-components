@@ -21,9 +21,9 @@ export const switchThumbVariants = cva(
   [
     "pointer-events-none block size-4 rounded-full",
     // The fill change is a colour crossfade, not a snap — the thumb eases between its
-    // two colours as it slides. Motion drives the transform (slide) and width (squish);
+    // two colours as it slides. Motion drives the transform (slide and squish);
     // background-color is left to CSS, and reduced-motion collapses this duration too.
-    "transition-[background-color] duration-(--duration-base) ease-out",
+    "origin-left transition-[background-color] duration-(--duration-base) ease-out data-[checked]:origin-right",
   ],
   {
     variants: {

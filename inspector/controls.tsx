@@ -14,12 +14,15 @@ import { cn } from "@/registry/lib/cn";
 import type { ControlDef, ControlSchema, ControlValues } from "./schema";
 
 interface ControlsProps<S extends ControlSchema> {
+  /** Prefixes DOM ids when several settings panels are rendered on one page. */
+  idPrefix?: string;
   schema: S;
   values: ControlValues<S>;
   onChange: (key: keyof S, value: unknown) => void;
 }
 
 export function Controls<S extends ControlSchema>({
+  idPrefix,
   schema,
   values,
   onChange,
@@ -35,7 +38,7 @@ export function Controls<S extends ControlSchema>({
         {entries.map(([key, def]) => (
           <Control
             key={key}
-            id={key}
+            id={idPrefix ? `${idPrefix}-${key}` : key}
             def={def}
             value={values[key]}
             values={values as Record<string, unknown>}
