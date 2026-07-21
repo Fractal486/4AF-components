@@ -851,6 +851,54 @@
           "target": "@ui/toast.variants.ts"
         }
       ]
+    },
+    {
+      "name": "sidebar",
+      "type": "registry:ui",
+      "description": "A collapsible application sidebar with default, floating, inset, and split layouts, nested rows, actions, badges, and loading skeletons.",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/slot.json",
+        "http://localhost:3000/r/button.json",
+        "http://localhost:3000/r/input.json",
+        "http://localhost:3000/r/sheet.json",
+        "http://localhost:3000/r/skeleton.json",
+        "http://localhost:3000/r/tooltip.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/sidebar/sidebar.tsx",
+          "type": "registry:ui",
+          "target": "@ui/sidebar.tsx"
+        },
+        {
+          "path": "registry/ui/sidebar/sidebar.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/sidebar.variants.ts"
+        }
+      ]
+    },
+    {
+      "name": "sidebar-layout",
+      "type": "registry:ui",
+      "description": "An optional application shell that composes Sidebar with an inset content surface, page title header, header actions, and a left-aligned collapse trigger before the title.",
+      "dependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/r/sidebar.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/sidebar-layout/sidebar-layout.tsx",
+          "type": "registry:ui",
+          "target": "@ui/sidebar-layout.tsx"
+        }
+      ]
     }
   ]
 }

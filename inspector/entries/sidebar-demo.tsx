@@ -24,7 +24,6 @@ import {
   SidebarHeader,
   SidebarHeaderButton,
   SidebarInput,
-  SidebarInset,
   SidebarMenu,
   SidebarMenuAction,
   SidebarMenuBadge,
@@ -38,11 +37,10 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarPanel,
-  SidebarProvider,
   SidebarRail,
   SidebarRailButton,
-  SidebarTrigger,
 } from "@/registry/ui/sidebar/sidebar";
+import { SidebarLayout } from "@/registry/ui/sidebar-layout/sidebar-layout";
 
 const NAV = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -114,21 +112,17 @@ export function SidebarDemo({
           : "relative h-[28rem] w-full overflow-hidden rounded-lg border border-border [contain:paint]"
       }
     >
-      <SidebarProvider
-        // The inspector is one page — persisting the rail state to a cookie would leak
-        // between visits and fight the control panel.
-        persist={false}
-        className="min-h-full"
-      >
-        <Sidebar
-          side={side}
-          variant={variant}
-          collapsible={collapsible}
-          defaultActivePanel={split ? "mail" : undefined}
-          className="h-full"
-          rail={
-            split ? (
-              <div className="flex h-full flex-col items-center gap-2">
+      <SidebarLayout
+        sidebar={
+          <Sidebar
+            side={side}
+            variant={variant}
+            collapsible={collapsible}
+            defaultActivePanel={split ? "mail" : undefined}
+            className="h-full"
+            rail={
+              split ? (
+                <div className="flex h-full flex-col items-center gap-2">
                 <SidebarRailButton
                   tooltip="Acme Inc"
                   aria-label="Acme Inc"
@@ -163,10 +157,10 @@ export function SidebarDemo({
                 <SidebarRailButton tooltip="Settings" value="settings" className="mt-auto">
                   <Settings />
                 </SidebarRailButton>
-              </div>
-            ) : undefined
-          }
-        >
+                </div>
+              ) : undefined
+            }
+          >
           {split ? (
             <>
               <SidebarPanel value="dashboard">
@@ -619,27 +613,26 @@ export function SidebarDemo({
 
           {!split && <SidebarRail />}
         </Sidebar>
-
-        <SidebarInset>
-          <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-3">
-            <SidebarTrigger />
-            <span className="text-sm text-muted-foreground">
-              {active[0]!.toUpperCase() + active.slice(1)}
-            </span>
-            <kbd className="ml-auto rounded-xs bg-muted px-1.5 py-0.5 font-mono text-2xs text-subtle-foreground">
-              ⌘B
-            </kbd>
-          </header>
-          <div className="flex flex-1 flex-col gap-3 p-4">
-            <div className="h-24 rounded-lg bg-muted" />
-            <div className="grid grid-cols-3 gap-3">
-              <div className="h-16 rounded-lg bg-muted" />
-              <div className="h-16 rounded-lg bg-muted" />
-              <div className="h-16 rounded-lg bg-muted" />
-            </div>
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
+        }
+        title={active[0]!.toUpperCase() + active.slice(1)}
+        headerActions={
+          <kbd className="rounded-xs bg-muted px-1.5 py-0.5 font-mono text-2xs text-subtle-foreground">
+            ⌘B
+          </kbd>
+        }
+        // The inspector is one page — persisting the rail state to a cookie would leak
+        // between visits and fight the control panel.
+        persist={false}
+        className="min-h-full"
+        contentClassName="gap-3 p-4"
+      >
+        <div className="h-24 rounded-lg bg-muted" />
+        <div className="grid grid-cols-3 gap-3">
+          <div className="h-16 rounded-lg bg-muted" />
+          <div className="h-16 rounded-lg bg-muted" />
+          <div className="h-16 rounded-lg bg-muted" />
+        </div>
+      </SidebarLayout>
     </div>
   );
 }

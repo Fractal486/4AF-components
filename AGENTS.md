@@ -31,8 +31,8 @@ non-interactively, and brings in the 4AF theme plus shared utilities. Add `--ove
 only when replacing files is intentional. Use `--dry-run` to inspect an install without
 writing to the target project.
 
-The installable component names are `button`, `input`, `toggle`, `morph`, `action-button`,
-`copy-button`, and `tabs`. The target project must already have a `package.json` and
+The installable component names include `button`, `input`, `toggle`, `morph`, `action-button`,
+`copy-button`, `tabs`, `sidebar`, and `sidebar-layout`. The target project must already have a `package.json` and
 shadcn `components.json` with `ui` and `lib` aliases. Run `pnpm 4af doctor` first when
 an agent is unsure whether the target is ready.
 
