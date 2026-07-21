@@ -2,7 +2,8 @@
 
 import { Check, TriangleAlert } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { Button, Spinner, type ButtonProps } from "@/registry/ui/button/button";
+import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
+import { Button, type ButtonProps } from "@/registry/ui/button/button";
 import { Morph } from "@/registry/ui/morph/morph";
 
 export type ActionStatus = "idle" | "pending" | "success" | "error";
@@ -170,7 +171,7 @@ export function ActionButton({
               <Content icon={icon}>{children}</Content>
             ),
             pending: (
-              <Content icon={<Spinner />}>{label(labels?.pending)}</Content>
+              <Content icon={<AsciiLoader />}>{label(labels?.pending)}</Content>
             ),
             success: (
               <Content icon={<Check />}>{label(labels?.success)}</Content>
