@@ -53,6 +53,33 @@ const NAV = [
 
 const PROJECTS = ["Aurora", "Basecamp", "Cartography"] as const;
 
+const MENU_SKELETON_WIDTHS = [70, 55, 85, 60] as const;
+const SUB_MENU_SKELETON_WIDTHS = [72, 56, 82, 64] as const;
+
+function SidebarSkeletonItems({
+  widths,
+  nested = false,
+  showIcon,
+}: {
+  widths: readonly number[];
+  nested?: boolean;
+  showIcon?: boolean;
+}) {
+  const icon = showIcon ?? !nested;
+
+  return widths.map((width, index) =>
+    nested ? (
+      <SidebarMenuSubItem key={`skeleton-sub-${index}`}>
+        <SidebarMenuSkeleton nested width={`${width}%`} showIcon={icon} />
+      </SidebarMenuSubItem>
+    ) : (
+      <SidebarMenuItem key={`skeleton-menu-${index}`}>
+        <SidebarMenuSkeleton width={`${width}%`} showIcon={icon} />
+      </SidebarMenuItem>
+    ),
+  );
+}
+
 export function SidebarDemo({
   side,
   variant,
@@ -153,26 +180,35 @@ export function SidebarDemo({
                     <SidebarGroupLabel>Workspace</SidebarGroupLabel>
                     <SidebarGroupContent>
                       <SidebarMenu>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            tooltip="Overview"
-                            isActive={dashboardSelection === "overview"}
-                            onClick={() => setDashboardSelection("overview")}
-                          >
-                            <LayoutDashboard />
-                            <span>Overview</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            tooltip="Reports"
-                            isActive={dashboardSelection === "reports"}
-                            onClick={() => setDashboardSelection("reports")}
-                          >
-                            <Files />
-                            <span>Reports</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
+                        {loading ? (
+                          <SidebarSkeletonItems
+                            widths={MENU_SKELETON_WIDTHS.slice(0, 2)}
+                            showIcon
+                          />
+                        ) : (
+                          <>
+                            <SidebarMenuItem>
+                              <SidebarMenuButton
+                                tooltip="Overview"
+                                isActive={dashboardSelection === "overview"}
+                                onClick={() => setDashboardSelection("overview")}
+                              >
+                                <LayoutDashboard />
+                                <span>Overview</span>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem>
+                              <SidebarMenuButton
+                                tooltip="Reports"
+                                isActive={dashboardSelection === "reports"}
+                                onClick={() => setDashboardSelection("reports")}
+                              >
+                                <Files />
+                                <span>Reports</span>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          </>
+                        )}
                       </SidebarMenu>
                     </SidebarGroupContent>
                   </SidebarGroup>
@@ -199,37 +235,46 @@ export function SidebarDemo({
                     <SidebarGroupLabel>Views</SidebarGroupLabel>
                     <SidebarGroupContent>
                       <SidebarMenu>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            tooltip="Inbox"
-                            isActive={mailSelection === "inbox"}
-                            onClick={() => setMailSelection("inbox")}
-                          >
-                            <Inbox />
-                            <span>Inbox</span>
-                          </SidebarMenuButton>
-                          <SidebarMenuBadge>99+</SidebarMenuBadge>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            tooltip="Sent"
-                            isActive={mailSelection === "sent"}
-                            onClick={() => setMailSelection("sent")}
-                          >
-                            <Files />
-                            <span>Sent</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            tooltip="Drafts"
-                            isActive={mailSelection === "drafts"}
-                            onClick={() => setMailSelection("drafts")}
-                          >
-                            <Files />
-                            <span>Drafts</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
+                        {loading ? (
+                          <SidebarSkeletonItems
+                            widths={MENU_SKELETON_WIDTHS.slice(0, 3)}
+                            showIcon
+                          />
+                        ) : (
+                          <>
+                            <SidebarMenuItem>
+                              <SidebarMenuButton
+                                tooltip="Inbox"
+                                isActive={mailSelection === "inbox"}
+                                onClick={() => setMailSelection("inbox")}
+                              >
+                                <Inbox />
+                                <span>Inbox</span>
+                              </SidebarMenuButton>
+                              <SidebarMenuBadge>99+</SidebarMenuBadge>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem>
+                              <SidebarMenuButton
+                                tooltip="Sent"
+                                isActive={mailSelection === "sent"}
+                                onClick={() => setMailSelection("sent")}
+                              >
+                                <Files />
+                                <span>Sent</span>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem>
+                              <SidebarMenuButton
+                                tooltip="Drafts"
+                                isActive={mailSelection === "drafts"}
+                                onClick={() => setMailSelection("drafts")}
+                              >
+                                <Files />
+                                <span>Drafts</span>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          </>
+                        )}
                       </SidebarMenu>
                     </SidebarGroupContent>
                   </SidebarGroup>
@@ -237,45 +282,57 @@ export function SidebarDemo({
                     <SidebarGroupLabel>Mail</SidebarGroupLabel>
                     <SidebarGroupContent>
                       <SidebarMenu>
-                        <SidebarMenuCollapsible defaultOpen>
-                          <SidebarMenuCollapsibleTrigger
-                            tooltip="Folders"
-                            isActive={mailSelection === "folders"}
-                            onClick={() => setMailSelection("folders")}
-                          >
-                            <Inbox />
-                            <span>Folders</span>
-                            <ChevronDown className="ml-auto -rotate-90 transition-[rotate] duration-(--duration-fast) ease-out [[data-panel-open]_&]:rotate-0" />
-                          </SidebarMenuCollapsibleTrigger>
-                          <SidebarMenuCollapsibleContent>
+                        {loading ? (
+                          <SidebarMenuItem>
+                            <SidebarMenuSkeleton showIcon width="78%" />
                             <SidebarMenuSub>
-                              <SidebarMenuSubItem>
-                                <SidebarMenuSubButton
-                                  href="#"
-                                  isActive={mailSelection === "all-mail"}
-                                  onClick={(event) => {
-                                    event.preventDefault();
-                                    setMailSelection("all-mail");
-                                  }}
-                                >
-                                  <span>All mail</span>
-                                </SidebarMenuSubButton>
-                              </SidebarMenuSubItem>
-                              <SidebarMenuSubItem>
-                                <SidebarMenuSubButton
-                                  href="#"
-                                  isActive={mailSelection === "favorites"}
-                                  onClick={(event) => {
-                                    event.preventDefault();
-                                    setMailSelection("favorites");
-                                  }}
-                                >
-                                  <span>Favorites</span>
-                                </SidebarMenuSubButton>
-                              </SidebarMenuSubItem>
+                              <SidebarSkeletonItems
+                                nested
+                                widths={SUB_MENU_SKELETON_WIDTHS.slice(0, 2)}
+                              />
                             </SidebarMenuSub>
-                          </SidebarMenuCollapsibleContent>
-                        </SidebarMenuCollapsible>
+                          </SidebarMenuItem>
+                        ) : (
+                          <SidebarMenuCollapsible defaultOpen>
+                            <SidebarMenuCollapsibleTrigger
+                              tooltip="Folders"
+                              isActive={mailSelection === "folders"}
+                              onClick={() => setMailSelection("folders")}
+                            >
+                              <Inbox />
+                              <span>Folders</span>
+                              <ChevronDown className="ml-auto -rotate-90 transition-[rotate] duration-(--duration-fast) ease-out [[data-panel-open]_&]:rotate-0" />
+                            </SidebarMenuCollapsibleTrigger>
+                            <SidebarMenuCollapsibleContent>
+                              <SidebarMenuSub>
+                                <SidebarMenuSubItem>
+                                  <SidebarMenuSubButton
+                                    href="#"
+                                    isActive={mailSelection === "all-mail"}
+                                    onClick={(event) => {
+                                      event.preventDefault();
+                                      setMailSelection("all-mail");
+                                    }}
+                                  >
+                                    <span>All mail</span>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                                <SidebarMenuSubItem>
+                                  <SidebarMenuSubButton
+                                    href="#"
+                                    isActive={mailSelection === "favorites"}
+                                    onClick={(event) => {
+                                      event.preventDefault();
+                                      setMailSelection("favorites");
+                                    }}
+                                  >
+                                    <span>Favorites</span>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                              </SidebarMenuSub>
+                            </SidebarMenuCollapsibleContent>
+                          </SidebarMenuCollapsible>
+                        )}
                       </SidebarMenu>
                     </SidebarGroupContent>
                   </SidebarGroup>
@@ -298,36 +355,45 @@ export function SidebarDemo({
                     <SidebarGroupLabel>Places</SidebarGroupLabel>
                     <SidebarGroupContent>
                       <SidebarMenu>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            tooltip="Browse"
-                            isActive={filesSelection === "browse"}
-                            onClick={() => setFilesSelection("browse")}
-                          >
-                            <Files />
-                            <span>Browse</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            tooltip="Recent"
-                            isActive={filesSelection === "recent"}
-                            onClick={() => setFilesSelection("recent")}
-                          >
-                            <Search />
-                            <span>Recent</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            tooltip="Shared"
-                            isActive={filesSelection === "shared"}
-                            onClick={() => setFilesSelection("shared")}
-                          >
-                            <Users />
-                            <span>Shared with me</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
+                        {loading ? (
+                          <SidebarSkeletonItems
+                            widths={MENU_SKELETON_WIDTHS.slice(0, 3)}
+                            showIcon
+                          />
+                        ) : (
+                          <>
+                            <SidebarMenuItem>
+                              <SidebarMenuButton
+                                tooltip="Browse"
+                                isActive={filesSelection === "browse"}
+                                onClick={() => setFilesSelection("browse")}
+                              >
+                                <Files />
+                                <span>Browse</span>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem>
+                              <SidebarMenuButton
+                                tooltip="Recent"
+                                isActive={filesSelection === "recent"}
+                                onClick={() => setFilesSelection("recent")}
+                              >
+                                <Search />
+                                <span>Recent</span>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem>
+                              <SidebarMenuButton
+                                tooltip="Shared"
+                                isActive={filesSelection === "shared"}
+                                onClick={() => setFilesSelection("shared")}
+                              >
+                                <Users />
+                                <span>Shared with me</span>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          </>
+                        )}
                       </SidebarMenu>
                     </SidebarGroupContent>
                   </SidebarGroup>
@@ -345,26 +411,35 @@ export function SidebarDemo({
                     <SidebarGroupLabel>People</SidebarGroupLabel>
                     <SidebarGroupContent>
                       <SidebarMenu>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            tooltip="Members"
-                            isActive={teamSelection === "members"}
-                            onClick={() => setTeamSelection("members")}
-                          >
-                            <Users />
-                            <span>Members</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            tooltip="Invitations"
-                            isActive={teamSelection === "invitations"}
-                            onClick={() => setTeamSelection("invitations")}
-                          >
-                            <Plus />
-                            <span>Invitations</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
+                        {loading ? (
+                          <SidebarSkeletonItems
+                            widths={MENU_SKELETON_WIDTHS.slice(0, 2)}
+                            showIcon
+                          />
+                        ) : (
+                          <>
+                            <SidebarMenuItem>
+                              <SidebarMenuButton
+                                tooltip="Members"
+                                isActive={teamSelection === "members"}
+                                onClick={() => setTeamSelection("members")}
+                              >
+                                <Users />
+                                <span>Members</span>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem>
+                              <SidebarMenuButton
+                                tooltip="Invitations"
+                                isActive={teamSelection === "invitations"}
+                                onClick={() => setTeamSelection("invitations")}
+                              >
+                                <Plus />
+                                <span>Invitations</span>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          </>
+                        )}
                       </SidebarMenu>
                     </SidebarGroupContent>
                   </SidebarGroup>
@@ -382,26 +457,35 @@ export function SidebarDemo({
                     <SidebarGroupLabel>Preferences</SidebarGroupLabel>
                     <SidebarGroupContent>
                       <SidebarMenu>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            tooltip="Preferences"
-                            isActive={settingsSelection === "preferences"}
-                            onClick={() => setSettingsSelection("preferences")}
-                          >
-                            <Settings />
-                            <span>Preferences</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            tooltip="Account"
-                            isActive={settingsSelection === "account"}
-                            onClick={() => setSettingsSelection("account")}
-                          >
-                            <Users />
-                            <span>Account</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
+                        {loading ? (
+                          <SidebarSkeletonItems
+                            widths={MENU_SKELETON_WIDTHS.slice(0, 2)}
+                            showIcon
+                          />
+                        ) : (
+                          <>
+                            <SidebarMenuItem>
+                              <SidebarMenuButton
+                                tooltip="Preferences"
+                                isActive={settingsSelection === "preferences"}
+                                onClick={() => setSettingsSelection("preferences")}
+                              >
+                                <Settings />
+                                <span>Preferences</span>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem>
+                              <SidebarMenuButton
+                                tooltip="Account"
+                                isActive={settingsSelection === "account"}
+                                onClick={() => setSettingsSelection("account")}
+                              >
+                                <Users />
+                                <span>Account</span>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          </>
+                        )}
                       </SidebarMenu>
                     </SidebarGroupContent>
                   </SidebarGroup>
@@ -430,11 +514,7 @@ export function SidebarDemo({
               <SidebarGroupContent>
                 <SidebarMenu>
                   {loading
-                    ? [70, 55, 85, 60].map((width, index) => (
-                        <SidebarMenuItem key={index}>
-                          <SidebarMenuSkeleton showIcon width={`${width}%`} />
-                        </SidebarMenuItem>
-                      ))
+                    ? <SidebarSkeletonItems widths={MENU_SKELETON_WIDTHS} showIcon />
                     : NAV.map((item) => (
                         <SidebarMenuItem key={item.id}>
                           <SidebarMenuButton
@@ -465,48 +545,60 @@ export function SidebarDemo({
               </SidebarGroupAction>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  <SidebarMenuCollapsible defaultOpen>
-                    <SidebarMenuCollapsibleTrigger tooltip="Projects">
-                      <Search />
-                      <span>Browse</span>
-                      <ChevronDown
-                        className="ml-auto -rotate-90 transition-[rotate] duration-(--duration-fast) ease-out [[data-panel-open]_&]:rotate-0"
-                      />
-                    </SidebarMenuCollapsibleTrigger>
-                    <SidebarMenuCollapsibleContent>
+                  {loading ? (
+                    <SidebarMenuItem>
+                      <SidebarMenuSkeleton showIcon width="78%" />
                       <SidebarMenuSub>
-                        {PROJECTS.map((project) => (
-                          <SidebarMenuSubItem key={project}>
-                            <SidebarMenuSubButton
-                              href="#"
-                              isActive={active === project}
-                              onClick={(event) => {
-                                event.preventDefault();
-                                setActive(project);
-                              }}
-                            >
-                              <span>{project}</span>
-                            </SidebarMenuSubButton>
-                            <SidebarMenuAction
-                              nested
-                              showOnHover
-                              aria-label={`More for ${project}`}
-                            >
-                              <MoreHorizontal />
-                            </SidebarMenuAction>
-                          </SidebarMenuSubItem>
-                        ))}
-                        <SidebarMenuSubItem>
-                          <SidebarMenuSubButton asChild>
-                            <button type="button">
-                              <Plus />
-                              <span>New project</span>
-                            </button>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
+                        <SidebarSkeletonItems
+                          nested
+                          widths={SUB_MENU_SKELETON_WIDTHS}
+                        />
                       </SidebarMenuSub>
-                    </SidebarMenuCollapsibleContent>
-                  </SidebarMenuCollapsible>
+                    </SidebarMenuItem>
+                  ) : (
+                    <SidebarMenuCollapsible defaultOpen>
+                      <SidebarMenuCollapsibleTrigger tooltip="Projects">
+                        <Search />
+                        <span>Browse</span>
+                        <ChevronDown
+                          className="ml-auto -rotate-90 transition-[rotate] duration-(--duration-fast) ease-out [[data-panel-open]_&]:rotate-0"
+                        />
+                      </SidebarMenuCollapsibleTrigger>
+                      <SidebarMenuCollapsibleContent>
+                        <SidebarMenuSub>
+                          {PROJECTS.map((project) => (
+                            <SidebarMenuSubItem key={project}>
+                              <SidebarMenuSubButton
+                                href="#"
+                                isActive={active === project}
+                                onClick={(event) => {
+                                  event.preventDefault();
+                                  setActive(project);
+                                }}
+                              >
+                                <span>{project}</span>
+                              </SidebarMenuSubButton>
+                              <SidebarMenuAction
+                                nested
+                                showOnHover
+                                aria-label={`More for ${project}`}
+                              >
+                                <MoreHorizontal />
+                              </SidebarMenuAction>
+                            </SidebarMenuSubItem>
+                          ))}
+                          <SidebarMenuSubItem>
+                            <SidebarMenuSubButton asChild>
+                              <button type="button">
+                                <Plus />
+                                <span>New project</span>
+                              </button>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        </SidebarMenuSub>
+                      </SidebarMenuCollapsibleContent>
+                    </SidebarMenuCollapsible>
+                  )}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>

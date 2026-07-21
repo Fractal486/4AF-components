@@ -1002,6 +1002,8 @@ export function SidebarMenuBadge({ className, ...props }: ComponentProps<"div">)
 
 export interface SidebarMenuSkeletonProps extends ComponentProps<"div"> {
   showIcon?: boolean;
+  /** Uses the shorter, indented geometry of a nested menu row. */
+  nested?: boolean;
   /**
    * Width of the text bar, e.g. `"70%"`.
    *
@@ -1014,6 +1016,7 @@ export interface SidebarMenuSkeletonProps extends ComponentProps<"div"> {
 
 export function SidebarMenuSkeleton({
   className,
+  nested = false,
   showIcon = false,
   width = "70%",
   ...props
@@ -1021,7 +1024,12 @@ export function SidebarMenuSkeleton({
   return (
     <div
       data-slot="sidebar-menu-skeleton"
-      className={cn("flex h-8 items-center gap-2 rounded-md px-2", className)}
+      className={cn(
+        "flex items-center gap-2 rounded-md px-2",
+        nested ? "h-7 w-full min-w-0 -translate-x-px" : "h-8",
+        "group-data-[collapsible=icon]:hidden",
+        className,
+      )}
       {...props}
     >
       {showIcon && <Skeleton className="size-4 rounded-md" />}
