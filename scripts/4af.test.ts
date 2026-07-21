@@ -29,7 +29,14 @@ describe("4AF CLI", () => {
     writeFileSync(resolve(project, "tsconfig.json"), '{"references":[{"path":"./tsconfig.app.json"}]}');
     writeFileSync(
       resolve(project, "tsconfig.app.json"),
-      '{"compilerOptions":{"paths":{"~/*":["./src/*"]}}}',
+      `{
+        // Vite creates commented JSONC tsconfig files.
+        "compilerOptions": {
+          "paths": {
+            "~/*": ["./src/*"],
+          },
+        },
+      }`,
     );
     writeFileSync(buttonPath, "export {};\n");
 

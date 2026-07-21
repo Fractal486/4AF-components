@@ -5,6 +5,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve, relative, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
+import ts from "typescript";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const registryPath = resolve(repoRoot, "registry.json");
@@ -210,7 +211,12 @@ function resolveTarget(target, config, project) {
 }
 
 function readJson(path) {
-  return JSON.parse(readFileSync(path, "utf8"));
+  const parsed = ts.parseConfigFileTextToJson(path, readFileSync(path, "utf8"));
+  if (parsed.error) {
+    const message = ts.flattenDiagnosticMessageText(parsed.error.messageText, "\n");
+    throw new Error(`Could not parse ${path}: ${message}`);
+  }
+  return parsed.config;
 }
 
 function resolveProjectAlias(alias, project) {
