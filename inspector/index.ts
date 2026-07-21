@@ -22,6 +22,7 @@ import { selectSearchEntry } from "./entries/select-search";
 import { selectSortEntry } from "./entries/select-sort";
 import { skeletonEntry } from "./entries/skeleton";
 import { sheetEntry } from "./entries/sheet";
+import { sidebarEntry } from "./entries/sidebar";
 import { sliderEntry } from "./entries/slider";
 import { switchEntry } from "./entries/switch";
 import { tableOfContentsEntry } from "./entries/table-of-contents";
@@ -198,6 +199,13 @@ export const groups: Group[] = [
     summary:
       "A stacking toast. Collapsed cards fan out on hover and swipe to dismiss — the whole stack is one CSS transform off Base UI's vars.",
     entries: [toastEntry],
+  },
+  {
+    slug: "sidebar",
+    name: "Sidebar",
+    summary:
+      "An application shell: a collapsible nav rail that becomes a drawer on mobile. Groups, sub-menus, badges and row actions, with tooltips once it collapses to icons.",
+    entries: [sidebarEntry],
   },
   {
     slug: "sheet",
