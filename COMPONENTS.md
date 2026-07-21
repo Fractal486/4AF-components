@@ -174,8 +174,8 @@ The following 35 names are accepted by `pnpm 4af install <name>`.
 
 | Install name | Main API | What it provides |
 | --- | --- | --- |
-| `button` | `Button`, `Spinner` | Primary, outline, ghost, plain, destructive, and link variants; text and icon sizes; optical icon spacing; loading without resizing; `asChild`. |
-| `toggle` | `Toggle` | A Base UI pressed/unpressed control using the Button appearance and sizes, with optional icon-fill behaviour. |
+| `button` | `Button`, `Spinner` | Primary, outline, ghost, plain, destructive, and link variants; text and icon sizes; optical icon spacing; loading without resizing; `asChild`; optional `pressScale={false}` for anchored controls. |
+| `toggle` | `Toggle` | A Base UI pressed/unpressed control using the Button appearance and sizes, with optional icon-fill behaviour and `pressScale={false}` support. |
 | `morph` | `Morph` | Animated icon or text replacement that reserves the wider state's space and handles reduced motion. |
 | `action-button` | `ActionButton` | Runs asynchronous work and presents idle, pending, success, and error states without changing width. |
 | `copy-button` | `CopyButton` | Clipboard-specialized Action Button with visual and screen-reader confirmation. |
@@ -191,7 +191,7 @@ The following 35 names are accepted by `pnpm 4af install <name>`.
 | `switch` | `Switch` | Base UI switch with a sliding, press-squishing thumb and adaptive or fixed tone. |
 | `checkbox` | `Checkbox` | Base UI checkbox with an animated drawn tick, controlled/uncontrolled state, and an optional click-target label. |
 | `radio` | `RadioGroup`, `Radio` | Single-choice Base UI radio group with the Checkbox family's geometry and an animated dot. |
-| `slider` | `Slider` | Controlled or uncontrolled numeric slider with a spring-gliding fill and bar or circle thumb. |
+| `slider` | `Slider` | Controlled or uncontrolled numeric slider with a spring-gliding fill and three thumb variants: `bar` (thin handle), `circle` (round thumb filling the rail), and `knob` (round thumb over a thin rail). |
 | `select` | `Select`, `SelectTrigger`, `SelectSortTrigger`, `SelectValue`, `SelectContent`, `SelectItem` | Accessible Base UI single/multi select with icons, optional in-panel search, clear footer, content sizing, and the compact sort/filter trigger. |
 | `select-search` | `SearchSelect`, `SearchSelectInput`, `SearchSelectContent`, item parts | Editable Combobox-style trigger with live filtering, single or checkbox-based multi-selection, icons, and full keyboard/ARIA behaviour. |
 | `select-motion` | `Select`, `SelectTrigger`, `SelectValue`, `SelectContent`, `SelectItem` | Hand-animated unfolding Select with single/multi selection and optional in-panel search. Use when the unfolding entrance is the reason for choosing it. |
@@ -206,7 +206,10 @@ The following 35 names are accepted by `pnpm 4af install <name>`.
 | `skeleton` | `Skeleton` | Generic loading placeholder sized by normal utility classes; its pulse is disabled for reduced motion. |
 | `empty` | `Empty` and its header, media, title, description, and content parts | Composable empty state, borderless by default with an optional dashed placeholder treatment. |
 | `text-shimmer` | `TextShimmer` | Theme-aware looping highlight across text for “working” labels; supports another element through `as` and a custom duration. |
-| `toast` | `ToastProvider`, `useToast`, `createToastManager` | Base UI toast manager with list or collapsed-stack presentation, bottom-centre/right placement, timers, focus handling, and swipe dismissal. |
+| `toast` | `ToastProvider`, `useToast`, `createToastManager` | Base UI toast manager with list or collapsed-stack presentation, bottom-centre/right placement, timers, focus handling, swipe dismissal, and up to three custom action buttons per toast. |
+
+Use `actions` for up to three custom buttons. The existing Base UI-compatible `actionProps`
+option remains available for a single action.
 
 ### Navigation and application structure
 
@@ -256,6 +259,19 @@ When it describes a specific field, connect it to that field for assistive techn
 />
 <FieldError id="email-error">{error}</FieldError>
 ```
+
+### Disable press scaling when needed
+
+Buttons scale to `0.95` while pressed by default. Set `pressScale={false}` when the
+control is an anchored trigger and its visual resize would make the attached panel feel
+like it moves. The default remains enabled for ordinary buttons.
+
+```tsx
+<Button pressScale={false}>Open menu</Button>
+<Toggle pressScale={false} aria-label="Filter" />
+```
+
+`ActionButton`, `CopyButton`, and `DeleteButton` inherit the same Button prop.
 
 ### Select Sort is part of Select
 
@@ -310,7 +326,7 @@ The registry item includes more than the root popup:
 - nested item lists;
 - arbitrary custom panels opened through `helpers.openPanel`;
 - custom panel header search fields or traditional text fields;
-- Escape-to-clear before Escape-to-back when a header field has text;
+- Escape-to-clear for `type="search"` header fields, while traditional text fields use Escape to go back;
 - per-panel `headerActions`, suitable for Select and Select Sort controls;
 - custom list rows with trailing badges or selection checkboxes;
 - grouped action panels with section labels, icons, keybinds, search, and destructive actions.

@@ -61,6 +61,8 @@ export interface ToggleProps
    * changes. Reach for `Morph` when the shape actually changes (play → pause).
    */
   fillIcon?: boolean;
+  /** Disable the tactile press scale. Defaults to `true`; useful for anchored triggers. */
+  pressScale?: boolean;
 }
 
 export function Toggle({
@@ -68,6 +70,7 @@ export function Toggle({
   variant = "ghost",
   size = "icon",
   fillIcon = false,
+  pressScale = true,
   ...props
 }: ToggleProps) {
   const reduceMotion = useReducedMotion();
@@ -83,7 +86,7 @@ export function Toggle({
           // event) and to Motion (a gesture callback). It's a type-level collision
           // only — Base UI never passes them.
           {...(toggleProps as HTMLMotionProps<"button">)}
-          whileTap={reduceMotion || props.disabled ? undefined : { scale: PRESS_SCALE }}
+          whileTap={reduceMotion || props.disabled || !pressScale ? undefined : { scale: PRESS_SCALE }}
           transition={spring.press}
         />
       )}

@@ -90,19 +90,39 @@ function ToastDemo({ limit }: { limit: number }) {
             title: "Message archived",
             description: "Moved out of your inbox to Archive.",
             type: "neutral",
-            actionProps: {
-              children: "Undo",
-              onClick: () =>
-                toast.add({
-                  title: "Restored",
-                  description: "The message is back in your inbox.",
-                  type: "success",
-                }),
-            },
+            actions: [
+              {
+                children: "Undo",
+                onClick: () =>
+                  toast.add({
+                    title: "Restored",
+                    description: "The message is back in your inbox.",
+                    type: "success",
+                  }),
+              },
+              {
+                children: "Open",
+                onClick: () =>
+                  toast.add({
+                    title: "Archive opened",
+                    description: "Showing archived messages.",
+                    type: "info",
+                  }),
+              },
+              {
+                children: "Keep",
+                onClick: () =>
+                  toast.add({
+                    title: "Message kept",
+                    description: "The message remains in your inbox.",
+                    type: "success",
+                  }),
+              },
+            ],
           })
         }
       >
-        With action · stack (limit {limit})
+        With 3 actions · stack (limit {limit})
       </Button>
     </div>
   );

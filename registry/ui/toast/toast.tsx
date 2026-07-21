@@ -2,7 +2,19 @@
 
 import { Toast as BaseToast } from "@base-ui/react/toast";
 import { Bell, Check, Info, LoaderCircle, X } from "lucide-react";
-import type { ComponentProps, ComponentType } from "react";
+import type {
+  ToastManager as BaseToastManager,
+  ToastManagerAddOptions as BaseToastManagerAddOptions,
+  ToastManagerUpdateOptions as BaseToastManagerUpdateOptions,
+  ToastObject as BaseToastObject,
+} from "@base-ui/react/toast";
+import {
+  useMemo,
+  type ComponentProps,
+  type ComponentPropsWithoutRef,
+  type ComponentType,
+  type ReactNode,
+} from "react";
 import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
 import { Morph } from "@/registry/ui/morph/morph";
@@ -68,10 +80,92 @@ export interface ToastData {
   morph?: boolean;
 }
 
+/** Props for one of up to three custom action buttons rendered in a toast. */
+export type ToastActionProps = Omit<
+  ComponentPropsWithoutRef<"button">,
+  "children"
+> & {
+  children: ReactNode;
+};
+
+export type ToastObject<Data extends object = ToastData> = BaseToastObject<Data> & {
+  /** Custom actions rendered below the toast description. */
+  actions?: ToastActionProps[];
+};
+
+export type ToastManagerAddOptions<Data extends object = ToastData> =
+  BaseToastManagerAddOptions<Data> & {
+    /** Renders at most the first three custom actions. */
+    actions?: ToastActionProps[];
+  };
+
+export type ToastManagerUpdateOptions<Data extends object = ToastData> =
+  BaseToastManagerUpdateOptions<Data> & {
+    /** Renders at most the first three custom actions. */
+    actions?: ToastActionProps[];
+  };
+
+type ToastManagerMethods<Data extends object> = {
+  add: <T extends Data = Data>(options: ToastManagerAddOptions<T>) => string;
+  close: BaseToastManager<Data>["close"];
+  update: <T extends Data = Data>(id: string, options: ToastManagerUpdateOptions<T>) => void;
+  promise: BaseToastManager<Data>["promise"];
+};
+
+export interface ToastManager<Data extends object = ToastData>
+  extends Pick<BaseToastManager<Data>, " subscribe">,
+    ToastManagerMethods<Data> {}
+
+export interface ToastManagerState<Data extends object = ToastData> extends ToastManagerMethods<Data> {
+  toasts: ToastObject<Data>[];
+}
+
+const MAX_TOAST_ACTIONS = 3;
+
+function limitToastActions<T extends { actions?: ToastActionProps[] }>(options: T): T {
+  if (!options.actions || options.actions.length <= MAX_TOAST_ACTIONS) return options;
+  return { ...options, actions: options.actions.slice(0, MAX_TOAST_ACTIONS) };
+}
+
+function adaptToastMethods<Data extends object>(
+  manager: Pick<BaseToastManager<Data>, "add" | "close" | "update" | "promise">,
+): ToastManagerMethods<Data> {
+  return {
+    add: <T extends Data = Data>(options: ToastManagerAddOptions<T>) =>
+      manager.add(limitToastActions(options) as BaseToastManagerAddOptions<T>),
+    close: manager.close,
+    update: <T extends Data = Data>(id: string, options: ToastManagerUpdateOptions<T>) => {
+      manager.update(id, limitToastActions(options) as BaseToastManagerUpdateOptions<T>);
+    },
+    promise: manager.promise,
+  };
+}
+
 /** Fire, update, and dismiss toasts. Call from any component under `ToastProvider`. */
-export const useToast = BaseToast.useToastManager;
+export function useToast<Data extends object = ToastData>(): ToastManagerState<Data> {
+  const manager = BaseToast.useToastManager<Data>();
+  const adapted = useMemo(() => adaptToastMethods<Data>(manager), [manager]);
+
+  return useMemo(
+    () => ({
+      toasts: manager.toasts as ToastObject<Data>[],
+      add: adapted.add,
+      close: adapted.close,
+      update: adapted.update,
+      promise: adapted.promise,
+    }),
+    [adapted, manager.toasts],
+  );
+}
+
 /** For firing toasts from outside React (event handlers, stores). Pass to the provider. */
-export const createToastManager = BaseToast.createToastManager;
+export function createToastManager<Data extends object = ToastData>(): ToastManager<Data> {
+  const manager = BaseToast.createToastManager<Data>();
+  return {
+    " subscribe": manager[" subscribe"],
+    ...adaptToastMethods<Data>(manager),
+  };
+}
 
 export interface ToastProviderProps extends ComponentProps<typeof BaseToast.Provider> {
   /** Which corner the stack anchors to. Both grow upward from the bottom. */
@@ -129,10 +223,12 @@ const STACK_LIST =
 const STACK_COLLAPSE =
   "[--stack-y:calc(min(var(--toast-index,0),10)*-20%)] [--stack-scale:calc(max(0,1_-_min(var(--toast-index,0),10)*0.1))] data-[expanded]:[--stack-y:calc(var(--toast-offset-y,0px)*-1_+_min(var(--toast-index,0),10)*-0.75rem)] data-[expanded]:[--stack-scale:1]";
 
-function ToastItem({ toast, stack }: { toast: BaseToast.Root.ToastObject<ToastData>; stack: ToastStack }) {
+function ToastItem({ toast, stack }: { toast: ToastObject<ToastData>; stack: ToastStack }) {
   const type = (toast.type as ToastType) ?? "neutral";
   const Icon = STATUS_ICON[type] ?? Bell;
   const shouldMorph = Boolean(toast.data?.morph);
+  const hasCustomActions = toast.actions !== undefined;
+  const customActions = toast.actions?.slice(0, MAX_TOAST_ACTIONS);
   // Explicit size (not the chip's `[&>svg]` rule) so it still applies when Morph nests the
   // icon a few levels down.
   const iconNode =
@@ -150,7 +246,7 @@ function ToastItem({ toast, stack }: { toast: BaseToast.Root.ToastObject<ToastDa
         // Pinned to the bottom of the viewport; the transform fans them out from there.
         // `origin-bottom` keeps a scaled card's bottom edge aligned, which is the stack.
         "group absolute inset-x-0 bottom-0 w-full origin-bottom select-none opacity-100 blur-0",
-        "rounded-xl border border-border bg-surface-raised p-3 shadow-overlay-drop",
+        "rounded-lg border border-border bg-surface-raised p-3 shadow-overlay-drop",
         "[z-index:calc(1000_-_var(--toast-index,0))]",
         ROOT_TRANSFORM,
         // Stack position per mode. `list` is always fanned; `collapse` overlaps and only
@@ -186,9 +282,27 @@ function ToastItem({ toast, stack }: { toast: BaseToast.Root.ToastObject<ToastDa
             <BaseToast.Title className="truncate text-sm leading-5 font-medium text-foreground" />
           )}
           <BaseToast.Description className="mt-0.5 line-clamp-2 text-xs leading-4 text-muted-foreground" />
-          {toast.actionProps && (
+          {hasCustomActions ? (
+            customActions &&
+            customActions.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {customActions.map((action, index) => {
+                  const { className, ...props } = action;
+                  return (
+                    <Button
+                      key={index}
+                      {...props}
+                      variant="outline"
+                      size="sm"
+                      className={className}
+                    />
+                  );
+                })}
+              </div>
+            )
+          ) : toast.actionProps ? (
             <BaseToast.Action render={<Button variant="outline" size="sm" className="mt-2" />} />
-          )}
+          ) : null}
         </div>
 
         <BaseToast.Close

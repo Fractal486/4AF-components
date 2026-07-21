@@ -33,6 +33,8 @@ export interface ButtonProps
   asChild?: boolean;
   /** Swaps in a spinner and blocks interaction, without changing the button's size. */
   loading?: boolean;
+  /** Disable the tactile press scale. Defaults to `true`; useful for anchored triggers. */
+  pressScale?: boolean;
   /**
    * Holds the button in its pressed state — e.g. while a popover or menu it triggers is
    * open, so the trigger reads as "held down" for as long as its surface is showing. It's
@@ -58,6 +60,7 @@ export function Button({
   asChild = false,
   loading = false,
   loadingLabel = "Loading",
+  pressScale = true,
   pressed = false,
   disabled,
   children,
@@ -108,11 +111,12 @@ export function Button({
       className={cn(
         buttonVariants({ variant, size }),
         asChild &&
+          pressScale &&
           "transition-[background-color,box-shadow,color,opacity,scale] active:scale-[0.95] motion-reduce:active:scale-100",
         // Held state for the CSS-press (`asChild`) path. `scale` is a single CSS
         // property, so this and `active:scale-[0.95]` resolve to one value (0.95) rather
         // than multiplying — no compounding when a held button is pressed to dismiss.
-        asChild && pressed && "scale-[0.95] motion-reduce:scale-100",
+        asChild && pressScale && pressed && "scale-[0.95] motion-reduce:scale-100",
         className,
       )}
       disabled={isDisabled}
@@ -136,8 +140,13 @@ export function Button({
           // While `pressed`, the tap is suppressed and the hold owns the scale — one
           // property (Motion's transform), one spring — so pressing to dismiss doesn't
           // stack a second 0.95 or hand the scale-back-up to a different timing curve.
-          whileTap: reduceMotion || isDisabled || pressed ? undefined : { scale: PRESS_SCALE },
-          animate: reduceMotion ? undefined : { scale: pressed ? PRESS_SCALE : 1 },
+          whileTap:
+            reduceMotion || isDisabled || pressed || !pressScale
+              ? undefined
+              : { scale: PRESS_SCALE },
+          animate: reduceMotion
+            ? undefined
+            : { scale: pressed && pressScale ? PRESS_SCALE : 1 },
           transition: spring.press,
         };
 

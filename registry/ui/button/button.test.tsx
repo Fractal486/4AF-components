@@ -40,6 +40,18 @@ describe("Button", () => {
     expect(onClick).toHaveBeenCalledOnce();
   });
 
+  it("can disable press scaling for an asChild trigger", () => {
+    render(
+      <Button asChild pressScale={false}>
+        <a href="/docs">Static trigger</a>
+      </Button>,
+    );
+
+    expect(screen.getByRole("link", { name: "Static trigger" }).className).not.toContain(
+      "active:scale-[0.95]",
+    );
+  });
+
   it("keeps a loading asChild link styled and blocks its interaction", () => {
     const onClick = vi.fn();
     render(

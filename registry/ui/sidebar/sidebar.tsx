@@ -952,16 +952,21 @@ export function SidebarMenuAction({
   /** Marks the action as belonging to a nested menu row. */
   nested?: boolean;
 }) {
-  const Comp = asChild ? Slot : "button";
-
   return (
-    <Comp
+    <Button
+      asChild={asChild}
+      variant="plain"
+      size="icon-sm"
+      pressScale={false}
       data-slot={nested ? "sidebar-menu-sub-action" : "sidebar-menu-action"}
+      {...props}
       className={cn(
-        "absolute top-1.5 right-1.5 z-[1] flex aspect-square w-5 cursor-pointer items-center justify-center rounded-md p-0",
+        // Keep the Button's shared behavior, but preserve the compact action's
+        // existing 20px visual box and row geometry.
+        "absolute top-1.5 right-1.5 z-[1] size-5 cursor-pointer rounded-md p-0",
         nested && "top-1 right-[7px]",
         "text-muted-foreground outline-none hover:bg-transparent hover:text-primary-foreground dark:hover:text-foreground",
-        "focus-visible:ring-2 focus-visible:ring-ring",
+        "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0",
         "after:absolute after:-inset-2 md:after:hidden",
         "peer-data-[size=sm]/menu-button:top-1",
         "peer-data-[size=default]/menu-button:top-1.5",
@@ -971,8 +976,8 @@ export function SidebarMenuAction({
         // no hover to reveal it and the action would be unreachable.
         showOnHover &&
           (nested
-            ? "md:opacity-0 group-focus-within/menu-sub-item:opacity-100 group-hover/menu-sub-item:opacity-100 data-[state=open]:opacity-100"
-            : "md:opacity-0 group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100"),
+            ? "md:opacity-0 group-focus-within/menu-sub-item:opacity-100 group-hover/menu-sub-item:opacity-100 group-has-data-[active=true]/menu-sub-item:opacity-100 data-[state=open]:opacity-100"
+            : "md:opacity-0 group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 group-has-data-[active=true]/menu-item:opacity-100 data-[state=open]:opacity-100"),
         "[&>svg]:size-4 [&>svg]:shrink-0",
         className,
       )}

@@ -65,7 +65,7 @@ export interface CommandPanelInputProps
   value?: string;
   /** Initial value for an uncontrolled header field. */
   defaultValue?: string;
-  /** Optional key handler; Escape and Backspace still retain panel navigation unless prevented. */
+  /** Optional key handler; Escape clears only `type="search"` fields, otherwise it goes back. */
   onKeyDown?: ComponentProps<"input">["onKeyDown"];
   /** Called with the current value whenever the header field changes. */
   onValueChange?: (value: string) => void;
@@ -686,8 +686,9 @@ export function CommandPalette({
                 {/* A panel page: a Back button and either a title or an opt-in input field,
                     then the form body and a slim footer. The header field drives
                     `helpers.query` / `helpers.inputValue`; regular panels leave their own
-                    fields in charge. Escape and Backspace step back, while the Back button
-                    and the panel's own `back` helper remain available. */}
+                    fields in charge. Escape clears a search field, but goes back from a
+                    traditional text field. Backspace steps back when the field is empty,
+                    while the Back button and the panel's own `back` helper remain available. */}
                 <>
                   <div
                     className={cn(
@@ -726,12 +727,12 @@ export function CommandPalette({
                             if (event.defaultPrevented) return;
 
                             if (event.key === "Escape") {
-                              if (panelInputValue !== "") {
+                              if (panelInput.type === "search" && panelInputValue !== "") {
                                 consumeHeaderEscape(event);
                                 setPanelInputValue("");
                                 return;
                               }
-                              event.preventDefault();
+                              consumeHeaderEscape(event);
                               goToDepth(pages.length - 1);
                               return;
                             }
@@ -832,7 +833,7 @@ export function CommandPalette({
                     className="h-12 min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-subtle-foreground"
                   />
 
-                  <kbd className="hidden shrink-0 rounded-xs bg-muted px-1.5 py-0.5 font-mono text-2xs text-subtle-foreground select-none sm:block">
+                  <kbd className="hidden shrink-0 rounded-xs bg-surface px-1.5 py-0.5 font-mono text-2xs text-subtle-foreground select-none sm:block">
                     Esc
                   </kbd>
                 </div>
@@ -1294,7 +1295,7 @@ function EscapeHint() {
 
 function Kbd({ children }: { children: ReactNode }) {
   return (
-    <kbd className="flex min-w-4 shrink-0 items-center justify-center rounded-xs bg-muted px-1 py-0.5 font-mono text-2xs text-subtle-foreground">
+    <kbd className="flex min-w-4 shrink-0 items-center justify-center rounded-xs bg-surface px-1 py-0.5 font-mono text-2xs text-subtle-foreground">
       {children}
     </kbd>
   );
