@@ -4,6 +4,9 @@ A private React component library and a small inspector for reviewing each compo
 isolation. Components are copied into other projects through a local shadcn registry, so
 you keep ownership of the source instead of installing a public npm package.
 
+See [COMPONENTS.md](./COMPONENTS.md) for the complete registry catalog, visual and
+engineering style, CLI workflow, bundled subcomponents, and inspector-only patterns.
+
 ## Structure
 
 ```text
@@ -42,8 +45,7 @@ pnpm registry:build      # Generate private install files in public/r
    pnpm 4af install button --project C:\Projects\my-app
    ```
 
-   Replace `button` with `input`, `toggle`, `morph`, `action-button`, `copy-button`, or
-   `tabs`.
+   Replace `button` with any name shown by `pnpm 4af list`.
    The command builds the registry, starts a temporary local registry server, and
    installs the component non-interactively. Add `--overwrite` only when replacing
    existing files is intentional.
@@ -57,15 +59,7 @@ pnpm registry:build      # Generate private install files in public/r
 Dependencies and the 4AF theme are included automatically. Agents should use this CLI
 instead of manually copying files or running the lower-level shadcn command.
 
-## Component families
+## Component catalog
 
-- **Button** — a standard action with variants, sizes, loading, and `asChild`.
-- **Input** — a Base UI text field with default, plain, and underline variants plus custom number steppers.
-- **Toggle** — a pressed/unpressed control backed by Base UI.
-- **Morph** — an animated content swap used by status-driven controls.
-- **Action Button** — runs asynchronous work and displays pending/success/error states.
-- **Copy Button** — an Action Button specialized for clipboard writes.
-- **Tabs** — accessible Base UI tabs with a travelling Motion indicator.
-
-The Button family is shown together in the sidebar, while standalone components such as
-Input have their own inspector route.
+The complete, maintained catalog lives in [COMPONENTS.md](./COMPONENTS.md). Run
+`pnpm 4af list` for the exact set of names accepted by the installer.
