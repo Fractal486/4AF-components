@@ -21,6 +21,7 @@ import { selectMotionEntry } from "./entries/select-motion";
 import { selectMotionSearchEntry } from "./entries/select-motion-search";
 import { selectSearchEntry } from "./entries/select-search";
 import { selectSortEntry } from "./entries/select-sort";
+import { separatorEntry } from "./entries/separator";
 import { skeletonEntry } from "./entries/skeleton";
 import { sheetEntry } from "./entries/sheet";
 import { sidebarEntry } from "./entries/sidebar";
@@ -126,6 +127,12 @@ export const groups: Group[] = [
     name: "Skeleton",
     summary: "A muted placeholder that pulses while content loads. Sized with utilities.",
     entries: [skeletonEntry],
+  },
+  {
+    slug: "separator",
+    name: "Separator",
+    summary: "A divider. Base UI's Separator for the ARIA; a filled hairline, horizontal or vertical.",
+    entries: [separatorEntry],
   },
   {
     slug: "empty",
