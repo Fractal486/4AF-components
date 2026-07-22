@@ -139,11 +139,16 @@ export function TabsList({
       {box && (
         <motion.div
           aria-hidden
+          // `left`/`width` are static styles the browser lays out once; `layout` is what
+          // moves the indicator. Motion measures the box before and after the change and
+          // plays the delta as a transform (FLIP) — so travelling between tabs never
+          // animates `left`/`width` frame by frame (both relayout). It also corrects the
+          // corner distortion a raw `scaleX` would leave on the rounded pill. No fly-in on
+          // first appearance: the element mounts at its target with no prior box to
+          // animate from.
+          layout
           className={tabIndicatorVariants({ variant, solid })}
-          // No animation on first appearance — it should already be under the selected
-          // tab, not fly in from the origin on load.
-          initial={false}
-          animate={{ left: box.left, width: box.width }}
+          style={{ left: box.left, width: box.width }}
           transition={reduceMotion ? { duration: 0 } : spring.snappy}
         />
       )}

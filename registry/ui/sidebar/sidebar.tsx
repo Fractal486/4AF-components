@@ -992,7 +992,6 @@ export function SidebarMenuAction({
         "[&>svg]:size-4 [&>svg]:shrink-0",
         className,
       )}
-      {...props}
     />
   );
 }

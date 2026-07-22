@@ -266,6 +266,25 @@
       ]
     },
     {
+      "name": "separator",
+      "type": "registry:ui",
+      "description": "An accessible horizontal or vertical divider built on Base UI Separator.",
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/separator/separator.tsx",
+          "type": "registry:ui",
+          "target": "@ui/separator.tsx"
+        }
+      ]
+    },
+    {
       "name": "textarea",
       "type": "registry:ui",
       "description": "A multi-line field sharing the Input treatment (border, focus ring, variant/tone), plus a custom drag-to-resize corner grip in place of the native handle.",

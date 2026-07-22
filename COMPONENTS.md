@@ -173,7 +173,7 @@ transitively rather than requested directly through `pnpm 4af install`.
 
 ## Full installable UI registry
 
-The following 34 names are accepted by `pnpm 4af install <name>`.
+The following 36 names are accepted by `pnpm 4af install <name>`.
 
 ### Actions
 
@@ -222,6 +222,7 @@ option remains available for a single action.
 | --- | --- | --- |
 | `tabs` | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | Base UI tabs with a travelling Motion indicator; segment, pill, and underline appearances, with optional solid treatment. |
 | `table-of-contents` | `TableOfContents` | Heading navigation that observes the current section, smooth-scrolls, and slides a marker to the active item. |
+| `separator` | `Separator` | Accessible horizontal or vertical divider built on Base UI Separator. |
 | `command-palette` | `CommandPalette` and custom panel/list/row/action parts | Keyboard-first command/search dialog with fuzzy ranking, groups, nested and custom panels, header text fields, per-panel header actions, badges, checkboxes, keybinds, destructive actions, and keyboard navigation. |
 | `sidebar` | `SidebarProvider`, `Sidebar`, `SidebarPanel`, menu/group/submenu/action/badge/skeleton parts | Responsive application sidebar with sidebar, floating, inset, split, split-floating, and split-inset layouts; controlled collapse; sections; nested rows; actions; badges; and loading skeletons. |
 | `sidebar-layout` | `SidebarLayout` | Optional reusable page shell that composes Sidebar with its inset content surface, left-aligned collapse control, page title, and header actions. |
