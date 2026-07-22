@@ -223,7 +223,7 @@ option remains available for a single action.
 | `tabs` | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | Base UI tabs with a travelling Motion indicator; segment, pill, and underline appearances, with optional solid treatment. |
 | `table-of-contents` | `TableOfContents` | Heading navigation that observes the current section, smooth-scrolls, and slides a marker to the active item. |
 | `separator` | `Separator` | Accessible horizontal or vertical divider built on Base UI Separator. |
-| `command-palette` | `CommandPalette` and custom panel/list/row/action parts | Keyboard-first command/search dialog with fuzzy ranking, groups, nested and custom panels, header text fields, per-panel header actions, badges, checkboxes, keybinds, destructive actions, and keyboard navigation. |
+| `command-palette` | `CommandPalette`, custom panel/list/row/action parts, and `useCommandSearch` | Keyboard-first command/search dialog with fuzzy ranking, groups, nested and custom panels, async/server-driven search, header text fields, per-panel header actions, badges, checkboxes, keybinds, destructive actions, and keyboard navigation. |
 | `sidebar` | `SidebarProvider`, `Sidebar`, `SidebarPanel`, menu/group/submenu/action/badge/skeleton parts | Responsive application sidebar with sidebar, floating, inset, split, split-floating, and split-inset layouts; controlled collapse; sections; nested rows; actions; badges; and loading skeletons. |
 | `sidebar-layout` | `SidebarLayout` | Optional reusable page shell that composes Sidebar with its inset content surface, left-aligned collapse control, page title, and header actions. |
 
@@ -335,7 +335,8 @@ The registry item includes more than the root popup:
 - Escape-to-clear for `type="search"` header fields, while traditional text fields use Escape to go back;
 - per-panel `headerActions`, suitable for Select and Select Sort controls;
 - custom list rows with trailing badges or selection checkboxes;
-- grouped action panels with section labels, icons, keybinds, search, and destructive actions.
+- grouped action panels with section labels, icons, keybinds, search, and destructive actions;
+- async/server-driven search: pass `onSearch` on the root (with `groups` as the resting state), or call the exported `useCommandSearch` hook in a custom panel and render `CommandPanelLoading` for its first-load state.
 
 The demo's Projects, Rename Project, and New Project flows are examples built from these
 public APIs, not hard-coded private behaviour.
