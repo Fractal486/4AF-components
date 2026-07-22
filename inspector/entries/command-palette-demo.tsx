@@ -244,6 +244,9 @@ export function CommandPaletteDemo({
           size="sm"
           status="info"
           showIcon={false}
+          // Static label in a list that filters/reorders — don't let it FLIP its own
+          // position as the row moves.
+          animateLayout={false}
         >
           Beta
         </Badge>
@@ -550,6 +553,8 @@ function ProjectsPanel({
                       size="sm"
                       status="success"
                       showIcon={false}
+                      // Static label in a filterable list — see the Beta badge above.
+                      animateLayout={false}
                     >
                       Current
                     </Badge>

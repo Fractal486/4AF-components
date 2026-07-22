@@ -279,6 +279,18 @@ like it moves. The default remains enabled for ordinary buttons.
 
 `ActionButton`, `CopyButton`, and `DeleteButton` inherit the same Button prop.
 
+### Disable Badge layout animation in reordering lists
+
+`Badge` animates its pill resizing when its content changes. Set `animateLayout={false}`
+for a static badge inside a list that filters or reorders (a command-palette row, a table
+row), or it FLIP-animates its own position as the row moves — sliding within a row that
+does not animate, and adding layout cost. A badge whose content actually changes keeps the
+default.
+
+```tsx
+<Badge animateLayout={false}>Beta</Badge>
+```
+
 ### Select Sort is part of Select
 
 Install `select`, then use `SelectSortTrigger`. It automatically:

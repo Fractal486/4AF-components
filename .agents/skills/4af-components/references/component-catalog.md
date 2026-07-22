@@ -119,6 +119,12 @@ mark the field invalid.
 press resizing would make the attached popup appear to move. `ActionButton`, `CopyButton`,
 and `DeleteButton` inherit the Button prop.
 
+### Badge layout animation can be disabled
+
+`Badge` accepts `animateLayout={false}`. Use it for a static badge inside a list that
+filters or reorders (a command-palette row, a table row); otherwise the pill FLIP-animates
+its own position as the row moves. A badge whose content actually changes keeps the default.
+
 ### Select Sort belongs to Select
 
 Install `select` to use `SelectSortTrigger`; there is no `select-sort` registry item.
