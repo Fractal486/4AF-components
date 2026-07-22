@@ -22,6 +22,9 @@ import {
   Star,
   Sun,
   Trash2,
+  User,
+  Users,
+  type LucideIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { Badge, type BadgeProps } from "@/registry/ui/badge/badge";
@@ -35,6 +38,8 @@ import {
   CommandPanelBody,
   CommandPanelFooter,
   CommandPanelList,
+  CommandPanelLoading,
+  useCommandSearch,
   type CommandGroup,
   type CommandPanelHelpers,
 } from "@/registry/ui/command-palette/command-palette";
@@ -80,17 +85,152 @@ function PaletteHeaderActions() {
   );
 }
 
+// A shared "network latency" for the async demos: resolves after `ms`, or rejects the
+// moment a newer keystroke aborts the request — the same contract a real fetch honours.
+function simulateLatency(signal: AbortSignal, ms: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(resolve, ms);
+    signal.addEventListener("abort", () => {
+      clearTimeout(timer);
+      reject(new DOMException("aborted", "AbortError"));
+    });
+  });
+}
+
+// A stand-in "server index" for the async-search demo — the sort of thing a real palette
+// would query over the network rather than filter in memory.
+const SEARCH_INDEX: { id: string; label: string; hint: string; icon: LucideIcon }[] = [
+  { id: "s-annual", label: "Annual Report 2026.pdf", hint: "Document", icon: FileText },
+  { id: "s-roadmap", label: "Product Roadmap", hint: "Document", icon: FileText },
+  { id: "s-budget", label: "Q3 Budget Forecast", hint: "Spreadsheet", icon: FileText },
+  { id: "s-onboard", label: "Onboarding Checklist", hint: "Document", icon: FileText },
+  { id: "s-brand", label: "Brand Guidelines", hint: "Document", icon: FileText },
+  { id: "s-archive", label: "Archived Releases", hint: "Folder", icon: Archive },
+  { id: "s-invoices", label: "Invoices 2025", hint: "Folder", icon: FolderOpen },
+  { id: "s-ada", label: "Ada Lovelace", hint: "Person", icon: Star },
+  { id: "s-grace", label: "Grace Hopper", hint: "Person", icon: Star },
+  { id: "s-alan", label: "Alan Turing", hint: "Person", icon: Star },
+  { id: "s-notify", label: "Notification Settings", hint: "Setting", icon: Bell },
+  { id: "s-security", label: "Security & Access", hint: "Setting", icon: Lock },
+  { id: "s-billing", label: "Billing History", hint: "Setting", icon: FileText },
+  { id: "s-display", label: "Display & Appearance", hint: "Setting", icon: Monitor },
+];
+
+// A second mock source, for the async *panel* demo (Find People…). A drilled-in panel
+// runs its own `useCommandSearch` against this, exactly as the root does with `onSearch`.
+interface Person {
+  id: string;
+  name: string;
+  role: string;
+}
+
+const PEOPLE: Person[] = [
+  { id: "p-ada", name: "Ada Lovelace", role: "Engineering" },
+  { id: "p-grace", name: "Grace Hopper", role: "Engineering" },
+  { id: "p-alan", name: "Alan Turing", role: "Research" },
+  { id: "p-katherine", name: "Katherine Johnson", role: "Research" },
+  { id: "p-margaret", name: "Margaret Hamilton", role: "Engineering" },
+  { id: "p-barbara", name: "Barbara Liskov", role: "Research" },
+  { id: "p-radia", name: "Radia Perlman", role: "Infrastructure" },
+  { id: "p-donald", name: "Donald Knuth", role: "Research" },
+  { id: "p-tim", name: "Tim Berners-Lee", role: "Platform" },
+  { id: "p-linus", name: "Linus Torvalds", role: "Infrastructure" },
+];
+
+async function searchPeople(query: string, signal: AbortSignal): Promise<Person[]> {
+  await simulateLatency(signal, 400);
+  const needle = query.toLowerCase();
+  return PEOPLE.filter(
+    (person) =>
+      person.name.toLowerCase().includes(needle) ||
+      person.role.toLowerCase().includes(needle),
+  );
+}
+
+// An async list panel: the header search field feeds `helpers.query` into the shared
+// engine, which debounces, cancels superseded requests and reports `searching`. The panel
+// just renders the rows and a `CommandPanelLoading` row — no async plumbing of its own.
+function PeopleSearchPanel({
+  helpers,
+  onDone,
+}: {
+  helpers: CommandPanelHelpers;
+  onDone: (summary: string) => void;
+}) {
+  const { results, searching } = useCommandSearch<Person[]>(helpers.query, searchPeople);
+  const people = results ?? [];
+  const trimmed = helpers.query.trim();
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <CommandPanelList autoFocus={false} className="flex flex-col gap-0">
+        {/* First load only — once results are on screen, refining shows the header's inline
+            loader instead (from the palette), so the two never both appear. */}
+        {searching && results === null && (
+          <CommandPanelLoading>Searching people…</CommandPanelLoading>
+        )}
+        {people.map((person) => (
+          <CommandPanelRow
+            key={person.id}
+            icon={<User />}
+            badge={<span className="text-xs text-subtle-foreground">{person.role}</span>}
+            onSelect={() => {
+              onDone(`Opened ${person.name}`);
+              helpers.close();
+            }}
+          >
+            {person.name}
+          </CommandPanelRow>
+        ))}
+        {!searching && trimmed === "" && (
+          <p className="px-2.5 py-8 text-center text-sm text-muted-foreground">
+            Type to search people.
+          </p>
+        )}
+        {!searching && trimmed !== "" && people.length === 0 && (
+          <p className="px-2.5 py-8 text-center text-sm text-muted-foreground">
+            No people found.
+          </p>
+        )}
+      </CommandPanelList>
+    </div>
+  );
+}
+
 export function CommandPaletteDemo({
   shortcut,
   grouped,
+  search,
 }: {
   shortcut: boolean;
   grouped: boolean;
+  search: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [lastRun, setLastRun] = useState<string | null>(null);
 
   const run = (label: string) => () => setLastRun(label);
+
+  // A mock server search: waits out a latency, honours the abort signal so superseded
+  // keystrokes cancel, and returns already-ranked results (here, a plain substring match).
+  const searchSource = async (q: string, signal: AbortSignal): Promise<CommandGroup[]> => {
+    await simulateLatency(signal, 450);
+    const needle = q.toLowerCase();
+    const hits = SEARCH_INDEX.filter((entry) => entry.label.toLowerCase().includes(needle));
+    if (hits.length === 0) return [];
+    return [
+      {
+        heading: "Results",
+        items: hits.map((entry) => ({
+          id: entry.id,
+          label: entry.label,
+          description: entry.hint,
+          icon: <entry.icon />,
+          onSelect: run(entry.label),
+        })),
+      },
+    ];
+  };
 
   const navigation: CommandGroup["items"] = [
     { id: "home", label: "Go to Home", description: "Your dashboard overview", icon: <Home />, shortcut: "G H", keywords: ["dashboard"], onSelect: run("Go to Home") },
@@ -163,6 +303,21 @@ export function CommandPaletteDemo({
       },
     },
     {
+      id: "find-people",
+      label: "Find People…",
+      description: "An async list panel backed by useCommandSearch",
+      icon: <Users />,
+      keywords: ["members", "team", "search", "directory"],
+      panelInput: {
+        type: "search",
+        label: "Search people",
+        placeholder: "Search people…",
+      },
+      panel: (helpers) => (
+        <PeopleSearchPanel helpers={helpers} onDone={(summary) => setLastRun(summary)} />
+      ),
+    },
+    {
       id: "theme",
       label: "Change Theme…",
       description: "Light, dark, or match the system",
@@ -208,6 +363,8 @@ export function CommandPaletteDemo({
             Ran <ArrowRight className="size-3.5" aria-hidden />
             <span className="font-medium text-foreground">{lastRun}</span>
           </>
+        ) : search ? (
+          "Type to search a mock server (try “report”, “settings”, or a name). Clear it for the commands."
         ) : (
           "Try a search, a sub-page (Theme), or a form (Rename / Project Settings)."
         )}
@@ -215,8 +372,11 @@ export function CommandPaletteDemo({
 
       <CommandPalette
         // Remounted per toggle so the demo rebuilds cleanly.
-        key={`${shortcut}-${grouped}`}
+        key={`${shortcut}-${grouped}-${search}`}
         groups={groups}
+        // With async on, the static groups become the resting state (shown while the query
+        // is empty) and the mock server takes over the moment you type.
+        onSearch={search ? searchSource : undefined}
         shortcut={shortcut}
         open={open}
         onOpenChange={setOpen}

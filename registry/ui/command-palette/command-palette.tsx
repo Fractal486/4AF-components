@@ -13,12 +13,14 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ComponentProps,
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
 import { ease, spring } from "@/registry/lib/motion";
+import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import {
   Select,
@@ -146,6 +148,23 @@ export interface CommandPanelHelpers {
 
 export interface CommandPaletteProps {
   groups: CommandGroup[];
+  /**
+   * Drive the root results from a source instead of filtering `groups` locally — for a
+   * server-backed search. Called (debounced) as the query changes; return the groups to
+   * show, already ranked, and the palette renders them in that order without a second
+   * local pass. A loading indicator shows while the promise is in flight, and stale
+   * responses are dropped when a newer keystroke supersedes them (the `signal` aborts too).
+   *
+   * `groups` still renders whenever the query is empty, so it's the resting state —
+   * recents or suggestions — with `onSearch` taking over the moment someone types. Only
+   * the root page is affected; drilled-in pages and panels stay local. Omit it entirely
+   * and the palette filters `groups` itself, exactly as before.
+   */
+  onSearch?: (query: string, signal: AbortSignal) => Promise<CommandGroup[]>;
+  /** How long to wait after a keystroke before calling `onSearch`, in ms. @default 200 */
+  searchDebounce?: number;
+  /** Shown in place of the results while `onSearch` is in flight. @default "Searching…" */
+  loadingMessage?: ReactNode;
   /** Bind ⌘K / Ctrl-K to toggle the palette globally. @default true */
   shortcut?: boolean;
   placeholder?: string;
@@ -430,8 +449,106 @@ interface Page {
   headerActions?: ReactNode;
 }
 
+export interface UseCommandSearchOptions {
+  /** Wait this long after a keystroke before calling `onSearch`, in ms. @default 200 */
+  debounce?: number;
+  /** Search only while this is true — e.g. a panel that isn't the active page. @default true */
+  enabled?: boolean;
+}
+
+// How a panel's `useCommandSearch` tells the palette to show the inline header loader.
+// It reports only the *refresh* case (a search running over results already on screen),
+// so the header spinner and a first-load `CommandPanelLoading` are mutually exclusive —
+// exactly as the input-row and empty-region loaders are on the root list. The root's own
+// `useCommandSearch` call sits outside this provider, so it reports to no one.
+const PanelSearchContext = createContext<((refreshing: boolean) => void) | null>(null);
+
+/**
+ * The async-search engine behind the palette, exported so a custom panel gets the same
+ * guarantees the root list does. Feed it the live query (a panel reads it from
+ * `helpers.query`) and a source; it debounces, aborts the superseded request through its
+ * `AbortSignal`, drops out-of-order responses, and reports `searching` *during render* —
+ * derived from which query the current results answer — so no empty state flashes ahead of
+ * the loading row.
+ *
+ * `results` is the last resolved value: it stays put while a refinement loads, so the list
+ * doesn't blink to empty between keystrokes, and is `null` before the first result, while
+ * the query is blank, or while `enabled` is false. The source ranks its own results —
+ * render them in the order returned. Pair it with `CommandPanelLoading` for the row.
+ */
+export function useCommandSearch<T>(
+  query: string,
+  onSearch: ((query: string, signal: AbortSignal) => Promise<T>) | undefined,
+  options: UseCommandSearchOptions = {},
+): { results: T | null; searching: boolean } {
+  const { debounce = 200, enabled = true } = options;
+  const [results, setResults] = useState<T | null>(null);
+  const [resolvedTerm, setResolvedTerm] = useState<string | null>(null);
+  // The source lives behind a ref so an inline function (a fresh identity every render)
+  // doesn't retrigger the effect and loop — it fires on the query, not the identity.
+  const onSearchRef = useRef(onSearch);
+  useEffect(() => {
+    onSearchRef.current = onSearch;
+  });
+  // Monotonic id: only the newest request may commit, so a slow earlier response can't
+  // overwrite a fast later one.
+  const seqRef = useRef(0);
+  const reportRefreshing = useContext(PanelSearchContext);
+  const active = enabled && onSearch != null && query.trim() !== "";
+
+  useEffect(() => {
+    if (!active) {
+      // Leaving search mode — drop stale results so the next entry starts clean. Setting
+      // the same value is a no-op, so this doesn't loop while inactive.
+      setResults(null);
+      setResolvedTerm(null);
+      return;
+    }
+    const term = query.trim();
+    const seq = ++seqRef.current;
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      Promise.resolve(onSearchRef.current!(term, controller.signal))
+        .then((result) => {
+          if (seq !== seqRef.current) return;
+          setResults(result);
+          setResolvedTerm(term);
+        })
+        .catch(() => {
+          // An abort is the expected path when a newer keystroke supersedes this one — not
+          // a failure, and the superseding run already owns the state.
+          if (seq !== seqRef.current || controller.signal.aborted) return;
+          setResults(null);
+          setResolvedTerm(term);
+        });
+    }, debounce);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [active, query, debounce]);
+
+  // Derived, not stored: true from the keystroke until the results answer this exact
+  // query, which is what keeps the loading indicator ahead of any empty state.
+  const searching = active && resolvedTerm !== query.trim();
+
+  // Tell a panel header when to show its inline loader — the refresh case only (a search
+  // over results already on screen). First-load, when there's nothing yet, is left to the
+  // centred `CommandPanelLoading`, so the two never overlap. A no-op at the root.
+  const refreshing = searching && results != null;
+  useEffect(() => {
+    reportRefreshing?.(refreshing);
+    return () => reportRefreshing?.(false);
+  }, [reportRefreshing, refreshing]);
+
+  return { results: active ? results : null, searching };
+}
+
 export function CommandPalette({
   groups,
+  onSearch,
+  searchDebounce = 200,
+  loadingMessage = "Searching…",
   shortcut = true,
   placeholder = "Type a command or search…",
   emptyMessage = "No results found.",
@@ -449,6 +566,20 @@ export function CommandPalette({
   const [pages, setPages] = useState<Page[]>([]);
   const reduceMotion = useReducedMotion();
   const generatedPanelInputId = useId();
+
+  const isRoot = pages.length === 0;
+  // The root command search runs on the shared engine (below), which custom panels reuse.
+  // Async only governs the root: a non-empty query there hands off to the source, while
+  // drilled-in pages and panels stay local (or run their own `useCommandSearch`).
+  const { results: asyncResults, searching } = useCommandSearch<CommandGroup[]>(
+    query,
+    onSearch,
+    { debounce: searchDebounce, enabled: isRoot },
+  );
+  const asyncActive = onSearch != null && isRoot && query.trim() !== "";
+  // A drilled-in panel running its own `useCommandSearch` reports its refresh state here,
+  // so the panel header can show the same inline loader the root input row does.
+  const [panelSearching, setPanelSearching] = useState(false);
 
   const setOpen = useCallback(
     (next: boolean) => {
@@ -579,20 +710,42 @@ export function CommandPalette({
     : null;
   const panelInputAttributes = panelInput ? omitCommandPanelInputProps(panelInput) : {};
   const panelInputId = panelInput?.id ?? generatedPanelInputId;
+  // The panel header's trailing cluster: an inline loader (while the panel is refreshing a
+  // search) sitting left of the panel's own filter/sort controls, mirroring the root input
+  // row. Rendered whenever either is present. With actions, `-mr-1.5` pulls their padded
+  // hit areas snug to the edge; a lone loader drops it so its right edge lands on `pr-3`
+  // (12px) — the same rail the rows' trailing badge column sits on.
+  const panelHeaderTrailing =
+    panelSearching || activeHeaderActions ? (
+      <div
+        className={cn(
+          "flex shrink-0 items-center gap-1.5",
+          activeHeaderActions && "-mr-1.5",
+        )}
+      >
+        {panelSearching && <AsciiLoader className="text-sm text-subtle-foreground" />}
+        {activeHeaderActions}
+      </div>
+    ) : null;
   // Filter + rank ourselves, drop groups that empty out, and append the create row on the
   // root page while typing. Base UI then renders this list as-is (`filter={null}`).
   const visibleGroups = useMemo(() => {
-    const source = activePage ? (activePage.groups ?? []) : groups;
-    const result = source
-      .map((group) => ({
-        heading: group.heading,
-        items: group.items
-          .map((item) => ({ item, match: scoreItem(item, query) }))
-          .filter((entry) => entry.match !== null)
-          .sort((a, b) => b.match!.score - a.match!.score)
-          .map((entry) => entry.item),
-      }))
-      .filter((group) => group.items.length > 0);
+    // Async mode: the source already filtered and ranked, so we render its groups as they
+    // came, only dropping any that arrived empty. Local mode: score, sort and prune here.
+    const result = asyncActive
+      ? (asyncResults ?? [])
+          .map((group) => ({ heading: group.heading, items: group.items }))
+          .filter((group) => group.items.length > 0)
+      : (activePage ? (activePage.groups ?? []) : groups)
+          .map((group) => ({
+            heading: group.heading,
+            items: group.items
+              .map((item) => ({ item, match: scoreItem(item, query) }))
+              .filter((entry) => entry.match !== null)
+              .sort((a, b) => b.match!.score - a.match!.score)
+              .map((entry) => entry.item),
+          }))
+          .filter((group) => group.items.length > 0);
 
     if (onCreate && pages.length === 0 && query.trim()) {
       const term = query.trim();
@@ -609,7 +762,12 @@ export function CommandPalette({
       });
     }
     return result;
-  }, [activePage, groups, query, onCreate, pages.length]);
+  }, [asyncActive, asyncResults, activePage, groups, query, onCreate, pages.length]);
+
+  // `searching` (from the engine) drives a moving indicator: whenever there's a list to
+  // show it rides quietly in the input row ("refreshing"); with nothing to show it stands
+  // in for the list via the Empty region below, so the two never both appear.
+  const hasVisibleItems = visibleGroups.some((group) => group.items.length > 0);
 
   // Base UI wants the grouped shape (`{ items, …anyKeys }`); a heading-less group renders
   // no label. It filters/sorts nothing here — that already happened above.
@@ -751,26 +909,24 @@ export function CommandPalette({
                             panelInput.className,
                           )}
                         />
-                        {activeHeaderActions && (
-                          <div className="-mr-1.5 flex shrink-0 items-center gap-1.5">
-                            {activeHeaderActions}
-                          </div>
-                        )}
+                        {panelHeaderTrailing}
                       </>
                     ) : (
                       <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
                         {activePage?.title}
                       </span>
                     )}
-                    {!panelInput && activeHeaderActions && (
-                      <div className="-mr-1.5 flex shrink-0 items-center gap-1.5">
-                        {activeHeaderActions}
-                      </div>
-                    )}
+                    {!panelInput && panelHeaderTrailing}
                   </div>
                   {/* Just a column — the panel owns its own body/footer split, so a pinned
-                      footer can sit outside the scroll area rather than sticky inside it. */}
-                  <div className="flex min-h-0 flex-1 flex-col">{panelNode}</div>
+                      footer can sit outside the scroll area rather than sticky inside it.
+                      The provider lets the panel's own `useCommandSearch` light the header
+                      loader above. */}
+                  <div className="flex min-h-0 flex-1 flex-col">
+                    <PanelSearchContext.Provider value={setPanelSearching}>
+                      {panelNode}
+                    </PanelSearchContext.Provider>
+                  </div>
                 </>
                 </Autocomplete.Root>
               ) : (
@@ -788,7 +944,10 @@ export function CommandPalette({
                 // Keep the top match ready so Enter runs it without an arrow press first.
                 autoHighlight
               >
-                <div className="flex items-center gap-2.5 border-b border-border pl-4 pr-3">
+                <div
+                  data-searching={searching ? "" : undefined}
+                  className="flex items-center gap-2.5 border-b border-border pl-4 pr-3"
+                >
                   <CommandIcon className="text-subtle-foreground" aria-hidden>
                     <Search />
                   </CommandIcon>
@@ -837,6 +996,10 @@ export function CommandPalette({
                     className="h-12 min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-subtle-foreground"
                   />
 
+                  {searching && hasVisibleItems && (
+                    <AsciiLoader className="shrink-0 text-sm text-subtle-foreground" />
+                  )}
+
                   <kbd className="hidden shrink-0 rounded-xs bg-surface px-1.5 py-0.5 font-mono text-2xs text-subtle-foreground select-none sm:block">
                     Esc
                   </kbd>
@@ -870,7 +1033,14 @@ export function CommandPalette({
                     element that comes and goes with the message, so the outer box collapses
                     to nothing rather than leaving a dead band under the list. */}
                 <Autocomplete.Empty className="text-center text-sm text-muted-foreground">
-                  <div className="px-4 py-8">{emptyMessage}</div>
+                  {searching ? (
+                    <div className="flex items-center justify-center gap-2 px-4 py-8">
+                      <AsciiLoader className="text-sm text-subtle-foreground" />
+                      <span>{loadingMessage}</span>
+                    </div>
+                  ) : (
+                    <div className="px-4 py-8">{emptyMessage}</div>
+                  )}
                 </Autocomplete.Empty>
 
                 {footer && (
@@ -956,6 +1126,33 @@ export function CommandPanelList({
         {children}
       </Autocomplete.List>
     </>
+  );
+}
+
+/**
+ * The first-load state for a custom panel driven by `useCommandSearch` — centred exactly
+ * like the root list's empty/loading region, since it stands in for the list when there's
+ * nothing to show yet. Render it while a search is in flight *and* there are no results
+ * yet (`searching && !results`); once results are on screen the panel header's inline
+ * loader takes over, so the two never overlap. A plain block — the arrow keys step over it.
+ */
+export function CommandPanelLoading({
+  children = "Searching…",
+  className,
+}: {
+  children?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex items-center justify-center gap-2 px-4 py-8 text-sm text-muted-foreground",
+        className,
+      )}
+    >
+      <AsciiLoader className="text-sm text-subtle-foreground" />
+      <span>{children}</span>
+    </div>
   );
 }
 

@@ -9,8 +9,10 @@ export const commandPaletteEntry = defineEntry({
     shortcut: bool(true, "⌘K shortcut"),
     // Section the commands under headings, or run them as one flat list.
     grouped: bool(true, "Grouped"),
+    // Drive results from a mock async source while typing, with a loading indicator.
+    search: bool(false, "Async search"),
   },
-  render({ shortcut, grouped }) {
-    return <CommandPaletteDemo shortcut={shortcut} grouped={grouped} />;
+  render({ shortcut, grouped, search }) {
+    return <CommandPaletteDemo shortcut={shortcut} grouped={grouped} search={search} />;
   },
 });
