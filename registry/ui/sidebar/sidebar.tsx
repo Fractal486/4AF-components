@@ -381,11 +381,11 @@ export function Sidebar({
             splitInset && "inset-y-2 h-auto! px-2",
             side === "left"
               ? splitInset
-                ? "left-0 border-r-0 after:pointer-events-none after:absolute after:inset-y-3 after:right-0 after:w-px after:bg-border after:content-[''] after:transition-[background-color] after:duration-(--duration-fast) after:ease-out [&:has(>[data-slot=sidebar-rail]:hover)]:after:bg-border-strong"
-                : "left-0 border-r [&:has(>[data-slot=sidebar-rail]:hover)]:border-r-border-strong"
+                ? "left-0 border-r-0"
+                : "left-0 border-r"
               : splitInset
-                ? "right-0 border-l-0 after:pointer-events-none after:absolute after:inset-y-3 after:left-0 after:w-px after:bg-border after:content-[''] after:transition-[background-color] after:duration-(--duration-fast) after:ease-out [&:has(>[data-slot=sidebar-rail]:hover)]:after:bg-border-strong"
-                : "right-0 border-l [&:has(>[data-slot=sidebar-rail]:hover)]:border-l-border-strong",
+                ? "right-0 border-l-0"
+                : "right-0 border-l",
             className,
           )}
           {...props}
@@ -467,8 +467,8 @@ export function Sidebar({
               ? cn(
                   "inset-y-2 h-auto! px-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]",
                   side === "left"
-                    ? "border-r-0 after:pointer-events-none after:absolute after:inset-y-3 after:right-0 after:w-px after:bg-border after:content-[''] after:transition-[background-color] after:duration-(--duration-fast) after:ease-out [&:has([data-slot=sidebar-rail]:hover)]:after:bg-border-strong"
-                    : "border-l-0 after:pointer-events-none after:absolute after:inset-y-3 after:left-0 after:w-px after:bg-border after:content-[''] after:transition-[background-color] after:duration-(--duration-fast) after:ease-out [&:has([data-slot=sidebar-rail]:hover)]:after:bg-border-strong",
+                    ? "border-r-0 after:pointer-events-none after:absolute after:inset-y-3 after:right-0 after:w-px after:bg-border after:content-['']"
+                    : "border-l-0 after:pointer-events-none after:absolute after:inset-y-3 after:left-0 after:w-px after:bg-border after:content-['']",
                 )
               : "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
             : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l border-border",
@@ -614,14 +614,11 @@ export function SidebarRail({ className, onClick, ...props }: ComponentProps<"bu
       title="Toggle sidebar"
       className={cn(
         "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 sm:flex",
-        "transition-[background-color] duration-(--duration-fast) ease-out",
-        "after:absolute after:inset-y-0 after:left-1/2 after:w-px hover:after:bg-border-strong",
         "group-data-[side=left]:-right-4 group-data-[side=right]:left-0",
         "in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize",
         "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize",
         "[[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
         "group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full",
-        "hover:group-data-[collapsible=offcanvas]:bg-surface",
         "[[data-side=left][data-collapsible=offcanvas]_&]:-right-2",
         "[[data-side=right][data-collapsible=offcanvas]_&]:-left-2",
         "group-data-[variant=inset]:after:hidden group-data-[variant=split]:after:hidden group-data-[variant=split-floating]:after:hidden group-data-[variant=split-inset]:after:hidden",

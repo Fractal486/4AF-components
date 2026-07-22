@@ -608,7 +608,7 @@ export function SidebarDemo({
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarFooter>
-            </>
+          </>
           )}
 
           {!split && <SidebarRail />}
