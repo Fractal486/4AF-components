@@ -87,7 +87,7 @@ The catalog currently contains 34 installable UI items. Verify the count and nam
 | --- | --- | --- |
 | `tabs` | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | Segment, pill, or underline tabs with a traveling indicator. |
 | `table-of-contents` | `TableOfContents` | Observed heading navigation with smooth scrolling and active marker. |
-| `command-palette` | `CommandPalette` and panel/list/row/action parts | Fuzzy command search, groups, nested/custom panels, configurable headers, keybinds, selection, and actions. |
+| `command-palette` | `CommandPalette`, panel/list/row/action parts, and `useCommandSearch` | Fuzzy command search, groups, nested/custom panels, async/server-driven search, configurable headers, keybinds, selection, and actions. |
 | `sidebar` | Provider, panel, group/menu/submenu/action/badge/skeleton parts | Default/floating/inset and split sidebars, collapse, sections, nested rows, actions, badges, skeletons. |
 | `sidebar-layout` | `SidebarLayout` | Optional page shell around Sidebar with inset surface, title, collapse control, and actions. |
 
@@ -145,6 +145,17 @@ actions, badges, checkboxes, Kbd hints, destructive states, and grouped action p
 Escape clears a non-empty header field only when that header is `type="search"`.
 Traditional text-field headers go back instead. Projects, Rename Project, and New Project
 in the inspector are public-API examples rather than private behavior.
+
+### Command Palette search can be async
+
+Pass `onSearch(query, signal) => Promise<CommandGroup[]>` to drive root results from a
+server instead of filtering `groups` locally; `groups` then acts as the resting state shown
+while the query is empty. Returned groups render in source order (no re-rank).
+`searchDebounce` and `loadingMessage` tune it; debounce, `AbortSignal` cancellation,
+out-of-order dropping, and a non-flashing loading indicator are handled. For an async custom
+panel, call the exported `useCommandSearch(helpers.query, source)` hook in the panel body and
+render `CommandPanelLoading` on first load (`searching && results === null`) — the header
+shows an inline loader on refresh automatically. Find People… is a public-API example.
 
 ### Dropdown Menu has three nested-panel forms
 

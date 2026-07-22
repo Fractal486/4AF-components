@@ -700,7 +700,7 @@
     {
       "name": "command-palette",
       "type": "registry:ui",
-      "description": "A keyboard-first command and search palette with nested panels, custom panel content, fuzzy filtering, keybind hints, and Base UI dialog/autocomplete behavior.",
+      "description": "A keyboard-first command and search palette with nested panels, custom panel content, fuzzy filtering, async/server-driven search, keybind hints, and Base UI dialog/autocomplete behavior.",
       "dependencies": [
         "@base-ui/react",
         "lucide-react",
