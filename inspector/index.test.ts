@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { groups } from "./index";
 
-const inspectorExceptions = new Set(["sidebar-layout"]);
+const inspectorExceptions = new Set(["ascii-loader", "sidebar-layout"]);
 
 describe("Inspector registry parity", () => {
   it("documents only valid registry exceptions", () => {

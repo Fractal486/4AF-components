@@ -710,6 +710,7 @@
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/motion.json",
+        "http://localhost:3000/r/ascii-loader.json",
         "http://localhost:3000/r/checkbox.json",
         "http://localhost:3000/r/select.json"
       ],
@@ -718,6 +719,25 @@
           "path": "registry/ui/command-palette/command-palette.tsx",
           "type": "registry:ui",
           "target": "@ui/command-palette.tsx"
+        }
+      ]
+    },
+    {
+      "name": "ascii-loader",
+      "type": "registry:ui",
+      "description": "A looping braille spinner for compact async status affordances.",
+      "dependencies": [
+        "motion"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/ascii-loader/ascii-loader.tsx",
+          "type": "registry:ui",
+          "target": "@components/ascii-loader/ascii-loader.tsx"
         }
       ]
     },
