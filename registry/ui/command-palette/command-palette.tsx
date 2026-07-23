@@ -27,6 +27,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
+  useSelectSearch,
 } from "@/registry/ui/select/select";
 
 /**
@@ -1392,13 +1393,38 @@ export function CommandPanelActions({
         emptyMessage={emptyMessage}
         className="min-w-56"
       >
-        {actionGroups.map((group, groupIndex) => (
+        <CommandActionSections groups={actionGroups} />
+      </SelectContent>
+    </Select>
+  );
+}
+
+/**
+ * The grouped rows of `CommandPanelActions`, rendered inside the Select so they can read its
+ * in-panel search state. A section heading is dropped when the filter hides every one of its
+ * items — an always-on heading over an empty section reads as a bug — and the divider above a
+ * heading is drawn only when a visible section actually precedes it, so filtering down to a
+ * single section never leaves a stray top border.
+ */
+function CommandActionSections({ groups }: { groups: CommandGroup[] }) {
+  const { matches } = useSelectSearch();
+  let shownSections = 0;
+
+  return (
+    <>
+      {groups.map((group, groupIndex) => {
+        const hasVisibleItems = group.items.some((item) => matches(item.label));
+        const showHeading = Boolean(group.heading) && hasVisibleItems;
+        const withDivider = showHeading && shownSections > 0;
+        if (hasVisibleItems) shownSections += 1;
+
+        return (
           <BaseSelect.Group key={`${group.heading ?? "group"}-${groupIndex}`}>
-            {group.heading && (
+            {showHeading && (
               <BaseSelect.GroupLabel
                 className={cn(
                   "px-2.5 pt-2 pb-1 text-xs font-medium text-subtle-foreground",
-                  groupIndex > 0 && "mt-1 border-t border-border",
+                  withDivider && "mt-1 border-t border-border",
                 )}
               >
                 {group.heading}
@@ -1431,9 +1457,9 @@ export function CommandPanelActions({
               );
             })}
           </BaseSelect.Group>
-        ))}
-      </SelectContent>
-    </Select>
+        );
+      })}
+    </>
   );
 }
 

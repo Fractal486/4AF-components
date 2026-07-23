@@ -4,10 +4,9 @@ export const checkboxVariants = cva(
   [
     "peer relative inline-flex shrink-0 cursor-pointer items-center justify-center",
     // Unchecked reads as a recessed well: a thin border around a fill darker than the
-    // surface it sits on. `dark:` drops below the page background (nothing in the theme
-    // scale is darker than `background`, so this reaches for the ramp); light mode keeps
-    // the page colour, where a darker fill would read as filled-in.
-    "border-[1.5px] border-border bg-background text-primary-foreground dark:bg-neutral-1000",
+    // surface it sits on. Scope the dark ramp to the unchecked state so it cannot win
+    // over the checked/indeterminate fill through dark-mode selector specificity.
+    "border-[1.5px] border-border bg-background text-primary-foreground dark:data-[unchecked]:bg-neutral-1000",
     // Colour fills as the box checks; the press scale is Motion's, on transform.
     "transition-[background-color,border-color,box-shadow] duration-(--duration-base) ease-out",
     // Base UI marks state with data attributes. Checked and indeterminate read the

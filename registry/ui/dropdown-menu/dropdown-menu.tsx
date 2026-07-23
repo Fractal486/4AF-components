@@ -607,16 +607,18 @@ export function DropdownMenuSelectContent({
   );
 
   const searchField = searchable ? (
+    // A fixed 37px row, flush to the panel edge: the negative margins cancel the popup's
+    // `p-1` so the strip runs from the panel's top edge to its separator line at exactly
+    // 37px (the popup's `overflow-hidden` clips it to the rounded corners). Denser than the
+    // standalone Select's inset field, matching the submenu's compact rows. Icon and input
+    // are centred flex children rather than an absolute icon over a padded input.
     <div
       className={cn(
-        "relative px-2 py-1",
-        searchPosition === "bottom" ? "border-t border-border" : "border-b border-border",
+        "-mx-1 flex h-[37px] shrink-0 items-center gap-2 px-3",
+        searchPosition === "bottom" ? "-mb-1 border-t border-border" : "-mt-1 border-b border-border",
       )}
     >
-      <Search
-        aria-hidden="true"
-        className="pointer-events-none absolute top-1/2 left-4 size-3.5 -translate-y-1/2 text-muted-foreground"
-      />
+      <Search aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />
       <Input
         ref={searchInputRef}
         aria-label="Search options"
@@ -639,7 +641,7 @@ export function DropdownMenuSelectContent({
           }
         }}
         placeholder={searchPlaceholder}
-        className="h-8 pl-8"
+        className="h-full border-0 p-0 text-xs"
       />
     </div>
   ) : null;

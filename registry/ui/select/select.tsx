@@ -391,6 +391,17 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   );
 }
 
+/**
+ * Read an ancestor `Select`'s in-panel search state — for building search-aware content
+ * inside `SelectContent`, such as a group heading that hides when none of its items match.
+ * `matches` is the same predicate the items themselves hide on, so a heading and its rows
+ * stay in agreement.
+ */
+export function useSelectSearch(): { query: string; matches: (text: string) => boolean } {
+  const { searchQuery, matchesQuery } = useContext(SelectContext);
+  return { query: searchQuery, matches: matchesQuery };
+}
+
 export function SelectValue({
   className,
   children,
@@ -688,24 +699,55 @@ export function SelectContent({
   } = useContext(SelectContext);
   const listRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const [noResults, setNoResults] = useState(false);
+  // A state node, not a ref: Base UI mounts the popup lazily, so on the first open the
+  // positioner DOM doesn't exist yet when a ref-reading effect fires. A callback ref makes
+  // the node's arrival a state change the measuring effect can depend on.
+  const [positionerNode, setPositionerNode] = useState<HTMLDivElement | null>(null);
+  const [lockedWidth, setLockedWidth] = useState<number | null>(null);
+
+  // Derived during render, not from a post-render DOM query: `firstVisibleItem` is the same
+  // predicate the items themselves hide on, so it's `undefined` exactly when nothing matches.
+  // Computing it here means the list-hidden + empty-message swap happens in the *same* frame
+  // as the filtering — an effect-set flag would flip a render late, giving one frame with an
+  // empty (but not-yet-hidden) list. That extra frame is a second height change, and on the
+  // upward-opening variant a late reposition paints the whole popup — search field and all —
+  // one frame too high before it snaps down: the flash above the field.
+  const noResults =
+    searchable && searchQuery.trim() !== "" && firstVisibleItem === undefined;
 
   useEffect(() => {
     setPanelSearch(searchable);
     return () => setPanelSearch(false);
   }, [searchable, setPanelSearch]);
 
+  // Pin a content-width panel to its *unfiltered* width so an in-panel search can't resize
+  // it while typing. `w-max` sizes to the widest visible row, so hiding rows would let the
+  // panel narrow toward its longest remaining item; measuring the full set (query empty)
+  // and holding it as a `min-width` floor keeps the panel the width it opened at.
+  //
+  // Runs only while the query is empty — the full set is on screen then — and stops once
+  // typing begins, so it never captures a filtered (narrower) width. A `ResizeObserver`
+  // rather than a one-shot read: on the *first* open Base UI's positioner hasn't been sized
+  // by floating-ui yet when the effect fires, so an immediate `offsetWidth` reads 0. The
+  // observer fires again once the panel gets its real width, and depending on `positionerNode`
+  // means the effect also re-runs when the lazily-mounted popup first appears — the two
+  // together are why the floor now sets on the first visit, not just the second. `offsetWidth`
+  // is a layout metric, so the enter animation's `scale` doesn't distort it. Not cleared on
+  // close: a stale-but-correct floor avoids a width jump during the exit blur, and the next
+  // open re-measures (labels may have changed) as soon as its query resets to empty.
   useEffect(() => {
-    if (!searchable || searchQuery.trim() === "") {
-      setNoResults(false);
-      return;
-    }
+    if (!positionerNode || !open || !searchable || width !== "content") return;
+    if (searchQuery.trim() !== "") return;
 
-    const hasVisibleOption = Array.from(
-      listRef.current?.querySelectorAll<HTMLElement>('[role="option"]') ?? [],
-    ).some((option) => !option.hidden);
-    setNoResults(!hasVisibleOption);
-  }, [searchQuery, searchable]);
+    const measure = () => {
+      const measured = positionerNode.offsetWidth;
+      if (measured) setLockedWidth((prev) => (prev === measured ? prev : measured));
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(positionerNode);
+    return () => observer.disconnect();
+  }, [positionerNode, open, searchable, width, searchQuery]);
 
   // Every non-sort select begins on its first row, even when another value is selected.
   // Searchable panels retain DOM focus in their field, but carry the same active-row state.
@@ -768,6 +810,7 @@ export function SelectContent({
           at the trigger's edge, so the unfold grows *from* the trigger whichever side it
           lands on. */}
       <BaseSelect.Positioner
+        ref={setPositionerNode}
         sideOffset={sideOffset}
         align={align}
         alignItemWithTrigger={false}
@@ -794,7 +837,14 @@ export function SelectContent({
           )}
           render={
             <motion.div
-              style={{ transformOrigin: "var(--transform-origin)" }}
+              // The `min-width` floor lives on the popup — the visible bordered box — not
+              // the positioner: the popup shrink-wraps its content, so when a search hides
+              // the list (leaving only the empty message) the floor is what stops it
+              // collapsing to that message's width. Content-width searchable panels only.
+              style={{
+                transformOrigin: "var(--transform-origin)",
+                minWidth: width === "content" && lockedWidth ? lockedWidth : undefined,
+              }}
               initial={reduceMotion ? { opacity: 0 } : FADE_HIDDEN}
               animate={
                 reduceMotion

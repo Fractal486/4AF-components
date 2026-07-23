@@ -565,7 +565,13 @@ export function SidebarRailButton({
   if (tooltip == null) return button;
 
   return (
-    <Tooltip content={tooltip} side="right">
+    <Tooltip
+      content={tooltip}
+      side="right"
+      // The popup is portalled, but the positioner itself still needs a stacking
+      // level so an expanded contextual column cannot paint over the rail tooltip.
+      positionerProps={{ className: "z-50" }}
+    >
       {button}
     </Tooltip>
   );

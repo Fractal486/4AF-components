@@ -1,6 +1,5 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
 import {
   useEffect,
   useLayoutEffect,
@@ -12,7 +11,6 @@ import {
   type RefObject,
 } from "react";
 import { cn } from "@/registry/lib/cn";
-import { spring } from "@/registry/lib/motion";
 
 /**
  * A table of contents that tracks the reader.
@@ -20,12 +18,18 @@ import { spring } from "@/registry/lib/motion";
  * Give it the headings (`{ id, title, level }`) and it lights *every entry whose section is
  * on screen* — an `IntersectionObserver` watches each section, so when three are in view all
  * three are lit, not just the top one. The rail marker **spans** that visible range: it
- * grows, shrinks and slides to cover exactly the lit entries.
+ * grows, shrinks and slides to cover exactly the lit entries. Because it mirrors what's
+ * actually visible, it stays in lockstep with the scroll and the bottom section lights up as
+ * soon as it scrolls into view — no reading-band that a short final section can never reach.
  *
- * Because the marker mirrors what's actually visible rather than a clicked target, it stays
- * in lockstep with the scroll — no racing ahead of a smooth scroll and stuttering back. The
- * span is a transform-only animation (one element, off the layout path). Clicking an
- * entry scrolls its heading to the top (smoothly, or instantly under reduced motion).
+ * The marker is an SVG stroke on a straight rail: its visible length is a dash
+ * (`stroke-dasharray`/`stroke-dashoffset`) covering the lit range, animated with a single CSS
+ * transition. `stroke-linecap="round"` gives true rounded caps at any length — no `scaleY`
+ * stretching a corner radius — and because it's CSS, reduced motion collapses the
+ * `--duration-*` token to 1ms for free.
+ *
+ * Sub-headings indent their *text* to show the hierarchy, but the rail stays a single
+ * straight line — the marker never has to weave, so it reads as one continuous track.
  *
  * Pass `rootRef` when the content scrolls inside a container rather than the page.
  */
@@ -44,17 +48,29 @@ export interface TableOfContentsProps extends Omit<ComponentProps<"nav">, "child
   rootRef?: RefObject<HTMLElement | null>;
 }
 
+/** Inset (px) so the marker's rounded ends sit inside the lit rows rather than on their edges. */
+const MARKER_PAD = 4;
+
+interface RailGeometry {
+  /** Y of the rail's top (the first entry's top), in the SVG's pixel coordinates. */
+  top: number;
+  /** Rail length in pixels — the full span from the first entry's top to the last's bottom. */
+  total: number;
+  /** Per-entry range along the rail, keyed by id. `start` is measured from `top`. */
+  segments: { id: string; start: number; length: number }[];
+}
+
 export function TableOfContents({ items, rootRef, className, ...props }: TableOfContentsProps) {
-  const reduceMotion = useReducedMotion();
   const listRef = useRef<HTMLUListElement>(null);
   const [visibleIds, setVisibleIds] = useState<string[]>([]);
-  const [marker, setMarker] = useState<{ y: number; height: number } | null>(null);
+  const [geometry, setGeometry] = useState<RailGeometry | null>(null);
   const minLevel = useMemo(
     () => (items.length ? Math.min(...items.map((item) => item.level ?? 2)) : 2),
     [items],
   );
   const visible = useRef<Map<string, boolean>>(new Map());
 
+  // Light every section currently touching the viewport, in document order.
   useEffect(() => {
     visible.current = new Map();
     const root = rootRef?.current ?? null;
@@ -66,7 +82,6 @@ export function TableOfContents({ items, rootRef, className, ...props }: TableOf
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) visible.current.set(entry.target.id, entry.isIntersecting);
-        // Every section currently touching the viewport, in document order.
         setVisibleIds(items.filter((item) => visible.current.get(item.id)).map((item) => item.id));
       },
       { root, threshold: 0 },
@@ -75,54 +90,97 @@ export function TableOfContents({ items, rootRef, className, ...props }: TableOf
     return () => observer.disconnect();
   }, [items, rootRef]);
 
-  // The marker covers the first through last lit entry. Measured from the list layout (not
-  // the scroll), so it only moves when the visible *set* changes.
+  // Measure the rail from the list layout: the straight track down the left edge and each
+  // entry's slice of it. Re-measured on content or size changes, never on scroll — the
+  // marker's position is a dash offset, so scrolling only swaps which slice is shown.
   useLayoutEffect(() => {
     const list = listRef.current;
-    if (!list || visibleIds.length === 0) {
-      setMarker(null);
-      return;
-    }
-    const rows = Array.from(list.querySelectorAll<HTMLElement>("[data-toc-id]")).filter((row) =>
-      visibleIds.includes(row.dataset.tocId ?? ""),
-    );
-    if (rows.length === 0) {
-      setMarker(null);
-      return;
-    }
-    const first = rows[0]!;
-    const last = rows[rows.length - 1]!;
-    const pad = 4;
-    setMarker({
-      y: first.offsetTop + pad,
-      height: last.offsetTop + last.offsetHeight - first.offsetTop - pad * 2,
-    });
-  }, [visibleIds]);
+    if (!list) return;
+
+    const measure = () => {
+      const rows = items
+        .map((item) => list.querySelector<HTMLElement>(`[data-toc-id="${CSS.escape(item.id)}"]`))
+        .filter((row): row is HTMLElement => row != null);
+      if (rows.length === 0) {
+        setGeometry(null);
+        return;
+      }
+      const first = rows[0]!;
+      const last = rows[rows.length - 1]!;
+      const top = first.offsetTop;
+      const total = last.offsetTop + last.offsetHeight - top;
+      setGeometry({
+        top,
+        total,
+        segments: rows.map((row) => ({
+          id: row.dataset.tocId!,
+          start: row.offsetTop - top,
+          length: row.offsetHeight,
+        })),
+      });
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(list);
+    return () => observer.disconnect();
+  }, [items]);
 
   const scrollTo = (event: React.MouseEvent, id: string) => {
     const el = document.getElementById(id);
     if (!el) return;
     event.preventDefault();
-    el.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
   };
 
   const currentId = visibleIds[0];
 
+  // The dash spans the first through last lit entry. `visibleIds` is in document order, so
+  // the geometry's first/last visible segments are the ends of the range.
+  const visibleSet = new Set(visibleIds);
+  const litSegments = geometry?.segments.filter((segment) => visibleSet.has(segment.id)) ?? [];
+  const marker =
+    litSegments.length > 0
+      ? (() => {
+          const first = litSegments[0]!;
+          const last = litSegments[litSegments.length - 1]!;
+          const start = first.start + MARKER_PAD;
+          const length = Math.max(last.start + last.length - first.start - MARKER_PAD * 2, 0);
+          return { start, length };
+        })()
+      : null;
+  const railPath = geometry ? `M 1 ${geometry.top} L 1 ${geometry.top + geometry.total}` : "";
+
   return (
     <nav aria-label="Table of contents" className={cn("text-sm", className)} {...props}>
-      <ul ref={listRef} className="relative border-l border-border">
-        {marker && (
-          <motion.span
+      <ul ref={listRef} className="relative">
+        {geometry && (
+          <svg
             aria-hidden
-            className="absolute top-0 -left-px w-0.5 rounded-full bg-foreground"
-            initial={false}
-            style={{ height: 1, transformOrigin: "top" }}
-            animate={{ y: marker.y, scaleY: marker.height }}
-            transition={reduceMotion ? { duration: 0 } : spring.snappy}
-          />
+            className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+            fill="none"
+          >
+            {/* The static rail. A drawn stroke rather than a `border`, so the marker below
+                sits exactly on it at the same coordinates. */}
+            <path d={railPath} className="stroke-border" strokeWidth={2} strokeLinecap="round" />
+            {/* The marker: a single dash covering the lit range, slid into place. Round caps
+                come from the stroke itself, so they never distort with length. */}
+            <path
+              d={railPath}
+              className="stroke-foreground transition-[stroke-dasharray,stroke-dashoffset,opacity] duration-(--duration-base) ease-out"
+              strokeWidth={2}
+              strokeLinecap="round"
+              style={{
+                strokeDasharray: marker ? `${marker.length} ${geometry.total + 1}` : undefined,
+                strokeDashoffset: marker ? -marker.start : undefined,
+                opacity: marker ? 1 : 0,
+              }}
+            />
+          </svg>
         )}
         {items.map((item) => {
-          const active = visibleIds.includes(item.id);
+          const active = visibleSet.has(item.id);
           return (
             <li key={item.id} data-toc-id={item.id} className="relative">
               <a
