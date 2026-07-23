@@ -5,7 +5,7 @@ import {
   SelectItem,
   SelectSortTrigger,
 } from "@/registry/ui/select/select";
-import { bool, defineEntry } from "../schema";
+import { bool, defineEntry, select } from "../schema";
 
 const STATUS = [
   { value: "active", label: "Active" },
@@ -18,13 +18,14 @@ export const selectSortEntry = defineEntry({
   slug: "select-sort",
   name: "Select · Sort",
   controls: {
+    size: select(["sm", "md"] as const, "sm"),
     outline: bool(true, "Outline"),
     showIcon: bool(true, "Icon"),
     showLabel: bool(true, "Label"),
     showValue: bool(true, "Value"),
     multiple: bool(false, "Multiple (filter)"),
   },
-  render({ outline, showIcon, showLabel, showValue, multiple }) {
+  render({ size, outline, showIcon, showLabel, showValue, multiple }) {
     // A sort/filter chip. Nothing selected by default, so it starts dashed ("Status: Any")
     // and turns solid once a choice is made — for `multiple`, it lists every pick.
     const trigger = (
@@ -48,12 +49,12 @@ export const selectSortEntry = defineEntry({
 
     // Remount when the mode flips so the single/multiple root resets cleanly.
     return multiple ? (
-      <Select<string, true> key="multiple" multiple defaultValue={[]}>
+      <Select<string, true> key="multiple" multiple size={size} defaultValue={[]}>
         {trigger}
         {content}
       </Select>
     ) : (
-      <Select<string> key="single">
+      <Select<string> key="single" size={size}>
         {trigger}
         {content}
       </Select>

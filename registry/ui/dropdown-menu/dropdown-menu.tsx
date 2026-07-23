@@ -259,24 +259,25 @@ export function DropdownMenuSelect<Value, Multiple extends boolean | undefined =
 }
 
 const itemBase = cn(
-  "relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-foreground outline-none select-none",
+  // Compact rows: 12px text and 14px glyphs, a denser treatment than the 14px overlays.
+  "relative flex cursor-pointer items-center gap-2 rounded-sm px-2.5 py-1.5 text-xs text-foreground outline-none select-none",
   // Instant — no transition, so the highlight tracks the keyboard rather than trailing it.
   "data-[highlighted]:bg-muted data-[popup-open]:bg-muted",
   "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
   // Size/inert every glyph, but only mute the *leading* icons (direct children) — the
   // nested check/dot indicators keep the item's foreground ink.
-  "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&>svg]:text-muted-foreground",
+  "[&_svg]:pointer-events-none [&_svg]:size-3.5 [&_svg]:shrink-0 [&>svg]:text-muted-foreground",
 );
 
 const selectItemBase = cn(
-  "relative flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-sm outline-none select-none",
+  "relative flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-xs outline-none select-none",
   "text-muted-foreground data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
   "data-[checked]:text-foreground",
   "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
 );
 
 const selectItemIcon =
-  "pointer-events-none flex size-4 shrink-0 items-center justify-center text-muted-foreground [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-muted-foreground";
+  "pointer-events-none flex size-3.5 shrink-0 items-center justify-center text-muted-foreground [&>svg]:size-3.5 [&>svg]:shrink-0 [&>svg]:text-muted-foreground";
 
 function focusDropdownMenuSelectItem(
   list: HTMLElement | null,
@@ -671,7 +672,7 @@ export function DropdownMenuSelectContent({
         {items}
       </div>
       {noResults && (
-        <div className="m-1 flex h-8 items-center justify-center px-2.5 text-center text-sm text-muted-foreground">
+        <div className="m-1 flex h-8 items-center justify-center px-2.5 text-center text-xs text-muted-foreground">
           {emptyMessage}
         </div>
       )}
@@ -771,7 +772,7 @@ export function DropdownMenuSelectItem({
       <BaseMenu.RadioItemIndicator
         keepMounted
         className={cn(
-          "ml-auto flex size-4 shrink-0 items-center justify-center text-foreground",
+          "ml-auto flex size-3.5 shrink-0 items-center justify-center text-foreground",
           "scale-0 opacity-0 transition-[opacity,scale] duration-(--duration-fast) ease-out",
           "data-[checked]:scale-100 data-[checked]:opacity-100",
         )}

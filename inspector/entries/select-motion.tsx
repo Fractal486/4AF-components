@@ -7,7 +7,7 @@ import {
   SelectValue,
 } from "@/registry/ui/select/select-motion";
 import { FruitIcon } from "./select-fruit-icons";
-import { bool, defineEntry } from "../schema";
+import { bool, defineEntry, select } from "../schema";
 
 const FRUITS = {
   apple: "Apple",
@@ -24,17 +24,18 @@ export const selectMotionEntry = defineEntry({
   slug: "select-motion",
   name: "Motion",
   controls: {
+    size: select(["sm", "md"] as const, "sm"),
     disabled: bool(false),
     multiple: bool(false),
     searchable: bool(false, "Search in panel"),
     icons: bool(true),
     invalid: bool(false),
   },
-  render({ disabled, multiple, searchable, icons, invalid }) {
+  render({ size, disabled, multiple, searchable, icons, invalid }) {
     return (
       <div className="w-full max-w-56">
         {multiple ? (
-          <Select key="multiple" multiple defaultValue={["banana", "mango"]} disabled={disabled}>
+          <Select key="multiple" multiple size={size} defaultValue={["banana", "mango"]} disabled={disabled}>
             <SelectTrigger
               aria-invalid={invalid ? true : undefined}
               aria-describedby={invalid ? "select-motion-error" : undefined}
@@ -60,6 +61,7 @@ export const selectMotionEntry = defineEntry({
         ) : (
           <Select
             key="single"
+            size={size}
             defaultValue="banana"
             disabled={disabled}
             iconForValue={icons ? (value) => <FruitIcon value={value} /> : undefined}

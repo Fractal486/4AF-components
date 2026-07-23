@@ -26,19 +26,21 @@ export const selectSearchEntry = defineEntry({
   slug: "select-search",
   name: "BaseUI Search",
   controls: {
+    size: select(["sm", "md"] as const, "sm"),
     tone: select(["neutral", "accent"], "neutral", "Focus"),
     disabled: bool(false),
     multiple: bool(false),
     icons: bool(true),
     invalid: bool(false),
   },
-  render({ tone, disabled, multiple, icons, invalid }) {
+  render({ size, tone, disabled, multiple, icons, invalid }) {
     return (
       <div className="w-full max-w-56">
         {multiple ? (
           <SearchSelect
             key="multiple"
             multiple
+            size={size}
             items={FRUITS}
             defaultValue={[FRUITS[1], FRUITS[4]]}
             disabled={disabled}
@@ -64,6 +66,7 @@ export const selectSearchEntry = defineEntry({
         ) : (
           <SearchSelect<Fruit>
             key="single"
+            size={size}
             items={FRUITS}
             disabled={disabled}
             iconForValue={icons ? (value) => <FruitIcon value={value.value} /> : undefined}

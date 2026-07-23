@@ -46,9 +46,22 @@ const SCROLLBAR =
 
 const EMPTY_ITEMS: readonly never[] = [];
 
+/**
+ * The two sizes, mirroring Button. `sm` (32px) is the compact default; `md` (36px) matches
+ * Button's `md` and the Input for form rows. The size flows through context so the input
+ * trigger and the option rows scale together.
+ */
+export type SelectSize = "sm" | "md";
+
+const SIZE: Record<SelectSize, { field: string; glyph: string; iconSlot: string; row: string }> = {
+  sm: { field: "h-8 text-xs", glyph: "size-3.5", iconSlot: "size-3.5 [&>svg]:size-3.5", row: "text-xs" },
+  md: { field: "h-9 text-sm", glyph: "size-4", iconSlot: "size-4 [&>svg]:size-4", row: "text-sm" },
+};
+
 interface SearchContextValue {
   open: boolean;
   multiple: boolean;
+  size: SelectSize;
   registerIcon: (value: unknown, icon: ReactNode | undefined) => void;
   unregisterIcon: (value: unknown) => void;
   iconFor: (value: unknown) => ReactNode | undefined;
@@ -57,6 +70,7 @@ interface SearchContextValue {
 const SearchContext = createContext<SearchContextValue>({
   open: false,
   multiple: false,
+  size: "sm",
   registerIcon: () => {},
   unregisterIcon: () => {},
   iconFor: () => undefined,
@@ -68,6 +82,8 @@ export interface SearchSelectProps<
 > extends Omit<ComponentProps<typeof Combobox.Root<Value, Multiple>>, "children"> {
   /** Resolves the icon shown in the closed single-select value. */
   iconForValue?: (value: Value) => ReactNode | undefined;
+  /** Compact 32px (`sm`, default) or the 36px form-row size (`md`). @default "sm" */
+  size?: SelectSize;
   children: ReactNode;
 }
 
@@ -80,6 +96,7 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
   multiple,
   items,
   iconForValue,
+  size = "sm",
   ...props
 }: SearchSelectProps<Value, Multiple>) {
   const [uncontrolled, setUncontrolled] = useState(defaultOpen ?? false);
@@ -158,7 +175,7 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
 
   return (
     <SearchContext.Provider
-      value={{ open: isOpen, multiple: Boolean(multiple), registerIcon, unregisterIcon, iconFor }}
+      value={{ open: isOpen, multiple: Boolean(multiple), size, registerIcon, unregisterIcon, iconFor }}
     >
       <Combobox.Root<Value, Multiple>
         open={isOpen}
@@ -194,7 +211,7 @@ export function SearchSelectInput({
    */
   tone?: "neutral" | "accent";
 }) {
-  const { open, multiple, iconFor } = useContext(SearchContext);
+  const { open, multiple, iconFor, size } = useContext(SearchContext);
   const [focused, setFocused] = useState(false);
   const reduceMotion = useReducedMotion();
 
@@ -210,11 +227,13 @@ export function SearchSelectInput({
             <>
               <SearchSelectItemIcon
                 icon={selectedIcon}
+                size={size}
                 className="absolute top-1/2 left-3.5 -translate-y-1/2"
               />
               <Combobox.Input
                 className={cn(
-                  "h-9 w-full rounded-md border border-border bg-surface pr-9 pl-3.5 text-sm text-foreground",
+                  "w-full rounded-md border border-border bg-surface pr-9 pl-3.5 text-foreground",
+                  SIZE[size].field,
                   "outline-none placeholder:text-muted-foreground",
                   "transition-[border-color,box-shadow,color] duration-(--duration-fast) ease-out",
                   "hover:border-border-strong disabled:cursor-not-allowed disabled:opacity-50",
@@ -261,7 +280,7 @@ export function SearchSelectInput({
             reduceMotion ? { duration: 0 } : { type: "spring", duration: 0.4, bounce: 0 }
           }
         >
-          <ChevronDown className="size-4" />
+          <ChevronDown className={SIZE[size].glyph} />
         </motion.span>
       </Combobox.Trigger>
     </div>
@@ -282,7 +301,7 @@ export function SearchSelectContent({
   sideOffset?: number;
 }) {
   const reduceMotion = useReducedMotion();
-  const { open } = useContext(SearchContext);
+  const { open, size } = useContext(SearchContext);
 
   return (
     <Combobox.Portal keepMounted>
@@ -318,7 +337,7 @@ export function SearchSelectContent({
           {/* Base UI keeps this div mounted and only nulls its children when there are
               matches; `empty:hidden` collapses it then, so it doesn't reserve blank space
               above the results. */}
-          <Combobox.Empty className="m-1 flex h-8 items-center justify-center px-2.5 text-center text-sm text-muted-foreground empty:hidden">
+          <Combobox.Empty className={cn("m-1 flex h-8 items-center justify-center px-2.5 text-center text-muted-foreground empty:hidden", SIZE[size].row)}>
             {emptyMessage}
           </Combobox.Empty>
           <Combobox.List
@@ -344,9 +363,11 @@ export type SearchSelectItemProps = Omit<ComponentProps<typeof Combobox.Item>, "
 
 function SearchSelectItemIcon({
   icon,
+  size,
   className,
 }: {
   icon?: ReactNode;
+  size: SelectSize;
   className?: string;
 }) {
   if (icon == null) return null;
@@ -355,7 +376,8 @@ function SearchSelectItemIcon({
     <span
       aria-hidden="true"
       className={cn(
-        "pointer-events-none flex size-4 shrink-0 items-center justify-center [&>svg]:size-4",
+        "pointer-events-none flex shrink-0 items-center justify-center",
+        SIZE[size].iconSlot,
         className,
       )}
     >
@@ -371,7 +393,7 @@ export function SearchSelectItem({
   value,
   ...props
 }: SearchSelectItemProps) {
-  const { registerIcon, unregisterIcon } = useContext(SearchContext);
+  const { registerIcon, unregisterIcon, size } = useContext(SearchContext);
 
   useEffect(() => {
     registerIcon(value, icon);
@@ -382,7 +404,8 @@ export function SearchSelectItem({
     <Combobox.Item
       value={value}
       className={cn(
-        "flex cursor-pointer items-center gap-2 rounded-xs px-2.5 py-1.5 text-sm outline-none select-none",
+        "flex cursor-pointer items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
+        SIZE[size].row,
         "text-muted-foreground",
         // Base UI moves this highlight with the keyboard as well as the pointer; it snaps
         // (no transition) so it keeps up with arrow-key navigation rather than lagging.
@@ -392,7 +415,7 @@ export function SearchSelectItem({
       )}
       {...props}
     >
-      <SearchSelectItemIcon icon={icon} />
+      <SearchSelectItemIcon icon={icon} size={size} />
       <span className="flex-1 truncate">{children}</span>
       <Combobox.ItemIndicator className="shrink-0 text-foreground">
         <Check className="size-3.5" />
@@ -424,7 +447,7 @@ export function SearchMultiSelectItem({
   value,
   ...props
 }: SearchMultiSelectItemProps) {
-  const { registerIcon, unregisterIcon } = useContext(SearchContext);
+  const { registerIcon, unregisterIcon, size } = useContext(SearchContext);
 
   useEffect(() => {
     registerIcon(value, icon);
@@ -435,7 +458,8 @@ export function SearchMultiSelectItem({
     <Combobox.Item
       value={value}
       className={cn(
-        "flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-sm outline-none select-none",
+        "flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 outline-none select-none",
+        SIZE[size].row,
         "text-muted-foreground",
         "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
         "data-[selected]:text-foreground",
@@ -459,7 +483,7 @@ export function SearchMultiSelectItem({
           </span>
         )}
       />
-      <SearchSelectItemIcon icon={icon} />
+      <SearchSelectItemIcon icon={icon} size={size} />
       <span className="flex-1 truncate">{children}</span>
     </Combobox.Item>
   );

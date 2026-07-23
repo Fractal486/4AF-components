@@ -67,10 +67,24 @@ const SCROLLBAR =
 
 type Placement = "bottom" | "top";
 
+/**
+ * The two sizes, mirroring Button. `sm` (32px) is the compact default; `md` (36px) matches
+ * Button's `md` and the Input for form rows. The size flows through context so the trigger
+ * and the option rows scale together. This trigger is padding-sized (it animates its own
+ * radius), so `field` carries `py`/text rather than a fixed height.
+ */
+export type SelectSize = "sm" | "md";
+
+const SIZE: Record<SelectSize, { field: string; glyph: string; iconSlot: string; row: string }> = {
+  sm: { field: "py-1.5 text-xs", glyph: "size-3.5", iconSlot: "size-3.5 [&>svg]:size-3.5", row: "text-xs" },
+  md: { field: "py-2 text-sm", glyph: "size-4", iconSlot: "size-4 [&>svg]:size-4", row: "text-sm" },
+};
+
 interface SelectContextValue {
   value: string | undefined;
   values: readonly string[];
   multiple: boolean;
+  size: SelectSize;
   open: boolean;
   setOpen: (open: boolean) => void;
   select: (value: string) => void;
@@ -131,6 +145,8 @@ interface SelectBaseProps {
   className?: string;
   /** Resolves the icon shown in the closed single-select value. */
   iconForValue?: (value: string) => ReactNode | undefined;
+  /** Compact 32px (`sm`, default) or the 36px form-row size (`md`). @default "sm" */
+  size?: SelectSize;
   children: ReactNode;
 }
 
@@ -158,6 +174,7 @@ export function Select({
   disabled = false,
   className,
   iconForValue,
+  size = "sm",
   children,
 }: SelectProps) {
   const reduce = useReducedMotion() ?? false;
@@ -288,6 +305,7 @@ export function Select({
       triggerId: `${baseId}-trigger`,
       listId: `${baseId}-list`,
       disabled,
+      size,
       placement,
       setPlacement,
       activeItem,
@@ -299,6 +317,7 @@ export function Select({
       selectedValue,
       values,
       multiple,
+      size,
       open,
       select,
       register,
@@ -371,7 +390,8 @@ export function SelectTrigger({ className, children, ...aria }: SelectTriggerPro
         borderBottomRightRadius: isTop ? INSTANT : kfT,
       }}
       className={cn(
-        "relative z-10 flex w-full cursor-pointer items-center justify-between gap-2 rounded-md border border-border bg-surface px-3.5 py-2 text-sm text-foreground outline-none transition-colors",
+        "relative z-10 flex w-full cursor-pointer items-center justify-between gap-2 rounded-md border border-border bg-surface px-3.5 text-foreground outline-none transition-colors",
+        SIZE[ctx.size].field,
         "hover:border-border-strong focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         // Invalid mirrors the Input's treatment — red border + 3px red ring. Pair with `FieldError`.
         "aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",
@@ -386,7 +406,7 @@ export function SelectTrigger({ className, children, ...aria }: SelectTriggerPro
         transition={ctx.reduce ? INSTANT : CHEVRON_TRANSITION}
         className="text-muted-foreground"
       >
-        <ChevronDown className="size-4" />
+        <ChevronDown className={SIZE[ctx.size].glyph} />
       </motion.span>
     </motion.button>
   );
@@ -416,7 +436,7 @@ export function SelectValue({ placeholder, className }: SelectValueProps) {
         className,
       )}
     >
-      <SelectItemIcon icon={icon} />
+      <SelectItemIcon icon={icon} size={ctx.size} />
       <span className="truncate">{displayValue}</span>
     </span>
   );
@@ -610,7 +630,7 @@ export function SelectContent({
           {children}
         </motion.div>
         {noResults && (
-          <div className="m-1 flex h-8 items-center justify-center px-2.5 text-center text-sm text-muted-foreground">
+          <div className={cn("m-1 flex h-8 items-center justify-center px-2.5 text-center text-muted-foreground", SIZE[ctx.size].row)}>
             {emptyMessage}
           </div>
         )}
@@ -630,13 +650,16 @@ export interface SelectItemProps {
   searchValue?: string;
 }
 
-function SelectItemIcon({ icon }: { icon?: ReactNode }) {
+function SelectItemIcon({ icon, size }: { icon?: ReactNode; size: SelectSize }) {
   if (icon == null) return null;
 
   return (
     <span
       aria-hidden="true"
-      className="pointer-events-none flex size-4 shrink-0 items-center justify-center [&>svg]:size-4"
+      className={cn(
+        "pointer-events-none flex shrink-0 items-center justify-center",
+        SIZE[size].iconSlot,
+      )}
     >
       {icon}
     </span>
@@ -675,7 +698,8 @@ export function SelectItem({
   }, [register, unregister, value, label]);
 
   const itemClassName = cn(
-    "flex w-full cursor-pointer items-center rounded-xs px-2.5 py-1.5 text-left text-sm outline-none",
+    "flex w-full cursor-pointer items-center rounded-xs px-2.5 py-1.5 text-left outline-none",
+    SIZE[ctx.size].row,
     ctx.multiple ? "gap-2.5" : "gap-2",
     ctx.multiple
       ? "text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:bg-muted data-[highlighted]:bg-muted data-[highlighted]:text-foreground data-[selected]:text-foreground"
@@ -735,7 +759,7 @@ export function SelectItem({
           tabIndex={-1}
           className="pointer-events-none shrink-0"
         />
-        <SelectItemIcon icon={icon} />
+        <SelectItemIcon icon={icon} size={ctx.size} />
         <span className="flex-1 truncate">{children}</span>
       </motion.li>
     );
@@ -768,7 +792,7 @@ export function SelectItem({
         className={cn("justify-between", itemClassName)}
       >
         <span className="flex min-w-0 flex-1 items-center gap-2">
-          <SelectItemIcon icon={icon} />
+          <SelectItemIcon icon={icon} size={ctx.size} />
           <span className="truncate">{children}</span>
         </span>
         {selected ? <Check className="size-3.5 shrink-0" /> : null}

@@ -142,6 +142,11 @@ clear footer with `clearable` on `SelectContent`.
 All three support single and multi selection. Multi selection uses Checkbox. Only base
 `select` bundles `SelectSortTrigger`.
 
+Every implementation takes `size="sm" | "md"` (default `sm`), scaling the trigger and the
+option rows together: `sm` is compact 32px (12px text), `md` is 36px and matches Button
+`md`/Input for form rows. Inside a Command Palette panel, always use `sm` (the default) —
+it fits the palette's density; do not set `md` there.
+
 ### Command Palette is a component family
 
 The `command-palette` item includes root groups/rows, nested lists, arbitrary custom
@@ -150,7 +155,9 @@ actions, badges, checkboxes, Kbd hints, destructive states, and grouped action p
 
 Escape clears a non-empty header field only when that header is `type="search"`.
 Traditional text-field headers go back instead. Projects, Rename Project, and New Project
-in the inspector are public-API examples rather than private behavior.
+in the inspector are public-API examples rather than private behavior. When a panel's
+header actions are Select or Select Sort controls, keep them at `size="sm"` (the default)
+so they fit the palette.
 
 ### Command Palette search can be async
 

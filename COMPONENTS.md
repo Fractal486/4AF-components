@@ -336,6 +336,11 @@ This is why the Web UI has a “Select · Sort” demo while the registry has no
 Single and multi-selection are supported across the family. Multi-selection uses the
 Checkbox component. `SelectSortTrigger` belongs only to the base `select` item.
 
+Every implementation takes `size="sm" | "md"` (default `sm`). `sm` is the compact 32px
+size (12px text, 14px glyphs); `md` is 36px and matches Button `md` and the Input for form
+rows. The size scales the trigger and the option rows together. Inside a Command Palette
+panel, always use `sm` (the default) — it fits the palette's density.
+
 ### Command Palette composition
 
 The registry item includes more than the root popup:
@@ -345,7 +350,7 @@ The registry item includes more than the root popup:
 - arbitrary custom panels opened through `helpers.openPanel`;
 - custom panel header search fields or traditional text fields;
 - Escape-to-clear for `type="search"` header fields, while traditional text fields use Escape to go back;
-- per-panel `headerActions`, suitable for Select and Select Sort controls;
+- per-panel `headerActions`, suitable for Select and Select Sort controls (use `size="sm"`, the default, so they fit the palette);
 - custom list rows with trailing badges or selection checkboxes;
 - grouped action panels with section labels, icons, keybinds, search, and destructive actions;
 - async/server-driven search: pass `onSearch` on the root (with `groups` as the resting state), or call the exported `useCommandSearch` hook in a custom panel and render `CommandPanelLoading` for its first-load state.

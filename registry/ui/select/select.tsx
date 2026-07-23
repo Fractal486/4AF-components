@@ -36,9 +36,37 @@ import { Input } from "@/registry/ui/input/input";
  * for when the entrance is the point.
  */
 
+/**
+ * The two sizes, mirroring Button. `sm` (32px) is the compact/toolbar default; `md` (36px)
+ * matches Button's `md` and the Input, so a select lines up with them in a form row. The
+ * size flows through context so the trigger *and* the option rows scale together.
+ */
+export type SelectSize = "sm" | "md";
+
+const SIZE: Record<
+  SelectSize,
+  { field: string; chip: string; glyph: string; iconSlot: string; row: string }
+> = {
+  sm: {
+    field: "h-8 text-xs",
+    chip: "h-8 px-2.5 text-xs",
+    glyph: "size-3.5",
+    iconSlot: "size-3.5 [&>svg]:size-3.5",
+    row: "text-xs",
+  },
+  md: {
+    field: "h-9 text-sm",
+    chip: "h-9 px-3 text-sm",
+    glyph: "size-4",
+    iconSlot: "size-4 [&>svg]:size-4",
+    row: "text-sm",
+  },
+};
+
 interface SelectContextValue {
   open: boolean;
   multiple: boolean;
+  size: SelectSize;
   /** The current selection, always as an array (one entry for single-select). */
   values: unknown[];
   registerIcon: (value: unknown, icon: ReactNode | undefined) => void;
@@ -67,6 +95,7 @@ interface SelectContextValue {
 const SelectContext = createContext<SelectContextValue>({
   open: false,
   multiple: false,
+  size: "sm",
   values: [],
   registerIcon: () => {},
   unregisterIcon: () => {},
@@ -119,6 +148,8 @@ export interface SelectProps<Value, Multiple extends boolean | undefined = false
   extends Omit<ComponentProps<typeof BaseSelect.Root<Value, Multiple>>, "children"> {
   /** Resolves the icon shown in the closed single-select value. */
   iconForValue?: (value: Value) => ReactNode | undefined;
+  /** Compact 32px (`sm`, default) or the 36px form-row size (`md`). @default "sm" */
+  size?: SelectSize;
   children: ReactNode;
 }
 
@@ -132,6 +163,7 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   children,
   multiple,
   iconForValue,
+  size = "sm",
   ...props
 }: SelectProps<Value, Multiple>) {
   const [uncontrolled, setUncontrolled] = useState(defaultOpen ?? false);
@@ -296,6 +328,7 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
       value={{
         open: isOpen,
         multiple: Boolean(multiple),
+        size,
         values,
         registerIcon,
         unregisterIcon,
@@ -339,7 +372,7 @@ export function SelectValue({
   render,
   ...props
 }: ComponentProps<typeof BaseSelect.Value>) {
-  const { multiple, iconFor } = useContext(SelectContext);
+  const { multiple, iconFor, size } = useContext(SelectContext);
 
   if (!multiple && render == null) {
     return (
@@ -351,7 +384,7 @@ export function SelectValue({
             {...valueProps}
             className={cn("flex min-w-0 items-center gap-2 truncate", valueProps.className)}
           >
-            <SelectItemIcon icon={iconFor(state.value)} />
+            <SelectItemIcon icon={iconFor(state.value)} size={size} />
             <span className="truncate">{valueProps.children}</span>
           </span>
         )}
@@ -402,15 +435,16 @@ export function SelectTrigger({
    */
   chevron?: boolean;
 }) {
-  const { open } = useContext(SelectContext);
+  const { open, size } = useContext(SelectContext);
   const reduceMotion = useReducedMotion();
 
   return (
     <BaseSelect.Trigger
       className={cn(
-        // h-9 matches Button's default `md` size and the Input — a select sat beside
-        // either in a form row has to line up with it.
-        "group flex h-9 items-center gap-2 rounded-md text-sm text-foreground",
+        // `md` (h-9) matches Button's default and the Input — a select beside either in a
+        // form row lines up with it. `sm` (h-8, the default) is the compact toolbar size.
+        "group flex items-center gap-2 rounded-md text-foreground",
+        SIZE[size].field,
         "cursor-pointer outline-none select-none",
         "transition-[background-color,border-color] duration-(--duration-base) ease-out",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
@@ -438,7 +472,7 @@ export function SelectTrigger({
             reduceMotion ? { duration: 0 } : { type: "spring", duration: 0.4, bounce: 0 }
           }
         >
-          <ChevronDown className="size-4" />
+          <ChevronDown className={SIZE[size].glyph} />
         </motion.span>
       )}
     </BaseSelect.Trigger>
@@ -479,7 +513,7 @@ export function SelectSortTrigger({
   placeholder = "Any",
   ...props
 }: SelectSortTriggerProps) {
-  const { open, values, labelFor } = useContext(SelectContext);
+  const { open, values, labelFor, size } = useContext(SelectContext);
   const reduceMotion = useReducedMotion();
   const selected = values.map((v) => labelFor(v) ?? (typeof v === "string" ? v : String(v)));
   const isUnset = selected.length === 0;
@@ -492,7 +526,8 @@ export function SelectSortTrigger({
     <BaseSelect.Trigger
       data-unset={isUnset || undefined}
       className={cn(
-        "group inline-flex h-9 max-w-full cursor-pointer items-center gap-2 rounded-md px-3 text-sm text-foreground outline-none select-none",
+        "group inline-flex max-w-full cursor-pointer items-center gap-2 rounded-md text-foreground outline-none select-none",
+        SIZE[size].chip,
         "transition-[background-color,border-color] duration-(--duration-base) ease-out",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
@@ -515,7 +550,8 @@ export function SelectSortTrigger({
         <span
           aria-hidden
           className={cn(
-            "shrink-0 [&>svg]:size-4",
+            "shrink-0",
+            size === "sm" ? "[&>svg]:size-3.5" : "[&>svg]:size-4",
             // Icon-only chip: the glyph carries the state, so it brightens to the
             // foreground once something's selected. Otherwise it stays a muted adornment.
             iconOnly && !isUnset ? "text-foreground" : "text-muted-foreground",
@@ -560,7 +596,7 @@ export function SelectSortTrigger({
             reduceMotion ? { duration: 0 } : { type: "spring", duration: 0.4, bounce: 0 }
           }
         >
-          <ChevronDown className="size-4" />
+          <ChevronDown className={SIZE[size].glyph} />
         </motion.span>
       )}
     </BaseSelect.Trigger>
@@ -617,6 +653,7 @@ export function SelectContent({
     open,
     values,
     clear,
+    size,
     firstVisibleItem,
     setActiveItem,
     setPanelSearch,
@@ -765,7 +802,7 @@ export function SelectContent({
             <BaseSelect.List ref={listRef}>{children}</BaseSelect.List>
           </div>
           {noResults && (
-            <div className="m-1 flex h-8 items-center justify-center px-2.5 text-center text-sm text-muted-foreground">
+            <div className={cn("m-1 flex h-8 items-center justify-center px-2.5 text-center text-muted-foreground", SIZE[size].row)}>
               {emptyMessage}
             </div>
           )}
@@ -779,9 +816,9 @@ export function SelectContent({
                 variant="outline"
                 disabled={values.length === 0}
                 onClick={() => clear()}
-                // Match a row's highlight box exactly (`rounded-xs px-2.5 py-1.5 text-sm`),
+                // Match a row's highlight box exactly (`rounded-xs px-2.5 py-1.5 text-xs`),
                 // so the clear button lines up with the options above it.
-                className="h-auto w-full rounded-xs px-2.5 py-1.5 text-sm"
+                className={cn("h-auto w-full rounded-xs px-2.5 py-1.5", SIZE[size].row)}
               >
                 {clearLabel}
               </Button>
@@ -808,13 +845,16 @@ export type SelectItemProps = Omit<
   searchValue?: string;
 };
 
-function SelectItemIcon({ icon }: { icon?: ReactNode }) {
+function SelectItemIcon({ icon, size }: { icon?: ReactNode; size: SelectSize }) {
   if (icon == null) return null;
 
   return (
     <span
       aria-hidden="true"
-      className="pointer-events-none flex size-4 shrink-0 items-center justify-center [&>svg]:size-4"
+      className={cn(
+        "pointer-events-none flex shrink-0 items-center justify-center",
+        SIZE[size].iconSlot,
+      )}
     >
       {icon}
     </span>
@@ -834,6 +874,7 @@ export function SelectItem({
 }: SelectItemProps) {
   const {
     multiple,
+    size,
     registerIcon,
     unregisterIcon,
     registerLabel,
@@ -879,7 +920,8 @@ export function SelectItem({
           if (!event.defaultPrevented) setActiveItem(value);
         }}
         className={cn(
-          "flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-sm outline-none select-none",
+          "flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 outline-none select-none",
+          SIZE[size].row,
           "text-muted-foreground",
           !panelSearch && "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
           "data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
@@ -904,7 +946,7 @@ export function SelectItem({
             </span>
           )}
         />
-        <SelectItemIcon icon={icon} />
+        <SelectItemIcon icon={icon} size={size} />
         <BaseSelect.ItemText className="flex-1 truncate">{children}</BaseSelect.ItemText>
       </BaseSelect.Item>
     );
@@ -921,7 +963,8 @@ export function SelectItem({
           if (!event.defaultPrevented) setActiveItem(value);
         }}
       className={cn(
-        "flex cursor-pointer items-center gap-2 rounded-xs px-2.5 py-1.5 text-sm outline-none select-none",
+        "flex cursor-pointer items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
+        SIZE[size].row,
         "text-muted-foreground",
         // Base UI moves this highlight with the keyboard as well as the pointer; it snaps
         // (no transition) so it keeps up with arrow-key navigation rather than lagging.
@@ -933,7 +976,7 @@ export function SelectItem({
       )}
       {...props}
     >
-      <SelectItemIcon icon={icon} />
+      <SelectItemIcon icon={icon} size={size} />
       <BaseSelect.ItemText className="flex-1 truncate">{children}</BaseSelect.ItemText>
       {/* A fixed check slot keeps ordinary selects stable; `end` replaces it for custom
           trailing content such as an action's keybind hint. */}

@@ -7,7 +7,7 @@ import {
   SelectValue,
 } from "@/registry/ui/select/select";
 import { FruitIcon } from "./select-fruit-icons";
-import { bool, defineEntry } from "../schema";
+import { bool, defineEntry, select } from "../schema";
 
 const FRUITS = {
   apple: "Apple",
@@ -24,6 +24,7 @@ export const selectEntry = defineEntry({
   slug: "select",
   name: "BaseUI",
   controls: {
+    size: select(["sm", "md"] as const, "sm"),
     disabled: bool(false),
     multiple: bool(false),
     searchable: bool(false, "Search in panel"),
@@ -31,13 +32,14 @@ export const selectEntry = defineEntry({
     outline: bool(true),
     invalid: bool(false),
   },
-  render({ disabled, multiple, searchable, icons, outline, invalid }) {
+  render({ size, disabled, multiple, searchable, icons, outline, invalid }) {
     return (
       <div className="w-full max-w-56">
         {multiple ? (
           <Select
             key="multiple"
             multiple
+            size={size}
             items={FRUITS}
             defaultValue={["banana", "mango"]}
             disabled={disabled}
@@ -70,6 +72,7 @@ export const selectEntry = defineEntry({
         ) : (
           <Select
             key="single"
+            size={size}
             items={FRUITS}
             defaultValue="banana"
             disabled={disabled}
