@@ -54,6 +54,15 @@ import {
 import { Slider } from "@/registry/ui/slider/slider";
 import { Switch } from "@/registry/ui/switch/switch";
 
+// `items` doubles as the value→label map the sort chip reads to show "Recently updated"
+// for its `defaultValue` before the panel is ever opened, and the source the rows render
+// from — one place for both.
+const SORT_OPTIONS = {
+  updated: "Recently updated",
+  name: "Name",
+  created: "Recently created",
+} as const;
+
 function PaletteHeaderActions() {
   return (
     <>
@@ -70,15 +79,17 @@ function PaletteHeaderActions() {
         </SelectContent>
       </Select>
 
-      <Select<string> defaultValue="updated">
+      <Select<string> defaultValue="updated" items={SORT_OPTIONS}>
         <SelectSortTrigger
           icon={<ArrowUpDown />}
           aria-label="Sort projects"
         />
         <SelectContent width="content" autoFocusFirstItem={false} className="min-w-40">
-          <SelectItem value="updated">Recently updated</SelectItem>
-          <SelectItem value="name">Name</SelectItem>
-          <SelectItem value="created">Recently created</SelectItem>
+          {Object.entries(SORT_OPTIONS).map(([value, label]) => (
+            <SelectItem key={value} value={value}>
+              {label}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     </>
@@ -546,20 +557,6 @@ function ProjectsPanel({
               <CommandPanelRow
                 key={project}
                 icon={<FolderOpen />}
-                badge={
-                  project === selected ? (
-                    <Badge
-                      variant="outline"
-                      size="sm"
-                      status="success"
-                      showIcon={false}
-                      // Static label in a filterable list — see the Beta badge above.
-                      animateLayout={false}
-                    >
-                      Current
-                    </Badge>
-                  ) : undefined
-                }
                 selected={project === selected}
                 onSelect={() => setSelected(project)}
                 checkbox

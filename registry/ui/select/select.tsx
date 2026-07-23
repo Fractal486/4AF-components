@@ -128,6 +128,27 @@ const FADE_SHOW = { opacity: 1, scale: 1, filter: "blur(0px)" };
 const SCROLLBAR =
   "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground";
 
+/**
+ * Resolve a value's label from Base UI's `items` prop — the canonical mapping that exists
+ * precisely so a trigger can show a *preselected* value's label before the popup (and its
+ * `SelectItem`s) has ever mounted. Without this, a sort/filter chip with a `defaultValue`
+ * shows the raw value ("updated") until the panel is opened once and the items register
+ * their labels. Supports both `items` shapes: a `{ value: label }` record and a
+ * `{ value, label }[]` array.
+ */
+function labelFromItems(items: unknown, value: unknown): ReactNode | undefined {
+  if (!items) return undefined;
+  if (Array.isArray(items)) {
+    return (items as { value: unknown; label?: ReactNode }[]).find((item) =>
+      Object.is(item.value, value),
+    )?.label;
+  }
+  if (typeof items === "object" && value != null) {
+    return (items as Record<string, ReactNode>)[value as string];
+  }
+  return undefined;
+}
+
 function focusPanelOption(
   list: HTMLElement | null,
   direction: "next" | "previous",
@@ -235,7 +256,12 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
       return next;
     });
   }, []);
-  const labelFor = useCallback((v: unknown) => labels.get(v), [labels]);
+  // A registered label (from a mounted `SelectItem`) wins; otherwise fall back to the
+  // `items` mapping, so a preselected value shows its label before the panel is ever opened.
+  const labelFor = useCallback(
+    (v: unknown) => labels.get(v) ?? labelFromItems(props.items, v),
+    [labels, props.items],
+  );
   const firstItem = useMemo(() => labels.keys().next().value, [labels]);
 
   // Items register the text a panel search matches against, so the panel can work out
