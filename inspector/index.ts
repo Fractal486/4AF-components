@@ -2,6 +2,7 @@ import { actionButtonEntry } from "./entries/action-button";
 import { alertDialogEntry } from "./entries/alert-dialog";
 import { badgeEntry } from "./entries/badge";
 import { buttonEntry } from "./entries/button";
+import { buttonGroupEntry } from "./entries/button-group";
 import { checkboxEntry } from "./entries/checkbox";
 import { commandPaletteEntry } from "./entries/command-palette";
 import { copyButtonEntry } from "./entries/copy-button";
@@ -61,9 +62,10 @@ export const groups: Group[] = [
     slug: "button",
     name: "Button",
     summary:
-      "The action, the toggle that holds a state, the content swap inside them, and the three buttons built from those — one that reports how it went, one that copies, and one that asks before it deletes.",
+      "The action, several of them joined into one control, the toggle that holds a state, the content swap inside them, and the three buttons built from those — one that reports how it went, one that copies, and one that asks before it deletes.",
     entries: [
       buttonEntry,
+      buttonGroupEntry,
       toggleEntry,
       morphEntry,
       copyButtonEntry,

@@ -241,6 +241,31 @@
       ]
     },
     {
+      "name": "button-group",
+      "type": "registry:ui",
+      "description": "Two or more Buttons joined into one control: flattened inner corners, one hairline per seam, horizontal or vertical.",
+      "dependencies": [
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/button.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/button-group/button-group.tsx",
+          "type": "registry:ui",
+          "target": "@ui/button-group.tsx"
+        },
+        {
+          "path": "registry/ui/button-group/button-group.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/button-group.variants.ts"
+        }
+      ]
+    },
+    {
       "name": "input",
       "type": "registry:ui",
       "description": "A Base UI input with token-based surfaces, focus states, custom number steppers, and default, plain, and underline variants.",

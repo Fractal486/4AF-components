@@ -72,4 +72,31 @@ describe("Button", () => {
     expect(click.defaultPrevented).toBe(true);
     expect(onClick).not.toHaveBeenCalled();
   });
+
+  it("moves the press onto a content wrapper instead of the box", () => {
+    render(<Button pressTarget="content">Save</Button>);
+
+    const button = screen.getByRole("button", { name: "Save" });
+    expect(button.querySelector("[data-slot=button-content]")).not.toBeNull();
+  });
+
+  it("presses the box itself by default, with no extra wrapper", () => {
+    render(<Button>Save</Button>);
+
+    expect(
+      screen.getByRole("button", { name: "Save" }).querySelector("[data-slot=button-content]"),
+    ).toBeNull();
+  });
+
+  it("scales the content of an asChild link rather than the link", () => {
+    render(
+      <Button asChild pressTarget="content">
+        <a href="/docs">Read docs</a>
+      </Button>,
+    );
+
+    const link = screen.getByRole("link", { name: "Read docs" });
+    expect(link.className).not.toContain("active:scale-[0.95]");
+    expect(link.className).toContain("[&:active_[data-slot=button-content]]:scale-[0.95]");
+  });
 });

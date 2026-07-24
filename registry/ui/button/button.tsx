@@ -43,6 +43,16 @@ export interface ButtonProps
    * the scale or fight a second timing curve on the way back up.
    */
   pressed?: boolean;
+  /**
+   * What the press scale applies to.
+   *
+   * `"button"` (the default) presses the whole control. `"content"` presses only the
+   * label and icons and holds the box still — the version a button needs when its
+   * edges are joined to its neighbours', because shrinking the box there opens a
+   * visible gap along every seam. `ButtonGroup` sets it; on its own a button has
+   * nothing to avoid and should press as one object.
+   */
+  pressTarget?: "button" | "content";
   /** Announced while `loading`, since the visible label is hidden from sight. */
   loadingLabel?: string;
   children?: ReactNode;
@@ -52,6 +62,32 @@ export interface ButtonProps
 // Created once at module scope: doing it inside the component would mint a new
 // component type on every render and remount the child.
 const MotionButton = motion.button;
+const MotionSpan = motion.span;
+
+/**
+ * The press, as *variants* rather than as values.
+ *
+ * A label is the only thing Motion can't reach directly here: `whileTap` listens on
+ * the element it's attached to, and an inner span only covers the text — press the
+ * padding and nothing would happen. So the gesture stays on the button and hands the
+ * state down by name; Motion propagates a variant label to any child that declares
+ * one, which is how the box can own the gesture while the content owns the movement.
+ */
+const PRESS_VARIANTS = {
+  rest: { scale: 1 },
+  pressed: { scale: PRESS_SCALE },
+};
+
+/**
+ * The same content press for the `asChild` path, which can't use Motion — wrapping an
+ * arbitrary child would mean nesting DOM that isn't valid. Same 0.95, driven off the
+ * element's `:active` and the fast duration token, so it collapses under reduced
+ * motion with everything else.
+ */
+const CONTENT_PRESS_CSS =
+  "[&:active_[data-slot=button-content]]:scale-[0.95] motion-reduce:[&:active_[data-slot=button-content]]:scale-100";
+const CONTENT_HELD_CSS =
+  "[&_[data-slot=button-content]]:scale-[0.95] motion-reduce:[&_[data-slot=button-content]]:scale-100";
 
 export function Button({
   className,
@@ -62,6 +98,7 @@ export function Button({
   loadingLabel = "Loading",
   pressScale = true,
   pressed = false,
+  pressTarget = "button",
   disabled,
   children,
   ref,
@@ -70,14 +107,40 @@ export function Button({
   const isDisabled = disabled || loading;
   const icons = iconEdges(children, asChild);
   const reduceMotion = useReducedMotion();
+  const pressesContent = pressScale && pressTarget === "content";
   const innerContent =
     asChild && isValidElement<{ children?: ReactNode }>(children)
       ? children.props.children
       : children;
-  const content = loading ? (
+  const labelled = loading ? (
     <ButtonLoading label={loadingLabel}>{innerContent}</ButtonLoading>
   ) : (
     innerContent
+  );
+  /**
+   * The wrapper only exists when the content is what presses, and it re-establishes
+   * the row the button's own flex was providing — `gap-[inherit]` so the icon keeps
+   * exactly the spacing its size gave it, rather than a second copy of that number.
+   * The spinner stays absolute against the button, since this span isn't positioned.
+   */
+  const content = !pressesContent ? (
+    labelled
+  ) : asChild ? (
+    <span
+      data-slot="button-content"
+      className="inline-flex items-center gap-[inherit] transition-[scale] duration-(--duration-fast) ease-out"
+    >
+      {labelled}
+    </span>
+  ) : (
+    <MotionSpan
+      data-slot="button-content"
+      className="inline-flex items-center gap-[inherit]"
+      variants={PRESS_VARIANTS}
+      transition={spring.press}
+    >
+      {labelled}
+    </MotionSpan>
   );
 
   if (asChild && !isValidElement(children)) {
@@ -112,11 +175,14 @@ export function Button({
         buttonVariants({ variant, size }),
         asChild &&
           pressScale &&
+          !pressesContent &&
           "transition-[background-color,box-shadow,color,opacity,scale] active:scale-[0.95] motion-reduce:active:scale-100",
         // Held state for the CSS-press (`asChild`) path. `scale` is a single CSS
         // property, so this and `active:scale-[0.95]` resolve to one value (0.95) rather
         // than multiplying — no compounding when a held button is pressed to dismiss.
-        asChild && pressScale && pressed && "scale-[0.95] motion-reduce:scale-100",
+        asChild && pressScale && !pressesContent && pressed && "scale-[0.95] motion-reduce:scale-100",
+        asChild && pressesContent && CONTENT_PRESS_CSS,
+        asChild && pressesContent && pressed && CONTENT_HELD_CSS,
         className,
       )}
       disabled={isDisabled}
@@ -136,6 +202,11 @@ export function Button({
         // the native button's press spring. `asChild` uses CSS press feedback because
         // Motion cannot wrap an arbitrary child without creating invalid nested DOM.
         const motionProps = buttonProps as HTMLMotionProps<"button">;
+        // Which *element* moves is the only difference: the button animates the scale
+        // itself, or it names the state and the content span animates it. Same spring
+        // either way, and the gesture stays on the button so the whole hit area
+        // responds, not just the text.
+        const held = pressed && pressScale;
         const pressProps = {
           // While `pressed`, the tap is suppressed and the hold owns the scale — one
           // property (Motion's transform), one spring — so pressing to dismiss doesn't
@@ -143,10 +214,16 @@ export function Button({
           whileTap:
             reduceMotion || isDisabled || pressed || !pressScale
               ? undefined
-              : { scale: PRESS_SCALE },
+              : pressesContent
+                ? "pressed"
+                : { scale: PRESS_SCALE },
           animate: reduceMotion
             ? undefined
-            : { scale: pressed && pressScale ? PRESS_SCALE : 1 },
+            : pressesContent
+              ? held
+                ? "pressed"
+                : "rest"
+              : { scale: held ? PRESS_SCALE : 1 },
           transition: spring.press,
         };
 

@@ -173,13 +173,14 @@ transitively rather than requested directly through `pnpm 4af install`.
 
 ## Full installable UI registry
 
-The following 37 names are accepted by `pnpm 4af install <name>`.
+The following 38 names are accepted by `pnpm 4af install <name>`.
 
 ### Actions
 
 | Install name | Main API | What it provides |
 | --- | --- | --- |
-| `button` | `Button`, `Spinner` | Primary, outline, ghost, plain, destructive, and link variants; text and icon sizes; optical icon spacing; loading without resizing; `asChild`; optional `pressScale={false}` for anchored controls. |
+| `button` | `Button`, `Spinner` | Primary, outline, ghost, plain, destructive, and link variants; text and icon sizes; optical icon spacing; loading without resizing; `asChild`; optional `pressScale={false}` for anchored controls and `pressTarget="content"` for joined ones. |
+| `button-group` | `ButtonGroup` | Joins two or more Buttons into one control: flattened inner corners, one hairline per seam, a single outline around the run, horizontal or vertical, with `variant`/`size` passed down as defaults. |
 | `toggle` | `Toggle` | A Base UI pressed/unpressed control using the Button appearance and sizes, with optional icon-fill behaviour and `pressScale={false}` support. |
 | `morph` | `Morph` | Animated icon or text replacement that reserves the wider state's space and handles reduced motion. |
 | `action-button` | `ActionButton` | Runs asynchronous work and presents idle, pending, success, and error states without changing width. |
@@ -275,6 +276,15 @@ like it moves. The default remains enabled for ordinary buttons.
 ```tsx
 <Button pressScale={false}>Open menu</Button>
 <Toggle pressScale={false} aria-label="Filter" />
+```
+
+Use `pressTarget="content"` instead when the button's edges are joined to something
+else's, so the press scales only the label and icons and the box holds still. Shrinking
+a joined box opens a gap along every seam. `ButtonGroup` sets this on its children
+already; set it by hand only when joining buttons some other way.
+
+```tsx
+<Button pressTarget="content">Save</Button>
 ```
 
 `ActionButton`, `CopyButton`, and `DeleteButton` inherit the same Button prop.
