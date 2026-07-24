@@ -306,10 +306,18 @@ function ToastItem({ toast, stack }: { toast: ToastObject<ToastData>; stack: Toa
         </div>
 
         <BaseToast.Close
-          render={<Button variant="plain" size="icon-sm" aria-label="Dismiss" className="text-muted-foreground" />}
-        >
-          <X />
-        </BaseToast.Close>
+          render={
+            <Button
+              variant="plain"
+              size="icon-sm"
+              pressScale={false}
+              aria-label="Dismiss"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X />
+            </Button>
+          }
+        />
       </div>
     </BaseToast.Root>
   );

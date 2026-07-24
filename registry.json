@@ -535,6 +535,7 @@
       "description": "A slider whose thumb springs between steps and grabs while held. Bar or circle thumb. Base UI behaviour.",
       "dependencies": [
         "@base-ui/react",
+        "lucide-react",
         "motion"
       ],
       "registryDependencies": [

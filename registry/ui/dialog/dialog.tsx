@@ -136,10 +136,11 @@ export function DialogContent({
               <BaseDialog.Close
                 render={
                   <Button
-                    variant="ghost"
+                    variant="plain"
                     size="icon-sm"
+                    pressScale={false}
                     aria-label="Close"
-                    className="absolute top-4 right-4"
+                    className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
                   >
                     <X />
                   </Button>

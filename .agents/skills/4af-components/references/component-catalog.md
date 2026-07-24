@@ -40,7 +40,7 @@ These entries install transitively:
 
 ## Installable catalog
 
-The catalog currently contains 34 installable UI items. Verify the count and names with
+The catalog currently contains 37 installable UI items. Verify the count and names with
 `pnpm 4af list` before making registry-wide claims.
 
 ### Actions

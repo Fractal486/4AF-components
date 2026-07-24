@@ -173,7 +173,7 @@ transitively rather than requested directly through `pnpm 4af install`.
 
 ## Full installable UI registry
 
-The following 36 names are accepted by `pnpm 4af install <name>`.
+The following 37 names are accepted by `pnpm 4af install <name>`.
 
 ### Actions
 
