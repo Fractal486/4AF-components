@@ -1,0 +1,19 @@
+import Link from "next/link";
+import { Button } from "@/registry/ui/button/button";
+
+export const metadata = { title: "Not found — 4AF" };
+
+export default function NotFound() {
+  return (
+    <div className="flex min-h-[60svh] flex-col items-center justify-center gap-3 text-center">
+      <p className="font-mono text-xs tracking-widest text-subtle-foreground uppercase">404</p>
+      <h1 className="text-lg font-medium text-foreground">Nothing to inspect here</h1>
+      <p className="max-w-xs text-sm text-muted-foreground">
+        That route doesn&apos;t match a group in the registry.
+      </p>
+      <Button asChild variant="outline" size="sm" className="mt-3">
+        <Link href="/">Back to the library</Link>
+      </Button>
+    </div>
+  );
+}

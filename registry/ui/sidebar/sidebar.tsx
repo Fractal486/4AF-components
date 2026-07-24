@@ -358,7 +358,13 @@ export function Sidebar({
         className="group peer hidden text-foreground md:block"
         style={{ "--sidebar-width-icon": SIDEBAR_WIDTH_SPLIT_RAIL } as CSSProperties}
         data-state={splitCollapsed ? "collapsed" : "expanded"}
-        data-collapsible={splitCollapsed ? "icon" : ""}
+        // `offcanvas`, not `icon`. The split panel doesn't *become* a rail when it
+        // collapses — the rail is a separate column that never leaves — so the panel just
+        // closes. Reporting `icon` put every label, action and sub-menu inside it on
+        // `display: none` the instant the toggle fired, which emptied the panel in one
+        // frame and left a blank box to shrink. That's the "no animation": the content
+        // was already gone before the width started moving.
+        data-collapsible={splitCollapsed ? "offcanvas" : ""}
         data-variant={variant}
         data-side={side}
         data-slot="sidebar"
@@ -406,13 +412,27 @@ export function Sidebar({
             >
               {rail}
             </div>
+            {/* `visibility` is in the transition list on purpose: it interpolates as a
+                step that holds the *visible* end for the whole duration, so the panel
+                stays on screen while it closes and is only hidden from AT and tab order
+                once it's actually gone. Left out, it flips at frame one and the fade has
+                nothing to fade. `pointer-events-none` isn't transitioned — a panel on its
+                way out should stop taking clicks immediately. */}
             <div
               className={cn(
-                "flex h-full w-(--sidebar-width) shrink-0 flex-col overflow-hidden bg-surface transition-[width] duration-(--duration-slow) ease-out",
-                "group-data-[state=collapsed]:pointer-events-none group-data-[state=collapsed]:invisible group-data-[state=collapsed]:w-0",
+                "flex h-full w-(--sidebar-width) shrink-0 flex-col overflow-hidden bg-surface",
+                "transition-[width,opacity,visibility] duration-(--duration-slow) ease-out",
+                "group-data-[state=collapsed]:pointer-events-none group-data-[state=collapsed]:invisible",
+                "group-data-[state=collapsed]:w-0 group-data-[state=collapsed]:opacity-0",
               )}
             >
-              <div data-slot="sidebar-inner" className="flex h-full w-full flex-col text-foreground">
+              {/* Fixed at the panel's full width rather than `w-full`, so the closing
+                  panel clips it instead of reflowing it. At `w-full` every row re-wraps
+                  its text on the way down to zero, which is far louder than the slide. */}
+              <div
+                data-slot="sidebar-inner"
+                className="flex h-full w-(--sidebar-width) flex-col text-foreground"
+              >
                 {children}
               </div>
             </div>
