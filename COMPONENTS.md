@@ -289,6 +289,38 @@ already; set it by hand only when joining buttons some other way.
 
 `ActionButton`, `CopyButton`, and `DeleteButton` inherit the same Button prop.
 
+### Copy Button resolves its text on press
+
+`CopyButton`'s `value` takes a function as well as a string:
+
+```tsx
+value: string | (() => string | Promise<string>)
+```
+
+Reach for the function form whenever the text isn't already sitting in a variable — it has
+to be assembled from a selection, read off the DOM, or fetched. Computing it eagerly to
+satisfy a `string` means doing that work on every render for a button that may never be
+pressed, and if the work is a request, it means requesting on every state change.
+
+```tsx
+<CopyButton value={() => selected.map((row) => row.url).join("\n")} />
+<CopyButton value={async () => (await fetchDocument(id)).body} />
+```
+
+The pending state resolves this correctly in both directions without configuration: a
+plain string (or a synchronous function) finishes inside `pendingDelay` and goes straight
+to the check mark, while a value that genuinely waits crosses the threshold and shows the
+spinner. A function that throws or rejects lands on the error state and never writes to the
+clipboard, so `onCopy` reports only text that actually got there.
+
+`icon` overrides the resting glyph, for when what's being copied has its own symbol and two
+copy buttons beside each other would otherwise look identical. The success check mark is
+unaffected.
+
+```tsx
+<CopyButton icon={<Link />} value={() => rows.map((r) => r.url).join("\n")} />
+```
+
 ### Disable Badge layout animation in reordering lists
 
 `Badge` animates its pill resizing when its content changes. Set `animateLayout={false}`

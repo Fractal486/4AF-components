@@ -1,7 +1,7 @@
 "use client";
 
 import { Copy } from "lucide-react";
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import {
   ActionButton,
   type ActionButtonProps,
@@ -12,10 +12,30 @@ export interface CopyButtonProps
     ActionButtonProps,
     // `onCopy` is also a native DOM clipboard event on every element, and ours means
     // something else entirely. Drop the DOM one rather than rename around it.
-    "action" | "icon" | "labels" | "announce" | "children" | "onCopy"
+    //
+    // `value` is likewise a native `<button value>` attribute. It was compatible by
+    // accident while ours was a plain string; the function form isn't, and forwarding a
+    // form value through a copy button was never meaningful anyway.
+    "action" | "icon" | "labels" | "announce" | "children" | "onCopy" | "value"
   > {
-  /** The text placed on the clipboard. */
-  value: string;
+  /**
+   * The text placed on the clipboard.
+   *
+   * Pass a function when the text isn't known until the press — when it has to be
+   * assembled from a selection, read off the DOM, or fetched. Doing that work up front to
+   * satisfy a `string` means doing it on every render for a button that may never be
+   * pressed; returning a promise here defers it to the one moment it's needed, and the
+   * button's own pending state covers the wait.
+   */
+  value: string | (() => string | Promise<string>);
+  /**
+   * The resting glyph. Defaults to the copy icon.
+   *
+   * Override it when the thing being copied has its own established symbol — a link, a
+   * key, a coupon code — and two copy buttons side by side would otherwise be
+   * indistinguishable. The success check mark is not affected.
+   */
+  icon?: ReactNode;
   /** Optional label. Without one this is an icon-only button. */
   children?: ReactNode;
   /** Overridable for translation — these are announced, not just displayed. */
@@ -33,12 +53,15 @@ export interface CopyButtonProps
  * and the only thing about copying that's hard is `navigator.clipboard` not existing
  * half the time.
  *
- * The spinner never appears: a clipboard write resolves in about a millisecond, and the
- * `pendingDelay` below outlives it, so the button goes straight from copy to check —
- * which is what actually happened.
+ * For a plain string the spinner never appears: a clipboard write resolves in about a
+ * millisecond, and the `pendingDelay` below outlives it, so the button goes straight from
+ * copy to check — which is what actually happened. A lazy `value` that has to fetch
+ * outlives the same delay and does show it, which is equally honest: the delay separates
+ * "instant" from "actually waiting" rather than hiding the spinner outright.
  */
 export function CopyButton({
   value,
+  icon = <Copy />,
   children,
   labels = { copy: "Copy", copied: "Copied", failed: "Couldn't copy" },
   onCopy,
@@ -47,17 +70,34 @@ export function CopyButton({
   size,
   ...props
 }: CopyButtonProps) {
+  // What actually reached the clipboard, handed to `onCopy` after the fact. A lazy `value`
+  // isn't knowable until the action has run, and `onCopy` fires from `onSuccess` — one
+  // step later — so the resolved text has to survive the gap between them.
+  const copied = useRef("");
+
   return (
     <ActionButton
-      action={() => writeToClipboard(value)}
-      icon={<Copy />}
+      action={async () => {
+        const text = typeof value === "function" ? await value() : value;
+        await writeToClipboard(text);
+        copied.current = text;
+      }}
+      icon={icon}
       variant={variant}
       size={size ?? (children ? "md" : "icon")}
-      // ActionButton shows `pending` on the press frame by default, and it should — a
-      // slow action that doesn't answer the click feels broken. Copying isn't slow. This
-      // is the exception the option exists for: without it, the spinner would appear and
-      // vanish inside a single frame, which reads as a glitch rather than as progress.
-      pendingDelay={250}
+      // Just long enough to tell "already done" from "actually waiting", and no longer.
+      //
+      // A resolved string, or a function that returns one, finishes within a microtask —
+      // far inside this window — so the spinner never appears for a copy that was instant,
+      // which would read as a glitch rather than as progress. Anything that genuinely
+      // waits (a fetch behind a lazy `value`) crosses it and gets the spinner.
+      //
+      // It has to stay small. At a couple of hundred milliseconds it lands *after* the
+      // press spring has settled, so the button visibly finishes its press, sits there,
+      // and only then admits it's working — the delay stops reading as "instant" and
+      // starts reading as lag. 50ms is ~3 frames: below the threshold where a person
+      // perceives a gap at all, and still an eternity next to a microtask.
+      pendingDelay={50}
       // With a label, the label names the button. Without one there's no text at all,
       // so it needs an aria-label — and adding one *as well as* a label would override
       // and silence the visible text.
@@ -67,7 +107,7 @@ export function CopyButton({
       labels={{ success: children ? labels.copied : undefined }}
       announce={{ success: labels.copied, error: labels.failed }}
       onSuccess={() => {
-        onCopy?.(value);
+        onCopy?.(copied.current);
         onSuccess?.();
       }}
       {...props}

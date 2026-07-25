@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 import { ActionButton } from "./action-button";
 
@@ -45,12 +45,12 @@ describe("ActionButton", () => {
       </ActionButton>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    const button = screen.getByRole("button", { name: "Save" });
+    fireEvent.click(button);
 
-    await screen.findByText("Try again");
-    expect(document.querySelector('[data-status="error"]')).toHaveAttribute(
-      "data-status",
-      "error",
-    );
+    // Wait on the status, not on the label. Morph renders every state at once — the
+    // inactive ones as invisible sizers — so "Try again" is in the DOM from the first
+    // render and `findByText` resolves before the action has even rejected.
+    await waitFor(() => expect(button).toHaveAttribute("data-status", "error"));
   });
 });

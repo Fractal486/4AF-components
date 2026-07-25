@@ -12,12 +12,22 @@ export const copyButtonEntry = defineEntry({
     withLabel: bool(false, "Show a label"),
     value: text("npx shadcn@latest add copy-button", "Text to copy"),
     revertAfter: num(2000, { min: 500, max: 5000, step: 500, label: "Revert after (ms)" }),
+    lazy: bool(false, "Fetch the text on press"),
   },
-  render({ variant, size, withLabel, value, revertAfter }) {
+  render({ variant, size, withLabel, value, revertAfter, lazy }) {
     return (
       <CopyButton
         key={withLabel ? "labelled" : "icon"}
-        value={value}
+        // The function form defers the work to the press. Here it also waits, to show the
+        // pending state a real fetch would produce — a plain string never reaches it.
+        value={
+          lazy
+            ? async () => {
+                await new Promise((resolve) => setTimeout(resolve, 900));
+                return value;
+              }
+            : value
+        }
         variant={variant}
         size={withLabel ? undefined : size}
         revertAfter={revertAfter}
