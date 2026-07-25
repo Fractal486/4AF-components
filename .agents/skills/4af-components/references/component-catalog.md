@@ -40,7 +40,7 @@ These entries install transitively:
 
 ## Installable catalog
 
-The catalog currently contains 37 installable UI items. Verify the count and names with
+The catalog currently contains 38 installable UI items. Verify the count and names with
 `pnpm 4af list` before making registry-wide claims.
 
 ### Actions
@@ -48,6 +48,7 @@ The catalog currently contains 37 installable UI items. Verify the count and nam
 | Install name | Main API | Use it for |
 | --- | --- | --- |
 | `button` | `Button`, `Spinner` | Primary, outline, ghost, plain, destructive, link, and icon controls; loading; `asChild`; optional press scaling. |
+| `button-group` | `ButtonGroup` | Joining two or more Buttons into one control: flattened inner corners, one hairline per seam, a single outline around the run, horizontal or vertical. |
 | `toggle` | `Toggle` | Base UI pressed/unpressed controls using Button visuals and sizes. |
 | `morph` | `Morph` | Animated icon or text replacement that reserves stable space. |
 | `action-button` | `ActionButton` | Async actions with idle, pending, success, and error states. |
@@ -113,11 +114,28 @@ These are reusable public features, not separate install names.
 short inline errors. When it describes a field, connect it with `aria-describedby` and
 mark the field invalid.
 
-### Press scaling can be disabled
+### Press scaling can be disabled or retargeted
 
 `Button` and `Toggle` accept `pressScale={false}`. Use it for anchored triggers when
 press resizing would make the attached popup appear to move. `ActionButton`, `CopyButton`,
 and `DeleteButton` inherit the Button prop.
+
+`Button` also accepts `pressTarget="content"`, which keeps the press but moves it to the
+label and icons so the box holds still. Use it when the button's edges are joined to
+something else's, where shrinking the box would open a gap along the seam. `ButtonGroup`
+sets it on its children already; set it by hand only when joining buttons some other way.
+
+### ButtonGroup joins Buttons and takes over their outline
+
+Put plain `Button` children inside `ButtonGroup`; it clones them to apply position
+(which corners flatten), to pass its own `variant`/`size` down as overridable defaults,
+and to retarget the press. The group draws one `shadow-border` around the whole run and
+the buttons drop theirs, so seams are single hairlines rather than two overlapping rings.
+Each variant keeps its standalone hover exactly.
+
+It is `role="group"`, not a toolbar: every button stays its own tab stop. A group whose
+buttons *select* between options is a different widget — use `tabs` or a toggle group,
+which is where roving focus belongs.
 
 ### Badge layout animation can be disabled
 
@@ -181,6 +199,11 @@ include search. Safe pointer travel keeps the parent active while moving into it
 `sidebar` provides low-level default, floating, inset, and split forms; reusable
 collapsible sections; per-row actions; badges; nested rows; search/button headers; and row
 skeletons. Consumers can compose a row action with `dropdown-menu`.
+
+A header takes one full-width `SidebarHeaderButton`, or two side by side when they are
+wrapped in `SidebarHeaderRow`. The row owns the spacing below the title, splits its width
+evenly, and stacks the buttons once the sidebar collapses to icons. A button that should
+keep its own width opts out with `className="flex-none"`.
 
 `sidebar-layout` is an optional installable shell. It adds the content surface, page
 header, left-side collapse control, title, and optional header actions without forcing

@@ -417,7 +417,22 @@ safe pointer corridor.
 
 `sidebar` is the low-level component family. It includes default, floating, inset, and
 split forms; collapsible sections; per-row actions; badges; nested rows; header search or
-button controls; and row skeletons. Menus such as the three-dot action menu are composed
+button controls; and row skeletons. A header holds one full-width `SidebarHeaderButton`,
+or two side by side when they are wrapped in `SidebarHeaderRow`:
+
+```tsx
+<SidebarHeader>
+  <span>Emails</span>
+  <SidebarHeaderRow>
+    <SidebarHeaderButton><Plus />Compose</SidebarHeaderButton>
+    <SidebarHeaderButton variant="outline"><Search />Search</SidebarHeaderButton>
+  </SidebarHeaderRow>
+</SidebarHeader>
+```
+
+The row owns the spacing below the title, splits its width evenly between the buttons, and
+stacks them once the sidebar collapses to icons. A button that should keep its own width
+opts out with `className="flex-none"`. Menus such as the three-dot action menu are composed
 with `dropdown-menu` by the consumer.
 
 `sidebar-layout` is intentionally separate but installable. It is the reusable application

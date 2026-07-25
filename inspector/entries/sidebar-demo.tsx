@@ -23,6 +23,7 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarHeaderButton,
+  SidebarHeaderRow,
   SidebarInput,
   SidebarMenu,
   SidebarMenuAction,
@@ -214,14 +215,24 @@ export function SidebarDemo({
                   <span className="mt-1 flex h-8 items-center px-1 text-sm font-medium text-foreground">
                     Emails
                   </span>
-                  <SidebarHeaderButton
-                    variant="primary"
-                    aria-label="Compose"
-                    onClick={() => setMailSelection("compose")}
-                  >
-                    <Plus />
-                    <span>Compose</span>
-                  </SidebarHeaderButton>
+                  <SidebarHeaderRow>
+                    <SidebarHeaderButton
+                      variant="primary"
+                      aria-label="Compose"
+                      onClick={() => setMailSelection("compose")}
+                    >
+                      <Plus />
+                      <span>Compose</span>
+                    </SidebarHeaderButton>
+                    <SidebarHeaderButton
+                      variant="outline"
+                      aria-label="Search mail"
+                      onClick={() => setMailSelection("inbox")}
+                    >
+                      <Search />
+                      <span>Search</span>
+                    </SidebarHeaderButton>
+                  </SidebarHeaderRow>
                   </SidebarHeader>
                 <SidebarContent>
                   <SidebarGroup>

@@ -687,10 +687,58 @@ export function SidebarInput({ className, ...props }: ComponentProps<typeof Inpu
   );
 }
 
+/**
+ * Whether a header button is sharing its row, which is the one thing it can't work out
+ * for itself: the same button is full width on its own and half of it in a pair, and
+ * the difference is `flex-basis` in one direction versus the other — a lone button that
+ * grew along the header's column axis would stretch to the height of the header.
+ */
+const SidebarHeaderRowContext = createContext(false);
+
+/**
+ * Two header actions side by side, where one would otherwise sit full width.
+ *
+ * The margin a lone button carries moves up here, so the actions sit the same distance
+ * below the title whether there are one or two of them, and the buttons inside split
+ * the width evenly. A button that should stay its own size — an icon beside a labelled
+ * action — opts out with `className="flex-none"`.
+ *
+ * ```tsx
+ * <SidebarHeader>
+ *   <span>Emails</span>
+ *   <SidebarHeaderRow>
+ *     <SidebarHeaderButton><Plus />Compose</SidebarHeaderButton>
+ *     <SidebarHeaderButton variant="outline"><Search />Search</SidebarHeaderButton>
+ *   </SidebarHeaderRow>
+ * </SidebarHeader>
+ * ```
+ */
+export function SidebarHeaderRow({ className, ...props }: ComponentProps<"div">) {
+  return (
+    <SidebarHeaderRowContext.Provider value={true}>
+      <div
+        data-slot="sidebar-header-row"
+        className={cn(
+          "mt-2 flex items-center gap-2",
+          // Nothing in the row may size itself by its label, or a long one pushes the
+          // rest out of the sidebar instead of truncating.
+          "[&>*]:min-w-0",
+          // Collapsed there is no room for two buttons abreast — two 32px squares
+          // against 32px of usable rail — so the row becomes a column and they stack.
+          "group-data-[collapsible=icon]:flex-col",
+          className,
+        )}
+        {...props}
+      />
+    </SidebarHeaderRowContext.Provider>
+  );
+}
+
 export type SidebarHeaderButtonProps = ButtonProps;
 
 /**
- * A full-width primary action placed directly beneath a sidebar header title.
+ * A primary action placed directly beneath a sidebar header title: full width on its
+ * own, an equal share of the row inside a `SidebarHeaderRow`.
  *
  * Its spacing is part of the component contract, matching the inspector's canonical
  * title/action composition. Consumers should not need local margin adjustments.
@@ -701,12 +749,27 @@ export function SidebarHeaderButton({
   size = "sm",
   ...props
 }: SidebarHeaderButtonProps) {
+  const inRow = useContext(SidebarHeaderRowContext);
+
   return (
     <Button
       data-slot="sidebar-header-button"
       variant={variant}
       size={size}
-      className={cn("mt-2 w-full justify-start", className)}
+      className={cn(
+        inRow
+          ? [
+              // An equal share of the row, and centred — the label has too little
+              // width left to read as a row of its own the way a full-width one does.
+              // `flex-1` also clears the Button's `shrink-0`, which would otherwise
+              // hold both buttons at their label width and overflow the sidebar.
+              "flex-1",
+              // Stacked into the rail, each one is a square again.
+              "group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:flex-none",
+            ]
+          : "mt-2 w-full justify-start",
+        className,
+      )}
       {...props}
     />
   );
