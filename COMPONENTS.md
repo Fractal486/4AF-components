@@ -225,7 +225,7 @@ option remains available for a single action.
 | `table-of-contents` | `TableOfContents` | Heading navigation that observes the current section, smooth-scrolls, and slides a marker to the active item. |
 | `separator` | `Separator` | Accessible horizontal or vertical divider built on Base UI Separator. |
 | `command-palette` | `CommandPalette`, custom panel/list/row/action parts, and `useCommandSearch` | Keyboard-first command/search dialog with fuzzy ranking, groups, nested and custom panels, async/server-driven search, header text fields, per-panel header actions, badges, checkboxes, keybinds, destructive actions, and keyboard navigation. |
-| `sidebar` | `SidebarProvider`, `Sidebar`, `SidebarPanel`, menu/group/submenu/action/badge/skeleton parts | Responsive application sidebar with sidebar, floating, inset, split, split-floating, and split-inset layouts; controlled collapse; sections; nested rows; actions; badges; and loading skeletons. |
+| `sidebar` | `SidebarProvider`, `Sidebar`, `SidebarPanel`, `SidebarHeaderButton`, menu/group/submenu/action/badge/skeleton parts | Responsive application sidebar with sidebar, floating, inset, split, split-floating, and split-inset layouts; controlled collapse; sections; nested rows; a canonical full-width primary header action; badges; and loading skeletons. |
 | `sidebar-layout` | `SidebarLayout` | Optional reusable page shell that composes Sidebar with its inset content surface, left-aligned collapse control, page title, and header actions. |
 
 ### Overlays and menus

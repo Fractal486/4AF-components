@@ -3,9 +3,10 @@ import { cva, type VariantProps } from "class-variance-authority";
 /**
  * `status` sets the ink — the glyph and text colour — and it's the same across variants.
  * `solid` wraps it in a translucent pill (a ~10% wash of the same hue plus a hairline
- * border, fully rounded); `outline` is a hollow chip with the Button's `rounded-md`
- * corners and a border but no fill; `bare` drops the box entirely, leaving just the
- * coloured glyph and text. `warning` spends the amber accent (that's what amber is *for*,
+ * border, fully rounded); `outline` is the same pill hollowed out — a border and no
+ * fill. They share the radius on purpose: the two are the same object at two weights,
+ * and a boxier outline reads as a different component rather than a quieter one.
+ * `bare` drops the box entirely, leaving just the coloured glyph and text. `warning` spends the amber accent (that's what amber is *for*,
  * a caution signal) and `success` the green token; tints are translucent so a boxed badge
  * sits on any surface.
  */
@@ -15,7 +16,7 @@ export const badgeVariants = cva(
     variants: {
       variant: {
         solid: "rounded-full border",
-        outline: "rounded-md border",
+        outline: "rounded-full border",
         bare: "",
       },
       status: {

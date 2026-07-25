@@ -10,7 +10,7 @@ export const badgeEntry = defineEntry({
   slug: "badge",
   name: "Badge",
   controls: {
-    // `outline` is a hollow rounded-md chip; `bare` drops the box entirely.
+    // `outline` is the same pill hollowed out; `bare` drops the box entirely.
     variant: select(VARIANTS, "solid"),
     // Changing the status rolls the glyph and label over; changing the label rolls the text.
     status: select(STATUSES, "success"),

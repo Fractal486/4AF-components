@@ -217,7 +217,6 @@ export function SidebarDemo({
                   <SidebarHeaderButton
                     variant="primary"
                     aria-label="Compose"
-                    className="mt-2"
                     onClick={() => setMailSelection("compose")}
                   >
                     <Plus />

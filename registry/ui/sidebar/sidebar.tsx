@@ -689,10 +689,15 @@ export function SidebarInput({ className, ...props }: ComponentProps<typeof Inpu
 
 export type SidebarHeaderButtonProps = ButtonProps;
 
-/** A full-width action that can occupy the same header slot as `SidebarInput`. */
+/**
+ * A full-width primary action placed directly beneath a sidebar header title.
+ *
+ * Its spacing is part of the component contract, matching the inspector's canonical
+ * title/action composition. Consumers should not need local margin adjustments.
+ */
 export function SidebarHeaderButton({
   className,
-  variant = "outline",
+  variant = "primary",
   size = "sm",
   ...props
 }: SidebarHeaderButtonProps) {
@@ -701,7 +706,7 @@ export function SidebarHeaderButton({
       data-slot="sidebar-header-button"
       variant={variant}
       size={size}
-      className={cn("w-full justify-start", className)}
+      className={cn("mt-2 w-full justify-start", className)}
       {...props}
     />
   );
