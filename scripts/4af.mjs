@@ -65,7 +65,11 @@ function parseArgs(args) {
 }
 
 function listComponents() {
-  for (const item of components) {
+  // Sorted here rather than in registry.json: this is a lookup table, and whoever is
+  // reading it already knows the name and only needs to confirm it. The file itself keeps
+  // related items adjacent, which is what helps when editing it.
+  const sorted = [...components].sort((a, b) => a.name.localeCompare(b.name));
+  for (const item of sorted) {
     console.log(`${item.name}\t${item.description ?? ""}`);
   }
 }

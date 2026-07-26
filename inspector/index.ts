@@ -58,12 +58,23 @@ export interface Group {
   stacked?: boolean;
 }
 
-export const groups: Group[] = [
+/**
+ * Everything is sorted by name, groups and the entries inside them, and the list below is
+ * written in whatever order is convenient to edit.
+ *
+ * Nobody arrives at this site to browse a taxonomy. They arrive knowing the name of a
+ * component they already know exists, and the only question is where in the list it is —
+ * so the answer has to be "where the alphabet says", not "wherever it fits conceptually".
+ * Don't restore a grouping here; sorting is the feature.
+ */
+const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name);
+
+const groupList: Group[] = [
   {
     slug: "button",
     name: "Button",
     summary:
-      "The action, several of them joined into one control, the toggle that holds a state, the content swap inside them, and the four buttons built from those — one that reports how it went, one that copies, one whose state has to be earned, and one that asks before it deletes.",
+      "The action, several of them joined into one control, the toggle that holds a state, and the content swap inside them — plus the four built from those: one that reports how it went, one that copies, one whose state has to be earned, and one that asks before it deletes.",
     entries: [
       buttonEntry,
       buttonGroupEntry,
@@ -187,7 +198,7 @@ export const groups: Group[] = [
     slug: "dialog",
     name: "Dialog",
     summary:
-      "A modal centred over the page. The plain dialog scales in from a blur and can be phased with step navigation; the alert dialog is its decision-forcing sibling — same surface, but it can't be dismissed by clicking away.",
+      "A modal centred over the page, on the same surface either way. The alert dialog forces a decision and can't be dismissed by clicking away; the plain dialog scales in from a blur and can be phased with step navigation.",
     entries: [dialogEntry, alertDialogEntry],
     stacked: true,
   },
@@ -240,6 +251,10 @@ export const groups: Group[] = [
     entries: [sheetEntry],
   },
 ];
+
+export const groups: Group[] = groupList
+  .map((group) => ({ ...group, entries: [...group.entries].sort(byName) }))
+  .sort(byName);
 
 export function getGroup(slug: string): Group | undefined {
   return groups.find((group) => group.slug === slug);
