@@ -76,11 +76,36 @@ const SearchContext = createContext<SearchContextValue>({
   iconFor: () => undefined,
 });
 
+/**
+ * The icon an item carries on itself.
+ *
+ * An item registers its icon when it mounts, and that's when the panel first opens — so
+ * the registry is guaranteed *empty* at the one moment the closed field first paints, and
+ * populated ever after. That failure hides itself: it looks right the moment you click to
+ * check, and it's wrong on every cold load.
+ *
+ * The way out is different here than in the Base UI `Select`. A Combobox item *is* its
+ * value — `<SearchSelectItem value={item}>` — so there's no key to look up in a separate
+ * `items` mapping; the data is already in hand. Reading `icon` off it extends the shape
+ * Base UI already recognises, which treats `{ value, label }` specially for display and
+ * form submission.
+ *
+ * So an icon put on the item data resolves on first paint. One put only on
+ * `<SearchSelectItem icon={…}>` cannot: nothing outside the popup has seen it yet.
+ */
+function iconFromValue(value: unknown): ReactNode | undefined {
+  if (typeof value !== "object" || value === null) return undefined;
+  return (value as { icon?: ReactNode }).icon;
+}
+
 export interface SearchSelectProps<
   Value,
   Multiple extends boolean | undefined = false,
 > extends Omit<ComponentProps<typeof Combobox.Root<Value, Multiple>>, "children"> {
-  /** Resolves the icon shown in the closed single-select value. */
+  /**
+   * Resolves the icon shown in the closed single-select value — for icons that are
+   * computed rather than carried. Items that hold their own `icon` need no function.
+   */
   iconForValue?: (value: Value) => ReactNode | undefined;
   /** Compact 32px (`sm`, default) or the 36px form-row size (`md`). @default "sm" */
   size?: SelectSize;
@@ -124,10 +149,15 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
       return next;
     });
   }, []);
+  // A registered icon (from a mounted item) wins; then a computed one; then the icon the
+  // value carries — the only one of the three that can answer before the panel has ever
+  // been opened.
   const iconFor = useCallback(
     (value: unknown) =>
       icons.get(value) ??
-      (value == null ? undefined : iconForValue?.(value as Value)),
+      (value == null
+        ? undefined
+        : (iconForValue?.(value as Value) ?? iconFromValue(value))),
     [iconForValue, icons],
   );
   const [closedRegistryCleared, setClosedRegistryCleared] = useState(

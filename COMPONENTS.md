@@ -465,9 +465,22 @@ then, which is why the label reads from it too. Use `iconForValue` instead when 
 is computed rather than declared. Resolution order is the mounted item, then
 `iconForValue`, then `items`.
 
-The Combobox-based `select-search` and `select-motion-search` are not affected: their
-value *is* the item object, so `iconForValue={(item) => item.icon}` already resolves
-before mount.
+`select-search` and `select-motion-search` need the same thing for the same reason, but
+get it a different way. They're Combobox-based, so an item *is* its value
+(`<SearchSelectItem value={item}>`) — there's no key to look up in a separate mapping.
+Put the icon on the item data and the closed field resolves it on first paint:
+
+```tsx
+const fruits = [{ value: "apple", label: "Apple", icon: <Apple /> }];
+
+<SearchSelect items={fruits} defaultValue={fruits[0]}>
+```
+
+No type change is needed — Base UI types Combobox `items` as `readonly any[]` — and the
+convention extends the `{ value, label }` shape Base UI already treats specially. An icon
+passed only to `<SearchSelectItem icon={…}>` still can't resolve before mount, because
+nothing outside the popup has seen it. Resolution order in both is the mounted item, then
+`iconForValue`, then the value's own `icon`.
 
 Every implementation takes `size="sm" | "md"` (default `sm`). `sm` is the compact 32px
 size (12px text, 14px glyphs); `md` is 36px and matches Button `md` and the Input for form

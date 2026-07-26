@@ -220,9 +220,21 @@ why the label reads from it too. Resolution order is mounted item, then `iconFor
 (for computed icons), then `items`. Only the array form of `items` carries icons — the
 record form is `{ value: label }`.
 
-`select-search` and `select-motion-search` do not need this: they are Combobox-based, the
-value *is* the item object, and `iconForValue={(item) => item.icon}` resolves before
-mount.
+`select-search` and `select-motion-search` need the same thing by a different route. They
+are Combobox-based, so an item *is* its value (`<SearchSelectItem value={item}>`) and
+there is no separate mapping to look up — put `icon` on the item data instead:
+
+```tsx
+const fruits = [{ value: "apple", label: "Apple", icon: <Apple /> }];
+<SearchSelect items={fruits} defaultValue={fruits[0]}>
+```
+
+Do not widen their `items` type or add an `iconFromItems` keyed on `item.value`: Base UI
+types Combobox `items` as `readonly any[]` so the icon already type-checks, and a lookup
+by `item.value` would never match, because the value is the whole object. An icon passed
+only to `<SearchSelectItem icon={…}>` cannot resolve before mount in any of the three.
+Resolution order everywhere: mounted item, then `iconForValue`, then `items`/the value's
+own `icon`.
 
 ### Command Palette is a component family
 

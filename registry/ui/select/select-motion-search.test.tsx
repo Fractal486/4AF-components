@@ -280,4 +280,30 @@ describe("Motion Search Select", () => {
       expect(input.parentElement?.querySelector('[data-testid="dynamic-fruit-icon"]')).not.toBeInTheDocument(),
     );
   });
+
+  it("shows a preselected value's icon before the panel has ever mounted", () => {
+    const withIcons = [
+      { ...FRUITS[0], icon: <span data-testid="apple-icon" /> },
+      { ...FRUITS[1], icon: <span data-testid="mango-icon" /> },
+    ];
+    type IconFruit = (typeof withIcons)[number];
+
+    const { container } = render(
+      <MotionSearchSelect<IconFruit> items={withIcons} defaultValue={withIcons[0]}>
+        <MotionSearchSelectInput aria-label="Fruit" placeholder="Search fruit" />
+        <MotionSearchSelectContent emptyMessage="No fruit found.">
+          {(item: IconFruit) => (
+            <MotionSearchSelectItem key={item.value} value={item} icon={item.icon}>
+              {item.label}
+            </MotionSearchSelectItem>
+          )}
+        </MotionSearchSelectContent>
+      </MotionSearchSelect>,
+    );
+
+    // No click first: an item registers its icon when the popup mounts, so this is the
+    // one render where only the value's own `icon` can answer — and it's every cold load.
+    expect(container.querySelector('[data-testid="apple-icon"]')).toBeInTheDocument();
+    expect(container.querySelector('[data-testid="mango-icon"]')).not.toBeInTheDocument();
+  });
 });

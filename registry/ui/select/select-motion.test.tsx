@@ -157,4 +157,32 @@ describe("Motion Select", () => {
     fireEvent.change(input, { target: { value: "zzz" } });
     expect(screen.getByText("No results.")).toBeInTheDocument();
   });
+
+  it("shows a preselected value's icon and label without ever opening", () => {
+    render(
+      <Select defaultValue="apple">
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="apple" icon={<span data-testid="apple-icon" />}>
+            Apple
+          </SelectItem>
+          <SelectItem value="mango" icon={<span data-testid="mango-icon" />}>
+            Mango
+          </SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    // This one needs no `items` mapping, and that is not an oversight: the panel is
+    // inline and always mounted (it animates between show and hidden rather than being
+    // conditionally rendered), so items register their icons and labels on the first
+    // render. Make the panel conditional and this breaks — which is what this pins.
+    // The aria-label is the accessible name; the label text is the trigger's content.
+    const trigger = screen.getByRole("button", { name: "Fruit" });
+    expect(trigger.querySelector('[data-testid="apple-icon"]')).toBeInTheDocument();
+    expect(trigger).toHaveTextContent("Apple");
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+  });
 });
