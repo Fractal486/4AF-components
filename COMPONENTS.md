@@ -468,6 +468,28 @@ Single- and multi-select panels can include in-panel search. Their parent highli
 active while the pointer is on the parent, inside the nested panel, or moving through the
 safe pointer corridor.
 
+A checkbox item can also read as a toggle button rather than a ticked row. Its `children`
+may be a function of the checked state, and `indicator={false}` drops the left tick and
+its indent, so the state is carried by the icon and label instead:
+
+```tsx
+<DropdownMenuCheckboxItem indicator={false}>
+  {(checked) => (
+    <>
+      <Morph activeKey={checked ? "on" : "off"} items={{ on: <BellOff />, off: <Bell /> }} />
+      <Morph activeKey={checked ? "on" : "off"} items={{ on: "Unmute", off: "Mute" }} />
+    </>
+  )}
+</DropdownMenuCheckboxItem>
+```
+
+Use `fillIcon` instead when the glyph doesn't change shape — a bookmark, star, or heart
+only changes weight, so there is nothing to morph *to* and it becomes a `fill` transition
+on the one element. Either way the row keeps its `menuitemcheckbox` semantics.
+
+Rows left-align any `Morph` inside them, so a shorter label doesn't sit indented in the
+width reserved for the longer one. Don't pass `place-items-start` at the call site.
+
 ### Sidebar composition and layout
 
 `sidebar` is the low-level component family. It includes default, floating, inset, and

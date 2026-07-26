@@ -65,9 +65,6 @@ export const dropdownMenuEntry = defineEntry({
               <>
                 <Bookmark />
                 <Morph
-                  // Left-align both states (the shorter one would otherwise sit centred
-                  // in the reserved width of the longer).
-                  className="place-items-start"
                   activeKey={checked ? "on" : "off"}
                   items={{ on: "Bookmarked", off: "Bookmark" }}
                 />

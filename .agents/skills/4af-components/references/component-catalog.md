@@ -228,6 +228,17 @@ The `dropdown-menu` item includes the original navigation submenu, a single-sele
 with a trailing checkmark, and a checkbox-based multi-select panel. Selection panels can
 include search. Safe pointer travel keeps the parent active while moving into its panel.
 
+### A checkbox item can read as a toggle button
+
+`DropdownMenuCheckboxItem` takes `children` as a function of the checked state, and
+`indicator={false}` drops the left tick and its indent, so the icon and label carry the
+state instead. Wrap each swapping part in `Morph` (Mute ⇄ Unmute with a different glyph);
+use `fillIcon` instead when the glyph only changes weight (bookmark, star, heart) and
+there is nothing to morph to. Semantics stay `menuitemcheckbox` either way.
+
+Rows already left-align any `Morph` inside them — do not add `place-items-start` at the
+call site.
+
 ### Sidebar and layout are separate
 
 `sidebar` provides low-level default, floating, inset, and split forms; reusable

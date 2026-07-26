@@ -267,6 +267,12 @@ const itemBase = cn(
   // Size/inert every glyph, but only mute the *leading* icons (direct children) — the
   // nested check/dot indicators keep the item's foreground ink.
   "[&_svg]:pointer-events-none [&_svg]:size-3.5 [&_svg]:shrink-0 [&>svg]:text-muted-foreground",
+  // A Morph reserves the width of its widest state and centres inside it, which is right
+  // for a button and wrong here: in a left-aligned row the shorter label would sit
+  // indented, so a toggling item looks misaligned in one state only. Start-alignment is
+  // always correct inside a row, so the row decides it rather than every call site
+  // remembering to.
+  "[&_[data-slot=morph]]:place-items-start",
 );
 
 const selectItemBase = cn(
