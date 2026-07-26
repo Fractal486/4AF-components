@@ -535,7 +535,7 @@ export function SelectTrigger({
               "w-full justify-between border border-border bg-surface px-3.5",
               "hover:border-border-strong data-[popup-open]:border-border-strong",
               // Invalid mirrors the Input's treatment — red border + 3px red ring — so a
-              // select in a form reads its error the same way. Pair with `FieldError`.
+              // select in a form reads its error the same way. Pair with `Alert`.
               "aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",
             )
           : "w-auto justify-between gap-1.5 px-0",

@@ -1,4 +1,4 @@
-import { FieldError } from "@/registry/ui/field-error/field-error";
+import { Alert } from "@/registry/ui/alert/alert";
 import { Input } from "@/registry/ui/input/input";
 import { bool, defineEntry, select, text } from "../schema";
 
@@ -30,7 +30,7 @@ export const inputEntry = defineEntry({
           aria-describedby={invalid ? "input-error" : undefined}
           aria-label="Input preview"
         />
-        {invalid && <FieldError id="input-error">Please enter a valid value.</FieldError>}
+        {invalid && <Alert id="input-error">Please enter a valid value.</Alert>}
       </div>
     );
   },

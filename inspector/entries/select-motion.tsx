@@ -1,4 +1,4 @@
-import { FieldError } from "@/registry/ui/field-error/field-error";
+import { Alert } from "@/registry/ui/alert/alert";
 import {
   Select,
   SelectContent,
@@ -89,7 +89,7 @@ export const selectMotionEntry = defineEntry({
             </SelectContent>
           </Select>
         )}
-        {invalid && <FieldError id="select-motion-error">Please choose an option.</FieldError>}
+        {invalid && <Alert id="select-motion-error">Please choose an option.</Alert>}
       </div>
     );
   },

@@ -1,4 +1,4 @@
-import { FieldError } from "@/registry/ui/field-error/field-error";
+import { Alert } from "@/registry/ui/alert/alert";
 import { Textarea } from "@/registry/ui/textarea/textarea";
 import { bool, defineEntry, select, text } from "../schema";
 
@@ -27,7 +27,7 @@ export const textareaEntry = defineEntry({
           aria-label="Textarea preview"
           rows={4}
         />
-        {invalid && <FieldError id="textarea-error">Please enter a valid value.</FieldError>}
+        {invalid && <Alert id="textarea-error">Please enter a valid value.</Alert>}
       </div>
     );
   },

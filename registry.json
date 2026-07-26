@@ -330,19 +330,28 @@
       ]
     },
     {
-      "name": "field-error",
+      "name": "alert",
       "type": "registry:ui",
-      "description": "A field error message \u2014 the hexagon alert glyph plus the reason, in destructive red. role=alert, sits below the control.",
-      "dependencies": [],
+      "description": "An inline status line \u2014 a glyph plus a sentence, no surface. Destructive error (role=alert), amber warning, green success, neutral info, and a muted loading line with the ASCII spinner.",
+      "dependencies": [
+        "class-variance-authority",
+        "lucide-react"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/ascii-loader.json"
       ],
       "files": [
         {
-          "path": "registry/ui/field-error/field-error.tsx",
+          "path": "registry/ui/alert/alert.tsx",
           "type": "registry:ui",
-          "target": "@ui/field-error.tsx"
+          "target": "@ui/alert.tsx"
+        },
+        {
+          "path": "registry/ui/alert/alert.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/alert.variants.ts"
         }
       ]
     },

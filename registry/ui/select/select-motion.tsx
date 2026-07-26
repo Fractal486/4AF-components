@@ -393,7 +393,7 @@ export function SelectTrigger({ className, children, ...aria }: SelectTriggerPro
         "relative z-10 flex w-full cursor-pointer items-center justify-between gap-2 rounded-md border border-border bg-surface px-3.5 text-foreground outline-none transition-colors",
         SIZE[ctx.size].field,
         "hover:border-border-strong focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        // Invalid mirrors the Input's treatment — red border + 3px red ring. Pair with `FieldError`.
+        // Invalid mirrors the Input's treatment — red border + 3px red ring. Pair with `Alert`.
         "aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",
         "disabled:pointer-events-none disabled:opacity-50",
         className,

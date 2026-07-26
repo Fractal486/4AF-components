@@ -1,4 +1,4 @@
-import { FieldError } from "@/registry/ui/field-error/field-error";
+import { Alert } from "@/registry/ui/alert/alert";
 import {
   SearchMultiSelectItem,
   SearchSelect,
@@ -90,7 +90,7 @@ export const selectSearchEntry = defineEntry({
             </SearchSelectContent>
           </SearchSelect>
         )}
-        {invalid && <FieldError id="select-search-error">Please choose an option.</FieldError>}
+        {invalid && <Alert id="select-search-error">Please choose an option.</Alert>}
       </div>
     );
   },

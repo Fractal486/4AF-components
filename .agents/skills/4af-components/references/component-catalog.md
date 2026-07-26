@@ -61,7 +61,6 @@ The catalog currently contains 38 installable UI items. Verify the count and nam
 | --- | --- | --- |
 | `input` | `Input` | Default, plain, and underline fields; number steppers; invalid/disabled states. |
 | `textarea` | `Textarea` | Matching multiline fields with an optional custom resize grip. |
-| `field-error` | `FieldError` | Standalone inline error feedback with `role="alert"`; not tied to field context. |
 | `switch` | `Switch` | Binary on/off state with a sliding, press-squishing thumb. |
 | `checkbox` | `Checkbox` | Boolean or indeterminate selection with animated tick and optional label. |
 | `radio` | `RadioGroup`, `Radio` | Single-choice selection groups. |
@@ -76,6 +75,7 @@ The catalog currently contains 38 installable UI items. Verify the count and nam
 | Install name | Main API | Use it for |
 | --- | --- | --- |
 | `progress` | `Progress`, `ProgressLabel`, `ProgressValue` | Determinate progress with transform-driven fill. |
+| `alert` | `Alert` | Inline status line (glyph + sentence, no surface): `error` (hexagon, `role="alert"`), `warning` (amber triangle), `success` (green check), `info` (neutral), `loading` (muted ASCII spinner); not tied to field context. |
 | `badge` | `Badge` | Outline/status labels with optional icon or dot and animated content changes. |
 | `skeleton` | `Skeleton` | Generic loading placeholders; animation respects reduced motion. |
 | `empty` | `Empty` and composition parts | Empty states with optional dashed placeholder treatment. |
@@ -108,11 +108,30 @@ The catalog currently contains 38 installable UI items. Verify the count and nam
 
 These are reusable public features, not separate install names.
 
-### FieldError is general-purpose
+### Alert is the general inline status line
 
-`field-error` has no field-provider dependency. Use it for field, form, save, or other
-short inline errors. When it describes a field, connect it with `aria-describedby` and
-mark the field invalid.
+`alert` carries no surface and no field context. Use it for field, form, save, or other
+short inline status anywhere. When it describes a field, connect it with
+`aria-describedby` and mark the field invalid.
+
+| Variant | Ink | Glyph | Role |
+| --- | --- | --- | --- |
+| `error` (default) | Destructive | Hexagon alert | `alert` |
+| `warning` | Amber accent | Lucide triangle | `status` |
+| `success` | Success green | Lucide check | `status` |
+| `info` | Foreground ink | Lucide info | `status` |
+| `loading` | Muted grey | ASCII spinner | `status` |
+
+Only `error` interrupts; the rest are polite. The two neutrals differ by weight, not hue:
+`info` is a note meant to be read, `loading` is muted because it is not yet an outcome. Do
+not fake a variant by restyling another one — the role and glyph would not follow the
+colour. Reach for `badge` when the status is a label on a row rather than a sentence, and
+for `toast` when it should arrive over the page. Installing `alert` pulls in
+`ascii-loader`.
+
+**Renamed.** This was `FieldError` / `field-error`. The file exports a deprecated
+`FieldError` alias so old call sites compile, but the install name is now `alert` — do not
+tell a user to `pnpm 4af install field-error`.
 
 ### Press scaling can be disabled or retargeted
 

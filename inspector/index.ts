@@ -1,4 +1,5 @@
 import { actionButtonEntry } from "./entries/action-button";
+import { alertEntry } from "./entries/alert";
 import { alertDialogEntry } from "./entries/alert-dialog";
 import { badgeEntry } from "./entries/badge";
 import { buttonEntry } from "./entries/button";
@@ -10,7 +11,6 @@ import { deleteButtonEntry } from "./entries/delete-button";
 import { dialogEntry } from "./entries/dialog";
 import { dropdownMenuEntry } from "./entries/dropdown-menu";
 import { emptyEntry } from "./entries/empty";
-import { fieldErrorEntry } from "./entries/field-error";
 import { hoverCardEntry } from "./entries/hover-card";
 import { inputEntry } from "./entries/input";
 import { morphEntry } from "./entries/morph";
@@ -78,7 +78,7 @@ export const groups: Group[] = [
     slug: "input",
     name: "Input",
     summary: "A native text field backed by Base UI, and the taller textarea that shares its treatment.",
-    entries: [inputEntry, textareaEntry, fieldErrorEntry],
+    entries: [inputEntry, textareaEntry],
     stacked: true,
   },
   {
@@ -123,6 +123,13 @@ export const groups: Group[] = [
     name: "Badge",
     summary: "A status label that rolls its glyph and text over when the status changes.",
     entries: [badgeEntry],
+  },
+  {
+    slug: "alert",
+    name: "Alert",
+    summary:
+      "An inline status line — glyph and sentence, no surface. Error, warning, success, info, and a loading line that spins.",
+    entries: [alertEntry],
   },
   {
     slug: "skeleton",

@@ -193,7 +193,6 @@ The following 38 names are accepted by `pnpm 4af install <name>`.
 | --- | --- | --- |
 | `input` | `Input` | Base UI input with default, plain, and underline structures; neutral or accent focus; invalid and disabled states; custom number steppers. |
 | `textarea` | `Textarea` | Multiline field matching Input, with an optional pointer-captured corner resize grip. |
-| `field-error` | `FieldError` | Standalone destructive error line with a hexagon icon and `role="alert"`. It renders nothing for an empty message and is not tied to a field context. |
 | `switch` | `Switch` | Base UI switch with a sliding, press-squishing thumb and adaptive or fixed tone. |
 | `checkbox` | `Checkbox` | Base UI checkbox with an animated drawn tick, controlled/uncontrolled state, and an optional click-target label. |
 | `radio` | `RadioGroup`, `Radio` | Single-choice Base UI radio group with the Checkbox family's geometry and an animated dot. |
@@ -208,6 +207,7 @@ The following 38 names are accepted by `pnpm 4af install <name>`.
 | Install name | Main API | What it provides |
 | --- | --- | --- |
 | `progress` | `Progress`, `ProgressLabel`, `ProgressValue` | Determinate Base UI progress bar whose fill moves with transform rather than animated width. |
+| `alert` | `Alert` | Inline status line — glyph plus sentence, no surface — in five variants: destructive `error` (hexagon, `role="alert"`), amber `warning` (triangle), green `success` (check), neutral `info`, and muted `loading` (ASCII spinner); the last four are `role="status"`. Renders nothing for an empty message and is tied to no field context. |
 | `badge` | `Badge` | Status badge with outline/status treatments, optional icon or dot, and animated label/glyph changes. |
 | `skeleton` | `Skeleton` | Generic loading placeholder sized by normal utility classes; its pulse is disabled for reduced motion. |
 | `empty` | `Empty` and its header, media, title, description, and content parts | Composable empty state, borderless by default with an optional dashed placeholder treatment. |
@@ -244,18 +244,48 @@ option remains available for a single action.
 
 These are real reusable features, but they are not separate registry install names.
 
-### FieldError can be used anywhere
+### Alert is the general inline status line
 
-`field-error` is an installable registry component despite not currently having its own
-inspector page. Its name describes the common use, not a technical restriction. It has no
-field-provider dependency, so it can also present a save error, form error, or another
-short inline error message.
+`alert` carries no surface of its own — no panel, no border, no padding beyond the space
+above it — and has no field context. That is what lets the same line report a failed save,
+a passing check, or work in progress anywhere a short status belongs.
 
 ```tsx
-import { FieldError } from "@/components/ui/field-error";
+import { Alert } from "@/components/ui/alert";
 
-<FieldError>Could not save your changes.</FieldError>
+<Alert>Could not save your changes.</Alert>
+<Alert variant="warning">Sending will notify all 240 members.</Alert>
+<Alert variant="success">Changes saved.</Alert>
+<Alert variant="info">We'll only use this to send receipts.</Alert>
+<Alert variant="loading">Checking availability…</Alert>
 ```
+
+| Variant | Ink | Glyph | Announced as |
+| --- | --- | --- | --- |
+| `error` (default) | Destructive red | Hexagon alert | `role="alert"` |
+| `warning` | Amber accent | Lucide triangle | `role="status"` |
+| `success` | Success green | Lucide check | `role="status"` |
+| `info` | Foreground ink | Lucide info | `role="status"` |
+| `loading` | Muted grey | ASCII spinner | `role="status"` |
+
+The inks are Badge's status colours value for value, so a line under a field and a badge
+beside it read as one severity. The two neutrals differ by weight, not hue: `info` is
+full-strength ink because it is a note meant to be read, `loading` is muted because work
+in progress is not yet an outcome.
+
+Only the error interrupts. `role="alert"` is right for something that has just stopped the
+user; a caution, a confirmation, a note, or a progress line is `role="status"` and waits
+for a pause, rather than cutting across whatever the user was being told. The loading
+spinner stays out of the accessibility tree entirely — the line beside it is the
+announcement, so a live region of its own would say "Loading" over the sentence explaining
+what is loading.
+
+The glyph always occupies the same 14px slot, so a line that moves through the states —
+checking, then saved or failed — swaps its glyph without the text shifting sideways.
+Installing `alert` brings `ascii-loader` with it.
+
+Reach for `badge` when the status is a label on a row rather than a sentence, and for
+`toast` when it should arrive over the page rather than live in it.
 
 When it describes a specific field, connect it to that field for assistive technology:
 
@@ -264,8 +294,12 @@ When it describes a specific field, connect it to that field for assistive techn
   aria-invalid={Boolean(error)}
   aria-describedby={error ? "email-error" : undefined}
 />
-<FieldError id="email-error">{error}</FieldError>
+<Alert id="email-error">{error}</Alert>
 ```
+
+This component was called `FieldError` and installed as `field-error`. `Alert` is exported
+alongside a deprecated `FieldError` alias, so existing call sites keep working; the install
+name has changed outright.
 
 ### Disable press scaling when needed
 
