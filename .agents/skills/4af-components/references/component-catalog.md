@@ -37,21 +37,23 @@ These entries install transitively:
 | `cn` | Class composition through `clsx` and `tailwind-merge`. |
 | `slot` | Local helper for `asChild` composition. |
 | `motion` | Shared Motion spring and easing presets. |
+| `use-action` | `useAction` — the run/pending/outcome/revert machine behind `ActionButton`, `ActionToggle`, and `DropdownMenuActionItem`. Use it directly for a transient confirmation on something that is neither. |
 
 ## Installable catalog
 
-The catalog currently contains 38 installable UI items. Verify the count and names with
+The catalog currently contains 39 installable UI items. Verify the count and names with
 `pnpm 4af list` before making registry-wide claims.
 
 ### Actions
 
 | Install name | Main API | Use it for |
 | --- | --- | --- |
-| `button` | `Button`, `Spinner` | Primary, outline, ghost, plain, destructive, link, and icon controls; loading; `asChild`; optional press scaling. |
+| `button` | `Button` | Primary, outline, ghost, plain, destructive, link, and icon controls; loading; `asChild`; optional press scaling. |
 | `button-group` | `ButtonGroup` | Joining two or more Buttons into one control: flattened inner corners, one hairline per seam, a single outline around the run, horizontal or vertical. |
 | `toggle` | `Toggle` | Base UI pressed/unpressed controls using Button visuals and sizes. |
 | `morph` | `Morph` | Animated icon or text replacement that reserves stable space. |
-| `action-button` | `ActionButton` | Async actions with idle, pending, success, and error states. |
+| `action-button` | `ActionButton` | Async actions with idle, pending, success, and error states, then a revert to idle. |
+| `action-toggle` | `ActionToggle` | An async toggle: waits on the action, lands when it succeeds, stays put when it fails. Follow/Following, Subscribe/Subscribed. |
 | `copy-button` | `CopyButton` | Clipboard actions with visual and screen-reader confirmation. |
 | `delete-button` | `DeleteButton` | Quiet destructive, two-step confirmation with Escape, blur, and timeout disarming. |
 
@@ -132,6 +134,29 @@ for `toast` when it should arrive over the page. Installing `alert` pulls in
 **Renamed.** This was `FieldError` / `field-error`. The file exports a deprecated
 `FieldError` alias so old call sites compile, but the install name is now `alert` — do not
 tell a user to `pnpm 4af install field-error`.
+
+### Async work always looks the same
+
+Every waiting state is the ASCII loader: `Button`'s `loading`, `ActionButton` and
+`ActionToggle` while pending, `DropdownMenuActionItem`, the command palette, and Alert's
+`loading`. `Button` still exports a deprecated SVG `Spinner`; do not reach for it.
+
+Pick by what happens *after* the work:
+
+| Outcome | Use |
+| --- | --- |
+| Reverts to how it was | `action-button` (or `copy-button` for the clipboard) |
+| Lands in a new state and stays | `action-toggle` |
+| Runs inside a menu, confirms in place | `DropdownMenuActionItem` |
+| Anything else | `useAction` directly |
+
+`ActionButton` cannot be made to stay: `revertAfter={Infinity}` clamps to a 32-bit int and
+reverts almost immediately. `ActionToggle` is a separate component because the landing
+state is `aria-pressed` — the same reason `Toggle` is not a `Button` prop.
+
+`ActionToggle` is deliberately not optimistic: the label holds and the loader runs until
+the action settles, and `onPressedChange` fires only on success. A failure needs no
+rollback because nothing moved.
 
 ### Press scaling can be disabled or retargeted
 
@@ -236,8 +261,20 @@ state instead. Wrap each swapping part in `Morph` (Mute ⇄ Unmute with a differ
 use `fillIcon` instead when the glyph only changes weight (bookmark, star, heart) and
 there is nothing to morph to. Semantics stay `menuitemcheckbox` either way.
 
-Rows already left-align any `Morph` inside them — do not add `place-items-start` at the
-call site.
+Rows already left-align any `Morph` inside them and mute a morphing leading icon to match
+a plain one — do not add `place-items-start` or a text colour at the call site.
+
+### A row can run something and confirm it in place
+
+`DropdownMenuActionItem` is the menu's Action Button: `action`, `labels`, `icons`,
+`revertAfter`, `pendingDelay`, `announce`, `onSuccess`, `onError`. "Copy link" → "Copied"
+with a check, then back. It defaults to `closeOnClick={false}`, since a row otherwise
+closes the menu and the outcome is never seen; override that only when the result is
+visible on the page behind the menu.
+
+Do not hand-roll this with `useState` and `setTimeout` — the shared `useAction` machine
+handles the double-submit guard, the revert clock each run owns, and the async resolve
+that must not land on an unmounted component.
 
 ### Sidebar and layout are separate
 

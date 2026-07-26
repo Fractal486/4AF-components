@@ -1,7 +1,7 @@
 "use client";
 
 import { Menu as BaseMenu } from "@base-ui/react/menu";
-import { Check, ChevronRight, Search } from "lucide-react";
+import { Check, ChevronRight, Search, TriangleAlert } from "lucide-react";
 import {
   createContext,
   useCallback,
@@ -14,6 +14,8 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
+import { useAction } from "@/registry/lib/use-action";
+import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Input } from "@/registry/ui/input/input";
 import { Morph } from "@/registry/ui/morph/morph";
@@ -267,6 +269,14 @@ const itemBase = cn(
   // Size/inert every glyph, but only mute the *leading* icons (direct children) — the
   // nested check/dot indicators keep the item's foreground ink.
   "[&_svg]:pointer-events-none [&_svg]:size-3.5 [&_svg]:shrink-0 [&>svg]:text-muted-foreground",
+  // A morphing icon is a leading icon too, and the rule above misses it: `Morph` wraps
+  // its content in a span, so the glyph is a grandchild and inherits the row's full-ink
+  // `text-foreground` instead — one row's icon brighter than every other row's, for no
+  // reason the user could name. Matching through a direct-child Morph puts it back.
+  //
+  // Still scoped to direct children, so the check and dot indicators are untouched: both
+  // sit inside an absolutely positioned span, and they're meant to read at full ink.
+  "[&>[data-slot=morph]_svg]:text-muted-foreground",
   // A Morph reserves the width of its widest state and centres inside it, which is right
   // for a button and wrong here: in a left-aligned row the shorter label would sit
   // indented, so a toggling item looks misaligned in one state only. Start-alignment is
@@ -380,6 +390,112 @@ export function DropdownMenuItem({
     >
       {children}
     </BaseMenu.Item>
+  );
+}
+
+export interface DropdownMenuActionItemProps
+  extends Omit<DropdownMenuItemProps, "onClick" | "children"> {
+  /** The work. Return a promise and the row waits for it. */
+  action: () => void | Promise<unknown>;
+  /** The resting label. */
+  children?: ReactNode;
+  /** The resting glyph. */
+  icon?: ReactNode;
+  /** Labels per state. Each falls back to the resting label. */
+  labels?: { pending?: ReactNode; success?: ReactNode; error?: ReactNode };
+  /** Glyphs per state. Default to the spinner, a check, and the warning triangle. */
+  icons?: { pending?: ReactNode; success?: ReactNode; error?: ReactNode };
+  /** How long the outcome holds before the row returns to idle, in ms. @default 2000 */
+  revertAfter?: number;
+  /** Hold back `pending` for this long, so a near-instant action doesn't flash a
+      spinner on its way to the check. @default 0 */
+  pendingDelay?: number;
+  /** Announced to screen readers. A state change they can't see is one they don't know
+      about — and in a menu the row may be the only thing that changed. */
+  announce?: { pending?: string; success?: string; error?: string };
+  onSuccess?: () => void;
+  onError?: (error: unknown) => void;
+}
+
+/**
+ * A row that runs something, shows how it went, and puts itself back — the menu's
+ * ActionButton. "Copy link" becoming "Copied" with a check for a beat is the whole case.
+ *
+ * It defaults to `closeOnClick={false}`, which is the part that's easy to miss: a menu
+ * row closes the menu on click, so an outcome shown on a row the user can no longer see
+ * is no outcome at all. Pass `closeOnClick` explicitly to override that — worth doing for
+ * an action whose result is visible on the page behind the menu.
+ *
+ * The state machine is `useAction`, shared with ActionButton, so a copy row and a copy
+ * button behave identically: the same double-submit guard, the same revert clock, the
+ * same refusal to render a failure as a success.
+ */
+export function DropdownMenuActionItem({
+  action,
+  children,
+  icon,
+  labels,
+  icons,
+  revertAfter,
+  pendingDelay,
+  announce,
+  closeOnClick = false,
+  disabled,
+  onSuccess,
+  onError,
+  ...props
+}: DropdownMenuActionItemProps) {
+  const { status, run } = useAction({
+    action,
+    revertAfter,
+    pendingDelay,
+    onSuccess,
+    onError,
+  });
+
+  const label = (override: ReactNode | undefined) => override ?? children;
+  const glyph = (override: ReactNode | undefined, fallback: ReactNode) => override ?? fallback;
+
+  return (
+    <DropdownMenuItem
+      closeOnClick={closeOnClick}
+      onClick={run}
+      disabled={disabled || status === "pending"}
+      aria-busy={status === "pending" || undefined}
+      data-status={status}
+      {...props}
+    >
+      {/* Morph is handed every state at once, so the row reserves the width of the widest
+          and never resizes as it moves through them. A row that grows mid-action shoves
+          the rest of the menu around under a cursor that's still resting on it. */}
+      <Morph
+        activeKey={status}
+        items={{
+          idle: icon,
+          pending: glyph(icons?.pending, <AsciiLoader />),
+          success: glyph(icons?.success, <Check />),
+          error: glyph(icons?.error, <TriangleAlert />),
+        }}
+      />
+      <Morph
+        activeKey={status}
+        items={{
+          idle: children,
+          pending: label(labels?.pending),
+          success: label(labels?.success),
+          error: label(labels?.error),
+        }}
+      />
+
+      {/* Politely, so it waits for a pause rather than interrupting. The pending
+          announcement matters most: a sighted user sees a spinner, everyone else gets
+          silence unless you say something. */}
+      <span aria-live="polite" className="sr-only">
+        {status === "pending" && (announce?.pending ?? "Working")}
+        {status === "success" && (announce?.success ?? "Done")}
+        {status === "error" && (announce?.error ?? "Something went wrong")}
+      </span>
+    </DropdownMenuItem>
   );
 }
 

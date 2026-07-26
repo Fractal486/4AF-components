@@ -15,6 +15,7 @@ import {
 } from "react";
 import { cn } from "@/registry/lib/cn";
 import { PRESS_SCALE, spring } from "@/registry/lib/motion";
+import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
 import { buttonVariants, type ButtonVariants } from "./button.variants";
 
 /**
@@ -290,13 +291,24 @@ function ButtonLoading({ label, children }: { label: string; children: ReactNode
         {children}
       </span>
       <span className="absolute inset-0 inline-flex items-center justify-center">
-        <Spinner />
+        {/* The ASCII loader, not an SVG spinner. It's the glyph every other waiting
+            state in the library uses — ActionButton's pending, the command palette,
+            Alert's loading line — and ActionButton already renders it inside a Button,
+            so a `loading` Button that span differently was the odd one out.
+
+            Being text, it takes the button's font size rather than needing its own
+            dimensions, so it scales across `sm`/`md`/`lg` for free. */}
+        <AsciiLoader />
         <span className="sr-only">{label}</span>
       </span>
     </>
   );
 }
 
+/**
+ * @deprecated `Button` now waits with `AsciiLoader`, like everything else here. This is
+ * the SVG spinner it used to draw, kept only for call sites that render it directly.
+ */
 export function Spinner() {
   return (
     <svg

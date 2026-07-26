@@ -214,6 +214,18 @@
       ]
     },
     {
+      "name": "use-action",
+      "type": "registry:lib",
+      "description": "The run/pending/outcome/revert state machine behind ActionButton and the menu's action row — double-submit guard, unmount safety, and a revert clock each run owns.",
+      "files": [
+        {
+          "path": "registry/lib/use-action.ts",
+          "type": "registry:lib",
+          "target": "@lib/use-action.ts"
+        }
+      ]
+    },
+    {
       "name": "button",
       "type": "registry:ui",
       "description": "Six variants, six sizes, optical icon alignment, and a loading state that doesn't resize.",
@@ -225,7 +237,8 @@
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json"
+        "http://localhost:3000/r/motion.json",
+        "http://localhost:3000/r/ascii-loader.json"
       ],
       "files": [
         {
@@ -332,7 +345,7 @@
     {
       "name": "alert",
       "type": "registry:ui",
-      "description": "An inline status line \u2014 a glyph plus a sentence, no surface. Destructive error (role=alert), amber warning, green success, neutral info, and a muted loading line with the ASCII spinner.",
+      "description": "An inline status line — a glyph plus a sentence, no surface. Destructive error (role=alert), amber warning, green success, neutral info, and a muted loading line with the ASCII spinner.",
       "dependencies": [
         "class-variance-authority",
         "lucide-react"
@@ -381,7 +394,7 @@
     {
       "name": "morph",
       "type": "registry:ui",
-      "description": "Animated content swap \u00e2\u20ac\u201d icons or text. Copy to check, Follow to Following.",
+      "description": "Animated content swap â€” icons or text. Copy to check, Follow to Following.",
       "dependencies": [
         "motion"
       ],
@@ -421,7 +434,7 @@
     {
       "name": "copy-button",
       "type": "registry:ui",
-      "description": "Copies to the clipboard and confirms it \u00e2\u20ac\u201d visually, and to screen readers.",
+      "description": "Copies to the clipboard and confirms it â€” visually, and to screen readers.",
       "dependencies": [
         "lucide-react"
       ],
@@ -445,13 +458,35 @@
       ],
       "registryDependencies": [
         "http://localhost:3000/r/button.json",
-        "http://localhost:3000/r/morph.json"
+        "http://localhost:3000/r/morph.json",
+        "http://localhost:3000/r/use-action.json"
       ],
       "files": [
         {
           "path": "registry/ui/action-button/action-button.tsx",
           "type": "registry:ui",
           "target": "@ui/action-button.tsx"
+        }
+      ]
+    },
+    {
+      "name": "action-toggle",
+      "type": "registry:ui",
+      "description": "A toggle whose state has to be earned: it waits on an async action, lands when it succeeds, and stays put when it fails. Follow/Following, Subscribe/Subscribed.",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/toggle.json",
+        "http://localhost:3000/r/morph.json",
+        "http://localhost:3000/r/ascii-loader.json",
+        "http://localhost:3000/r/use-action.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/action-toggle/action-toggle.tsx",
+          "type": "registry:ui",
+          "target": "@ui/action-toggle.tsx"
         }
       ]
     },
@@ -539,7 +574,7 @@
     {
       "name": "radio",
       "type": "registry:ui",
-      "description": "A radio group \u00e2\u20ac\u201d the Checkbox's sibling, a single choice with a dot that scales in.",
+      "description": "A radio group â€” the Checkbox's sibling, a single choice with a dot that scales in.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -633,7 +668,7 @@
     {
       "name": "skeleton",
       "type": "registry:ui",
-      "description": "A loading placeholder \u2014 a muted block that pulses while content loads; reduced motion switches the pulse off rather than strobing.",
+      "description": "A loading placeholder — a muted block that pulses while content loads; reduced motion switches the pulse off rather than strobing.",
       "dependencies": [],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
@@ -650,7 +685,7 @@
     {
       "name": "table-of-contents",
       "type": "registry:ui",
-      "description": "A table of contents that tracks the reader \u2014 an IntersectionObserver lights the active heading and a Motion layoutId marker slides to it; smooth-scroll on click.",
+      "description": "A table of contents that tracks the reader — an IntersectionObserver lights the active heading and a Motion layoutId marker slides to it; smooth-scroll on click.",
       "dependencies": [
         "motion"
       ],
@@ -670,7 +705,7 @@
     {
       "name": "empty",
       "type": "registry:ui",
-      "description": "An empty state \u2014 a centred column of media, title, description and an action. Composable parts; borderless by default with an optional dashed placeholder outline.",
+      "description": "An empty state — a centred column of media, title, description and an action. Composable parts; borderless by default with an optional dashed placeholder outline.",
       "dependencies": [
         "class-variance-authority"
       ],
@@ -694,7 +729,7 @@
     {
       "name": "text-shimmer",
       "type": "registry:ui",
-      "description": "Text with a highlight sweeping across it \u2014 a looping working-in-progress affordance. Gradient clipped to the glyphs, switched off (not sped up) under reduced motion.",
+      "description": "Text with a highlight sweeping across it — a looping working-in-progress affordance. Gradient clipped to the glyphs, switched off (not sped up) under reduced motion.",
       "dependencies": [],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
@@ -711,7 +746,7 @@
     {
       "name": "select",
       "type": "registry:ui",
-      "description": "A single or multi-select on Base UI \u00e2\u20ac\u201d keyboard, typeahead and collision-aware positioning \u00e2\u20ac\u201d whose panel blurs and scales in from the trigger. Multi-select keeps the panel open while animated checkbox rows are toggled; an optional plain panel search filters options in place.",
+      "description": "A single or multi-select on Base UI â€” keyboard, typeahead and collision-aware positioning â€” whose panel blurs and scales in from the trigger. Multi-select keeps the panel open while animated checkbox rows are toggled; an optional plain panel search filters options in place.",
       "dependencies": [
         "@base-ui/react",
         "lucide-react",
@@ -772,7 +807,7 @@
         {
           "path": "registry/ui/ascii-loader/ascii-loader.tsx",
           "type": "registry:ui",
-          "target": "@components/ascii-loader/ascii-loader.tsx"
+          "target": "@ui/ascii-loader.tsx"
         }
       ]
     },
@@ -825,7 +860,7 @@
     {
       "name": "select-search",
       "type": "registry:ui",
-      "description": "A searchable single or multi-select on Base UI's Combobox \u00e2\u20ac\u201d type to filter the list, with full keyboard and ARIA support. Multi-select keeps its animated checkbox list open while choices are toggled.",
+      "description": "A searchable single or multi-select on Base UI's Combobox â€” type to filter the list, with full keyboard and ARIA support. Multi-select keeps its animated checkbox list open while choices are toggled.",
       "dependencies": [
         "@base-ui/react",
         "lucide-react",
@@ -990,7 +1025,8 @@
         "http://localhost:3000/r/motion.json",
         "http://localhost:3000/r/morph.json",
         "http://localhost:3000/r/checkbox.json",
-        "http://localhost:3000/r/input.json"
+        "http://localhost:3000/r/input.json",
+        "http://localhost:3000/r/use-action.json"
       ],
       "files": [
         {

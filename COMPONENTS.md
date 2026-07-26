@@ -170,20 +170,22 @@ transitively rather than requested directly through `pnpm 4af install`.
 | `cn` | Class-name composition using `clsx` and `tailwind-merge`. |
 | `slot` | The small local slot helper used for `asChild` composition. |
 | `motion` | Shared spring and easing presets for Motion-driven components. |
+| `use-action` | The run/pending/outcome/revert state machine behind Action Button and the menu's action row. |
 
 ## Full installable UI registry
 
-The following 38 names are accepted by `pnpm 4af install <name>`.
+The following 39 names are accepted by `pnpm 4af install <name>`.
 
 ### Actions
 
 | Install name | Main API | What it provides |
 | --- | --- | --- |
-| `button` | `Button`, `Spinner` | Primary, outline, ghost, plain, destructive, and link variants; text and icon sizes; optical icon spacing; loading without resizing; `asChild`; optional `pressScale={false}` for anchored controls and `pressTarget="content"` for joined ones. |
+| `button` | `Button` | Primary, outline, ghost, plain, destructive, and link variants; text and icon sizes; optical icon spacing; loading without resizing (the ASCII loader, as everywhere else); `asChild`; optional `pressScale={false}` for anchored controls and `pressTarget="content"` for joined ones. |
 | `button-group` | `ButtonGroup` | Joins two or more Buttons into one control: flattened inner corners, one hairline per seam, a single outline around the run, horizontal or vertical, with `variant`/`size` passed down as defaults. |
 | `toggle` | `Toggle` | A Base UI pressed/unpressed control using the Button appearance and sizes, with optional icon-fill behaviour and `pressScale={false}` support. |
 | `morph` | `Morph` | Animated icon or text replacement that reserves the wider state's space and handles reduced motion. |
-| `action-button` | `ActionButton` | Runs asynchronous work and presents idle, pending, success, and error states without changing width. |
+| `action-button` | `ActionButton` | Runs asynchronous work and presents idle, pending, success, and error states without changing width, then reverts. |
+| `action-toggle` | `ActionToggle` | A toggle whose state has to be earned: it waits on the action, lands when it succeeds, and stays put when it fails. Follow/Following, Subscribe/Subscribed. |
 | `copy-button` | `CopyButton` | Clipboard-specialized Action Button with visual and screen-reader confirmation. |
 | `delete-button` | `DeleteButton` | Quiet destructive button that arms on the first deliberate press and confirms on the second; Escape, blur, and timeout disarm it. |
 
@@ -322,6 +324,40 @@ already; set it by hand only when joining buttons some other way.
 ```
 
 `ActionButton`, `CopyButton`, and `DeleteButton` inherit the same Button prop.
+
+### Waiting looks the same everywhere
+
+Every waiting state in the library is the ASCII loader: `Button`'s `loading`,
+`ActionButton` and `ActionToggle` while pending, the menu's action row, the command
+palette, and Alert's `loading` variant. `Button` still exports the SVG `Spinner` it used
+to draw, but it is deprecated and nothing renders it.
+
+### A toggle whose state has to be earned
+
+`ActionButton` always reverts — its model is idle → outcome → idle, and there is no opt-out
+(`revertAfter={Infinity}` clamps to a 32-bit int and fires almost immediately). When the
+new state should *stick*, use `action-toggle`:
+
+```tsx
+<ActionToggle
+  action={(following) => (following ? follow(id) : unfollow(id))}
+  icon={<Plus />}
+  icons={{ pressed: <Check /> }}
+  labels={{ pressed: "Following" }}
+>
+  Follow
+</ActionToggle>
+```
+
+It is a separate component rather than a flag on `ActionButton` for the reason `Toggle`
+is separate from `Button`: a button *does* something, this *is* something afterwards, and
+the difference is `aria-pressed`.
+
+It is deliberately not optimistic. The label holds and the loader runs until the action
+settles, because a control that already reads "Following" while a spinner insists it is
+still working is saying two things at once. A failure needs no rollback, since nothing
+moved: it shows the error briefly and goes quiet. `onPressedChange` fires only on success,
+so a controlled parent is never told about a change that did not happen.
 
 ### Copy Button resolves its text on press
 
@@ -487,8 +523,28 @@ Use `fillIcon` instead when the glyph doesn't change shape — a bookmark, star,
 only changes weight, so there is nothing to morph *to* and it becomes a `fill` transition
 on the one element. Either way the row keeps its `menuitemcheckbox` semantics.
 
-Rows left-align any `Morph` inside them, so a shorter label doesn't sit indented in the
-width reserved for the longer one. Don't pass `place-items-start` at the call site.
+Rows left-align any `Morph` inside them, and mute a morphing leading icon to the same
+weight as a plain one. Don't pass `place-items-start` or a text colour at the call site.
+
+`DropdownMenuActionItem` is the row that runs something, shows how it went, and puts
+itself back — the menu's Action Button:
+
+```tsx
+<DropdownMenuActionItem
+  icon={<Link2 />}
+  action={() => navigator.clipboard.writeText(url)}
+  labels={{ success: "Copied" }}
+  announce={{ success: "Link copied" }}
+>
+  Copy link
+</DropdownMenuActionItem>
+```
+
+It defaults to `closeOnClick={false}`, because a row closes the menu on click and an
+outcome shown on a row the user can no longer see is no outcome at all. Override it for an
+action whose result is visible on the page behind the menu. It takes the same `labels`,
+`icons`, `revertAfter`, `pendingDelay`, `announce`, `onSuccess`, and `onError` as
+`ActionButton`, and both morph between states without the row resizing.
 
 ### Sidebar composition and layout
 

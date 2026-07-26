@@ -1,0 +1,39 @@
+"use client";
+
+import { Check, Plus } from "lucide-react";
+import { ActionToggle } from "@/registry/ui/action-toggle/action-toggle";
+
+export function ActionToggleDemo({
+  variant,
+  size,
+  duration,
+  fail,
+}: {
+  variant: "outline" | "primary" | "ghost";
+  size: "sm" | "md" | "lg";
+  duration: number;
+  fail: boolean;
+}) {
+  async function follow() {
+    await new Promise((resolve, reject) =>
+      setTimeout(() => (fail ? reject(new Error("Network error")) : resolve(null)), duration),
+    );
+  }
+
+  return (
+    <ActionToggle
+      // Remounted when the settings change so it starts from unpressed rather than
+      // mid-flight — an uncontrolled state machine ignores changed props otherwise.
+      key={`${variant}-${size}-${duration}-${fail}`}
+      action={follow}
+      variant={variant}
+      size={size}
+      icon={<Plus />}
+      icons={{ pressed: <Check /> }}
+      labels={{ pressed: "Following", error: "Try again" }}
+      announce={{ pending: "Following", error: "Could not follow" }}
+    >
+      Follow
+    </ActionToggle>
+  );
+}

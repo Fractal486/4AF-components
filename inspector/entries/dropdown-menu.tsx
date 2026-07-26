@@ -1,8 +1,21 @@
-import { Bookmark, CreditCard, Download, LogOut, Settings, Trash2, Upload, User } from "lucide-react";
+import {
+  Bell,
+  BellOff,
+  Bookmark,
+  CreditCard,
+  Download,
+  Link2,
+  LogOut,
+  Settings,
+  Trash2,
+  Upload,
+  User,
+} from "lucide-react";
 import { Button } from "@/registry/ui/button/button";
 import { Morph } from "@/registry/ui/morph/morph";
 import {
   DropdownMenu,
+  DropdownMenuActionItem,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -58,6 +71,20 @@ export const dropdownMenuEntry = defineEntry({
 
           <DropdownMenuSeparator />
 
+          {/* A transient row: it runs, confirms, and puts itself back. It keeps the menu
+              open while it does — an outcome shown on a row the user can no longer see
+              is no outcome at all. */}
+          <DropdownMenuActionItem
+            icon={<Link2 />}
+            action={() => navigator.clipboard?.writeText("https://example.com/i/4af")}
+            labels={{ success: "Copied" }}
+            announce={{ success: "Link copied" }}
+          >
+            Copy link
+          </DropdownMenuActionItem>
+
+          <DropdownMenuSeparator />
+
           {/* A toggle button: no left tick. `fillIcon` fills the one bookmark glyph on
               check (a fill transition, not a morph); the label text-morphs between states. */}
           <DropdownMenuCheckboxItem fillIcon indicator={false}>
@@ -67,6 +94,24 @@ export const dropdownMenuEntry = defineEntry({
                 <Morph
                   activeKey={checked ? "on" : "off"}
                   items={{ on: "Bookmarked", off: "Bookmark" }}
+                />
+              </>
+            )}
+          </DropdownMenuCheckboxItem>
+
+          {/* The other toggle shape: the glyph genuinely changes, so both the icon and
+              the label morph. Its icon has to sit at the same muted weight as every
+              other row's, even though Morph nests it a level deeper. */}
+          <DropdownMenuCheckboxItem indicator={false}>
+            {(checked) => (
+              <>
+                <Morph
+                  activeKey={checked ? "on" : "off"}
+                  items={{ on: <BellOff />, off: <Bell /> }}
+                />
+                <Morph
+                  activeKey={checked ? "on" : "off"}
+                  items={{ on: "Unmute", off: "Mute" }}
                 />
               </>
             )}
