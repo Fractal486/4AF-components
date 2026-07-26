@@ -149,6 +149,26 @@ function labelFromItems(items: unknown, value: unknown): ReactNode | undefined {
   return undefined;
 }
 
+/**
+ * The same lookup for the icon, and it exists for the same reason.
+ *
+ * A `SelectItem`'s icon is registered when the item mounts, which is when the popup
+ * first opens — so the icon registry is guaranteed *empty* at the one moment the closed
+ * trigger first paints, and populated ever after. That's a failure shape that hides
+ * itself: it looks right the moment you click to check, and it's wrong on every cold
+ * load. `items` is the mapping that exists before anything mounts, so an icon declared
+ * there resolves on first paint.
+ *
+ * Only the array form carries icons — the record form is `{ value: label }` and has
+ * nowhere to put one.
+ */
+function iconFromItems(items: unknown, value: unknown): ReactNode | undefined {
+  if (!Array.isArray(items)) return undefined;
+  return (items as { value: unknown; icon?: ReactNode }[]).find((item) =>
+    Object.is(item.value, value),
+  )?.icon;
+}
+
 function focusPanelOption(
   list: HTMLElement | null,
   direction: "next" | "previous",
@@ -166,8 +186,27 @@ function focusPanelOption(
 }
 
 export interface SelectProps<Value, Multiple extends boolean | undefined = false>
-  extends Omit<ComponentProps<typeof BaseSelect.Root<Value, Multiple>>, "children"> {
-  /** Resolves the icon shown in the closed single-select value. */
+  extends Omit<ComponentProps<typeof BaseSelect.Root<Value, Multiple>>, "children" | "items"> {
+  /**
+   * Base UI's item mapping, widened by one optional field: an `icon` alongside each
+   * `label`. Declaring both here is what lets a preselected value show its icon on the
+   * first paint, before the popup has mounted and the items have registered themselves.
+   *
+   * ```tsx
+   * items={[{ value: "sans", label: "Sans-serif", icon: <Type /> }]}
+   * ```
+   *
+   * Every shape Base UI accepts still works; the icon is only available on the array
+   * form, since the record form is `{ value: label }` and has nowhere to put one.
+   */
+  items?:
+    | ReadonlyArray<{ label: ReactNode; value: Value; icon?: ReactNode }>
+    | ComponentProps<typeof BaseSelect.Root<Value, Multiple>>["items"];
+  /**
+   * Resolves the icon shown in the closed single-select value — for icons that are
+   * computed rather than declared. Prefer `items` when the set is a fixed list: it's
+   * one declaration per option, and it resolves before mount either way.
+   */
   iconForValue?: (value: Value) => ReactNode | undefined;
   /** Compact 32px (`sm`, default) or the 36px form-row size (`md`). @default "sm" */
   size?: SelectSize;
@@ -332,11 +371,16 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
       return next;
     });
   }, []);
+  // A registered icon (from a mounted `SelectItem`) wins; then a computed one; then the
+  // `items` mapping — the only one of the three that can answer before the panel has
+  // ever been opened.
   const iconFor = useCallback(
     (value: unknown) =>
       icons.get(value) ??
-      (value == null ? undefined : iconForValue?.(value as Value)),
-    [iconForValue, icons],
+      (value == null
+        ? undefined
+        : (iconForValue?.(value as Value) ?? iconFromItems(props.items, value))),
+    [iconForValue, icons, props.items],
   );
 
   const handleOpenChange = useCallback<

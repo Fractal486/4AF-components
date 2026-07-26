@@ -165,6 +165,21 @@ option rows together: `sm` is compact 32px (12px text), `md` is 36px and matches
 `md`/Input for form rows. Inside a Command Palette panel, always use `sm` (the default) —
 it fits the palette's density; do not set `md` there.
 
+### A preselected Select value needs its icon on `items`
+
+In `select`, declare the icon beside the label:
+`items={[{ value: "sans", label: "Sans-serif", icon: <Type /> }]}`.
+
+`SelectItem`'s `icon` prop registers only when the popup mounts, so it cannot answer for
+the closed trigger on a cold load; `items` is the mapping that exists beforehand, which is
+why the label reads from it too. Resolution order is mounted item, then `iconForValue`
+(for computed icons), then `items`. Only the array form of `items` carries icons — the
+record form is `{ value: label }`.
+
+`select-search` and `select-motion-search` do not need this: they are Combobox-based, the
+value *is* the item object, and `iconForValue={(item) => item.icon}` resolves before
+mount.
+
 ### Command Palette is a component family
 
 The `command-palette` item includes root groups/rows, nested lists, arbitrary custom

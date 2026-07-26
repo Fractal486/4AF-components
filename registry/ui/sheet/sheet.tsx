@@ -12,6 +12,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
   type ComponentProps,
   type ReactNode,
@@ -41,6 +42,8 @@ import { sheetContentVariants, type SheetContentVariants } from "./sheet.variant
  */
 
 const SheetOpenContext = createContext(false);
+const sheetOpenAttribute = "data-4af-sheet-open";
+let openSheetCount = 0;
 
 export interface SheetProps extends Omit<ComponentProps<typeof BaseDialog.Root>, "children"> {
   children: ReactNode;
@@ -50,6 +53,18 @@ export function Sheet({ open, defaultOpen, onOpenChange, children, ...props }: S
   const [uncontrolled, setUncontrolled] = useState(defaultOpen ?? false);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : uncontrolled;
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    openSheetCount += 1;
+    document.documentElement.setAttribute(sheetOpenAttribute, "");
+
+    return () => {
+      openSheetCount = Math.max(0, openSheetCount - 1);
+      if (openSheetCount === 0) document.documentElement.removeAttribute(sheetOpenAttribute);
+    };
+  }, [isOpen]);
 
   const handleOpenChange = useCallback<NonNullable<SheetProps["onOpenChange"]>>(
     (next, details) => {

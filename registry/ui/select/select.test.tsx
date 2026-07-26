@@ -150,6 +150,58 @@ describe("Base UI Select", () => {
     );
   });
 
+  it("shows a preselected value's icon from items, before the panel has ever mounted", () => {
+    render(
+      <Select
+        items={[
+          { value: "apple", label: "Apple", icon: <span data-testid="apple-icon" /> },
+          { value: "banana", label: "Banana", icon: <span data-testid="banana-icon" /> },
+        ]}
+        defaultValue="apple"
+      >
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="apple" icon={<span data-testid="apple-icon" />}>
+            Apple
+          </SelectItem>
+          <SelectItem value="banana" icon={<span data-testid="banana-icon" />}>
+            Banana
+          </SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    // No click first: the items register their icons when the popup mounts, so this is
+    // the one render where only `items` can answer — and it's every cold load.
+    const trigger = screen.getByRole("combobox", { name: "Fruit" });
+    expect(trigger).toHaveTextContent("Apple");
+    expect(trigger.querySelector('[data-testid="apple-icon"]')).toBeInTheDocument();
+    expect(trigger.querySelector('[data-testid="banana-icon"]')).not.toBeInTheDocument();
+  });
+
+  it("lets iconForValue win over the items icon", () => {
+    render(
+      <Select
+        items={[{ value: "apple", label: "Apple", icon: <span data-testid="declared" /> }]}
+        defaultValue="apple"
+        iconForValue={() => <span data-testid="computed" />}
+      >
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="apple">Apple</SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("combobox", { name: "Fruit" });
+    expect(trigger.querySelector('[data-testid="computed"]')).toBeInTheDocument();
+    expect(trigger.querySelector('[data-testid="declared"]')).not.toBeInTheDocument();
+  });
+
   it("filters options from an optional plain panel search", async () => {
     const user = userEvent.setup();
 

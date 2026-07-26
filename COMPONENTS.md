@@ -198,7 +198,7 @@ The following 38 names are accepted by `pnpm 4af install <name>`.
 | `checkbox` | `Checkbox` | Base UI checkbox with an animated drawn tick, controlled/uncontrolled state, and an optional click-target label. |
 | `radio` | `RadioGroup`, `Radio` | Single-choice Base UI radio group with the Checkbox family's geometry and an animated dot. |
 | `slider` | `Slider` | Controlled or uncontrolled numeric slider with a spring-gliding fill and three thumb variants: `bar` (thin handle), `circle` (round thumb filling the rail), and `knob` (round thumb over a thin rail). |
-| `select` | `Select`, `SelectTrigger`, `SelectSortTrigger`, `SelectValue`, `SelectContent`, `SelectItem` | Accessible Base UI single/multi select with icons, optional in-panel search, clear footer, content sizing, and the compact sort/filter trigger. |
+| `select` | `Select`, `SelectTrigger`, `SelectSortTrigger`, `SelectValue`, `SelectContent`, `SelectItem` | Accessible Base UI single/multi select with icons (declarable on `items` so a preselected value resolves before mount), optional in-panel search, clear footer, content sizing, and the compact sort/filter trigger. |
 | `select-search` | `SearchSelect`, `SearchSelectInput`, `SearchSelectContent`, item parts | Editable Combobox-style trigger with live filtering, single or checkbox-based multi-selection, icons, and full keyboard/ARIA behaviour. |
 | `select-motion` | `Select`, `SelectTrigger`, `SelectValue`, `SelectContent`, `SelectItem` | Hand-animated unfolding Select with single/multi selection and optional in-panel search. |
 | `select-motion-search` | `MotionSearchSelect`, input/content/item parts | Editable Base UI Combobox whose panel unfolds from the field; supports single and checkbox-based multi-selection. |
@@ -377,6 +377,27 @@ This is why the Web UI has a “Select · Sort” demo while the registry has no
 
 Single and multi-selection are supported across the family. Multi-selection uses the
 Checkbox component. `SelectSortTrigger` belongs only to the base `select` item.
+
+In `select`, an option's icon can be declared on the `items` collection alongside its
+label:
+
+```tsx
+<Select
+  items={[{ value: "sans", label: "Sans-serif", icon: <Type /> }]}
+  defaultValue="sans"
+>
+```
+
+Do that whenever a preselected value must show its icon. `SelectItem`'s own `icon` prop
+only registers when the popup mounts, so on a cold load the closed trigger has nothing to
+show until the panel has been opened once — `items` is the mapping that exists before
+then, which is why the label reads from it too. Use `iconForValue` instead when the icon
+is computed rather than declared. Resolution order is the mounted item, then
+`iconForValue`, then `items`.
+
+The Combobox-based `select-search` and `select-motion-search` are not affected: their
+value *is* the item object, so `iconForValue={(item) => item.icon}` already resolves
+before mount.
 
 Every implementation takes `size="sm" | "md"` (default `sm`). `sm` is the compact 32px
 size (12px text, 14px glyphs); `md` is 36px and matches Button `md` and the Input for form
