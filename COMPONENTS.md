@@ -546,6 +546,25 @@ action whose result is visible on the page behind the menu. It takes the same `l
 `icons`, `revertAfter`, `pendingDelay`, `announce`, `onSuccess`, and `onError` as
 `ActionButton`, and both morph between states without the row resizing.
 
+When the row should *land* in a new state rather than revert, give
+`DropdownMenuCheckboxItem` an `action` instead — the menu's `ActionToggle`:
+
+```tsx
+<DropdownMenuCheckboxItem action={(muted) => setMuted(id, muted)}>
+  Mute thread
+</DropdownMenuCheckboxItem>
+```
+
+Without `action` the row is the plain synchronous checkbox it has always been. With it,
+the tick holds and the loader runs in its slot until the work settles; `onCheckedChange`
+fires only on success, and a failure needs no rollback because nothing moved. With
+`indicator={false}` there is no tick slot to put the loader in, so the children function
+receives the status as a second argument for you to render it yourself.
+
+Both deferred rows keep their status announcement *outside* the row element. A menu item's
+accessible name is built from its contents, so an `sr-only` live region inside would rename
+the row to "Mute thread Working" for as long as it ran.
+
 ### Sidebar composition and layout
 
 `sidebar` is the low-level component family. It includes default, floating, inset, and

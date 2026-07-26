@@ -45,7 +45,21 @@ export function AsciiLoader({ speed = 0.8, label, className }: AsciiLoaderProps)
       role={label ? "status" : undefined}
       aria-label={label}
       aria-hidden={label ? undefined : true}
-      className={cn("inline-block font-mono leading-none tabular-nums", className)}
+      className={cn(
+        "inline-block font-mono leading-none tabular-nums",
+        // Optical correction, and the one place it belongs: the braille block almost
+        // certainly isn't in Geist Mono, so these render from a fallback whose cell sits
+        // fractionally left inside its advance width. Centre the box and the glyph still
+        // reads a hair left of centre — invisible on its own, obvious in a menu row
+        // beside icons that *are* centred.
+        //
+        // Safe to apply to every frame: they're all one cell from one block with one
+        // advance width, so this corrects the cell's position, not each frame's ink. (The
+        // ink genuinely does swing left and right between frames — that's the spin.)
+        // One number, tune it here.
+        "translate-x-[0.3px]",
+        className,
+      )}
     >
       {FRAMES[frame]}
     </span>

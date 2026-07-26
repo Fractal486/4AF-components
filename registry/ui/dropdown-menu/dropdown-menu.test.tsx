@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, vi } from "vitest";
+import { vi } from "vitest";
 import { Morph } from "@/registry/ui/morph/morph";
 import {
   DropdownMenu,
@@ -10,8 +10,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./dropdown-menu";
-
-afterEach(() => vi.useRealTimers());
 
 describe("DropdownMenu", () => {
   it("supports keyboard checkbox toggles and closes after a normal item is chosen", async () => {
@@ -66,8 +64,65 @@ describe("DropdownMenu", () => {
 
     // The row owns this, not the call site: Morph centres in the width it reserves for
     // its widest state, which would indent the shorter label in one state only.
-    expect(item.className).toContain("[&_[data-slot=morph]]:place-items-start");
+    expect(item.className).toContain("[&>[data-slot=morph]]:place-items-start");
     expect(item.querySelector("[data-slot=morph]")).not.toBeNull();
+  });
+
+  it("gives the tick the same box a leading icon gets", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger aria-label="More actions" />
+        <DropdownMenuContent>
+          <DropdownMenuItem>
+            <svg />
+            Settings
+          </DropdownMenuItem>
+          <DropdownMenuCheckboxItem defaultChecked>Show toolbar</DropdownMenuCheckboxItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+    const checkboxRow = await screen.findByRole("menuitemcheckbox");
+    const slot = checkboxRow.querySelector("span");
+
+    // 10px to 24px, the same run a leading icon takes from the row's `px-2.5`. `left-2`
+    // with `size-4` shares only the right edge, which puts the tick a pixel left of every
+    // icon row's glyph.
+    expect(slot?.className).toContain("left-2.5");
+    expect(slot?.className).toContain("size-3.5");
+
+    // And no size on the glyph itself: the row sizes every svg, and `.row svg` outranks a
+    // class on the element, so one set here would be silently overruled.
+    expect(slot?.querySelector("svg")?.getAttribute("class")).not.toContain("size-");
+  });
+
+  it("keeps a glyph Morph centred in an icon slot rather than start-aligned", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger aria-label="More actions" />
+        <DropdownMenuContent>
+          <DropdownMenuActionItem action={() => {}} icon={<svg />}>
+            Copy link
+          </DropdownMenuActionItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+    const row = await screen.findByRole("menuitem");
+
+    // The start-alignment rule is scoped to direct children so it reaches the label but
+    // not the glyph. A start-aligned glyph slot drags the narrow ASCII loader left of
+    // where every other row's 14px icon sits.
+    const [glyph, label] = [...row.querySelectorAll("[data-slot=morph]")];
+    expect(glyph?.parentElement).not.toBe(row);
+    expect(glyph?.parentElement?.className).toContain("size-3.5");
+    expect(label?.parentElement).toBe(row);
   });
 
   it("mutes a morphing leading icon to the same weight as a plain one", async () => {
@@ -116,7 +171,7 @@ describe("DropdownMenu", () => {
           <DropdownMenuActionItem
             action={action}
             labels={{ success: "Copied" }}
-            revertAfter={200}
+            revertAfter={50}
           >
             Copy link
           </DropdownMenuActionItem>
@@ -126,10 +181,6 @@ describe("DropdownMenu", () => {
 
     await user.click(screen.getByRole("button", { name: "More actions" }));
     const row = await screen.findByRole("menuitem");
-
-    // Fake timers only from here: opening the menu runs through Base UI's own timers and
-    // frames, which a faked clock would leave suspended.
-    vi.useFakeTimers();
 
     fireEvent.click(row);
     fireEvent.click(row);
@@ -145,8 +196,121 @@ describe("DropdownMenu", () => {
     expect(screen.getByRole("menu")).toBeInTheDocument();
     expect(row).toHaveTextContent("Copied");
 
-    await act(async () => vi.advanceTimersByTime(200));
-    expect(row).toHaveAttribute("data-status", "idle");
+    // A real 50ms wait rather than a faked clock: Base UI's menu schedules its own
+    // timers, and parking those on a fake clock leaves the *next* test's menu unable to
+    // open at all. The revert is short enough that waiting for it is cheap.
+    await waitFor(() => expect(row).toHaveAttribute("data-status", "idle"));
     expect(row).toHaveTextContent("Copy link");
+  });
+
+  it("defers a checkbox row's tick until its action settles", async () => {
+    const user = userEvent.setup();
+    let finish: () => void;
+    const action = vi.fn(() => new Promise<void>((resolve) => (finish = resolve)));
+    const onCheckedChange = vi.fn();
+
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger aria-label="More actions" />
+        <DropdownMenuContent>
+          <DropdownMenuCheckboxItem action={action} onCheckedChange={onCheckedChange}>
+            Mute thread
+          </DropdownMenuCheckboxItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+    const row = await screen.findByRole("menuitemcheckbox");
+
+    fireEvent.click(row);
+
+    // The tick holds while the work runs — the row must not claim to be muted before it
+    // is, and nothing has been reported to the owner yet.
+    expect(action).toHaveBeenCalledWith(true);
+    expect(row).toHaveAttribute("aria-checked", "false");
+    expect(row).toHaveAttribute("data-status", "pending");
+    expect(onCheckedChange).not.toHaveBeenCalled();
+
+    await act(async () => finish!());
+
+    expect(row).toHaveAttribute("aria-checked", "true");
+    expect(onCheckedChange).toHaveBeenCalledWith(true);
+  });
+
+  it("leaves a checkbox row unchecked when its action fails", async () => {
+    const user = userEvent.setup();
+    const action = vi.fn(() => Promise.reject(new Error("offline")));
+    const onCheckedChange = vi.fn();
+
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger aria-label="More actions" />
+        <DropdownMenuContent>
+          <DropdownMenuCheckboxItem action={action} onCheckedChange={onCheckedChange}>
+            Mute thread
+          </DropdownMenuCheckboxItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+    const row = await screen.findByRole("menuitemcheckbox");
+
+    await act(async () => {
+      fireEvent.click(row);
+    });
+
+    // Nothing moved, so there is nothing to roll back.
+    expect(row).toHaveAttribute("data-status", "error");
+    expect(row).toHaveAttribute("aria-checked", "false");
+    expect(onCheckedChange).not.toHaveBeenCalled();
+  });
+
+  it("stays a plain synchronous checkbox without an action", async () => {
+    const user = userEvent.setup();
+    const onCheckedChange = vi.fn();
+
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger aria-label="More actions" />
+        <DropdownMenuContent>
+          <DropdownMenuCheckboxItem onCheckedChange={onCheckedChange}>
+            Show toolbar
+          </DropdownMenuCheckboxItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+    const row = await screen.findByRole("menuitemcheckbox");
+
+    fireEvent.click(row);
+
+    // Flips on the click, and carries no status attribute at all.
+    expect(row).toHaveAttribute("aria-checked", "true");
+    expect(row).not.toHaveAttribute("data-status");
+    expect(onCheckedChange).toHaveBeenCalledWith(true, expect.anything());
+  });
+
+  it("keeps a deferred row's accessible name free of its status text", async () => {
+    const user = userEvent.setup();
+    const action = vi.fn(() => new Promise<void>(() => {}));
+
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger aria-label="More actions" />
+        <DropdownMenuContent>
+          <DropdownMenuCheckboxItem action={action}>Mute thread</DropdownMenuCheckboxItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+    fireEvent.click(await screen.findByRole("menuitemcheckbox"));
+
+    // A menu item's name is built from its contents, so the live region has to live
+    // outside the row or the row renames itself to "Mute thread Working" mid-flight.
+    expect(screen.getByRole("menuitemcheckbox", { name: "Mute thread" })).toBeInTheDocument();
   });
 });

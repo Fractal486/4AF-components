@@ -276,6 +276,18 @@ Do not hand-roll this with `useState` and `setTimeout` — the shared `useAction
 handles the double-submit guard, the revert clock each run owns, and the async resolve
 that must not land on an unmounted component.
 
+When the row should *land* rather than revert, pass `action` to
+`DropdownMenuCheckboxItem`: the tick holds, the loader runs in its slot, and
+`onCheckedChange` fires only on success. Without `action` it stays a plain synchronous
+checkbox. With `indicator={false}` the children function receives the status as a second
+argument, since there is no tick slot to put the loader in.
+
+| Row behaviour | Use |
+| --- | --- |
+| Runs, confirms, reverts | `DropdownMenuActionItem` |
+| Runs, then lands checked | `DropdownMenuCheckboxItem` with `action` |
+| Flips immediately | `DropdownMenuCheckboxItem` with no `action` |
+
 ### Sidebar and layout are separate
 
 `sidebar` provides low-level default, floating, inset, and split forms; reusable

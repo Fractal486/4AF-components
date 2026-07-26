@@ -14,7 +14,7 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
-import { useAction } from "@/registry/lib/use-action";
+import { useAction, type ActionStatus } from "@/registry/lib/use-action";
 import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Input } from "@/registry/ui/input/input";
@@ -278,12 +278,29 @@ const itemBase = cn(
   // sit inside an absolutely positioned span, and they're meant to read at full ink.
   "[&>[data-slot=morph]_svg]:text-muted-foreground",
   // A Morph reserves the width of its widest state and centres inside it, which is right
-  // for a button and wrong here: in a left-aligned row the shorter label would sit
-  // indented, so a toggling item looks misaligned in one state only. Start-alignment is
-  // always correct inside a row, so the row decides it rather than every call site
-  // remembering to.
-  "[&_[data-slot=morph]]:place-items-start",
+  // for a button and wrong for a label here: in a left-aligned row the shorter label
+  // would sit indented, so a toggling item looks misaligned in one state only.
+  //
+  // Direct children only, and that scoping is load-bearing. A Morph swapping *glyphs* in
+  // a fixed icon slot must stay centred — the ASCII loader is a narrow character next to
+  // 14px icons, and start-aligning it inside the slot they share drags it left of every
+  // other row's icon. Labels are written inline as direct children; glyph Morphs are
+  // wrapped in their slot, one level down, and keep Morph's own centring.
+  "[&>[data-slot=morph]]:place-items-start",
 );
+
+/**
+ * The tick/dot slot, and it holds the same 14px box a leading icon does — `left-2.5` and
+ * `size-3.5` against the row's `px-2.5` padding, so both run 10px to 24px and share a
+ * centre.
+ *
+ * It used to be `left-2 size-4`: 8px to 24px. The two boxes shared a right edge but not a
+ * centre, so a ticked row's glyph sat a pixel left of an icon row's, which is exactly the
+ * kind of drift you can see in a column of rows and can't name. The labels were always
+ * fine — the row's `pl-8` is 10 + 14 + 8 — so only the glyph column was off.
+ */
+const INDICATOR_SLOT =
+  "pointer-events-none absolute left-2.5 flex size-3.5 items-center justify-center";
 
 const selectItemBase = cn(
   "relative flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-xs outline-none select-none",
@@ -457,45 +474,53 @@ export function DropdownMenuActionItem({
   const glyph = (override: ReactNode | undefined, fallback: ReactNode) => override ?? fallback;
 
   return (
-    <DropdownMenuItem
-      closeOnClick={closeOnClick}
-      onClick={run}
-      disabled={disabled || status === "pending"}
-      aria-busy={status === "pending" || undefined}
-      data-status={status}
-      {...props}
-    >
-      {/* Morph is handed every state at once, so the row reserves the width of the widest
-          and never resizes as it moves through them. A row that grows mid-action shoves
-          the rest of the menu around under a cursor that's still resting on it. */}
-      <Morph
-        activeKey={status}
-        items={{
-          idle: icon,
-          pending: glyph(icons?.pending, <AsciiLoader />),
-          success: glyph(icons?.success, <Check />),
-          error: glyph(icons?.error, <TriangleAlert />),
-        }}
-      />
-      <Morph
-        activeKey={status}
-        items={{
-          idle: children,
-          pending: label(labels?.pending),
-          success: label(labels?.success),
-          error: label(labels?.error),
-        }}
-      />
+    <>
+      <DropdownMenuItem
+        closeOnClick={closeOnClick}
+        onClick={run}
+        disabled={disabled || status === "pending"}
+        aria-busy={status === "pending" || undefined}
+        data-status={status}
+        {...props}
+      >
+        {/* The glyph gets the same 14px box a plain row icon occupies, and the Morph
+            centres inside it. Without the box the loader — one narrow character against
+            three 14px icons — would sit wherever its own advance width put it, which is
+            not where the icon above it in the menu sits. The muting is here rather than
+            from `itemBase`, whose rule reaches a direct-child Morph and this one is a
+            level down. */}
+        <span className="flex size-3.5 shrink-0 items-center justify-center text-muted-foreground">
+          {/* Every state at once, so the slot never resizes as it moves through them. */}
+          <Morph
+            activeKey={status}
+            items={{
+              idle: icon,
+              pending: glyph(icons?.pending, <AsciiLoader />),
+              success: glyph(icons?.success, <Check />),
+              error: glyph(icons?.error, <TriangleAlert />),
+            }}
+          />
+        </span>
+        <Morph
+          activeKey={status}
+          items={{
+            idle: children,
+            pending: label(labels?.pending),
+            success: label(labels?.success),
+            error: label(labels?.error),
+          }}
+        />
+      </DropdownMenuItem>
 
-      {/* Politely, so it waits for a pause rather than interrupting. The pending
-          announcement matters most: a sighted user sees a spinner, everyone else gets
-          silence unless you say something. */}
+      {/* Politely, so it waits for a pause rather than interrupting — and outside the row,
+          because a menu item's accessible name is built from its contents and an sr-only
+          status in there would rename it to "Copy link Working" while it ran. */}
       <span aria-live="polite" className="sr-only">
         {status === "pending" && (announce?.pending ?? "Working")}
         {status === "success" && (announce?.success ?? "Done")}
         {status === "error" && (announce?.error ?? "Something went wrong")}
       </span>
-    </DropdownMenuItem>
+    </>
   );
 }
 
@@ -505,8 +530,12 @@ export interface DropdownMenuCheckboxItemProps
    * `children` may be a function of the checked state — return a different icon and label
    * for each, so a `menuitemcheckbox` can read as a toggle button (Bookmark ⇄ Bookmarked)
    * rather than a ticked row.
+   *
+   * It's also handed the action status, which only moves off `"idle"` when there's an
+   * `action`. With `indicator={false}` there's no tick slot to put the loader in, so a
+   * deferred row has to show the wait itself.
    */
-  children?: ReactNode | ((checked: boolean) => ReactNode);
+  children?: ReactNode | ((checked: boolean, status: ActionStatus) => ReactNode);
   /**
    * The built-in left tick and its `pl-8` indent. Turn it off when the toggle state is
    * carried by the label/icon instead (the bookmark case).
@@ -519,6 +548,29 @@ export interface DropdownMenuCheckboxItemProps
    * Toggle's `fillIcon`. Pair with `indicator={false}` so the fill *is* the state.
    */
   fillIcon?: boolean;
+  /**
+   * Make the check conditional on work that has to succeed first — a setting that isn't
+   * on until the server says so. It's handed the state being moved *to*.
+   *
+   * Without it the row is what it has always been: a synchronous checkbox that flips on
+   * click. With it the row defers — the tick holds, the loader runs in its place, and
+   * `onCheckedChange` fires only once the action has settled. A failure needs no rollback
+   * because nothing moved; it shows briefly and the row goes quiet.
+   *
+   * This is `ActionToggle` for a menu row, and it works the same way for the same reason:
+   * a row that already shows a tick while a spinner insists it's still working is telling
+   * the user two things at once, and one of them is a guess.
+   */
+  action?: (checked: boolean) => void | Promise<unknown>;
+  /** How long a failure is shown before the row goes quiet, in ms. @default 2000 */
+  revertAfter?: number;
+  /** Hold back the loader for this long, so a near-instant action doesn't flash it.
+      @default 0 */
+  pendingDelay?: number;
+  /** Announced while deferred. `aria-checked` covers the landing; the wait and the
+      failure are otherwise silent. */
+  announce?: { pending?: string; error?: string };
+  onError?: (error: unknown) => void;
 }
 
 export function DropdownMenuCheckboxItem({
@@ -526,36 +578,108 @@ export function DropdownMenuCheckboxItem({
   children,
   indicator = true,
   fillIcon = false,
+  action,
+  checked,
+  defaultChecked,
+  onCheckedChange,
+  revertAfter,
+  pendingDelay,
+  announce,
+  disabled,
+  onError,
   ...props
 }: DropdownMenuCheckboxItemProps) {
+  const deferred = action !== undefined;
+  const [uncontrolled, setUncontrolled] = useState(defaultChecked ?? false);
+  const isControlled = checked !== undefined;
+  const current = isControlled ? checked : uncontrolled;
+  const target = !current;
+
+  const { status, run } = useAction({
+    action: () => action?.(target),
+    revertAfter,
+    pendingDelay,
+    onSuccess: () => {
+      if (!isControlled) setUncontrolled(target);
+      // Base UI hands its own callback an event details object. This change came from a
+      // promise settling rather than from an event, so there is nothing truthful to pass.
+      (onCheckedChange as ((next: boolean, details?: never) => void) | undefined)?.(target);
+    },
+    onError,
+  });
+
+  // Untouched when there's no `action`: the consumer's own checked/onCheckedChange go
+  // straight to Base UI and the row stays the synchronous checkbox it always was.
+  const control = deferred
+    ? {
+        checked: current,
+        onCheckedChange: () => void run(),
+        disabled: disabled || status === "pending",
+        "aria-busy": status === "pending" || undefined,
+        "data-status": status,
+      }
+    : { checked, defaultChecked, onCheckedChange, disabled };
+
   return (
-    <BaseMenu.CheckboxItem
-      className={cn(
-        itemBase,
-        indicator && "pr-2 pl-8",
-        fillIcon && [
-          "[&_svg]:transition-[fill] [&_svg]:duration-(--duration-fast) [&_svg]:ease-out",
-          "data-[checked]:[&_svg]:fill-current",
-        ],
-        className,
+    <>
+      <BaseMenu.CheckboxItem
+        className={cn(
+          itemBase,
+          indicator && "pr-2 pl-8",
+          fillIcon && [
+            "[&_svg]:transition-[fill] [&_svg]:duration-(--duration-fast) [&_svg]:ease-out",
+            "data-[checked]:[&_svg]:fill-current",
+          ],
+          className,
+        )}
+        // Render function to read `checked`: the tick can Morph in and out (draw itself
+        // in, blur out) instead of snapping, and `children` can swap on it.
+        render={(itemProps, state) => (
+          <div {...itemProps}>
+            {indicator && (
+              <span className={INDICATOR_SLOT}>
+                {/* The tick slot doubles as the status slot: while the action is in
+                    flight the loader sits exactly where the tick will land, which is
+                    what makes the wait read as "not yet" rather than as "nothing
+                    happened". Both extra keys are unreachable without an `action`.
+
+                    No size on the glyphs: `itemBase` sizes every svg in the row, and its
+                    `.row svg` beats a class on the element itself, so anything set here
+                    would be a statement the CSS quietly overrules. */}
+                <Morph
+                  activeKey={
+                    status === "pending" || status === "error"
+                      ? status
+                      : state.checked
+                        ? "on"
+                        : "off"
+                  }
+                  items={{
+                    on: <Check />,
+                    off: null,
+                    pending: <AsciiLoader />,
+                    error: <TriangleAlert />,
+                  }}
+                />
+              </span>
+            )}
+            {typeof children === "function" ? children(state.checked, status) : children}
+          </div>
+        )}
+        {...control}
+        {...props}
+      />
+
+      {/* Outside the row, not inside it: a menu item's accessible name is built from its
+          contents, so an sr-only status in there would rename the row to "Mute Working"
+          for as long as it ran. */}
+      {deferred && (
+        <span aria-live="polite" className="sr-only">
+          {status === "pending" && (announce?.pending ?? "Working")}
+          {status === "error" && (announce?.error ?? "Something went wrong")}
+        </span>
       )}
-      // Render function to read `checked`: the tick can Morph in and out (draw itself in,
-      // blur out) instead of snapping, and `children` can swap on it.
-      render={(itemProps, state) => (
-        <div {...itemProps}>
-          {indicator && (
-            <span className="pointer-events-none absolute left-2 flex size-4 items-center justify-center">
-              <Morph
-                activeKey={state.checked ? "on" : "off"}
-                items={{ on: <Check className="size-4" />, off: null }}
-              />
-            </span>
-          )}
-          {typeof children === "function" ? children(state.checked) : children}
-        </div>
-      )}
-      {...props}
-    />
+    </>
   );
 }
 
@@ -566,7 +690,7 @@ export function DropdownMenuRadioItem({
 }: ComponentProps<typeof BaseMenu.RadioItem>) {
   return (
     <BaseMenu.RadioItem className={cn(itemBase, "pr-2 pl-8", className)} {...props}>
-      <span className="pointer-events-none absolute left-2 flex size-4 items-center justify-center">
+      <span className={INDICATOR_SLOT}>
         {/* Base UI's own indicator, styled like the standalone Radio's dot. `keepMounted`
             matters: without it the indicator is transition-status-gated and can miss the
             group's initial value on first paint, which is why it showed empty. It scales

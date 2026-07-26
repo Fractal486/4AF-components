@@ -117,6 +117,15 @@ export const dropdownMenuEntry = defineEntry({
             )}
           </DropdownMenuCheckboxItem>
 
+          {/* A deferred toggle: the tick holds and the loader runs in its slot until the
+              work settles, so the row never claims to be muted before it is. */}
+          <DropdownMenuCheckboxItem
+            action={() => new Promise((resolve) => setTimeout(resolve, 1200))}
+            announce={{ pending: "Muting thread" }}
+          >
+            Mute thread
+          </DropdownMenuCheckboxItem>
+
           <DropdownMenuSeparator />
 
           <DropdownMenuCheckboxItem defaultChecked>Show toolbar</DropdownMenuCheckboxItem>
