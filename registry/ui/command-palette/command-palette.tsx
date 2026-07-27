@@ -800,7 +800,7 @@ export function CommandPalette({
           // horizontal centring a `-translate-x-1/2` that now has nothing composing
           // on top of it.
           className={cn(
-            "fixed top-[14vh] left-1/2 z-50 flex max-h-[min(34rem,calc(100dvh-16vh))] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 flex-col overflow-hidden rounded-md border border-border bg-background shadow-overlay-drop outline-none",
+            "fixed top-[14vh] left-1/2 z-50 flex max-h-[min(34rem,calc(100dvh-16vh))] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 flex-col overflow-hidden rounded-md border border-border bg-surface-raised shadow-overlay-drop outline-none",
             className,
           )}
         >

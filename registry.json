@@ -459,7 +459,8 @@
       "registryDependencies": [
         "http://localhost:3000/r/button.json",
         "http://localhost:3000/r/morph.json",
-        "http://localhost:3000/r/use-action.json"
+        "http://localhost:3000/r/use-action.json",
+        "http://localhost:3000/r/ascii-loader.json"
       ],
       "files": [
         {
@@ -1024,7 +1025,8 @@
         "http://localhost:3000/r/morph.json",
         "http://localhost:3000/r/checkbox.json",
         "http://localhost:3000/r/input.json",
-        "http://localhost:3000/r/use-action.json"
+        "http://localhost:3000/r/use-action.json",
+        "http://localhost:3000/r/ascii-loader.json"
       ],
       "files": [
         {
@@ -1102,7 +1104,8 @@
       "description": "An optional application shell that composes Sidebar with an inset content surface, page title header, header actions, and a left-aligned collapse trigger before the title.",
       "dependencies": [],
       "registryDependencies": [
-        "http://localhost:3000/r/sidebar.json"
+        "http://localhost:3000/r/sidebar.json",
+        "http://localhost:3000/r/cn.json"
       ],
       "files": [
         {

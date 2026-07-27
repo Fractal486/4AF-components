@@ -104,7 +104,7 @@ export function DialogContent({
               // Centred with a translate; Motion scales on top (Tailwind v4 keeps
               // `translate` and Motion's `transform` as separate properties, so the two
               // compose and it stays centred while it scales).
-              "fixed top-1/2 left-1/2 z-50 flex max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg -translate-1/2 flex-col gap-4 overflow-y-auto rounded-md border border-border bg-background p-6 shadow-overlay-drop",
+              "fixed top-1/2 left-1/2 z-50 flex max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg -translate-1/2 flex-col gap-4 overflow-y-auto rounded-md border border-border bg-surface-raised p-6 shadow-overlay-drop",
               // A thin custom scrollbar, shown only when the dialog is taller than the
               // viewport. Firefox uses the standard properties; WebKit the pseudo-elements.
               "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent]",

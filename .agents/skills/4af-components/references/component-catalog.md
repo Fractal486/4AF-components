@@ -108,227 +108,145 @@ The catalog currently contains 39 installable UI items. Verify the count and nam
 
 ## Bundled APIs and composition
 
-These are reusable public features, not separate install names.
+Public features, not separate install names.
 
-### Alert is the general inline status line
+### Alert
 
-`alert` carries no surface and no field context. Use it for field, form, save, or other
-short inline status anywhere. When it describes a field, connect it with
-`aria-describedby` and mark the field invalid.
+No surface, no field context — use it for any short inline status. Under a field, connect
+with `aria-describedby` and mark the field invalid.
 
 | Variant | Ink | Glyph | Role |
 | --- | --- | --- | --- |
-| `error` (default) | Destructive | Hexagon alert | `alert` |
-| `warning` | Amber accent | Lucide triangle | `status` |
-| `success` | Success green | Lucide check | `status` |
-| `info` | Foreground ink | Lucide info | `status` |
+| `error` (default) | Destructive | Hexagon | `alert` |
+| `warning` | Amber accent | Triangle | `status` |
+| `success` | Success green | Check | `status` |
+| `info` | Foreground ink | Info | `status` |
 | `loading` | Muted grey | ASCII spinner | `status` |
 
-Only `error` interrupts; the rest are polite. The two neutrals differ by weight, not hue:
-`info` is a note meant to be read, `loading` is muted because it is not yet an outcome. Do
-not fake a variant by restyling another one — the role and glyph would not follow the
-colour. Reach for `badge` when the status is a label on a row rather than a sentence, and
-for `toast` when it should arrive over the page. Installing `alert` pulls in
-`ascii-loader`.
+Set `variant`; do not restyle one variant to imitate another — the role and glyph do not
+follow the colour. Pulls in `ascii-loader`. Renamed from `FieldError`/`field-error`: a
+deprecated `FieldError` alias still compiles, but the install name is `alert`.
 
-**Renamed.** This was `FieldError` / `field-error`. The file exports a deprecated
-`FieldError` alias so old call sites compile, but the install name is now `alert` — do not
-tell a user to `pnpm 4af install field-error`.
+### Async work
 
-### Async work always looks the same
+Every waiting state is the ASCII loader. `Button` exports a deprecated SVG `Spinner`; do
+not use it.
 
-Every waiting state is the ASCII loader: `Button`'s `loading`, `ActionButton` and
-`ActionToggle` while pending, `DropdownMenuActionItem`, the command palette, and Alert's
-`loading`. `Button` still exports a deprecated SVG `Spinner`; do not reach for it.
-
-Pick by what happens *after* the work:
-
-| Outcome | Use |
+| After the work | Use |
 | --- | --- |
-| Reverts to how it was | `action-button` (or `copy-button` for the clipboard) |
-| Lands in a new state and stays | `action-toggle` |
-| Runs inside a menu, confirms in place | `DropdownMenuActionItem` |
+| Reverts to how it was | `action-button` (`copy-button` for the clipboard) |
+| Lands in a new state | `action-toggle` |
+| Runs inside a menu | `DropdownMenuActionItem` |
 | Anything else | `useAction` directly |
 
-`ActionButton` cannot be made to stay: `revertAfter={Infinity}` clamps to a 32-bit int and
-reverts almost immediately. `ActionToggle` is a separate component because the landing
-state is `aria-pressed` — the same reason `Toggle` is not a `Button` prop.
+`ActionButton` always reverts — `revertAfter={Infinity}` clamps to a 32-bit int and fires
+almost immediately. `ActionToggle` is not optimistic: the label holds until the action
+settles and `onPressedChange` fires only on success.
 
-`ActionToggle` is deliberately not optimistic: the label holds and the loader runs until
-the action settles, and `onPressedChange` fires only on success. A failure needs no
-rollback because nothing moved.
+### Press scaling
 
-### Press scaling can be disabled or retargeted
+`Button` and `Toggle` take `pressScale={false}` — for anchored triggers whose popup would
+appear to move. `Button` takes `pressTarget="content"` when its edges are joined to a
+neighbour's; `ButtonGroup` sets it already. `ActionButton`, `CopyButton`, and
+`DeleteButton` inherit both.
 
-`Button` and `Toggle` accept `pressScale={false}`. Use it for anchored triggers when
-press resizing would make the attached popup appear to move. `ActionButton`, `CopyButton`,
-and `DeleteButton` inherit the Button prop.
+### ButtonGroup
 
-`Button` also accepts `pressTarget="content"`, which keeps the press but moves it to the
-label and icons so the box holds still. Use it when the button's edges are joined to
-something else's, where shrinking the box would open a gap along the seam. `ButtonGroup`
-sets it on its children already; set it by hand only when joining buttons some other way.
+Takes plain `Button` children and clones them for position, `variant`/`size` defaults, and
+press target. The group owns the single outline; the buttons drop theirs. It is
+`role="group"` and every button keeps its own tab stop — for selecting between options use
+`tabs`.
 
-### ButtonGroup joins Buttons and takes over their outline
+### Badge
 
-Put plain `Button` children inside `ButtonGroup`; it clones them to apply position
-(which corners flatten), to pass its own `variant`/`size` down as overridable defaults,
-and to retarget the press. The group draws one `shadow-border` around the whole run and
-the buttons drop theirs, so seams are single hairlines rather than two overlapping rings.
-Each variant keeps its standalone hover exactly.
+`animateLayout={false}` for a static badge in a list that filters or reorders; otherwise
+the pill FLIP-animates as the row moves.
 
-It is `role="group"`, not a toolbar: every button stays its own tab stop. A group whose
-buttons *select* between options is a different widget — use `tabs` or a toggle group,
-which is where roving focus belongs.
+### Select family
 
-### Badge layout animation can be disabled
-
-`Badge` accepts `animateLayout={false}`. Use it for a static badge inside a list that
-filters or reorders (a command-palette row, a table row); otherwise the pill FLIP-animates
-its own position as the row moves. A badge whose content actually changes keeps the default.
-
-### Select Sort belongs to Select
-
-Install `select` to use `SelectSortTrigger`; there is no `select-sort` registry item.
-The trigger automatically uses the sort treatment: dashed while empty, filled when
-selected or open, selected-label display, and matching chevron state. Enable the separate
-clear footer with `clearable` on `SelectContent`.
+`SelectSortTrigger` ships inside `select` (there is no `select-sort` item); `clearable` on
+`SelectContent` adds the clear footer.
 
 | Install name | Trigger | Panel entrance | Search location |
 | --- | --- | --- | --- |
-| `select` | Button/field | Standard scale, blur, fade | Optional inside panel |
+| `select` | Button/field | Scale, blur, fade | Optional inside panel |
 | `select-search` | Editable Combobox | Standard positioned panel | Trigger field |
 | `select-motion` | Button/field | Unfolding panel | Optional inside panel |
 | `select-motion-search` | Editable Combobox | Unfolds from field | Trigger field |
 
-All three support single and multi selection. Multi selection uses Checkbox. Only base
-`select` bundles `SelectSortTrigger`.
+All support single and multi selection (multi uses Checkbox) and take `size="sm" | "md"`,
+default `sm`. Inside a Command Palette keep `sm`.
 
-Every implementation takes `size="sm" | "md"` (default `sm`), scaling the trigger and the
-option rows together: `sm` is compact 32px (12px text), `md` is 36px and matches Button
-`md`/Input for form rows. Inside a Command Palette panel, always use `sm` (the default) —
-it fits the palette's density; do not set `md` there.
+For an icon on a closed trigger before the panel has ever opened:
 
-### A preselected Select value needs its icon on `items`
+- `select` — put `icon` in the `items` array (array form only; the record form is
+  `{ value: label }`).
+- `select-search`, `select-motion-search` — put `icon` on the item data; the item *is* the
+  value. Do not widen their `items` type or key a lookup on `item.value`.
+- `select-motion` — nothing needed; its items are always mounted.
 
-In `select`, declare the icon beside the label:
-`items={[{ value: "sans", label: "Sans-serif", icon: <Type /> }]}`.
+Order: mounted item, then `iconForValue`, then `items`/the value. An icon passed only to
+the item element cannot resolve before mount.
 
-`SelectItem`'s `icon` prop registers only when the popup mounts, so it cannot answer for
-the closed trigger on a cold load; `items` is the mapping that exists beforehand, which is
-why the label reads from it too. Resolution order is mounted item, then `iconForValue`
-(for computed icons), then `items`. Only the array form of `items` carries icons — the
-record form is `{ value: label }`.
+### Command Palette
 
-`select-search` and `select-motion-search` need the same thing by a different route. They
-are Combobox-based, so an item *is* its value (`<SearchSelectItem value={item}>`) and
-there is no separate mapping to look up — put `icon` on the item data instead:
+Root groups/rows, nested lists, custom panels via `helpers.openPanel`, search or
+text-field panel headers, per-panel header actions, badges, checkboxes, Kbd hints,
+destructive states, action panels.
 
-```tsx
-const fruits = [{ value: "apple", label: "Apple", icon: <Apple /> }];
-<SearchSelect items={fruits} defaultValue={fruits[0]}>
-```
+No enter or exit animation, deliberately — do not add one, or `keepMounted`/
+`AnimatePresence`.
 
-Do not widen their `items` type or add an `iconFromItems` keyed on `item.value`: Base UI
-types Combobox `items` as `readonly any[]` so the icon already type-checks, and a lookup
-by `item.value` would never match, because the value is the whole object. An icon passed
-only to `<SearchSelectItem icon={…}>` cannot resolve before mount in any of the three.
-Resolution order everywhere: mounted item, then `iconForValue`, then `items`/the value's
-own `icon`.
+Escape clears a non-empty header field only when that header is `type="search"`; other
+headers go back. Keep Select controls in headers at `size="sm"`.
 
-### Command Palette is a component family
+Async root results: `onSearch(query, signal) => Promise<CommandGroup[]>`, with `groups` as
+the resting state while the query is empty. Returned order is preserved. Tune with
+`searchDebounce` and `loadingMessage`; debounce, abort, out-of-order dropping, and the
+loading indicator are handled. In a custom panel call
+`useCommandSearch(helpers.query, source)` and render `CommandPanelLoading` while
+`searching && results === null`.
 
-The `command-palette` item includes root groups/rows, nested lists, arbitrary custom
-panels through `helpers.openPanel`, search or text-field panel headers, per-panel header
-actions, badges, checkboxes, Kbd hints, destructive states, and grouped action panels.
+### Dropdown Menu
 
-Escape clears a non-empty header field only when that header is `type="search"`.
-Traditional text-field headers go back instead. Projects, Rename Project, and New Project
-in the inspector are public-API examples rather than private behavior. When a panel's
-header actions are Select or Select Sort controls, keep them at `size="sm"` (the default)
-so they fit the palette.
+Three nested-panel forms: navigation submenu, single-select with a trailing checkmark, and
+checkbox multi-select. Selection panels can search. Safe pointer travel keeps the parent
+active on the way into a panel.
 
-### Command Palette search can be async
-
-Pass `onSearch(query, signal) => Promise<CommandGroup[]>` to drive root results from a
-server instead of filtering `groups` locally; `groups` then acts as the resting state shown
-while the query is empty. Returned groups render in source order (no re-rank).
-`searchDebounce` and `loadingMessage` tune it; debounce, `AbortSignal` cancellation,
-out-of-order dropping, and a non-flashing loading indicator are handled. For an async custom
-panel, call the exported `useCommandSearch(helpers.query, source)` hook in the panel body and
-render `CommandPanelLoading` on first load (`searching && results === null`) — the header
-shows an inline loader on refresh automatically. Find People… is a public-API example.
-
-### Dropdown Menu has three nested-panel forms
-
-The `dropdown-menu` item includes the original navigation submenu, a single-select panel
-with a trailing checkmark, and a checkbox-based multi-select panel. Selection panels can
-include search. Safe pointer travel keeps the parent active while moving into its panel.
-
-### A checkbox item can read as a toggle button
-
-`DropdownMenuCheckboxItem` takes `children` as a function of the checked state, and
-`indicator={false}` drops the left tick and its indent, so the icon and label carry the
-state instead. Wrap each swapping part in `Morph` (Mute ⇄ Unmute with a different glyph);
-use `fillIcon` instead when the glyph only changes weight (bookmark, star, heart) and
-there is nothing to morph to. Semantics stay `menuitemcheckbox` either way.
-
-Rows already left-align any `Morph` inside them and mute a morphing leading icon to match
-a plain one — do not add `place-items-start` or a text colour at the call site.
-
-### A row can run something and confirm it in place
-
-`DropdownMenuActionItem` is the menu's Action Button: `action`, `labels`, `icons`,
-`revertAfter`, `pendingDelay`, `announce`, `onSuccess`, `onError`. "Copy link" → "Copied"
-with a check, then back. It defaults to `closeOnClick={false}`, since a row otherwise
-closes the menu and the outcome is never seen; override that only when the result is
-visible on the page behind the menu.
-
-Do not hand-roll this with `useState` and `setTimeout` — the shared `useAction` machine
-handles the double-submit guard, the revert clock each run owns, and the async resolve
-that must not land on an unmounted component.
-
-When the row should *land* rather than revert, pass `action` to
-`DropdownMenuCheckboxItem`: the tick holds, the loader runs in its slot, and
-`onCheckedChange` fires only on success. Without `action` it stays a plain synchronous
-checkbox. With `indicator={false}` the children function receives the status as a second
-argument, since there is no tick slot to put the loader in.
+`DropdownMenuCheckboxItem` takes `children` as `(checked, status) => …` and
+`indicator={false}` to drop the tick, so the icon and label carry the state. Wrap swapping
+parts in `Morph`; use `fillIcon` when only the glyph's weight changes. Rows already
+left-align Morphs and mute a morphing leading icon — do not set `place-items-start` or a
+text colour.
 
 | Row behaviour | Use |
 | --- | --- |
-| Runs, confirms, reverts | `DropdownMenuActionItem` |
+| Runs, confirms, reverts | `DropdownMenuActionItem` (`closeOnClick={false}` by default) |
 | Runs, then lands checked | `DropdownMenuCheckboxItem` with `action` |
-| Flips immediately | `DropdownMenuCheckboxItem` with no `action` |
+| Flips immediately | `DropdownMenuCheckboxItem`, no `action` |
 
-### Sidebar and layout are separate
+Do not hand-roll either with `useState` and `setTimeout`; both run on `useAction`.
 
-`sidebar` provides low-level default, floating, inset, and split forms; reusable
-collapsible sections; per-row actions; badges; nested rows; search/button headers; and row
-skeletons. Consumers can compose a row action with `dropdown-menu`.
+### Sidebar
 
-A header takes one full-width `SidebarHeaderButton`, or two side by side when they are
-wrapped in `SidebarHeaderRow`. The row owns the spacing below the title, splits its width
-evenly, and stacks the buttons once the sidebar collapses to icons. A button that should
-keep its own width opts out with `className="flex-none"`.
+`sidebar` covers default, floating, inset, and split forms, collapsible sections, row
+actions, badges, nested rows, search/button headers, and row skeletons. Compose a row
+action with `dropdown-menu`.
 
-`sidebar-layout` is an optional installable shell. It adds the content surface, page
-header, left-side collapse control, title, and optional header actions without forcing
-that layout on every Sidebar consumer.
+A header takes one full-width `SidebarHeaderButton`, or two wrapped in `SidebarHeaderRow`,
+which splits the width and stacks them when the sidebar collapses; `className="flex-none"`
+opts a button out.
 
-### Toast supports multiple actions
+`sidebar-layout` is the optional shell: content surface, page header, collapse control,
+title, header actions.
 
-Use `actions` for up to three custom toast buttons. The Base UI-compatible `actionProps`
-option remains available for one action.
+### Toast
+
+`actions` for up to three buttons; `actionProps` remains for one.
 
 ## Inspector and registry parity
 
-The inspector is a review site, not the installable catalog.
-
-`sidebar-layout` is an installable page-frame companion intentionally represented in the
-Sidebar demo rather than by a dedicated inspector entry.
-
-The inspector's “Select · Sort” / `select-sort` entry demonstrates `SelectSortTrigger`;
-install `select`.
-
-Demo helpers, sample data, inspector navigation, settings controls, fullscreen wrappers,
-and page composition are not registry components.
+The inspector is a review site, not the installable catalog. `sidebar-layout` appears
+inside the Sidebar demo, and the "Select · Sort" entry demonstrates `SelectSortTrigger`
+(install `select`). Demo helpers, sample data, navigation, settings controls, and page
+wrappers are not registry components.

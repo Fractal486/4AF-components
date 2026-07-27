@@ -106,7 +106,7 @@ export function AlertDialogContent({ className, children, ...props }: AlertDialo
               // Centred with a translate; Motion scales on top (Tailwind v4 keeps
               // `translate` and Motion's `transform` as separate properties, so the two
               // compose and it stays centred while it scales).
-              "fixed top-1/2 left-1/2 z-50 flex w-[calc(100%-2rem)] max-w-lg -translate-1/2 flex-col gap-4 rounded-md border border-border bg-background p-6 shadow-overlay-drop",
+              "fixed top-1/2 left-1/2 z-50 flex w-[calc(100%-2rem)] max-w-lg -translate-1/2 flex-col gap-4 rounded-md border border-border bg-surface-raised p-6 shadow-overlay-drop",
               className,
             )}
             render={

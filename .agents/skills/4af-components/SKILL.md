@@ -39,18 +39,14 @@ path, for example:
 pnpm --dir C:\Files\Development\4AF-components 4af install button --project C:\Projects\my-app
 ```
 
-Run `doctor` whenever the target is unfamiliar. The target must contain `package.json`,
-shadcn `components.json`, and `ui` and `lib` aliases. Use `--dry-run` to inspect the complete
-mutation plan: target files, theme CSS merge, package changes, and conflicts. Installation refuses existing target files by default; pass `--overwrite`
-only when replacement is intentional.
+Run `doctor` on an unfamiliar target: it needs `package.json`, shadcn `components.json`,
+and `ui` and `lib` aliases. `--dry-run` prints the full mutation plan — files, theme CSS
+merge, package changes, conflicts. Existing target files are refused unless `--overwrite`
+is passed. Install serves the registry temporarily and stops it afterwards; the dev server
+need not be running.
 
-The install command builds and serves the private registry temporarily, invokes shadcn
-non-interactively, installs recursive 4AF dependencies and theme files, then stops the
-server. The development server does not need to be running.
-
-After installation, inspect the target diff and run the target project's normal checks,
-at minimum its typecheck or production build when available. Do not run the library
-repository's `pnpm build` while its `pnpm dev` server is active; both use `.next/`.
+Afterwards inspect the diff and run the target's own typecheck or build. Never run this
+repository's `pnpm build` while its `pnpm dev` is active — both use `.next/`.
 
 ## Work on the library
 
@@ -58,17 +54,11 @@ Preserve `app -> inspector -> registry`. Never import `app/` or `inspector/` fro
 `registry/`. Keep portable implementation in `registry/ui/<name>/`, demonstrations and
 settings in `inspector/entries/`, and install metadata in `registry.json`.
 
-Follow the root `AGENTS.md` component contract. In particular:
-
-- Use Base UI as the canonical behaviour layer.
-- Forward refs and props; support composition and controlled/uncontrolled state where
-  applicable.
-- Keep CVA variants in the sibling `.variants.ts` file.
-- Expose state through attributes such as `data-state`, `data-variant`, and
-  `data-loading`.
-- Use semantic theme tokens, named transition properties, and duration tokens.
-- Avoid animated layout properties and unnecessary Motion runtime code.
-- Preserve unrelated work in a dirty worktree.
+Follow the component contract in the root `AGENTS.md`: Base UI for behaviour, forwarded
+refs and props, controlled and uncontrolled state, CVA variants in the sibling
+`.variants.ts`, state exposed as `data-*` attributes, semantic tokens, named transition
+properties and duration tokens, no animated layout properties, no needless Motion runtime.
+Preserve unrelated work in a dirty worktree.
 
 For a component change:
 

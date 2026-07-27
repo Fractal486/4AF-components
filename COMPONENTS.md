@@ -39,6 +39,11 @@ separate `select-sort` registry item.
   padding between them.
 - Buttons and raised controls normally use the transparent `shadow-border` treatment.
   Real borders are kept for dividers, table cells, and other true separators.
+- A component's fill states how high it sits: `background` for the page and for sunk wells
+  (input fields, the checkbox and radio field, `SidebarInset`); `surface` for chrome and
+  anchored popups (sidebar, dropdown menu, popover, hover card); `surface-raised` for what
+  floats over everything (dialog, alert dialog, sheet, command palette, toast). A consuming
+  project decides what those resolve to.
 
 ### Behaviour and accessibility
 
