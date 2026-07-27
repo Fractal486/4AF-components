@@ -489,6 +489,12 @@ panel, always use `sm` (the default) — it fits the palette's density.
 
 ### Command Palette composition
 
+It opens and closes with no enter or exit animation, on either the backdrop or the panel.
+That is deliberate: a palette is summoned mid-thought and typing usually begins before it
+has finished arriving, so an entrance is time spent between deciding and typing. With
+nothing to play out, the portal mounts and unmounts under Base UI directly — no
+`keepMounted`, no `AnimatePresence` — and the item carries no Motion dependency.
+
 The registry item includes more than the root popup:
 
 - root groups and rows with icons, descriptions, badges, keybinds, and destructive state;

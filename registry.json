@@ -773,13 +773,11 @@
       "description": "A keyboard-first command and search palette with nested panels, custom panel content, fuzzy filtering, async/server-driven search, keybind hints, and Base UI dialog/autocomplete behavior.",
       "dependencies": [
         "@base-ui/react",
-        "lucide-react",
-        "motion"
+        "lucide-react"
       ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json",
         "http://localhost:3000/r/ascii-loader.json",
         "http://localhost:3000/r/checkbox.json",
         "http://localhost:3000/r/select.json"

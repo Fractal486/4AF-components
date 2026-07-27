@@ -3,7 +3,6 @@
 import { Autocomplete } from "@base-ui/react/autocomplete";
 import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import { Select as BaseSelect } from "@base-ui/react/select";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ChevronLeft, ChevronRight, CornerDownLeft, Plus, Search } from "lucide-react";
 import {
   Fragment,
@@ -19,7 +18,6 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
-import { ease, spring } from "@/registry/lib/motion";
 import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import {
@@ -52,9 +50,11 @@ import {
  * Custom panels can push another panel with `helpers.openPanel` when a flow needs a
  * second form step.
  *
- * The enter/exit are Motion's, matching the Dialog: it scales up out of a blur and leaves
- * by fading and blurring rather than playing the entrance backwards. `keepMounted` hands
- * unmount timing to AnimatePresence so the exit finishes before the DOM is torn down.
+ * It opens and closes without motion — no fade, no scale, no blur, on the backdrop or the
+ * panel. A palette is summoned mid-thought and the query usually starts before it has
+ * finished arriving; an entrance is time spent between deciding and typing. Nothing here
+ * animates in or out, so the portal mounts and unmounts under Base UI directly rather
+ * than being held open for an exit.
  */
 
 export interface CommandPanelInputProps
@@ -565,7 +565,6 @@ export function CommandPalette({
   const isOpen = isControlled ? open : uncontrolled;
   const [query, setQuery] = useState("");
   const [pages, setPages] = useState<Page[]>([]);
-  const reduceMotion = useReducedMotion();
   const generatedPanelInputId = useId();
 
   const isRoot = pages.length === 0;
@@ -774,291 +773,260 @@ export function CommandPalette({
   // no label. It filters/sorts nothing here — that already happened above.
   const items = visibleGroups.map((group) => ({ heading: group.heading, items: group.items }));
 
+  if (!isOpen) return null;
+
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <BaseDialog.Root
-          open
-          onOpenChange={(next, details) => {
-            if (next) return;
-            // Escape inside a drilled-in page steps back out of it instead of dismissing
-            // the whole palette — cancelling Base UI's close is what keeps it open. Only
-            // the root level actually closes on Escape.
-            if (details.reason === "escape-key" && pages.length > 0) {
-              details.cancel();
-              goToDepth(pages.length - 1);
-              return;
-            }
-            setOpen(false);
-          }}
+    <BaseDialog.Root
+      open
+      onOpenChange={(next, details) => {
+        if (next) return;
+        // Escape inside a drilled-in page steps back out of it instead of dismissing
+        // the whole palette — cancelling Base UI's close is what keeps it open. Only
+        // the root level actually closes on Escape.
+        if (details.reason === "escape-key" && pages.length > 0) {
+          details.cancel();
+          goToDepth(pages.length - 1);
+          return;
+        }
+        setOpen(false);
+      }}
+    >
+      {/* No `keepMounted`: nothing has to be held on screen for an exit, so Base UI
+          tears the tree down as soon as it closes. */}
+      <BaseDialog.Portal>
+        <BaseDialog.Backdrop className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" />
+        <BaseDialog.Popup
+          // Top-anchored and x-centred. The vertical offset is a plain `top`, and the
+          // horizontal centring a `-translate-x-1/2` that now has nothing composing
+          // on top of it.
+          className={cn(
+            "fixed top-[14vh] left-1/2 z-50 flex max-h-[min(34rem,calc(100dvh-16vh))] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 flex-col overflow-hidden rounded-md border border-border bg-background shadow-overlay-drop outline-none",
+            className,
+          )}
         >
-          {/* keepMounted so AnimatePresence, not Base UI, decides when the tree unmounts. */}
-          <BaseDialog.Portal keepMounted>
-            <BaseDialog.Backdrop
-              render={
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0, transition: { duration: reduceMotion ? 0 : 0.18 } }}
-                  transition={{ duration: reduceMotion ? 0 : 0.25, ease: ease.out }}
-                  className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-                />
-              }
-            />
-            <BaseDialog.Popup
-              // Top-anchored, x-centred with a translate so Motion's scale composes on top
-              // (Tailwind keeps `translate` and Motion's `transform` separate). No
-              // y-translate — the vertical offset is a plain `top`, which nothing animates.
-              className={cn(
-                "fixed top-[14vh] left-1/2 z-50 flex max-h-[min(34rem,calc(100dvh-16vh))] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 flex-col overflow-hidden rounded-md border border-border bg-background shadow-overlay-drop outline-none",
-                className,
-              )}
-              render={
-                <motion.div
-                  initial={
-                    reduceMotion
-                      ? { opacity: 0 }
-                      : { opacity: 0, scale: 0.96, filter: "blur(4px)" }
-                  }
-                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                  exit={
-                    reduceMotion
-                      ? { opacity: 0, transition: { duration: 0 } }
-                      : {
-                          opacity: 0,
-                          filter: "blur(8px)",
-                          transition: { duration: 0.2, ease: ease.out },
-                        }
-                  }
-                  transition={reduceMotion ? { duration: 0 } : spring.smooth}
-                />
-              }
+          <BaseDialog.Title className="sr-only">Command palette</BaseDialog.Title>
+
+          <PaletteControlsContext.Provider value={controls}>
+          {panelNode ? (
+            <Autocomplete.Root
+              inline
+              open
+              mode="none"
+              autoHighlight
+              value={panelInputValue}
+              onValueChange={setPanelInputValue}
             >
-              <BaseDialog.Title className="sr-only">Command palette</BaseDialog.Title>
-
-              <PaletteControlsContext.Provider value={controls}>
-              {panelNode ? (
-                <Autocomplete.Root
-                  inline
-                  open
-                  mode="none"
-                  autoHighlight
-                  value={panelInputValue}
-                  onValueChange={setPanelInputValue}
-                >
-                {/* A panel page: a Back button and either a title or an opt-in input field,
-                    then the form body and a slim footer. The header field drives
-                    `helpers.query` / `helpers.inputValue`; regular panels leave their own
-                    fields in charge. Escape clears a search field, but goes back from a
-                    traditional text field. Backspace steps back when the field is empty,
-                    while the Back button and the panel's own `back` helper remain available. */}
-                <>
-                  <div
-                    className={cn(
-                      "flex h-12 shrink-0 items-center gap-2.5 border-b border-border pl-4 pr-3",
-                    )}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => goToDepth(pages.length - 1)}
-                      aria-label="Back"
-                      className={cn(
-                        "relative flex size-4 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors duration-(--duration-fast) before:absolute before:-inset-y-2 before:-left-2.5 before:w-9 before:rounded-sm before:content-[''] hover:text-foreground focus-visible:text-foreground",
-                      )}
-                    >
-                      <CommandIcon>
-                        <ChevronLeft />
-                      </CommandIcon>
-                    </button>
-                    {panelInput ? (
-                      <>
-                        {panelInput.label && (
-                          <label htmlFor={panelInputId} className="sr-only">
-                            {panelInput.label}
-                          </label>
-                        )}
-                        <Autocomplete.Input
-                          {...panelInputAttributes}
-                          id={panelInputId}
-                          autoFocus={panelInput.autoFocus ?? true}
-                          aria-label={
-                            panelInput["aria-label"] ??
-                            (panelInput.label ? undefined : activePage?.title)
-                          }
-                          onKeyDown={(event) => {
-                            panelInput.onKeyDown?.(event);
-                            if (event.defaultPrevented) return;
-
-                            if (event.key === "Escape") {
-                              if (panelInput.type === "search" && panelInputValue !== "") {
-                                consumeHeaderEscape(event);
-                                setPanelInputValue("");
-                                return;
-                              }
-                              consumeHeaderEscape(event);
-                              goToDepth(pages.length - 1);
-                              return;
-                            }
-                            if (event.key === "Backspace" && panelInputValue === "") {
-                              event.preventDefault();
-                              goToDepth(pages.length - 1);
-                            }
-                          }}
-                          placeholder={panelInput.placeholder ?? placeholder}
-                          className={cn(
-                            "h-12 min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-subtle-foreground [&::-webkit-search-cancel-button]:appearance-none",
-                            panelInput.className,
-                          )}
-                        />
-                        {panelHeaderTrailing}
-                      </>
-                    ) : (
-                      <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
-                        {activePage?.title}
-                      </span>
-                    )}
-                    {!panelInput && panelHeaderTrailing}
-                  </div>
-                  {/* Just a column — the panel owns its own body/footer split, so a pinned
-                      footer can sit outside the scroll area rather than sticky inside it.
-                      The provider lets the panel's own `useCommandSearch` light the header
-                      loader above. */}
-                  <div className="flex min-h-0 flex-1 flex-col">
-                    <PanelSearchContext.Provider value={setPanelSearching}>
-                      {panelNode}
-                    </PanelSearchContext.Provider>
-                  </div>
-                </>
-                </Autocomplete.Root>
-              ) : (
-              <Autocomplete.Root
-                // `inline open`: the list lives in this panel, always visible. Controlled
-                // query so it resets on close and on page changes. `filter={null}` because
-                // we've already filtered and ranked the items ourselves.
-                inline
-                open
-                items={items}
-                filter={null}
-                value={query}
-                onValueChange={setQuery}
-                itemToStringValue={(item: CommandItem) => item.label}
-                // Keep the top match ready so Enter runs it without an arrow press first.
-                autoHighlight
+            {/* A panel page: a Back button and either a title or an opt-in input field,
+                then the form body and a slim footer. The header field drives
+                `helpers.query` / `helpers.inputValue`; regular panels leave their own
+                fields in charge. Escape clears a search field, but goes back from a
+                traditional text field. Backspace steps back when the field is empty,
+                while the Back button and the panel's own `back` helper remain available. */}
+            <>
+              <div
+                className={cn(
+                  "flex h-12 shrink-0 items-center gap-2.5 border-b border-border pl-4 pr-3",
+                )}
               >
-                <div
-                  data-searching={searching ? "" : undefined}
-                  className="flex items-center gap-2.5 border-b border-border pl-4 pr-3"
+                <button
+                  type="button"
+                  onClick={() => goToDepth(pages.length - 1)}
+                  aria-label="Back"
+                  className={cn(
+                    "relative flex size-4 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors duration-(--duration-fast) before:absolute before:-inset-y-2 before:-left-2.5 before:w-9 before:rounded-sm before:content-[''] hover:text-foreground focus-visible:text-foreground",
+                  )}
                 >
-                  <CommandIcon className="text-subtle-foreground" aria-hidden>
-                    <Search />
+                  <CommandIcon>
+                    <ChevronLeft />
                   </CommandIcon>
+                </button>
+                {panelInput ? (
+                  <>
+                    {panelInput.label && (
+                      <label htmlFor={panelInputId} className="sr-only">
+                        {panelInput.label}
+                      </label>
+                    )}
+                    <Autocomplete.Input
+                      {...panelInputAttributes}
+                      id={panelInputId}
+                      autoFocus={panelInput.autoFocus ?? true}
+                      aria-label={
+                        panelInput["aria-label"] ??
+                        (panelInput.label ? undefined : activePage?.title)
+                      }
+                      onKeyDown={(event) => {
+                        panelInput.onKeyDown?.(event);
+                        if (event.defaultPrevented) return;
 
-                  {/* Breadcrumb: one pill per drilled-in page, click to jump back. */}
-                  {pages.map((page, index) => (
-                    <button
-                      key={index}
-                      type="button"
-                      onClick={() => goToDepth(index)}
-                      className="flex shrink-0 items-center gap-1 rounded-sm bg-muted px-2 py-1 text-xs font-medium text-foreground transition-colors duration-(--duration-fast) hover:bg-border"
-                    >
-                      {page.title}
-                    </button>
-                  ))}
-
-                  <Autocomplete.Input
-                    autoFocus
-                    placeholder={placeholder}
-                    // The list is `inline open`, so Autocomplete swallows Escape (no popup to
-                    // close). Drive navigation ourselves: Escape clears a non-empty query;
-                    // once empty, it steps back or closes. Backspace on an empty query steps
-                    // back up the page stack.
-                    onKeyDown={(event) => {
-                      if (event.key === "Escape") {
-                        // A query clears first; then Escape steps back out of a sub-page;
-                        // only at the root does it dismiss the palette.
-                        if (query !== "") {
+                        if (event.key === "Escape") {
+                          if (panelInput.type === "search" && panelInputValue !== "") {
+                            consumeHeaderEscape(event);
+                            setPanelInputValue("");
+                            return;
+                          }
                           consumeHeaderEscape(event);
-                          setQuery("");
-                          return;
-                        }
-                        if (pages.length > 0) {
-                          event.preventDefault();
                           goToDepth(pages.length - 1);
                           return;
                         }
-                        setOpen(false);
-                        return;
-                      }
-                      if (event.key === "Backspace" && query === "" && pages.length > 0) {
-                        event.preventDefault();
-                        goToDepth(pages.length - 1);
-                      }
-                    }}
-                    className="h-12 min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-subtle-foreground"
-                  />
-
-                  {searching && hasVisibleItems && (
-                    <AsciiLoader className="shrink-0 text-sm text-subtle-foreground" />
-                  )}
-
-                  <kbd className="hidden shrink-0 rounded-xs bg-surface px-1.5 py-0.5 font-mono text-2xs text-subtle-foreground select-none sm:block">
-                    Esc
-                  </kbd>
-                </div>
-
-                <Autocomplete.List
-                  className={cn("min-h-0 flex-1 overflow-y-auto overscroll-contain p-1.5", SCROLLBAR)}
-                >
-                  {(group: { heading?: string; items: CommandItem[] }) => (
-                    <Autocomplete.Group
-                      key={group.heading ?? "group"}
-                      items={group.items}
-                      className="mb-1 last:mb-0"
-                    >
-                      {group.heading && (
-                        <Autocomplete.GroupLabel className="px-2.5 pt-2 pb-1 text-xs font-medium text-subtle-foreground">
-                          {group.heading}
-                        </Autocomplete.GroupLabel>
+                        if (event.key === "Backspace" && panelInputValue === "") {
+                          event.preventDefault();
+                          goToDepth(pages.length - 1);
+                        }
+                      }}
+                      placeholder={panelInput.placeholder ?? placeholder}
+                      className={cn(
+                        "h-12 min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-subtle-foreground [&::-webkit-search-cancel-button]:appearance-none",
+                        panelInput.className,
                       )}
-                      <Autocomplete.Collection>
-                        {(item: CommandItem) => (
-                          <CommandRow key={item.id} item={item} query={query} onRun={runItem} />
-                        )}
-                      </Autocomplete.Collection>
-                    </Autocomplete.Group>
-                  )}
-                </Autocomplete.List>
-
-                {/* Empty's box must stay mounted — it's an ARIA live region — and only its
-                    *children* clear when there are results. The padding lives on an inner
-                    element that comes and goes with the message, so the outer box collapses
-                    to nothing rather than leaving a dead band under the list. */}
-                <Autocomplete.Empty className="text-center text-sm text-muted-foreground">
-                  {searching ? (
-                    <div className="flex items-center justify-center gap-2 px-4 py-8">
-                      <AsciiLoader className="text-sm text-subtle-foreground" />
-                      <span>{loadingMessage}</span>
-                    </div>
-                  ) : (
-                    <div className="px-4 py-8">{emptyMessage}</div>
-                  )}
-                </Autocomplete.Empty>
-
-                {footer && (
-                  <div className="flex shrink-0 items-center gap-3 border-t border-border px-1.5 py-2">
-                    <Hint keys={["↑", "↓"]}>Navigate</Hint>
-                    <Hint keys={[<CornerDownLeft key="enter" className="size-2.5" />]}>Select</Hint>
-                    <EscapeHint />
-                  </div>
+                    />
+                    {panelHeaderTrailing}
+                  </>
+                ) : (
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+                    {activePage?.title}
+                  </span>
                 )}
-              </Autocomplete.Root>
+                {!panelInput && panelHeaderTrailing}
+              </div>
+              {/* Just a column — the panel owns its own body/footer split, so a pinned
+                  footer can sit outside the scroll area rather than sticky inside it.
+                  The provider lets the panel's own `useCommandSearch` light the header
+                  loader above. */}
+              <div className="flex min-h-0 flex-1 flex-col">
+                <PanelSearchContext.Provider value={setPanelSearching}>
+                  {panelNode}
+                </PanelSearchContext.Provider>
+              </div>
+            </>
+            </Autocomplete.Root>
+          ) : (
+          <Autocomplete.Root
+            // `inline open`: the list lives in this panel, always visible. Controlled
+            // query so it resets on close and on page changes. `filter={null}` because
+            // we've already filtered and ranked the items ourselves.
+            inline
+            open
+            items={items}
+            filter={null}
+            value={query}
+            onValueChange={setQuery}
+            itemToStringValue={(item: CommandItem) => item.label}
+            // Keep the top match ready so Enter runs it without an arrow press first.
+            autoHighlight
+          >
+            <div
+              data-searching={searching ? "" : undefined}
+              className="flex items-center gap-2.5 border-b border-border pl-4 pr-3"
+            >
+              <CommandIcon className="text-subtle-foreground" aria-hidden>
+                <Search />
+              </CommandIcon>
+
+              {/* Breadcrumb: one pill per drilled-in page, click to jump back. */}
+              {pages.map((page, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => goToDepth(index)}
+                  className="flex shrink-0 items-center gap-1 rounded-sm bg-muted px-2 py-1 text-xs font-medium text-foreground transition-colors duration-(--duration-fast) hover:bg-border"
+                >
+                  {page.title}
+                </button>
+              ))}
+
+              <Autocomplete.Input
+                autoFocus
+                placeholder={placeholder}
+                // The list is `inline open`, so Autocomplete swallows Escape (no popup to
+                // close). Drive navigation ourselves: Escape clears a non-empty query;
+                // once empty, it steps back or closes. Backspace on an empty query steps
+                // back up the page stack.
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    // A query clears first; then Escape steps back out of a sub-page;
+                    // only at the root does it dismiss the palette.
+                    if (query !== "") {
+                      consumeHeaderEscape(event);
+                      setQuery("");
+                      return;
+                    }
+                    if (pages.length > 0) {
+                      event.preventDefault();
+                      goToDepth(pages.length - 1);
+                      return;
+                    }
+                    setOpen(false);
+                    return;
+                  }
+                  if (event.key === "Backspace" && query === "" && pages.length > 0) {
+                    event.preventDefault();
+                    goToDepth(pages.length - 1);
+                  }
+                }}
+                className="h-12 min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-subtle-foreground"
+              />
+
+              {searching && hasVisibleItems && (
+                <AsciiLoader className="shrink-0 text-sm text-subtle-foreground" />
               )}
-              </PaletteControlsContext.Provider>
-            </BaseDialog.Popup>
-          </BaseDialog.Portal>
-        </BaseDialog.Root>
-      )}
-    </AnimatePresence>
+
+              <kbd className="hidden shrink-0 rounded-xs bg-surface px-1.5 py-0.5 font-mono text-2xs text-subtle-foreground select-none sm:block">
+                Esc
+              </kbd>
+            </div>
+
+            <Autocomplete.List
+              className={cn("min-h-0 flex-1 overflow-y-auto overscroll-contain p-1.5", SCROLLBAR)}
+            >
+              {(group: { heading?: string; items: CommandItem[] }) => (
+                <Autocomplete.Group
+                  key={group.heading ?? "group"}
+                  items={group.items}
+                  className="mb-1 last:mb-0"
+                >
+                  {group.heading && (
+                    <Autocomplete.GroupLabel className="px-2.5 pt-2 pb-1 text-xs font-medium text-subtle-foreground">
+                      {group.heading}
+                    </Autocomplete.GroupLabel>
+                  )}
+                  <Autocomplete.Collection>
+                    {(item: CommandItem) => (
+                      <CommandRow key={item.id} item={item} query={query} onRun={runItem} />
+                    )}
+                  </Autocomplete.Collection>
+                </Autocomplete.Group>
+              )}
+            </Autocomplete.List>
+
+            {/* Empty's box must stay mounted — it's an ARIA live region — and only its
+                *children* clear when there are results. The padding lives on an inner
+                element that comes and goes with the message, so the outer box collapses
+                to nothing rather than leaving a dead band under the list. */}
+            <Autocomplete.Empty className="text-center text-sm text-muted-foreground">
+              {searching ? (
+                <div className="flex items-center justify-center gap-2 px-4 py-8">
+                  <AsciiLoader className="text-sm text-subtle-foreground" />
+                  <span>{loadingMessage}</span>
+                </div>
+              ) : (
+                <div className="px-4 py-8">{emptyMessage}</div>
+              )}
+            </Autocomplete.Empty>
+
+            {footer && (
+              <div className="flex shrink-0 items-center gap-3 border-t border-border px-1.5 py-2">
+                <Hint keys={["↑", "↓"]}>Navigate</Hint>
+                <Hint keys={[<CornerDownLeft key="enter" className="size-2.5" />]}>Select</Hint>
+                <EscapeHint />
+              </div>
+            )}
+          </Autocomplete.Root>
+          )}
+          </PaletteControlsContext.Provider>
+        </BaseDialog.Popup>
+      </BaseDialog.Portal>
+    </BaseDialog.Root>
   );
 }
 
