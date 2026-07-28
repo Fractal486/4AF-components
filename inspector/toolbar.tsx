@@ -16,6 +16,11 @@ export function Toolbar() {
   const [theme, setTheme] = useState<Theme | null>(null);
 
   useEffect(() => {
+    // Reading the DOM is exactly what an effect is for, and this one can't be derived
+    // during render: the value is written to `documentElement` by a pre-paint script, so
+    // it doesn't exist on the server and touching it while rendering would be a hydration
+    // mismatch. There is nothing here to move into render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
   }, []);
 

@@ -7,6 +7,13 @@ const __dirname = dirname(__filename);
 
 const compat = new FlatCompat({ baseDirectory: __dirname });
 
+// `eslint-plugin-react-hooks` is a direct devDependency here purely to raise the version.
+// `eslint-config-next` depends on `^5`, which ships only `rules-of-hooks` and
+// `exhaustive-deps`; declaring `^7` at the root is what `next/core-web-vitals` then
+// resolves, so its preset brings the React Compiler checks — `set-state-in-effect`,
+// `immutability` and the rest — with it. Without that, this repo stays blind to a class of
+// defect that consumers on a current plugin see the moment they install a component.
+
 const config = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {

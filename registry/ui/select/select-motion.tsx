@@ -212,12 +212,17 @@ export function Select({
   const selectedValue = multiple ? undefined : values[0];
 
   // A panel filter belongs to this open session only. Reopening shows the full list.
-  useEffect(() => {
+  // Adjusted during render rather than from an effect: this is state derived from the
+  // open/closed transition, not a synchronisation with anything outside React, so an
+  // effect would only paint the stale filter for a frame and schedule a second render.
+  const [wasOpen, setWasOpen] = useState(open);
+  if (wasOpen !== open) {
+    setWasOpen(open);
     if (!open) {
       setSearchQuery("");
       setActiveItem(undefined);
     }
-  }, [open]);
+  }
 
   const select = useCallback(
     (next: string) => {
@@ -465,7 +470,7 @@ export function SelectContent({
   const listRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const [height, setHeight] = useState(0);
-  const [noResults, setNoResults] = useState(false);
+  const [measuredEmpty, setMeasuredEmpty] = useState(false);
   const open = ctx.open;
   const { setActiveItem, setPlacement, searchQuery } = ctx;
 
@@ -479,17 +484,25 @@ export function SelectContent({
     if (searchable) searchRef.current?.focus();
   }, [open, searchable, searchQuery, setActiveItem]);
 
+  // Whether the filter emptied the list can only be answered by the DOM — Base UI hides
+  // the rows itself, so there's nothing in React state to count. That measurement is a
+  // genuine external read and stays in a layout effect.
+  //
+  // "Not filtering at all", though, is knowable during render, so it's derived rather than
+  // written back into state. Keeping it out of the effect means the effect no longer has a
+  // branch that sets a constant, and an unfiltered panel can't briefly inherit the last
+  // filter's answer.
+  const filtering = searchable && searchQuery.trim() !== "";
+  const noResults = filtering && measuredEmpty;
+
   useLayoutEffect(() => {
-    if (!searchable || searchQuery.trim() === "") {
-      setNoResults(false);
-      return;
-    }
+    if (!filtering) return;
 
     const hasVisibleOption = Array.from(
       listRef.current?.querySelectorAll<HTMLElement>('[role="option"]') ?? [],
     ).some((option) => !option.hidden);
-    setNoResults(!hasVisibleOption);
-  }, [searchQuery, searchable]);
+    setMeasuredEmpty(!hasVisibleOption);
+  }, [searchQuery, filtering]);
 
   useLayoutEffect(() => {
     const node = innerRef.current;

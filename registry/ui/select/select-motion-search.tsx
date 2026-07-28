@@ -155,16 +155,21 @@ export function MotionSearchSelect<Value, Multiple extends boolean | undefined =
     () => !isOpen && items !== undefined,
   );
 
+  // Adjusted during render, above `visibleItems` so it reads the released latch in this
+  // same pass. From an effect the latch would still be set on the render that opens the
+  // panel, so the list would mount empty for a frame and fill on the following render.
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (wasOpen !== isOpen) {
+    setWasOpen(isOpen);
+    if (isOpen) setClosedRegistryCleared(false);
+  }
+
   // Base UI normally remembers the selected item as the starting point for the next open.
   // Search selects instead begin at the first visible choice, so clear that registry only
   // after its close transition completes. The real items remain in the exiting panel and
   // are restored in the same render that opens the list.
   const visibleItems =
     !isOpen && closedRegistryCleared && items !== undefined ? EMPTY_ITEMS : items;
-
-  useEffect(() => {
-    if (isOpen) setClosedRegistryCleared(false);
-  }, [isOpen]);
 
   const handleOpenChange = useCallback<
     NonNullable<MotionSearchSelectProps<Value, Multiple>["onOpenChange"]>
