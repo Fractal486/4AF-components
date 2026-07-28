@@ -164,16 +164,21 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
     () => !isOpen && items !== undefined,
   );
 
+  // Adjusted during render, and it has to be: `visibleItems` below reads this in the same
+  // pass. From an effect the latch would still be set on the render that opens the panel,
+  // so the list would mount empty for a frame and only fill on the following render.
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (wasOpen !== isOpen) {
+    setWasOpen(isOpen);
+    if (isOpen) setClosedRegistryCleared(false);
+  }
+
   // Base UI normally restores the selected item as the active row. Search selects instead
   // start at the first visible match, so clear that lookup after the close transition. The
   // actual items remain available to the exiting panel and return in the same render that
   // opens the list.
   const visibleItems =
     !isOpen && closedRegistryCleared && items !== undefined ? EMPTY_ITEMS : items;
-
-  useEffect(() => {
-    if (isOpen) setClosedRegistryCleared(false);
-  }, [isOpen]);
 
   const handleOpenChange = useCallback<
     NonNullable<SearchSelectProps<Value, Multiple>["onOpenChange"]>

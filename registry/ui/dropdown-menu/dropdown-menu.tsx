@@ -130,9 +130,14 @@ export function DropdownMenuSelect<Value, Multiple extends boolean | undefined =
     [currentValue, isMultiple],
   );
 
-  useEffect(() => {
+  // Opening the panel always starts from the full set of choices. Adjusted during render
+  // rather than in an effect: nothing external is being synchronised, so an effect would
+  // just paint the stale query for a frame and then schedule a second render.
+  const [wasOpen, setWasOpen] = useState(currentOpen);
+  if (wasOpen !== currentOpen) {
+    setWasOpen(currentOpen);
     if (currentOpen) setSearchQuery("");
-  }, [currentOpen]);
+  }
 
   const setOpen = useCallback(
     (nextOpen: boolean) => {

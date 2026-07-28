@@ -497,14 +497,22 @@ export function useCommandSearch<T>(
   const reportRefreshing = useContext(PanelSearchContext);
   const active = enabled && onSearch != null && query.trim() !== "";
 
-  useEffect(() => {
+  // Leaving search mode drops the stale results so the next entry starts clean — done on
+  // the transition during render, not from the effect below. The effect owns a debounce
+  // timer and an AbortController, which are genuinely external; this reset is not, and
+  // from inside the effect it fired on every inactive render (a no-op each time, but a
+  // cascading render by the letter of it).
+  const [wasActive, setWasActive] = useState(active);
+  if (wasActive !== active) {
+    setWasActive(active);
     if (!active) {
-      // Leaving search mode — drop stale results so the next entry starts clean. Setting
-      // the same value is a no-op, so this doesn't loop while inactive.
       setResults(null);
       setResolvedTerm(null);
-      return;
     }
+  }
+
+  useEffect(() => {
+    if (!active) return;
     const term = query.trim();
     const seq = ++seqRef.current;
     const controller = new AbortController();
@@ -590,13 +598,17 @@ export function CommandPalette({
   );
 
   // A controlled owner can reject a close request by leaving `open` true. Reset only after
-  // the rendered state actually closes, otherwise an Escape key would erase its query/page.
-  useEffect(() => {
+  // the rendered state actually closes, otherwise an Escape key would erase its query/page
+  // — which is why this keys off `isOpen` rather than the close handler. Adjusted during
+  // render: it's derived from the transition, nothing external is involved.
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (wasOpen !== isOpen) {
+    setWasOpen(isOpen);
     if (!isOpen) {
-      setPages((current) => (current.length === 0 ? current : []));
-      setQuery((current) => (current === "" ? current : ""));
+      setPages([]);
+      setQuery("");
     }
-  }, [isOpen]);
+  }
 
   // Global ⌘K / Ctrl-K. Toggling is deliberate — the same chord that summons the palette
   // dismisses it, which is what every palette that owns the shortcut does.
@@ -1376,15 +1388,22 @@ export function CommandPanelActions({
  */
 function CommandActionSections({ groups }: { groups: CommandGroup[] }) {
   const { matches } = useSelectSearch();
-  let shownSections = 0;
+  // Worked out up front rather than by advancing a counter inside the map. A running
+  // total reassigned from a render callback is a variable whose value depends on how many
+  // times that callback happened to run, which React can make no promises about — so the
+  // question each row actually asks ("is there a visible section above me?") is answered
+  // from the list instead.
+  const visibleSections = groups.map((group) => group.items.some((item) => matches(item.label)));
+  const hasVisibleSectionAbove = visibleSections.map((_, index) =>
+    visibleSections.slice(0, index).some(Boolean),
+  );
 
   return (
     <>
       {groups.map((group, groupIndex) => {
-        const hasVisibleItems = group.items.some((item) => matches(item.label));
+        const hasVisibleItems = visibleSections[groupIndex] ?? false;
         const showHeading = Boolean(group.heading) && hasVisibleItems;
-        const withDivider = showHeading && shownSections > 0;
-        if (hasVisibleItems) shownSections += 1;
+        const withDivider = showHeading && (hasVisibleSectionAbove[groupIndex] ?? false);
 
         return (
           <BaseSelect.Group key={`${group.heading ?? "group"}-${groupIndex}`}>

@@ -231,17 +231,6 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   const isOpen = isControlled ? open : uncontrolled;
   const [searchQuery, setSearchQuery] = useState("");
 
-  // A panel search is transient: opening the list always starts with its full set of
-  // choices, rather than retaining a filter from a previous visit.
-  //
-  // Reset on *open*, not on close. Clearing as the panel closes un-hides every option
-  // while the exit animation is still running, so a filtered panel visibly grows back to
-  // full height on its way out. Holding the query until the next open means the panel
-  // fades out exactly as it looked, and the stale query is invisible in between.
-  useEffect(() => {
-    if (isOpen) setSearchQuery("");
-  }, [isOpen]);
-
   // Mirror the selection so a trigger can read it for its own display and styling — a
   // filter chip that shows its picks and dashes its border while nothing is chosen. Base
   // UI stays the source of truth via `value`/`onValueChange`; this just tracks a copy.
@@ -338,9 +327,28 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   const [activeItem, setActiveItem] = useState<unknown>(undefined);
   const [panelSearch, setPanelSearch] = useState(false);
 
-  useEffect(() => {
-    if (!isOpen) setActiveItem(undefined);
-  }, [isOpen]);
+  /**
+   * Everything that resets when the panel opens or closes, adjusted during render rather
+   * than in an effect.
+   *
+   * Nothing here synchronises with anything outside React — it's state derived from a
+   * transition — so an effect would only schedule a second render after the first had
+   * already painted the stale value. React's own answer to that is to compare against the
+   * previous value during render: the reset lands in the same pass that flips `isOpen`,
+   * and the discarded first pass never commits.
+   *
+   * The search query resets on *open*, not on close. Clearing as the panel closes
+   * un-hides every option while the exit animation is still running, so a filtered panel
+   * visibly grows back to full height on its way out. Holding the query until the next
+   * open means the panel fades out exactly as it looked, and the stale query is invisible
+   * in between. The active item is the reverse: it's meaningless once the list is gone.
+   */
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (wasOpen !== isOpen) {
+    setWasOpen(isOpen);
+    if (isOpen) setSearchQuery("");
+    else setActiveItem(undefined);
+  }
 
   const clear = useCallback(() => {
     const empty = (multiple ? ([] as Value[]) : null) as Value | Value[] | null;
