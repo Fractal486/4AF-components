@@ -60,13 +60,14 @@ import {
 /**
  * A keycap.
  *
- * `bg-border` rather than a surface token, because a keycap has to sit *above* whatever
- * it's printed on and the panel is already the raised surface. In dark that's a step up
- * from the panel; in light there is nothing above white, so the step goes the other way
- * and the chip reads darker. One token gives both, which a surface token can't.
+ * A translucent lift rather than a fixed token, because a keycap has to sit just above
+ * *whatever* it's printed on, and that isn't one surface: the palette panel is
+ * `surface-raised`, a menu row is `surface`. `foreground` at 8% steps up from either, and
+ * flips direction on its own between themes — a pale wash on ink in dark, a grey one on
+ * white in light. A fixed value can only be right on one of them.
  */
 const KBD =
-  "shrink-0 rounded-xs bg-border px-1.5 py-0.5 font-mono text-2xs text-subtle-foreground select-none";
+  "shrink-0 rounded-xs bg-foreground/8 px-1.5 py-0.5 font-mono text-2xs text-subtle-foreground select-none";
 
 export interface CommandPanelInputProps
   extends Omit<
@@ -476,6 +477,32 @@ export interface UseCommandSearchOptions {
 const PanelSearchContext = createContext<((refreshing: boolean) => void) | null>(null);
 
 /**
+ * Set while an actions menu is open, so the list behind it stops following the pointer.
+ *
+ * The menu belongs to one row. Leaving it with the cursor crosses back over the list, and
+ * every row it passes would otherwise take the highlight — so the user returns to a menu
+ * that now appears to belong to a different row than the one they opened it from. Freezing
+ * the highlight keeps the two attached for as long as the menu is up.
+ */
+const ActionsOpenContext = createContext<((open: boolean) => void) | null>(null);
+
+/**
+ * The row the open actions menu belongs to.
+ *
+ * Base UI drops `data-highlighted` the moment focus leaves the list for the menu, so the
+ * row can't keep the primitive's own highlight. The palette remembers which row was
+ * highlighted when the menu opened and the rows paint that themselves — `data-frozen`,
+ * styled identically to `data-highlighted`.
+ */
+const FrozenRowContext = createContext<unknown>(undefined);
+
+/** True when this row is the one an open actions menu belongs to. */
+function useFrozen(value: unknown): boolean {
+  const frozen = useContext(FrozenRowContext);
+  return frozen !== undefined && Object.is(frozen, value);
+}
+
+/**
  * The async-search engine behind the palette, exported so a custom panel gets the same
  * guarantees the root list does. Feed it the live query (a panel reads it from
  * `helpers.query`) and a source; it debounces, aborts the superseded request through its
@@ -700,6 +727,22 @@ export function CommandPalette({
     [setOpen, goToDepth, pages.length],
   );
 
+  // Reported by an actions menu when it opens; freezes the highlight on the row that owns
+  // it. Base UI keeps driving the keyboard highlight, so arrows and Enter inside the menu
+  // are unaffected — only the pointer stops moving the row behind it.
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const [frozenRow, setFrozenRow] = useState<unknown>(undefined);
+  // Only ever the last *real* highlight. Opening the menu blurs the list, which reports
+  // `undefined` — so reading the live value at that moment would always come up empty.
+  const lastHighlightedRef = useRef<unknown>(undefined);
+  const reportActionsOpen = useCallback((open: boolean) => {
+    setActionsOpen(open);
+    setFrozenRow(open ? lastHighlightedRef.current : undefined);
+  }, []);
+  const rememberHighlight = useCallback((value: unknown) => {
+    if (value !== undefined) lastHighlightedRef.current = value;
+  }, []);
+
   const activePage = pages.length > 0 ? pages[pages.length - 1]! : null;
   const activePanelItem = activePage?.itemId
     ? findCommandItemInGroups(groups, activePage.itemId)
@@ -830,12 +873,16 @@ export function CommandPalette({
           <BaseDialog.Title className="sr-only">Command palette</BaseDialog.Title>
 
           <PaletteControlsContext.Provider value={controls}>
+          <ActionsOpenContext.Provider value={reportActionsOpen}>
+          <FrozenRowContext.Provider value={frozenRow}>
           {panelNode ? (
             <Autocomplete.Root
               inline
               open
               mode="none"
               autoHighlight
+              highlightItemOnHover={!actionsOpen}
+              onItemHighlighted={rememberHighlight}
               value={panelInputValue}
               onValueChange={setPanelInputValue}
             >
@@ -937,6 +984,9 @@ export function CommandPalette({
             itemToStringValue={(item: CommandItem) => item.label}
             // Keep the top match ready so Enter runs it without an arrow press first.
             autoHighlight
+            // Inert while an actions menu is open — see ActionsOpenContext.
+            highlightItemOnHover={!actionsOpen}
+            onItemHighlighted={rememberHighlight}
           >
             <div
               data-searching={searching ? "" : undefined}
@@ -1046,6 +1096,8 @@ export function CommandPalette({
             )}
           </Autocomplete.Root>
           )}
+          </FrozenRowContext.Provider>
+          </ActionsOpenContext.Provider>
           </PaletteControlsContext.Provider>
         </BaseDialog.Popup>
       </BaseDialog.Portal>
@@ -1191,6 +1243,7 @@ export function CommandPanelRow({
 }: CommandPanelRowProps) {
   const interactive = onSelect != null;
   const itemValue = value ?? props.id ?? String(children ?? "");
+  const frozen = useFrozen(itemValue);
 
   return (
     <Autocomplete.Item
@@ -1199,13 +1252,17 @@ export function CommandPanelRow({
       aria-selected={interactive ? selected : undefined}
       onClick={interactive ? onSelect : undefined}
       onKeyDown={onKeyDown}
+      // Paints the highlight this row would have if Base UI hadn't dropped it when the
+      // actions menu took focus. Styled from the same pair of rules, so the two states are
+      // indistinguishable rather than merely similar.
+      data-frozen={frozen ? "" : undefined}
       className={cn(
         "group flex min-h-9 items-center gap-2.5 rounded-sm px-2.5 text-sm text-muted-foreground outline-none select-none",
         badge ? "py-1.5" : "py-2",
         interactive ? "cursor-pointer" : "cursor-default",
         destructive
-          ? "text-destructive data-highlighted:bg-muted data-highlighted:text-destructive"
-          : "data-highlighted:bg-muted data-highlighted:text-foreground",
+          ? "text-destructive data-highlighted:bg-muted data-highlighted:text-destructive data-frozen:bg-muted data-frozen:text-destructive"
+          : "data-highlighted:bg-muted data-highlighted:text-foreground data-frozen:bg-muted data-frozen:text-foreground",
         className,
       )}
     >
@@ -1213,8 +1270,8 @@ export function CommandPanelRow({
         <CommandIcon
           className={cn(
             destructive
-              ? "text-destructive group-data-highlighted:text-destructive"
-              : "text-subtle-foreground group-data-highlighted:text-foreground",
+              ? "text-destructive group-data-highlighted:text-destructive group-data-frozen:text-destructive"
+              : "text-subtle-foreground group-data-highlighted:text-foreground group-data-frozen:text-foreground",
           )}
         >
           {icon}
@@ -1304,6 +1361,25 @@ export function CommandPanelActions({
   emptyMessage = "No actions found.",
 }: CommandPanelActionsProps) {
   const [open, setOpen] = useState(false);
+  const reportActionsOpen = useContext(ActionsOpenContext);
+
+  // Every open/close goes through here so the list behind the menu learns about it in the
+  // same event, not from an effect a render later.
+  const setMenuOpen = useCallback(
+    (next: boolean | ((current: boolean) => boolean)) => {
+      setOpen((current) => {
+        const resolved = typeof next === "function" ? next(current) : next;
+        reportActionsOpen?.(resolved);
+        return resolved;
+      });
+    },
+    [reportActionsOpen],
+  );
+
+  // A panel can be torn down with its menu still open — stepping back, or the palette
+  // closing under it — and the frozen highlight would outlive the thing that froze it.
+  useEffect(() => () => reportActionsOpen?.(false), [reportActionsOpen]);
+
   const actionGroups = useMemo(
     () => groups ?? [{ items: items ?? [] }],
     [groups, items],
@@ -1313,11 +1389,14 @@ export function CommandPanelActions({
     [actionGroups],
   );
 
-  const runAction = useCallback((item: CommandItem) => {
-    if (item.disabled) return;
-    setOpen(false);
-    item.onSelect?.();
-  }, []);
+  const runAction = useCallback(
+    (item: CommandItem) => {
+      if (item.disabled) return;
+      setMenuOpen(false);
+      item.onSelect?.();
+    },
+    [setMenuOpen],
+  );
 
   // Action keybinds intentionally live on the actions component rather than the popup:
   // the containing custom panel owns them even while this menu is closed.
@@ -1344,7 +1423,7 @@ export function CommandPanelActions({
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key.toLowerCase() === hotkey.toLowerCase() && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
-        setOpen((current) => !current);
+        setMenuOpen((current) => !current);
       }
     };
     // Capture phase: once the menu is open, focus is inside the Select's popup, and
@@ -1352,12 +1431,14 @@ export function CommandPanelActions({
     // this listener — so the same chord could open the menu but never close it.
     window.addEventListener("keydown", onKeyDown, true);
     return () => window.removeEventListener("keydown", onKeyDown, true);
-  }, [hotkey]);
+    // `setMenuOpen` is memoised on a `useState` setter from context, so listing it here
+    // doesn't churn the listener the way an inline callback would.
+  }, [hotkey, setMenuOpen]);
 
   return (
     <Select<CommandItem | null>
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={setMenuOpen}
       value={null}
       onValueChange={(item) => item && runAction(item)}
     >
@@ -1616,12 +1697,16 @@ function CommandRow({
   const positions = !isCreate && query ? (fuzzyMatch(item.label, query)?.positions ?? []) : [];
   const hasChildren = item.panel != null || (item.items != null && item.items.length > 0);
   const compactRow = Boolean(item.badge) && !item.description;
+  const frozen = useFrozen(item);
 
   return (
     <Autocomplete.Item
       value={item}
       disabled={item.disabled}
       onClick={() => onRun(item)}
+      // See CommandPanelRow: `data-frozen` stands in for the highlight Base UI drops when
+      // an actions menu takes focus.
+      data-frozen={frozen ? "" : undefined}
       // The highlight is Base UI's `data-highlighted` (keyboard *and* pointer land on the
       // same attribute), applied instantly with no transition so it keeps up with a fast
       // ↑↓ and doesn't smear across rows under the pointer.
@@ -1629,8 +1714,8 @@ function CommandRow({
         "group flex min-h-9 cursor-pointer items-center gap-2.5 rounded-sm px-2.5 text-sm text-muted-foreground outline-none select-none",
         compactRow ? "py-1.5" : "py-2",
         item.destructive
-          ? "data-highlighted:bg-muted text-destructive data-highlighted:text-destructive"
-          : "data-highlighted:bg-muted data-highlighted:text-foreground",
+          ? "data-highlighted:bg-muted text-destructive data-highlighted:text-destructive data-frozen:bg-muted data-frozen:text-destructive"
+          : "data-highlighted:bg-muted data-highlighted:text-foreground data-frozen:bg-muted data-frozen:text-foreground",
         "data-disabled:pointer-events-none data-disabled:opacity-50",
       )}
     >
@@ -1638,8 +1723,8 @@ function CommandRow({
         <CommandIcon
           className={cn(
             item.destructive
-              ? "text-destructive group-data-highlighted:text-destructive"
-              : "text-subtle-foreground group-data-highlighted:text-foreground",
+              ? "text-destructive group-data-highlighted:text-destructive group-data-frozen:text-destructive"
+              : "text-subtle-foreground group-data-highlighted:text-foreground group-data-frozen:text-foreground",
           )}
         >
           {item.icon}

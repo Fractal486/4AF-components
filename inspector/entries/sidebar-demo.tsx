@@ -626,7 +626,7 @@ export function SidebarDemo({
         }
         title={active[0]!.toUpperCase() + active.slice(1)}
         headerActions={
-          <kbd className="rounded-xs bg-border px-1.5 py-0.5 font-mono text-2xs text-subtle-foreground">
+          <kbd className="rounded-xs bg-foreground/8 px-1.5 py-0.5 font-mono text-2xs text-subtle-foreground">
             ⌘B
           </kbd>
         }

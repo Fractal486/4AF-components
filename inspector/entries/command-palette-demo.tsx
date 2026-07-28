@@ -366,8 +366,8 @@ export function CommandPaletteDemo({
       <Button variant="outline" onClick={() => setOpen(true)}>
         Open palette
         <span className="ml-1 flex items-center gap-0.5 text-subtle-foreground">
-          <kbd className="rounded-xs bg-border px-1 py-0.5 font-mono text-2xs">⌘</kbd>
-          <kbd className="rounded-xs bg-border px-1 py-0.5 font-mono text-2xs">K</kbd>
+          <kbd className="rounded-xs border border-current/50 px-1 py-0.5 font-mono text-2xs">⌘</kbd>
+          <kbd className="rounded-xs border border-current/50 px-1 py-0.5 font-mono text-2xs">K</kbd>
         </span>
       </Button>
 
