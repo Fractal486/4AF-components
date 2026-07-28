@@ -739,7 +739,10 @@ export function DropdownMenuShortcut({ className, ...props }: ComponentProps<"kb
   return (
     <kbd
       className={cn(
-        "ml-auto flex min-w-4 shrink-0 items-center justify-center rounded-xs bg-muted px-1 py-0.5 font-mono text-2xs text-subtle-foreground",
+        // `bg-border`, the same keycap fill the command palette uses: a key has to sit
+        // above the surface it's printed on, and `bg-muted` is the row highlight — a
+        // shortcut on a highlighted row would have disappeared into it.
+        "ml-auto flex min-w-4 shrink-0 items-center justify-center rounded-xs bg-border px-1 py-0.5 font-mono text-2xs text-subtle-foreground",
         className,
       )}
       {...props}

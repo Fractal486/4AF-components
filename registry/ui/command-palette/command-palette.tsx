@@ -57,6 +57,17 @@ import {
  * than being held open for an exit.
  */
 
+/**
+ * A keycap.
+ *
+ * `bg-border` rather than a surface token, because a keycap has to sit *above* whatever
+ * it's printed on and the panel is already the raised surface. In dark that's a step up
+ * from the panel; in light there is nothing above white, so the step goes the other way
+ * and the chip reads darker. One token gives both, which a surface token can't.
+ */
+const KBD =
+  "shrink-0 rounded-xs bg-border px-1.5 py-0.5 font-mono text-2xs text-subtle-foreground select-none";
+
 export interface CommandPanelInputProps
   extends Omit<
     ComponentProps<typeof Autocomplete.Input>,
@@ -983,7 +994,7 @@ export function CommandPalette({
                 <AsciiLoader className="shrink-0 text-sm text-subtle-foreground" />
               )}
 
-              <kbd className="hidden shrink-0 rounded-xs bg-surface px-1.5 py-0.5 font-mono text-2xs text-subtle-foreground select-none sm:block">
+              <kbd className={cn(KBD, "hidden sm:block")}>
                 Esc
               </kbd>
             </div>
@@ -1509,7 +1520,7 @@ function EscapeHint() {
 
 function Kbd({ children }: { children: ReactNode }) {
   return (
-    <kbd className="flex min-w-4 shrink-0 items-center justify-center rounded-xs bg-surface px-1 py-0.5 font-mono text-2xs text-subtle-foreground">
+    <kbd className={cn(KBD, "flex min-w-4 items-center justify-center px-1")}>
       {children}
     </kbd>
   );
