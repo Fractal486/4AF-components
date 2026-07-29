@@ -37,7 +37,7 @@ These entries install transitively:
 | `cn` | Class composition through `clsx` and `tailwind-merge`. |
 | `slot` | Local helper for `asChild` composition. |
 | `motion` | Shared Motion spring and easing presets. |
-| `use-action` | `useAction` — the run/pending/outcome/revert machine behind `ActionButton`, `ActionToggle`, and `DropdownMenuActionItem`. Use it directly for a transient confirmation on something that is neither. |
+| `use-action` | `useAction` — the run/pending/outcome/revert machine behind `ActionButton`, `ActionToggle`, `DropdownMenuActionItem`, and the command palette action rows. Use it directly for anything else that runs and reports. |
 
 ## Installable catalog
 
@@ -200,13 +200,16 @@ No enter or exit animation, deliberately — do not add one, or `keepMounted`/
 Escape clears a non-empty header field only when that header is `type="search"`; other
 headers go back. Keep Select controls in headers at `size="sm"`.
 
-Actions rows take the dropdown menu's three shapes as item fields, and keep the menu open:
-`action` alone runs/confirms/reverts; `action` + `checked`/`defaultChecked` lands in the
-new state; `checked`/`defaultChecked` alone flips at once; `confirm` arms on the first press and
-runs `onSelect` and closes on the second (disarms on Escape, on the menu closing, or after
-`confirm.resetAfter`, default 3s). `labels`/`icons` supply the
-`checked`, `pending`, `success` and `error` states; `revertAfter` and `pendingDelay` as on
-`ActionButton`. An item with none of them closes the menu and calls `onSelect`.
+Actions rows take four shapes as item fields. The first three are the dropdown menu's, and
+keep the menu open: `action` alone runs/confirms/reverts; `action` +
+`checked`/`defaultChecked` lands in the new state; `checked`/`defaultChecked` alone flips
+at once. The fourth is `DeleteButton`'s: `confirm` arms on the first press and runs
+`onSelect` and closes on the second, disarming on Escape, on the menu closing, or after
+`confirm.resetAfter` (3s; `0` never).
+
+`labels`/`icons` supply the `checked`, `pending`, `success` and `error` states;
+`revertAfter` and `pendingDelay` as on `ActionButton`. An item with none of these fields
+closes the menu and calls `onSelect`.
 
 Async root results: `onSearch(query, signal) => Promise<CommandGroup[]>`, with `groups` as
 the resting state while the query is empty. Returned order is preserved. Tune with
