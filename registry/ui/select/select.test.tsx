@@ -278,4 +278,34 @@ describe("Base UI Select", () => {
     );
     expect(screen.getByRole("option", { name: "Mango" })).not.toHaveAttribute("data-panel-active");
   });
+
+  it("runs the highlighted row on Enter, straight from the search field", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+
+    render(
+      <Select items={FRUITS} onValueChange={onValueChange}>
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <SelectContent searchable searchPlaceholder="Search fruit">
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectItem value="banana">Banana</SelectItem>
+          <SelectItem value="mango">Mango</SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    const search = await screen.findByPlaceholderText("Search fruit");
+    await user.type(search, "man");
+
+    // The caret never leaves the field: no arrow press, so nothing in the list has DOM
+    // focus. Enter still has to run whatever the panel is showing as active.
+    const active = screen.getByRole("option", { name: "Mango" });
+    expect(active).toHaveAttribute("data-panel-active");
+
+    await user.keyboard("{Enter}");
+    await waitFor(() => expect(onValueChange).toHaveBeenCalledWith("mango", expect.anything()));
+  });
 });

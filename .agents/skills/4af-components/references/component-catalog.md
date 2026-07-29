@@ -200,6 +200,14 @@ No enter or exit animation, deliberately — do not add one, or `keepMounted`/
 Escape clears a non-empty header field only when that header is `type="search"`; other
 headers go back. Keep Select controls in headers at `size="sm"`.
 
+Actions rows take the dropdown menu's three shapes as item fields, and keep the menu open:
+`action` alone runs/confirms/reverts; `action` + `checked`/`defaultChecked` lands in the
+new state; `checked`/`defaultChecked` alone flips at once; `confirm` arms on the first press and
+runs `onSelect` and closes on the second (disarms on Escape, on the menu closing, or after
+`confirm.resetAfter`, default 3s). `labels`/`icons` supply the
+`checked`, `pending`, `success` and `error` states; `revertAfter` and `pendingDelay` as on
+`ActionButton`. An item with none of them closes the menu and calls `onSelect`.
+
 Async root results: `onSearch(query, signal) => Promise<CommandGroup[]>`, with `groups` as
 the resting state while the query is empty. Returned order is preserved. Tune with
 `searchDebounce` and `loadingMessage`; debounce, abort, out-of-order dropping, and the

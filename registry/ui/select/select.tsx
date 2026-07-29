@@ -51,14 +51,14 @@ const SIZE: Record<
     field: "h-8 text-xs",
     chip: "h-8 px-2.5 text-xs",
     glyph: "size-3.5",
-    iconSlot: "size-3.5 [&>svg]:size-3.5",
+    iconSlot: "size-3.5 [&_svg]:size-3.5",
     row: "text-xs",
   },
   md: {
     field: "h-9 text-sm",
     chip: "h-9 px-3 text-sm",
     glyph: "size-4",
-    iconSlot: "size-4 [&>svg]:size-4",
+    iconSlot: "size-4 [&_svg]:size-4",
     row: "text-sm",
   },
 };
@@ -842,6 +842,21 @@ export function SelectContent({
             focusPanelOption(listRef.current, event.key === "ArrowDown" ? "next" : "previous");
             return;
           }
+          // Enter runs the row the panel is *showing* as active. The caret stays in the
+          // field while a query narrows the list, so nothing in the list has DOM focus and
+          // Base UI has no key target — the highlight would look armed and do nothing
+          // until an arrow press moved real focus onto it. Reading the same
+          // `data-panel-active` the row paints keeps the two from ever disagreeing.
+          if (event.key === "Enter") {
+            const active = listRef.current?.querySelector<HTMLElement>(
+              '[role="option"][data-panel-active]:not([hidden])',
+            );
+            if (active) {
+              event.preventDefault();
+              active.click();
+            }
+            return;
+          }
           // Keep Select's typeahead from treating input keystrokes as option jumps — but
           // only plain typing. A modifier chord is never typeahead, and swallowing it here
           // would stop app-level shortcuts (the chord that opened this panel, say) from
@@ -973,6 +988,11 @@ export type SelectItemProps = Omit<
   searchValue?: string;
 };
 
+/**
+ * The icon slot sizes *any* glyph inside it, not just a direct child: a row can hand it a
+ * `Morph` that swaps between glyphs, which puts the svg a level down. A direct-child rule
+ * would miss it and the icon would render at its intrinsic size.
+ */
 function SelectItemIcon({ icon, size }: { icon?: ReactNode; size: SelectSize }) {
   if (icon == null) return null;
 

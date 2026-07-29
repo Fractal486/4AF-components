@@ -515,6 +515,41 @@ The registry item includes more than the root popup:
 The demo's Projects, Rename Project, and New Project flows are examples built from these
 public APIs, not hard-coded private behaviour.
 
+An actions row normally chooses and closes the menu. Three optional fields make it report
+in place instead, keeping the menu open — the same shapes the dropdown menu offers,
+expressed as data because a palette action *is* data:
+
+| Shape | Fields | Dropdown equivalent |
+| --- | --- | --- |
+| Runs, confirms, reverts | `action` | `DropdownMenuActionItem` |
+| Runs, then lands checked | `action` + `checked`/`defaultChecked` | `DropdownMenuCheckboxItem` with `action` |
+| Flips at once, morphing | `checked`/`defaultChecked` | `DropdownMenuCheckboxItem` + `Morph` |
+| Asks, then commits and closes | `confirm` + `onSelect` | `DeleteButton` |
+
+```tsx
+<CommandPanelActions
+  items={[
+    { id: "sync", label: "Sync now", action: sync, labels: { pending: "Syncing…", success: "Synced" } },
+    { id: "watch", label: "Watch", defaultChecked: false, action: watch, labels: { checked: "Watching" } },
+    { id: "star", label: "Star", defaultChecked: false, labels: { checked: "Starred" } },
+  ]}
+/>
+```
+
+`labels` and `icons` carry the other states (`checked`, `pending`, `success`, `error`),
+each falling back to the row's own `label`/`icon`; pending and error default to the ASCII
+loader and the warning triangle. `revertAfter` and `pendingDelay` behave as on
+`ActionButton`. Neither toggle shows a success tick — the row having become the other
+thing is the confirmation. An item with none of these fields is unchanged: it closes the
+menu and calls `onSelect`.
+
+`confirm` is the exception that closes: the first press arms and morphs the row (to
+`confirm.label`, "Confirm?" by default), the second runs `onSelect` and dismisses the menu
+by the ordinary path. It disarms on Escape, when the menu closes, and after
+`confirm.resetAfter` (3s; `0` never). A press within 350ms of arming is ignored, so one
+double-click can't confirm what it just armed — the same rules as `DeleteButton`, which is
+the standalone version of this row.
+
 ### Dropdown Menu nested panels
 
 `dropdown-menu` includes three reusable nested-panel forms:

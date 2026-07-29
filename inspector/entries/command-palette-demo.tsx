@@ -5,6 +5,7 @@ import {
   ArrowRight,
   ArrowUpDown,
   Bell,
+  BellOff,
   Copy,
   CornerDownLeft,
   FileText,
@@ -19,6 +20,7 @@ import {
   Plus,
   Settings,
   SlidersHorizontal,
+  RefreshCw,
   Star,
   Sun,
   Trash2,
@@ -482,6 +484,36 @@ function ProjectsPanel({
       ],
     },
     {
+      // The three rows that report in place instead of choosing and closing: one that
+      // waits and confirms, one that waits and lands, one that just flips.
+      heading: "In place",
+      items: [
+        {
+          id: "sync",
+          label: "Sync now",
+          icon: <RefreshCw />,
+          action: () => new Promise((resolve) => setTimeout(resolve, 1200)),
+          labels: { pending: "Syncing…", success: "Synced" },
+        },
+        {
+          id: "watch",
+          label: "Watch project",
+          icon: <Bell />,
+          defaultChecked: false,
+          action: () => new Promise((resolve) => setTimeout(resolve, 900)),
+          labels: { pending: "Subscribing…", checked: "Watching" },
+          icons: { checked: <BellOff /> },
+        },
+        {
+          id: "star",
+          label: "Star project",
+          icon: <Star />,
+          defaultChecked: false,
+          labels: { checked: "Starred" },
+        },
+      ],
+    },
+    {
       heading: "Sharing",
       items: [
         {
@@ -509,6 +541,9 @@ function ProjectsPanel({
           icon: <Trash2 />,
           keybind: "mod+shift+backspace",
           destructive: true,
+          // Asks first: the row morphs to "Confirm?", and only the second press deletes
+          // and closes the menu. Disarms on Escape, on the menu closing, or after 3s.
+          confirm: { label: "Confirm?" },
           onSelect: () => {
             onDone(`Deleted ${selected}`);
             helpers.close();

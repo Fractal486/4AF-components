@@ -1,6 +1,9 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
+
+/** Mirrors DOUBLE_PRESS_GUARD in the component. */
+const DOUBLE_PRESS_GUARD_MS = 400;
 import {
   CommandPalette,
   CommandPanelActions,
@@ -86,5 +89,126 @@ describe("CommandPalette", () => {
     // And it lets go when the menu does.
     await user.keyboard("{Escape}");
     await waitFor(() => expect(alpha).not.toHaveAttribute("data-frozen"));
+  });
+
+  it("runs, toggles and morphs rows inside the actions menu", async () => {
+    const user = userEvent.setup();
+    let finish: () => void;
+    const save = vi.fn(() => new Promise<void>((resolve) => (finish = resolve)));
+    const onCheckedChange = vi.fn();
+
+    render(
+      <CommandPalette
+        open
+        groups={[
+          {
+            items: [
+              {
+                id: "projects",
+                label: "Projects",
+                panel: () => (
+                  <CommandPanelBody>
+                    <CommandPanelList>
+                      <CommandPanelRow value="alpha">Alpha</CommandPanelRow>
+                    </CommandPanelList>
+                    <CommandPanelFooter>
+                      <CommandPanelActions
+                        items={[
+                          {
+                            id: "save",
+                            label: "Save",
+                            action: save,
+                            labels: { success: "Saved" },
+                          },
+                          {
+                            id: "star",
+                            label: "Star",
+                            defaultChecked: false,
+                            labels: { checked: "Starred" },
+                            onCheckedChange,
+                          },
+                        ]}
+                      />
+                    </CommandPanelFooter>
+                  </CommandPanelBody>
+                ),
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    await user.click(await screen.findByRole("option", { name: "Projects" }));
+    await user.click(screen.getByText("Actions"));
+
+    // Morph row: no work to wait on, so it flips on the press — and the menu stays up,
+    // which is the whole point of a row that reports in place.
+    await user.click(await screen.findByRole("option", { name: "Star" }));
+    expect(onCheckedChange).toHaveBeenCalledWith(true);
+    expect(await screen.findByRole("option", { name: "Starred" })).toBeInTheDocument();
+
+    // Action row: waits, then confirms, with the menu still open behind it.
+    await user.click(screen.getByRole("option", { name: "Save" }));
+    expect(save).toHaveBeenCalledOnce();
+    await act(async () => finish!());
+    expect(await screen.findByRole("option", { name: "Saved" })).toBeInTheDocument();
+  });
+
+  it("arms a confirm row on the first press and commits on the second", async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+
+    render(
+      <CommandPalette
+        open
+        groups={[
+          {
+            items: [
+              {
+                id: "projects",
+                label: "Projects",
+                panel: () => (
+                  <CommandPanelBody>
+                    <CommandPanelList>
+                      <CommandPanelRow value="alpha">Alpha</CommandPanelRow>
+                    </CommandPanelList>
+                    <CommandPanelFooter>
+                      <CommandPanelActions
+                        items={[
+                          {
+                            id: "delete",
+                            label: "Delete project",
+                            destructive: true,
+                            confirm: { label: "Confirm?" },
+                            onSelect,
+                          },
+                        ]}
+                      />
+                    </CommandPanelFooter>
+                  </CommandPanelBody>
+                ),
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    await user.click(await screen.findByRole("option", { name: "Projects" }));
+    await user.click(screen.getByText("Actions"));
+
+    // First press arms: it morphs, runs nothing, and leaves the menu up.
+    await user.click(await screen.findByRole("option", { name: "Delete project" }));
+    expect(await screen.findByRole("option", { name: "Confirm?" })).toBeInTheDocument();
+    expect(onSelect).not.toHaveBeenCalled();
+
+    // The guard means a second press has to be a deliberate one, not a double-click.
+    await new Promise((resolve) => setTimeout(resolve, DOUBLE_PRESS_GUARD_MS));
+
+    await user.click(screen.getByRole("option", { name: "Confirm?" }));
+    expect(onSelect).toHaveBeenCalledOnce();
+    // And it closes down the ordinary path, unlike every other stay-open row.
+    await waitFor(() => expect(screen.queryByRole("option", { name: "Confirm?" })).toBeNull());
   });
 });

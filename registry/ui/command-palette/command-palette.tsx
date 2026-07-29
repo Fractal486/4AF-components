@@ -3,7 +3,15 @@
 import { Autocomplete } from "@base-ui/react/autocomplete";
 import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import { Select as BaseSelect } from "@base-ui/react/select";
-import { ChevronLeft, ChevronRight, CornerDownLeft, Plus, Search } from "lucide-react";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  CornerDownLeft,
+  Plus,
+  Search,
+  TriangleAlert,
+} from "lucide-react";
 import {
   Fragment,
   createContext,
@@ -18,8 +26,10 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
+import { useAction } from "@/registry/lib/use-action";
 import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
+import { Morph } from "@/registry/ui/morph/morph";
 import {
   Select,
   SelectContent,
@@ -122,6 +132,47 @@ export interface CommandItem {
   headerActions?: ReactNode;
   /** Run when a leaf item is chosen (click or Enter). The palette closes around it. */
   onSelect?: () => void;
+
+  /* -- Actions-menu rows. Ignored in the main list; see `CommandPanelActions`. -------- */
+
+  /**
+   * Work the row waits on, instead of choosing and closing. The menu stays open so the
+   * outcome is visible. Given the state being moved *to* when the row is a toggle.
+   *
+   * With `checked`/`defaultChecked` it's the dropdown's `DropdownMenuCheckboxItem action`
+   * — the row lands in the new state. Without, it's `DropdownMenuActionItem` — the row
+   * confirms and reverts.
+   */
+  action?: (checked: boolean) => void | Promise<unknown>;
+  /** Controlled toggle state. With no `action`, the flip is immediate. */
+  checked?: boolean;
+  /** Uncontrolled starting state. Its presence is what makes the row a toggle. */
+  defaultChecked?: boolean;
+  /** Called once the row has actually settled into the new state. */
+  onCheckedChange?: (checked: boolean) => void;
+  /** Labels for the row's other states. Each falls back to `label`. */
+  labels?: { checked?: ReactNode; pending?: ReactNode; success?: ReactNode; error?: ReactNode };
+  /** Glyphs for the row's other states. Pending and error default to the loader and the
+      warning triangle. */
+  icons?: { checked?: ReactNode; pending?: ReactNode; success?: ReactNode; error?: ReactNode };
+  /**
+   * Make the row ask before it runs: the first press arms and morphs it, the second runs
+   * `onSelect` and closes the menu like any other row. The menu-row form of
+   * `DeleteButton`, and it disarms the same ways — Escape, the menu closing, or a timeout.
+   */
+  confirm?: {
+    /** The armed label. Defaults to "Confirm?". */
+    label?: ReactNode;
+    /** The armed glyph. Defaults to the row's own icon. */
+    icon?: ReactNode;
+    /** How long it waits before disarming itself, in ms. `0` never does. @default 3000 */
+    resetAfter?: number;
+  };
+  /** How long an outcome holds before the row returns to rest, in ms. @default 2000 */
+  revertAfter?: number;
+  /** Hold the loader back this long, so a near-instant action doesn't flash it.
+      @default 0 */
+  pendingDelay?: number;
 }
 
 export interface CommandGroup {
@@ -1365,15 +1416,18 @@ export function CommandPanelActions({
 
   // Every open/close goes through here so the list behind the menu learns about it in the
   // same event, not from an effect a render later.
+  //
+  // Resolved against `open` rather than inside a `setOpen` updater. React runs updaters
+  // while rendering, so telling the palette from in there is a setState during another
+  // component's render — which React warns about, and which would make the freeze depend
+  // on when React chose to re-run the updater.
   const setMenuOpen = useCallback(
     (next: boolean | ((current: boolean) => boolean)) => {
-      setOpen((current) => {
-        const resolved = typeof next === "function" ? next(current) : next;
-        reportActionsOpen?.(resolved);
-        return resolved;
-      });
+      const resolved = typeof next === "function" ? next(open) : next;
+      setOpen(resolved);
+      reportActionsOpen?.(resolved);
     },
-    [reportActionsOpen],
+    [open, reportActionsOpen],
   );
 
   // A panel can be torn down with its menu still open — stepping back, or the palette
@@ -1389,11 +1443,44 @@ export function CommandPanelActions({
     [actionGroups],
   );
 
+  // Rows that run or toggle in place register here; the rest keep the original path of
+  // closing the menu and calling `onSelect`.
+  // State, not a ref: it is handed to a provider during render, and a ref read there
+  // is exactly what `react-hooks/refs` forbids. The Map is created once and mutated in
+  // effects, so the identity is as stable as a ref's either way.
+  const [rowHandlers] = useState(() => new Map<string, () => boolean>());
+  // Set by the selection so the close request that follows it knows to stand down. Base UI
+  // fires the value change first, which is the only reason a flag works here.
+  const stayOpenRef = useRef(false);
+  const rowScope = useMemo(() => ({ handlers: rowHandlers, menuOpen: open }), [rowHandlers, open]);
+
   const runAction = useCallback(
     (item: CommandItem) => {
       if (item.disabled) return;
+      const handler = rowHandlers.get(item.id);
+      // A handler that returns false has decided the menu should close after all — the
+      // confirming press of a confirm row — so it falls through to the ordinary path.
+      if (handler && handler()) {
+        stayOpenRef.current = true;
+        return;
+      }
       setMenuOpen(false);
       item.onSelect?.();
+    },
+    [rowHandlers, setMenuOpen],
+  );
+
+  // Base UI closes a Select when an item is pressed. A row that reports its outcome in
+  // place needs the menu to stay up, so that one close request is cancelled — the same
+  // move the multi-selects make to survive a checkbox press.
+  const handleOpenChange = useCallback(
+    (next: boolean, details?: { reason?: string; cancel?: () => void }) => {
+      if (!next && details?.reason === "item-press" && stayOpenRef.current) {
+        stayOpenRef.current = false;
+        details.cancel?.();
+        return;
+      }
+      setMenuOpen(next);
     },
     [setMenuOpen],
   );
@@ -1438,7 +1525,7 @@ export function CommandPanelActions({
   return (
     <Select<CommandItem | null>
       open={open}
-      onOpenChange={setMenuOpen}
+      onOpenChange={handleOpenChange}
       value={null}
       onValueChange={(item) => item && runAction(item)}
     >
@@ -1465,7 +1552,9 @@ export function CommandPanelActions({
         emptyMessage={emptyMessage}
         className="min-w-56"
       >
-        <CommandActionSections groups={actionGroups} />
+        <ActionRowContext.Provider value={rowScope}>
+          <CommandActionSections groups={actionGroups} />
+        </ActionRowContext.Provider>
       </SelectContent>
     </Select>
   );
@@ -1478,6 +1567,192 @@ export function CommandPanelActions({
  * heading is drawn only when a visible section actually precedes it, so filtering down to a
  * single section never leaves a stray top border.
  */
+/** True when the row runs or toggles in place instead of choosing and closing. */
+function staysOpen(item: CommandItem): boolean {
+  return (
+    item.action != null ||
+    item.checked !== undefined ||
+    item.defaultChecked !== undefined ||
+    item.confirm != null
+  );
+}
+
+/**
+ * Lets a stay-open row hand its press handler to the menu that owns the selection, and
+ * lets it see when that menu closes. A handler returns `true` to keep the menu open; a
+ * confirm row returns `false` on the press that commits, so the menu closes down the same
+ * path an ordinary row takes.
+ */
+interface ActionRowScope {
+  handlers: Map<string, () => boolean>;
+  menuOpen: boolean;
+}
+
+const ActionRowContext = createContext<ActionRowScope | null>(null);
+
+/** How long a press is ignored after arming, so one double-click can't confirm. */
+const DOUBLE_PRESS_GUARD = 350;
+
+/**
+ * One actions row, in whichever of the three shapes its item describes.
+ *
+ * They're the dropdown menu's three, expressed as data rather than children, because a
+ * palette action *is* data — the caller passes `CommandItem`s, not JSX:
+ *
+ * - `action` alone — runs, confirms, reverts. `DropdownMenuActionItem`.
+ * - `action` + `checked` — runs, then lands in the new state. `DropdownMenuCheckboxItem`
+ *   with an `action`.
+ * - `checked` alone — flips at once, morphing between the two. The `Morph` toggle.
+ *
+ * Neither of the last two shows a success tick: the row having *become* the other thing is
+ * the confirmation, and a check on top of that would be a second one.
+ */
+function CommandActionRow({ item, end }: { item: CommandItem; end?: ReactNode }) {
+  const scope = useContext(ActionRowContext);
+  const menuOpen = scope?.menuOpen ?? false;
+  const isToggle = item.checked !== undefined || item.defaultChecked !== undefined;
+  const isControlled = item.checked !== undefined;
+  const [uncontrolled, setUncontrolled] = useState(item.defaultChecked ?? false);
+  const checked = isControlled ? item.checked! : uncontrolled;
+  const target = !checked;
+
+  const land = useCallback(() => {
+    if (!isControlled) setUncontrolled(target);
+    item.onCheckedChange?.(target);
+  }, [isControlled, item, target]);
+
+  const { status, run } = useAction({
+    action: () => item.action?.(target),
+    revertAfter: item.revertAfter,
+    pendingDelay: item.pendingDelay,
+    onSuccess: isToggle ? land : undefined,
+  });
+
+  // Arming is this row's own state: a confirm row is not "checked", it's waiting.
+  const [armed, setArmed] = useState(false);
+  const armedAt = useRef(0);
+
+  // Standing down when the menu closes, adjusted during render — reopening a menu onto a
+  // row still reading "Confirm?" would put a destructive press one click away with no
+  // memory of having armed it.
+  const [wasMenuOpen, setWasMenuOpen] = useState(menuOpen);
+  if (wasMenuOpen !== menuOpen) {
+    setWasMenuOpen(menuOpen);
+    if (!menuOpen && armed) setArmed(false);
+  }
+
+  const resetAfter = item.confirm?.resetAfter ?? 3000;
+  useEffect(() => {
+    if (!armed || resetAfter <= 0) return;
+    const timer = setTimeout(() => setArmed(false), resetAfter);
+    return () => clearTimeout(timer);
+  }, [armed, resetAfter]);
+
+  /** Returns true when the menu should stay open. */
+  const press = useCallback((): boolean => {
+    if (item.confirm) {
+      if (!armed) {
+        armedAt.current = Date.now();
+        setArmed(true);
+        return true;
+      }
+      // A double-click shouldn't confirm what it only just armed.
+      if (Date.now() - armedAt.current < DOUBLE_PRESS_GUARD) return true;
+      setArmed(false);
+      // Falls through to the ordinary path: the menu closes and `onSelect` runs.
+      return false;
+    }
+    if (item.action) {
+      void run();
+      return true;
+    }
+    // No work to wait on: the morph toggle flips on the press itself.
+    land();
+    return true;
+  }, [armed, item.action, item.confirm, land, run]);
+
+  // Registered by id so the menu can route its selection here and leave itself open.
+  useEffect(() => {
+    const handlers = scope?.handlers;
+    if (!handlers || !staysOpen(item)) return;
+    handlers.set(item.id, press);
+    return () => {
+      handlers.delete(item.id);
+    };
+  }, [scope, item, press]);
+
+  // A toggle's outcome is the new state, so `success` rests rather than confirming.
+  const key = armed
+    ? "armed"
+    : status === "pending" || status === "error"
+      ? status
+      : !isToggle && status === "success"
+        ? "success"
+        : checked
+          ? "on"
+          : "off";
+
+  // Memoised on the state they show, and that is load-bearing rather than an
+  // optimisation: `SelectItem` registers its icon and label into the Select by identity,
+  // so a freshly built element every render would set state every render — an unbounded
+  // re-render loop rather than a slow one.
+  const glyphNode = useMemo(() => {
+    if (!item.icon && !isToggle && !item.action) return undefined;
+    return (
+      <Morph
+        activeKey={key}
+        items={{
+          off: item.icon,
+          on: item.icons?.checked ?? item.icon,
+          pending: item.icons?.pending ?? <AsciiLoader />,
+          success: item.icons?.success ?? <Check />,
+          error: item.icons?.error ?? <TriangleAlert />,
+          armed: item.confirm?.icon ?? item.icon,
+        }}
+      />
+    );
+  }, [item, isToggle, key]);
+
+  const textNode = useMemo(
+    () => (
+      <Morph
+        activeKey={key}
+        className="place-items-start"
+        items={{
+          off: item.label,
+          on: item.labels?.checked ?? item.label,
+          pending: item.labels?.pending ?? item.label,
+          success: item.labels?.success ?? item.label,
+          error: item.labels?.error ?? item.label,
+          armed: item.confirm?.label ?? "Confirm?",
+        }}
+      />
+    ),
+    [item, key],
+  );
+
+  return (
+    <SelectItem
+      value={item}
+      // The filter matches the resting label, so a row doesn't fall out of the list
+      // while it happens to read "Muting…".
+      searchValue={item.label}
+      icon={glyphNode}
+      end={end}
+      disabled={item.disabled || status === "pending"}
+      data-status={status}
+      data-armed={armed || undefined}
+      className={cn(
+        "gap-2.5",
+        item.destructive &&
+          "text-destructive data-[highlighted]:text-destructive data-[panel-active]:text-destructive",
+      )}
+    >
+      {textNode}
+    </SelectItem>
+  );
+}
+
 function CommandActionSections({ groups }: { groups: CommandGroup[] }) {
   const { matches } = useSelectSearch();
   // Worked out up front rather than by advancing a counter inside the map. A running
@@ -1518,22 +1793,7 @@ function CommandActionSections({ groups }: { groups: CommandGroup[] }) {
                 </span>
               ) : undefined;
 
-              return (
-                <SelectItem
-                  key={item.id}
-                  value={item}
-                  icon={item.icon}
-                  end={end}
-                  disabled={item.disabled}
-                  className={cn(
-                    "gap-2.5",
-                    item.destructive &&
-                      "text-destructive data-[highlighted]:text-destructive data-[panel-active]:text-destructive",
-                  )}
-                >
-                  {item.label}
-                </SelectItem>
-              );
+              return <CommandActionRow key={item.id} item={item} end={end} />;
             })}
           </BaseSelect.Group>
         );
