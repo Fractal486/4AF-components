@@ -1,5 +1,6 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { vi } from "vitest";
 
 /** Mirrors DOUBLE_PRESS_GUARD in the component. */
@@ -89,6 +90,48 @@ describe("CommandPalette", () => {
     // And it lets go when the menu does.
     await user.keyboard("{Escape}");
     await waitFor(() => expect(alpha).not.toHaveAttribute("data-frozen"));
+  });
+
+  it("reports keyboard activation separately from pointer selection", async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    const onActivate = vi.fn();
+
+    render(
+      <CommandPalette
+        open
+        groups={[
+          {
+            items: [
+              {
+                id: "projects",
+                label: "Projects",
+                panel: () => (
+                  <CommandPanelBody>
+                    <CommandPanelList>
+                      <CommandPanelRow
+                        value="alpha"
+                        onSelect={onSelect}
+                        onActivate={onActivate}
+                      >
+                        Alpha
+                      </CommandPanelRow>
+                    </CommandPanelList>
+                  </CommandPanelBody>
+                ),
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    await user.click(await screen.findByRole("option", { name: "Projects" }));
+    await user.keyboard("{ArrowDown}{Enter}");
+
+    expect(onSelect).toHaveBeenCalledOnce();
+    expect(onActivate).toHaveBeenCalledOnce();
+    expect(onActivate.mock.calls[0]?.[0]).toHaveProperty("detail", 0);
   });
 
   it("runs, toggles and morphs rows inside the actions menu", async () => {
@@ -219,5 +262,65 @@ describe("CommandPalette", () => {
     expect(onSelect).toHaveBeenCalledOnce();
     // And it closes down the ordinary path, unlike every other stay-open row.
     await waitFor(() => expect(screen.queryByRole("option", { name: "Confirm?" })).toBeNull());
+  });
+
+  it("keeps the active row when the items are rebuilt around it", async () => {
+    const user = userEvent.setup();
+
+    function Harness() {
+      const [starred, setStarred] = useState(false);
+      // Deliberately *not* memoised: a consumer's action list is normally a memo over real
+      // dependencies, so acting on one row rebuilds every item object. The active row has
+      // to survive that.
+      const items = [
+        { id: "first", label: "First" },
+        {
+          id: "star",
+          label: starred ? "Starred" : "Star",
+          defaultChecked: starred,
+          onCheckedChange: setStarred,
+        },
+      ];
+
+      return (
+        <CommandPalette
+          open
+          groups={[
+            {
+              items: [
+                {
+                  id: "projects",
+                  label: "Projects",
+                  panel: () => (
+                    <CommandPanelBody>
+                      <CommandPanelList>
+                        <CommandPanelRow value="alpha">Alpha</CommandPanelRow>
+                      </CommandPanelList>
+                      <CommandPanelFooter>
+                        <CommandPanelActions items={items} />
+                      </CommandPanelFooter>
+                    </CommandPanelBody>
+                  ),
+                },
+              ],
+            },
+          ]}
+        />
+      );
+    }
+
+    render(<Harness />);
+    await user.click(await screen.findByRole("option", { name: "Projects" }));
+    await user.click(screen.getByText("Actions"));
+
+    const star = await screen.findByRole("option", { name: "Star" });
+    await user.click(star);
+
+    // Rebuilt items must not strand the highlight on an object that no longer exists.
+    await waitFor(() =>
+      expect(screen.getByRole("option", { name: "Starred" })).toHaveAttribute(
+        "data-panel-active",
+      ),
+    );
   });
 });

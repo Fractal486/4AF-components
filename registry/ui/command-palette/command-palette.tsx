@@ -23,6 +23,7 @@ import {
   useRef,
   useState,
   type ComponentProps,
+  type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
@@ -1266,6 +1267,8 @@ export interface CommandPanelRowProps
   selected?: boolean;
   /** Select the row when it is clicked or activated with Enter/Space. */
   onSelect?: () => void;
+  /** Observe the activation event when a caller needs to distinguish keyboard activation. */
+  onActivate?: (event: ReactMouseEvent<HTMLDivElement>) => void;
   /** Show a trailing checkbox indicator for the row's selection state. */
   checkbox?: boolean;
   onKeyDown?: ComponentProps<"div">["onKeyDown"];
@@ -1288,11 +1291,12 @@ export function CommandPanelRow({
   badge,
   selected = false,
   onSelect,
+  onActivate,
   checkbox = false,
   onKeyDown,
   ...props
 }: CommandPanelRowProps) {
-  const interactive = onSelect != null;
+  const interactive = onSelect != null || onActivate != null;
   const itemValue = value ?? props.id ?? String(children ?? "");
   const frozen = useFrozen(itemValue);
 
@@ -1301,7 +1305,10 @@ export function CommandPanelRow({
       {...props}
       value={itemValue}
       aria-selected={interactive ? selected : undefined}
-      onClick={interactive ? onSelect : undefined}
+      onClick={interactive ? (event) => {
+        onSelect?.();
+        onActivate?.(event);
+      } : undefined}
       onKeyDown={onKeyDown}
       // Paints the highlight this row would have if Base UI hadn't dropped it when the
       // actions menu took focus. Styled from the same pair of rules, so the two states are
@@ -1523,11 +1530,14 @@ export function CommandPanelActions({
   }, [hotkey, setMenuOpen]);
 
   return (
-    <Select<CommandItem | null>
+    <Select<string | null>
       open={open}
       onOpenChange={handleOpenChange}
       value={null}
-      onValueChange={(item) => item && runAction(item)}
+      onValueChange={(id) => {
+        const item = id == null ? undefined : actionItems.find((candidate) => candidate.id === id);
+        if (item) runAction(item);
+      }}
     >
       <SelectTrigger outline={false} chevron={false} className={cn(ACTION_CLASS, "h-auto")}>
         {label}
@@ -1733,7 +1743,11 @@ function CommandActionRow({ item, end }: { item: CommandItem; end?: ReactNode })
 
   return (
     <SelectItem
-      value={item}
+      // The row's *id*, not the item object. A consumer's `actionGroups` is normally a
+      // memo over real dependencies, so toggling one of these rows rebuilds every item —
+      // and an active row tracked by object identity would be stranded on the previous
+      // object the moment its own action changed anything.
+      value={item.id}
       // The filter matches the resting label, so a row doesn't fall out of the list
       // while it happens to read "Muting…".
       searchValue={item.label}
