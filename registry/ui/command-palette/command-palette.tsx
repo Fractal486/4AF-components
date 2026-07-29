@@ -1739,7 +1739,13 @@ function CommandActionRow({ item, end }: { item: CommandItem; end?: ReactNode })
       searchValue={item.label}
       icon={glyphNode}
       end={end}
-      disabled={item.disabled || status === "pending"}
+      // Not disabled while pending, deliberately. A disabled row is skipped by the
+      // roving highlight, so the list would move focus off the row the user just ran
+      // and their next Enter would fire a different action. `useAction` already drops
+      // a re-entrant press with a ref guard, which is the real protection; `aria-busy`
+      // is what says it's working.
+      disabled={item.disabled}
+      aria-busy={status === "pending" || undefined}
       data-status={status}
       data-armed={armed || undefined}
       className={cn(

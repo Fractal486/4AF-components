@@ -483,7 +483,10 @@ export function DropdownMenuActionItem({
       <DropdownMenuItem
         closeOnClick={closeOnClick}
         onClick={run}
-        disabled={disabled || status === "pending"}
+        // Not disabled while pending: a disabled item is skipped by the menu's roving
+        // highlight, which would move focus off the row that is running. `useAction`'s ref
+        // guard already refuses a re-entrant press.
+        disabled={disabled}
         aria-busy={status === "pending" || undefined}
         data-status={status}
         {...props}
@@ -619,7 +622,8 @@ export function DropdownMenuCheckboxItem({
     ? {
         checked: current,
         onCheckedChange: () => void run(),
-        disabled: disabled || status === "pending",
+        // Same as the action row: staying enabled keeps the highlight on this row.
+        disabled,
         "aria-busy": status === "pending" || undefined,
         "data-status": status,
       }

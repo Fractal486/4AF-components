@@ -149,7 +149,16 @@ describe("CommandPalette", () => {
     expect(await screen.findByRole("option", { name: "Starred" })).toBeInTheDocument();
 
     // Action row: waits, then confirms, with the menu still open behind it.
-    await user.click(screen.getByRole("option", { name: "Save" }));
+    const saveRow = screen.getByRole("option", { name: "Save" });
+    await user.click(saveRow);
+    expect(save).toHaveBeenCalledOnce();
+
+    // Still enabled while it runs: a disabled row drops out of the roving highlight, and
+    // the list would move focus onto a neighbour — so the next Enter would run something
+    // the user never chose. Re-entry is refused by useAction, not by the DOM.
+    expect(saveRow).not.toHaveAttribute("aria-disabled", "true");
+    expect(saveRow).toHaveAttribute("aria-busy", "true");
+    await user.click(saveRow);
     expect(save).toHaveBeenCalledOnce();
     await act(async () => finish!());
     expect(await screen.findByRole("option", { name: "Saved" })).toBeInTheDocument();
