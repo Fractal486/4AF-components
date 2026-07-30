@@ -178,7 +178,10 @@ export function Slider({
   const stepCount = Math.floor((normalizedMax - normalizedMin) / normalizedStep);
   const ticks =
     showTicks && stepCount > 0 && stepCount <= 50
-      ? Array.from({ length: stepCount + 1 }, (_, i) => (i / stepCount) * 100)
+      ? Array.from(
+          { length: stepCount + 1 },
+          (_, i) => ((i * normalizedStep) / (normalizedMax - normalizedMin)) * 100,
+        )
       : [];
 
   const handleValueChange = (next: number) => {

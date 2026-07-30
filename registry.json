@@ -185,10 +185,23 @@
       ]
     },
     {
+      "name": "refs",
+      "type": "registry:lib",
+      "description": "React 19-safe callback and object ref composition.",
+      "files": [
+        {
+          "path": "registry/lib/refs.ts",
+          "type": "registry:lib",
+          "target": "@lib/refs.ts"
+        }
+      ]
+    },
+    {
       "name": "slot",
       "type": "registry:lib",
       "registryDependencies": [
-        "http://localhost:3000/r/cn.json"
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/refs.json"
       ],
       "files": [
         {
@@ -288,7 +301,8 @@
       ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/refs.json"
       ],
       "files": [
         {
@@ -331,7 +345,8 @@
       ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/refs.json"
       ],
       "files": [
         {
@@ -507,7 +522,8 @@
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json"
+        "http://localhost:3000/r/motion.json",
+        "http://localhost:3000/r/refs.json"
       ],
       "files": [
         {
@@ -691,13 +707,9 @@
       "name": "table-of-contents",
       "type": "registry:ui",
       "description": "A table of contents that tracks visible headings, keeps the last passed section active through long prose, and smooth-scrolls on click.",
-      "dependencies": [
-        "motion"
-      ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json"
+        "http://localhost:3000/r/cn.json"
       ],
       "files": [
         {

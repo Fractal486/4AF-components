@@ -528,7 +528,7 @@ export function SidebarTrigger({
       className={className}
       onClick={(event) => {
         onClick?.(event);
-        toggleSidebar();
+        if (!event.defaultPrevented) toggleSidebar();
       }}
       {...props}
     >
@@ -571,10 +571,11 @@ export function SidebarRailButton({
       aria-label={ariaLabel ?? (typeof tooltip === "string" ? tooltip : undefined)}
       className={cn(sidebarRailButtonVariants(), className)}
       onClick={(event) => {
+        onClick?.(event);
+        if (event.defaultPrevented) return;
         if (value !== undefined && splitContext !== null) {
           splitContext.setActivePanel(value);
         }
-        onClick?.(event);
       }}
       {...props}
     >

@@ -17,6 +17,41 @@ import {
 } from "./command-palette";
 
 describe("CommandPalette", () => {
+  it("shows a useful state when async search rejects", async () => {
+    const user = userEvent.setup();
+    render(
+      <CommandPalette
+        open
+        groups={[]}
+        searchDebounce={0}
+        onSearch={() => Promise.reject(new Error("Service unavailable"))}
+        searchErrorMessage={(error) =>
+          error instanceof Error ? error.message : "Search unavailable"
+        }
+      />,
+    );
+
+    await user.type(screen.getByPlaceholderText("Type a command or search…"), "status");
+    expect(await screen.findByRole("alert")).toHaveTextContent("Service unavailable");
+  });
+
+  it("also contains a synchronous search-source failure", async () => {
+    const user = userEvent.setup();
+    render(
+      <CommandPalette
+        open
+        groups={[]}
+        searchDebounce={0}
+        onSearch={() => {
+          throw new Error("Broken source");
+        }}
+      />,
+    );
+
+    await user.type(screen.getByPlaceholderText("Type a command or search…"), "status");
+    expect(await screen.findByRole("alert")).toHaveTextContent("Search failed. Try again.");
+  });
+
   it("keeps its query when a controlled owner rejects a close request", async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();

@@ -11,6 +11,7 @@ import {
   type Ref,
 } from "react";
 import { cn } from "./cn";
+import { composeRefs } from "./refs";
 
 /**
  * Renders its props onto its child instead of onto a wrapper element.
@@ -57,7 +58,13 @@ function mergeProps(
       if (typeof slotValue === "function" && typeof childValue === "function") {
         merged[key] = (...args: unknown[]) => {
           (childValue as (...a: unknown[]) => unknown)(...args);
-          (slotValue as (...a: unknown[]) => unknown)(...args);
+          const event = args[0];
+          const prevented =
+            event != null &&
+            typeof event === "object" &&
+            "defaultPrevented" in event &&
+            event.defaultPrevented === true;
+          if (!prevented) (slotValue as (...a: unknown[]) => unknown)(...args);
         };
       } else if (typeof slotValue === "function") {
         merged[key] = slotValue;
@@ -72,22 +79,4 @@ function mergeProps(
   }
 
   return merged;
-}
-
-/** Both the Slot's ref and any ref the child already had must be honoured. */
-function composeRefs<T>(...refs: (Ref<T> | undefined)[]): Ref<T> {
-  return (node: T | null) => {
-    const cleanups: (() => void)[] = [];
-    for (const ref of refs) {
-      if (typeof ref === "function") {
-        const result = ref(node);
-        if (typeof result === "function") cleanups.push(result);
-      } else if (ref != null && typeof ref === "object") {
-        (ref as { current: T | null }).current = node;
-      }
-    }
-    return () => {
-      for (const cleanup of cleanups) cleanup();
-    };
-  };
 }

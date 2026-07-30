@@ -1,52 +1,95 @@
 #!/usr/bin/env node
 
-import { createServer } from "node:http";
-import { existsSync, readFileSync } from "node:fs";
-import { resolve, relative, dirname } from "node:path";
+import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { existsSync, readFileSync, statSync } from "node:fs";
+import { resolve, relative, dirname, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
 import ts from "typescript";
+
+type CliOptions = Record<string, string | boolean>;
+
+interface RegistryFile {
+  path: string;
+  type: string;
+  target: string;
+}
+
+interface RegistryItem {
+  name: string;
+  type: string;
+  description?: string;
+  dependencies?: string[];
+  registryDependencies?: string[];
+  files?: RegistryFile[];
+}
+
+interface Registry {
+  items: RegistryItem[];
+}
+
+interface ComponentsConfig {
+  aliases?: Record<string, string>;
+  tailwind?: { css?: string };
+}
+
+interface InstallRuntime {
+  buildRegistry: () => Promise<void>;
+  startServer: () => Promise<RegistryServer>;
+  runInstaller: (registryUrl: string, project: string, overwrite: boolean) => Promise<void>;
+}
+
+interface RegistryServer {
+  origin: string;
+  close: () => Promise<void>;
+}
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const registryPath = resolve(repoRoot, "registry.json");
 const publicRoot = resolve(repoRoot, "public");
 const pnpm = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const SHADCN_VERSION = "4.13.1";
+const shadcnPackagePath = resolve(repoRoot, "node_modules/shadcn/package.json");
 
-const registry = JSON.parse(readFileSync(registryPath, "utf8"));
+const registry = JSON.parse(readFileSync(registryPath, "utf8")) as Registry;
 const components = registry.items.filter((item) => item.type === "registry:ui");
 
-const { command, positional, options } = parseArgs(process.argv.slice(2));
+const defaultInstallRuntime: InstallRuntime = {
+  buildRegistry: () => runCommand(pnpm, ["registry:build"], repoRoot),
+  startServer: startRegistryServer,
+  runInstaller: async (registryUrl, project, overwrite) => {
+    const args = [resolveShadcnCli(), "add", registryUrl, "--yes"];
+    if (overwrite) args.push("--overwrite");
+    await runCommand(process.execPath, args, project);
+  },
+};
 
-try {
-  if (command === "list") {
-    listComponents();
-  } else if (command === "doctor") {
-    await doctor(options);
-  } else if (command === "install") {
-    await installComponent(positional[0], options);
-  } else {
-    printHelp();
-    if (command !== "help") process.exitCode = 1;
+function resolveShadcnCli() {
+  if (!existsSync(shadcnPackagePath)) {
+    throw new Error("The pinned shadcn CLI is missing. Run `pnpm install` in the 4AF repository.");
   }
-} catch (error) {
-  console.error(`4AF: ${error instanceof Error ? error.message : String(error)}`);
-  process.exitCode = 1;
+  const manifest = JSON.parse(readFileSync(shadcnPackagePath, "utf8")) as {
+    bin?: string | Record<string, string>;
+  };
+  const relativeBin = typeof manifest.bin === "string" ? manifest.bin : manifest.bin?.shadcn;
+  if (!relativeBin) throw new Error("The installed shadcn package does not expose its CLI.");
+  return resolve(dirname(shadcnPackagePath), relativeBin);
 }
 
-function parseArgs(args) {
-  const positional = [];
-  const options = {};
+export function parseArgs(args: string[]) {
+  const positional: string[] = [];
+  const options: CliOptions = {};
   const command = args.shift() ?? "help";
 
   for (let index = 0; index < args.length; index += 1) {
-    const arg = args[index];
+    const arg = args[index]!;
     if (!arg.startsWith("--")) {
       positional.push(arg);
       continue;
     }
 
     const [rawKey, inlineValue] = arg.slice(2).split("=", 2);
+    if (!rawKey) continue;
     if (inlineValue !== undefined) {
       options[rawKey] = inlineValue;
       continue;
@@ -64,7 +107,7 @@ function parseArgs(args) {
   return { command, positional, options };
 }
 
-function listComponents() {
+export function listComponents() {
   // Sorted here rather than in registry.json: this is a lookup table, and whoever is
   // reading it already knows the name and only needs to confirm it. The file itself keeps
   // related items adjacent, which is what helps when editing it.
@@ -74,7 +117,7 @@ function listComponents() {
   }
 }
 
-function requireProject(options) {
+function requireProject(options: CliOptions) {
   if (!options.project || typeof options.project !== "string") {
     throw new Error("Missing --project <path>. The target project must be explicit for agent use.");
   }
@@ -87,7 +130,7 @@ function requireProject(options) {
   return project;
 }
 
-async function doctor(options) {
+export async function doctor(options: CliOptions): Promise<ComponentsConfig> {
   const project = requireProject(options);
   const componentsConfigPath = resolve(project, "components.json");
   const errors = [];
@@ -96,7 +139,7 @@ async function doctor(options) {
   if (!existsSync(componentsConfigPath)) {
     errors.push("components.json is missing; initialize shadcn in the target project first.");
   } else {
-    const config = readJson(componentsConfigPath);
+    const config = readJson<ComponentsConfig>(componentsConfigPath);
     for (const alias of ["ui", "lib"]) {
       if (!config.aliases?.[alias]) errors.push(`components.json is missing the ${alias} alias.`);
     }
@@ -109,12 +152,14 @@ async function doctor(options) {
   for (const error of errors) console.log(`error\t${error}`);
   if (errors.length) throw new Error("Target project is not ready for 4AF components.");
   console.log("status\tok");
-  return existsSync(componentsConfigPath)
-    ? readJson(componentsConfigPath)
-    : null;
+  return readJson<ComponentsConfig>(componentsConfigPath);
 }
 
-async function installComponent(name, options) {
+export async function installComponent(
+  name: string | undefined,
+  options: CliOptions,
+  runtime: InstallRuntime = defaultInstallRuntime,
+) {
   if (!name) throw new Error("Missing component name. Run `pnpm 4af list` to see the options.");
   const component = components.find((item) => item.name === name);
   if (!component) {
@@ -128,9 +173,6 @@ async function installComponent(name, options) {
 
   const overwrite = Boolean(options.overwrite);
   const dryRun = Boolean(options["dry-run"]);
-  const args = ["dlx", `shadcn@${SHADCN_VERSION}`, "add", "REGISTRY_URL", "--yes"];
-  if (overwrite) args.push("--overwrite");
-
   if (dryRun) {
     console.log(`component\t${component.name}`);
     console.log(`project\t${project}`);
@@ -150,21 +192,24 @@ async function installComponent(name, options) {
     );
   }
 
-  await runCommand(pnpm, ["registry:build"], repoRoot);
-  const server = await startRegistryServer();
+  await runtime.buildRegistry();
+  const server = await runtime.startServer();
   const registryUrl = `${server.origin}/r/${component.name}.json`;
-  args[3] = registryUrl;
 
   try {
     console.log(`Installing ${component.name} into ${project}`);
-    await runCommand(pnpm, args, project);
+    await runtime.runInstaller(registryUrl, project, overwrite);
     console.log(`status\tinstalled ${component.name}`);
   } finally {
     await server.close();
   }
 }
 
-function installPlan(component, config, project) {
+export function installPlan(
+  component: RegistryItem,
+  config: ComponentsConfig,
+  project: string,
+) {
   const items = collectRegistryItems(component.name);
   const files = items.flatMap((item) =>
     (item.files ?? []).map((file) => ({
@@ -173,7 +218,10 @@ function installPlan(component, config, project) {
     })),
   );
   const requestedDependencies = [...new Set(items.flatMap((item) => item.dependencies ?? []))].sort();
-  const packageJson = readJson(resolve(project, "package.json"));
+  const packageJson = readJson<{
+    dependencies?: Record<string, string>;
+    devDependencies?: Record<string, string>;
+  }>(resolve(project, "package.json"));
   const installedDependencies = {
     ...(packageJson.dependencies ?? {}),
     ...(packageJson.devDependencies ?? {}),
@@ -191,11 +239,15 @@ function installPlan(component, config, project) {
   };
 }
 
-function collectRegistryItems(name, visited = new Set(), items = []) {
-  if (visited.has(name)) return;
+export function collectRegistryItems(
+  name: string,
+  visited = new Set<string>(),
+  items: RegistryItem[] = [],
+): RegistryItem[] {
+  if (visited.has(name)) return items;
   visited.add(name);
   const item = registry.items.find((entry) => entry.name === name);
-  if (!item) return;
+  if (!item) return items;
 
   items.push(item);
   for (const dependency of item.registryDependencies ?? []) {
@@ -205,42 +257,51 @@ function collectRegistryItems(name, visited = new Set(), items = []) {
   return items;
 }
 
-function resolveTarget(target, config, project) {
+function resolveTarget(target: string, config: ComponentsConfig, project: string) {
   const match = target.match(/^@([^/]+)\/(.+)$/);
   if (!match) return resolve(repoRoot, target);
-  const alias = config.aliases?.[match[1]];
-  if (!alias) throw new Error(`components.json is missing the ${match[1]} alias required by ${target}.`);
+  const aliasName = match[1]!;
+  const suffix = match[2]!;
+  const alias = config.aliases?.[aliasName];
+  if (!alias) {
+    throw new Error(`components.json is missing the ${aliasName} alias required by ${target}.`);
+  }
 
-  return resolve(resolveProjectAlias(alias, project), match[2]);
+  return resolve(resolveProjectAlias(alias, project), suffix);
 }
 
-function readJson(path) {
+function readJson<T>(path: string): T {
   const parsed = ts.parseConfigFileTextToJson(path, readFileSync(path, "utf8"));
   if (parsed.error) {
     const message = ts.flattenDiagnosticMessageText(parsed.error.messageText, "\n");
     throw new Error(`Could not parse ${path}: ${message}`);
   }
-  return parsed.config;
+  return parsed.config as T;
 }
 
-function resolveProjectAlias(alias, project) {
-  const matches = [];
+export function resolveProjectAlias(alias: string, project: string) {
+  const matches: { pattern: string; target: string; base: string }[] = [];
 
-  for (const { path, config } of projectTsconfigs(project)) {
-    for (const [pattern, targets] of Object.entries(config.compilerOptions?.paths ?? {})) {
+  for (const { path, parsed } of projectTsconfigs(project)) {
+    for (const [pattern, targets] of Object.entries(parsed.options.paths ?? {})) {
       const wildcard = matchPathPattern(alias, pattern);
       if (wildcard === null || !Array.isArray(targets) || typeof targets[0] !== "string") continue;
+      const internalOptions = parsed.options as ts.CompilerOptions & { pathsBasePath?: string };
+      const configuredBase =
+        parsed.options.baseUrl ?? internalOptions.pathsBasePath ?? dirname(path);
       matches.push({
         pattern,
         target: targets[0].replace("*", wildcard),
-        path,
+        base: isAbsolute(configuredBase)
+          ? configuredBase
+          : resolve(dirname(path), configuredBase),
       });
     }
   }
 
   matches.sort((a, b) => b.pattern.length - a.pattern.length);
   const match = matches[0];
-  if (match) return resolve(dirname(match.path), match.target);
+  if (match) return resolve(match.base, match.target);
 
   if (alias.startsWith("./") || alias.startsWith("../")) return resolve(project, alias);
   throw new Error(
@@ -248,7 +309,7 @@ function resolveProjectAlias(alias, project) {
   );
 }
 
-function matchPathPattern(value, pattern) {
+function matchPathPattern(value: string, pattern: string): string | null {
   const star = pattern.indexOf("*");
   if (star < 0) return value === pattern ? "" : null;
 
@@ -258,26 +319,31 @@ function matchPathPattern(value, pattern) {
   return value.slice(prefix.length, value.length - suffix.length);
 }
 
-function projectTsconfigs(project) {
-  const configs = [];
-  const visited = new Set();
+function projectTsconfigs(project: string) {
+  const configs: { path: string; parsed: ts.ParsedCommandLine }[] = [];
+  const visited = new Set<string>();
 
-  const visit = (path) => {
+  const visit = (path: string) => {
     if (visited.has(path) || !existsSync(path)) return;
     visited.add(path);
 
-    const config = readJson(path);
-    configs.push({ path, config });
+    const parsed = ts.getParsedCommandLineOfConfigFile(path, {}, {
+      ...ts.sys,
+      onUnRecoverableConfigFileDiagnostic(diagnostic) {
+        const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
+        throw new Error(`Could not parse ${path}: ${message}`);
+      },
+    });
+    if (!parsed) throw new Error(`Could not parse ${path}.`);
+    configs.push({ path, parsed });
 
-    for (const reference of config.references ?? []) {
-      if (typeof reference?.path !== "string") continue;
-      const referencePath = resolve(dirname(path), reference.path);
-      visit(existsSync(referencePath) ? referencePath : `${referencePath}.json`);
-    }
-
-    if (typeof config.extends === "string" && config.extends.startsWith(".")) {
-      const extendsPath = resolve(dirname(path), config.extends);
-      visit(existsSync(extendsPath) ? extendsPath : `${extendsPath}.json`);
+    for (const reference of parsed.projectReferences ?? []) {
+      const referencePath = reference.path;
+      const candidates = existsSync(referencePath) && statSync(referencePath).isDirectory()
+        ? [resolve(referencePath, "tsconfig.json")]
+        : [referencePath, `${referencePath}.json`];
+      const next = candidates.find((candidate) => existsSync(candidate));
+      if (next) visit(next);
     }
   };
 
@@ -286,8 +352,8 @@ function projectTsconfigs(project) {
   return configs;
 }
 
-function runCommand(command, args, cwd) {
-  return new Promise((resolvePromise, reject) => {
+export function runCommand(command: string, args: string[], cwd: string): Promise<void> {
+  return new Promise<void>((resolvePromise, reject) => {
     // Windows exposes pnpm as a .cmd shim. Invoke it through cmd.exe explicitly
     // instead of enabling Node's shell option, which emits a security warning and
     // performs weaker argument handling. Arguments are generated by this script or
@@ -308,8 +374,8 @@ function runCommand(command, args, cwd) {
   });
 }
 
-function startRegistryServer() {
-  return new Promise((resolvePromise, reject) => {
+export function startRegistryServer(): Promise<RegistryServer> {
+  return new Promise<RegistryServer>((resolvePromise, reject) => {
     const server = createServer((request, response) => {
       void serveRegistryFile(request, response).catch((error) => {
         response.statusCode = 500;
@@ -329,13 +395,13 @@ function startRegistryServer() {
       const origin = `http://127.0.0.1:${address.port}`;
       resolvePromise({
         origin,
-        close: () => new Promise((resolveClose) => server.close(() => resolveClose())),
+        close: () => new Promise<void>((resolveClose) => server.close(() => resolveClose())),
       });
     });
   });
 }
 
-async function serveRegistryFile(request, response) {
+async function serveRegistryFile(request: IncomingMessage, response: ServerResponse) {
   const pathname = new URL(request.url ?? "/", "http://localhost").pathname;
   if (!pathname.startsWith("/r/") || request.method !== "GET") {
     response.statusCode = 404;
@@ -358,7 +424,7 @@ async function serveRegistryFile(request, response) {
   response.end(JSON.stringify(rewriteRegistryUrls(json, origin)));
 }
 
-function rewriteRegistryUrls(value, origin) {
+export function rewriteRegistryUrls(value: unknown, origin: string): unknown {
   if (typeof value === "string") return value.replaceAll("http://localhost:3000", origin);
   if (Array.isArray(value)) return value.map((entry) => rewriteRegistryUrls(entry, origin));
   if (value && typeof value === "object") {
@@ -381,3 +447,26 @@ The install command builds and serves the private registry automatically, then i
 shadcn ${SHADCN_VERSION} non-interactively in the target project. The 4AF theme is included by dependencies.
 `);
 }
+
+export async function main(args = process.argv.slice(2)) {
+  const { command, positional, options } = parseArgs([...args]);
+
+  try {
+    if (command === "list") {
+      listComponents();
+    } else if (command === "doctor") {
+      await doctor(options);
+    } else if (command === "install") {
+      await installComponent(positional[0], options);
+    } else {
+      printHelp();
+      if (command !== "help") process.exitCode = 1;
+    }
+  } catch (error) {
+    console.error(`4AF: ${error instanceof Error ? error.message : String(error)}`);
+    process.exitCode = 1;
+  }
+}
+
+const entryPoint = process.argv[1] ? resolve(process.argv[1]) : "";
+if (entryPoint === fileURLToPath(import.meta.url)) await main();

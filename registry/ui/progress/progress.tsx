@@ -1,6 +1,7 @@
 "use client";
 
 import { Progress as BaseProgress } from "@base-ui/react/progress";
+import { useDirection } from "@base-ui/react/direction-provider";
 import type { ComponentProps } from "react";
 import { cn } from "@/registry/lib/cn";
 
@@ -41,14 +42,26 @@ export function Progress({
   indicatorClassName,
   ...props
 }: ProgressProps) {
+  const direction = useDirection();
+  const normalizedMin = Number.isFinite(min) ? min : 0;
+  const normalizedMax =
+    Number.isFinite(max) && max > normalizedMin ? max : normalizedMin + 1;
+  const normalizedValue =
+    value == null
+      ? null
+      : clamp(Number.isFinite(value) ? value : normalizedMin, normalizedMin, normalizedMax);
   const pct =
-    value == null ? null : clamp(((value - min) / (max - min)) * 100, 0, 100);
+    normalizedValue == null
+      ? null
+      : ((normalizedValue - normalizedMin) / (normalizedMax - normalizedMin)) * 100;
+  const hiddenPercent = 100 - (pct ?? 0);
+  const translate = direction === "rtl" ? hiddenPercent : -hiddenPercent;
 
   return (
     <BaseProgress.Root
-      value={value}
-      min={min}
-      max={max}
+      value={normalizedValue}
+      min={normalizedMin}
+      max={normalizedMax}
       className={cn("w-full", className)}
       {...props}
     >
@@ -66,7 +79,11 @@ export function Progress({
           // Full-width and slid into view, so only `transform` animates. Our `style` is
           // spread after Base UI's, so this `width` overrides the percentage width it
           // would otherwise set.
-          style={pct == null ? undefined : { width: "100%", transform: `translateX(-${100 - pct}%)` }}
+          style={
+            pct == null
+              ? undefined
+              : { width: "100%", transform: `translateX(${translate}%)` }
+          }
         />
       </BaseProgress.Track>
     </BaseProgress.Root>

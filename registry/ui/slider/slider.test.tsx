@@ -25,4 +25,15 @@ describe("Slider", () => {
       clipPath: expect.stringContaining("inset"),
     });
   });
+
+  it("places an off-range final step at its real percentage", () => {
+    const { container } = render(
+      <Slider aria-label="Amount" min={0} max={10} step={3} showValue={false} />,
+    );
+
+    const tickPositions = Array.from(container.querySelectorAll("span"))
+      .map((element) => element.style.left)
+      .filter(Boolean);
+    expect(tickPositions).toEqual(["0%", "30%", "60%", "90%"]);
+  });
 });

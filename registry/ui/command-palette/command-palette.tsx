@@ -230,6 +230,8 @@ export interface CommandPaletteProps {
   searchDebounce?: number;
   /** Shown in place of the results while `onSearch` is in flight. @default "Searching…" */
   loadingMessage?: ReactNode;
+  /** Shown when `onSearch` rejects. Receives the error when supplied as a function. */
+  searchErrorMessage?: ReactNode | ((error: unknown) => ReactNode);
   /** Bind ⌘K / Ctrl-K to toggle the palette globally. @default true */
   shortcut?: boolean;
   placeholder?: string;
@@ -590,10 +592,11 @@ export function useCommandSearch<T>(
   query: string,
   onSearch: ((query: string, signal: AbortSignal) => Promise<T>) | undefined,
   options: UseCommandSearchOptions = {},
-): { results: T | null; searching: boolean } {
+): { results: T | null; searching: boolean; error: unknown | null } {
   const { additionalRefreshing = false, debounce = 200, enabled = true } = options;
   const [results, setResults] = useState<T | null>(null);
   const [resolvedTerm, setResolvedTerm] = useState<string | null>(null);
+  const [error, setError] = useState<unknown | null>(null);
   // The source lives behind a ref so an inline function (a fresh identity every render)
   // doesn't retrigger the effect and loop — it fires on the query, not the identity.
   const onSearchRef = useRef(onSearch);
@@ -617,6 +620,7 @@ export function useCommandSearch<T>(
     if (!active) {
       setResults(null);
       setResolvedTerm(null);
+      setError(null);
     }
   }
 
@@ -626,18 +630,22 @@ export function useCommandSearch<T>(
     const seq = ++seqRef.current;
     const controller = new AbortController();
     const timer = setTimeout(() => {
-      Promise.resolve(onSearchRef.current!(term, controller.signal))
+      setError(null);
+      Promise.resolve()
+        .then(() => onSearchRef.current!(term, controller.signal))
         .then((result) => {
           if (seq !== seqRef.current) return;
           setResults(result);
           setResolvedTerm(term);
+          setError(null);
         })
-        .catch(() => {
+        .catch((reason: unknown) => {
           // An abort is the expected path when a newer keystroke supersedes this one — not
           // a failure, and the superseding run already owns the state.
           if (seq !== seqRef.current || controller.signal.aborted) return;
           setResults(null);
           setResolvedTerm(term);
+          setError(reason || new Error("Search failed."));
         });
     }, debounce);
     return () => {
@@ -659,7 +667,11 @@ export function useCommandSearch<T>(
     return () => reportRefreshing?.(false);
   }, [reportRefreshing, refreshing]);
 
-  return { results: active ? results : null, searching };
+  return {
+    results: active ? results : null,
+    searching,
+    error: active ? error : null,
+  };
 }
 
 export function CommandPalette({
@@ -667,6 +679,7 @@ export function CommandPalette({
   onSearch,
   searchDebounce = 200,
   loadingMessage = "Searching…",
+  searchErrorMessage = "Search failed. Try again.",
   shortcut = true,
   placeholder = "Type a command or search…",
   emptyMessage = "No results found.",
@@ -688,7 +701,11 @@ export function CommandPalette({
   // The root command search runs on the shared engine (below), which custom panels reuse.
   // Async only governs the root: a non-empty query there hands off to the source, while
   // drilled-in pages and panels stay local (or run their own `useCommandSearch`).
-  const { results: asyncResults, searching } = useCommandSearch<CommandGroup[]>(
+  const {
+    results: asyncResults,
+    searching,
+    error: searchError,
+  } = useCommandSearch<CommandGroup[]>(
     query,
     onSearch,
     { debounce: searchDebounce, enabled: isRoot },
@@ -920,6 +937,11 @@ export function CommandPalette({
   // show it rides quietly in the input row ("refreshing"); with nothing to show it stands
   // in for the list via the Empty region below, so the two never both appear.
   const hasVisibleItems = visibleGroups.some((group) => group.items.length > 0);
+  const renderedSearchError = searchError
+    ? typeof searchErrorMessage === "function"
+      ? searchErrorMessage(searchError)
+      : searchErrorMessage
+    : null;
 
   // Base UI wants the grouped shape (`{ items, …anyKeys }`); a heading-less group renders
   // no label. It filters/sorts nothing here — that already happened above.
@@ -1171,6 +1193,10 @@ export function CommandPalette({
                 <div className="flex items-center justify-center gap-2 px-4 py-8">
                   <AsciiLoader className="text-sm text-subtle-foreground" />
                   <span>{loadingMessage}</span>
+                </div>
+              ) : searchError ? (
+                <div role="alert" className="px-4 py-8">
+                  {renderedSearchError}
                 </div>
               ) : (
                 <div className="px-4 py-8">{emptyMessage}</div>

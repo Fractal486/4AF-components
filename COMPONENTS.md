@@ -79,7 +79,7 @@ inspector/    Web UI demos and controls. Imports from registry/.
 app/          Minimal Next.js shell for the inspector.
 _incoming/    Temporary staging for downloaded source; never imported.
 registry.json Installable item metadata and dependency graph.
-scripts/4af.mjs
+scripts/4af.ts
               The deterministic list, doctor, and install workflow.
 ```
 
@@ -90,7 +90,7 @@ The dependency direction is always `app` → `inspector` → `registry`.
 Run the CLI from the 4AF Components repository. Use an absolute path for the target
 project so there is no ambiguity about where files will be written.
 
-The repository toolchain is pinned to Node 25.9.0 and pnpm 11.13.1 (`.node-version` and
+The repository toolchain is pinned to Node 24.18.0 LTS and pnpm 11.18.0 (`.node-version` and
 `package.json`). The registry commands use shadcn 4.13.1, so validation, build, and install
 behave consistently across machines.
 
@@ -510,7 +510,7 @@ The registry item includes more than the root popup:
 - per-panel `headerActions`, suitable for Select and Select Sort controls (use `size="sm"`, the default, so they fit the palette);
 - custom list rows with trailing badges or selection checkboxes;
 - grouped action panels with section labels, icons, keybinds, search, and destructive actions;
-- async/server-driven search: pass `onSearch` on the root (with `groups` as the resting state), or call the exported `useCommandSearch` hook in a custom panel and render `CommandPanelLoading` for its first-load state;
+- async/server-driven search: pass `onSearch` on the root (with `groups` as the resting state), or call the exported `useCommandSearch` hook in a custom panel and render `CommandPanelLoading` for its first-load state. Root failures render `searchErrorMessage`; custom panels receive the failure as the hook's `error`;
 - paginated custom panels: observe the shared keyboard/pointer highlight with `useCommandPanelHighlight`, fetch when the last row is reached, and pass that request as `additionalRefreshing` to `useCommandSearch` so the panel header keeps showing its inline loader.
 
 The demo's Projects, Rename Project, and New Project flows are examples built from these

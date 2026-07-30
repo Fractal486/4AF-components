@@ -213,10 +213,11 @@ closes the menu and calls `onSelect`.
 
 Async root results: `onSearch(query, signal) => Promise<CommandGroup[]>`, with `groups` as
 the resting state while the query is empty. Returned order is preserved. Tune with
-`searchDebounce` and `loadingMessage`; debounce, abort, out-of-order dropping, and the
-loading indicator are handled. In a custom panel call
-`useCommandSearch(helpers.query, source)` and render `CommandPanelLoading` while
-`searching && results === null`.
+`searchDebounce`, `loadingMessage`, and `searchErrorMessage`; debounce, abort,
+out-of-order dropping, loading, and rejected searches are handled. In a custom panel call
+`useCommandSearch(helpers.query, source)`, render `CommandPanelLoading` while
+`searching && results === null`, and use the returned `error` for a panel-specific failure
+state.
 
 ### Dropdown Menu
 

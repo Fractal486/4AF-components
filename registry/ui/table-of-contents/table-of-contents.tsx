@@ -78,9 +78,9 @@ export function TableOfContents({ items, rootRef, className, ...props }: TableOf
   );
   const visible = useRef<Map<string, boolean>>(new Map());
 
-  // Track headings currently intersecting the reading viewport while also remembering the
-  // last heading passed, so normal prose still has a current row. The scroll listener works
-  // for both the page and a nested content scroller.
+  // Cache heading offsets when layout changes, then use a binary search during scroll.
+  // The hot path reads only scrollTop/scrollY: no per-heading layout reads and at most one
+  // state update per animation frame.
   useEffect(() => {
     visible.current = new Map();
     const root = rootRef?.current ?? null;
@@ -90,27 +90,57 @@ export function TableOfContents({ items, rootRef, className, ...props }: TableOf
       if (element) elements.push(element);
     }
 
+    let positions: { id: string; top: number }[] = [];
+    let frame = 0;
+
     const updateCurrentId = () => {
-      if (elements.length === 0) {
+      if (positions.length === 0) {
         setCurrentId((previous) => (previous === undefined ? previous : undefined));
         return;
       }
 
-      const viewportTop = root?.getBoundingClientRect().top ?? 0;
-      let nextId = elements[0]!.id;
-      for (const element of elements) {
-        if (element.getBoundingClientRect().top <= viewportTop + 1) {
-          nextId = element.id;
+      const scrollPosition = (root?.scrollTop ?? window.scrollY) + 1;
+      let low = 0;
+      let high = positions.length - 1;
+      let match = 0;
+      while (low <= high) {
+        const middle = Math.floor((low + high) / 2);
+        if (positions[middle]!.top <= scrollPosition) {
+          match = middle;
+          low = middle + 1;
         } else {
-          break;
+          high = middle - 1;
         }
       }
+      const nextId = positions[match]!.id;
       setCurrentId((previous) => (previous === nextId ? previous : nextId));
     };
 
+    const measurePositions = () => {
+      const viewportTop = root?.getBoundingClientRect().top ?? 0;
+      const scrollOffset = root?.scrollTop ?? window.scrollY;
+      positions = elements.map((element) => ({
+        id: element.id,
+        top: element.getBoundingClientRect().top - viewportTop + scrollOffset,
+      }));
+      updateCurrentId();
+    };
+
+    const scheduleUpdate = () => {
+      if (frame !== 0) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        updateCurrentId();
+      });
+    };
+
     const scrollTarget: HTMLElement | Window = root ?? window;
-    scrollTarget.addEventListener("scroll", updateCurrentId, { passive: true });
-    updateCurrentId();
+    scrollTarget.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", measurePositions);
+    const resizeObserver = new ResizeObserver(measurePositions);
+    resizeObserver.observe(root ?? document.documentElement);
+    for (const element of elements) resizeObserver.observe(element);
+    measurePositions();
 
     const observer =
       elements.length > 0
@@ -132,7 +162,10 @@ export function TableOfContents({ items, rootRef, className, ...props }: TableOf
 
     return () => {
       observer?.disconnect();
-      scrollTarget.removeEventListener("scroll", updateCurrentId);
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", measurePositions);
+      scrollTarget.removeEventListener("scroll", scheduleUpdate);
+      if (frame !== 0) cancelAnimationFrame(frame);
     };
   }, [items, rootRef]);
 
