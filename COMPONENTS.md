@@ -229,11 +229,11 @@ option remains available for a single action.
 | Install name | Main API | What it provides |
 | --- | --- | --- |
 | `tabs` | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | Base UI tabs with a travelling Motion indicator; segment, pill, and underline appearances, with optional solid treatment. |
-| `table-of-contents` | `TableOfContents` | Heading navigation that observes the current section, smooth-scrolls, and slides a marker to the active item. |
+| `table-of-contents` | `TableOfContents` | Heading navigation that observes visible headings, keeps the last passed section active through long prose, smooth-scrolls, and slides a marker to the active range. |
 | `separator` | `Separator` | Accessible horizontal or vertical divider built on Base UI Separator. |
-| `command-palette` | `CommandPalette`, custom panel/list/row/action parts, and `useCommandSearch` | Keyboard-first command/search dialog with fuzzy ranking, groups, nested and custom panels, async/server-driven search, header text fields, per-panel header actions, badges, checkboxes, keybinds, destructive actions, and keyboard navigation. |
+| `command-palette` | `CommandPalette`, custom panel/list/row/action parts, `useCommandSearch`, and `useCommandPanelHighlight` | Keyboard-first command/search dialog with fuzzy ranking, groups, nested and custom panels, async/server-driven and paginated search, header text fields, per-panel header actions, badges, checkboxes, keybinds, destructive actions, and keyboard navigation. |
 | `sidebar` | `SidebarProvider`, `Sidebar`, `SidebarPanel`, `SidebarHeaderButton`, menu/group/submenu/action/badge/skeleton parts | Responsive application sidebar with sidebar, floating, inset, split, split-floating, and split-inset layouts; controlled collapse; sections; nested rows; a canonical full-width primary header action; badges; and loading skeletons. |
-| `sidebar-layout` | `SidebarLayout` | Optional reusable page shell that composes Sidebar with its inset content surface, left-aligned collapse control, page title, and header actions. |
+| `sidebar-layout` | `SidebarLayout` | Optional reusable viewport shell that composes Sidebar with a contained, independently scrolling inset surface, left-aligned collapse control, page title, and header actions. |
 
 ### Overlays and menus
 
@@ -510,7 +510,8 @@ The registry item includes more than the root popup:
 - per-panel `headerActions`, suitable for Select and Select Sort controls (use `size="sm"`, the default, so they fit the palette);
 - custom list rows with trailing badges or selection checkboxes;
 - grouped action panels with section labels, icons, keybinds, search, and destructive actions;
-- async/server-driven search: pass `onSearch` on the root (with `groups` as the resting state), or call the exported `useCommandSearch` hook in a custom panel and render `CommandPanelLoading` for its first-load state.
+- async/server-driven search: pass `onSearch` on the root (with `groups` as the resting state), or call the exported `useCommandSearch` hook in a custom panel and render `CommandPanelLoading` for its first-load state;
+- paginated custom panels: observe the shared keyboard/pointer highlight with `useCommandPanelHighlight`, fetch when the last row is reached, and pass that request as `additionalRefreshing` to `useCommandSearch` so the panel header keeps showing its inline loader.
 
 The demo's Projects, Rename Project, and New Project flows are examples built from these
 public APIs, not hard-coded private behaviour.
@@ -647,9 +648,11 @@ opts out with `className="flex-none"`. Menus such as the three-dot action menu a
 with `dropdown-menu` by the consumer.
 
 `sidebar-layout` is intentionally separate but installable. It is the reusable application
-frame around Sidebar, not behaviour that every Sidebar user must accept. It supplies the
-inset page surface, header title, left-side collapse control, and optional right-side header
-actions.
+frame around Sidebar, not behaviour that every Sidebar user must accept. It constrains the
+shell to the viewport, keeps the sidebar and header fixed, gives the inset content region
+ownership of vertical scrolling, and supplies the header title, left-side collapse control,
+and optional right-side header actions. A boxed preview can override the provider height
+through `className`, as the inspector does with `h-full`.
 
 ## Inspector and registry parity
 

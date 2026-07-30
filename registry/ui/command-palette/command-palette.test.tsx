@@ -12,6 +12,8 @@ import {
   CommandPanelFooter,
   CommandPanelList,
   CommandPanelRow,
+  useCommandPanelHighlight,
+  useCommandSearch,
 } from "./command-palette";
 
 describe("CommandPalette", () => {
@@ -132,6 +134,55 @@ describe("CommandPalette", () => {
     expect(onSelect).toHaveBeenCalledOnce();
     expect(onActivate).toHaveBeenCalledOnce();
     expect(onActivate.mock.calls[0]?.[0]).toHaveProperty("detail", 0);
+  });
+
+  it("reports custom-panel highlights and additional refresh work", async () => {
+    const user = userEvent.setup();
+    const onHighlight = vi.fn();
+
+    function PaginatedPanel() {
+      useCommandPanelHighlight(onHighlight);
+      useCommandSearch("", undefined, { additionalRefreshing: true });
+
+      return (
+        <CommandPanelBody>
+          <CommandPanelList>
+            <CommandPanelRow value="alpha">Alpha</CommandPanelRow>
+            <CommandPanelRow value="beta">Beta</CommandPanelRow>
+          </CommandPanelList>
+        </CommandPanelBody>
+      );
+    }
+
+    render(
+      <CommandPalette
+        open
+        groups={[
+          {
+            items: [
+              {
+                id: "projects",
+                label: "Projects",
+                panelInput: {
+                  type: "search",
+                  label: "Search projects",
+                },
+                panel: () => <PaginatedPanel />,
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    await user.click(await screen.findByRole("option", { name: "Projects" }));
+    const input = screen.getByLabelText("Search projects");
+    await waitFor(() =>
+      expect(input.parentElement?.querySelector('span[aria-hidden="true"]')).toBeInTheDocument(),
+    );
+
+    await user.keyboard("{ArrowDown}");
+    expect(onHighlight).toHaveBeenCalled();
   });
 
   it("runs, toggles and morphs rows inside the actions menu", async () => {

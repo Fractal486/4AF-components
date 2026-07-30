@@ -633,7 +633,7 @@ export function SidebarDemo({
         // The inspector is one page — persisting the rail state to a cookie would leak
         // between visits and fight the control panel.
         persist={false}
-        className="min-h-full"
+        className="h-full"
         contentClassName="gap-3 p-4"
       >
         <div className="h-24 rounded-lg bg-muted" />

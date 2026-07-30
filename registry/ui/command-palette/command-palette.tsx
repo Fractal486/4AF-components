@@ -519,6 +519,8 @@ export interface UseCommandSearchOptions {
   debounce?: number;
   /** Search only while this is true — e.g. a panel that isn't the active page. @default true */
   enabled?: boolean;
+  /** Keep the panel header loader on for an additional async operation, such as pagination. */
+  additionalRefreshing?: boolean;
 }
 
 // How a panel's `useCommandSearch` tells the palette to show the inline header loader.
@@ -527,6 +529,23 @@ export interface UseCommandSearchOptions {
 // exactly as the input-row and empty-region loaders are on the root list. The root's own
 // `useCommandSearch` call sits outside this provider, so it reports to no one.
 const PanelSearchContext = createContext<((refreshing: boolean) => void) | null>(null);
+
+type PanelHighlightHandler = (value: unknown) => void;
+type PanelHighlightRegistration = (handler: PanelHighlightHandler | null) => () => void;
+
+// A custom panel can observe the shared Autocomplete highlight without reaching into the
+// palette's root. This is used by server-backed panels that need to react when the last
+// visible row becomes highlighted (for example, to fetch the next page).
+const PanelHighlightContext = createContext<PanelHighlightRegistration | null>(null);
+
+export function useCommandPanelHighlight(handler: PanelHighlightHandler | null): void {
+  const register = useContext(PanelHighlightContext);
+
+  useEffect(() => {
+    if (!register) return;
+    return register(handler);
+  }, [handler, register]);
+}
 
 /**
  * Set while an actions menu is open, so the list behind it stops following the pointer.
@@ -572,7 +591,7 @@ export function useCommandSearch<T>(
   onSearch: ((query: string, signal: AbortSignal) => Promise<T>) | undefined,
   options: UseCommandSearchOptions = {},
 ): { results: T | null; searching: boolean } {
-  const { debounce = 200, enabled = true } = options;
+  const { additionalRefreshing = false, debounce = 200, enabled = true } = options;
   const [results, setResults] = useState<T | null>(null);
   const [resolvedTerm, setResolvedTerm] = useState<string | null>(null);
   // The source lives behind a ref so an inline function (a fresh identity every render)
@@ -634,7 +653,7 @@ export function useCommandSearch<T>(
   // Tell a panel header when to show its inline loader — the refresh case only (a search
   // over results already on screen). First-load, when there's nothing yet, is left to the
   // centred `CommandPanelLoading`, so the two never overlap. A no-op at the root.
-  const refreshing = searching && results != null;
+  const refreshing = additionalRefreshing || (searching && results != null);
   useEffect(() => {
     reportRefreshing?.(refreshing);
     return () => reportRefreshing?.(false);
@@ -787,12 +806,27 @@ export function CommandPalette({
   // Only ever the last *real* highlight. Opening the menu blurs the list, which reports
   // `undefined` — so reading the live value at that moment would always come up empty.
   const lastHighlightedRef = useRef<unknown>(undefined);
+  const panelHighlightRef = useRef<PanelHighlightHandler | null>(null);
   const reportActionsOpen = useCallback((open: boolean) => {
     setActionsOpen(open);
     setFrozenRow(open ? lastHighlightedRef.current : undefined);
   }, []);
   const rememberHighlight = useCallback((value: unknown) => {
     if (value !== undefined) lastHighlightedRef.current = value;
+  }, []);
+  const notifyItemHighlighted = useCallback(
+    (value: unknown) => {
+      rememberHighlight(value);
+      panelHighlightRef.current?.(value);
+    },
+    [rememberHighlight],
+  );
+  const registerPanelHighlight = useCallback<PanelHighlightRegistration>((handler) => {
+    const previous = panelHighlightRef.current;
+    panelHighlightRef.current = handler;
+    return () => {
+      if (panelHighlightRef.current === handler) panelHighlightRef.current = previous;
+    };
   }, []);
 
   const activePage = pages.length > 0 ? pages[pages.length - 1]! : null;
@@ -933,8 +967,9 @@ export function CommandPalette({
               open
               mode="none"
               autoHighlight
+              loopFocus={false}
               highlightItemOnHover={!actionsOpen}
-              onItemHighlighted={rememberHighlight}
+              onItemHighlighted={notifyItemHighlighted}
               value={panelInputValue}
               onValueChange={setPanelInputValue}
             >
@@ -1017,7 +1052,9 @@ export function CommandPalette({
                   loader above. */}
               <div className="flex min-h-0 flex-1 flex-col">
                 <PanelSearchContext.Provider value={setPanelSearching}>
-                  {panelNode}
+                  <PanelHighlightContext.Provider value={registerPanelHighlight}>
+                    {panelNode}
+                  </PanelHighlightContext.Provider>
                 </PanelSearchContext.Provider>
               </div>
             </>
@@ -1036,6 +1073,7 @@ export function CommandPalette({
             itemToStringValue={(item: CommandItem) => item.label}
             // Keep the top match ready so Enter runs it without an arrow press first.
             autoHighlight
+            loopFocus={false}
             // Inert while an actions menu is open — see ActionsOpenContext.
             highlightItemOnHover={!actionsOpen}
             onItemHighlighted={rememberHighlight}

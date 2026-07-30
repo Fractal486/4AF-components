@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
   type ComponentProps,
+  type MouseEvent,
   type ReactNode,
   type RefObject,
 } from "react";
@@ -15,16 +16,14 @@ import { cn } from "@/registry/lib/cn";
 /**
  * A table of contents that tracks the reader.
  *
- * Give it the headings (`{ id, title, level }`) and it lights *every entry whose section is
- * on screen* — an `IntersectionObserver` watches each section, so when three are in view all
- * three are lit, not just the top one. The rail marker **spans** that visible range: it
- * grows, shrinks and slides to cover exactly the lit entries. Because it mirrors what's
- * actually visible, it stays in lockstep with the scroll and the bottom section lights up as
- * soon as it scrolls into view — no reading-band that a short final section can never reach.
+ * Give it the headings (`{ id, title, level }`) and it lights every entry whose heading is
+ * currently on screen. The rail marker spans that visible range so the labels and marker stay
+ * together when several sections are visible. When ordinary prose leaves the viewport with no
+ * heading intersecting, it falls back to the last section whose heading has been passed.
  *
  * The marker is an SVG stroke on a straight rail: its visible length is a dash
- * (`stroke-dasharray`/`stroke-dashoffset`) covering the lit range, animated with a single CSS
- * transition. `stroke-linecap="round"` gives true rounded caps at any length — no `scaleY`
+ * (`stroke-dasharray`/`stroke-dashoffset`) covering the visible range, animated with a single
+ * CSS transition. `stroke-linecap="round"` gives true rounded caps at any length — no `scaleY`
  * stretching a corner radius — and because it's CSS, reduced motion collapses the
  * `--duration-*` token to 1ms for free.
  *
@@ -60,9 +59,18 @@ interface RailGeometry {
   segments: { id: string; start: number; length: number }[];
 }
 
+function scrollTo(event: MouseEvent, id: string) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  event.preventDefault();
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+}
+
 export function TableOfContents({ items, rootRef, className, ...props }: TableOfContentsProps) {
   const listRef = useRef<HTMLUListElement>(null);
   const [visibleIds, setVisibleIds] = useState<string[]>([]);
+  const [currentId, setCurrentId] = useState<string>();
   const [geometry, setGeometry] = useState<RailGeometry | null>(null);
   const minLevel = useMemo(
     () => (items.length ? Math.min(...items.map((item) => item.level ?? 2)) : 2),
@@ -70,24 +78,62 @@ export function TableOfContents({ items, rootRef, className, ...props }: TableOf
   );
   const visible = useRef<Map<string, boolean>>(new Map());
 
-  // Light every section currently touching the viewport, in document order.
+  // Track headings currently intersecting the reading viewport while also remembering the
+  // last heading passed, so normal prose still has a current row. The scroll listener works
+  // for both the page and a nested content scroller.
   useEffect(() => {
     visible.current = new Map();
     const root = rootRef?.current ?? null;
-    const elements = items
-      .map((item) => document.getElementById(item.id))
-      .filter((el): el is HTMLElement => el != null);
-    if (elements.length === 0) return;
+    const elements: HTMLElement[] = [];
+    for (const item of items) {
+      const element = document.getElementById(item.id);
+      if (element) elements.push(element);
+    }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) visible.current.set(entry.target.id, entry.isIntersecting);
-        setVisibleIds(items.filter((item) => visible.current.get(item.id)).map((item) => item.id));
-      },
-      { root, threshold: 0 },
-    );
-    elements.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
+    const updateCurrentId = () => {
+      if (elements.length === 0) {
+        setCurrentId((previous) => (previous === undefined ? previous : undefined));
+        return;
+      }
+
+      const viewportTop = root?.getBoundingClientRect().top ?? 0;
+      let nextId = elements[0]!.id;
+      for (const element of elements) {
+        if (element.getBoundingClientRect().top <= viewportTop + 1) {
+          nextId = element.id;
+        } else {
+          break;
+        }
+      }
+      setCurrentId((previous) => (previous === nextId ? previous : nextId));
+    };
+
+    const scrollTarget: HTMLElement | Window = root ?? window;
+    scrollTarget.addEventListener("scroll", updateCurrentId, { passive: true });
+    updateCurrentId();
+
+    const observer =
+      elements.length > 0
+        ? new IntersectionObserver(
+            (entries) => {
+              for (const entry of entries) visible.current.set(entry.target.id, entry.isIntersecting);
+              const nextVisibleIds: string[] = [];
+              for (const item of items) {
+                if (visible.current.get(item.id)) nextVisibleIds.push(item.id);
+              }
+              setVisibleIds(nextVisibleIds);
+            },
+            { root, threshold: 0 },
+          )
+        : null;
+    if (observer) {
+      for (const element of elements) observer.observe(element);
+    }
+
+    return () => {
+      observer?.disconnect();
+      scrollTarget.removeEventListener("scroll", updateCurrentId);
+    };
   }, [items, rootRef]);
 
   // Measure the rail from the list layout: the straight track down the left edge and each
@@ -126,25 +172,18 @@ export function TableOfContents({ items, rootRef, className, ...props }: TableOf
     return () => observer.disconnect();
   }, [items]);
 
-  const scrollTo = (event: React.MouseEvent, id: string) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    event.preventDefault();
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
-  };
-
-  const currentId = visibleIds[0];
-
-  // The dash spans the first through last lit entry. `visibleIds` is in document order, so
-  // the geometry's first/last visible segments are the ends of the range.
+  // The dash spans the first through last visible entry. If no heading is intersecting, fall
+  // back to the current section so the marker does not disappear in prose.
   const visibleSet = new Set(visibleIds);
   const litSegments = geometry?.segments.filter((segment) => visibleSet.has(segment.id)) ?? [];
+  const currentSegment = geometry?.segments.find((segment) => segment.id === currentId);
+  const currentHighlightId = visibleIds[0] ?? currentId;
+  const markerSegments = litSegments.length > 0 ? litSegments : currentSegment ? [currentSegment] : [];
   const marker =
-    litSegments.length > 0
+    markerSegments.length > 0
       ? (() => {
-          const first = litSegments[0]!;
-          const last = litSegments[litSegments.length - 1]!;
+          const first = markerSegments[0]!;
+          const last = markerSegments[markerSegments.length - 1]!;
           const start = first.start + MARKER_PAD;
           const length = Math.max(last.start + last.length - first.start - MARKER_PAD * 2, 0);
           return { start, length };
@@ -164,7 +203,7 @@ export function TableOfContents({ items, rootRef, className, ...props }: TableOf
             {/* The static rail. A drawn stroke rather than a `border`, so the marker below
                 sits exactly on it at the same coordinates. */}
             <path d={railPath} className="stroke-border" strokeWidth={2} strokeLinecap="round" />
-            {/* The marker: a single dash covering the lit range, slid into place. Round caps
+            {/* The marker: a single dash covering the visible range, slid into place. Round caps
                 come from the stroke itself, so they never distort with length. */}
             <path
               d={railPath}
@@ -180,13 +219,13 @@ export function TableOfContents({ items, rootRef, className, ...props }: TableOf
           </svg>
         )}
         {items.map((item) => {
-          const active = visibleSet.has(item.id);
+          const active = visibleSet.has(item.id) || (visibleIds.length === 0 && item.id === currentId);
           return (
             <li key={item.id} data-toc-id={item.id} className="relative">
               <a
                 href={`#${item.id}`}
                 onClick={(event) => scrollTo(event, item.id)}
-                aria-current={item.id === currentId ? "location" : undefined}
+                aria-current={item.id === currentHighlightId ? "location" : undefined}
                 style={{ paddingInlineStart: `${0.75 + ((item.level ?? 2) - minLevel) * 0.75}rem` }}
                 className={cn(
                   "block py-1.5 pr-2 leading-snug transition-colors duration-(--duration-fast) ease-out",

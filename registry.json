@@ -686,7 +686,7 @@
     {
       "name": "table-of-contents",
       "type": "registry:ui",
-      "description": "A table of contents that tracks the reader — an IntersectionObserver lights the active heading and a Motion layoutId marker slides to it; smooth-scroll on click.",
+      "description": "A table of contents that tracks visible headings, keeps the last passed section active through long prose, and smooth-scrolls on click.",
       "dependencies": [
         "motion"
       ],
@@ -771,7 +771,7 @@
     {
       "name": "command-palette",
       "type": "registry:ui",
-      "description": "A keyboard-first command and search palette with nested panels, custom panel content, fuzzy filtering, async/server-driven search, keybind hints, and Base UI dialog/autocomplete behavior.",
+      "description": "A keyboard-first command and search palette with nested panels, custom panel content, fuzzy filtering, async/server-driven and paginated search, keybind hints, and Base UI dialog/autocomplete behavior.",
       "dependencies": [
         "@base-ui/react",
         "lucide-react"
@@ -1101,7 +1101,7 @@
     {
       "name": "sidebar-layout",
       "type": "registry:ui",
-      "description": "An optional application shell that composes Sidebar with an inset content surface, page title header, header actions, and a left-aligned collapse trigger before the title.",
+      "description": "An optional viewport shell that composes Sidebar with a contained, independently scrolling inset surface, page title header, header actions, and a left-aligned collapse trigger before the title.",
       "dependencies": [],
       "registryDependencies": [
         "http://localhost:3000/r/sidebar.json",
