@@ -8,13 +8,15 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
   type ComponentProps,
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
-import { ease, spring } from "@/registry/lib/motion";
+import { duration, ease, spring } from "@/registry/lib/motion";
 import { Button } from "@/registry/ui/button/button";
 
 /**
@@ -223,10 +225,98 @@ export interface DialogStepsProps extends Omit<ComponentProps<"div">, "children"
 }
 
 /**
- * A phased dialog body with clickable progress dots and previous/next arrows. The phases
- * swap instantly — no transition between them; only the dots and arrows react. It's a
- * composition inside DialogContent: Base UI still owns the modal focus trap, dismissal,
- * and title/description relationships.
+ * How far an arriving phase travels. Far enough that `duration.slow` is spent on visible
+ * movement — over a short distance, the tail of that curve is a phase sitting still.
+ */
+const STEP_OFFSET = 24;
+
+/**
+ * `custom` is the travel direction: 1 forward, -1 back, 0 when motion is reduced.
+ *
+ * **Only the arriving phase animates.** The one you're leaving is cut, not faded, and
+ * that's the whole design:
+ *
+ * - Cross-fading them stacks two sets of text on top of each other, and the blur turns
+ *   the doubled copy into a smear.
+ * - Sequencing them instead — leave, then arrive — fixes the overlap but buys a delay
+ *   before anything new appears, and the new phase is precisely what the click asked for.
+ *   Past ~100ms of nothing, a click reads as laggy.
+ *
+ * Cutting the old phase costs nothing, because it's replaced in the same region on the
+ * same frame.
+ *
+ * `ease.out` is doing two jobs at once, which is why the swap can be a full
+ * `duration.slow` without feeling sluggish: it's steep enough that the arriving phase is
+ * ~70% of the way there a fifth of the way in — so it answers the click on the first few
+ * frames and leaves no gap where the body reads as empty — and then spends the rest of the
+ * time settling, which is what stops it feeling clipped. A delay, or a shallower curve,
+ * puts that responsiveness back at the start where it gets noticed as lag.
+ */
+const stepVariants = {
+  enter: (direction: number) => ({
+    opacity: 0,
+    x: direction * STEP_OFFSET,
+    filter: direction === 0 ? "blur(0px)" : "blur(4px)",
+  }),
+  active: (direction: number) => ({
+    opacity: 1,
+    x: 0,
+    filter: "blur(0px)",
+    transition: { duration: direction === 0 ? 0 : duration.slow, ease: ease.out },
+  }),
+};
+
+/**
+ * The natural height of the phase currently rendered, so the container can be animated to
+ * it. Measured rather than read from `height: auto`, because "auto" isn't a value you can
+ * interpolate from.
+ *
+ * ResizeObserver delivers at the end of a frame but *before* paint, so a new phase is
+ * measured and the container's target updated without the old height ever being painted
+ * against the new content. The observed element's height doesn't depend on the container's,
+ * so this can't feed back into itself.
+ */
+function usePhaseHeight() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<number>();
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      if (!entry) return;
+      setHeight(entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height);
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  return [ref, height] as const;
+}
+
+/**
+ * A phased dialog body with clickable progress dots and previous/next arrows.
+ *
+ * The arriving phase slides a short distance in the direction of travel while fading in
+ * through a blur; the phase it replaces is cut on the same frame. See `stepVariants` for
+ * why nothing animates on the way out.
+ *
+ * The body then animates to the new phase's height, which is the one place this component
+ * animates a layout property on purpose. `CLAUDE.md` rules that out, and the exception is
+ * narrow but real: Motion's layout projection — the sanctioned alternative — fakes the
+ * container's size with a transform while the *actual* box jumps, so the popup would
+ * re-centre on the first frame and slide out from under its own contents. Animating the
+ * real height keeps one source of truth, and the navigation row, the popup's height and its
+ * centring all follow from it for free.
+ *
+ * No AnimatePresence, and that's the point: with no exit to hold, the old phase can
+ * unmount immediately, which is what makes overlapping content structurally impossible
+ * rather than something the timing has to dodge. Re-keying the wrapper on `activeStep` is
+ * enough to replay the entrance.
+ *
+ * It's a composition inside DialogContent: Base UI still owns the modal focus trap,
+ * dismissal, and title/description relationships.
  */
 export function DialogSteps({
   children,
@@ -244,6 +334,26 @@ export function DialogSteps({
   );
   const isControlled = step !== undefined;
   const activeStep = clampStep(isControlled ? step : uncontrolledStep, phases.length);
+  const reduceMotion = useReducedMotion();
+
+  // Derived during render rather than set in `goToStep`, so a *controlled* step change
+  // gets a direction too — the parent may move the step without going through us.
+  const [seenStep, setSeenStep] = useState(activeStep);
+  const [direction, setDirection] = useState(1);
+  // The first phase must not animate: the dialog is already scaling itself in around it,
+  // and two things arriving at once leaves the eye nowhere to land.
+  const [swapped, setSwapped] = useState(false);
+  if (seenStep !== activeStep) {
+    setDirection(activeStep > seenStep ? 1 : -1);
+    setSeenStep(activeStep);
+    setSwapped(true);
+  }
+  const travel = reduceMotion ? 0 : direction;
+
+  const [phaseRef, phaseHeight] = usePhaseHeight();
+  // Clipped only while the height is in flight. Held permanently, it would shave the focus
+  // ring off whichever control sits against the top or bottom edge of the phase.
+  const [resizing, setResizing] = useState(false);
 
   const goToStep = useCallback(
     (nextStep: number) => {
@@ -263,8 +373,35 @@ export function DialogSteps({
   if (phases.length === 0) return null;
 
   return (
-    <div className={cn("min-w-0", className)} {...props}>
-      {phases[activeStep]}
+    <div
+      className={cn("min-w-0", className)}
+      data-direction={direction > 0 ? "forward" : "back"}
+      {...props}
+    >
+      <motion.div
+        // `initial={false}` so the first measurement lands without animating from nothing.
+        initial={false}
+        animate={{ height: phaseHeight ?? "auto" }}
+        transition={{ duration: reduceMotion ? 0 : duration.slow, ease: ease.out }}
+        onAnimationStart={() => setResizing(true)}
+        onAnimationComplete={() => setResizing(false)}
+        className={cn("min-w-0", resizing && "overflow-hidden")}
+      >
+        {/* Measured separately from the animated box, so what's observed is the phase's
+            natural height and not the height we're currently animating it to. */}
+        <div ref={phaseRef}>
+          <motion.div
+            key={activeStep}
+            custom={travel}
+            variants={stepVariants}
+            initial={swapped ? "enter" : false}
+            animate="active"
+            className="min-w-0"
+          >
+            {phases[activeStep]}
+          </motion.div>
+        </div>
+      </motion.div>
 
       <DialogStepsNavigation
         activeStep={activeStep}

@@ -63,6 +63,30 @@ describe("DialogSteps", () => {
     );
   });
 
+  it("reports the direction the phases travelled", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Dialog open>
+        <DialogSteps data-testid="steps" labels={["Profile", "Review"]}>
+          <DialogStep>Profile phase</DialogStep>
+          <DialogStep>Review phase</DialogStep>
+        </DialogSteps>
+      </Dialog>,
+    );
+
+    expect(screen.getByTestId("steps")).toHaveAttribute("data-direction", "forward");
+
+    await user.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() => expect(screen.getByText("Review phase")).toBeVisible());
+    expect(screen.getByTestId("steps")).toHaveAttribute("data-direction", "forward");
+
+    await user.click(screen.getByRole("button", { name: "Back" }));
+    await waitFor(() =>
+      expect(screen.getByTestId("steps")).toHaveAttribute("data-direction", "back"),
+    );
+  });
+
   it("blocks forward navigation when the current phase is invalid", async () => {
     const user = userEvent.setup();
     const validateStep = vi.fn(() => false);
