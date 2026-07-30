@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 interface RegistryItem {
   name: string;
   registryDependencies?: string[];
-  files?: { path: string }[];
+  files?: { path: string; target?: string }[];
 }
 
 const registry = JSON.parse(readFileSync(resolve("registry.json"), "utf8")) as {
@@ -45,6 +45,29 @@ describe("private registry", () => {
         "http://localhost:3000/r/checkbox.json",
         "http://localhost:3000/r/input.json",
       ]),
+    );
+  });
+
+  it("ships every direct Command Palette component dependency", () => {
+    expect(items.get("command-palette")?.registryDependencies).toEqual(
+      expect.arrayContaining([
+        "http://localhost:3000/r/morph.json",
+        "http://localhost:3000/r/use-action.json",
+      ]),
+    );
+  });
+
+  it("installs the Textarea's shared Input variants at the flat UI alias", () => {
+    expect(items.get("textarea")?.files).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: "registry/ui/input/input.variants.ts",
+          target: "@ui/input.variants.ts",
+        }),
+      ]),
+    );
+    expect(readFileSync(resolve("registry/ui/textarea/textarea.tsx"), "utf8")).toContain(
+      'from "@/registry/ui/ui/input.variants"',
     );
   });
 

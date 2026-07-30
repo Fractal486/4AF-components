@@ -2,7 +2,7 @@
 
 import { useRef, type ComponentProps, type PointerEvent, type Ref } from "react";
 import { cn } from "@/registry/lib/cn";
-import { inputVariants, type InputVariants } from "@/registry/ui/input/input.variants";
+import { inputVariants, type InputVariants } from "@/registry/ui/ui/input.variants";
 
 /**
  * A multi-line field — the Input, taller.

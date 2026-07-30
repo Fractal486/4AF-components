@@ -331,14 +331,18 @@
       ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/input.json"
+        "http://localhost:3000/r/cn.json"
       ],
       "files": [
         {
           "path": "registry/ui/textarea/textarea.tsx",
           "type": "registry:ui",
           "target": "@ui/textarea.tsx"
+        },
+        {
+          "path": "registry/ui/input/input.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/input.variants.ts"
         }
       ]
     },
@@ -781,6 +785,8 @@
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/ascii-loader.json",
         "http://localhost:3000/r/checkbox.json",
+        "http://localhost:3000/r/morph.json",
+        "http://localhost:3000/r/use-action.json",
         "http://localhost:3000/r/select.json"
       ],
       "files": [
