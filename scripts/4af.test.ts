@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { vi } from "vitest";
-import { installComponent } from "./4af";
+import { installComponent, runCommand } from "./4af";
 
 const temporaryProjects: string[] = [];
 
@@ -14,6 +14,12 @@ afterEach(() => {
 });
 
 describe("4AF CLI", () => {
+  it("launches executables whose Windows paths contain spaces without shell splitting", async () => {
+    if (process.platform !== "win32" || !process.execPath.includes(" ")) return;
+
+    await runCommand(process.execPath, ["-e", "process.exit(0)"], process.cwd());
+  });
+
   it("discloses every dry-run mutation through a referenced tsconfig and a non-@ alias", () => {
     const project = mkdtempSync(join(tmpdir(), "4af-cli-"));
     temporaryProjects.push(project);
