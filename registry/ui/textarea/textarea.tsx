@@ -2,7 +2,8 @@
 
 import { useRef, type ComponentProps, type PointerEvent, type Ref } from "react";
 import { cn } from "@/registry/lib/cn";
-import { inputVariants, type InputVariants } from "@/registry/ui/input/input.variants";
+import { useMergedRefs } from "@/registry/lib/refs";
+import { inputVariants, type InputVariants } from "@/registry/ui/ui/input.variants";
 
 /**
  * A multi-line field — the Input, taller.
@@ -38,12 +39,7 @@ export function Textarea({
   ...props
 }: TextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-
-  const setRef = (node: HTMLTextAreaElement | null) => {
-    textareaRef.current = node;
-    if (typeof ref === "function") ref(node);
-    else if (ref) ref.current = node;
-  };
+  const mergedRef = useMergedRefs(textareaRef, ref);
 
   const startResize = (event: PointerEvent<HTMLButtonElement>) => {
     const textarea = textareaRef.current;
@@ -71,7 +67,7 @@ export function Textarea({
   return (
     <div className="relative w-full" data-slot="textarea">
       <textarea
-        ref={setRef}
+        ref={mergedRef}
         data-variant="default"
         data-tone={tone ?? "neutral"}
         disabled={disabled}

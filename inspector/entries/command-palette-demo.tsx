@@ -28,7 +28,7 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Badge, type BadgeProps } from "@/registry/ui/badge/badge";
 import { Button } from "@/registry/ui/button/button";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
@@ -41,6 +41,7 @@ import {
   CommandPanelFooter,
   CommandPanelList,
   CommandPanelLoading,
+  useCommandPanelHighlight,
   useCommandSearch,
   type CommandGroup,
   type CommandPanelHelpers,
@@ -149,6 +150,7 @@ const PEOPLE: Person[] = [
   { id: "p-tim", name: "Tim Berners-Lee", role: "Platform" },
   { id: "p-linus", name: "Linus Torvalds", role: "Infrastructure" },
 ];
+const PEOPLE_PAGE_SIZE = 4;
 
 async function searchPeople(query: string, signal: AbortSignal): Promise<Person[]> {
   await simulateLatency(signal, 400);
@@ -170,9 +172,54 @@ function PeopleSearchPanel({
   helpers: CommandPanelHelpers;
   onDone: (summary: string) => void;
 }) {
-  const { results, searching } = useCommandSearch<Person[]>(helpers.query, searchPeople);
-  const people = results ?? [];
+  const [pagination, setPagination] = useState({
+    query: "",
+    visibleCount: PEOPLE_PAGE_SIZE,
+    loading: false,
+  });
+  const loadMoreTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const currentPagination =
+    pagination.query === helpers.query
+      ? pagination
+      : {
+          query: helpers.query,
+          visibleCount: PEOPLE_PAGE_SIZE,
+          loading: false,
+        };
+  const { visibleCount, loading: loadingMore } = currentPagination;
+  const { results, searching } = useCommandSearch<Person[]>(helpers.query, searchPeople, {
+    additionalRefreshing: loadingMore,
+  });
+  const allPeople = results ?? [];
+  const people = allPeople.slice(0, visibleCount);
   const trimmed = helpers.query.trim();
+  const lastVisibleId = people.at(-1)?.id;
+  const hasMore = visibleCount < allPeople.length;
+
+  useEffect(
+    () => () => {
+      if (loadMoreTimerRef.current) clearTimeout(loadMoreTimerRef.current);
+    },
+    [helpers.query],
+  );
+
+  const handleHighlight = (value: unknown) => {
+    if (value !== lastVisibleId || !hasMore || loadingMore) return;
+    const query = helpers.query;
+    setPagination({ query, visibleCount, loading: true });
+    loadMoreTimerRef.current = setTimeout(() => {
+      setPagination((current) =>
+        current.query === query
+          ? {
+              query,
+              visibleCount: current.visibleCount + PEOPLE_PAGE_SIZE,
+              loading: false,
+            }
+          : current,
+      );
+    }, 500);
+  };
+  useCommandPanelHighlight(handleHighlight);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -185,6 +232,7 @@ function PeopleSearchPanel({
         {people.map((person) => (
           <CommandPanelRow
             key={person.id}
+            value={person.id}
             icon={<User />}
             badge={<span className="text-xs text-subtle-foreground">{person.role}</span>}
             onSelect={() => {

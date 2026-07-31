@@ -1,5 +1,6 @@
 import {
   Children,
+  Fragment,
   cloneElement,
   isValidElement,
   type ComponentProps,
@@ -49,6 +50,23 @@ export interface ButtonGroupProps
   children?: ReactNode;
 }
 
+function flattenElements(children: ReactNode): ReactElement<ItemProps>[] {
+  const items: ReactElement<ItemProps>[] = [];
+
+  Children.forEach(children, (child) => {
+    if (!isValidElement(child)) return;
+    if (child.type === Fragment) {
+      flattenElements((child.props as { children?: ReactNode }).children).forEach((item) =>
+        items.push(item),
+      );
+      return;
+    }
+    items.push(child as ReactElement<ItemProps>);
+  });
+
+  return items;
+}
+
 /**
  * Two or more Buttons joined into one control.
  *
@@ -85,11 +103,10 @@ export function ButtonGroup({
   children,
   ...props
 }: ButtonGroupProps) {
-  // `toArray` flattens fragments and drops the falsy branches of conditionals, so a
-  // group whose last button only sometimes renders still knows which child is last.
-  const items = Children.toArray(children).filter((child): child is ReactElement<ItemProps> =>
-    isValidElement(child),
-  );
+  // React treats a Fragment as one child during traversal, so flatten it recursively.
+  // Falsy conditional branches are skipped and the visible buttons still receive the
+  // correct first/middle/last geometry.
+  const items = flattenElements(children);
 
   // The child's own variant wins over the group's, and Button's default (`primary`) is
   // the last word — the same resolution the child will do itself, so a seam is always

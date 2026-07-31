@@ -51,6 +51,7 @@ describe("Controls select", () => {
     expect(trigger).toHaveTextContent("primary");
 
     await user.click(trigger);
+    await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "true"));
     await user.click(screen.getByRole("option", { name: "outline" }));
 
     await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "false"));

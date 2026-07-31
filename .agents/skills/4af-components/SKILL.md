@@ -9,7 +9,7 @@ Use the repository CLI and source as the authority. Do not manually copy compone
 guess registry URLs, or reproduce the CLI's temporary registry-server workflow.
 
 The library repository is normally at `C:\Files\Development\4AF-components`. If it is
-elsewhere, locate the directory containing both `registry.json` and `scripts/4af.mjs`.
+elsewhere, locate the directory containing both `registry.json` and `scripts/4af.ts`.
 
 ## Route the task
 

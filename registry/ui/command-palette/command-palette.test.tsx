@@ -12,9 +12,46 @@ import {
   CommandPanelFooter,
   CommandPanelList,
   CommandPanelRow,
+  useCommandPanelHighlight,
+  useCommandSearch,
 } from "./command-palette";
 
 describe("CommandPalette", () => {
+  it("shows a useful state when async search rejects", async () => {
+    const user = userEvent.setup();
+    render(
+      <CommandPalette
+        open
+        groups={[]}
+        searchDebounce={0}
+        onSearch={() => Promise.reject(new Error("Service unavailable"))}
+        searchErrorMessage={(error) =>
+          error instanceof Error ? error.message : "Search unavailable"
+        }
+      />,
+    );
+
+    await user.type(screen.getByPlaceholderText("Type a command or search…"), "status");
+    expect(await screen.findByRole("alert")).toHaveTextContent("Service unavailable");
+  });
+
+  it("also contains a synchronous search-source failure", async () => {
+    const user = userEvent.setup();
+    render(
+      <CommandPalette
+        open
+        groups={[]}
+        searchDebounce={0}
+        onSearch={() => {
+          throw new Error("Broken source");
+        }}
+      />,
+    );
+
+    await user.type(screen.getByPlaceholderText("Type a command or search…"), "status");
+    expect(await screen.findByRole("alert")).toHaveTextContent("Search failed. Try again.");
+  });
+
   it("keeps its query when a controlled owner rejects a close request", async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();
@@ -132,6 +169,55 @@ describe("CommandPalette", () => {
     expect(onSelect).toHaveBeenCalledOnce();
     expect(onActivate).toHaveBeenCalledOnce();
     expect(onActivate.mock.calls[0]?.[0]).toHaveProperty("detail", 0);
+  });
+
+  it("reports custom-panel highlights and additional refresh work", async () => {
+    const user = userEvent.setup();
+    const onHighlight = vi.fn();
+
+    function PaginatedPanel() {
+      useCommandPanelHighlight(onHighlight);
+      useCommandSearch("", undefined, { additionalRefreshing: true });
+
+      return (
+        <CommandPanelBody>
+          <CommandPanelList>
+            <CommandPanelRow value="alpha">Alpha</CommandPanelRow>
+            <CommandPanelRow value="beta">Beta</CommandPanelRow>
+          </CommandPanelList>
+        </CommandPanelBody>
+      );
+    }
+
+    render(
+      <CommandPalette
+        open
+        groups={[
+          {
+            items: [
+              {
+                id: "projects",
+                label: "Projects",
+                panelInput: {
+                  type: "search",
+                  label: "Search projects",
+                },
+                panel: () => <PaginatedPanel />,
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    await user.click(await screen.findByRole("option", { name: "Projects" }));
+    const input = screen.getByLabelText("Search projects");
+    await waitFor(() =>
+      expect(input.parentElement?.querySelector('span[aria-hidden="true"]')).toBeInTheDocument(),
+    );
+
+    await user.keyboard("{ArrowDown}");
+    expect(onHighlight).toHaveBeenCalled();
   });
 
   it("runs, toggles and morphs rows inside the actions menu", async () => {

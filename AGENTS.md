@@ -113,7 +113,8 @@ Plus one-off sources for specific jobs (loaders, charts). Same loop applies.
 
 ## Adding a component (the ingestion loop)
 
-1. **Download.** `pnpm dlx shadcn@4.13.1 add <url>` — `components.json` aliases point at
+1. **Download.** `pnpm exec shadcn add <url>` — the locally pinned CLI and
+   `components.json` aliases point at
    `_incoming/`, so anything from any public registry lands in staging, never in the
    library.
 2. **Rebuild to the contract.** Don't polish the download; rewrite it. Most public

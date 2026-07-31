@@ -185,10 +185,23 @@
       ]
     },
     {
+      "name": "refs",
+      "type": "registry:lib",
+      "description": "React 19-safe callback and object ref composition.",
+      "files": [
+        {
+          "path": "registry/lib/refs.ts",
+          "type": "registry:lib",
+          "target": "@lib/refs.ts"
+        }
+      ]
+    },
+    {
       "name": "slot",
       "type": "registry:lib",
       "registryDependencies": [
-        "http://localhost:3000/r/cn.json"
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/refs.json"
       ],
       "files": [
         {
@@ -288,7 +301,8 @@
       ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/refs.json"
       ],
       "files": [
         {
@@ -332,13 +346,18 @@
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/input.json"
+        "http://localhost:3000/r/refs.json"
       ],
       "files": [
         {
           "path": "registry/ui/textarea/textarea.tsx",
           "type": "registry:ui",
           "target": "@ui/textarea.tsx"
+        },
+        {
+          "path": "registry/ui/input/input.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/input.variants.ts"
         }
       ]
     },
@@ -503,7 +522,8 @@
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json"
+        "http://localhost:3000/r/motion.json",
+        "http://localhost:3000/r/refs.json"
       ],
       "files": [
         {
@@ -686,14 +706,10 @@
     {
       "name": "table-of-contents",
       "type": "registry:ui",
-      "description": "A table of contents that tracks the reader — an IntersectionObserver lights the active heading and a Motion layoutId marker slides to it; smooth-scroll on click.",
-      "dependencies": [
-        "motion"
-      ],
+      "description": "A table of contents that tracks visible headings, keeps the last passed section active through long prose, and smooth-scrolls on click.",
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json"
+        "http://localhost:3000/r/cn.json"
       ],
       "files": [
         {
@@ -771,7 +787,7 @@
     {
       "name": "command-palette",
       "type": "registry:ui",
-      "description": "A keyboard-first command and search palette with nested panels, custom panel content, fuzzy filtering, async/server-driven search, keybind hints, and Base UI dialog/autocomplete behavior.",
+      "description": "A keyboard-first command and search palette with nested panels, custom panel content, fuzzy filtering, async/server-driven and paginated search, keybind hints, and Base UI dialog/autocomplete behavior.",
       "dependencies": [
         "@base-ui/react",
         "lucide-react"
@@ -781,6 +797,8 @@
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/ascii-loader.json",
         "http://localhost:3000/r/checkbox.json",
+        "http://localhost:3000/r/morph.json",
+        "http://localhost:3000/r/use-action.json",
         "http://localhost:3000/r/select.json"
       ],
       "files": [
@@ -1101,7 +1119,7 @@
     {
       "name": "sidebar-layout",
       "type": "registry:ui",
-      "description": "An optional application shell that composes Sidebar with an inset content surface, page title header, header actions, and a left-aligned collapse trigger before the title.",
+      "description": "An optional viewport shell that composes Sidebar with a contained, independently scrolling inset surface, page title header, header actions, and a left-aligned collapse trigger before the title.",
       "dependencies": [],
       "registryDependencies": [
         "http://localhost:3000/r/sidebar.json",

@@ -36,12 +36,13 @@ export function SidebarLayout({
   headerClassName,
   contentClassName,
   children,
+  className,
   ...providerProps
 }: SidebarLayoutProps) {
   return (
-    <SidebarProvider {...providerProps}>
+    <SidebarProvider {...providerProps} className={cn("h-svh overflow-hidden", className)}>
       {sidebar}
-      <SidebarInset>
+      <SidebarInset className="min-h-0 overflow-hidden">
         <header
           data-slot="sidebar-layout-header"
           className={cn(
@@ -53,13 +54,16 @@ export function SidebarLayout({
           {title !== undefined && (
             <span className="min-w-0 truncate text-sm text-muted-foreground">{title}</span>
           )}
-          {headerActions !== undefined && (
-            <div className="ml-auto flex items-center gap-2">{headerActions}</div>
-          )}
+          <div
+            data-slot="sidebar-layout-header-actions"
+            className="ml-auto flex items-center gap-2"
+          >
+            {headerActions}
+          </div>
         </header>
         <div
           data-slot="sidebar-layout-content"
-          className={cn("flex flex-1 flex-col", contentClassName)}
+          className={cn("flex min-h-0 flex-1 flex-col overflow-y-auto", contentClassName)}
         >
           {children}
         </div>

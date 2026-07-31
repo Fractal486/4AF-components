@@ -8,7 +8,12 @@ export default defineConfig({
     jsx: { runtime: "automatic" },
   },
   resolve: {
-    alias: { "@": root },
+    alias: {
+      "@/registry/ui/ui/input.variants": fileURLToPath(
+        new URL("./registry/ui/input/input.variants.ts", import.meta.url),
+      ),
+      "@": root,
+    },
   },
   test: {
     environment: "jsdom",

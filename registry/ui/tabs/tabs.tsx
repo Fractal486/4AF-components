@@ -5,7 +5,6 @@ import { motion, useReducedMotion } from "motion/react";
 import {
   createContext,
   useContext,
-  useCallback,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -15,6 +14,7 @@ import {
 } from "react";
 import { cn } from "@/registry/lib/cn";
 import { duration, ease, spring } from "@/registry/lib/motion";
+import { useMergedRefs } from "@/registry/lib/refs";
 import {
   tabIndicatorVariants,
   tabsListVariants,
@@ -90,6 +90,7 @@ export function TabsList({
   const listRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState<{ left: number; width: number } | null>(null);
   const reduceMotion = useReducedMotion();
+  const mergedRef = useMergedRefs(listRef, forwardedRef);
 
   // Track the selected tab's horizontal box, relative to the list. Base UI owns the
   // selection, so rather than duplicate its state we watch the attribute it sets and
@@ -121,20 +122,11 @@ export function TabsList({
     };
   }, [variant]);
 
-  const composeRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      listRef.current = node;
-      if (typeof forwardedRef === "function") forwardedRef(node);
-      else if (forwardedRef) forwardedRef.current = node;
-    },
-    [forwardedRef],
-  );
-
   return (
     <BaseTabs.List
       className={cn(tabsListVariants({ variant, solid }), className)}
       {...props}
-      ref={composeRef}
+      ref={mergedRef}
     >
       {box && (
         <motion.div

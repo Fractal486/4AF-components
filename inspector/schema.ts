@@ -137,10 +137,25 @@ export function valuesFromParams<S extends ControlSchema>(
     if (value === undefined) {
       out[key] = def.defaultValue;
     } else if (def.kind === "boolean") {
-      out[key] = value === "true";
+      out[key] = value === "true" ? true : value === "false" ? false : def.defaultValue;
     } else if (def.kind === "number") {
       const parsed = Number(value);
-      out[key] = Number.isFinite(parsed) ? parsed : def.defaultValue;
+      if (!Number.isFinite(parsed)) {
+        out[key] = def.defaultValue;
+        continue;
+      }
+
+      const min = typeof def.min === "number" && Number.isFinite(def.min) ? def.min : -Infinity;
+      const max = typeof def.max === "number" && Number.isFinite(def.max) ? def.max : Infinity;
+      const clamped = Math.min(Math.max(parsed, min), max);
+      if (typeof def.step === "number" && Number.isFinite(def.step) && def.step > 0) {
+        const anchor =
+          typeof def.min === "number" && Number.isFinite(def.min) ? def.min : 0;
+        const snapped = anchor + Math.round((clamped - anchor) / def.step) * def.step;
+        out[key] = Number(Math.min(Math.max(snapped, min), max).toFixed(12));
+      } else {
+        out[key] = clamped;
+      }
     } else if (def.kind === "select") {
       out[key] = def.options.includes(value) ? value : def.defaultValue;
     } else {

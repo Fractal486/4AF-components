@@ -20,6 +20,26 @@ describe("ButtonGroup", () => {
     expect(last?.className).not.toContain("rounded-e-none");
   });
 
+  it("flattens buttons nested inside fragments", () => {
+    render(
+      <ButtonGroup>
+        <>
+          <Button>One</Button>
+          <>
+            <Button>Two</Button>
+            {false && <Button>Hidden</Button>}
+          </>
+        </>
+        <Button>Three</Button>
+      </ButtonGroup>,
+    );
+
+    const [first, middle, last] = screen.getAllByRole("button");
+    expect(first?.className).toContain("rounded-e-none");
+    expect(middle?.className).toContain("rounded-none");
+    expect(last?.className).toContain("rounded-s-none");
+  });
+
   it("leaves a single button alone", () => {
     render(
       <ButtonGroup>

@@ -230,6 +230,8 @@ export interface CommandPaletteProps {
   searchDebounce?: number;
   /** Shown in place of the results while `onSearch` is in flight. @default "Searching…" */
   loadingMessage?: ReactNode;
+  /** Shown when `onSearch` rejects. Receives the error when supplied as a function. */
+  searchErrorMessage?: ReactNode | ((error: unknown) => ReactNode);
   /** Bind ⌘K / Ctrl-K to toggle the palette globally. @default true */
   shortcut?: boolean;
   placeholder?: string;
@@ -519,6 +521,8 @@ export interface UseCommandSearchOptions {
   debounce?: number;
   /** Search only while this is true — e.g. a panel that isn't the active page. @default true */
   enabled?: boolean;
+  /** Keep the panel header loader on for an additional async operation, such as pagination. */
+  additionalRefreshing?: boolean;
 }
 
 // How a panel's `useCommandSearch` tells the palette to show the inline header loader.
@@ -527,6 +531,23 @@ export interface UseCommandSearchOptions {
 // exactly as the input-row and empty-region loaders are on the root list. The root's own
 // `useCommandSearch` call sits outside this provider, so it reports to no one.
 const PanelSearchContext = createContext<((refreshing: boolean) => void) | null>(null);
+
+type PanelHighlightHandler = (value: unknown) => void;
+type PanelHighlightRegistration = (handler: PanelHighlightHandler | null) => () => void;
+
+// A custom panel can observe the shared Autocomplete highlight without reaching into the
+// palette's root. This is used by server-backed panels that need to react when the last
+// visible row becomes highlighted (for example, to fetch the next page).
+const PanelHighlightContext = createContext<PanelHighlightRegistration | null>(null);
+
+export function useCommandPanelHighlight(handler: PanelHighlightHandler | null): void {
+  const register = useContext(PanelHighlightContext);
+
+  useEffect(() => {
+    if (!register) return;
+    return register(handler);
+  }, [handler, register]);
+}
 
 /**
  * Set while an actions menu is open, so the list behind it stops following the pointer.
@@ -571,10 +592,11 @@ export function useCommandSearch<T>(
   query: string,
   onSearch: ((query: string, signal: AbortSignal) => Promise<T>) | undefined,
   options: UseCommandSearchOptions = {},
-): { results: T | null; searching: boolean } {
-  const { debounce = 200, enabled = true } = options;
+): { results: T | null; searching: boolean; error: unknown | null } {
+  const { additionalRefreshing = false, debounce = 200, enabled = true } = options;
   const [results, setResults] = useState<T | null>(null);
   const [resolvedTerm, setResolvedTerm] = useState<string | null>(null);
+  const [error, setError] = useState<unknown | null>(null);
   // The source lives behind a ref so an inline function (a fresh identity every render)
   // doesn't retrigger the effect and loop — it fires on the query, not the identity.
   const onSearchRef = useRef(onSearch);
@@ -598,6 +620,7 @@ export function useCommandSearch<T>(
     if (!active) {
       setResults(null);
       setResolvedTerm(null);
+      setError(null);
     }
   }
 
@@ -607,18 +630,22 @@ export function useCommandSearch<T>(
     const seq = ++seqRef.current;
     const controller = new AbortController();
     const timer = setTimeout(() => {
-      Promise.resolve(onSearchRef.current!(term, controller.signal))
+      setError(null);
+      Promise.resolve()
+        .then(() => onSearchRef.current!(term, controller.signal))
         .then((result) => {
           if (seq !== seqRef.current) return;
           setResults(result);
           setResolvedTerm(term);
+          setError(null);
         })
-        .catch(() => {
+        .catch((reason: unknown) => {
           // An abort is the expected path when a newer keystroke supersedes this one — not
           // a failure, and the superseding run already owns the state.
           if (seq !== seqRef.current || controller.signal.aborted) return;
           setResults(null);
           setResolvedTerm(term);
+          setError(reason || new Error("Search failed."));
         });
     }, debounce);
     return () => {
@@ -634,13 +661,17 @@ export function useCommandSearch<T>(
   // Tell a panel header when to show its inline loader — the refresh case only (a search
   // over results already on screen). First-load, when there's nothing yet, is left to the
   // centred `CommandPanelLoading`, so the two never overlap. A no-op at the root.
-  const refreshing = searching && results != null;
+  const refreshing = additionalRefreshing || (searching && results != null);
   useEffect(() => {
     reportRefreshing?.(refreshing);
     return () => reportRefreshing?.(false);
   }, [reportRefreshing, refreshing]);
 
-  return { results: active ? results : null, searching };
+  return {
+    results: active ? results : null,
+    searching,
+    error: active ? error : null,
+  };
 }
 
 export function CommandPalette({
@@ -648,6 +679,7 @@ export function CommandPalette({
   onSearch,
   searchDebounce = 200,
   loadingMessage = "Searching…",
+  searchErrorMessage = "Search failed. Try again.",
   shortcut = true,
   placeholder = "Type a command or search…",
   emptyMessage = "No results found.",
@@ -669,7 +701,11 @@ export function CommandPalette({
   // The root command search runs on the shared engine (below), which custom panels reuse.
   // Async only governs the root: a non-empty query there hands off to the source, while
   // drilled-in pages and panels stay local (or run their own `useCommandSearch`).
-  const { results: asyncResults, searching } = useCommandSearch<CommandGroup[]>(
+  const {
+    results: asyncResults,
+    searching,
+    error: searchError,
+  } = useCommandSearch<CommandGroup[]>(
     query,
     onSearch,
     { debounce: searchDebounce, enabled: isRoot },
@@ -787,12 +823,27 @@ export function CommandPalette({
   // Only ever the last *real* highlight. Opening the menu blurs the list, which reports
   // `undefined` — so reading the live value at that moment would always come up empty.
   const lastHighlightedRef = useRef<unknown>(undefined);
+  const panelHighlightRef = useRef<PanelHighlightHandler | null>(null);
   const reportActionsOpen = useCallback((open: boolean) => {
     setActionsOpen(open);
     setFrozenRow(open ? lastHighlightedRef.current : undefined);
   }, []);
   const rememberHighlight = useCallback((value: unknown) => {
     if (value !== undefined) lastHighlightedRef.current = value;
+  }, []);
+  const notifyItemHighlighted = useCallback(
+    (value: unknown) => {
+      rememberHighlight(value);
+      panelHighlightRef.current?.(value);
+    },
+    [rememberHighlight],
+  );
+  const registerPanelHighlight = useCallback<PanelHighlightRegistration>((handler) => {
+    const previous = panelHighlightRef.current;
+    panelHighlightRef.current = handler;
+    return () => {
+      if (panelHighlightRef.current === handler) panelHighlightRef.current = previous;
+    };
   }, []);
 
   const activePage = pages.length > 0 ? pages[pages.length - 1]! : null;
@@ -886,6 +937,11 @@ export function CommandPalette({
   // show it rides quietly in the input row ("refreshing"); with nothing to show it stands
   // in for the list via the Empty region below, so the two never both appear.
   const hasVisibleItems = visibleGroups.some((group) => group.items.length > 0);
+  const renderedSearchError = searchError
+    ? typeof searchErrorMessage === "function"
+      ? searchErrorMessage(searchError)
+      : searchErrorMessage
+    : null;
 
   // Base UI wants the grouped shape (`{ items, …anyKeys }`); a heading-less group renders
   // no label. It filters/sorts nothing here — that already happened above.
@@ -933,8 +989,9 @@ export function CommandPalette({
               open
               mode="none"
               autoHighlight
+              loopFocus={false}
               highlightItemOnHover={!actionsOpen}
-              onItemHighlighted={rememberHighlight}
+              onItemHighlighted={notifyItemHighlighted}
               value={panelInputValue}
               onValueChange={setPanelInputValue}
             >
@@ -1017,7 +1074,9 @@ export function CommandPalette({
                   loader above. */}
               <div className="flex min-h-0 flex-1 flex-col">
                 <PanelSearchContext.Provider value={setPanelSearching}>
-                  {panelNode}
+                  <PanelHighlightContext.Provider value={registerPanelHighlight}>
+                    {panelNode}
+                  </PanelHighlightContext.Provider>
                 </PanelSearchContext.Provider>
               </div>
             </>
@@ -1036,6 +1095,7 @@ export function CommandPalette({
             itemToStringValue={(item: CommandItem) => item.label}
             // Keep the top match ready so Enter runs it without an arrow press first.
             autoHighlight
+            loopFocus={false}
             // Inert while an actions menu is open — see ActionsOpenContext.
             highlightItemOnHover={!actionsOpen}
             onItemHighlighted={rememberHighlight}
@@ -1133,6 +1193,10 @@ export function CommandPalette({
                 <div className="flex items-center justify-center gap-2 px-4 py-8">
                   <AsciiLoader className="text-sm text-subtle-foreground" />
                   <span>{loadingMessage}</span>
+                </div>
+              ) : searchError ? (
+                <div role="alert" className="px-4 py-8">
+                  {renderedSearchError}
                 </div>
               ) : (
                 <div className="px-4 py-8">{emptyMessage}</div>

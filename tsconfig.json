@@ -17,6 +17,7 @@
     "incremental": true,
     "plugins": [{ "name": "next" }],
     "paths": {
+      "@/registry/ui/ui/input.variants": ["./registry/ui/input/input.variants.ts"],
       "@/registry/*": ["./registry/*"],
       "@/inspector": ["./inspector/index.ts"],
       "@/inspector/*": ["./inspector/*"],

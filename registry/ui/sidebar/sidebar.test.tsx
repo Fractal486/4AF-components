@@ -1,12 +1,22 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 import {
   SidebarHeader,
   SidebarHeaderButton,
   SidebarHeaderRow,
+  Sidebar,
+  SidebarPanel,
   SidebarProvider,
   SidebarRail,
+  SidebarRailButton,
+  SidebarTrigger,
+  useSidebar,
 } from "./sidebar";
+
+function MobileProbe() {
+  const { isMobile } = useSidebar();
+  return <output>{isMobile ? "mobile" : "desktop"}</output>;
+}
 
 describe("SidebarRail", () => {
   it("runs a consumer click handler and still toggles the sidebar", () => {
@@ -39,6 +49,109 @@ describe("SidebarRail", () => {
 
     expect(onOpenChange).toHaveBeenCalledWith(false);
     await waitFor(() => expect(document.cookie).not.toContain("sidebar_state=false"));
+  });
+});
+
+describe("cancellable sidebar controls", () => {
+  it("does not toggle when a SidebarTrigger consumer prevents the click", () => {
+    const onOpenChange = vi.fn();
+    render(
+      <SidebarProvider onOpenChange={onOpenChange} persist={false}>
+        <SidebarTrigger onClick={(event) => event.preventDefault()} />
+      </SidebarProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Toggle sidebar" }));
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it("does not select a split panel when a rail-button consumer prevents the click", () => {
+    const onActivePanelChange = vi.fn();
+    render(
+      <SidebarProvider persist={false}>
+        <Sidebar
+          variant="split"
+          collapsible="none"
+          defaultActivePanel="first"
+          onActivePanelChange={onActivePanelChange}
+          rail={
+            <SidebarRailButton
+              value="second"
+              aria-label="Second panel"
+              onClick={(event) => event.preventDefault()}
+            >
+              Two
+            </SidebarRailButton>
+          }
+        >
+          <SidebarPanel value="first">First</SidebarPanel>
+          <SidebarPanel value="second">Second</SidebarPanel>
+        </Sidebar>
+      </SidebarProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Second panel" }));
+    expect(onActivePanelChange).not.toHaveBeenCalled();
+    expect(screen.getByText("First")).toBeInTheDocument();
+    expect(screen.queryByText("Second")).toBeNull();
+  });
+});
+
+describe("SidebarProvider environment behavior", () => {
+  it("tracks matchMedia changes and removes its listener on unmount", async () => {
+    const listeners = new Set<() => void>();
+    let matches = true;
+    const media = {
+      get matches() {
+        return matches;
+      },
+      media: "(max-width: 767px)",
+      onchange: null,
+      addEventListener: vi.fn((_type: string, listener: () => void) => listeners.add(listener)),
+      removeEventListener: vi.fn((_type: string, listener: () => void) =>
+        listeners.delete(listener),
+      ),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    };
+    const originalMatchMedia = window.matchMedia;
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      value: vi.fn(() => media as unknown as MediaQueryList),
+    });
+
+    const { unmount } = render(
+      <SidebarProvider persist={false}>
+        <MobileProbe />
+      </SidebarProvider>,
+    );
+    await waitFor(() => expect(screen.getByText("mobile")).toBeInTheDocument());
+
+    matches = false;
+    act(() => {
+      for (const listener of listeners) listener();
+    });
+    expect(screen.getByText("desktop")).toBeInTheDocument();
+
+    unmount();
+    expect(media.removeEventListener).toHaveBeenCalled();
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      value: originalMatchMedia,
+    });
+  });
+
+  it("toggles with Ctrl-B", () => {
+    const onOpenChange = vi.fn();
+    render(
+      <SidebarProvider onOpenChange={onOpenChange} persist={false}>
+        <MobileProbe />
+      </SidebarProvider>,
+    );
+
+    fireEvent.keyDown(window, { key: "b", ctrlKey: true });
+    expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 });
 

@@ -3,6 +3,7 @@
 import { Input as BaseInput, type InputState } from "@base-ui/react/input";
 import { useRef, type ComponentProps } from "react";
 import { cn } from "@/registry/lib/cn";
+import { useMergedRefs } from "@/registry/lib/refs";
 import { inputVariants, type InputVariants } from "./input.variants";
 
 /**
@@ -33,12 +34,7 @@ export function Input({
   const baseClassName = inputVariants({ variant: resolvedVariant, tone: resolvedTone });
   const isNumber = type === "number";
   const inputRef = useRef<HTMLInputElement | null>(null);
-
-  const setInputRef = (node: HTMLElement | null) => {
-    inputRef.current = node as HTMLInputElement | null;
-    if (typeof ref === "function") ref(node);
-    else if (ref) ref.current = node;
-  };
+  const mergedRef = useMergedRefs(inputRef, ref);
 
   const stepValue = (direction: "up" | "down") => {
     const input = inputRef.current;
@@ -63,7 +59,7 @@ export function Input({
 
   const input = (
     <BaseInput
-      ref={setInputRef}
+      ref={mergedRef}
       type={type}
       autoComplete="off"
       data-slot="input"
