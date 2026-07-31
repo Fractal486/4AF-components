@@ -127,7 +127,7 @@ export function SidebarDemo({
                 <SidebarRailButton
                   tooltip="Acme Inc"
                   aria-label="Acme Inc"
-                  className="mt-1 mb-2 bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+                  className="mt-1 mb-2 bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground active:bg-primary active:text-primary-foreground"
                 >
                   <span className="text-2xs font-semibold">4</span>
                 </SidebarRailButton>

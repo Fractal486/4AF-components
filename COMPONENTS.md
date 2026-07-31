@@ -90,7 +90,7 @@ The dependency direction is always `app` → `inspector` → `registry`.
 Run the CLI from the 4AF Components repository. Use an absolute path for the target
 project so there is no ambiguity about where files will be written.
 
-The repository toolchain is pinned to Node 25.9.0 and pnpm 11.13.1 (`.node-version` and
+The repository toolchain is pinned to Node 24.18.1 and pnpm 11.13.1 (`.node-version` and
 `package.json`). The registry commands use shadcn 4.13.1, so validation, build, and install
 behave consistently across machines.
 
