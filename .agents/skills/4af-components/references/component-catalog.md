@@ -103,7 +103,7 @@ The catalog currently contains 39 installable UI items. Verify the count and nam
 | `dialog` | `Dialog` parts, `DialogSteps`, `DialogStep` | Centered modals and optional validated multi-step flows. |
 | `alert-dialog` | `AlertDialog` parts | Decision-forcing modal that cannot dismiss by clicking away. |
 | `popover` | `Popover` parts | Interactive anchored panels with optional modal behavior. |
-| `hover-card` | `HoverCard`, trigger/content parts | Rich previews opened by hover or keyboard focus. |
+| `hover-card` | `HoverCard`, trigger/content parts, `HoverCardSkeleton` | Rich previews opened by hover or keyboard focus, with built-in loading placeholders. |
 | `dropdown-menu` | Menu, checkbox/radio/submenu, shortcut, and nested-select parts | Keyboard menus, safe submenus, destructive items, Kbd hints, and searchable selection panels. |
 
 ## Bundled APIs and composition

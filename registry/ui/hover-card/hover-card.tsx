@@ -1,8 +1,9 @@
 "use client";
 
 import { PreviewCard as BasePreviewCard } from "@base-ui/react/preview-card";
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
+import { Skeleton } from "@/registry/ui/skeleton/skeleton";
 
 /**
  * A hover card — a rich preview of what's behind a link, for sighted pointer users.
@@ -23,6 +24,41 @@ import { cn } from "@/registry/lib/cn";
 
 export const HoverCard = BasePreviewCard.Root;
 export const HoverCardTrigger = BasePreviewCard.Trigger;
+
+export interface HoverCardSkeletonProps extends ComponentProps<"div"> {
+  /** Keeps the avatar placeholder when the preview represents a profile or author. */
+  showAvatar?: boolean;
+}
+
+/**
+ * The default loading shape for a preview card. It mirrors the common avatar-and-copy
+ * layout while leaving the outer content wrapper under the caller's control.
+ */
+export function HoverCardSkeleton({
+  className,
+  showAvatar = true,
+  ...props
+}: HoverCardSkeletonProps) {
+  return (
+    <div
+      data-slot="hover-card-skeleton"
+      aria-hidden="true"
+      className={cn("flex gap-3", className)}
+      {...props}
+    >
+      {showAvatar && <Skeleton className="size-10 shrink-0 rounded-full" />}
+      <div className="min-w-0 flex-1 space-y-2">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-3 w-16" />
+        <div className="space-y-1.5 pt-1">
+          <Skeleton className="h-3 w-full" />
+          <Skeleton className="h-3 w-4/5" />
+        </div>
+        <Skeleton className="h-3 w-28" />
+      </div>
+    </div>
+  );
+}
 
 const popupClassName = cn(
   // The same floating-panel material as the Popover and Select panels: the border, plus
@@ -47,6 +83,10 @@ const popupClassName = cn(
 export interface HoverCardContentProps
   extends Omit<ComponentProps<typeof BasePreviewCard.Popup>, "className"> {
   className?: string;
+  /** Shows a loading placeholder instead of the preview while its data is pending. */
+  loading?: boolean;
+  /** Optional custom placeholder; defaults to `HoverCardSkeleton`. */
+  loadingContent?: ReactNode;
   /** Which side of the trigger to anchor to. */
   side?: ComponentProps<typeof BasePreviewCard.Positioner>["side"];
   /** Alignment along that side. */
@@ -63,6 +103,8 @@ export interface HoverCardContentProps
 export function HoverCardContent({
   className,
   children,
+  loading = false,
+  loadingContent,
   side = "bottom",
   align = "center",
   sideOffset = 6,
@@ -78,8 +120,13 @@ export function HoverCardContent({
         className="z-50 outline-none"
         {...positionerProps}
       >
-        <BasePreviewCard.Popup className={cn(popupClassName, className)} {...props}>
-          {children}
+        <BasePreviewCard.Popup
+          {...props}
+          className={cn(popupClassName, className)}
+          data-loading={loading || undefined}
+          aria-busy={loading || undefined}
+        >
+          {loading ? (loadingContent ?? <HoverCardSkeleton />) : children}
         </BasePreviewCard.Popup>
       </BasePreviewCard.Positioner>
     </BasePreviewCard.Portal>

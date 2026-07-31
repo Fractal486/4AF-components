@@ -1011,13 +1011,14 @@
     {
       "name": "hover-card",
       "type": "registry:ui",
-      "description": "A rich preview of what is behind a link, on hover and focus. Base UI PreviewCard behaviour with a CSS scale-and-blur enter from the trigger edge.",
+      "description": "A rich preview of what is behind a link, on hover and focus. Base UI PreviewCard behaviour with a CSS scale-and-blur enter from the trigger edge, plus a built-in loading skeleton.",
       "dependencies": [
         "@base-ui/react"
       ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/skeleton.json"
       ],
       "files": [
         {

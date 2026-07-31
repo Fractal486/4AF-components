@@ -2,9 +2,10 @@ import { CalendarDays } from "lucide-react";
 import {
   HoverCard,
   HoverCardContent,
+  HoverCardSkeleton,
   HoverCardTrigger,
 } from "@/registry/ui/hover-card/hover-card";
-import { defineEntry, num, select } from "../schema";
+import { bool, defineEntry, num, select } from "../schema";
 
 const SIDES = ["bottom", "top", "right", "left"] as const;
 
@@ -14,8 +15,9 @@ export const hoverCardEntry = defineEntry({
   controls: {
     side: select(SIDES, "bottom"),
     delay: num(400, { min: 0, max: 1200, step: 100, label: "Open delay (ms)" }),
+    loading: bool(false, "Loading"),
   },
-  render({ side, delay }) {
+  render({ side, delay, loading }) {
     return (
       <HoverCard>
         <HoverCardTrigger
@@ -26,7 +28,7 @@ export const hoverCardEntry = defineEntry({
         >
           @basecn
         </HoverCardTrigger>
-        <HoverCardContent side={side}>
+        <HoverCardContent side={side} loading={loading} loadingContent={<HoverCardSkeleton />}>
           <div className="flex gap-3">
             <span
               aria-hidden

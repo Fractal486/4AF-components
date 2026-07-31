@@ -244,7 +244,7 @@ option remains available for a single action.
 | `dialog` | `Dialog` and content/title/footer parts; `DialogSteps`, `DialogStep` | Centred modal with enter/exit motion and optional validated multi-step flow. |
 | `alert-dialog` | `AlertDialog` and content, action, cancel, title, and description parts | Decision-forcing modal that cannot be dismissed by clicking away. |
 | `popover` | `Popover` and trigger, close, content, header, title, and description parts | Interactive anchored panel with Base UI positioning and optional modal behaviour. |
-| `hover-card` | `HoverCard`, `HoverCardTrigger`, `HoverCardContent` | Rich preview panel shown from hover or keyboard focus. |
+| `hover-card` | `HoverCard`, `HoverCardTrigger`, `HoverCardContent`, `HoverCardSkeleton` | Rich preview panel shown from hover or keyboard focus, with a built-in loading placeholder and custom loading content support. |
 | `dropdown-menu` | Root/trigger/content/item, checkbox/radio/submenu parts, shortcut and nested-select parts | Base UI menu with keyboard navigation, safe submenu pointer travel, Kbd-style shortcuts, destructive rows, original submenus, and searchable single/multi select subpanels. |
 
 ## Important bundled APIs and patterns
