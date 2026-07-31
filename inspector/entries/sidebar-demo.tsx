@@ -219,7 +219,6 @@ export function SidebarDemo({
                     <SidebarHeaderButton
                       variant="primary"
                       aria-label="Compose"
-                      onClick={() => setMailSelection("compose")}
                     >
                       <Plus />
                       <span>Compose</span>
@@ -227,7 +226,6 @@ export function SidebarDemo({
                     <SidebarHeaderButton
                       variant="outline"
                       aria-label="Search mail"
-                      onClick={() => setMailSelection("inbox")}
                     >
                       <Search />
                       <span>Search</span>
