@@ -637,6 +637,11 @@
           "path": "registry/ui/slider/slider.tsx",
           "type": "registry:ui",
           "target": "@ui/slider.tsx"
+        },
+        {
+          "path": "registry/ui/slider/slider-geometry.ts",
+          "type": "registry:ui",
+          "target": "@ui/slider-geometry.ts"
         }
       ]
     },

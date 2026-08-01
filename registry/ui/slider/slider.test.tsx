@@ -1,5 +1,6 @@
 import { DirectionProvider } from "@base-ui/react/direction-provider";
 import { render, screen, waitFor } from "@testing-library/react";
+import { getSliderFillOffset } from "./slider-geometry";
 import { Slider } from "./slider";
 
 describe("Slider", () => {
@@ -35,5 +36,13 @@ describe("Slider", () => {
       .map((element) => element.style.left)
       .filter(Boolean);
     expect(tickPositions).toEqual(["0%", "30%", "60%", "90%"]);
+  });
+
+  it("keeps the fill correction tied to the animated thumb position", () => {
+    expect(getSliderFillOffset(40, false, 20)).toBeCloseTo(2);
+    expect(getSliderFillOffset(80, false, 20)).toBeCloseTo(-6);
+    expect(getSliderFillOffset(80, true, 20)).toBeCloseTo(6);
+    expect(getSliderFillOffset(0, false, 20)).toBe(0);
+    expect(getSliderFillOffset(100, false, 20)).toBe(0);
   });
 });

@@ -18,6 +18,7 @@ import {
   type ComponentProps,
   type ReactNode,
 } from "react";
+import { getSliderFillOffset } from "./slider-geometry";
 import { cn } from "@/registry/lib/cn";
 
 /**
@@ -129,7 +130,6 @@ export function Slider({
   const percent = ((normalizedCurrent - normalizedMin) / (normalizedMax - normalizedMin)) * 100;
   const visualPercent = isRtl ? 100 - percent : percent;
 
-  const atEdge = normalizedCurrent <= normalizedMin || normalizedCurrent >= normalizedMax;
   const thumbWidthPx = dims.thumbPx;
 
   // Spring-smoothed position drives transform-only visual layers.
@@ -155,22 +155,17 @@ export function Slider({
     (p) => (p / 100) * Math.max(controlWidth - dims.thumbPx, 0),
   );
 
-  // The fill ends at the thumb's *centre*. `pos%` alone would lag the (edge-aligned)
-  // thumb on the left and overrun it on the right — off by up to half a thumb — so the
-  // fill carries a correction of `thumbWidth·(0.5 − pos/100)`. That correction is kept in
-  // full for every real value (perfect alignment), and only zeroed *at the extremes*, so
-  // the fill sits flush to the rail there: no sliver at the left, no gap at the right.
-  // The offset is sprung on its own so that endpoint snap eases in rather than jumping.
-  const offsetTargetValue = atEdge ? 0 : thumbWidthPx * (0.5 - percent / 100);
-  const offsetTarget = useMotionValue(offsetTargetValue);
-  useEffect(() => {
-    offsetTarget.set(offsetTargetValue);
-  }, [offsetTargetValue, offsetTarget]);
-  const offsetSmooth = useSpring(offsetTarget, SPRING_GLIDE);
-  const offset = reduceMotion ? offsetTarget : offsetSmooth;
   // `pos` is a physical left-to-right position for the thumb. In RTL the fill still
   // grows from the inline start (the right edge), so it needs the inverse progress.
   const fillProgress = useTransform(pos, (position) => (isRtl ? 100 - position : position));
+  // The fill ends at the thumb's *centre*. `pos%` alone would lag the (edge-aligned)
+  // thumb on the left and overrun it on the right — off by up to half a thumb — so the
+  // fill carries a correction of `thumbWidth·(0.5 − pos/100)`. Derive that correction
+  // from the same spring-driven position as the thumb; using the raw target value or a
+  // second spring lets the fill get ahead while the thumb is still settling.
+  const offset = useTransform(pos, (position) => {
+    return getSliderFillOffset(position, isRtl, thumbWidthPx);
+  });
   const ltrFillClip = useMotionTemplate`inset(0 calc(100% - ${fillProgress}% - ${offset}px) 0 0)`;
   const rtlFillClip = useMotionTemplate`inset(0 0 0 calc(100% - ${fillProgress}% - ${offset}px))`;
   const fillClip = isRtl ? rtlFillClip : ltrFillClip;
