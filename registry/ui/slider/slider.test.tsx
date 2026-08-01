@@ -1,6 +1,6 @@
 import { DirectionProvider } from "@base-ui/react/direction-provider";
 import { render, screen, waitFor } from "@testing-library/react";
-import { getSliderFillOffset } from "./slider-geometry";
+import { getSliderControlWidth, getSliderFillOffset } from "./slider-geometry";
 import { Slider } from "./slider";
 
 describe("Slider", () => {
@@ -44,5 +44,16 @@ describe("Slider", () => {
     expect(getSliderFillOffset(80, true, 20)).toBeCloseTo(6);
     expect(getSliderFillOffset(0, false, 20)).toBe(0);
     expect(getSliderFillOffset(100, false, 20)).toBe(0);
+  });
+
+  it("measures layout width instead of transformed visual bounds", () => {
+    const control = document.createElement("div");
+    Object.defineProperty(control, "offsetWidth", { configurable: true, value: 286 });
+    Object.defineProperty(control, "getBoundingClientRect", {
+      configurable: true,
+      value: () => ({ width: 271.7 }),
+    });
+
+    expect(getSliderControlWidth(control)).toBe(286);
   });
 });

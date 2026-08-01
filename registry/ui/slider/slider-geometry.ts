@@ -1,3 +1,12 @@
+/**
+ * Read the control's layout width rather than its transformed visual bounds.
+ * Popover and dialog entry animations can scale the control while it mounts;
+ * offsetWidth remains stable through that animation.
+ */
+export function getSliderControlWidth(control: HTMLElement): number {
+  return control.offsetWidth;
+}
+
 export function getSliderFillOffset(
   position: number,
   isRtl: boolean,

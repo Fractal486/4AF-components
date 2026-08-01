@@ -18,7 +18,7 @@ import {
   type ComponentProps,
   type ReactNode,
 } from "react";
-import { getSliderFillOffset } from "./slider-geometry";
+import { getSliderControlWidth, getSliderFillOffset } from "./slider-geometry";
 import { cn } from "@/registry/lib/cn";
 
 /**
@@ -144,7 +144,7 @@ export function Slider({
   useLayoutEffect(() => {
     const control = controlRef.current;
     if (!control) return;
-    const measure = () => setControlWidth(control.getBoundingClientRect().width);
+    const measure = () => setControlWidth(getSliderControlWidth(control));
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(control);
