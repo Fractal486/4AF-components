@@ -124,9 +124,15 @@ describe("CommandPalette", () => {
     expect(beta).not.toHaveAttribute("data-frozen");
     expect(alpha).toHaveAttribute("data-frozen");
 
-    // And it lets go when the menu does.
+    // Closing must never leave the row unlit. The frozen highlight is held until Base UI's
+    // own one comes back — releasing it on close instead blinks the highlight off and on
+    // again over the same row, because the real highlight lands a frame or two later.
     await user.keyboard("{Escape}");
-    await waitFor(() => expect(alpha).not.toHaveAttribute("data-frozen"));
+    await waitFor(() =>
+      expect(
+        alpha.hasAttribute("data-frozen") || alpha.hasAttribute("data-highlighted"),
+      ).toBe(true),
+    );
   });
 
   it("reports keyboard activation separately from pointer selection", async () => {
