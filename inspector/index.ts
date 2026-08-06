@@ -6,6 +6,7 @@ import { badgeEntry } from "./entries/badge";
 import { buttonEntry } from "./entries/button";
 import { buttonGroupEntry } from "./entries/button-group";
 import { checkboxEntry } from "./entries/checkbox";
+import { collapsibleEntry } from "./entries/collapsible";
 import { commandPaletteEntry } from "./entries/command-palette";
 import { copyButtonEntry } from "./entries/copy-button";
 import { deleteButtonEntry } from "./entries/delete-button";
@@ -149,6 +150,13 @@ const groupList: Group[] = [
     name: "Skeleton",
     summary: "A muted placeholder that pulses while content loads. Sized with utilities.",
     entries: [skeletonEntry],
+  },
+  {
+    slug: "collapsible",
+    name: "Collapsible",
+    summary:
+      "A row that opens a panel under it. The chevron swings round; the space appears at once and the content fades up out of a blur into it.",
+    entries: [collapsibleEntry],
   },
   {
     slug: "separator",

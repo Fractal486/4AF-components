@@ -704,6 +704,32 @@
       ]
     },
     {
+      "name": "collapsible",
+      "type": "registry:ui",
+      "description": "A disclosure row built on Base UI Collapsible: the chevron rotates, the space opens in one frame, and the content fades up out of a blur into it.",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/collapsible/collapsible.tsx",
+          "type": "registry:ui",
+          "target": "@ui/collapsible.tsx"
+        },
+        {
+          "path": "registry/ui/collapsible/collapsible.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/collapsible.variants.ts"
+        }
+      ]
+    },
+    {
       "name": "table-of-contents",
       "type": "registry:ui",
       "description": "A table of contents that tracks visible headings, keeps the last passed section active through long prose, and smooth-scrolls on click.",

@@ -229,6 +229,7 @@ option remains available for a single action.
 | Install name | Main API | What it provides |
 | --- | --- | --- |
 | `tabs` | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | Base UI tabs with a travelling Motion indicator; segment, pill, and underline appearances, with optional solid treatment. |
+| `collapsible` | `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` | Base UI disclosure row in `plain` or `card` appearance, with a rotating chevron at either end (or none). The panel slides its height so rows underneath travel rather than jump — the library's one deliberate exception to compositor-only motion, since no transform can move the following rows — while the content itself dissolves in out of a blur. |
 | `table-of-contents` | `TableOfContents` | Heading navigation that observes visible headings, keeps the last passed section active through long prose, smooth-scrolls, and slides a marker to the active range. |
 | `separator` | `Separator` | Accessible horizontal or vertical divider built on Base UI Separator. |
 | `command-palette` | `CommandPalette`, custom panel/list/row/action parts, `useCommandSearch`, and `useCommandPanelHighlight` | Keyboard-first command/search dialog with fuzzy ranking, groups, nested and custom panels, async/server-driven and paginated search, header text fields, per-panel header actions, badges, checkboxes, keybinds, destructive actions, and keyboard navigation. |
