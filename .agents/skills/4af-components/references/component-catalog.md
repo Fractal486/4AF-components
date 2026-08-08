@@ -41,7 +41,7 @@ These entries install transitively:
 
 ## Installable catalog
 
-The catalog currently contains 39 installable UI items. Verify the count and names with
+The catalog currently contains 41 installable UI items. Verify the count and names with
 `pnpm 4af list` before making registry-wide claims.
 
 ### Actions
@@ -89,6 +89,7 @@ The catalog currently contains 39 installable UI items. Verify the count and nam
 | Install name | Main API | Use it for |
 | --- | --- | --- |
 | `tabs` | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | Segment, pill, or underline tabs with a traveling indicator. |
+| `collapsible` | `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` | Disclosure rows (`plain`/`card`) with a rotating chevron, a height slide so following rows travel rather than jump, and a blur-fade on the content. |
 | `table-of-contents` | `TableOfContents` | Observed heading navigation with smooth scrolling and active marker. |
 | `command-palette` | `CommandPalette`, panel/list/row/action parts, and `useCommandSearch` | Fuzzy command search, groups, nested/custom panels, async/server-driven search, configurable headers, keybinds, selection, and actions. |
 | `sidebar` | Provider, panel, group/menu/submenu/action/badge/skeleton parts | Default/floating/inset and split sidebars, collapse, sections, nested rows, actions, badges, skeletons. |
@@ -103,6 +104,7 @@ The catalog currently contains 39 installable UI items. Verify the count and nam
 | `dialog` | `Dialog` parts, `DialogSteps`, `DialogStep` | Centered modals and optional validated multi-step flows. |
 | `alert-dialog` | `AlertDialog` parts | Decision-forcing modal that cannot dismiss by clicking away. |
 | `popover` | `Popover` parts | Interactive anchored panels with optional modal behavior. |
+| `selection-toolbar` | `SelectionToolbar`, button/action-button/toggle/action-toggle/toggle-group/separator parts | Actions over selected text — copy, highlight, quote. Anchored to the range, hands the captured text and range to every action. Plain items dismiss the bar on press; async and toggle items keep it up so their state is visible. |
 | `hover-card` | `HoverCard`, trigger/content parts, `HoverCardSkeleton` | Rich previews opened by hover or keyboard focus, with built-in loading placeholders. |
 | `dropdown-menu` | Menu, checkbox/radio/submenu, shortcut, and nested-select parts | Keyboard menus, safe submenus, destructive items, Kbd hints, and searchable selection panels. |
 
@@ -142,6 +144,12 @@ not use it.
 `ActionButton` always reverts — `revertAfter={Infinity}` clamps to a 32-bit int and fires
 almost immediately. `ActionToggle` is not optimistic: the label holds until the action
 settles and `onPressedChange` fires only on success.
+
+Glyph and label morph in separate boxes (the loader is a text glyph, far narrower than an
+icon; morphing them together slides the label). So a label with no per-state override does
+not animate — pass `labels={{ pending: … }}` only when the word should change. `ActionToggle`
+with `fillIcon` and no `icons.pressed` does not swap the glyph either; the fill is the
+animation. Do not wrap the label and icon in one `Morph` when building something similar.
 
 ### Press scaling
 
@@ -238,6 +246,26 @@ text colour.
 | Flips immediately | `DropdownMenuCheckboxItem`, no `action` |
 
 Do not hand-roll either with `useState` and `setTimeout`; both run on `useAction`.
+
+### Selection Toolbar
+
+Item kinds mirror the menu's rows. Use the part, don't rebuild it on `SelectionToolbarButton`.
+
+| Item | Wraps | Dismisses the bar |
+| --- | --- | --- |
+| `SelectionToolbarButton` | `Button` | Yes (`keepOpen` opts out) |
+| `SelectionToolbarActionButton` | `ActionButton` | No (`closeOnSuccess` opts in) |
+| `SelectionToolbarToggle` | `Toggle` | Never |
+| `SelectionToolbarActionToggle` | `ActionToggle` | Never |
+| `SelectionToolbarToggleGroup` | Base UI `ToggleGroup` | — |
+
+Async and toggle items keep the bar up because that is where their state is drawn. Every
+action receives the captured `(text, range)` — never call `window.getSelection()` inside one.
+`variant="destructive"` is quieted to red ink automatically; do not add a red fill.
+
+For an item whose state depends on the selection, write a small component and call
+`useSelectionToolbar()` inside it — it renders within the bar even though it is created
+outside, so the hook reads the right selection.
 
 ### Sidebar
 

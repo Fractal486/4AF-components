@@ -6,6 +6,7 @@ import { badgeEntry } from "./entries/badge";
 import { buttonEntry } from "./entries/button";
 import { buttonGroupEntry } from "./entries/button-group";
 import { checkboxEntry } from "./entries/checkbox";
+import { collapsibleEntry } from "./entries/collapsible";
 import { commandPaletteEntry } from "./entries/command-palette";
 import { copyButtonEntry } from "./entries/copy-button";
 import { deleteButtonEntry } from "./entries/delete-button";
@@ -23,6 +24,7 @@ import { selectMotionEntry } from "./entries/select-motion";
 import { selectMotionSearchEntry } from "./entries/select-motion-search";
 import { selectSearchEntry } from "./entries/select-search";
 import { selectSortEntry } from "./entries/select-sort";
+import { selectionToolbarEntry } from "./entries/selection-toolbar";
 import { separatorEntry } from "./entries/separator";
 import { skeletonEntry } from "./entries/skeleton";
 import { sheetEntry } from "./entries/sheet";
@@ -151,6 +153,13 @@ const groupList: Group[] = [
     entries: [skeletonEntry],
   },
   {
+    slug: "collapsible",
+    name: "Collapsible",
+    summary:
+      "A row that opens a panel under it. The chevron swings round; the space slides open so the rows below travel rather than jump, and the content fades in out of a blur where it lands.",
+    entries: [collapsibleEntry],
+  },
+  {
     slug: "separator",
     name: "Separator",
     summary: "A divider. Base UI's Separator for the ARIA; a filled hairline, horizontal or vertical.",
@@ -193,6 +202,13 @@ const groupList: Group[] = [
     name: "Tooltip",
     summary: "Base UI positioning and timing, a CSS scale-and-blur enter.",
     entries: [tooltipEntry],
+  },
+  {
+    slug: "selection-toolbar",
+    name: "Selection Toolbar",
+    summary:
+      "Select some text and a bar of actions rises over it: the tooltip's material, the ghost button's actions, anchored to the range rather than to any element. Pressing one dismisses it.",
+    entries: [selectionToolbarEntry],
   },
   {
     slug: "dialog",

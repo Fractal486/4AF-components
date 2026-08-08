@@ -105,8 +105,8 @@
           "destructive-hover": "oklch(0.448 0.164 26)",
           "success": "oklch(0.52 0.13 152)",
           "success-foreground": "oklch(1 0 0)",
-          "text-shimmer-base": "var(--foreground)",
-          "text-shimmer-highlight": "oklch(0.716 0.01 70)",
+          "text-shimmer-base": "oklch(0.538 0 70)",
+          "text-shimmer-highlight": "oklch(0.946 0 70)",
           "elevation-border": "0 0 0 1px oklch(0 0 0 / 0.06), 0 1px 2px -1px oklch(0 0 0 / 0.06), 0 2px 4px 0 oklch(0 0 0 / 0.04)",
           "elevation-raised": "0 0 0 1px oklch(0 0 0 / 0.06), 0 2px 4px -2px oklch(0 0 0 / 0.06), 0 6px 12px -3px oklch(0 0 0 / 0.08)",
           "elevation-overlay": "0 0 0 1px oklch(0 0 0 / 0.06), 0 8px 16px -6px oklch(0 0 0 / 0.1), 0 16px 32px -8px oklch(0 0 0 / 0.12)",
@@ -131,8 +131,8 @@
           "destructive-hover": "oklch(0.62 0.208 25)",
           "success": "oklch(0.52 0.13 152)",
           "success-foreground": "oklch(1 0 0)",
-          "text-shimmer-base": "var(--muted-foreground)",
-          "text-shimmer-highlight": "oklch(1 0 0)",
+          "text-shimmer-base": "oklch(0.538 0 70)",
+          "text-shimmer-highlight": "oklch(0.946 0 70)",
           "elevation-border": "0 0 0 1px oklch(1 0 0 / 0.08)",
           "elevation-raised": "0 0 0 1px oklch(1 0 0 / 0.1), 0 8px 16px -8px oklch(0 0 0 / 0.6)",
           "elevation-overlay": "0 0 0 1px oklch(1 0 0 / 0.12), 0 16px 32px -12px oklch(0 0 0 / 0.7)",
@@ -709,6 +709,32 @@
       ]
     },
     {
+      "name": "collapsible",
+      "type": "registry:ui",
+      "description": "A disclosure row built on Base UI Collapsible: the chevron rotates, the space slides open so the rows below travel rather than jump, and the content fades in out of a blur where it lands.",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/collapsible/collapsible.tsx",
+          "type": "registry:ui",
+          "target": "@ui/collapsible.tsx"
+        },
+        {
+          "path": "registry/ui/collapsible/collapsible.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/collapsible.variants.ts"
+        }
+      ]
+    },
+    {
       "name": "table-of-contents",
       "type": "registry:ui",
       "description": "A table of contents that tracks visible headings, keeps the last passed section active through long prose, and smooth-scrolls on click.",
@@ -917,6 +943,37 @@
           "path": "registry/ui/tooltip/tooltip.tsx",
           "type": "registry:ui",
           "target": "@ui/tooltip.tsx"
+        }
+      ]
+    },
+    {
+      "name": "selection-toolbar",
+      "type": "registry:ui",
+      "description": "A bar of actions over selected text. Base UI Popover anchored to the range itself plus Base UI Toolbar for the row; plain, async, toggle and exclusive-group items. It swallows mousedown so the press can't collapse the selection, and hands the captured text to the action.",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/refs.json",
+        "http://localhost:3000/r/slot.json",
+        "http://localhost:3000/r/button.json",
+        "http://localhost:3000/r/toggle.json",
+        "http://localhost:3000/r/action-button.json",
+        "http://localhost:3000/r/action-toggle.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/selection-toolbar/selection-toolbar.tsx",
+          "type": "registry:ui",
+          "target": "@ui/selection-toolbar.tsx"
+        },
+        {
+          "path": "registry/ui/selection-toolbar/selection-toolbar.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/selection-toolbar.variants.ts"
         }
       ]
     },

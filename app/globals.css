@@ -202,10 +202,9 @@
   --muted-foreground: var(--color-neutral-600);
   --subtle-foreground: var(--color-neutral-500);
 
-  /* The text-shimmer sweep. A "brighter highlight" means *lighter* in light mode, so the
-     base is full-strength ink and the highlight is a pale sheen passing over it. */
-  --text-shimmer-base: var(--foreground);
-  --text-shimmer-highlight: var(--color-neutral-400);
+  /* Match the shared shimmer treatment: a neutral gray base with a soft near-white sheen. */
+  --text-shimmer-base: oklch(0.538 0 70);
+  --text-shimmer-highlight: oklch(0.946 0 70);
 
   --border: var(--color-neutral-200);
   --border-strong: var(--color-neutral-300);
@@ -269,10 +268,8 @@
   --muted-foreground: var(--color-neutral-400);
   --subtle-foreground: var(--color-neutral-500);
 
-  /* On black there's nothing brighter than the foreground, so the base is *dimmed* to a
-     muted grey and the highlight is pure white — the sweep reads as the text brightening. */
-  --text-shimmer-base: var(--muted-foreground);
-  --text-shimmer-highlight: oklch(1 0 0);
+  --text-shimmer-base: oklch(0.538 0 70);
+  --text-shimmer-highlight: oklch(0.946 0 70);
 
   --border: oklch(0.235 0 0); /* #1E1E1E — component outline */
   --border-strong: oklch(0.285 0 0); /* #2A2A2A */

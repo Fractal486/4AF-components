@@ -78,16 +78,16 @@ export interface SliderProps
 // the thumb overhangs.
 const DIMS = {
   circle: {
-    md: { control: "h-5", rail: "inset-0", thumb: "size-5 rounded-full", thumbPx: 20, tickInset: "inset-x-2.5" },
-    sm: { control: "h-4", rail: "inset-0", thumb: "size-4 rounded-full", thumbPx: 16, tickInset: "inset-x-2" },
+    md: { control: "h-5", rail: "inset-0", thumb: "size-5 rounded-full", thumbPx: 20, tickInset: "inset-x-2.5", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    sm: { control: "h-4", rail: "inset-0", thumb: "size-4 rounded-full", thumbPx: 16, tickInset: "inset-x-2", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
   },
   knob: {
-    md: { control: "h-5", rail: "inset-x-0 top-1/2 h-2.5 -translate-y-1/2", thumb: "size-5 rounded-full", thumbPx: 20, tickInset: "inset-x-2.5" },
-    sm: { control: "h-4", rail: "inset-x-0 top-1/2 h-2 -translate-y-1/2", thumb: "size-4 rounded-full", thumbPx: 16, tickInset: "inset-x-2" },
+    md: { control: "h-5", rail: "inset-x-0 top-1/2 h-2.5 -translate-y-1/2", thumb: "size-5 rounded-full", thumbPx: 20, tickInset: "inset-x-2.5", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    sm: { control: "h-4", rail: "inset-x-0 top-1/2 h-2 -translate-y-1/2", thumb: "size-4 rounded-full", thumbPx: 16, tickInset: "inset-x-2", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
   },
   bar: {
-    md: { control: "h-10", rail: "inset-0", thumb: "h-5 w-1.5 rounded-sm", thumbPx: 6, tickInset: "inset-x-[3px]" },
-    sm: { control: "h-8", rail: "inset-0", thumb: "h-4 w-1.5 rounded-sm", thumbPx: 6, tickInset: "inset-x-[3px]" },
+    md: { control: "h-10", rail: "inset-0", thumb: "h-5 w-1.5 rounded-sm", thumbPx: 6, tickInset: "inset-x-[3px]", tick: "h-2 rounded-none", tickCenterX: "", tickHairline: true },
+    sm: { control: "h-8", rail: "inset-0", thumb: "h-4 w-1.5 rounded-sm", thumbPx: 6, tickInset: "inset-x-[3px]", tick: "h-1.5 rounded-none", tickCenterX: "", tickHairline: true },
   },
 } as const;
 
@@ -118,6 +118,7 @@ export function Slider({
   const [internal, setInternal] = useState(defaultValue);
   const [dragging, setDragging] = useState(false);
   const controlRef = useRef<HTMLDivElement>(null);
+  const [pixelRatio, setPixelRatio] = useState(1);
   const [controlWidth, setControlWidth] = useState(0);
 
   const controlled = value !== undefined;
@@ -144,7 +145,12 @@ export function Slider({
   useLayoutEffect(() => {
     const control = controlRef.current;
     if (!control) return;
-    const measure = () => setControlWidth(getSliderControlWidth(control));
+    const measure = () => {
+      setControlWidth(getSliderControlWidth(control));
+      // Captured with the width because ticks are snapped to the *device* pixel grid, and
+      // that ratio changes when the window moves to a monitor with different scaling.
+      setPixelRatio(window.devicePixelRatio || 1);
+    };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(control);
@@ -250,9 +256,13 @@ export function Slider({
             style={{ clipPath: fillClip }}
           />
 
-          {/* Ticks inset by exactly half the thumb width, so each dot lands where the
-              (edge-aligned) thumb's centre lands at that value — otherwise the dots and
-              the thumb drift apart toward the ends. */}
+          {/* Ticks inset by exactly half the thumb width, so each one lands where the
+              (edge-aligned) thumb's centre lands at that value — otherwise the ticks and
+              the thumb drift apart toward the ends.
+
+              The shape follows the thumb: round thumbs get dots, and `bar` — whose thumb
+              is a thin vertical handle — gets thin vertical lines, so the marks read as
+              the same family of object as the thing sliding over them. */}
           <div
             aria-hidden
             className={cn(
@@ -260,13 +270,42 @@ export function Slider({
               dims.tickInset,
             )}
           >
-            {ticks.map((tp, i) => (
-              <span
-                key={i}
-                className="absolute top-1/2 size-1 -translate-1/2 rounded-full bg-foreground/25"
-                style={{ left: `${isRtl ? 100 - tp : tp}%` }}
-              />
-            ))}
+            {ticks.map((tp, i) => {
+              const percent = isRtl ? 100 - tp : tp;
+              // Snapped to whole pixels once the control has been measured. A hairline
+              // placed at a percentage lands on a fractional device pixel and the browser
+              // spreads it across two, so a run of identical ticks renders as a mix of
+              // crisp 1px lines and blurred 2px ones. The width is already measured here
+              // for the thumb, so rounding costs nothing. Only the *centring* translate
+              // stays, and only on the axis the tick has no odd half-pixel on.
+              const trackPx = Math.max(controlWidth - dims.thumbPx, 0);
+              // Snapped to the device pixel grid, not the CSS one. On a display scaled to
+              // 125% or 150% — the common Windows case — a whole CSS pixel still lands
+              // mid-device-pixel, so the browser spreads a hairline across two and the run
+              // of ticks comes out as a mix of crisp and blurred. Rounding in device
+              // pixels puts every tick on the same boundary, so they all render alike.
+              const snap = (px: number) => Math.round(px * pixelRatio) / pixelRatio;
+              const left =
+                trackPx > 0 ? `${snap((percent / 100) * trackPx)}px` : `${percent}%`;
+              // The width has to sit on the grid too. `1px` is 1.25 device pixels at 125%
+              // scaling, so even a perfectly placed line bleeds a quarter of a pixel into
+              // its neighbour and reads as thicker than one that doesn't. Rounding to a
+              // whole number of device pixels — never fewer than one — gives every tick
+              // the same true hairline.
+              const hairline = `${Math.max(1, Math.round(pixelRatio)) / pixelRatio}px`;
+
+              return (
+                <span
+                  key={i}
+                  className={cn(
+                    "absolute top-1/2 -translate-y-1/2 bg-foreground/25",
+                    dims.tick,
+                    dims.tickCenterX,
+                  )}
+                  style={{ left, ...(dims.tickHairline && { width: hairline }) }}
+                />
+              );
+            })}
           </div>
         </div>
 

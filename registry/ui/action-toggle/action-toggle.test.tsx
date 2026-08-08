@@ -109,4 +109,34 @@ describe("ActionToggle", () => {
     expect(onPressedChange).toHaveBeenCalledWith(true);
     expect(toggle).toHaveAttribute("aria-pressed", "false");
   });
+
+  it("leaves a fillIcon glyph to its fill rather than morphing it", async () => {
+    render(
+      // `pendingDelay` outlives the action, so the control never shows the loader and the
+      // only glyph change on offer is unpressed → pressed.
+      <ActionToggle
+        action={() => Promise.resolve()}
+        pendingDelay={1000}
+        fillIcon
+        icon={<span>@</span>}
+      />,
+    );
+
+    const toggle = screen.getByRole("button");
+    const morph = toggle.querySelector('[data-slot="morph"]')!;
+    const live = () =>
+      [...morph.children].filter((child) => child.getAttribute("aria-hidden") !== "true");
+    const before = live()[0];
+
+    await act(async () => {
+      fireEvent.click(toggle);
+    });
+
+    // With no `icons.pressed` there is nothing to morph *to* — the glyph is the same shape
+    // at a different weight, which is what `fillIcon` is for. Swapping it as well would put
+    // a morph and a fill transition on the same element, fighting over it.
+    expect(toggle).toHaveAttribute("aria-pressed", "true");
+    expect(live()).toHaveLength(1);
+    expect(live()[0]).toBe(before);
+  });
 });

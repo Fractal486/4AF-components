@@ -179,7 +179,7 @@ transitively rather than requested directly through `pnpm 4af install`.
 
 ## Full installable UI registry
 
-The following 39 names are accepted by `pnpm 4af install <name>`.
+The following 41 names are accepted by `pnpm 4af install <name>`.
 
 ### Actions
 
@@ -229,6 +229,7 @@ option remains available for a single action.
 | Install name | Main API | What it provides |
 | --- | --- | --- |
 | `tabs` | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | Base UI tabs with a travelling Motion indicator; segment, pill, and underline appearances, with optional solid treatment. |
+| `collapsible` | `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` | Base UI disclosure row in `plain` or `card` appearance, with a rotating chevron at either end (or none). The panel slides its height so rows underneath travel rather than jump — the library's one deliberate exception to compositor-only motion, since no transform can move the following rows — while the content itself dissolves in out of a blur. |
 | `table-of-contents` | `TableOfContents` | Heading navigation that observes visible headings, keeps the last passed section active through long prose, smooth-scrolls, and slides a marker to the active range. |
 | `separator` | `Separator` | Accessible horizontal or vertical divider built on Base UI Separator. |
 | `command-palette` | `CommandPalette`, custom panel/list/row/action parts, `useCommandSearch`, and `useCommandPanelHighlight` | Keyboard-first command/search dialog with fuzzy ranking, groups, nested and custom panels, async/server-driven and paginated search, header text fields, per-panel header actions, badges, checkboxes, keybinds, destructive actions, and keyboard navigation. |
@@ -244,6 +245,7 @@ option remains available for a single action.
 | `dialog` | `Dialog` and content/title/footer parts; `DialogSteps`, `DialogStep` | Centred modal with enter/exit motion and optional validated multi-step flow. |
 | `alert-dialog` | `AlertDialog` and content, action, cancel, title, and description parts | Decision-forcing modal that cannot be dismissed by clicking away. |
 | `popover` | `Popover` and trigger, close, content, header, title, and description parts | Interactive anchored panel with Base UI positioning and optional modal behaviour. |
+| `selection-toolbar` | `SelectionToolbar`; `SelectionToolbarButton`, `SelectionToolbarActionButton`, `SelectionToolbarToggle`, `SelectionToolbarActionToggle`, `SelectionToolbarToggleGroup`, `SelectionToolbarSeparator`; `useSelectionToolbar` | A bar of ghost-button actions over selected text, in the tooltip's material. Base UI Popover anchored to the range itself — so it follows the text as the page scrolls — composed with Base UI Toolbar for roving-tabindex items. Item kinds match the menu's rows: plain, async with pending/success/error in place, toggle, deferred toggle, and an exclusive group. It swallows `mousedown` so the press can't collapse the selection, and hands the captured text and range to every action. |
 | `hover-card` | `HoverCard`, `HoverCardTrigger`, `HoverCardContent`, `HoverCardSkeleton` | Rich preview panel shown from hover or keyboard focus, with a built-in loading placeholder and custom loading content support. |
 | `dropdown-menu` | Root/trigger/content/item, checkbox/radio/submenu parts, shortcut and nested-select parts | Base UI menu with keyboard navigation, safe submenu pointer travel, Kbd-style shortcuts, destructive rows, original submenus, and searchable single/multi select subpanels. |
 
@@ -336,6 +338,20 @@ Every waiting state in the library is the ASCII loader: `Button`'s `loading`,
 `ActionButton` and `ActionToggle` while pending, the menu's action row, the command
 palette, and Alert's `loading` variant. `Button` still exports the SVG `Spinner` it used
 to draw, but it is deprecated and nothing renders it.
+
+The glyph and the label morph in **separate boxes**, in `ActionButton`, `ActionToggle` and
+the menu's action row alike. The loader is a text glyph and about half the advance width of
+an icon, so morphing the two together centres the narrower state and drags the label
+sideways on every status change.
+
+That split has a consequence worth knowing at the call site: a label with no per-state
+override doesn't animate at all. Pass `labels={{ pending: "Saving" }}` when the word should
+change, and leave it out when only the glyph should move — a word that never changed should
+not be scaled and blurred through a swap it had no part in.
+
+`ActionToggle` follows the same rule for its glyph: with `fillIcon` and no `icons.pressed`
+it doesn't swap the glyph on press, because there's nothing to morph *to* and a `fill`
+transition plus a morph on one element fight over it.
 
 ### A toggle whose state has to be earned
 
@@ -624,6 +640,47 @@ receives the status as a second argument for you to render it yourself.
 Both deferred rows keep their status announcement *outside* the row element. A menu item's
 accessible name is built from its contents, so an `sr-only` live region inside would rename
 the row to "Mute thread Working" for as long as it ran.
+
+### Selection Toolbar item kinds
+
+The bar's items mirror the menu's rows, minus the nested panels, and each is the library
+component that already owns that behaviour rather than a toolbar-local reimplementation.
+
+| Item | Built on | Dismisses the bar |
+| --- | --- | --- |
+| `SelectionToolbarButton` | `Button` | Yes. `keepOpen` opts out. |
+| `SelectionToolbarActionButton` | `ActionButton` | No. `closeOnSuccess` opts in. |
+| `SelectionToolbarToggle` | `Toggle` | Never |
+| `SelectionToolbarActionToggle` | `ActionToggle` | Never |
+| `SelectionToolbarToggleGroup` | Base UI `ToggleGroup` in `Toolbar.Group` | — |
+| `SelectionToolbarSeparator` | Base UI `Toolbar.Separator` | — |
+
+The dismissal rules differ on purpose. An async action draws its outcome *in the bar*, so
+dismissing on press would put a check on a surface that has already gone — the same reason
+`DropdownMenuActionItem` defaults to `closeOnClick={false}`. A toggle *is* something rather
+than does something: you press it to see the state change, and usually press its neighbour
+next. Only the plain button completes and leaves.
+
+Every action is handed the selection as it was when the bar opened — `onAction(text, range)`,
+`action(text, range)`, `onAction(pressed, text, range)` — because by the time a click handler
+runs the live selection may belong to something else. Don't call `window.getSelection()` from
+an action.
+
+`variant="destructive"` is quieted to red ink on the neutral hover rather than the solid red
+fill, the same call the menu makes for its destructive row: a 24px slab of red inside a 32px
+bar is louder than the bar it sits in.
+
+For a bar item whose state depends on the selection — a toggle that should read as pressed
+when the text is already highlighted — write a small component and call `useSelectionToolbar()`
+inside it. The element is created outside the bar but renders inside it, so the hook reads the
+right selection:
+
+```tsx
+function HighlightToggle() {
+  const { range } = useSelectionToolbar();
+  return <SelectionToolbarToggle pressed={isHighlighted(range)} … />;
+}
+```
 
 ### Sidebar composition and layout
 

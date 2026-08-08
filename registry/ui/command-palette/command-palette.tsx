@@ -723,6 +723,7 @@ export function CommandPalette({
     [isControlled, onOpenChange],
   );
 
+  const [frozenRow, setFrozenRow] = useState<unknown>(undefined);
   // A controlled owner can reject a close request by leaving `open` true. Reset only after
   // the rendered state actually closes, otherwise an Escape key would erase its query/page
   // — which is why this keys off `isOpen` rather than the close handler. Adjusted during
@@ -733,6 +734,9 @@ export function CommandPalette({
     if (!isOpen) {
       setPages([]);
       setQuery("");
+      // A frozen row is released by the next real highlight; if the palette closes before
+      // one arrives, this is what stops it outliving the thing it was frozen on.
+      setFrozenRow(undefined);
     }
   }
 
@@ -819,17 +823,25 @@ export function CommandPalette({
   // it. Base UI keeps driving the keyboard highlight, so arrows and Enter inside the menu
   // are unaffected — only the pointer stops moving the row behind it.
   const [actionsOpen, setActionsOpen] = useState(false);
-  const [frozenRow, setFrozenRow] = useState<unknown>(undefined);
   // Only ever the last *real* highlight. Opening the menu blurs the list, which reports
   // `undefined` — so reading the live value at that moment would always come up empty.
   const lastHighlightedRef = useRef<unknown>(undefined);
   const panelHighlightRef = useRef<PanelHighlightHandler | null>(null);
+  // Closing does *not* release the frozen row. Base UI restores its own highlight a frame
+  // or two after focus returns to the list, and dropping ours the instant the menu closes
+  // leaves that gap unlit — the highlight blinks off and back on the same row. The handover
+  // happens below instead, when the real highlight actually arrives.
   const reportActionsOpen = useCallback((open: boolean) => {
     setActionsOpen(open);
-    setFrozenRow(open ? lastHighlightedRef.current : undefined);
+    if (open) setFrozenRow(lastHighlightedRef.current);
   }, []);
+
   const rememberHighlight = useCallback((value: unknown) => {
-    if (value !== undefined) lastHighlightedRef.current = value;
+    if (value === undefined) return;
+    lastHighlightedRef.current = value;
+    // Base UI has the highlight again, so ours can stand down. The two are styled
+    // identically, so overlapping for a frame is invisible where a gap is not.
+    setFrozenRow(undefined);
   }, []);
   const notifyItemHighlighted = useCallback(
     (value: unknown) => {

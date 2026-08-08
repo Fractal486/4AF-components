@@ -109,8 +109,27 @@ export function ActionToggle({
 
   // `success` deliberately shows the resting content: the control having *become*
   // Following is the confirmation, and a tick on top of that would be a second one.
-  const key = status === "pending" || status === "error" ? status : current ? "on" : "off";
-  const restingLabel = current ? (labels?.pressed ?? children) : children;
+  //
+  // Glyph and label get their own keys, and each collapses to the resting one when the
+  // state it's moving to would draw the same thing. A press with no `labels.pressed` then
+  // leaves the label alone instead of scaling and blurring an unchanged word — and with
+  // `fillIcon` and no `icons.pressed`, the glyph isn't swapped at all, so the fill
+  // transition is left to do the job it's there for rather than fighting a morph.
+  const glyphKey =
+    status === "pending" || status === "error"
+      ? status
+      : current && icons?.pressed != null
+        ? "on"
+        : "off";
+  const labelKey =
+    status === "pending" && labels?.pending != null
+      ? "pending"
+      : status === "error" && labels?.error != null
+        ? "error"
+        : current && labels?.pressed != null
+          ? "on"
+          : "off";
+  const labelled = Boolean(children) || Boolean(labels?.pressed);
 
   return (
     <Toggle
@@ -123,27 +142,37 @@ export function ActionToggle({
       size={size}
       {...props}
     >
-      {/* Every state at once, so the control reserves the width of the widest and holds
-          still. "Follow" and "Following" are different widths, and a button that resizes
+      {/* One box, so the button's own gap applies between glyph and label rather than a
+          second copy of it — and so the padding logic still sees a single child.
+
+          Glyph and label morph separately: the loader is a text glyph, about half the
+          advance width of a 16px icon, so morphing them together centres the narrower
+          state and drags the label sideways on every status change. Each Morph is handed
+          every state at once, so the control reserves the width of the widest and holds
+          still — "Follow" and "Following" are different widths, and a button that resizes
           as it lands moves out from under the cursor that's still resting on it. */}
-      <Morph
-        activeKey={key}
-        className="gap-2"
-        items={{
-          off: <Content icon={icon}>{children}</Content>,
-          on: <Content icon={icons?.pressed ?? icon}>{labels?.pressed ?? children}</Content>,
-          pending: (
-            <Content icon={icons?.pending ?? <AsciiLoader />}>
-              {labels?.pending ?? restingLabel}
-            </Content>
-          ),
-          error: (
-            <Content icon={icons?.error ?? <TriangleAlert />}>
-              {labels?.error ?? restingLabel}
-            </Content>
-          ),
-        }}
-      />
+      <span className="inline-flex items-center gap-[inherit]">
+        <Morph
+          activeKey={glyphKey}
+          items={{
+            off: icon,
+            on: icons?.pressed ?? icon,
+            pending: icons?.pending ?? <AsciiLoader />,
+            error: icons?.error ?? <TriangleAlert />,
+          }}
+        />
+        {labelled && (
+          <Morph
+            activeKey={labelKey}
+            items={{
+              off: children,
+              on: labels?.pressed,
+              pending: labels?.pending,
+              error: labels?.error,
+            }}
+          />
+        )}
+      </span>
 
       {/* `aria-pressed` announces the landing on its own. What it can't say is that the
           control is working, or that the press didn't take. */}
@@ -152,14 +181,5 @@ export function ActionToggle({
         {status === "error" && (announce?.error ?? "Something went wrong")}
       </span>
     </Toggle>
-  );
-}
-
-function Content({ icon, children }: { icon?: ReactNode; children?: ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-2">
-      {icon}
-      {children}
-    </span>
   );
 }
