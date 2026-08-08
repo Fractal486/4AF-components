@@ -230,8 +230,8 @@ option remains available for a single action.
 | --- | --- | --- |
 | `tabs` | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | Base UI tabs with a travelling Motion indicator; segment, pill, and underline appearances, with optional solid treatment. |
 | `collapsible` | `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` | Base UI disclosure row in `plain` or `card` appearance, with a rotating chevron at either end (or none). The panel slides its height so rows underneath travel rather than jump — the library's one deliberate exception to compositor-only motion, since no transform can move the following rows — while the content itself dissolves in out of a blur. |
-| `table-of-contents` | `TableOfContents` | Heading navigation that observes visible headings, keeps the last passed section active through long prose, smooth-scrolls, and uses a `span` or `single` active marker. |
-| `table-of-contents-lines` | `TableOfContentsLines` | Line-based heading navigation with a longer header rule, two shorter content rules, level indentation, and a smooth expanding hover treatment. |
+| `table-of-contents` | `TableOfContents` | Heading navigation with a dashed inactive rail, smooth scrolling, long-prose fallback, and `span` or `single` active marker variants. |
+| `table-of-contents-lines` | `TableOfContentsLines` | Dense line-based heading navigation with one active heading, a longer header rule, two equal shorter content rules, level indentation, `comfortable`/`compact` density, and an expanding hover treatment. |
 | `separator` | `Separator` | Accessible horizontal or vertical divider built on Base UI Separator. |
 | `command-palette` | `CommandPalette`, custom panel/list/row/action parts, `useCommandSearch`, and `useCommandPanelHighlight` | Keyboard-first command/search dialog with fuzzy ranking, groups, nested and custom panels, async/server-driven and paginated search, header text fields, per-panel header actions, badges, checkboxes, keybinds, destructive actions, and keyboard navigation. |
 | `sidebar` | `SidebarProvider`, `Sidebar`, `SidebarPanel`, `SidebarHeaderButton`, menu/group/submenu/action/badge/skeleton parts | Responsive application sidebar with sidebar, floating, inset, split, split-floating, and split-inset layouts; controlled collapse; sections; nested rows; a canonical full-width primary header action; badges; and loading skeletons. |
@@ -720,7 +720,8 @@ The inspector is a visual review site, not the registry itself.
 
 Every installable UI item except `sidebar-layout` has a dedicated inspector entry.
 `sidebar-layout` is intentionally represented within the Sidebar demo because it is a
-page-frame companion, not a standalone primitive. Shared foundation items such as the theme,
+page-frame companion, not a standalone primitive. The two Table of Contents entries are stacked
+on one page but rendered in separate demo canvases. Shared foundation items such as the theme,
 `cn`, `slot`, and motion presets are installed as dependencies and intentionally do not appear
 as standalone demos.
 
