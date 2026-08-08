@@ -339,6 +339,20 @@ Every waiting state in the library is the ASCII loader: `Button`'s `loading`,
 palette, and Alert's `loading` variant. `Button` still exports the SVG `Spinner` it used
 to draw, but it is deprecated and nothing renders it.
 
+The glyph and the label morph in **separate boxes**, in `ActionButton`, `ActionToggle` and
+the menu's action row alike. The loader is a text glyph and about half the advance width of
+an icon, so morphing the two together centres the narrower state and drags the label
+sideways on every status change.
+
+That split has a consequence worth knowing at the call site: a label with no per-state
+override doesn't animate at all. Pass `labels={{ pending: "Saving" }}` when the word should
+change, and leave it out when only the glyph should move — a word that never changed should
+not be scaled and blurred through a swap it had no part in.
+
+`ActionToggle` follows the same rule for its glyph: with `fillIcon` and no `icons.pressed`
+it doesn't swap the glyph on press, because there's nothing to morph *to* and a `fill`
+transition plus a morph on one element fight over it.
+
 ### A toggle whose state has to be earned
 
 `ActionButton` always reverts — its model is idle → outcome → idle, and there is no opt-out
@@ -626,6 +640,47 @@ receives the status as a second argument for you to render it yourself.
 Both deferred rows keep their status announcement *outside* the row element. A menu item's
 accessible name is built from its contents, so an `sr-only` live region inside would rename
 the row to "Mute thread Working" for as long as it ran.
+
+### Selection Toolbar item kinds
+
+The bar's items mirror the menu's rows, minus the nested panels, and each is the library
+component that already owns that behaviour rather than a toolbar-local reimplementation.
+
+| Item | Built on | Dismisses the bar |
+| --- | --- | --- |
+| `SelectionToolbarButton` | `Button` | Yes. `keepOpen` opts out. |
+| `SelectionToolbarActionButton` | `ActionButton` | No. `closeOnSuccess` opts in. |
+| `SelectionToolbarToggle` | `Toggle` | Never |
+| `SelectionToolbarActionToggle` | `ActionToggle` | Never |
+| `SelectionToolbarToggleGroup` | Base UI `ToggleGroup` in `Toolbar.Group` | — |
+| `SelectionToolbarSeparator` | Base UI `Toolbar.Separator` | — |
+
+The dismissal rules differ on purpose. An async action draws its outcome *in the bar*, so
+dismissing on press would put a check on a surface that has already gone — the same reason
+`DropdownMenuActionItem` defaults to `closeOnClick={false}`. A toggle *is* something rather
+than does something: you press it to see the state change, and usually press its neighbour
+next. Only the plain button completes and leaves.
+
+Every action is handed the selection as it was when the bar opened — `onAction(text, range)`,
+`action(text, range)`, `onAction(pressed, text, range)` — because by the time a click handler
+runs the live selection may belong to something else. Don't call `window.getSelection()` from
+an action.
+
+`variant="destructive"` is quieted to red ink on the neutral hover rather than the solid red
+fill, the same call the menu makes for its destructive row: a 24px slab of red inside a 32px
+bar is louder than the bar it sits in.
+
+For a bar item whose state depends on the selection — a toggle that should read as pressed
+when the text is already highlighted — write a small component and call `useSelectionToolbar()`
+inside it. The element is created outside the bar but renders inside it, so the hook reads the
+right selection:
+
+```tsx
+function HighlightToggle() {
+  const { range } = useSelectionToolbar();
+  return <SelectionToolbarToggle pressed={isHighlighted(range)} … />;
+}
+```
 
 ### Sidebar composition and layout
 

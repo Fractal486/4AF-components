@@ -145,6 +145,12 @@ not use it.
 almost immediately. `ActionToggle` is not optimistic: the label holds until the action
 settles and `onPressedChange` fires only on success.
 
+Glyph and label morph in separate boxes (the loader is a text glyph, far narrower than an
+icon; morphing them together slides the label). So a label with no per-state override does
+not animate — pass `labels={{ pending: … }}` only when the word should change. `ActionToggle`
+with `fillIcon` and no `icons.pressed` does not swap the glyph either; the fill is the
+animation. Do not wrap the label and icon in one `Morph` when building something similar.
+
 ### Press scaling
 
 `Button` and `Toggle` take `pressScale={false}` — for anchored triggers whose popup would
@@ -240,6 +246,26 @@ text colour.
 | Flips immediately | `DropdownMenuCheckboxItem`, no `action` |
 
 Do not hand-roll either with `useState` and `setTimeout`; both run on `useAction`.
+
+### Selection Toolbar
+
+Item kinds mirror the menu's rows. Use the part, don't rebuild it on `SelectionToolbarButton`.
+
+| Item | Wraps | Dismisses the bar |
+| --- | --- | --- |
+| `SelectionToolbarButton` | `Button` | Yes (`keepOpen` opts out) |
+| `SelectionToolbarActionButton` | `ActionButton` | No (`closeOnSuccess` opts in) |
+| `SelectionToolbarToggle` | `Toggle` | Never |
+| `SelectionToolbarActionToggle` | `ActionToggle` | Never |
+| `SelectionToolbarToggleGroup` | Base UI `ToggleGroup` | — |
+
+Async and toggle items keep the bar up because that is where their state is drawn. Every
+action receives the captured `(text, range)` — never call `window.getSelection()` inside one.
+`variant="destructive"` is quieted to red ink automatically; do not add a red fill.
+
+For an item whose state depends on the selection, write a small component and call
+`useSelectionToolbar()` inside it — it renders within the bar even though it is created
+outside, so the hook reads the right selection.
 
 ### Sidebar
 
