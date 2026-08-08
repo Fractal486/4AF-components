@@ -32,6 +32,7 @@ import { sidebarEntry } from "./entries/sidebar";
 import { sliderEntry } from "./entries/slider";
 import { switchEntry } from "./entries/switch";
 import { tableOfContentsEntry } from "./entries/table-of-contents";
+import { tableOfContentsLinesEntry } from "./entries/table-of-contents-lines";
 import { textShimmerEntry } from "./entries/text-shimmer";
 import { tabsEntry } from "./entries/tabs";
 import { textareaEntry } from "./entries/textarea";
@@ -181,7 +182,8 @@ const groupList: Group[] = [
     slug: "table-of-contents",
     name: "Table of Contents",
     summary: "Headings as a nav that tracks the reader — the active entry lit, a rail marker sliding to it.",
-    entries: [tableOfContentsEntry],
+    entries: [tableOfContentsEntry, tableOfContentsLinesEntry],
+    stacked: true,
   },
   {
     slug: "select",

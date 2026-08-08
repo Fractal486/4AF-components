@@ -10,7 +10,7 @@ export const tableOfContentsEntry = defineEntry({
     variant: select(VARIANTS, "span"),
   },
   render({ variant }) {
-    // Scroll the article on the left — the active entry and its rail marker track along.
+    // Scroll the article on the left — the active entry and rail marker track along.
     return <TocDemo variant={variant} />;
   },
 });

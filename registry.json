@@ -759,6 +759,30 @@
       ]
     },
     {
+      "name": "table-of-contents-lines",
+      "type": "registry:ui",
+      "description": "A line-based table of contents where each heading has a longer rule and two shorter content rules, with a highlighted, expanding hover treatment.",
+      "dependencies": [
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/table-of-contents-lines/table-of-contents-lines.tsx",
+          "type": "registry:ui",
+          "target": "@ui/table-of-contents-lines.tsx"
+        },
+        {
+          "path": "registry/ui/table-of-contents-lines/table-of-contents-lines.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/table-of-contents-lines.variants.ts"
+        }
+      ]
+    },
+    {
       "name": "empty",
       "type": "registry:ui",
       "description": "An empty state — a centred column of media, title, description and an action. Composable parts; borderless by default with an optional dashed placeholder outline.",

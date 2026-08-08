@@ -1,11 +1,12 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, type RefObject } from "react";
 import {
   TableOfContents,
   type TableOfContentsProps,
   type TocItem,
 } from "@/registry/ui/table-of-contents/table-of-contents";
+import { TableOfContentsLines } from "@/registry/ui/table-of-contents-lines/table-of-contents-lines";
 
 const SECTIONS: (TocItem & { body: string })[] = [
   {
@@ -52,32 +53,64 @@ const SECTIONS: (TocItem & { body: string })[] = [
   },
 ];
 
+function TocArticle({
+  sections,
+  scrollRef,
+}: {
+  sections: (TocItem & { body: string })[];
+  scrollRef: RefObject<HTMLDivElement | null>;
+}) {
+  return (
+    <div
+      ref={scrollRef}
+      className="h-80 flex-1 overflow-y-auto pr-4 [scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent]"
+    >
+      {sections.map((section) => (
+        <section key={section.id} className="pb-8">
+          <h3
+            id={section.id}
+            className="mb-2 scroll-mt-2 text-base font-medium text-foreground"
+          >
+            {section.title}
+          </h3>
+          <p className="text-sm text-pretty text-muted-foreground">{section.body}</p>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+const lineSections = () =>
+  SECTIONS.map((section) => ({ ...section, id: `toc-lines-${section.id}` }));
+
 export function TocDemo({ variant }: { variant?: TableOfContentsProps["variant"] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   return (
     <div className="flex w-full max-w-2xl gap-8">
-      <div
-        ref={scrollRef}
-        className="h-80 flex-1 overflow-y-auto pr-4 [scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent]"
-      >
-        {SECTIONS.map((section) => (
-          <section key={section.id} className="pb-8">
-            <h3
-              id={section.id}
-              className="mb-2 scroll-mt-2 text-base font-medium text-foreground"
-            >
-              {section.title}
-            </h3>
-            <p className="text-sm text-pretty text-muted-foreground">{section.body}</p>
-          </section>
-        ))}
-      </div>
-
+      <TocArticle sections={SECTIONS} scrollRef={scrollRef} />
       <TableOfContents
+        aria-label="Table of contents rail"
         items={SECTIONS.map(({ id, title, level }) => ({ id, title, level }))}
         rootRef={scrollRef}
         variant={variant}
+        className="sticky top-0 w-44 shrink-0 self-start"
+      />
+    </div>
+  );
+}
+
+export function TocLinesDemo() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const sections = lineSections();
+
+  return (
+    <div className="flex w-full max-w-2xl gap-8">
+      <TocArticle sections={sections} scrollRef={scrollRef} />
+      <TableOfContentsLines
+        aria-label="Table of contents lines"
+        items={sections.map(({ id, title, level }) => ({ id, title, level }))}
+        rootRef={scrollRef}
         className="sticky top-0 w-44 shrink-0 self-start"
       />
     </div>

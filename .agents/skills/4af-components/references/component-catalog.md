@@ -41,7 +41,7 @@ These entries install transitively:
 
 ## Installable catalog
 
-The catalog currently contains 41 installable UI items. Verify the count and names with
+The catalog currently contains 42 installable UI items. Verify the count and names with
 `pnpm 4af list` before making registry-wide claims.
 
 ### Actions
@@ -91,6 +91,7 @@ The catalog currently contains 41 installable UI items. Verify the count and nam
 | `tabs` | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | Segment, pill, or underline tabs with a traveling indicator. |
 | `collapsible` | `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` | Disclosure rows (`plain`/`card`) with a rotating chevron, a height slide so following rows travel rather than jump, and a blur-fade on the content. |
 | `table-of-contents` | `TableOfContents` | Observed heading navigation with smooth scrolling and `span` or `single` active marker variants. |
+| `table-of-contents-lines` | `TableOfContentsLines` | Line-based heading navigation with a longer header rule, two shorter content rules, level indentation, and an expanding hover treatment. |
 | `command-palette` | `CommandPalette`, panel/list/row/action parts, and `useCommandSearch` | Fuzzy command search, groups, nested/custom panels, async/server-driven search, configurable headers, keybinds, selection, and actions. |
 | `sidebar` | Provider, panel, group/menu/submenu/action/badge/skeleton parts | Default/floating/inset and split sidebars, collapse, sections, nested rows, actions, badges, skeletons. |
 | `sidebar-layout` | `SidebarLayout` | Optional page shell around Sidebar with inset surface, title, collapse control, and actions. |
@@ -287,6 +288,7 @@ title, header actions.
 ## Inspector and registry parity
 
 The inspector is a review site, not the installable catalog. `sidebar-layout` appears
-inside the Sidebar demo, and the "Select · Sort" entry demonstrates `SelectSortTrigger`
+inside the Sidebar demo, and `table-of-contents-lines` has its own stacked demo section on the
+Table of Contents page. The "Select · Sort" entry demonstrates `SelectSortTrigger`
 (install `select`). Demo helpers, sample data, navigation, settings controls, and page
 wrappers are not registry components.
