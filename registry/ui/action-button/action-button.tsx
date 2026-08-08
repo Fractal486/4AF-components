@@ -10,7 +10,7 @@ import { Morph } from "@/registry/ui/morph/morph";
 export type { ActionStatus };
 
 export interface ActionButtonProps
-  extends Omit<ButtonProps, "onClick" | "loading" | "children" | "asChild"> {
+  extends Omit<ButtonProps, "loading" | "children" | "asChild"> {
   /** The work. Return a promise and the button waits for it. */
   action: () => void | Promise<unknown>;
   /** The resting label. */
@@ -58,6 +58,7 @@ export function ActionButton({
   disabled,
   variant,
   size,
+  onClick,
   onSuccess,
   onError,
   ...props
@@ -70,41 +71,69 @@ export function ActionButton({
     onError,
   });
 
-  const label = (override: ReactNode | undefined) => override ?? children;
+  // Which label is actually showing, and — the part that matters — whether it differs from
+  // the resting one at all. A status with no override of its own keeps the idle key, so the
+  // label doesn't animate a swap for a change that never touched it.
+  const override = status === "idle" ? undefined : labels?.[status];
+  const labelKey = override == null ? "idle" : status;
+  const labelled =
+    Boolean(children) ||
+    Boolean(labels && (labels.pending ?? labels.success ?? labels.error));
 
   return (
     <>
       <Button
         variant={variant}
         size={size}
-        onClick={run}
+        // Composed rather than owned outright, and taken off the spread below so nothing
+        // can quietly replace it. A Base UI part that renders this button — a toolbar item,
+        // a menu trigger — hands down its own click handling through the same prop, and
+        // letting that land last meant the action simply never ran.
+        onClick={(event) => {
+          onClick?.(event);
+          run();
+        }}
         disabled={disabled || status === "pending"}
         aria-busy={status === "pending" || undefined}
         data-status={status}
         {...props}
       >
-        {/* Morph is handed every state at once, so the button reserves the width of the
-            widest and never resizes as it moves through them. A button that changes
-            width mid-action moves the target out from under the cursor — and here the
-            cursor is still on it, waiting. */}
-        <Morph
-          activeKey={status}
-          className="gap-2"
-          items={{
-            idle: (
-              <Content icon={icon}>{children}</Content>
-            ),
-            pending: (
-              <Content icon={<AsciiLoader />}>{label(labels?.pending)}</Content>
-            ),
-            success: (
-              <Content icon={<Check />}>{label(labels?.success)}</Content>
-            ),
-            error: (
-              <Content icon={<TriangleAlert />}>{label(labels?.error)}</Content>
-            ),
-          }}
-        />
+        {/* One box, so `iconEdges` still sees a single child and the padding doesn't move
+            — and `gap-[inherit]` so the space between glyph and label is the button's own,
+            per size, rather than a second copy of that number. */}
+        <span className="inline-flex items-center gap-[inherit]">
+          {/* The glyph morphs in its own box, separately from the label, and that split is
+              the whole point. The loader is a text glyph — roughly half the advance width
+              of a 16px icon — so morphing the two together centres the narrower state and
+              slides the label sideways every time the status changes. Apart, the glyph
+              swaps inside a box as wide as the widest glyph and the label holds still.
+              It's the same split the menu's action row makes, for the same reason.
+
+              Each Morph is handed every state at once, so the button reserves the width of
+              the widest and never resizes as it moves through them. A button that changes
+              width mid-action moves the target out from under the cursor — and here the
+              cursor is still on it, waiting. */}
+          <Morph
+            activeKey={status}
+            items={{
+              idle: icon,
+              pending: <AsciiLoader />,
+              success: <Check />,
+              error: <TriangleAlert />,
+            }}
+          />
+          {labelled && (
+            <Morph
+              activeKey={labelKey}
+              items={{
+                idle: children,
+                pending: labels?.pending,
+                success: labels?.success,
+                error: labels?.error,
+              }}
+            />
+          )}
+        </span>
       </Button>
 
       {/* Politely, so it waits for a pause rather than interrupting. The pending
@@ -116,14 +145,5 @@ export function ActionButton({
         {status === "error" && (announce?.error ?? "Something went wrong")}
       </span>
     </>
-  );
-}
-
-function Content({ icon, children }: { icon?: ReactNode; children?: ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-2">
-      {icon}
-      {children}
-    </span>
   );
 }

@@ -53,4 +53,32 @@ describe("ActionButton", () => {
     // render and `findByText` resolves before the action has even rejected.
     await waitFor(() => expect(button).toHaveAttribute("data-status", "error"));
   });
+
+  it("morphs the glyph without dragging the label through the swap", () => {
+    render(
+      <ActionButton action={() => new Promise(() => {})} icon={<span>@</span>}>
+        Save
+      </ActionButton>,
+    );
+
+    // Not by name: the stand-in glyph is real text, so it joins the accessible name.
+    const button = screen.getByRole("button");
+    // Two boxes, not one: the loader is a text glyph and about half the advance width of
+    // an icon, so a single Morph would centre the narrower state and slide the label.
+    const morphs = button.querySelectorAll('[data-slot="morph"]');
+    expect(morphs).toHaveLength(2);
+
+    const live = () =>
+      [...morphs[1]!.children].filter((child) => child.getAttribute("aria-hidden") !== "true");
+    const before = live()[0];
+
+    fireEvent.click(button);
+    expect(button).toHaveAttribute("data-status", "pending");
+
+    // No per-state label was given, so nothing about the label changed — and an unchanged
+    // label must not be scaled and blurred through a swap it had no part in. A key change
+    // would leave the outgoing copy on screen beside the incoming one.
+    expect(live()).toHaveLength(1);
+    expect(live()[0]).toBe(before);
+  });
 });

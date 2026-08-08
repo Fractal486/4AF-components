@@ -706,7 +706,7 @@
     {
       "name": "collapsible",
       "type": "registry:ui",
-      "description": "A disclosure row built on Base UI Collapsible: the chevron rotates, the space opens in one frame, and the content fades up out of a blur into it.",
+      "description": "A disclosure row built on Base UI Collapsible: the chevron rotates, the space slides open so the rows below travel rather than jump, and the content fades in out of a blur where it lands.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -938,6 +938,37 @@
           "path": "registry/ui/tooltip/tooltip.tsx",
           "type": "registry:ui",
           "target": "@ui/tooltip.tsx"
+        }
+      ]
+    },
+    {
+      "name": "selection-toolbar",
+      "type": "registry:ui",
+      "description": "A bar of actions over selected text. Base UI Popover anchored to the range itself plus Base UI Toolbar for the row; plain, async, toggle and exclusive-group items. It swallows mousedown so the press can't collapse the selection, and hands the captured text to the action.",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/refs.json",
+        "http://localhost:3000/r/slot.json",
+        "http://localhost:3000/r/button.json",
+        "http://localhost:3000/r/toggle.json",
+        "http://localhost:3000/r/action-button.json",
+        "http://localhost:3000/r/action-toggle.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/selection-toolbar/selection-toolbar.tsx",
+          "type": "registry:ui",
+          "target": "@ui/selection-toolbar.tsx"
+        },
+        {
+          "path": "registry/ui/selection-toolbar/selection-toolbar.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/selection-toolbar.variants.ts"
         }
       ]
     },

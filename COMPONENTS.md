@@ -179,7 +179,7 @@ transitively rather than requested directly through `pnpm 4af install`.
 
 ## Full installable UI registry
 
-The following 39 names are accepted by `pnpm 4af install <name>`.
+The following 41 names are accepted by `pnpm 4af install <name>`.
 
 ### Actions
 
@@ -245,6 +245,7 @@ option remains available for a single action.
 | `dialog` | `Dialog` and content/title/footer parts; `DialogSteps`, `DialogStep` | Centred modal with enter/exit motion and optional validated multi-step flow. |
 | `alert-dialog` | `AlertDialog` and content, action, cancel, title, and description parts | Decision-forcing modal that cannot be dismissed by clicking away. |
 | `popover` | `Popover` and trigger, close, content, header, title, and description parts | Interactive anchored panel with Base UI positioning and optional modal behaviour. |
+| `selection-toolbar` | `SelectionToolbar`; `SelectionToolbarButton`, `SelectionToolbarActionButton`, `SelectionToolbarToggle`, `SelectionToolbarActionToggle`, `SelectionToolbarToggleGroup`, `SelectionToolbarSeparator`; `useSelectionToolbar` | A bar of ghost-button actions over selected text, in the tooltip's material. Base UI Popover anchored to the range itself — so it follows the text as the page scrolls — composed with Base UI Toolbar for roving-tabindex items. Item kinds match the menu's rows: plain, async with pending/success/error in place, toggle, deferred toggle, and an exclusive group. It swallows `mousedown` so the press can't collapse the selection, and hands the captured text and range to every action. |
 | `hover-card` | `HoverCard`, `HoverCardTrigger`, `HoverCardContent`, `HoverCardSkeleton` | Rich preview panel shown from hover or keyboard focus, with a built-in loading placeholder and custom loading content support. |
 | `dropdown-menu` | Root/trigger/content/item, checkbox/radio/submenu parts, shortcut and nested-select parts | Base UI menu with keyboard navigation, safe submenu pointer travel, Kbd-style shortcuts, destructive rows, original submenus, and searchable single/multi select subpanels. |
 
