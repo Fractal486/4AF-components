@@ -207,6 +207,14 @@ describe("TableOfContents", () => {
       "-64",
     );
 
+    act(() => {
+      root.dispatchEvent(new Event("scrollend"));
+    });
+    expect(screen.getByRole("link", { name: "last" })).toHaveAttribute(
+      "aria-current",
+      "location",
+    );
+
     root.remove();
   });
 

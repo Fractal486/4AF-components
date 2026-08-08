@@ -79,6 +79,7 @@ export function TableOfContents({
   const [visibleIds, setVisibleIds] = useState<string[]>([]);
   const [currentId, setCurrentId] = useState<string>();
   const [scrollTargetId, setScrollTargetId] = useState<string>();
+  const [settledTargetId, setSettledTargetId] = useState<string>();
   const [scrollVisibleIds, setScrollVisibleIds] = useState<string[]>([]);
   const [scrollCurrentId, setScrollCurrentId] = useState<string>();
   const [geometry, setGeometry] = useState<RailGeometry | null>(null);
@@ -106,6 +107,7 @@ export function TableOfContents({
     // instead of retargeting once per observed heading.
     scrollCleanupRef.current?.();
     setScrollTargetId(id);
+    setSettledTargetId(undefined);
 
     const scrollRootElement = rootRef?.current ?? null;
     const scrollRoot: HTMLElement | Window = scrollRootElement ?? window;
@@ -152,6 +154,7 @@ export function TableOfContents({
     const finish = () => {
       cleanup();
       setScrollTargetId((current) => (current === id ? undefined : current));
+      setSettledTargetId(variant === "single" ? id : undefined);
       setScrollVisibleIds([]);
       setScrollCurrentId(undefined);
     };
@@ -218,6 +221,7 @@ export function TableOfContents({
     };
 
     const scheduleUpdate = () => {
+      setSettledTargetId((current) => (current === undefined ? current : undefined));
       if (frame !== 0) return;
       frame = requestAnimationFrame(() => {
         frame = 0;
@@ -306,7 +310,7 @@ export function TableOfContents({
   const currentSegment = geometry?.segments.find((segment) => segment.id === trackingCurrentId);
   const currentHighlightId =
     variant === "single"
-      ? scrollTargetId ?? visibleIds[0] ?? currentId
+      ? scrollTargetId ?? settledTargetId ?? visibleIds[0] ?? currentId
       : trackingVisibleIds[0] ?? trackingCurrentId;
   const singleSegment = geometry?.segments.find((segment) => segment.id === currentHighlightId);
   const markerSegments =
