@@ -1,7 +1,11 @@
 "use client";
 
 import { useRef } from "react";
-import { TableOfContents, type TocItem } from "@/registry/ui/table-of-contents/table-of-contents";
+import {
+  TableOfContents,
+  type TableOfContentsProps,
+  type TocItem,
+} from "@/registry/ui/table-of-contents/table-of-contents";
 
 const SECTIONS: (TocItem & { body: string })[] = [
   {
@@ -26,13 +30,13 @@ const SECTIONS: (TocItem & { body: string })[] = [
     id: "toc-configuration",
     title: "Configuration",
     level: 3,
-    body: "Levels drive the indent, so a nested heading sits under its parent. The active band sits near the top of the scroll area, which is where the eye expects the current section to be.",
+    body: "Levels drive the indent, so a nested heading sits under its parent. Use the span variant to show every visible heading, or single to keep the marker beside one current heading.",
   },
   {
     id: "toc-styling",
     title: "Styling",
     level: 3,
-    body: "The rail is a plain left border; the marker is a single element that slides between entries. Colour, width and the indent step are all utilities, so the whole thing re-themes with the tokens.",
+    body: "The rail and marker are aligned SVG strokes. Colour and spacing come from semantic tokens and utilities, so the whole thing re-themes with the rest of the library.",
   },
   {
     id: "toc-accessibility",
@@ -48,7 +52,7 @@ const SECTIONS: (TocItem & { body: string })[] = [
   },
 ];
 
-export function TocDemo() {
+export function TocDemo({ variant }: { variant?: TableOfContentsProps["variant"] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -58,8 +62,13 @@ export function TocDemo() {
         className="h-80 flex-1 overflow-y-auto pr-4 [scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent]"
       >
         {SECTIONS.map((section) => (
-          <section key={section.id} id={section.id} className="scroll-mt-2 pb-8">
-            <h3 className="mb-2 text-base font-medium text-foreground">{section.title}</h3>
+          <section key={section.id} className="pb-8">
+            <h3
+              id={section.id}
+              className="mb-2 scroll-mt-2 text-base font-medium text-foreground"
+            >
+              {section.title}
+            </h3>
             <p className="text-sm text-pretty text-muted-foreground">{section.body}</p>
           </section>
         ))}
@@ -68,6 +77,7 @@ export function TocDemo() {
       <TableOfContents
         items={SECTIONS.map(({ id, title, level }) => ({ id, title, level }))}
         rootRef={scrollRef}
+        variant={variant}
         className="sticky top-0 w-44 shrink-0 self-start"
       />
     </div>

@@ -737,7 +737,10 @@
     {
       "name": "table-of-contents",
       "type": "registry:ui",
-      "description": "A table of contents that tracks visible headings, keeps the last passed section active through long prose, and smooth-scrolls on click.",
+      "description": "A table of contents that tracks visible headings, keeps the last passed section active through long prose, and offers spanning or single-heading markers.",
+      "dependencies": [
+        "class-variance-authority"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json"
@@ -747,6 +750,11 @@
           "path": "registry/ui/table-of-contents/table-of-contents.tsx",
           "type": "registry:ui",
           "target": "@ui/table-of-contents.tsx"
+        },
+        {
+          "path": "registry/ui/table-of-contents/table-of-contents.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/table-of-contents.variants.ts"
         }
       ]
     },
