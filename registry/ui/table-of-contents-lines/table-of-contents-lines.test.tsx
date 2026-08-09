@@ -53,7 +53,13 @@ describe("TableOfContentsLines", () => {
       .getByRole("link", { name: "First section" })
       .querySelector("[aria-hidden]");
     expect(firstRules?.children).toHaveLength(3);
-    expect(firstRules?.firstElementChild).toHaveClass("group-hover:scale-x-[1.25]");
+    expect(firstRules?.firstElementChild).toHaveClass(
+      "group-hover:scale-x-[1.25]",
+      "scale-x-[1.25]",
+    );
+    expect(
+      screen.getByRole("link", { name: "First section" }).querySelector(":scope > span:last-child"),
+    ).toHaveClass("translate-x-1");
     expect(firstRules?.children[1]).toHaveStyle({ transform: "translateX(-0.75rem)" });
     const lastRules = screen
       .getByRole("link", { name: "Last section" })

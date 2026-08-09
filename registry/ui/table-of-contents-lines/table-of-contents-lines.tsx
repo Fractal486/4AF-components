@@ -215,7 +215,7 @@ export function TableOfContentsLines({
                       "transition-[scale,background-color] duration-(--duration-slow) ease-out",
                       "group-hover:scale-x-[1.25] group-hover:bg-foreground",
                       "group-focus-visible:scale-x-[1.25] group-focus-visible:bg-foreground",
-                      active && "bg-foreground",
+                      active && "scale-x-[1.25] bg-foreground",
                     )}
                   />
                   {hasFollowingHeading && (
@@ -231,7 +231,12 @@ export function TableOfContentsLines({
                     </>
                   )}
                 </span>
-                <span className="col-start-2 row-start-1 min-w-0 self-center transition-[translate] duration-(--duration-slow) ease-out group-hover:translate-x-1 group-focus-visible:translate-x-1">
+                <span
+                  className={cn(
+                    "col-start-2 row-start-1 min-w-0 self-center transition-[translate] duration-(--duration-slow) ease-out group-hover:translate-x-1 group-focus-visible:translate-x-1",
+                    active && "translate-x-1",
+                  )}
+                >
                   {item.title}
                 </span>
               </a>
