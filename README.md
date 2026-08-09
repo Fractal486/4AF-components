@@ -27,6 +27,9 @@ Every installable component now has a Fumadocs page. Each page includes an inter
 and a shared Install & Usage panel. The old inspector routes and story files are gone; the
 data-driven entries remain as the demo source for those pages.
 
+Every page is also available as Markdown by appending `.md` to its URL, for example
+`/docs/button.md` or `/docs.md` for the overview.
+
 ## Everyday commands
 
 ```bash

@@ -724,7 +724,7 @@ reuses the Sidebar demo because it is a page-frame companion, not a standalone p
 Pages lazy-load their established demo entry through a shared adapter, and each page
 includes the shared Install & Usage reference panel. Shared foundation items such as the theme,
 `cn`, `slot`, and motion presets are installed as dependencies and intentionally do not appear
-as standalone demos.
+as standalone demos. Append `.md` to any page URL to read that page as Markdown.
 
 ### Demo-only helpers
 
