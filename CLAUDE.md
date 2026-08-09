@@ -4,12 +4,13 @@ A personal component library. Components are pulled from public libraries, rebui
 contract below, and inspected through a deliberately minimal site.
 
 ```
-registry/     THE LIBRARY. Portable. Must never import from app/ or inspector/.
+registry/     THE LIBRARY. Portable. Must never import from app/, content/, stories/, or inspector/.
   lib/        cn, slot, motion presets — shared by components.
   ui/<name>/  <name>.tsx + <name>.variants.ts
-inspector/    THE SITE. Imports registry. The reverse is a lint error, on purpose.
-  entries/    One file per component: demo and settings schema.
-app/          Two routes and globals.css. That's the whole site.
+stories/      Shared Fumadocs demo adapter.
+content/docs/ Fumadocs MDX. One routed page per installable component.
+app/          Next.js shell, Fumadocs routes, and self-hosted search.
+inspector/    Data-driven demo entries, controls, and schemas. Never routed directly.
 _incoming/    Raw downloads, gitignored. Staging only — never imported.
 ```
 
@@ -111,8 +112,7 @@ Plus one-off sources for specific jobs (loaders, charts). Same loop applies.
    `asChild`.
 3. **Tokens only.** No hex, no `slate-*`/`zinc-*`. Semantic tokens (`bg-surface`,
    `text-muted-foreground`, `shadow-border`) or the ramps (`--color-accent-*`).
-4. **Variants + settings**, then an entry in `inspector/entries/` and one line in
-   `inspector/index.ts`.
+4. **Variants + settings**, then an entry in `inspector/entries/` and an MDX page.
 5. **Review at 4x**, then in `REDUCED`, then by keyboard only, then in both themes.
 6. `/review-animations` and `/code-review`.
 

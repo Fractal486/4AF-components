@@ -12,7 +12,6 @@ import {
   Users,
 } from "lucide-react";
 import { useState } from "react";
-import { useIsFullscreen } from "../fullscreen";
 import {
   Sidebar,
   SidebarContent,
@@ -97,9 +96,6 @@ export function SidebarDemo({
   const [teamSelection, setTeamSelection] = useState("members");
   const [settingsSelection, setSettingsSelection] = useState("preferences");
   const split = variant === "split" || variant === "split-floating" || variant === "split-inset";
-  // Full screen *is* the document root, near enough — so the framing that makes this fit
-  // a preview pane is exactly what has to come off.
-  const full = useIsFullscreen();
 
   return (
     // Demo-only framing. A real app renders this shell at the document root, where the
@@ -107,11 +103,7 @@ export function SidebarDemo({
     // escape to the viewport, so `contain: paint` makes this element the containing block
     // for the fixed panel — and the heights below are pulled back to the frame.
     <div
-      className={
-        full
-          ? "relative h-dvh w-full overflow-hidden"
-          : "relative h-[28rem] w-full overflow-hidden rounded-lg border border-border [contain:paint]"
-      }
+      className="relative h-[28rem] w-full overflow-hidden rounded-lg border border-border [contain:paint]"
     >
       <SidebarLayout
         sidebar={
@@ -628,7 +620,7 @@ export function SidebarDemo({
             ⌘B
           </kbd>
         }
-        // The inspector is one page — persisting the rail state to a cookie would leak
+        // The demo is one page — persisting the rail state to a cookie would leak
         // between visits and fight the control panel.
         persist={false}
         className="h-full"

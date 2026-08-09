@@ -8,8 +8,6 @@ const COLLAPSIBLE = ["offcanvas", "icon", "none"] as const;
 export const sidebarEntry = defineEntry({
   slug: "sidebar",
   name: "Sidebar",
-  // A whole app shell is the one component the preview box is too small for.
-  fullscreen: true,
   controls: {
     side: select(SIDES, "left"),
     // `sidebar` sits flush against the page edge; `floating` and `inset` inset it.

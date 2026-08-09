@@ -1,7 +1,7 @@
 # 4AF Components
 
 A private React component library with a self-hosted Fumadocs site for documentation and
-interactive component stories. Components are copied into other projects through a local
+interactive component demos. Components are copied into other projects through a local
 shadcn registry, so you keep ownership of the source instead of installing a public npm
 package.
 
@@ -12,10 +12,10 @@ engineering style, CLI workflow, bundled subcomponents, and composition patterns
 
 ```text
 registry/     Reusable components, utilities, and motion presets
-stories/      Fumadocs Story definitions plus the shared legacy-demo adapter
+stories/      Shared Fumadocs demo adapter
 content/docs/ Fumadocs MDX pages for the complete installable catalog
 app/          The Next.js shell, docs routes, and local search endpoint
-inspector/    Legacy demo schemas consumed by the shared Fumadocs adapter
+inspector/    Data-driven demo entries, controls, and schemas
 _incoming/    Temporary staging for downloaded components; never imported
 ```
 
@@ -24,8 +24,8 @@ Anything under `registry/` must remain independent from Next.js, Fumadocs, and t
 site.
 
 Every installable component now has a Fumadocs page. Each page includes an interactive demo
-and a shared Install & Usage panel. The old inspector routes are gone, but their schemas stay
-useful as the demo source until each page needs a richer authored story.
+and a shared Install & Usage panel. The old inspector routes and story files are gone; the
+data-driven entries remain as the demo source for those pages.
 
 ## Everyday commands
 

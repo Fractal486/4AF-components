@@ -21,7 +21,6 @@
       "@/lib/*": ["./lib/*"],
       "@/registry/ui/ui/input.variants": ["./registry/ui/input/input.variants.ts"],
       "@/registry/*": ["./registry/*"],
-      "@/inspector": ["./inspector/index.ts"],
       "@/inspector/*": ["./inspector/*"],
       "@/app/*": ["./app/*"],
       "@/stories/*": ["./stories/*"]

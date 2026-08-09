@@ -16,11 +16,10 @@ The project has three related surfaces that should not be confused:
 | --- | --- |
 | Registry item | A source bundle that can be installed by name with `pnpm 4af install`. |
 | Export or subcomponent | An API included inside a registry item, such as `SelectSortTrigger` inside `select`. |
-| Inspector entry | A visual demo in the Web UI. A demo may represent a complete registry item or only one usage of it. |
+| Demo entry | A visual demo in the Fumadocs site. A demo may represent a complete registry item or only one usage of it. |
 
 For example, `select` is an installable registry item. `SelectSortTrigger` is included in
-that item. The Web UI calls its demo “Select · Sort,” but there is intentionally no
-separate `select-sort` registry item.
+that item; there is intentionally no separate `select-sort` registry item.
 
 ## Design and engineering style
 
@@ -75,7 +74,7 @@ separate `select-sort` registry item.
 registry/     Portable library source. Never imports from app/, content/, stories/, or inspector/.
   lib/        Shared cn, slot, and motion helpers.
   ui/         Installable component source.
-inspector/    Legacy demo schemas and controls consumed by Fumadocs pages.
+inspector/    Data-driven demo entries, controls, and schemas consumed by Fumadocs pages.
 stories/      Authored Fumadocs stories and the shared legacy-demo adapter.
 content/docs/ Fumadocs MDX pages for the installable catalog.
 app/          Next.js shell, Fumadocs routes, and self-hosted search.
@@ -457,8 +456,8 @@ import {
 </Select>
 ```
 
-This is why the Web UI has a “Select · Sort” demo while the registry has no
-`select-sort` item.
+The API is documented on the Select page while the registry has no separate `select-sort`
+item.
 
 ### The three installable Select implementations
 
@@ -712,7 +711,7 @@ frame around Sidebar, not behaviour that every Sidebar user must accept. It cons
 shell to the viewport, keeps the sidebar and header fixed, gives the inset content region
 ownership of vertical scrolling, and supplies the header title, left-side collapse control,
 and optional right-side header actions. A boxed preview can override the provider height
-through `className`, as the inspector does with `h-full`.
+through `className`, as the docs demo does with `h-full`.
 
 ## Documentation and registry parity
 
@@ -722,24 +721,17 @@ The Fumadocs site is a visual review and documentation surface, not the registry
 
 Every installable UI item has a dedicated Fumadocs page. `sidebar-layout` intentionally
 reuses the Sidebar demo because it is a page-frame companion, not a standalone primitive.
-Pages lazy-load their established inspector entry through a shared adapter, and each page
+Pages lazy-load their established demo entry through a shared adapter, and each page
 includes the shared Install & Usage reference panel. Shared foundation items such as the theme,
 `cn`, `slot`, and motion presets are installed as dependencies and intentionally do not appear
 as standalone demos.
 
-### Inspector entry without a separate registry item
-
-| Inspector entry | What to install |
-| --- | --- |
-| `select-sort` / “Select · Sort” | Install `select`; the API is `SelectSortTrigger`. |
-
 ### Demo-only helpers
 
-The inspector also contains example helpers for Action Button, Badge cycling, Command
+The demo layer also contains example helpers for Action Button, Badge cycling, Command
 Palette, Morph, Select fruit icons, Sidebar, and Table of Contents. They hold demo state,
 sample data, or page composition and are intentionally not installable components. The
-inspector's own sidebar, toolbar, settings controls, fullscreen view, and page wrappers are
-also site infrastructure rather than library content.
+`inspector/` folder is demo infrastructure only; it has no routed site shell.
 
 ## Working on this repository
 

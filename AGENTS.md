@@ -7,10 +7,10 @@ contract below, and inspected through a deliberately minimal site.
 registry/     THE LIBRARY. Portable. Must never import from app/, content/, stories/, or inspector/.
   lib/        cn, slot, motion presets — shared by components.
   ui/<name>/  <name>.tsx + <name>.variants.ts
-stories/      FUMADOCS STORY. Authored stories plus the shared legacy-demo adapter.
+stories/      Shared Fumadocs demo adapter.
 content/docs/ FUMADOCS MDX. One routed page per installable component.
 app/          Next.js shell, Fumadocs routes, and self-hosted search.
-inspector/    Legacy demo schemas consumed by Fumadocs pages. Never routed directly.
+inspector/    Data-driven demo entries, controls, and schemas. Never routed directly.
 _incoming/    Raw downloads, gitignored. Staging only — never imported.
 ```
 
@@ -123,7 +123,7 @@ Plus one-off sources for specific jobs (loaders, charts). Same loop applies.
    `asChild`.
 3. **Tokens only.** No hex, no `slate-*`/`zinc-*`. Semantic tokens (`bg-surface`,
    `text-muted-foreground`, `shadow-border`) or the ramps (`--color-accent-*`).
-4. **Variants + Story controls**, then a `.story.tsx` definition, client demo, and MDX page.
+4. **Variants + demo controls**, then an entry in `inspector/entries/` and an MDX page.
 5. **Review at 4x**, then in reduced motion, then by keyboard only, then in both themes.
 6. `/review-animations` and `/code-review`.
 

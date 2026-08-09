@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 /**
  * A component's "settings" are declared once, as data, and everything else falls
  * out of that: the knobs in the panel, the types handed to `render`, and the
- * initial state. Adding a component to the inspector should never mean writing a
+ * initial state. Adding a component demo should never mean writing a
  * bespoke page.
  */
 
@@ -88,13 +88,6 @@ export interface Entry<S extends ControlSchema = ControlSchema> {
   slug: string;
   name: string;
   controls: S;
-  /**
-   * Offer a "full screen" view — a new tab that renders the demo alone at window size,
-   * with a mirrored settings panel. Only for the handful of components a preview box is
-   * genuinely too small for (an app shell), where it's worth the second route. Most
-   * components read fine in the box and don't want the button.
-   */
-  fullscreen?: boolean;
   /** Method syntax, not a property — bivariance is what lets entries with
       different schemas live in one array without an `any` in sight. */
   render(values: ControlValues<S>): ReactNode;
@@ -107,61 +100,5 @@ export function defineEntry<S extends ControlSchema>(entry: Entry<S>): Entry<S> 
 export function initialValues<S extends ControlSchema>(schema: S): ControlValues<S> {
   const out: Record<string, unknown> = {};
   for (const [key, def] of Object.entries(schema)) out[key] = def.defaultValue;
-  return out as ControlValues<S>;
-}
-
-/* -- URL round-tripping, so a full-screen tab opens on what you were already looking at. */
-
-export function paramsFromValues(values: Record<string, unknown>): URLSearchParams {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(values)) params.set(key, String(value));
-  return params;
-}
-
-/**
- * Rebuilds values from a query string, one control at a time. Every param arrives as a
- * string, so the schema is what says whether `"3000"` is a number and `"false"` is a
- * boolean — and anything missing or unparseable falls back to the control's default
- * rather than handing `render` a NaN or an option that isn't in the list.
- */
-export function valuesFromParams<S extends ControlSchema>(
-  schema: S,
-  params: Record<string, string | string[] | undefined>,
-): ControlValues<S> {
-  const out: Record<string, unknown> = {};
-
-  for (const [key, def] of Object.entries(schema)) {
-    const raw = params[key];
-    const value = Array.isArray(raw) ? raw[0] : raw;
-
-    if (value === undefined) {
-      out[key] = def.defaultValue;
-    } else if (def.kind === "boolean") {
-      out[key] = value === "true" ? true : value === "false" ? false : def.defaultValue;
-    } else if (def.kind === "number") {
-      const parsed = Number(value);
-      if (!Number.isFinite(parsed)) {
-        out[key] = def.defaultValue;
-        continue;
-      }
-
-      const min = typeof def.min === "number" && Number.isFinite(def.min) ? def.min : -Infinity;
-      const max = typeof def.max === "number" && Number.isFinite(def.max) ? def.max : Infinity;
-      const clamped = Math.min(Math.max(parsed, min), max);
-      if (typeof def.step === "number" && Number.isFinite(def.step) && def.step > 0) {
-        const anchor =
-          typeof def.min === "number" && Number.isFinite(def.min) ? def.min : 0;
-        const snapped = anchor + Math.round((clamped - anchor) / def.step) * def.step;
-        out[key] = Number(Math.min(Math.max(snapped, min), max).toFixed(12));
-      } else {
-        out[key] = clamped;
-      }
-    } else if (def.kind === "select") {
-      out[key] = def.options.includes(value) ? value : def.defaultValue;
-    } else {
-      out[key] = value;
-    }
-  }
-
   return out as ControlValues<S>;
 }
