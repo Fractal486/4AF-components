@@ -5,3 +5,30 @@ description: A responsive application sidebar with rails, panels, menus, and col
 
 <ComponentDemo name="sidebar" />
 <ComponentReference name="sidebar" />
+
+## API
+
+**Main exports:** `SidebarProvider`, `Sidebar`, `SidebarPanel`, `SidebarHeaderButton`, and the
+menu, group, submenu, action, badge, and skeleton parts
+
+A responsive application sidebar with sidebar, floating, inset, split, split-floating, and
+split-inset layouts; controlled collapse; sections; nested rows; a canonical full-width primary
+header action; badges; and loading skeletons.
+
+## Header composition
+
+A header contains one full-width `SidebarHeaderButton`, or two wrapped in `SidebarHeaderRow`:
+
+```tsx
+<SidebarHeader>
+  <span>Emails</span>
+  <SidebarHeaderRow>
+    <SidebarHeaderButton><Plus />Compose</SidebarHeaderButton>
+    <SidebarHeaderButton variant="outline"><Search />Search</SidebarHeaderButton>
+  </SidebarHeaderRow>
+</SidebarHeader>
+```
+
+The row owns spacing, divides width evenly, and stacks its buttons when the sidebar collapses to
+icons. Add `className="flex-none"` when a button should retain its own width. Compose menus with
+Dropdown Menu rather than embedding a separate menu implementation in Sidebar.

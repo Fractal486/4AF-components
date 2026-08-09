@@ -5,3 +5,27 @@ description: A searchable Base UI select for larger option sets.
 
 <ComponentDemo name="select-search" />
 <ComponentReference name="select-search" />
+
+## API
+
+**Main exports:** `SearchSelect`, `SearchSelectInput`, `SearchSelectContent`, and item parts
+
+An editable Combobox-style trigger with live filtering, single or checkbox-based multi-selection,
+icons, and full keyboard and ARIA behaviour.
+
+## Item data
+
+The Combobox value may carry its own icon. An item is its value—`<SearchSelectItem value={item}>`—
+so there is no key to look up in a separate mapping. Put the icon on each item object when a
+preselected value must resolve before the popup has mounted:
+
+```tsx
+const fruits = [{ value: "apple", label: "Apple", icon: <Apple /> }];
+
+<SearchSelect items={fruits} defaultValue={fruits[0]}>
+```
+
+No type change is needed: Base UI types Combobox `items` as `readonly any[]`, and this convention
+extends the `{ value, label }` shape it already treats specially. An icon passed only to
+`SearchSelectItem` still cannot resolve before mount because nothing outside the popup has seen
+it. Resolution order is the mounted item, then `iconForValue`, then the value's own `icon`.

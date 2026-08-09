@@ -5,3 +5,86 @@ description: A Base UI menu with submenus, checkable items, groups, and keyboard
 
 <ComponentDemo name="dropdown-menu" />
 <ComponentReference name="dropdown-menu" />
+
+## API
+
+**Main exports:** root, trigger, content, item, checkbox, radio, submenu, shortcut, and
+nested-select parts
+
+A Base UI menu with keyboard navigation, safe submenu pointer travel, Kbd-style shortcuts,
+destructive rows, original submenus, and searchable single and multi-select subpanels.
+
+## Nested panels
+
+Dropdown Menu includes three reusable nested-panel forms:
+
+- the original navigation submenu;
+- a single-select panel with the chosen value shown in the parent row and a checkmark in the
+  panel;
+- a multi-select panel using small Checkbox components and an `N selected` parent label.
+
+Single- and multi-select panels can include in-panel search. Their parent highlight stays active
+while the pointer is on the parent, inside the nested panel, or moving through the safe pointer
+corridor.
+
+A checkbox item can also read as a toggle button rather than a ticked row. Its `children` may be
+a function of checked state, and `indicator={false}` drops the left tick and its indent so the
+icon and label carry the state:
+
+```tsx
+<DropdownMenuCheckboxItem indicator={false}>
+  {(checked) => (
+    <>
+      <Morph activeKey={checked ? "on" : "off"} items={{ on: <BellOff />, off: <Bell /> }} />
+      <Morph activeKey={checked ? "on" : "off"} items={{ on: "Unmute", off: "Mute" }} />
+    </>
+  )}
+</DropdownMenuCheckboxItem>
+```
+
+Use `fillIcon` when the glyph does not change shape—a bookmark, star, or heart only changes
+weight, so there is nothing to morph to and it becomes a fill transition on one element. Either
+way, the row keeps its `menuitemcheckbox` semantics.
+
+Rows left-align every Morph inside them and mute a morphing leading icon to the same weight as a
+plain one. Do not pass `place-items-start` or a text colour at the call site.
+
+## Asynchronous rows
+
+`DropdownMenuActionItem` is the row that runs something, shows how it went, and puts itself
+back—the menu's Action Button:
+
+```tsx
+<DropdownMenuActionItem
+  icon={<Link2 />}
+  action={() => navigator.clipboard.writeText(url)}
+  labels={{ success: "Copied" }}
+  announce={{ success: "Link copied" }}
+>
+  Copy link
+</DropdownMenuActionItem>
+```
+
+It defaults to `closeOnClick={false}` because an outcome shown on a row the user can no longer
+see is no outcome at all. Override it when the result is visible on the page behind the menu. It
+takes the same `labels`, `icons`, `revertAfter`, `pendingDelay`, `announce`, `onSuccess`, and
+`onError` as Action Button, and both morph between states without resizing the row.
+
+When the row should persist in a new state, give `DropdownMenuCheckboxItem` an `action`. It holds
+its current state while pending and calls `onCheckedChange` only after success—the menu equivalent
+of Action Toggle:
+
+```tsx
+<DropdownMenuCheckboxItem action={(muted) => setMuted(id, muted)}>
+  Mute thread
+</DropdownMenuCheckboxItem>
+```
+
+Without `action`, the row is the plain synchronous checkbox it has always been. With it, the
+tick holds and the loader runs in its slot until the work settles. A failure needs no rollback
+because nothing moved. With `indicator={false}`, there is no tick slot for the loader, so the
+children function receives status as a second argument for the caller to render.
+
+Both deferred rows keep their status announcement outside the row element. A menu item's
+accessible name is built from its contents, so an `sr-only` live region inside would rename the
+row to “Mute thread Working” for as long as it ran.

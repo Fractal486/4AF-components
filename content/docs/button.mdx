@@ -6,6 +6,36 @@ description: A composable Base UI button with variants, loading state, asChild s
 <ComponentDemo name="button" />
 <ComponentReference name="button" />
 
+## API
+
+**Main export:** `Button`
+
+Primary, outline, ghost, plain, destructive, and link variants; text and icon sizes; optical
+icon spacing; loading without resizing through the shared ASCII loader; `asChild`; optional
+`pressScale={false}` for anchored controls and `pressTarget="content"` for joined ones.
+
+## Press behavior
+
+Buttons scale to `0.95` while pressed by default. Set `pressScale={false}` when the control is an
+anchored trigger and its visual resize would make the attached panel feel like it moves. The
+default remains enabled for ordinary buttons.
+
+```tsx
+<Button pressScale={false}>Open menu</Button>
+<Toggle pressScale={false} aria-label="Filter" />
+```
+
+Use `pressTarget="content"` when the button's edges are joined to another control. Only its
+label and icons scale, so the box holds still. Shrinking a joined box opens a gap along every
+seam. Button Group sets this on its children already; set it by hand only when joining buttons
+some other way.
+
+```tsx
+<Button pressTarget="content">Save</Button>
+```
+
+Action Button, Copy Button, and Delete Button inherit the same Button prop.
+
 ## Notes
 
 The native-button path uses Motion for a spring press. `asChild` preserves the child's

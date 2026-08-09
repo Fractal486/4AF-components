@@ -1,0 +1,107 @@
+---
+title: Design System
+description: The visual language, semantic tokens, geometry, depth, typography, and motion of 4AF.
+---
+
+4AF feels like a set of precise instruments: quiet, compact, warm-neutral, and tactile. The
+shell recedes so interactive states can be unmistakable without making every surface loud.
+The system uses one amber accent as a deliberate signal rather than a default coat of paint.
+
+## Visual atmosphere
+
+- **Restrained and utilitarian.** Controls are compact, legible, and free of ornamental chrome.
+- **Warm rather than clinical.** Neutral ramps carry a subtle warm hue instead of Tailwind's
+  common blue-grey cast.
+- **Tactile but controlled.** Press feedback, travelling indicators, and short entrances make
+  controls feel physical without delaying work.
+- **Layered by purpose.** Fill and elevation communicate whether something is sunk into the
+  page, anchored to it, or floating above it.
+
+## Color palette and roles
+
+Components consume semantic roles, never raw palette values. A consuming project can reskin
+the library by remapping those roles without rewriting component classes.
+
+| Role | Light treatment | Dark treatment | Purpose |
+| --- | --- | --- | --- |
+| Background | Warm near-white (`oklch(0.985 0.002 70)`) | Neutral near-black (`oklch(0.1448 0 0)`) | Page ground and sunk wells |
+| Surface | White (`oklch(1 0 0)`) | Soft black (`oklch(0.178 0 0)`) | Chrome and anchored popups |
+| Raised surface | White (`oklch(1 0 0)`) | Deep black (`oklch(0.130 0 0)`) | Dialogs, sheets, palettes, and toasts |
+| Foreground | Warm near-black (`oklch(0.155 0.006 70)`) | Warm near-white (`oklch(0.985 0.002 70)`) | Primary text and neutral actions |
+| Focus ring | Amber (`oklch(0.702 0.176 52)`) | The same amber | Focus and deliberate emphasis |
+| Destructive | Vivid red (`oklch(0.6 0.225 26)`) | The same red | Irreversible and failed actions |
+| Success | Deep green (`oklch(0.52 0.13 152)`) | The same green | Confirmed outcomes only |
+
+Primary is ink, not color. Amber is spent on focus and exceptional emphasis; destructive red
+and success green only appear when their meanings are real. This keeps color informative.
+Quiet destructive actions may use red text without adding a red hover surface; the danger signal
+remains clear without turning a compact menu or toolbar row into a solid warning block.
+
+A component's fill communicates its layer. `background` is the page and sunk wells such as
+Input, Checkbox, Radio, and Sidebar Inset. `surface` is chrome and anchored popups such as
+Sidebar, Dropdown Menu, Popover, and Hover Card. `surface-raised` belongs to elements floating
+over everything: Dialog, Alert Dialog, Sheet, Command Palette, and Toast. A consuming project
+decides what those semantic roles resolve to.
+
+## Typography
+
+Geist Sans is the interface voice: compact, neutral, and highly legible. Geist Mono is reserved
+for code, command examples, keyboard hints, and small technical labels.
+
+The scale is deliberately modest: 11px technical labels, 12px compact text, 13px default UI,
+15px body copy, then 18px, 22px, 28px, and 36px headings. Display sizes tighten their leading
+and tracking; body copy receives more air. Updating numbers opt into tabular figures so labels
+around them do not shift.
+
+## Geometry and shape
+
+Corners range from a precise 3px rounding to a generous 28px container radius. Nested shapes
+are concentric: the outer radius equals the inner radius plus the padding between them. A
+14px shell with 4px of padding therefore contains a 10px child. Reusing one radius for both
+creates visibly uneven corners.
+
+Controls are compact by default. Icons remain geometrically centered inside their boxes;
+leading and trailing icons beside text receive optical spacing through component attributes
+rather than one-off margins.
+
+## Depth and elevation
+
+Buttons and cards use a transparent `shadow-border`: a hairline ring, a close lift, and a soft
+ambient shadow. It reads correctly over any background and avoids the boxed-in look of a hard
+border. Raised and overlay surfaces increase separation progressively.
+
+Dark mode replaces most drop-shadow depth with restrained luminous rings. Heavy shadows become
+grey smudges on near-black, while a translucent edge preserves the layer boundary. Real borders
+remain reserved for dividers and table cells, whose purpose is separation rather than elevation.
+
+## Component styling
+
+- **Buttons** use neutral ink as the ordinary primary action, compact geometry, optical icon
+  spacing, and tactile press feedback. Joined buttons keep their outer box still so seams do not
+  open during a press.
+- **Fields** sit at the background layer and strengthen their ring on focus. Invalid state is
+  semantic and accessible, not merely a red decoration.
+- **Anchored panels** use the surface layer with a scale, blur, and fade entrance originating
+  near the trigger.
+- **Overlays** use the raised layer and stronger elevation. Their behavior and focus management
+  come from Base UI.
+- **Status UI** shares severity colors across alerts, badges, and outcomes so the same state
+  reads consistently whether it is a sentence, label, or temporary notification.
+
+## Layout principles
+
+Whitespace is compact but not crowded. Related controls sit in close groups; sections receive
+clearer separation than individual fields. Page shells keep navigation stable and give the
+content region ownership of scrolling. Popups and overlays are positioned relative to the
+control that summoned them, preserving spatial continuity.
+
+## Motion language
+
+Motion explains state and spatial relationships. CSS handles hover, focus, press, and simple
+entrances. Motion is reserved for exit lifecycles, gestures, springs, and layout animation.
+Transitions name the exact compositor-friendly properties they change.
+
+Four duration roles—fast, base, slow, and slower—cover everything from focus feedback to sheets.
+Reduced-motion preferences collapse CSS transitions to 1ms so lifecycle events still fire;
+JavaScript motion uses zero-duration transitions. Decorative loops stop instead of accelerating
+into a strobe.

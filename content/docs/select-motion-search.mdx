@@ -1,7 +1,22 @@
 ---
 title: Select Motion Search
-description: A searchable select combining filtered options with animated value transitions.
+description: A searchable Combobox whose panel unfolds from the input field.
 ---
 
 <ComponentDemo name="select-motion-search" />
 <ComponentReference name="select-motion-search" />
+
+## API
+
+**Main exports:** `MotionSearchSelect` and its input, content, and item parts
+
+An editable Base UI Combobox whose panel unfolds from the field. It supports single and
+checkbox-based multi-selection.
+
+## Item data
+
+Because this component is Combobox-based, an item is also its value. Put `icon` on the item data
+when a preselected value must display its icon before the popup mounts. No type change is needed:
+Base UI types Combobox `items` as `readonly any[]`. An icon passed only to the item element cannot
+resolve before mount because nothing outside the popup has seen it. Resolution order is the
+mounted item, then `iconForValue`, then the value's own `icon`.

@@ -5,3 +5,17 @@ description: A transient notification stack with accessible announcements and sw
 
 <ComponentDemo name="toast" />
 <ComponentReference name="toast" />
+
+## API
+
+**Main exports:** `ToastProvider`, `useToast`, `createToastManager`
+
+A Base UI toast manager with list or collapsed-stack presentation, bottom-centre or bottom-right
+placement, timers, focus handling, swipe dismissal, and up to three custom action buttons per
+toast.
+
+## Actions
+
+Use `actions` for up to three custom buttons on one toast. The Base UI-compatible `actionProps`
+option remains available when a single action is enough. Timers, focus movement, F6 navigation,
+and swipe dismissal remain owned by Base UI regardless of presentation.

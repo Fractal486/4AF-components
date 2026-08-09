@@ -5,3 +5,30 @@ description: A button that confirms an asynchronous action with loading, success
 
 <ComponentDemo name="action-button" />
 <ComponentReference name="action-button" />
+
+## API
+
+**Main export:** `ActionButton`
+
+Runs asynchronous work and presents idle, pending, success, and error states without changing
+width, then reverts.
+
+## Waiting states
+
+Every waiting state in the library is the ASCII loader: Button's `loading`, Action Button and
+Action Toggle while pending, the menu's action row, Command Palette, and Alert's `loading`
+variant. Button still exports the SVG `Spinner` it used to draw, but it is deprecated and nothing
+renders it.
+
+The glyph and label morph in **separate boxes** in Action Button, Action Toggle, and the menu's
+action row. The loader is a text glyph and about half the advance width of an icon, so morphing
+them together centres the narrower state and drags the label sideways on every status change.
+
+That split matters at the call site: a label with no per-state override does not animate. Pass
+`labels={{ pending: "Saving" }}` when the word should change, and leave it out when only the
+glyph should move—a word that never changed should not be scaled and blurred through a swap it
+had no part in.
+
+Action Toggle follows the same rule for its glyph: with `fillIcon` and no `icons.pressed`, it
+does not swap the glyph on press because there is nothing to morph to, and a fill transition plus
+a morph on one element fight over it.

@@ -413,7 +413,7 @@
     {
       "name": "morph",
       "type": "registry:ui",
-      "description": "Animated content swap â€” icons or text. Copy to check, Follow to Following.",
+      "description": "Animated content swap — icons or text. Copy to check, Follow to Following.",
       "dependencies": [
         "motion"
       ],
@@ -453,7 +453,7 @@
     {
       "name": "copy-button",
       "type": "registry:ui",
-      "description": "Copies to the clipboard and confirms it â€” visually, and to screen readers.",
+      "description": "Copies to the clipboard and confirms it — visually, and to screen readers.",
       "dependencies": [
         "lucide-react"
       ],
@@ -595,7 +595,7 @@
     {
       "name": "radio",
       "type": "registry:ui",
-      "description": "A radio group â€” the Checkbox's sibling, a single choice with a dot that scales in.",
+      "description": "A radio group — the Checkbox's sibling, a single choice with a dot that scales in.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -826,7 +826,7 @@
     {
       "name": "select",
       "type": "registry:ui",
-      "description": "A single or multi-select on Base UI â€” keyboard, typeahead and collision-aware positioning â€” whose panel blurs and scales in from the trigger. Multi-select keeps the panel open while animated checkbox rows are toggled; an optional plain panel search filters options in place.",
+      "description": "A single or multi-select on Base UI — keyboard, typeahead and collision-aware positioning — whose panel blurs and scales in from the trigger. Multi-select keeps the panel open while animated checkbox rows are toggled; an optional plain panel search filters options in place.",
       "dependencies": [
         "@base-ui/react",
         "lucide-react",
@@ -940,7 +940,7 @@
     {
       "name": "select-search",
       "type": "registry:ui",
-      "description": "A searchable single or multi-select on Base UI's Combobox â€” type to filter the list, with full keyboard and ARIA support. Multi-select keeps its animated checkbox list open while choices are toggled.",
+      "description": "A searchable single or multi-select on Base UI's Combobox — type to filter the list, with full keyboard and ARIA support. Multi-select keeps its animated checkbox list open while choices are toggled.",
       "dependencies": [
         "@base-ui/react",
         "lucide-react",

@@ -1,0 +1,97 @@
+---
+title: CLI Reference
+description: List, inspect, preview, and install components with the repository CLI.
+---
+
+Run the CLI from the 4AF Components repository. Use an absolute target-project path so the
+destination is always explicit.
+
+## Requirements
+
+The target project must already contain a `package.json` and a shadcn `components.json` with
+`ui` and `lib` aliases. The aliases may point anywhere; examples use the usual
+`@/components/ui` and `@/lib` paths.
+
+The repository pins Node 24.18.1 LTS, pnpm 11.18.0, and shadcn 4.13.1 through `.node-version`,
+`package.json`, and the lockfile so validation, build, and installation remain repeatable across
+machines.
+
+## List components
+
+```powershell
+pnpm 4af list
+```
+
+Lists every installable `registry:ui` item from `registry.json`. Foundation items are omitted
+because they are installed automatically as dependencies.
+
+## Check a project
+
+```powershell
+pnpm 4af doctor --project C:\Projects\my-app
+```
+
+Checks the package, shadcn configuration, and aliases without changing the target.
+
+## Read a component reference
+
+```powershell
+pnpm 4af docs select
+```
+
+Prints the selected component page as plain Markdown for agents and terminal workflows. The
+output includes the API and component-specific notes, plus separate install and usage code
+blocks. It is generated from the same `content/docs/<component>.mdx` page used by the website.
+
+## Preview an installation
+
+```powershell
+pnpm 4af install select --project C:\Projects\my-app --dry-run
+```
+
+Prints the complete mutation plan: target files, theme merge, package additions, existing
+dependencies, and conflicts. Nothing is written.
+
+## Install a component
+
+```powershell
+pnpm 4af install select --project C:\Projects\my-app
+```
+
+The command builds and temporarily serves the private registry, invokes shadcn
+non-interactively, and stops the server afterward. Dependencies are recursive: installing a
+composed component also brings in the theme, utilities, primitives, and packages it uses.
+Installing `command-palette`, for example, also brings in Select, Checkbox, shared helpers,
+package dependencies, and the 4AF theme. The target does not need the 4AF development server to
+be running.
+
+Existing files are never replaced silently. Add `--overwrite` only when replacement is
+intentional:
+
+```powershell
+pnpm 4af install select --project C:\Projects\my-app --overwrite
+```
+
+From another working directory, point pnpm at this repository:
+
+```powershell
+pnpm --dir C:\Development\4AF-components 4af install button --project C:\Projects\my-app
+```
+
+After installation, import the copied source through the target project's UI alias:
+
+```tsx
+import { Button } from "@/components/ui/button";
+```
+
+## Command summary
+
+```text
+pnpm 4af list
+pnpm 4af docs <component>
+pnpm 4af doctor --project <absolute-path>
+pnpm 4af install <component> --project <absolute-path> [--dry-run] [--overwrite]
+```
+
+The implementation and `--help` output in `scripts/4af.ts` remain authoritative if the CLI
+changes.

@@ -4,6 +4,10 @@ Use this reference to choose components, distinguish installable items from bund
 and find the likely source files. For exact current names run `pnpm 4af list`; for exact
 props inspect the implementation in `registry/ui/`.
 
+For the complete narrative reference for one component, run `pnpm 4af docs <component>`;
+it reads the matching Fumadocs page and expands its install and usage examples into plain
+Markdown.
+
 ## Contents
 
 - [Source-of-truth model](#source-of-truth-model)
@@ -83,6 +87,7 @@ The catalog currently contains 42 installable UI items. Verify the count and nam
 | `empty` | `Empty` and composition parts | Empty states with optional dashed placeholder treatment. |
 | `text-shimmer` | `TextShimmer` | Theme-aware looping highlight for working labels. |
 | `toast` | `ToastProvider`, `useToast`, `createToastManager` | Managed notifications, swipe dismissal, placement/stack modes, and up to three actions. |
+| `ascii-loader` | `AsciiLoader` | A looping braille spinner for compact async status affordances. |
 
 ### Navigation and application structure
 
@@ -92,6 +97,7 @@ The catalog currently contains 42 installable UI items. Verify the count and nam
 | `collapsible` | `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` | Disclosure rows (`plain`/`card`) with a rotating chevron, a height slide so following rows travel rather than jump, and a blur-fade on the content. |
 | `table-of-contents` | `TableOfContents` | Heading navigation with a dashed inactive rail, smooth scrolling, long-prose fallback, and `span` or `single` active marker variants. |
 | `table-of-contents-lines` | `TableOfContentsLines` | Dense line-based heading navigation with one active heading, a longer header rule, equal shorter rules between headings (none below the final heading), heading-relative indentation, and an expanding hover treatment. |
+| `separator` | `Separator` | An accessible horizontal or vertical divider built on Base UI Separator. |
 | `command-palette` | `CommandPalette`, panel/list/row/action parts, and `useCommandSearch` | Fuzzy command search, groups, nested/custom panels, async/server-driven search, configurable headers, keybinds, selection, and actions. |
 | `sidebar` | Provider, panel, group/menu/submenu/action/badge/skeleton parts | Default/floating/inset and split sidebars, collapse, sections, nested rows, actions, badges, skeletons. |
 | `sidebar-layout` | `SidebarLayout` | Optional page shell around Sidebar with inset surface, title, collapse control, and actions. |

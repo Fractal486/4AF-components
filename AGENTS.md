@@ -23,6 +23,7 @@ From this repository:
 
 ```text
 pnpm 4af list
+pnpm 4af docs <component>
 pnpm 4af doctor --project <absolute-target-project>
 pnpm 4af install <component> --project <absolute-target-project>
 ```
@@ -46,6 +47,31 @@ rather than reimplementing installation logic.
 > build empties the CSS chunks the dev server is serving — the page keeps working but
 > arrives with no styles, which looks exactly like a broken stylesheet. Stop dev first, or
 > `rm -rf .next` and restart it afterwards.
+
+## Fumadocs documentation
+
+`content/docs/` is the public Fumadocs surface. Every installable `registry:ui` item has a
+`content/docs/<name>.mdx` page with frontmatter, an interactive `<ComponentDemo>`, an
+install/usage `<ComponentReference>`, an `## API` summary, and component-specific notes.
+`pnpm 4af docs <component>` renders that page as plain Markdown for agents; the website
+Markdown export uses the same renderer.
+
+When adding a component, update all of the relevant sources together:
+
+1. `registry/ui/<name>/` — portable implementation, variants, and tests.
+2. `registry.json` — install name, description, files, dependencies, and registry dependencies.
+3. `inspector/entries/` — the demo and settings controls, when the component needs a demo.
+4. `content/docs/<name>.mdx` — title/description, demo, install/usage reference, API, and notes.
+5. `lib/component-catalog.ts` — the sidebar family, catalog category, and main API mapping when
+   the new item changes those derived views.
+6. `lib/component-reference.ts` — the canonical usage snippet used by both the page and CLI.
+
+When editing a public API or behavior, update its component page's API/notes and the shared
+usage reference as well as the source, tests, registry metadata, and demo that changed. The
+component catalog page and count are generated from `registry.json`; do not hand-edit their
+rows or count. Update `COMPONENTS.md` and the agent reference catalog when public composition
+guidance or the installable catalog changes. For topic-level changes, update the matching page
+under `content/docs/reference/`.
 
 ## The component contract
 

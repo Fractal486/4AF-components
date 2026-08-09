@@ -5,3 +5,62 @@ description: A composable Base UI select with rich items, sizing, and positionin
 
 <ComponentDemo name="select" />
 <ComponentReference name="select" />
+
+## API
+
+**Main exports:** `Select`, `SelectTrigger`, `SelectSortTrigger`, `SelectValue`, `SelectContent`,
+`SelectItem`
+
+An accessible Base UI single or multi-select with icons declarable on `items` so a preselected
+value resolves before mount, optional in-panel search, a clear footer, content sizing, and the
+compact sort/filter trigger.
+
+## Sort and filter trigger
+
+Install `select`, then use `SelectSortTrigger`. It automatically:
+
+- uses a dashed border while no value is selected;
+- becomes filled and solid when a value is selected;
+- remains filled while its panel is open;
+- reads and displays the selected label or labels from Select context;
+- rotates the chevron with the same treatment as the normal Select trigger.
+
+The clear footer is independently optional. Add `clearable` to `SelectContent` when the panel
+should offer it.
+
+```tsx
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectSortTrigger,
+} from "@/components/ui/select";
+
+<Select<string>>
+  <SelectSortTrigger label="Status" />
+  <SelectContent width="content" clearable autoFocusFirstItem={false}>
+    <SelectItem value="active">Active</SelectItem>
+    <SelectItem value="paused">Paused</SelectItem>
+  </SelectContent>
+</Select>
+```
+
+The API is documented here while the registry intentionally has no separate `select-sort` item.
+
+## Preselected icons
+
+Declare option icons in the root `items` collection when a closed, preselected trigger must show
+its icon on first paint:
+
+```tsx
+<Select
+  items={[{ value: "sans", label: "Sans-serif", icon: <Type /> }]}
+  defaultValue="sans"
+>
+```
+
+Do this whenever a preselected value must show its icon. `SelectItem`'s own `icon` prop only
+registers when the popup mounts, so on a cold load the closed trigger has nothing to show until
+the panel has opened once. `items` is the mapping that exists beforehand, which is also why the
+label reads from it. Use `iconForValue` when the icon is computed rather than declared.
+Resolution order is the mounted item, then `iconForValue`, then `items`.

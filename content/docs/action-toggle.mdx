@@ -1,7 +1,41 @@
 ---
 title: Action Toggle
-description: An optimistic toggle for asynchronous actions with pending and rollback feedback.
+description: An asynchronous toggle that commits its pressed state only after the action succeeds.
 ---
 
 <ComponentDemo name="action-toggle" />
 <ComponentReference name="action-toggle" />
+
+## API
+
+**Main export:** `ActionToggle`
+
+A toggle whose state has to be earned: it waits on the action, lands when it succeeds, and stays
+put when it fails. Use it for states such as Follow/Following or Subscribe/Subscribed.
+
+## A state that must be earned
+
+Action Button always reverts—its model is idle → outcome → idle, and there is no opt-out.
+`revertAfter={Infinity}` clamps to a 32-bit integer and fires almost immediately. When the new
+state should stick, use Action Toggle:
+
+```tsx
+<ActionToggle
+  action={(following) => (following ? follow(id) : unfollow(id))}
+  icon={<Plus />}
+  icons={{ pressed: <Check /> }}
+  labels={{ pressed: "Following" }}
+>
+  Follow
+</ActionToggle>
+```
+
+It is a separate component rather than a flag on Action Button for the reason Toggle is separate
+from Button: a button does something, this is something afterwards, and the difference is
+`aria-pressed`.
+
+It is deliberately not optimistic. The label holds and the loader runs until the action settles,
+because a control that already reads “Following” while a spinner insists it is still working is
+saying two things at once. A failure needs no rollback, since nothing moved: it shows the error
+briefly and goes quiet. `onPressedChange` fires only on success, so a controlled parent is never
+told about a change that did not happen.

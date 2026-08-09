@@ -15,6 +15,8 @@ elsewhere, locate the directory containing both `registry.json` and `scripts/4af
 
 - To choose or compare components, answer feature/API questions, or check inspector and
   registry parity, read [references/component-catalog.md](references/component-catalog.md).
+- To read one component's complete, agent-friendly reference, run `pnpm 4af docs <component>`;
+  it prints the page's API and notes together with separate install and usage code blocks.
 - To install into another project, use the CLI workflow below.
 - To change the library, read the repository's root `AGENTS.md` first, then inspect the
   component source, registry metadata, and inspector entry that are actually in scope.
@@ -27,6 +29,7 @@ Run from the library repository, using an absolute target path:
 
 ```text
 pnpm 4af list
+pnpm 4af docs <component>
 pnpm 4af doctor --project <absolute-target-project>
 pnpm 4af install <component> --project <absolute-target-project> --dry-run
 pnpm 4af install <component> --project <absolute-target-project>

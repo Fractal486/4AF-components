@@ -1,9 +1,7 @@
-#!/usr/bin/env node
-
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { resolve, relative, dirname, isAbsolute } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawn } from "node:child_process";
 import ts from "typescript";
 
@@ -47,6 +45,7 @@ interface RegistryServer {
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const registryPath = resolve(repoRoot, "registry.json");
 const publicRoot = resolve(repoRoot, "public");
+const docsRoot = resolve(repoRoot, "content", "docs");
 const pnpm = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const SHADCN_VERSION = "4.13.1";
 const shadcnPackagePath = resolve(repoRoot, "node_modules/shadcn/package.json");
@@ -376,6 +375,31 @@ export function runCommand(command: string, args: string[], cwd: string): Promis
   });
 }
 
+interface ComponentDocsModule {
+  renderComponentPageMarkdown: (source: string, name: string) => string;
+}
+
+async function componentDocumentation(name: string | undefined) {
+  if (!name) throw new Error("Missing component name. Run `pnpm 4af list` to see the options.");
+  if (!components.some((item) => item.name === name)) {
+    throw new Error(`Unknown component '${name}'. Run pnpm 4af list to see the options.`);
+  }
+
+  const pagePath = resolve(docsRoot, `${name}.mdx`);
+  if (!existsSync(pagePath)) {
+    throw new Error(`No documentation page found for '${name}'.`);
+  }
+
+  const docsModule = (await import(
+    pathToFileURL(resolve(repoRoot, "lib", "component-docs.ts")).href
+  )) as ComponentDocsModule;
+  return docsModule.renderComponentPageMarkdown(readFileSync(pagePath, "utf8"), name);
+}
+
+export async function docsComponent(name: string | undefined) {
+  process.stdout.write(`${await componentDocumentation(name)}\n`);
+}
+
 function quoteWindowsArg(value: string) {
   if (!/[\s"]/u.test(value)) return value;
   return `"${value.replace(/(\\*)"/gu, "$1$1\\\"").replace(/(\\*)$/u, "$1$1")}"`;
@@ -447,9 +471,12 @@ function printHelp() {
 
 Commands:
   pnpm 4af list
+  pnpm 4af docs <component>
   pnpm 4af doctor --project <path>
   pnpm 4af install <component> --project <path> [--overwrite] [--dry-run]
 
+The docs command prints one component's complete Markdown reference, including separate
+install and usage blocks plus the API and notes from its Fumadocs page.
 The install command builds and serves the private registry automatically, then invokes
 shadcn ${SHADCN_VERSION} non-interactively in the target project. The 4AF theme is included by dependencies.
 `);
@@ -461,6 +488,8 @@ export async function main(args = process.argv.slice(2)) {
   try {
     if (command === "list") {
       listComponents();
+    } else if (command === "docs") {
+      await docsComponent(positional[0]);
     } else if (command === "doctor") {
       await doctor(options);
     } else if (command === "install") {

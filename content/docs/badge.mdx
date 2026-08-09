@@ -5,3 +5,21 @@ description: A compact label for statuses, categories, and counts.
 
 <ComponentDemo name="badge" />
 <ComponentReference name="badge" />
+
+## API
+
+**Main export:** `Badge`
+
+A status badge with outline and status treatments, an optional icon or dot, and animated label
+and glyph changes.
+
+## Layout animation
+
+Badge animates its pill resizing when its content changes. Set `animateLayout={false}` for a
+static badge inside a list that filters or reorders, such as a Command Palette or table row.
+Otherwise it FLIP-animates its own position as the row moves—sliding within a row that does not
+animate and adding layout cost. A badge whose content actually changes keeps the default.
+
+```tsx
+<Badge animateLayout={false}>Beta</Badge>
+```

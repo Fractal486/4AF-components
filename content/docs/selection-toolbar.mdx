@@ -5,3 +5,52 @@ description: A contextual action toolbar that appears for a selection of items.
 
 <ComponentDemo name="selection-toolbar" />
 <ComponentReference name="selection-toolbar" />
+
+## API
+
+**Main exports:** `SelectionToolbar`, `SelectionToolbarButton`,
+`SelectionToolbarActionButton`, `SelectionToolbarToggle`, `SelectionToolbarActionToggle`,
+`SelectionToolbarToggleGroup`, `SelectionToolbarSeparator`, `useSelectionToolbar`
+
+A bar of ghost-button actions over selected text, using the tooltip material. A Base UI Popover
+anchors to the range itself so it follows the text while scrolling, and Base UI Toolbar provides
+roving tabindex. Its items may be plain, async with pending, success, and error in place, toggle,
+deferred toggle, or exclusive group. It swallows `mousedown` so a press cannot collapse the
+selection, and hands the captured text and range to every action.
+
+## Item kinds
+
+The bar's items mirror the menu's rows without nested panels. Each is the library component that
+already owns that behaviour rather than a toolbar-local reimplementation.
+
+| Item | Built on | Default dismissal |
+| --- | --- | --- |
+| `SelectionToolbarButton` | Button | Dismisses; `keepOpen` opts out |
+| `SelectionToolbarActionButton` | Action Button | Stays; `closeOnSuccess` opts in |
+| `SelectionToolbarToggle` | Toggle | Stays open |
+| `SelectionToolbarActionToggle` | Action Toggle | Stays open |
+| `SelectionToolbarToggleGroup` | Base UI `ToggleGroup` in `Toolbar.Group` | — |
+| `SelectionToolbarSeparator` | Base UI `Toolbar.Separator` | — |
+
+Async actions remain visible because their outcome appears inside the toolbar. Toggles remain
+visible because users often operate neighboring states. A plain button completes an action and
+leaves.
+
+Every action receives the selection as it was when the bar opened: `onAction(text, range)`,
+`action(text, range)`, or `onAction(pressed, text, range)`. By the time a click handler runs,
+the live selection may belong to something else. Do not call `window.getSelection()` from an
+action.
+
+`variant="destructive"` is quieted to red ink on a neutral hover rather than a solid red fill,
+matching the menu's destructive row. A 24px slab of red inside a 32px bar is louder than the bar
+it sits in.
+
+For state derived from the active range, render a small child component and call
+`useSelectionToolbar()` inside it:
+
+```tsx
+function HighlightToggle() {
+  const { range } = useSelectionToolbar();
+  return <SelectionToolbarToggle pressed={isHighlighted(range)} … />;
+}
+```

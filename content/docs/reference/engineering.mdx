@@ -1,0 +1,110 @@
+---
+title: Engineering
+description: The component contract, repository boundaries, motion rules, and documentation parity.
+---
+
+The library is valuable because every component follows one contract. The implementation may
+vary, but behavior, composition, state, styling, and installation remain predictable.
+
+## Component contract
+
+- Base UI is the canonical behavior layer for focus management, keyboard navigation, roving
+  focus, dialogs, popups, collision handling, dismissal, and ARIA wiring.
+- Components forward props and refs, support controlled and uncontrolled state where relevant,
+  and allow element replacement when the underlying element may reasonably change.
+- Variants live beside the component in a `.variants.ts` file and use CVA.
+- State is exposed on the element through attributes such as `data-state`, `data-variant`, and
+  `data-loading` so styling and tests do not depend on hidden implementation branches.
+- Components use semantic theme tokens rather than fixed colors or raw palette utilities.
+
+## Motion contract
+
+Hover, press, focus, and simple fades are CSS-first. Motion is used only when an element must
+remain mounted for exit, follow a gesture, settle with spring physics, or animate layout.
+
+Transitions name their properties and avoid animating layout properties frame by frame. CSS
+durations use the shared motion tokens. Reduced motion is handled in both CSS and JavaScript
+because the cascade cannot alter a Motion transition object.
+
+## Repository boundaries
+
+Three related surfaces serve different jobs:
+
+| Surface | Meaning |
+| --- | --- |
+| Registry item | A source bundle accepted by `pnpm 4af install` |
+| Export or subcomponent | An API bundled inside a registry item, such as `SelectSortTrigger` inside `select` |
+| Demo entry | Interactive documentation for a complete item or one particular composition |
+
+An exported helper does not automatically need another install item, and a demo does not define
+the registry boundary.
+
+```text
+registry/     Portable library source
+  lib/        Shared utilities and motion presets
+  ui/         Installable component source
+inspector/    Data-driven demos, settings, and schemas
+stories/      Fumadocs demo adapter
+content/docs/ Routed MDX documentation
+app/          Next.js and Fumadocs shell
+_incoming/    Temporary staging; never imported
+registry.json Install metadata and dependency graph
+scripts/4af.ts
+              Deterministic list, doctor, and install workflow
+```
+
+The dependency direction is `app/content/stories` → `inspector` → `registry`. Portable code
+must never import from the documentation or demo layers.
+
+## Shared foundation
+
+These registry items are installed transitively rather than shown as standalone component
+pages:
+
+| Item | Responsibility |
+| --- | --- |
+| `4af-theme` | Semantic colors, typography, radii, elevation, keyframes, and motion durations |
+| `cn` | Class-name composition with `clsx` and `tailwind-merge` |
+| `slot` | Small local helper for `asChild` composition |
+| `motion` | Shared spring and easing presets |
+| `use-action` | Run, pending, outcome, and revert state shared by Action Button and asynchronous menu rows |
+
+## Documentation parity
+
+Every installable UI item has one component page containing its demo, settings, installation,
+usage, and component-specific guidance. The generated [component catalog](/docs/reference/components)
+and overview count read `registry.json` directly.
+
+Pages load their established demo entries through the shared adapter. Sidebar Layout
+intentionally reuses the Sidebar demonstration because it is a page-frame
+companion rather than a standalone primitive. Every page uses the shared Install and Usage
+reference. Foundation items such as the theme, `cn`, `slot`, and motion presets install as
+dependencies and intentionally have no standalone demos. Append `.md` to any documentation URL
+to read its Markdown representation.
+
+The demo layer also contains example helpers for Action Button, Badge cycling, Command Palette,
+Morph, Select fruit icons, Sidebar, and Table of Contents. They hold demo state, sample data, or
+page composition and are intentionally not installable components. `inspector/` is demo
+infrastructure only; it has no routed site shell.
+
+The Fumadocs site is a review and documentation surface, not the registry itself. Registry and
+source remain authoritative.
+
+## Working on the repository
+
+```powershell
+pnpm dev
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm registry:validate
+pnpm registry:build
+```
+
+Never run `pnpm build` while `pnpm dev` is running. They share `.next`, and a production build
+can remove CSS chunks that the development server is still serving.
+
+When a component is added or renamed, update `registry.json`, its demo entry when it has one, and
+its `content/docs/` page. Navigation, the component count, and the public catalog are derived from
+those sources. Use `pnpm 4af list` to confirm the installable catalog rather than maintaining a
+second hard-coded CLI list.

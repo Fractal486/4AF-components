@@ -5,3 +5,78 @@ description: A searchable keyboard-first command surface composed from 4AF primi
 
 <ComponentDemo name="command-palette" />
 <ComponentReference name="command-palette" />
+
+## API
+
+**Main exports:** `CommandPalette`, custom panel, list, row, and action parts,
+`useCommandSearch`, `useCommandPanelHighlight`
+
+A keyboard-first command and search dialog with fuzzy ranking, groups, nested and custom panels,
+async, server-driven, and paginated search, header text fields, per-panel header actions, badges,
+checkboxes, keybinds, destructive actions, and keyboard navigation.
+
+## Composition
+
+It opens and closes with no enter or exit animation on either the backdrop or the panel. That is
+deliberate: a palette is summoned mid-thought and typing usually begins before it has finished
+arriving, so an entrance is time spent between deciding and typing. With nothing to play out,
+the portal mounts and unmounts under Base UI directly—no `keepMounted`, no `AnimatePresence`—and
+the item carries no Motion dependency.
+
+The registry item includes more than the root popup:
+
+- root groups and rows with icons, descriptions, badges, keybinds, and destructive state;
+- nested item lists;
+- arbitrary custom panels opened through `helpers.openPanel`;
+- custom panel header search fields or traditional text fields;
+- Escape-to-clear for `type="search"` header fields, while traditional text fields use Escape
+  to go back;
+- per-panel `headerActions`, suitable for Select and Select Sort controls—use the default
+  `size="sm"` so they fit the palette;
+- custom list rows with trailing badges or selection checkboxes;
+- grouped action panels with section labels, icons, keybinds, search, and destructive actions;
+- async or server-driven search: pass `onSearch` on the root with `groups` as the resting state,
+  or call `useCommandSearch` in a custom panel and render `CommandPanelLoading` for its first-load
+  state. Root failures render `searchErrorMessage`; custom panels receive the failure as the
+  hook's `error`;
+- paginated custom panels: observe the shared keyboard and pointer highlight with
+  `useCommandPanelHighlight`, fetch when the last row is reached, and pass that request as
+  `additionalRefreshing` to `useCommandSearch` so the panel header keeps showing its inline
+  loader.
+
+The demo's Projects, Rename Project, and New Project flows are examples built from these public
+APIs, not hard-coded private behaviour.
+
+An actions row normally chooses and closes the menu. Three optional fields make it report in
+place instead, keeping the menu open—the same shapes Dropdown Menu offers, expressed as data
+because a palette action is data:
+
+| Shape | Fields | Dropdown equivalent |
+| --- | --- | --- |
+| Runs, confirms, reverts | `action` | `DropdownMenuActionItem` |
+| Runs, then lands checked | `action` + `checked`/`defaultChecked` | `DropdownMenuCheckboxItem` with `action` |
+| Flips at once, morphing | `checked`/`defaultChecked` | `DropdownMenuCheckboxItem` + `Morph` |
+| Asks, then commits and closes | `confirm` + `onSelect` | `DeleteButton` |
+
+```tsx
+<CommandPanelActions
+  items={[
+    { id: "sync", label: "Sync now", action: sync, labels: { pending: "Syncing…", success: "Synced" } },
+    { id: "watch", label: "Watch", defaultChecked: false, action: watch, labels: { checked: "Watching" } },
+    { id: "star", label: "Star", defaultChecked: false, labels: { checked: "Starred" } },
+  ]}
+/>
+```
+
+`labels` and `icons` carry the other states—checked, pending, success, and error—each falling back
+to the row's own label or icon. Pending and error default to the ASCII loader and warning
+triangle. `revertAfter` and `pendingDelay` behave as on Action Button. Neither toggle shows a
+success tick: the row having become the other thing is the confirmation. An item with none of
+these fields is unchanged; it closes the menu and calls `onSelect`.
+
+`confirm` is the exception that closes. The first press arms and morphs the row to
+`confirm.label`, “Confirm?” by default; the second runs `onSelect` and dismisses the menu by the
+ordinary path. It disarms on Escape, when the menu closes, and after `confirm.resetAfter`—three
+seconds by default, while `0` means never. A press within 350ms of arming is ignored, so one
+double-click cannot confirm what it just armed. These are the same rules as Delete Button, the
+standalone version of this row.

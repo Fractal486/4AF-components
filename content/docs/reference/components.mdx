@@ -1,6 +1,13 @@
 ---
-title: Components Guide
-description: The complete 4AF component catalog, design foundation, and engineering guidance.
+title: Components
+description: Every installable 4AF component, generated directly from the registry.
 ---
 
-<include cwd>COMPONENTS.md</include>
+The catalog contains **<ComponentCount /> installable components**. Each entry below comes
+from `registry.json`, the same source read by `pnpm 4af list`, so this page cannot drift from
+the installer.
+
+Shared foundation items such as the theme, `cn`, `slot`, motion presets, and `use-action`
+are installed transitively and do not appear as standalone components.
+
+<ComponentCatalog />

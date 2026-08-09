@@ -5,8 +5,12 @@ interactive component demos. Components are copied into other projects through a
 shadcn registry, so you keep ownership of the source instead of installing a public npm
 package.
 
-See [COMPONENTS.md](./COMPONENTS.md) for the complete registry catalog, visual and
-engineering style, CLI workflow, bundled subcomponents, and composition patterns.
+Documentation is split by purpose: start with the [overview](./content/docs/index.mdx), then
+use the generated [component catalog](./content/docs/reference/components.mdx),
+[CLI reference](./content/docs/reference/cli.mdx),
+[design system](./content/docs/reference/design.mdx), or
+[engineering contract](./content/docs/reference/engineering.mdx). Component-specific APIs
+and composition guidance live on each component's own page.
 
 ## Structure
 
@@ -38,6 +42,7 @@ pnpm typecheck           # Check TypeScript
 pnpm lint                # Check code conventions and portability
 pnpm test                # Run component and registry tests
 pnpm 4af list            # List installable components
+pnpm 4af docs button     # Print a component's complete Markdown reference
 pnpm 4af doctor --project <path>
 pnpm 4af install button --project <path>
 pnpm registry:validate   # Validate registry.json and its files
@@ -68,9 +73,11 @@ pnpm registry:build      # Generate private install files in public/r
    ```
 
 Dependencies and the 4AF theme are included automatically. Agents should use this CLI
-instead of manually copying files or running the lower-level shadcn command.
+instead of manually copying files or running the lower-level shadcn command. `pnpm 4af docs
+<component>` prints the matching page's API, notes, install command, and usage example as
+plain Markdown.
 
 ## Component catalog
 
-The complete, maintained catalog lives in [COMPONENTS.md](./COMPONENTS.md). Run
-`pnpm 4af list` for the exact set of names accepted by the installer.
+The website catalog is generated from `registry.json`. Run `pnpm 4af list` for the exact set
+of names accepted by the installer.

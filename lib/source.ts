@@ -1,6 +1,7 @@
 import { loader } from "fumadocs-core/source";
 import type { Folder, Item, Node } from "fumadocs-core/page-tree";
 import { defineDocs } from "fumadocs-mdx/macro";
+import { COMPONENT_FAMILIES } from "@/lib/component-catalog";
 
 const docs = defineDocs({
   dir: "content/docs",
@@ -10,57 +11,6 @@ const docs = defineDocs({
     },
   },
 });
-
-const COMPONENT_GROUPS = [
-  { name: "Alert", slugs: ["alert"] },
-  { name: "Badge", slugs: ["badge"] },
-  {
-    name: "Button",
-    index: "button-overview",
-    slugs: [
-      "button",
-      "button-group",
-      "toggle",
-      "morph",
-      "copy-button",
-      "action-button",
-      "action-toggle",
-      "delete-button",
-    ],
-  },
-  { name: "Checkbox", slugs: ["checkbox"] },
-  { name: "Collapsible", slugs: ["collapsible"] },
-  { name: "Command Palette", slugs: ["command-palette"] },
-  { name: "Dialog", index: "dialog-overview", slugs: ["dialog", "alert-dialog"] },
-  { name: "Dropdown Menu", slugs: ["dropdown-menu"] },
-  { name: "Empty", slugs: ["empty"] },
-  { name: "Hover Card", slugs: ["hover-card"] },
-  { name: "Input", index: "input-overview", slugs: ["input", "textarea"] },
-  { name: "Popover", slugs: ["popover"] },
-  { name: "Progress", slugs: ["progress"] },
-  { name: "Radio", slugs: ["radio"] },
-  {
-    name: "Select",
-    index: "select-overview",
-    slugs: ["select", "select-search", "select-motion", "select-motion-search"],
-  },
-  { name: "Selection Toolbar", slugs: ["selection-toolbar"] },
-  { name: "Separator", slugs: ["separator"] },
-  { name: "Sheet", slugs: ["sheet"] },
-  { name: "Sidebar", index: "sidebar-overview", slugs: ["sidebar", "sidebar-layout"] },
-  { name: "Skeleton", slugs: ["skeleton"] },
-  { name: "Slider", slugs: ["slider"] },
-  { name: "Switch", slugs: ["switch"] },
-  {
-    name: "Table of Contents",
-    index: "table-of-contents-overview",
-    slugs: ["table-of-contents", "table-of-contents-lines"],
-  },
-  { name: "Tabs", slugs: ["tabs"] },
-  { name: "Text Shimmer", slugs: ["text-shimmer"] },
-  { name: "Toast", slugs: ["toast"] },
-  { name: "Tooltip", slugs: ["tooltip"] },
-] as const;
 
 export const source = loader({
   baseUrl: "/docs",
@@ -82,13 +32,13 @@ export const source = loader({
             componentPages.map((page) => [page.url.split("/").pop(), page]),
           );
           const groupIndexSlugs = new Set<string>(
-            COMPONENT_GROUPS.flatMap((group) =>
+            COMPONENT_FAMILIES.flatMap((group) =>
               "index" in group && group.index ? [group.index] : [],
             ),
           );
           const groupedSlugs = new Set<string>();
           const componentFolders: Node[] = [];
-          for (const group of COMPONENT_GROUPS) {
+          for (const group of COMPONENT_FAMILIES) {
             const { name, slugs } = group;
             const indexSlug = "index" in group ? group.index : undefined;
             const children = slugs.flatMap((slug) => {

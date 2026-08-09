@@ -7,3 +7,20 @@ The preview demonstrates `SidebarLayout` together with the `Sidebar` family it a
 
 <ComponentDemo name="sidebar-layout" />
 <ComponentReference name="sidebar-layout" />
+
+## API
+
+**Main export:** `SidebarLayout`
+
+An optional reusable viewport shell that composes Sidebar with a contained, independently
+scrolling inset surface, left-aligned collapse control, page title, and header actions.
+
+## Layout ownership
+
+Sidebar Layout constrains the application shell to the viewport, keeps navigation and the header
+stable, and gives the inset content region ownership of vertical scrolling. It provides the
+left-side collapse control, page title, and optional right-side header actions.
+
+It remains an installable companion rather than part of Sidebar itself because many consumers
+need the navigation family without this page-frame strategy. Boxed previews can override the
+provider height with a normal `className`, as this page's demo does with `h-full`.
