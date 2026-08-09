@@ -54,7 +54,7 @@ export interface TableOfContentsProps
   rootRef?: RefObject<HTMLElement | null>;
 }
 
-/** Inset (px) so the marker's rounded ends sit inside the lit rows rather than on their edges. */
+/** Inset (px) so the marker's rounded ends sit inside lit rows rather than on their edges. */
 const MARKER_PAD = 4;
 /** Fallback for browsers that do not emit `scrollend` after programmatic smooth scrolling. */
 const SCROLL_SETTLE_DELAY = 120;
@@ -334,7 +334,10 @@ export function TableOfContents({
         })()
       : null;
   const marker = markerRange;
-  const railPath = geometry ? `M 1 ${geometry.top} L 1 ${geometry.top + geometry.total}` : "";
+  const railPath = geometry
+    ? `M 1 ${geometry.top + MARKER_PAD} L 1 ${geometry.top + geometry.total - MARKER_PAD}`
+    : "";
+  const markerPath = geometry ? `M 1 ${geometry.top} L 1 ${geometry.top + geometry.total}` : "";
 
   return (
     <nav
@@ -362,7 +365,7 @@ export function TableOfContents({
             {/* The marker: a single dash covering the selected range, slid into place. Round caps
                 come from the stroke itself, so they never distort with length. */}
             <path
-              d={railPath}
+              d={markerPath}
               className="stroke-foreground transition-[stroke-dasharray,stroke-dashoffset,opacity] duration-(--duration-slower) ease-out"
               strokeWidth={2}
               strokeLinecap="round"

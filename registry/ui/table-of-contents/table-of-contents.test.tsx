@@ -64,6 +64,9 @@ describe("TableOfContents", () => {
     expect(container.querySelectorAll("svg path")[0]).toHaveAttribute("stroke-dasharray", "3 3");
     expect(container.querySelectorAll("svg path")[0]).toHaveAttribute("stroke-width", "1");
     expect(container.querySelectorAll("svg path")[1]).toHaveStyle({ opacity: "1" });
+    expect((container.querySelectorAll("svg path")[1] as SVGPathElement).style.strokeDashoffset).toBe(
+      "-4",
+    );
 
     root.scrollTop = 620;
     fireEvent.scroll(root);
@@ -138,8 +141,13 @@ describe("TableOfContents", () => {
     expect(screen.getByRole("link", { name: "Second visible" })).not.toHaveAttribute(
       "aria-current",
     );
+    expect(container.querySelectorAll("svg path")[0]).toHaveAttribute("d", "M 1 4 L 1 50");
+    expect(container.querySelectorAll("svg path")[1]).toHaveAttribute("d", "M 1 0 L 1 54");
     expect((container.querySelectorAll("svg path")[1] as SVGPathElement).style.strokeDasharray).toBe(
       "16 55",
+    );
+    expect((container.querySelectorAll("svg path")[1] as SVGPathElement).style.strokeDashoffset).toBe(
+      "-4",
     );
 
     root.remove();
