@@ -1,0 +1,13 @@
+---
+title: Morph
+description: A size-stable animated content swap for icons, labels, and status changes.
+---
+
+<ComponentDemo name="morph" />
+<ComponentReference name="morph" />
+
+## Notes
+
+All possible items reserve the same grid cell, so the surrounding control never changes
+size during a swap. AnimatePresence keeps outgoing content alive for its exit animation;
+reduced motion changes the transition duration to zero.

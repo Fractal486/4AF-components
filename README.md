@@ -1,28 +1,36 @@
 # 4AF Components
 
-A private React component library and a small inspector for reviewing each component in
-isolation. Components are copied into other projects through a local shadcn registry, so
-you keep ownership of the source instead of installing a public npm package.
+A private React component library with a self-hosted Fumadocs site for documentation and
+interactive component stories. Components are copied into other projects through a local
+shadcn registry, so you keep ownership of the source instead of installing a public npm
+package.
 
 See [COMPONENTS.md](./COMPONENTS.md) for the complete registry catalog, visual and
-engineering style, CLI workflow, bundled subcomponents, and inspector-only patterns.
+engineering style, CLI workflow, bundled subcomponents, and composition patterns.
 
 ## Structure
 
 ```text
 registry/     Reusable components, utilities, and motion presets
-inspector/    Demos and settings for reviewing components
-app/          The small Next.js site that renders the inspector
+stories/      Fumadocs Story definitions plus the shared legacy-demo adapter
+content/docs/ Fumadocs MDX pages for the complete installable catalog
+app/          The Next.js shell, docs routes, and local search endpoint
+inspector/    Legacy demo schemas consumed by the shared Fumadocs adapter
 _incoming/    Temporary staging for downloaded components; never imported
 ```
 
-The dependency direction is deliberately one-way: `app` → `inspector` → `registry`.
-Anything under `registry/` must remain independent from Next.js and the inspector.
+The dependency direction remains one-way: `app/content/stories` → `inspector` → `registry`.
+Anything under `registry/` must remain independent from Next.js, Fumadocs, and the demo
+site.
+
+Every installable component now has a Fumadocs page. Each page includes an interactive demo
+and a shared Install & Usage panel. The old inspector routes are gone, but their schemas stay
+useful as the demo source until each page needs a richer authored story.
 
 ## Everyday commands
 
 ```bash
-pnpm dev                 # Open the inspector
+pnpm dev                 # Open the Fumadocs component site
 pnpm typecheck           # Check TypeScript
 pnpm lint                # Check code conventions and portability
 pnpm test                # Run component and registry tests

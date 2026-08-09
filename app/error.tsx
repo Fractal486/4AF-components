@@ -5,9 +5,8 @@ import { useEffect } from "react";
 import { Button } from "@/registry/ui/button/button";
 
 /**
- * The route-level boundary. It catches renders under the shell — which is every page —
- * but not the shell itself; a throw in `layout.tsx` needs `global-error.tsx`, and that
- * ships its own <html>, which isn't worth carrying for a two-route site.
+ * The route-level boundary. It catches renders under the Fumadocs shell, but not the
+ * root layout itself; a throw there would require a separate global error boundary.
  */
 export default function RouteError({
   error,
@@ -27,7 +26,7 @@ export default function RouteError({
       <p className="font-mono text-xs tracking-widest text-subtle-foreground uppercase">Error</p>
       <h1 className="text-lg font-medium text-foreground">This component threw</h1>
       <p className="max-w-sm text-sm text-muted-foreground">
-        {error.message || "Something failed while rendering the inspector."}
+        {error.message || "Something failed while rendering the component documentation."}
       </p>
       <Button onClick={reset} variant="outline" size="sm" className="mt-3">
         <RotateCw />

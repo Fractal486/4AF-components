@@ -1,0 +1,13 @@
+---
+title: Button
+description: A composable Base UI button with variants, loading state, asChild support, and spring press feedback.
+---
+
+<ComponentDemo name="button" />
+<ComponentReference name="button" />
+
+## Notes
+
+The native-button path uses Motion for a spring press. `asChild` preserves the child's
+semantics and uses CSS press feedback because wrapping an arbitrary element would create
+invalid DOM. Loading blocks interaction without changing the control's dimensions.

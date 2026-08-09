@@ -72,18 +72,20 @@ separate `select-sort` registry item.
 ## Repository layout
 
 ```text
-registry/     Portable library source. Never imports from app/ or inspector/.
+registry/     Portable library source. Never imports from app/, content/, stories/, or inspector/.
   lib/        Shared cn, slot, and motion helpers.
   ui/         Installable component source.
-inspector/    Web UI demos and controls. Imports from registry/.
-app/          Minimal Next.js shell for the inspector.
+inspector/    Legacy demo schemas and controls consumed by Fumadocs pages.
+stories/      Authored Fumadocs stories and the shared legacy-demo adapter.
+content/docs/ Fumadocs MDX pages for the installable catalog.
+app/          Next.js shell, Fumadocs routes, and self-hosted search.
 _incoming/    Temporary staging for downloaded source; never imported.
 registry.json Installable item metadata and dependency graph.
 scripts/4af.ts
               The deterministic list, doctor, and install workflow.
 ```
 
-The dependency direction is always `app` → `inspector` → `registry`.
+The dependency direction is always `app/content/stories` → `inspector` → `registry`.
 
 ## CLI
 
@@ -712,16 +714,16 @@ ownership of vertical scrolling, and supplies the header title, left-side collap
 and optional right-side header actions. A boxed preview can override the provider height
 through `className`, as the inspector does with `h-full`.
 
-## Inspector and registry parity
+## Documentation and registry parity
 
-The inspector is a visual review site, not the registry itself.
+The Fumadocs site is a visual review and documentation surface, not the registry itself.
 
-### Registry items and inspector entries
+### Registry items and documentation pages
 
-Every installable UI item except `sidebar-layout` has a dedicated inspector entry.
-`sidebar-layout` is intentionally represented within the Sidebar demo because it is a
-page-frame companion, not a standalone primitive. The two Table of Contents entries are stacked
-on one page but rendered in separate demo canvases. Shared foundation items such as the theme,
+Every installable UI item has a dedicated Fumadocs page. `sidebar-layout` intentionally
+reuses the Sidebar demo because it is a page-frame companion, not a standalone primitive.
+Pages lazy-load their established inspector entry through a shared adapter, and each page
+includes the shared Install & Usage reference panel. Shared foundation items such as the theme,
 `cn`, `slot`, and motion presets are installed as dependencies and intentionally do not appear
 as standalone demos.
 
@@ -753,7 +755,7 @@ pnpm registry:build
 Never run `pnpm build` while `pnpm dev` is running. They share `.next`, and the production
 build can remove CSS chunks that the development server is still trying to serve.
 
-When a component is added or renamed, update `registry.json`, its inspector entry when it
-has one, and this guide. Use `pnpm 4af list` to confirm the installable catalog rather than
-maintaining a second hard-coded CLI list.
+When a component is added or renamed, update `registry.json`, its demo entry when it has
+one, its `content/docs/` page, the docs navigation, and this guide. Use `pnpm 4af list` to
+confirm the installable catalog rather than maintaining a second hard-coded CLI list.
 

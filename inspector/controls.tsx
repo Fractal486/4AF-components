@@ -2,14 +2,8 @@
 
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Input } from "@/registry/ui/input/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/registry/ui/select/select";
 import { Slider } from "@/registry/ui/slider/slider";
+import { Tabs, TabsList, TabsTab } from "@/registry/ui/tabs/tabs";
 import { cn } from "@/registry/lib/cn";
 import type { ControlDef, ControlSchema, ControlValues } from "./schema";
 
@@ -31,15 +25,16 @@ export function Controls<S extends ControlSchema>({
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="font-mono text-2xs tracking-widest text-subtle-foreground uppercase">
+      <p className="text-[15px] leading-5 font-semibold text-fd-foreground">
         Settings
-      </h2>
+      </p>
       <div className="flex flex-col gap-3">
         {entries.map(([key, def]) => (
           <Control
             key={key}
             id={idPrefix ? `${idPrefix}-${key}` : key}
             def={def}
+            label={def.label ?? humanizeLabel(key)}
             value={values[key]}
             values={values as Record<string, unknown>}
             onChange={(v) => onChange(key, v)}
@@ -53,12 +48,14 @@ export function Controls<S extends ControlSchema>({
 function Control({
   id,
   def,
+  label,
   value: rawValue,
   values,
   onChange,
 }: {
   id: string;
   def: ControlDef;
+  label: string;
   value: unknown;
   values: Record<string, unknown>;
   onChange: (value: unknown) => void;
@@ -69,7 +66,6 @@ function Control({
   // and Fast Refresh keeps the old state around. Without it, the field flips from
   // uncontrolled to controlled and Base UI (rightly) warns.
   const value = rawValue === undefined ? def.defaultValue : rawValue;
-  const label = def.label ?? id;
 
   if (def.kind === "boolean") {
     const disabled = def.disabledWhen?.(values) ?? false;
@@ -78,7 +74,7 @@ function Control({
     return (
       <label
         className={cn(
-          "flex items-center justify-between gap-4",
+          "flex items-center gap-2",
           disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
         )}
       >
@@ -95,75 +91,85 @@ function Control({
 
   if (def.kind === "select") {
     const labelId = `${id}-label`;
-    // A record of value → label so Base UI can resolve the closed trigger's text from the
-    // selected value (options are a bare string array; the record gives it the pairings).
-    const items = Object.fromEntries(def.options.map((option) => [option, option]));
 
     return (
-      // Inline, so the row reads as one phrase — "Variant: default ⌄". The trigger is the
-      // borderless (`outline={false}`) one sized to its content; `h-auto` drops the field
-      // height so the row sits on the label's baseline rather than a 40px hit box.
-      <div className="flex items-baseline gap-1">
-        <span id={labelId} className="text-sm text-muted-foreground">
+      <div className="flex min-w-0 items-center gap-2">
+        <span id={labelId} className="shrink-0 text-sm text-muted-foreground">
           {label}:
         </span>
-        <Select
-          items={items}
+        <Tabs
           value={value as string}
           onValueChange={(next) => onChange(next)}
+          className="min-w-0"
         >
-          <SelectTrigger outline={false} className="h-auto" aria-labelledby={labelId}>
-            <SelectValue />
-          </SelectTrigger>
-          {/* `content` sizes the panel to its rows rather than the narrow borderless
-              trigger, which would clip the longest option. */}
-          <SelectContent width="content">
+          <TabsList
+            aria-label={label}
+            className="max-w-full overflow-x-auto"
+          >
             {def.options.map((option) => (
-              <SelectItem key={option} value={option}>
-                {option}
-              </SelectItem>
+              <TabsTab key={option} value={option}>
+                {humanizeLabel(option)}
+              </TabsTab>
             ))}
-          </SelectContent>
-        </Select>
+          </TabsList>
+        </Tabs>
       </div>
     );
   }
 
   if (def.kind === "number") {
-    // The circle Slider owns its own label and value readout, with a dot at each step
-    // (the Slider hides them automatically once there are more than 50).
+    // Keep the label, rail, and value in one compact row so numeric props follow their
+    // names instead of taking a full-width line in the settings strip.
     return (
-      <Slider
-        thumb="knob"
-        size="sm"
-        showTicks={false}
-        label={label}
-        min={def.min}
-        max={def.max}
-        step={def.step}
-        value={value as number}
-        onValueChange={onChange}
-      />
+      <div className="flex min-w-52 items-center gap-2">
+        <span className="shrink-0 text-sm text-muted-foreground">{label}:</span>
+        <Slider
+          aria-label={label}
+          className="w-28 shrink-0 origin-center scale-y-[0.85]"
+          thumb="knob"
+          size="sm"
+          showTicks={false}
+          showValue={false}
+          min={def.min}
+          max={def.max}
+          step={def.step}
+          value={value as number}
+          onValueChange={onChange}
+        />
+        <output className="min-w-8 text-right text-sm tabular-nums text-foreground">
+          {value as number}
+        </output>
+      </div>
     );
   }
 
   const labelId = `${id}-label`;
 
   return (
-    <div className="flex flex-col gap-1.5">
-      {/* A `<span>`, not a `<label htmlFor>`: it still names the field via `aria-labelledby`,
-          but clicking the text no longer focuses the input. */}
-      <span id={labelId} className="text-sm text-muted-foreground">
-        {label}
+    <label className="flex items-center gap-2">
+      <span id={labelId} className="shrink-0 text-sm text-muted-foreground">
+        {label}:
       </span>
       <Input
         id={id}
         aria-labelledby={labelId}
         tone="accent"
+        className="w-48"
         value={value as string}
         placeholder={def.placeholder}
         onChange={(e) => onChange(e.target.value)}
       />
-    </div>
+    </label>
   );
+}
+
+function humanizeLabel(key: string) {
+  return key
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[-_]+/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }

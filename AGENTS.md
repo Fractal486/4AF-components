@@ -4,12 +4,13 @@ A personal component library. Components are pulled from public libraries, rebui
 contract below, and inspected through a deliberately minimal site.
 
 ```
-registry/     THE LIBRARY. Portable. Must never import from app/ or inspector/.
+registry/     THE LIBRARY. Portable. Must never import from app/, content/, stories/, or inspector/.
   lib/        cn, slot, motion presets — shared by components.
   ui/<name>/  <name>.tsx + <name>.variants.ts
-inspector/    THE SITE. Imports registry. The reverse is a lint error, on purpose.
-  entries/    One file per component: demo and settings schema.
-app/          Two routes and globals.css. That's the whole site.
+stories/      FUMADOCS STORY. Authored stories plus the shared legacy-demo adapter.
+content/docs/ FUMADOCS MDX. One routed page per installable component.
+app/          Next.js shell, Fumadocs routes, and self-hosted search.
+inspector/    Legacy demo schemas consumed by Fumadocs pages. Never routed directly.
 _incoming/    Raw downloads, gitignored. Staging only — never imported.
 ```
 
@@ -122,9 +123,8 @@ Plus one-off sources for specific jobs (loaders, charts). Same loop applies.
    `asChild`.
 3. **Tokens only.** No hex, no `slate-*`/`zinc-*`. Semantic tokens (`bg-surface`,
    `text-muted-foreground`, `shadow-border`) or the ramps (`--color-accent-*`).
-4. **Variants + settings**, then an entry in `inspector/entries/` and one line in
-   `inspector/index.ts`.
-5. **Review at 4x**, then in `REDUCED`, then by keyboard only, then in both themes.
+4. **Variants + Story controls**, then a `.story.tsx` definition, client demo, and MDX page.
+5. **Review at 4x**, then in reduced motion, then by keyboard only, then in both themes.
 6. `/review-animations` and `/code-review`.
 
 ## Design foundation (`app/globals.css`)
@@ -156,3 +156,13 @@ driven by `data-icon-start` / `data-icon-end`.
 Buttons and cards get depth from **`shadow-border`**, not `border`. A shadow is built from
 transparency, so it sits correctly on any background. Keep real borders for dividers and
 table cells, where the job is separation, not elevation.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

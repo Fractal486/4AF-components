@@ -15,7 +15,7 @@ export const buttonEntry = defineEntry({
     icon: select(["none", "leading", "trailing"], "none"),
     loading: bool(false),
     disabled: bool(false),
-    asChild: bool(false, "asChild (render as link)"),
+    asChild: bool(false, "Render as link"),
   },
   render({ variant, size, label, icon, loading, disabled, asChild }) {
     const isIconOnly = size.startsWith("icon");

@@ -1,0 +1,65 @@
+---
+title: Overview
+description: A small, portable React component library built on Base UI.
+---
+
+4AF Components is a personal library of polished, reusable React components. It is built on
+[Base UI](https://base-ui.com/) for behavior, designed around composable APIs, and distributed
+through a private shadcn-compatible registry.
+
+The library is intentionally small. Each component is refined to share the same tokens,
+motion rules, accessibility expectations, and installation workflow instead of becoming a
+collection of unrelated snippets.
+
+## What the library values
+
+- **Base UI behavior.** Focus management, dismissal, keyboard navigation, and other interaction
+  primitives come from Base UI rather than hand-rolled copies.
+- **Composable APIs.** Components forward props and refs, expose variants through CVA, and keep
+  state available on the DOM for styling and testing.
+- **Semantic styling.** Components consume the 4AF theme's semantic color, radius, elevation,
+  and motion tokens instead of hard-coded colors or durations.
+- **Portable installation.** Components can be installed into another shadcn-compatible project
+  with the 4AF CLI, including the shared theme and utilities they need.
+
+## Install a component
+
+From this repository, inspect the available components, check a target project, and install
+only what you need:
+
+```bash
+pnpm 4af list
+pnpm 4af doctor --project <absolute-target-project>
+pnpm 4af install button --project <absolute-target-project>
+```
+
+Replace `button` with any component from the catalog. The install command serves the private
+registry automatically and writes the component, shared utilities, and theme into the target
+project.
+
+## Use a component
+
+After installation, import the component from the target project's `components/ui` alias:
+
+```tsx
+import { Button } from "@/components/ui/button";
+
+export function DeployButton() {
+  return <Button variant="primary">Deploy</Button>;
+}
+```
+
+## Explore the library
+
+Every component page includes an interactive preview, live settings, an install command, and a
+copyable usage example. Use the sidebar to browse the complete catalog, or start with a few of
+the most representative components:
+
+<Cards>
+  <Card title="Button" description="Actions, links, loading state, icons, and tactile press feedback." href="/docs/button" />
+  <Card title="Dialog" description="A Base UI modal with animated entry, exit, and optional phased flows." href="/docs/dialog" />
+  <Card title="Morph" description="A size-stable animated swap for icons or text." href="/docs/morph" />
+  <Card title="Select" description="Base UI selection, search, sorting, and animated variants." href="/docs/select" />
+  <Card title="Sidebar" description="Responsive application shells, rails, panels, and menus." href="/docs/sidebar" />
+  <Card title="Toast" description="Accessible notifications with stacked and swipeable states." href="/docs/toast" />
+</Cards>

@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css";
+@import "@fumadocs/story/css/preset.css";
 
 /*
  * ============================================================================
@@ -253,6 +256,7 @@
   --image-outline: oklch(0 0 0 / 0.1);
 }
 
+.dark,
 [data-theme="dark"] {
   color-scheme: dark;
 
@@ -354,6 +358,89 @@
     --duration-slower: 1ms;
   }
 }
+
+/* Code blocks in the Install & Usage reference copy the Markdown reader's deliberately
+   utilitarian treatment: a language rail, a quiet copy action, and a raised black-ish
+   surface. The token colours remain semantic so the treatment survives both site themes. */
+.markdown-code-block {
+  --markdown-code-comment: var(--subtle-foreground);
+  --markdown-code-function: var(--success);
+  --markdown-code-keyword: var(--destructive);
+  --markdown-code-number: var(--ring);
+  --markdown-code-operator: var(--subtle-foreground);
+  --markdown-code-property: var(--color-accent-700);
+  --markdown-code-string: var(--color-accent-600);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+  border-radius: 8px;
+  background-color: var(--surface-raised);
+}
+
+.markdown-code-header {
+  display: flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.25rem 0.5rem 0.25rem 1rem;
+  border-bottom: 1px solid color-mix(in oklch, var(--border) 35%, transparent);
+  background: var(--surface);
+}
+
+.markdown-code-language {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.markdown-code-copy {
+  min-height: 2rem;
+  border-radius: 4px;
+  color: var(--muted-foreground);
+  background: transparent;
+  box-shadow: none;
+}
+
+.markdown-code-copy:hover {
+  color: var(--foreground);
+  background: transparent;
+}
+
+.markdown-code-content {
+  margin: 0;
+  min-height: 3.5rem;
+  overflow-x: auto;
+  padding: 1rem;
+  background-color: var(--surface-raised);
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+.markdown-code-inline {
+  display: block;
+  min-width: max-content;
+  padding: 0;
+  color: var(--foreground);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.75;
+  white-space: pre;
+}
+
+.markdown-token-comment { color: var(--markdown-code-comment); font-style: italic; }
+.markdown-token-function { color: var(--markdown-code-function); }
+.markdown-token-keyword { color: var(--markdown-code-keyword); }
+.markdown-token-number { color: var(--markdown-code-number); }
+.markdown-token-operator { color: var(--markdown-code-operator); }
+.markdown-token-property { color: var(--markdown-code-property); }
+.markdown-token-string { color: var(--markdown-code-string); }
 
 /* ---------------------------------------------------------------------------
  * Base
