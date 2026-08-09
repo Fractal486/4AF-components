@@ -31,8 +31,8 @@ describe("TableOfContentsLines", () => {
       <TableOfContentsLines
         rootRef={rootRef}
         items={[
-          { id: firstHeading.id, title: "First section" },
-          { id: lastHeading.id, title: "Last section", level: 3 },
+          { id: firstHeading.id, title: "First section", level: 3 },
+          { id: lastHeading.id, title: "Last section", level: 2 },
         ]}
       />,
     );
@@ -40,6 +40,9 @@ describe("TableOfContentsLines", () => {
     expect(screen.getByRole("navigation", { name: "Table of contents" })).toHaveAttribute(
       "data-variant",
       "lines",
+    );
+    expect(screen.getByRole("navigation", { name: "Table of contents" })).not.toHaveAttribute(
+      "data-density",
     );
     expect(screen.getByRole("link", { name: "First section" })).toHaveAttribute(
       "aria-current",
@@ -51,6 +54,11 @@ describe("TableOfContentsLines", () => {
       .querySelector("[aria-hidden]");
     expect(firstRules?.children).toHaveLength(3);
     expect(firstRules?.firstElementChild).toHaveClass("group-hover:scale-x-[1.25]");
+    expect(firstRules?.children[1]).toHaveStyle({ transform: "translateX(-0.75rem)" });
+    const lastRules = screen
+      .getByRole("link", { name: "Last section" })
+      .querySelector("[aria-hidden]");
+    expect(lastRules?.children).toHaveLength(1);
 
     fireEvent.click(screen.getByRole("link", { name: "Last section" }));
     expect(scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth", block: "start" });
@@ -68,4 +76,3 @@ describe("TableOfContentsLines", () => {
     root.remove();
   });
 });
-

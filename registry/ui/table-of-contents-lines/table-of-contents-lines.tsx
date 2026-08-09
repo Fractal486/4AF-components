@@ -39,7 +39,6 @@ const SCROLL_SETTLE_DELAY = 120;
 export function TableOfContentsLines({
   items,
   rootRef,
-  density = "comfortable",
   className,
   ...props
 }: TableOfContentsLinesProps) {
@@ -177,14 +176,19 @@ export function TableOfContentsLines({
     <nav
       aria-label="Table of contents"
       data-variant="lines"
-      data-density={density}
-      className={cn(tableOfContentsLinesVariants({ density }), className)}
+      className={cn(tableOfContentsLinesVariants(), className)}
       {...props}
     >
-      <ul data-density={density}>
-        {items.map((item) => {
+      <ul>
+        {items.map((item, itemIndex) => {
+          const hasFollowingHeading = itemIndex < items.length - 1;
           const active = item.id === activeId;
           const indent = 0.75 + ((item.level ?? 2) - minLevel) * 0.75;
+          const nextItem = items[itemIndex + 1];
+          const nextIndent = nextItem
+            ? 0.75 + ((nextItem.level ?? 2) - minLevel) * 0.75
+            : indent;
+          const secondaryOffset = nextIndent - indent;
 
           return (
             <li key={item.id} data-toc-id={item.id}>
@@ -193,11 +197,9 @@ export function TableOfContentsLines({
                 onClick={(event) => scrollTo(event, item.id)}
                 aria-current={active ? "location" : undefined}
                 data-active={active ? "true" : "false"}
-                data-density={density}
                 style={{ paddingInlineStart: `${indent}rem` }}
                 className={cn(
                   "group grid h-7 grid-cols-[1.5rem_minmax(0,1fr)] grid-rows-3 items-center gap-x-2.5 text-sm leading-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                  "data-[density=compact]:h-5",
                   "text-muted-foreground transition-[color,translate] duration-(--duration-slow) ease-out",
                   "hover:text-foreground focus-visible:text-foreground",
                   active && "text-foreground",
@@ -216,8 +218,18 @@ export function TableOfContentsLines({
                       active && "bg-foreground",
                     )}
                   />
-                  <span className="h-px w-4 rounded-full bg-border" />
-                  <span className="h-px w-4 rounded-full bg-border" />
+                  {hasFollowingHeading && (
+                    <>
+                      <span
+                        className="h-px w-4 rounded-full bg-border"
+                        style={{ transform: `translateX(${secondaryOffset}rem)` }}
+                      />
+                      <span
+                        className="h-px w-4 rounded-full bg-border"
+                        style={{ transform: `translateX(${secondaryOffset}rem)` }}
+                      />
+                    </>
+                  )}
                 </span>
                 <span className="col-start-2 row-start-1 min-w-0 self-center transition-[translate] duration-(--duration-slow) ease-out group-hover:translate-x-1 group-focus-visible:translate-x-1">
                   {item.title}
