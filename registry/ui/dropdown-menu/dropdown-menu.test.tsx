@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
+import { Button } from "@/registry/ui/button/button";
 import { Morph } from "@/registry/ui/morph/morph";
 import {
   DropdownMenu,
@@ -12,6 +13,42 @@ import {
 } from "./dropdown-menu";
 
 describe("DropdownMenu", () => {
+  it("releases a composed trigger after the menu closes", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={(props, state) => (
+            <Button
+              {...props}
+              variant="outline"
+              pressed={state.open}
+              pressScale={false}
+              className="transition-[background-color,box-shadow,color,opacity,scale] active:scale-[0.95] motion-reduce:active:scale-100 data-[popup-open]:scale-[0.95] motion-reduce:data-[popup-open]:scale-100"
+            >
+              Options
+            </Button>
+          )}
+        />
+        <DropdownMenuContent>
+          <DropdownMenuItem>Settings</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    const trigger = screen.getByRole("button", { name: "Options" });
+    expect(trigger).not.toHaveAttribute("data-pressed");
+
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute("data-pressed", "true");
+    expect(trigger.className).toContain("data-[popup-open]:scale-[0.95]");
+
+    await user.click(document.body);
+    await waitFor(() => expect(trigger).not.toHaveAttribute("data-pressed"));
+    await waitFor(() => expect(trigger.style.transform).toBe("none"), { timeout: 1000 });
+  });
+
   it("supports keyboard checkbox toggles and closes after a normal item is chosen", async () => {
     const user = userEvent.setup();
     const onCheckedChange = vi.fn();

@@ -61,10 +61,10 @@ function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
   const isAppShell = entry.slug === "sidebar";
 
   return (
-    <div className="not-prose my-6 space-y-4">
+    <div className="not-prose first:mt-0 my-6 space-y-4">
       <div
         className={cn(
-          "relative grid min-h-72 min-w-0 place-items-center overflow-hidden rounded-xl bg-fd-card p-6 shadow-border",
+          "relative grid min-h-72 min-w-0 place-items-center overflow-hidden rounded-xl bg-background p-6 shadow-border",
           isAppShell && "block min-h-0 p-3",
         )}
       >
@@ -73,7 +73,7 @@ function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
       {hasControls ? (
         <section
           aria-label={`${entry.name} settings`}
-          className="border-t border-fd-border/60 pt-5"
+          className="pt-5"
         >
           <Controls
             idPrefix={`docs-${entry.slug}`}
@@ -91,7 +91,7 @@ function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
 
 function loadingPreview() {
   return (
-    <div className="not-prose my-6 grid min-h-72 place-items-center rounded-xl bg-fd-card shadow-border">
+    <div className="not-prose first:mt-0 my-6 grid min-h-72 place-items-center rounded-xl bg-background shadow-border">
       <AsciiLoader label="Loading component demo" />
     </div>
   );
@@ -158,7 +158,7 @@ const demos: Record<Exclude<ComponentDemoName, "ascii-loader">, ComponentType> =
 export function ComponentDemo({ name }: { name: ComponentDemoName }) {
   if (name === "ascii-loader") {
     return (
-      <div className="not-prose my-6 grid min-h-72 place-items-center rounded-xl bg-fd-card shadow-border">
+      <div className="not-prose first:mt-0 my-6 grid min-h-72 place-items-center rounded-xl bg-background shadow-border">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <AsciiLoader label="Loading" />
           <span>Loading</span>

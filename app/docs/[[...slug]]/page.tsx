@@ -23,12 +23,16 @@ export default async function Page({ params }: DocsPageProps) {
   const MdxContent = page.data.body;
   const markdownUrl = `${page.url}.md`;
   const isAgentSkillOverview = page.url === "/docs/reference/agent-skill";
+  const isDemoPage =
+    page.url !== "/docs" &&
+    !page.url.includes("/reference/") &&
+    !page.url.endsWith("-overview");
 
   return (
     <DocsPage toc={page.data.toc}>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription className="mb-0">{page.data.description}</DocsDescription>
-      <div className="not-prose -mt-1 mb-8">
+      <div className={`not-prose -mt-1 ${isDemoPage ? "mb-2" : "mb-8"}`}>
         <div className="flex flex-wrap items-center gap-2">
           <a
             href={markdownUrl}
@@ -45,7 +49,9 @@ export default async function Page({ params }: DocsPageProps) {
           </a>
           {isAgentSkillOverview ? <DownloadSkillButton /> : null}
         </div>
-        <div role="separator" className="mt-4 border-t border-fd-border/60" />
+        {isDemoPage ? null : (
+          <div role="separator" className="mt-4 border-t border-fd-border/60" />
+        )}
       </div>
       <DocsBody>
         <MdxContent components={getMDXComponents()} />
