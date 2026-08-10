@@ -161,7 +161,7 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   tabs: "Tabs, TabsList, TabsTab, TabsPanel",
   "text-shimmer": "TextShimmer",
   textarea: "Textarea",
-  toast: "ToastProvider, useToast, createToastManager",
+  toast: "ToastProvider, useToast, createToastManager, ToastVariant",
   toggle: "Toggle",
   tooltip: "TooltipProvider, Tooltip",
 };

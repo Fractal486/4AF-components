@@ -5,6 +5,7 @@ import { Bell, Check, Info, LoaderCircle, X } from "lucide-react";
 import type {
   ToastManager as BaseToastManager,
   ToastManagerAddOptions as BaseToastManagerAddOptions,
+  ToastManagerPromiseOptions as BaseToastManagerPromiseOptions,
   ToastManagerUpdateOptions as BaseToastManagerUpdateOptions,
   ToastObject as BaseToastObject,
 } from "@base-ui/react/toast";
@@ -18,7 +19,14 @@ import {
 import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
 import { Morph } from "@/registry/ui/morph/morph";
-import { toastIconVariants, type ToastType } from "./toast.variants";
+import {
+  toastIconVariants,
+  toastVariants,
+  type ToastType,
+  type ToastVariant,
+} from "./toast.variants";
+
+export type { ToastVariant } from "./toast.variants";
 
 /**
  * A stacking toast.
@@ -27,6 +35,9 @@ import { toastIconVariants, type ToastType } from "./toast.variants";
  * focus, a live region, keyboard focus into the stack (F6) and back, swipe-to-dismiss,
  * and a `limit` beyond which older toasts collapse away. The manager (`useToast`) fires
  * them imperatively from anywhere under the provider.
+ *
+ * Each toast uses the default title-and-description layout unless its `variant` is
+ * `"title-only"`, which omits the description slot. Status remains independent in `type`.
  *
  * Two stacking modes, both driven by the custom properties Base UI publishes on each
  * toast — no per-toast Motion component, no layout runtime:
@@ -89,27 +100,56 @@ export type ToastActionProps = Omit<
 };
 
 export type ToastObject<Data extends object = ToastData> = BaseToastObject<Data> & {
+  /** Content layout. `title-only` omits the description slot. */
+  variant?: ToastVariant;
   /** Custom actions rendered below the toast description. */
   actions?: ToastActionProps[];
 };
 
 export type ToastManagerAddOptions<Data extends object = ToastData> =
   BaseToastManagerAddOptions<Data> & {
+    /** Content layout. `title-only` omits the description slot. */
+    variant?: ToastVariant;
     /** Renders at most the first three custom actions. */
     actions?: ToastActionProps[];
   };
 
 export type ToastManagerUpdateOptions<Data extends object = ToastData> =
   BaseToastManagerUpdateOptions<Data> & {
+    /** Content layout. `title-only` omits the description slot. */
+    variant?: ToastVariant;
     /** Renders at most the first three custom actions. */
     actions?: ToastActionProps[];
   };
+
+export type ToastManagerPromiseOptions<Value, Data extends object = ToastData> = Omit<
+  BaseToastManagerPromiseOptions<Value, Data>,
+  "loading" | "success" | "error"
+> & {
+  loading: string | ToastManagerUpdateOptions<Data>;
+  success:
+    | string
+    | ToastManagerUpdateOptions<Data>
+    | ((result: Value) => string | ToastManagerUpdateOptions<Data>);
+  error:
+    | string
+    | ToastManagerUpdateOptions<Data>
+    | ((error: unknown) => string | ToastManagerUpdateOptions<Data>);
+};
+
+type ToastPromiseResult<Data extends object> = string | ToastManagerUpdateOptions<Data>;
+type ToastPromiseOption<Value, Data extends object> =
+  | ToastPromiseResult<Data>
+  | ((value: Value) => ToastPromiseResult<Data>);
 
 type ToastManagerMethods<Data extends object> = {
   add: <T extends Data = Data>(options: ToastManagerAddOptions<T>) => string;
   close: BaseToastManager<Data>["close"];
   update: <T extends Data = Data>(id: string, options: ToastManagerUpdateOptions<T>) => void;
-  promise: BaseToastManager<Data>["promise"];
+  promise: <Value, T extends Data = Data>(
+    promiseValue: Promise<Value>,
+    options: ToastManagerPromiseOptions<Value, T>,
+  ) => Promise<Value>;
 };
 
 export interface ToastManager<Data extends object = ToastData>
@@ -127,6 +167,21 @@ function limitToastActions<T extends { actions?: ToastActionProps[] }>(options: 
   return { ...options, actions: options.actions.slice(0, MAX_TOAST_ACTIONS) };
 }
 
+function adaptToastPromiseOption<Value, Data extends object>(
+  option: ToastPromiseOption<Value, Data>,
+): string | BaseToastManagerUpdateOptions<Data> | ((value: Value) => string | BaseToastManagerUpdateOptions<Data>) {
+  if (typeof option === "string") return option;
+  if (typeof option === "function") {
+    return (value) => {
+      const result = option(value);
+      return typeof result === "string"
+        ? result
+        : (limitToastActions(result) as BaseToastManagerUpdateOptions<Data>);
+    };
+  }
+  return limitToastActions(option) as BaseToastManagerUpdateOptions<Data>;
+}
+
 function adaptToastMethods<Data extends object>(
   manager: Pick<BaseToastManager<Data>, "add" | "close" | "update" | "promise">,
 ): ToastManagerMethods<Data> {
@@ -137,7 +192,16 @@ function adaptToastMethods<Data extends object>(
     update: <T extends Data = Data>(id: string, options: ToastManagerUpdateOptions<T>) => {
       manager.update(id, limitToastActions(options) as BaseToastManagerUpdateOptions<T>);
     },
-    promise: manager.promise,
+    promise: <Value, T extends Data = Data>(
+      promiseValue: Promise<Value>,
+      options: ToastManagerPromiseOptions<Value, T>,
+    ) =>
+      manager.promise(promiseValue, {
+        ...options,
+        loading: adaptToastPromiseOption(options.loading),
+        success: adaptToastPromiseOption(options.success),
+        error: adaptToastPromiseOption(options.error),
+      } as BaseToastManagerPromiseOptions<Value, T>),
   };
 }
 
@@ -225,6 +289,7 @@ const STACK_COLLAPSE =
 
 function ToastItem({ toast, stack }: { toast: ToastObject<ToastData>; stack: ToastStack }) {
   const type = (toast.type as ToastType) ?? "neutral";
+  const variant = toast.variant ?? "default";
   const Icon = STATUS_ICON[type] ?? Bell;
   const shouldMorph = Boolean(toast.data?.morph);
   const hasCustomActions = toast.actions !== undefined;
@@ -242,6 +307,7 @@ function ToastItem({ toast, stack }: { toast: ToastObject<ToastData>; stack: Toa
     <BaseToast.Root
       toast={toast}
       swipeDirection={["right", "down"]}
+      data-variant={variant}
       className={cn(
         // Pinned to the bottom of the viewport; the transform fans them out from there.
         // `origin-bottom` keeps a scaled card's bottom edge aligned, which is the stack.
@@ -252,6 +318,7 @@ function ToastItem({ toast, stack }: { toast: ToastObject<ToastData>; stack: Toa
         // Stack position per mode. `list` is always fanned; `collapse` overlaps and only
         // fans when the viewport marks the stack expanded.
         stack === "list" ? STACK_LIST : STACK_COLLAPSE,
+        toastVariants({ variant }),
         // Enter (beUI): rise out of a blur. Exit (beUI): slide off, shrink, blur, fade —
         // faster than the enter. Both keep the stacked position via the shared transform.
         "data-[starting-style]:[--enter-y:22px] data-[starting-style]:[--io-scale:0.96] data-[starting-style]:opacity-0 data-[starting-style]:blur-[10px]",
@@ -268,7 +335,7 @@ function ToastItem({ toast, stack }: { toast: ToastObject<ToastData>; stack: Toa
           {shouldMorph ? <Morph activeKey={String(type)} items={{ [type]: iconNode }} /> : iconNode}
         </span>
 
-        <div className="min-w-0 flex-1">
+        <div className={cn("min-w-0 flex-1", variant === "title-only" && "self-center")}>
           {shouldMorph ? (
             <BaseToast.Title
               // Morph animates the title between updates (e.g. "Uploading…" → "Upload
@@ -281,7 +348,9 @@ function ToastItem({ toast, stack }: { toast: ToastObject<ToastData>; stack: Toa
           ) : (
             <BaseToast.Title className="truncate text-sm leading-5 font-medium text-foreground" />
           )}
-          <BaseToast.Description className="mt-0.5 line-clamp-2 text-xs leading-4 text-muted-foreground" />
+          {variant !== "title-only" && (
+            <BaseToast.Description className="mt-0.5 line-clamp-2 text-xs leading-4 text-muted-foreground" />
+          )}
           {hasCustomActions ? (
             customActions &&
             customActions.length > 0 && (

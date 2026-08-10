@@ -316,10 +316,21 @@ import { Button } from "@/components/ui/button";
 <Textarea placeholder="Write a note…" />`,
   },
   toast: {
-    importName: "ToastProvider",
-    usage: `import { ToastProvider } from "@/components/ui/toast";
+    importName: "ToastProvider, useToast",
+    usage: `import { ToastProvider, useToast } from "@/components/ui/toast";
 
-<ToastProvider>{children}</ToastProvider>`,
+function SaveButton() {
+  const toast = useToast();
+  return (
+    <button onClick={() => toast.add({ title: "Changes saved", variant: "title-only" })}>
+      Save
+    </button>
+  );
+}
+
+<ToastProvider>
+  <SaveButton />
+</ToastProvider>`,
   },
   toggle: {
     importName: "Toggle",

@@ -125,7 +125,7 @@ function Control({
         <span className="shrink-0 text-sm text-muted-foreground">{label}:</span>
         <Slider
           aria-label={label}
-          className="w-28 shrink-0 origin-center scale-y-[0.85]"
+          className="w-28 shrink-0"
           thumb="knob"
           size="sm"
           showTicks={false}

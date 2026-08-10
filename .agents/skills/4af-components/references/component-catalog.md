@@ -86,7 +86,7 @@ The catalog currently contains 42 installable UI items. Verify the count and nam
 | `skeleton` | `Skeleton` | Generic loading placeholders; animation respects reduced motion. |
 | `empty` | `Empty` and composition parts | Empty states with optional dashed placeholder treatment. |
 | `text-shimmer` | `TextShimmer` | Theme-aware looping highlight for working labels. |
-| `toast` | `ToastProvider`, `useToast`, `createToastManager` | Managed notifications, swipe dismissal, placement/stack modes, and up to three actions. |
+| `toast` | `ToastProvider`, `useToast`, `createToastManager` | Managed notifications with default or title-only content, swipe dismissal, placement/stack modes, and up to three actions. |
 | `ascii-loader` | `AsciiLoader` | A looping braille spinner for compact async status affordances. |
 
 ### Navigation and application structure

@@ -33,6 +33,19 @@ function ToastDemo({ limit }: { limit: number }) {
         size="sm"
         onClick={() =>
           toast.add({
+            title: "Changes saved",
+            variant: "title-only",
+            type: "success",
+          })
+        }
+      >
+        Title only
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() =>
+          toast.add({
             title: "Couldn't save changes",
             description: "Check your connection and try again.",
             type: "error",

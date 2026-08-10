@@ -1,6 +1,22 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
 /**
+ * Controls the content shown in each toast. Status styling remains on `type`; this axis only
+ * chooses whether the toast carries a description below its title.
+ */
+export const toastVariants = cva("", {
+  variants: {
+    variant: {
+      default: "",
+      "title-only": "",
+    },
+  },
+  defaultVariants: { variant: "default" },
+});
+
+export type ToastVariant = NonNullable<VariantProps<typeof toastVariants>["variant"]>;
+
+/**
  * The state circle: a soft, translucent chip whose tint is the status signal — a faint
  * green wash for success, red for a failure, and a barely-there ink wash for everything
  * else (info, loading, plain). The glyph carries the actual colour; the fill is a 6–10%

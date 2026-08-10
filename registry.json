@@ -1152,7 +1152,7 @@
     {
       "name": "toast",
       "type": "registry:ui",
-      "description": "A stacking toast. Base UI Toast behaviour (queue, timers, swipe-to-dismiss, F6 focus); the collapsed stack, hover-expand, and swipe are one CSS transform reading Base UI's --toast-* vars.",
+      "description": "A stacking toast with default or title-only content. Base UI Toast behaviour (queue, timers, swipe-to-dismiss, F6 focus); the collapsed stack, hover-expand, and swipe are one CSS transform reading Base UI's --toast-* vars.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",

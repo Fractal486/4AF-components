@@ -8,11 +8,28 @@ description: A transient notification stack with accessible announcements and sw
 
 ## API
 
-**Main exports:** `ToastProvider`, `useToast`, `createToastManager`
+**Main exports:** `ToastProvider`, `useToast`, `createToastManager`; type `ToastVariant`
 
 A Base UI toast manager with list or collapsed-stack presentation, bottom-centre or bottom-right
 placement, timers, focus handling, swipe dismissal, and up to three custom action buttons per
-toast.
+toast. Each toast can use the default title-and-description layout or the `title-only` variant.
+
+## Variants
+
+The `variant` field controls the toast's content layout independently from its status `type`:
+
+| Variant | Content |
+| --- | --- |
+| `default` | Title plus an optional description (default) |
+| `title-only` | Title only; the description slot is omitted |
+
+```tsx
+toast.add({
+  title: "Changes saved",
+  type: "success",
+  variant: "title-only",
+});
+```
 
 ## Actions
 
