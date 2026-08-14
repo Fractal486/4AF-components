@@ -1068,7 +1068,7 @@ export function SidebarMenuAction({
         // existing 20px visual box and row geometry.
         "absolute top-1.5 right-1.5 z-[1] size-5 cursor-pointer rounded-md p-0",
         nested && "top-1 right-[7px]",
-        "text-muted-foreground outline-none hover:bg-transparent hover:text-primary-foreground dark:hover:text-foreground",
+        "text-muted-foreground outline-none hover:bg-transparent hover:text-foreground",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0",
         "after:absolute after:-inset-2 md:after:hidden",
         "peer-data-[size=sm]/menu-button:top-1",

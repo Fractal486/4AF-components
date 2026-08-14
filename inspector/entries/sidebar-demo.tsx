@@ -83,11 +83,13 @@ export function SidebarDemo({
   variant,
   collapsible,
   loading,
+  fullscreen = false,
 }: {
   side: "left" | "right";
   variant: "sidebar" | "floating" | "inset" | "split" | "split-floating" | "split-inset";
   collapsible: "offcanvas" | "icon" | "none";
   loading: boolean;
+  fullscreen?: boolean;
 }) {
   const [active, setActive] = useState<string>("dashboard");
   const [dashboardSelection, setDashboardSelection] = useState("overview");
@@ -98,12 +100,14 @@ export function SidebarDemo({
   const split = variant === "split" || variant === "split-floating" || variant === "split-inset";
 
   return (
-    // Demo-only framing. A real app renders this shell at the document root, where the
-    // panel's `fixed` and `h-svh` mean what they say. Boxed into a preview pane they'd
-    // escape to the viewport, so `contain: paint` makes this element the containing block
-    // for the fixed panel — and the heights below are pulled back to the frame.
+    // The docs preview needs a containing block because the sidebar panel is fixed; the
+    // fullscreen route drops that frame so the shell can own the browser viewport instead.
     <div
-      className="relative h-[28rem] w-full overflow-hidden rounded-lg border border-border [contain:paint]"
+      className={
+        fullscreen
+          ? "relative h-dvh w-full overflow-hidden"
+          : "relative h-[28rem] w-full overflow-hidden rounded-lg border border-border [contain:paint]"
+      }
     >
       <SidebarLayout
         sidebar={
