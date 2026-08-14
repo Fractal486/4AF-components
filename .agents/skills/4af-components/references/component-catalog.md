@@ -209,8 +209,9 @@ Root groups/rows, nested lists, custom panels via `helpers.openPanel`, search or
 text-field panel headers, per-panel header actions, badges, checkboxes, Kbd hints,
 destructive states, action panels.
 
-No enter or exit animation, deliberately — do not add one, or `keepMounted`/
-`AnimatePresence`.
+Enter and exit mirror Dialog: the backdrop fades, the panel scales in from a small blur,
+and the exit fades and blurs without reversing the entrance. Use `keepMounted`/
+`AnimatePresence` and honor reduced motion.
 
 Escape clears a non-empty header field only when that header is `type="search"`; other
 headers go back. Keep Select controls in headers at `size="sm"`.

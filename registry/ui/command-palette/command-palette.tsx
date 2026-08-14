@@ -3,6 +3,7 @@
 import { Autocomplete } from "@base-ui/react/autocomplete";
 import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import { Select as BaseSelect } from "@base-ui/react/select";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   Check,
   ChevronLeft,
@@ -27,6 +28,7 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
+import { ease, spring } from "@/registry/lib/motion";
 import { useAction } from "@/registry/lib/use-action";
 import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
@@ -61,11 +63,9 @@ import {
  * Custom panels can push another panel with `helpers.openPanel` when a flow needs a
  * second form step.
  *
- * It opens and closes without motion — no fade, no scale, no blur, on the backdrop or the
- * panel. A palette is summoned mid-thought and the query usually starts before it has
- * finished arriving; an entrance is time spent between deciding and typing. Nothing here
- * animates in or out, so the portal mounts and unmounts under Base UI directly rather
- * than being held open for an exit.
+ * Its enter and exit mirror Dialog: the backdrop fades, the panel scales in from a small
+ * blur, and the exit fades and blurs without reversing the entrance. Base UI's `keepMounted`
+ * hands the unmount timing to AnimatePresence so the exit can finish before teardown.
  */
 
 /**
@@ -693,6 +693,7 @@ export function CommandPalette({
   const [uncontrolled, setUncontrolled] = useState(defaultOpen);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : uncontrolled;
+  const reduceMotion = useReducedMotion();
   const [query, setQuery] = useState("");
   const [pages, setPages] = useState<Page[]>([]);
   const generatedPanelInputId = useId();
@@ -959,11 +960,9 @@ export function CommandPalette({
   // no label. It filters/sorts nothing here — that already happened above.
   const items = visibleGroups.map((group) => ({ heading: group.heading, items: group.items }));
 
-  if (!isOpen) return null;
-
   return (
     <BaseDialog.Root
-      open
+      open={isOpen}
       onOpenChange={(next, details) => {
         if (next) return;
         // Escape inside a drilled-in page steps back out of it instead of dismissing
@@ -977,19 +976,50 @@ export function CommandPalette({
         setOpen(false);
       }}
     >
-      {/* No `keepMounted`: nothing has to be held on screen for an exit, so Base UI
-          tears the tree down as soon as it closes. */}
-      <BaseDialog.Portal>
-        <BaseDialog.Backdrop className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" />
-        <BaseDialog.Popup
-          // Top-anchored and x-centred. The vertical offset is a plain `top`, and the
-          // horizontal centring a `-translate-x-1/2` that now has nothing composing
-          // on top of it.
-          className={cn(
-            "fixed top-[14vh] left-1/2 z-50 flex max-h-[min(34rem,calc(100dvh-16vh))] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 flex-col overflow-hidden rounded-md border border-border bg-surface-raised shadow-overlay-drop outline-none",
-            className,
-          )}
-        >
+      <AnimatePresence>
+        {isOpen && (
+          // keepMounted on the Portal keeps the subtree in the DOM so AnimatePresence, not
+          // Base UI, owns when it's torn down.
+          <BaseDialog.Portal keepMounted>
+            <BaseDialog.Backdrop
+              render={
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0, transition: { duration: reduceMotion ? 0 : 0.18 } }}
+                  transition={{ duration: reduceMotion ? 0 : 0.25, ease: ease.out }}
+                  className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+                />
+              }
+            />
+            <BaseDialog.Popup
+              // Top-anchored and x-centred. The vertical offset is a plain `top`, and the
+              // horizontal centring a `-translate-x-1/2` now composes with Motion's scale.
+              className={cn(
+                "fixed top-[14vh] left-1/2 z-50 flex max-h-[min(34rem,calc(100dvh-16vh))] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 flex-col overflow-hidden rounded-md border border-border bg-surface-raised shadow-overlay-drop outline-none",
+                className,
+              )}
+              render={
+                <motion.div
+                  initial={
+                    reduceMotion
+                      ? { opacity: 0 }
+                      : { opacity: 0, scale: 0.96, filter: "blur(4px)" }
+                  }
+                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                  exit={
+                    reduceMotion
+                      ? { opacity: 0, transition: { duration: 0 } }
+                      : {
+                          opacity: 0,
+                          filter: "blur(8px)",
+                          transition: { duration: 0.2, ease: ease.out },
+                        }
+                  }
+                  transition={reduceMotion ? { duration: 0 } : spring.smooth}
+                />
+              }
+            >
           <BaseDialog.Title className="sr-only">Command palette</BaseDialog.Title>
 
           <PaletteControlsContext.Provider value={controls}>
@@ -1227,8 +1257,10 @@ export function CommandPalette({
           </FrozenRowContext.Provider>
           </ActionsOpenContext.Provider>
           </PaletteControlsContext.Provider>
-        </BaseDialog.Popup>
-      </BaseDialog.Portal>
+            </BaseDialog.Popup>
+          </BaseDialog.Portal>
+        )}
+      </AnimatePresence>
     </BaseDialog.Root>
   );
 }
