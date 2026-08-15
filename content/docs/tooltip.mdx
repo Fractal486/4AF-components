@@ -11,4 +11,5 @@ description: A concise hover and focus label with Base UI positioning and delay 
 **Main exports:** `TooltipProvider`, `Tooltip`
 
 A Base UI hover and focus tooltip with delay, collision-aware placement, and a CSS scale-and-blur
-entrance.
+entrance. Use `delay` to control when it opens; `closeOnClick={false}` keeps it open when the
+trigger is pressed, which is useful for live-value controls such as sliders.

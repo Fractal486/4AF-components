@@ -1,7 +1,6 @@
 import { bool, defineEntry, select, type ControlValues } from "../schema";
 import { SidebarDemo } from "./sidebar-demo";
 
-const SIDES = ["left", "right"] as const;
 const LAYOUTS = ["default", "split"] as const;
 const VARIANTS = ["default", "floating", "inset"] as const;
 const COLLAPSIBLE = ["offcanvas", "icon", "none"] as const;
@@ -30,7 +29,6 @@ export const sidebarEntry = defineEntry({
   slug: "sidebar",
   name: "Sidebar",
   controls: {
-    side: select(SIDES, "left"),
     // Split adds the fixed icon rail; the default keeps one navigation column.
     layout: select(LAYOUTS, "default", "Layout"),
     // `default` sits flush against the page edge; `floating` and `inset` inset it.
@@ -40,15 +38,14 @@ export const sidebarEntry = defineEntry({
     // Swaps the nav rows for their loading skeletons.
     loading: bool(false, "Loading"),
   },
-  render({ side, layout, variant, collapsible, loading }) {
+  render({ layout, variant, collapsible, loading }) {
     const resolvedVariant = resolveSidebarVariant(layout, variant);
 
     return (
       <SidebarDemo
         // Remounted per shell option so the fixed panel re-measures against the new
         // geometry instead of animating between two layouts.
-        key={`${side}-${layout}-${variant}-${collapsible}`}
-        side={side}
+        key={`${layout}-${variant}-${collapsible}`}
         variant={resolvedVariant}
         collapsible={collapsible}
         loading={loading}

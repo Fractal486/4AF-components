@@ -1,7 +1,7 @@
 "use client";
 
 import { Menu as BaseMenu } from "@base-ui/react/menu";
-import { Check, ChevronRight, Search, TriangleAlert } from "lucide-react";
+import { Check, ChevronRight, TriangleAlert } from "lucide-react";
 import {
   createContext,
   useCallback,
@@ -267,7 +267,7 @@ export function DropdownMenuSelect<Value, Multiple extends boolean | undefined =
 
 const itemBase = cn(
   // Compact rows: 12px text and 14px glyphs, a denser treatment than the 14px overlays.
-  "relative flex cursor-pointer items-center gap-2 rounded-sm px-2.5 py-1.5 text-xs text-foreground outline-none select-none",
+  "relative flex items-center gap-2 rounded-sm px-2.5 py-1.5 text-xs text-foreground outline-none select-none",
   // Instant — no transition, so the highlight tracks the keyboard rather than trailing it.
   "data-[highlighted]:bg-muted data-[popup-open]:bg-muted",
   "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
@@ -308,7 +308,7 @@ const INDICATOR_SLOT =
   "pointer-events-none absolute left-2.5 flex size-3.5 items-center justify-center";
 
 const selectItemBase = cn(
-  "relative flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-xs outline-none select-none",
+  "relative flex items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-xs outline-none select-none",
   "text-muted-foreground data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
   "data-[checked]:text-foreground",
   "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
@@ -758,7 +758,7 @@ export interface DropdownMenuSelectTriggerProps
   extends Omit<ComponentProps<typeof BaseMenu.SubmenuTrigger>, "children" | "className"> {
   /** An optional leading icon for the menu row. */
   icon?: ReactNode;
-  /** Shown until a single value is selected, or until a multiple select has picks. */
+  /** The label shown on the left side of the trigger. */
   placeholder?: ReactNode;
   className?: string;
 }
@@ -767,7 +767,8 @@ export interface DropdownMenuSelectTriggerProps
  * The row that opens a select panel from inside a dropdown menu.
  *
  * It is a real submenu trigger for arrow-key navigation and hover-safe pointer movement.
- * Single selects show their selected label; multiple selects show the selected count.
+ * The trigger keeps its label on the left and shows the selected value or count before
+ * the chevron.
  */
 export function DropdownMenuSelectTrigger({
   icon,
@@ -800,14 +801,10 @@ export function DropdownMenuSelectTrigger({
           {icon}
         </span>
       )}
-      <span
-        className={cn(
-          "min-w-0 flex-1 truncate",
-          !hasSelection && "text-muted-foreground",
-        )}
-      >
-        {summary}
-      </span>
+      <span className="min-w-0 flex-1 truncate text-foreground">{label ?? placeholder}</span>
+      {hasSelection && (
+        <span className="ml-auto max-w-[50%] shrink-0 truncate text-muted-foreground">{summary}</span>
+      )}
     </DropdownMenuSubTrigger>
   );
 }
@@ -876,7 +873,6 @@ export function DropdownMenuSelectContent({
         searchPosition === "bottom" ? "-mb-1 border-t border-border" : "-mt-1 border-b border-border",
       )}
     >
-      <Search aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />
       <Input
         ref={searchInputRef}
         aria-label="Search options"
@@ -932,7 +928,9 @@ export function DropdownMenuSelectContent({
         {items}
       </div>
       {noResults && (
-        <div className="m-1 flex h-8 items-center justify-center px-2.5 text-center text-xs text-muted-foreground">
+        // `m-1` supplies the same 4px inset as the list's `p-1`; `h-7` matches one
+        // select row, keeping the full panel height identical to a single result.
+        <div className="m-1 flex h-7 items-center justify-center px-2.5 text-center text-xs text-muted-foreground">
           {emptyMessage}
         </div>
       )}

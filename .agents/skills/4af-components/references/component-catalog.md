@@ -70,7 +70,7 @@ The catalog currently contains 42 installable UI items. Verify the count and nam
 | `switch` | `Switch` | Binary on/off state with a sliding, press-squishing thumb. |
 | `checkbox` | `Checkbox` | Boolean or indeterminate selection with animated tick and optional label. |
 | `radio` | `RadioGroup`, `Radio` | Single-choice selection groups. |
-| `slider` | `Slider` | Numeric input with `bar`, `circle`, and `knob` thumb variants. |
+| `slider` | `Slider` | Numeric input with `bar`, `circle`, and `knob` thumb variants, optional ticks, labels, and a live value tooltip. |
 | `select` | `Select`, trigger/content/item parts, `SelectSortTrigger` | Base UI single/multi select, optional panel search and clear footer, compact sort/filter trigger. |
 | `select-search` | `SearchSelect` and input/content/item parts | Editable Combobox trigger with filtering and single/multi selection. |
 | `select-motion` | `Select` and trigger/content/item parts | Button-triggered select with a hand-animated unfolding panel and optional panel search. |

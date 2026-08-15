@@ -15,13 +15,14 @@ export const sliderEntry = defineEntry({
     max: num(100, { min: 10, max: 500, step: 10, label: "Max" }),
     step: num(10, { min: 1, max: 25, step: 1, label: "Step" }),
     showTicks: bool(true, "Show ticks"),
+    showValueTooltip: bool(false, "Value tooltip"),
     disabled: bool(false),
   },
-  render({ thumb, size, label, max, step, showTicks, disabled }) {
+  render({ thumb, size, label, max, step, showTicks, showValueTooltip, disabled }) {
     return (
       <div className="w-full max-w-sm">
         <Slider
-          key={`${thumb}-${size}-${max}-${step}-${showTicks}-${disabled}`}
+          key={`${thumb}-${size}-${max}-${step}-${showTicks}-${showValueTooltip}-${disabled}`}
           thumb={thumb}
           size={size}
           label={label.trim() || undefined}
@@ -29,6 +30,7 @@ export const sliderEntry = defineEntry({
           max={max}
           step={step}
           showTicks={showTicks}
+          showValueTooltip={showValueTooltip}
           disabled={disabled}
           aria-label={label.trim() || "Preview slider"}
         />

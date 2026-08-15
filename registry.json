@@ -622,7 +622,7 @@
     {
       "name": "slider",
       "type": "registry:ui",
-      "description": "A slider whose thumb springs between steps and grabs while held. Bar or circle thumb. Base UI behaviour.",
+      "description": "A slider whose thumb springs between steps and grabs while held, with optional ticks, labels, and a live value tooltip. Base UI behaviour.",
       "dependencies": [
         "@base-ui/react",
         "lucide-react",
@@ -630,7 +630,8 @@
       ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/tooltip.json"
       ],
       "files": [
         {

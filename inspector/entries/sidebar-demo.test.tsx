@@ -3,8 +3,17 @@ import { sidebarEntry, resolveSidebarVariant } from "./sidebar";
 import { SidebarDemo } from "./sidebar-demo";
 
 describe("SidebarDemo split inbox header actions", () => {
+  it("uses the same button brand mark in the default layout", () => {
+    render(<SidebarDemo variant="sidebar" collapsible="icon" loading={false} />);
+
+    expect(screen.getByRole("button", { name: "Acme Inc" })).toHaveAttribute(
+      "data-slot",
+      "sidebar-rail-button",
+    );
+  });
+
   it("does not change the selected mail row when an action is clicked", () => {
-    render(<SidebarDemo side="left" variant="split" collapsible="offcanvas" loading={false} />);
+    render(<SidebarDemo variant="split" collapsible="offcanvas" loading={false} />);
 
     const inboxRow = document.querySelector<HTMLButtonElement>(
       '[data-slot="sidebar-menu-button"]',
@@ -21,7 +30,6 @@ describe("SidebarDemo split inbox header actions", () => {
   it("can remove the boxed preview frame for the fullscreen route", () => {
     const { container } = render(
       <SidebarDemo
-        side="left"
         variant="sidebar"
         collapsible="icon"
         loading={false}

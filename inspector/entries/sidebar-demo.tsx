@@ -39,6 +39,7 @@ import {
   SidebarPanel,
   SidebarRail,
   SidebarRailButton,
+  useSidebar,
 } from "@/registry/ui/sidebar/sidebar";
 import { SidebarLayout } from "@/registry/ui/sidebar-layout/sidebar-layout";
 
@@ -78,14 +79,26 @@ function SidebarSkeletonItems({
   );
 }
 
+function SidebarBrandButton() {
+  const { state } = useSidebar();
+
+  return (
+    <SidebarRailButton
+      tooltip={state === "collapsed" ? "Acme Inc" : undefined}
+      aria-label="Acme Inc"
+      className="size-6 bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground active:bg-primary active:text-primary-foreground"
+    >
+      <span className="text-2xs font-semibold">4</span>
+    </SidebarRailButton>
+  );
+}
+
 export function SidebarDemo({
-  side,
   variant,
   collapsible,
   loading,
   fullscreen = false,
 }: {
-  side: "left" | "right";
   variant: "sidebar" | "floating" | "inset" | "split" | "split-floating" | "split-inset";
   collapsible: "offcanvas" | "icon" | "none";
   loading: boolean;
@@ -112,7 +125,6 @@ export function SidebarDemo({
       <SidebarLayout
         sidebar={
           <Sidebar
-            side={side}
             variant={variant}
             collapsible={collapsible}
             defaultActivePanel={split ? "mail" : undefined}
@@ -123,7 +135,7 @@ export function SidebarDemo({
                 <SidebarRailButton
                   tooltip="Acme Inc"
                   aria-label="Acme Inc"
-                  className="mt-1 mb-2 bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground active:bg-primary active:text-primary-foreground"
+                  className="mt-1 mb-2 size-6 bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground active:bg-primary active:text-primary-foreground"
                 >
                   <span className="text-2xs font-semibold">4</span>
                 </SidebarRailButton>
@@ -162,7 +174,7 @@ export function SidebarDemo({
             <>
               <SidebarPanel value="dashboard">
                 <SidebarHeader>
-                  <span className="mt-1 flex h-8 items-center px-1 text-sm font-medium text-foreground">
+                  <span className="mt-1 flex h-6 items-center px-1 text-sm font-medium text-foreground">
                     Overview
                   </span>
                 </SidebarHeader>
@@ -208,7 +220,7 @@ export function SidebarDemo({
 
               <SidebarPanel value="mail">
                 <SidebarHeader>
-                  <span className="mt-1 flex h-8 items-center px-1 text-sm font-medium text-foreground">
+                  <span className="mt-1 flex h-6 items-center px-1 text-sm font-medium text-foreground">
                     Emails
                   </span>
                   <SidebarHeaderRow>
@@ -299,7 +311,7 @@ export function SidebarDemo({
                             >
                               <Inbox />
                               <span>Folders</span>
-                              <ChevronDown className="ml-auto -rotate-90 transition-[rotate] duration-(--duration-fast) ease-out [[data-panel-open]_&]:rotate-0" />
+                              <ChevronDown className="ml-auto -rotate-90 transition-[rotate] duration-(--duration-chevron) ease-out [[data-panel-open]_&]:rotate-0" />
                             </SidebarMenuCollapsibleTrigger>
                             <SidebarMenuCollapsibleContent>
                               <SidebarMenuSub>
@@ -339,7 +351,7 @@ export function SidebarDemo({
 
               <SidebarPanel value="files">
                 <SidebarHeader>
-                  <span className="mt-1 flex h-8 items-center px-1 text-sm font-medium text-foreground">
+                  <span className="mt-1 flex h-6 items-center px-1 text-sm font-medium text-foreground">
                     Files
                   </span>
                   <SidebarInput
@@ -400,7 +412,7 @@ export function SidebarDemo({
 
               <SidebarPanel value="team">
                 <SidebarHeader>
-                  <span className="mt-1 flex h-8 items-center px-1 text-sm font-medium text-foreground">
+                  <span className="mt-1 flex h-6 items-center px-1 text-sm font-medium text-foreground">
                     Team
                   </span>
                   </SidebarHeader>
@@ -446,7 +458,7 @@ export function SidebarDemo({
 
               <SidebarPanel value="settings">
                 <SidebarHeader>
-                  <span className="mt-1 flex h-8 items-center px-1 text-sm font-medium text-foreground">
+                  <span className="mt-1 flex h-6 items-center px-1 text-sm font-medium text-foreground">
                     Settings
                   </span>
                   </SidebarHeader>
@@ -494,9 +506,7 @@ export function SidebarDemo({
             <>
           <SidebarHeader>
             <div className="flex items-center gap-2 px-1 py-1">
-              <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                <span className="text-2xs font-semibold">4</span>
-              </div>
+              <SidebarBrandButton />
               <span className="truncate text-sm font-medium text-foreground group-data-[collapsible=icon]:hidden">
                 Acme Inc
               </span>
@@ -559,7 +569,7 @@ export function SidebarDemo({
                         <Search />
                         <span>Browse</span>
                         <ChevronDown
-                          className="ml-auto -rotate-90 transition-[rotate] duration-(--duration-fast) ease-out [[data-panel-open]_&]:rotate-0"
+                          className="ml-auto -rotate-90 transition-[rotate] duration-(--duration-chevron) ease-out [[data-panel-open]_&]:rotate-0"
                         />
                       </SidebarMenuCollapsibleTrigger>
                       <SidebarMenuCollapsibleContent>

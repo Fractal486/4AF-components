@@ -18,7 +18,7 @@ export const sidebarMenuButtonVariants = cva(
     "hover:bg-muted hover:text-foreground",
     "group-has-data-[slot=sidebar-menu-action]/menu-item:group-hover/menu-item:bg-muted group-has-data-[slot=sidebar-menu-action]/menu-item:group-hover/menu-item:text-foreground",
     "active:bg-muted active:text-foreground",
-    "data-active:bg-muted data-active:font-medium data-active:text-foreground",
+    "data-active:bg-muted data-active:font-medium data-active:text-foreground data-active:[&>svg]:stroke-[2.5]",
     "disabled:pointer-events-none disabled:opacity-50",
     "aria-disabled:pointer-events-none aria-disabled:opacity-50",
     // Leaves room for a trailing action button when the row has one.
@@ -57,7 +57,7 @@ export const sidebarMenuSubButtonVariants = cva(
     "hover:bg-muted hover:text-foreground",
     "group-hover/menu-sub-item:bg-muted group-hover/menu-sub-item:text-foreground",
     "active:bg-muted active:text-foreground",
-    "data-active:bg-muted data-active:text-foreground",
+    "data-active:bg-muted data-active:font-medium data-active:text-foreground data-active:[&>svg]:stroke-[2.5] data-active:[&>svg]:text-foreground",
     "disabled:pointer-events-none disabled:opacity-50",
     "aria-disabled:pointer-events-none aria-disabled:opacity-50",
     // Leaves room for a trailing action button on nested rows too.

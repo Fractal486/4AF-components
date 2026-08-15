@@ -329,7 +329,7 @@
  * ------------------------------------------------------------------------ */
 
 /*
- * Every duration in the library comes from one of these four. A component that
+ * Every duration in the library comes from one of these tokens. A component that
  * hardcodes `duration-150` opts itself out of the reduced-motion rule below and
  * will keep animating for a user who asked it not to.
  */
@@ -338,6 +338,7 @@
   --duration-base: 200ms; /* dropdowns, tooltips, small enter/exit */
   --duration-slow: 300ms; /* dialogs, popovers — further to travel */
   --duration-slower: 450ms; /* sheets, drawers */
+  --duration-chevron: 400ms; /* select and disclosure chevrons */
 }
 
 /*
@@ -355,6 +356,7 @@
     --duration-base: 1ms;
     --duration-slow: 1ms;
     --duration-slower: 1ms;
+    --duration-chevron: 1ms;
   }
 }
 

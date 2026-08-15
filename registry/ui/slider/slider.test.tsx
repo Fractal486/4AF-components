@@ -1,9 +1,58 @@
 import { DirectionProvider } from "@base-ui/react/direction-provider";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { getSliderControlWidth, getSliderFillOffset } from "./slider-geometry";
 import { Slider } from "./slider";
 
 describe("Slider", () => {
+  it("shows a live value tooltip above the thumb when enabled", async () => {
+    const user = userEvent.setup();
+
+    const { container } = render(
+      <Slider aria-label="Volume" defaultValue={40} showValueTooltip />,
+    );
+
+    const slider = screen.getByRole("slider");
+    expect(container.querySelector("[data-base-ui-tooltip-trigger]")).toHaveClass("h-5", "w-1.5");
+    await user.tab();
+    const valueTooltip = () =>
+      document.querySelector('[data-base-ui-focusable][data-side="top"]');
+
+    expect(slider).toHaveFocus();
+    await waitFor(() => expect(valueTooltip()).toHaveTextContent("40"));
+
+    await user.keyboard("{ArrowRight}");
+    await waitFor(() => expect(valueTooltip()).toHaveTextContent("41"));
+  });
+
+  it("keeps the live value tooltip open when dragging leaves the thumb", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <Slider aria-label="Volume" defaultValue={40} showValueTooltip />,
+    );
+
+    const thumb = container.querySelector("[data-base-ui-tooltip-trigger]");
+    expect(thumb).toBeInTheDocument();
+    await user.hover(thumb!);
+
+    const valueTooltip = () =>
+      document.querySelector('[data-base-ui-focusable][data-side="top"]');
+    await waitFor(() => expect(valueTooltip()).toHaveTextContent("40"));
+
+    if (!HTMLElement.prototype.hasPointerCapture) {
+      Object.defineProperty(HTMLElement.prototype, "hasPointerCapture", {
+        configurable: true,
+        value: () => false,
+      });
+    }
+    fireEvent.pointerDown(thumb!);
+    fireEvent.pointerLeave(thumb!);
+    await waitFor(() => expect(valueTooltip()).toHaveTextContent("40"));
+
+    fireEvent.pointerUp(thumb!, { clientX: 200, clientY: 200 });
+    await waitFor(() => expect(valueTooltip()).not.toBeInTheDocument());
+  });
+
   it("clamps an out-of-range default value to the usable range", () => {
     render(<Slider aria-label="Volume" defaultValue={40} max={10} />);
 

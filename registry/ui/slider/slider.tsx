@@ -6,6 +6,7 @@ import {
   motion,
   useMotionTemplate,
   useMotionValue,
+  useMotionValueEvent,
   useReducedMotion,
   useSpring,
   useTransform,
@@ -18,8 +19,9 @@ import {
   type ComponentProps,
   type ReactNode,
 } from "react";
-import { getSliderControlWidth, getSliderFillOffset } from "./slider-geometry";
 import { cn } from "@/registry/lib/cn";
+import { Tooltip } from "@/registry/ui/tooltip/tooltip";
+import { getSliderControlWidth, getSliderFillOffset } from "./slider-geometry";
 
 /**
  * A slider.
@@ -59,6 +61,8 @@ export interface SliderProps
   showTicks?: boolean;
   /** The current value, shown above the track on the right. */
   showValue?: boolean;
+  /** Show the live value in a tooltip above the thumb while it is hovered or focused. */
+  showValueTooltip?: boolean;
   /** Text shown above the track on the left, opposite the value. */
   label?: ReactNode;
   /**
@@ -78,16 +82,16 @@ export interface SliderProps
 // the thumb overhangs.
 const DIMS = {
   circle: {
-    md: { control: "h-5", rail: "inset-0", thumb: "size-5 rounded-full", thumbPx: 20, tickInset: "inset-x-2.5", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
-    sm: { control: "h-4", rail: "inset-0", thumb: "size-4 rounded-full", thumbPx: 16, tickInset: "inset-x-2", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    md: { control: "h-5", rail: "inset-0", thumb: "size-5 rounded-full", thumbPx: 20, tooltipSideOffset: 8, tickInset: "inset-x-2.5", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    sm: { control: "h-4", rail: "inset-0", thumb: "size-4 rounded-full", thumbPx: 16, tooltipSideOffset: 8, tickInset: "inset-x-2", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
   },
   knob: {
-    md: { control: "h-5", rail: "inset-x-0 top-1/2 h-2.5 -translate-y-1/2", thumb: "size-5 rounded-full", thumbPx: 20, tickInset: "inset-x-2.5", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
-    sm: { control: "h-4", rail: "inset-x-0 top-1/2 h-2 -translate-y-1/2", thumb: "size-4 rounded-full", thumbPx: 16, tickInset: "inset-x-2", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    md: { control: "h-5", rail: "inset-x-0 top-1/2 h-2.5 -translate-y-1/2", thumb: "size-5 rounded-full", thumbPx: 20, tooltipSideOffset: 8, tickInset: "inset-x-2.5", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    sm: { control: "h-4", rail: "inset-x-0 top-1/2 h-2 -translate-y-1/2", thumb: "size-4 rounded-full", thumbPx: 16, tooltipSideOffset: 8, tickInset: "inset-x-2", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
   },
   bar: {
-    md: { control: "h-10", rail: "inset-0", thumb: "h-5 w-1.5 rounded-sm", thumbPx: 6, tickInset: "inset-x-[3px]", tick: "h-2 rounded-none", tickCenterX: "", tickHairline: true },
-    sm: { control: "h-8", rail: "inset-0", thumb: "h-4 w-1.5 rounded-sm", thumbPx: 6, tickInset: "inset-x-[3px]", tick: "h-1.5 rounded-none", tickCenterX: "", tickHairline: true },
+    md: { control: "h-10", rail: "inset-0", thumb: "h-5 w-1.5 rounded-sm", thumbPx: 6, tooltipSideOffset: -2, tickInset: "inset-x-[3px]", tick: "h-2 rounded-none", tickCenterX: "", tickHairline: true },
+    sm: { control: "h-8", rail: "inset-0", thumb: "h-4 w-1.5 rounded-sm", thumbPx: 6, tooltipSideOffset: 0, tickInset: "inset-x-[3px]", tick: "h-1.5 rounded-none", tickCenterX: "", tickHairline: true },
   },
 } as const;
 
@@ -100,6 +104,7 @@ export function Slider({
   step = 1,
   showTicks = true,
   showValue = true,
+  showValueTooltip = false,
   label,
   thumb = "bar",
   size = "md",
@@ -117,7 +122,11 @@ export function Slider({
   const normalizedStep = Number.isFinite(step) && step > 0 ? step : 1;
   const [internal, setInternal] = useState(defaultValue);
   const [dragging, setDragging] = useState(false);
+  const [thumbHovered, setThumbHovered] = useState(false);
+  const [thumbFocused, setThumbFocused] = useState(false);
   const controlRef = useRef<HTMLDivElement>(null);
+  const thumbRef = useRef<HTMLDivElement>(null);
+  const pointerInteractionRef = useRef(false);
   const [pixelRatio, setPixelRatio] = useState(1);
   const [controlWidth, setControlWidth] = useState(0);
 
@@ -130,6 +139,7 @@ export function Slider({
   );
   const percent = ((normalizedCurrent - normalizedMin) / (normalizedMax - normalizedMin)) * 100;
   const visualPercent = isRtl ? 100 - percent : percent;
+  const tooltipOpen = showValueTooltip && (dragging || thumbHovered || thumbFocused);
 
   const thumbWidthPx = dims.thumbPx;
 
@@ -140,13 +150,24 @@ export function Slider({
   }, [target, visualPercent]);
   const smooth = useSpring(target, SPRING_GLIDE);
   const pos = reduceMotion ? target : smooth;
+  const [tooltipAlignOffset, setTooltipAlignOffset] = useState(0);
+  const visualPercentRef = useRef(visualPercent);
+  useLayoutEffect(() => {
+    visualPercentRef.current = visualPercent;
+  }, [visualPercent]);
   // Translate in pixels rather than changing `left` every animation frame. The control is
   // measured only when its size changes; the spring itself stays on the compositor.
   useLayoutEffect(() => {
     const control = controlRef.current;
     if (!control) return;
     const measure = () => {
-      setControlWidth(getSliderControlWidth(control));
+      const nextWidth = getSliderControlWidth(control);
+      setControlWidth(nextWidth);
+      setTooltipAlignOffset(
+        (visualPercentRef.current / 100) * Math.max(nextWidth - dims.thumbPx, 0) +
+          dims.thumbPx / 2 -
+          nextWidth / 2,
+      );
       // Captured with the width because ticks are snapped to the *device* pixel grid, and
       // that ratio changes when the window moves to a monitor with different scaling.
       setPixelRatio(window.devicePixelRatio || 1);
@@ -155,11 +176,21 @@ export function Slider({
     const observer = new ResizeObserver(measure);
     observer.observe(control);
     return () => observer.disconnect();
-  }, []);
+  }, [dims.thumbPx]);
   const thumbX = useTransform(
     pos,
     (p) => (p / 100) * Math.max(controlWidth - dims.thumbPx, 0),
   );
+
+  // Base UI's tooltip positioner listens for layout changes, but the slider thumb moves
+  // through a transform-driven spring. Feed the positioner the thumb's current cross-axis
+  // offset so the portalled popup follows every drag frame instead of only settling after
+  // the value changes.
+  useMotionValueEvent(thumbX, "change", (latest) => {
+    if (showValueTooltip) {
+      setTooltipAlignOffset(latest + dims.thumbPx / 2 - controlWidth / 2);
+    }
+  });
 
   // `pos` is a physical left-to-right position for the thumb. In RTL the fill still
   // grows from the inline start (the right edge), so it needs the inverse progress.
@@ -189,6 +220,32 @@ export function Slider({
     const nextValue = clamp(next, normalizedMin, normalizedMax);
     if (!controlled) setInternal(nextValue);
     onValueChange?.(nextValue);
+  };
+
+  const isPointerOverThumb = (event: { clientX: number; clientY: number }) => {
+    const thumb = thumbRef.current;
+    if (!thumb) return false;
+    const rect = thumb.getBoundingClientRect();
+    return (
+      event.clientX >= rect.left &&
+      event.clientX <= rect.right &&
+      event.clientY >= rect.top &&
+      event.clientY <= rect.bottom
+    );
+  };
+
+  const handlePointerEnd = (event: { clientX: number; clientY: number }) => {
+    pointerInteractionRef.current = false;
+    setDragging(false);
+    setThumbFocused(false);
+    setThumbHovered(isPointerOverThumb(event));
+  };
+
+  const handlePointerDown = () => {
+    if (disabled) return;
+    pointerInteractionRef.current = true;
+    setThumbFocused(false);
+    setDragging(true);
   };
 
   return (
@@ -221,9 +278,9 @@ export function Slider({
 
       <BaseSlider.Control
         ref={controlRef}
-        onPointerDown={() => !disabled && setDragging(true)}
-        onPointerUp={() => setDragging(false)}
-        onLostPointerCapture={() => setDragging(false)}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerEnd}
+        onLostPointerCapture={handlePointerEnd}
         className={cn(
           "group relative flex w-full touch-none items-center select-none",
           // The circle variant is half as thick; its round thumb is sized to the rail
@@ -310,8 +367,30 @@ export function Slider({
         </div>
 
         {/* Base UI's thumb: the input lives here for focus, keyboard and ARIA. Hidden,
-            because the visual thumb below is what's seen. */}
-        <BaseSlider.Thumb className="opacity-0" />
+            because the visual thumb below is what's seen. When opted in, the same thumb
+            is the tooltip anchor, so the value popup follows Base UI's real thumb position. */}
+        {showValueTooltip ? (
+          <Tooltip
+            content={normalizedCurrent}
+            open={tooltipOpen}
+            side="top"
+            sideOffset={dims.tooltipSideOffset}
+            delay={0}
+            closeOnClick={false}
+            positionerProps={{ anchor: controlRef, alignOffset: tooltipAlignOffset }}
+          >
+            <BaseSlider.Thumb
+              ref={thumbRef}
+              className={cn("opacity-0", dims.thumb)}
+              onPointerEnter={() => setThumbHovered(true)}
+              onPointerLeave={() => setThumbHovered(false)}
+              onFocus={() => setThumbFocused(!pointerInteractionRef.current)}
+              onBlur={() => setThumbFocused(false)}
+            />
+          </Tooltip>
+        ) : (
+          <BaseSlider.Thumb className={cn("opacity-0", dims.thumb)} />
+        )}
 
         {/* The visual thumb — spring-positioned, grab-stretched. The focus ring lights up
             when the hidden input is focus-visible (`group-has`), so keyboard focus shows
