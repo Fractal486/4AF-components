@@ -27,6 +27,10 @@ Single- and multi-select panels can include in-panel search. Their parent highli
 while the pointer is on the parent, inside the nested panel, or moving through the safe pointer
 corridor.
 
+Select-style triggers keep their label or placeholder on the left and show the selected value or
+selection count, dimmed, immediately before the chevron. Searchable panels use a plain text field
+without a leading search icon, and the no-results state is the same height as one option row.
+
 A checkbox item can also read as a toggle button rather than a ticked row. Its `children` may be
 a function of checked state, and `indicator={false}` drops the left tick and its indent so the
 icon and label carry the state:

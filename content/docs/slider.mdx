@@ -1,6 +1,6 @@
 ---
 title: Slider
-description: A Base UI range control with multiple thumb styles, labels, ticks, and sizing.
+description: A Base UI range control with multiple thumb styles, labels, ticks, sizing, and an optional live value tooltip.
 ---
 
 <ComponentDemo name="slider" />
@@ -12,5 +12,7 @@ description: A Base UI range control with multiple thumb styles, labels, ticks, 
 
 A controlled or uncontrolled numeric slider with a spring-gliding fill and three thumb variants:
 `bar` for a thin handle, `circle` for a round thumb filling the rail, and `knob` for a round thumb
-over a thin rail. Set `showValueTooltip` to show the live value in a tooltip above the thumb
-while it is hovered or focused; the tooltip follows the thumb continuously during motion.
+over a thin rail. Optional display props include `label`, `showValue`, and `showTicks`.
+`showValueTooltip` is off by default; enable it to show the live value above the thumb while the
+thumb is hovered or keyboard-focused. It stays visible during pointer drag, follows the thumb
+continuously during motion, and closes after release when the pointer is no longer over the thumb.

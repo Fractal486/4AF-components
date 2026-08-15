@@ -70,7 +70,7 @@ The catalog currently contains 42 installable UI items. Verify the count and nam
 | `switch` | `Switch` | Binary on/off state with a sliding, press-squishing thumb. |
 | `checkbox` | `Checkbox` | Boolean or indeterminate selection with animated tick and optional label. |
 | `radio` | `RadioGroup`, `Radio` | Single-choice selection groups. |
-| `slider` | `Slider` | Numeric input with `bar`, `circle`, and `knob` thumb variants, optional ticks, labels, and a live value tooltip. |
+| `slider` | `Slider` | Numeric input with `bar`, `circle`, and `knob` thumbs, optional ticks/labels, and an opt-in `showValueTooltip` that follows the thumb during drag. |
 | `select` | `Select`, trigger/content/item parts, `SelectSortTrigger` | Base UI single/multi select, optional panel search and clear footer, compact sort/filter trigger. |
 | `select-search` | `SearchSelect` and input/content/item parts | Editable Combobox trigger with filtering and single/multi selection. |
 | `select-motion` | `Select` and trigger/content/item parts | Button-triggered select with a hand-animated unfolding panel and optional panel search. |
@@ -98,15 +98,15 @@ The catalog currently contains 42 installable UI items. Verify the count and nam
 | `table-of-contents` | `TableOfContents` | Heading navigation with a dashed inactive rail, smooth scrolling, long-prose fallback, and `span` or `single` active marker variants. |
 | `table-of-contents-lines` | `TableOfContentsLines` | Dense line-based heading navigation with one active heading, a longer header rule, equal shorter rules between headings (none below the final heading), heading-relative indentation, and an expanding hover treatment. |
 | `separator` | `Separator` | An accessible horizontal or vertical divider built on Base UI Separator. |
-| `command-palette` | `CommandPalette`, panel/list/row/action parts, and `useCommandSearch` | Fuzzy command search, groups, nested/custom panels, async/server-driven search, configurable headers, keybinds, selection, and actions. |
-| `sidebar` | Provider, panel, group/menu/submenu/action/badge/skeleton parts | Default/floating/inset and split sidebars, collapse, sections, nested rows, actions, badges, skeletons. |
+| `command-palette` | `CommandPalette`, panel/list/row/action parts, and `useCommandSearch` | Fuzzy command search, groups, nested/custom panels, async/server-driven search, configurable headers, keybinds (default ⌘K/Ctrl+K), selection, actions, and Dialog-style enter/exit motion. |
+| `sidebar` | Provider, panel, group/menu/submenu/action/badge/skeleton parts | Default/floating/inset and split/split-floating/split-inset sidebars, collapse, sections, nested rows, split rail/panel selection, actions, badges, skeletons. |
 | `sidebar-layout` | `SidebarLayout` | Optional page shell around Sidebar with inset surface, title, collapse control, and actions. |
 
 ### Overlays and menus
 
 | Install name | Main API | Use it for |
 | --- | --- | --- |
-| `tooltip` | `TooltipProvider`, `Tooltip` | Delayed hover/focus descriptions with collision-aware placement. |
+| `tooltip` | `TooltipProvider`, `Tooltip` | Delayed hover/focus descriptions with collision-aware placement, optional controlled `open`, press behavior, and hoverable-popup control. |
 | `sheet` | `Sheet` and composition parts | Focus-trapped edge dialogs. |
 | `dialog` | `Dialog` parts, `DialogSteps`, `DialogStep` | Centered modals and optional validated multi-step flows. |
 | `alert-dialog` | `AlertDialog` parts | Decision-forcing modal that cannot dismiss by clicking away. |
@@ -213,6 +213,10 @@ Enter and exit mirror Dialog: the backdrop fades, the panel scales in from a sma
 and the exit fades and blurs without reversing the entrance. Use `keepMounted`/
 `AnimatePresence` and honor reduced motion.
 
+The root `shortcut` prop defaults to `true` (`⌘K` / `Ctrl+K`). The inspector demo turns that
+binding off on the component and uses `⌘⇧P` / `Ctrl+Shift+P` instead so it does not compete with
+Fumadocs' own command shortcut.
+
 Escape clears a non-empty header field only when that header is `type="search"`; other
 headers go back. Keep Select controls in headers at `size="sm"`.
 
@@ -240,6 +244,10 @@ state.
 Three nested-panel forms: navigation submenu, single-select with a trailing checkmark, and
 checkbox multi-select. Selection panels can search. Safe pointer travel keeps the parent
 active on the way into a panel.
+
+Select-style triggers keep their label or placeholder on the left and show the selected value or
+count, dimmed, before the chevron. Their optional search field is text-only, and the no-results
+state matches the height of one select row.
 
 `DropdownMenuCheckboxItem` takes `children` as `(checked, status) => …` and
 `indicator={false}` to drop the tick, so the icon and label carry the state. Wrap swapping
@@ -280,6 +288,11 @@ outside, so the hook reads the right selection.
 `sidebar` covers default, floating, inset, and split forms, collapsible sections, row
 actions, badges, nested rows, search/button headers, and row skeletons. Compose a row
 action with `dropdown-menu`.
+
+Split variants are `split`, `split-floating`, and `split-inset`. Provide the fixed `rail` with
+`SidebarRailButton` controls and `SidebarPanel` sections; use `activePanel`,
+`defaultActivePanel`, and `onActivePanelChange` when the wide panel selection needs to be
+controlled or observed.
 
 A header takes one full-width `SidebarHeaderButton`, or two wrapped in `SidebarHeaderRow`,
 which splits the width and stacks them when the sidebar collapses; `className="flex-none"`

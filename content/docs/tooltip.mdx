@@ -12,4 +12,7 @@ description: A concise hover and focus label with Base UI positioning and delay 
 
 A Base UI hover and focus tooltip with delay, collision-aware placement, and a CSS scale-and-blur
 entrance. Use `delay` to control when it opens; `closeOnClick={false}` keeps it open when the
-trigger is pressed, which is useful for live-value controls such as sliders.
+trigger is pressed, which is useful for live-value controls such as sliders. Pass `open` for
+controlled visibility, and `disableHoverablePopup` when the tooltip should close as soon as the
+pointer leaves the trigger instead of remaining open while the popup is hovered. Positioning
+options can be forwarded through `positionerProps`.
