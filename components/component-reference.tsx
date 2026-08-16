@@ -1,7 +1,7 @@
-import { ReferenceCodeBlock } from "@/components/reference-code-block";
+import { ServerCodeBlock } from "fumadocs-ui/components/codeblock.rsc";
 import { componentReferences, type ComponentReferenceName } from "@/lib/component-reference";
 
-export function ComponentReference({ name }: { name: ComponentReferenceName }) {
+export async function ComponentReference({ name }: { name: ComponentReferenceName }) {
   const reference = componentReferences[name];
   const install = `pnpm 4af install ${name} --project <absolute-target-project>`;
 
@@ -11,13 +11,13 @@ export function ComponentReference({ name }: { name: ComponentReferenceName }) {
         <p className="mb-2 text-[15px] leading-5 font-semibold text-fd-foreground">
           Install
         </p>
-        <ReferenceCodeBlock language="bash" code={install} />
+        <ServerCodeBlock lang="bash" code={install} />
       </div>
       <div>
         <p className="mb-2 text-[15px] leading-5 font-semibold text-fd-foreground">
           Usage
         </p>
-        <ReferenceCodeBlock language="tsx" code={reference.usage} />
+        <ServerCodeBlock lang="tsx" code={reference.usage} />
       </div>
     </div>
   );

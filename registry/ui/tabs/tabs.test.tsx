@@ -18,6 +18,19 @@ describe("Tabs", () => {
     expect(ref.current).toHaveAttribute("role", "tablist");
   });
 
+  it("uses concentric radii for the segment track and selected tab", () => {
+    const { container } = render(
+      <Tabs defaultValue="one">
+        <TabsList aria-label="Examples">
+          <TabsTab value="one">One</TabsTab>
+        </TabsList>
+      </Tabs>,
+    );
+
+    expect(container.querySelector('[role="tablist"]')).toHaveClass("rounded-md", "p-0.5");
+    expect(screen.getByRole("tab", { name: "One" })).toHaveClass("rounded-sm");
+  });
+
   it("keeps inactive panels mounted and switches with keyboard navigation", async () => {
     const user = userEvent.setup();
     render(
