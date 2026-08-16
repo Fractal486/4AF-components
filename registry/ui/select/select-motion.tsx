@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronDown, Search } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { motion, type Transition, useReducedMotion, type Variants } from "motion/react";
 import {
   createContext,
@@ -599,11 +599,7 @@ export function SelectContent({
         // `innerRef` still measures both parts, so the panel's unfold includes it.
       >
         {searchable && (
-          <div className="relative border-b border-border px-2 py-1">
-            <Search
-              aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 left-4 size-3.5 -translate-y-1/2 text-muted-foreground"
-            />
+          <div className="relative flex h-[38px] items-center border-b border-border px-3.5">
             <Input
               ref={searchRef}
               aria-label="Search options"
@@ -623,7 +619,7 @@ export function SelectContent({
                 if (event.key !== "Escape") event.stopPropagation();
               }}
               placeholder={searchPlaceholder}
-              className="h-8 pl-8"
+              className="h-full p-0"
             />
           </div>
         )}

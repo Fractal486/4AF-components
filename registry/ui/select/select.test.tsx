@@ -221,6 +221,10 @@ describe("Base UI Select", () => {
     await user.click(screen.getByRole("combobox", { name: "Fruit" }));
     const input = screen.getByRole("textbox", { name: "Search options" });
     expect(input).toHaveAttribute("placeholder", "Search fruit");
+    expect(input).toHaveClass("h-full");
+    expect(input).toHaveClass("p-0");
+    expect(input.parentElement).toHaveClass("h-[38px]", "px-3.5");
+    expect(input.parentElement?.querySelector("svg")).not.toBeInTheDocument();
 
     await user.keyboard("{ArrowDown}");
     expect(screen.getByRole("option", { name: "Apple" })).toHaveFocus();

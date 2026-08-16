@@ -1,7 +1,7 @@
 "use client";
 
 import { Select as BaseSelect } from "@base-ui/react/select";
-import { Check, ChevronDown, Search } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import {
   createContext,
@@ -822,14 +822,10 @@ export function SelectContent({
   const searchField = searchable ? (
     <div
       className={cn(
-        "relative px-2 py-1",
+        "relative flex h-[38px] items-center px-3.5",
         searchPosition === "bottom" ? "border-t border-border" : "border-b border-border",
       )}
     >
-      <Search
-        aria-hidden="true"
-        className="pointer-events-none absolute top-1/2 left-4 size-3.5 -translate-y-1/2 text-muted-foreground"
-      />
       <Input
         ref={searchInputRef}
         aria-label="Search options"
@@ -866,7 +862,7 @@ export function SelectContent({
           }
         }}
         placeholder={searchPlaceholder}
-        className="h-8 pl-8"
+        className="h-full p-0"
       />
     </div>
   ) : null;

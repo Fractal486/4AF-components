@@ -862,14 +862,14 @@ export function DropdownMenuSelectContent({
   );
 
   const searchField = searchable ? (
-    // A fixed 37px row, flush to the panel edge: the negative margins cancel the popup's
+    // A fixed 38px row, flush to the panel edge: the negative margins cancel the popup's
     // `p-1` so the strip runs from the panel's top edge to its separator line at exactly
-    // 37px (the popup's `overflow-hidden` clips it to the rounded corners). Denser than the
-    // standalone Select's inset field, matching the submenu's compact rows. Icon and input
-    // are centred flex children rather than an absolute icon over a padded input.
+    // 38px (the popup's `overflow-hidden` clips it to the rounded corners). `px-3.5` matches
+    // the standalone Select's search inset and its 4px list + 10px row icon inset. Icon and
+    // input are centred flex children rather than an absolute icon over a padded input.
     <div
       className={cn(
-        "-mx-1 flex h-[37px] shrink-0 items-center gap-2 px-3",
+        "-mx-1 flex h-[38px] shrink-0 items-center gap-2 px-3.5",
         searchPosition === "bottom" ? "-mb-1 border-t border-border" : "-mt-1 border-b border-border",
       )}
     >
