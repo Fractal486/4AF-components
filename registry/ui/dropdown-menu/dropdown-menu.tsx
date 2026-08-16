@@ -11,6 +11,7 @@ import {
   useRef,
   useState,
   type ComponentProps,
+  type ReactElement,
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
@@ -19,6 +20,7 @@ import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Input } from "@/registry/ui/input/input";
 import { Morph } from "@/registry/ui/morph/morph";
+import { Tooltip } from "@/registry/ui/tooltip/tooltip";
 
 /**
  * A dropdown menu.
@@ -317,6 +319,24 @@ const selectItemBase = cn(
 const selectItemIcon =
   "pointer-events-none flex size-3.5 shrink-0 items-center justify-center text-muted-foreground [&>svg]:size-3.5 [&>svg]:shrink-0 [&>svg]:text-muted-foreground";
 
+function DisabledReasonTooltip({
+  disabled,
+  reason,
+  children,
+}: {
+  disabled?: boolean;
+  reason?: ReactNode;
+  children: ReactElement;
+}) {
+  if (!disabled || reason == null || reason === "") return children;
+
+  return (
+    <Tooltip content={reason} side="right" sideOffset={6} delay={0}>
+      {children}
+    </Tooltip>
+  );
+}
+
 function focusDropdownMenuSelectItem(
   list: HTMLElement | null,
   direction: "next" | "previous",
@@ -390,6 +410,8 @@ export function DropdownMenuContent({
 export interface DropdownMenuItemProps extends ComponentProps<typeof BaseMenu.Item> {
   variant?: "default" | "destructive";
   inset?: boolean;
+  /** Explain why a disabled row is unavailable. Hovering the row shows the explanation. */
+  disabledReason?: ReactNode;
 }
 
 export function DropdownMenuItem({
@@ -397,21 +419,32 @@ export function DropdownMenuItem({
   variant = "default",
   inset,
   children,
+  disabled,
+  disabledReason,
   ...props
 }: DropdownMenuItemProps) {
-  return (
+  const hasReason = disabled && disabledReason != null && disabledReason !== "";
+  const item = (
     <BaseMenu.Item
       className={cn(
         itemBase,
         inset && "pl-8",
+        hasReason && "data-[disabled]:pointer-events-auto",
         // Red ink only — the highlight stays the same neutral wash as any other row.
         variant === "destructive" && "text-destructive [&>svg]:text-destructive",
         className,
       )}
+      disabled={disabled}
       {...props}
     >
       {children}
     </BaseMenu.Item>
+  );
+
+  return (
+    <DisabledReasonTooltip disabled={disabled} reason={disabledReason}>
+      {item}
+    </DisabledReasonTooltip>
   );
 }
 
@@ -579,6 +612,8 @@ export interface DropdownMenuCheckboxItemProps
       failure are otherwise silent. */
   announce?: { pending?: string; error?: string };
   onError?: (error: unknown) => void;
+  /** Explain why a disabled row is unavailable. Hovering the row shows the explanation. */
+  disabledReason?: ReactNode;
 }
 
 export function DropdownMenuCheckboxItem({
@@ -594,10 +629,12 @@ export function DropdownMenuCheckboxItem({
   pendingDelay,
   announce,
   disabled,
+  disabledReason,
   onError,
   ...props
 }: DropdownMenuCheckboxItemProps) {
   const deferred = action !== undefined;
+  const hasReason = disabled && disabledReason != null && disabledReason !== "";
   const [uncontrolled, setUncontrolled] = useState(defaultChecked ?? false);
   const isControlled = checked !== undefined;
   const current = isControlled ? checked : uncontrolled;
@@ -635,6 +672,7 @@ export function DropdownMenuCheckboxItem({
         className={cn(
           itemBase,
           indicator && "pr-2 pl-8",
+          hasReason && "data-[disabled]:pointer-events-auto",
           fillIcon && [
             "[&_svg]:transition-[fill] [&_svg]:duration-(--duration-fast) [&_svg]:ease-out",
             "data-[checked]:[&_svg]:fill-current",
@@ -644,36 +682,38 @@ export function DropdownMenuCheckboxItem({
         // Render function to read `checked`: the tick can Morph in and out (draw itself
         // in, blur out) instead of snapping, and `children` can swap on it.
         render={(itemProps, state) => (
-          <div {...itemProps}>
-            {indicator && (
-              <span className={INDICATOR_SLOT}>
-                {/* The tick slot doubles as the status slot: while the action is in
-                    flight the loader sits exactly where the tick will land, which is
-                    what makes the wait read as "not yet" rather than as "nothing
-                    happened". Both extra keys are unreachable without an `action`.
+          <DisabledReasonTooltip disabled={disabled} reason={disabledReason}>
+            <div {...itemProps}>
+              {indicator && (
+                <span className={INDICATOR_SLOT}>
+                  {/* The tick slot doubles as the status slot: while the action is in
+                      flight the loader sits exactly where the tick will land, which is
+                      what makes the wait read as "not yet" rather than as "nothing
+                      happened". Both extra keys are unreachable without an `action`.
 
-                    No size on the glyphs: `itemBase` sizes every svg in the row, and its
-                    `.row svg` beats a class on the element itself, so anything set here
-                    would be a statement the CSS quietly overrules. */}
-                <Morph
-                  activeKey={
-                    status === "pending" || status === "error"
-                      ? status
-                      : state.checked
-                        ? "on"
-                        : "off"
-                  }
-                  items={{
-                    on: <Check />,
-                    off: null,
-                    pending: <AsciiLoader />,
-                    error: <TriangleAlert />,
-                  }}
-                />
-              </span>
-            )}
-            {typeof children === "function" ? children(state.checked, status) : children}
-          </div>
+                      No size on the glyphs: `itemBase` sizes every svg in the row, and its
+                      `.row svg` beats a class on the element itself, so anything set here
+                      would be a statement the CSS quietly overrules. */}
+                  <Morph
+                    activeKey={
+                      status === "pending" || status === "error"
+                        ? status
+                        : state.checked
+                          ? "on"
+                          : "off"
+                    }
+                    items={{
+                      on: <Check />,
+                      off: null,
+                      pending: <AsciiLoader />,
+                      error: <TriangleAlert />,
+                    }}
+                  />
+                </span>
+              )}
+              {typeof children === "function" ? children(state.checked, status) : children}
+            </div>
+          </DisabledReasonTooltip>
         )}
         {...control}
         {...props}
@@ -692,13 +732,30 @@ export function DropdownMenuCheckboxItem({
   );
 }
 
+export interface DropdownMenuRadioItemProps extends ComponentProps<typeof BaseMenu.RadioItem> {
+  /** Explain why a disabled row is unavailable. Hovering the row shows the explanation. */
+  disabledReason?: ReactNode;
+}
+
 export function DropdownMenuRadioItem({
   className,
   children,
+  disabled,
+  disabledReason,
   ...props
-}: ComponentProps<typeof BaseMenu.RadioItem>) {
-  return (
-    <BaseMenu.RadioItem className={cn(itemBase, "pr-2 pl-8", className)} {...props}>
+}: DropdownMenuRadioItemProps) {
+  const hasReason = disabled && disabledReason != null && disabledReason !== "";
+  const item = (
+    <BaseMenu.RadioItem
+      className={cn(
+        itemBase,
+        "pr-2 pl-8",
+        hasReason && "data-[disabled]:pointer-events-auto",
+        className,
+      )}
+      disabled={disabled}
+      {...props}
+    >
       <span className={INDICATOR_SLOT}>
         {/* Base UI's own indicator, styled like the standalone Radio's dot. `keepMounted`
             matters: without it the indicator is transition-status-gated and can miss the
@@ -714,6 +771,12 @@ export function DropdownMenuRadioItem({
       </span>
       {children}
     </BaseMenu.RadioItem>
+  );
+
+  return (
+    <DisabledReasonTooltip disabled={disabled} reason={disabledReason}>
+      {item}
+    </DisabledReasonTooltip>
   );
 }
 
@@ -945,6 +1008,8 @@ export interface DropdownMenuSelectItemProps {
   icon?: ReactNode;
   label?: string;
   disabled?: boolean;
+  /** Explain why a disabled option is unavailable. Hovering the row shows the explanation. */
+  disabledReason?: ReactNode;
   className?: string;
   /** Text used by an ancestor searchable select panel to match this option. */
   searchValue?: string;
@@ -956,6 +1021,7 @@ export function DropdownMenuSelectItem({
   icon,
   label,
   disabled,
+  disabledReason,
   className,
   searchValue,
 }: DropdownMenuSelectItemProps) {
@@ -963,6 +1029,8 @@ export function DropdownMenuSelectItem({
   const itemLabel = label ?? (typeof children === "string" ? children : String(value));
   const optionText = searchValue ?? (typeof children === "string" ? children : itemLabel);
   const hiddenBySearch = !context.matchesQuery(optionText);
+  const isDisabled = disabled || context.disabled;
+  const hasReason = isDisabled && disabledReason != null && disabledReason !== "";
   const checked = context.values.some((current) => Object.is(current, value));
   const {
     registerLabel,
@@ -985,41 +1053,40 @@ export function DropdownMenuSelectItem({
       <BaseMenu.CheckboxItem
         checked={checked}
         onCheckedChange={(nextChecked) => context.toggleValue(value, nextChecked)}
-        disabled={disabled || context.disabled || hiddenBySearch}
+        disabled={isDisabled || hiddenBySearch}
         hidden={hiddenBySearch}
         label={itemLabel}
-        className={cn(
-          selectItemBase,
-          className,
-        )}
+        className={cn(selectItemBase, hasReason && "data-[disabled]:pointer-events-auto", className)}
         render={(itemProps, state) => (
-          <div {...itemProps}>
-            <Checkbox
-              checked={state.checked}
-              size="sm"
-              aria-hidden
-              tabIndex={-1}
-              className="pointer-events-none shrink-0"
-            />
-            {icon && (
-              <span aria-hidden="true" className={selectItemIcon}>
-                {icon}
-              </span>
-            )}
-            <span className="min-w-0 flex-1 truncate">{children}</span>
-          </div>
+          <DisabledReasonTooltip disabled={isDisabled} reason={disabledReason}>
+            <div {...itemProps}>
+              <Checkbox
+                checked={state.checked}
+                size="sm"
+                aria-hidden
+                tabIndex={-1}
+                className="pointer-events-none shrink-0"
+              />
+              {icon && (
+                <span aria-hidden="true" className={selectItemIcon}>
+                  {icon}
+                </span>
+              )}
+              <span className="min-w-0 flex-1 truncate">{children}</span>
+            </div>
+          </DisabledReasonTooltip>
         )}
       />
     );
   }
 
-  return (
+  const item = (
     <BaseMenu.RadioItem
       value={value}
-      disabled={disabled || context.disabled || hiddenBySearch}
+      disabled={isDisabled || hiddenBySearch}
       hidden={hiddenBySearch}
       label={itemLabel}
-      className={cn(selectItemBase, className)}
+      className={cn(selectItemBase, hasReason && "data-[disabled]:pointer-events-auto", className)}
     >
       {icon && (
         <span aria-hidden="true" className={selectItemIcon}>
@@ -1038,6 +1105,12 @@ export function DropdownMenuSelectItem({
         <Check className="size-3.5" />
       </BaseMenu.RadioItemIndicator>
     </BaseMenu.RadioItem>
+  );
+
+  return (
+    <DisabledReasonTooltip disabled={isDisabled} reason={disabledReason}>
+      {item}
+    </DisabledReasonTooltip>
   );
 }
 

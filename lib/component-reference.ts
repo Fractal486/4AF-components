@@ -126,6 +126,9 @@ import { Button } from "@/components/ui/button";
 <DropdownMenu>
   <DropdownMenuTrigger>Actions</DropdownMenuTrigger>
   <DropdownMenuItem>Edit</DropdownMenuItem>
+  <DropdownMenuItem disabled disabledReason="Billing is available on the Pro plan.">
+    Billing
+  </DropdownMenuItem>
 </DropdownMenu>`,
   },
   empty: {

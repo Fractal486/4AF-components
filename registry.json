@@ -1126,7 +1126,7 @@
     {
       "name": "dropdown-menu",
       "type": "registry:ui",
-      "description": "A dropdown menu on Base UI Menu (keyboard nav, submenus, checkbox/radio items). Instant row highlight; CSS scale-and-blur panel enter.",
+      "description": "A dropdown menu on Base UI Menu (keyboard nav, submenus, checkbox/radio items, searchable selection panels, and immediate disabled-reason tooltips). Instant row highlight; CSS scale-and-blur panel enter.",
       "dependencies": [
         "@base-ui/react",
         "lucide-react",
@@ -1139,6 +1139,7 @@
         "http://localhost:3000/r/morph.json",
         "http://localhost:3000/r/checkbox.json",
         "http://localhost:3000/r/input.json",
+        "http://localhost:3000/r/tooltip.json",
         "http://localhost:3000/r/use-action.json",
         "http://localhost:3000/r/ascii-loader.json"
       ],

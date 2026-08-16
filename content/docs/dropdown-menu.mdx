@@ -14,6 +14,16 @@ nested-select parts
 A Base UI menu with keyboard navigation, safe submenu pointer travel, Kbd-style shortcuts,
 destructive rows, original submenus, and searchable single and multi-select subpanels.
 
+Disabled rows can take an optional `disabledReason`. When present, hovering the row opens an
+immediate right-side tooltip explaining why it is unavailable. This use case skips the normal
+tooltip delay:
+
+```tsx
+<DropdownMenuItem disabled disabledReason="Billing is available on the Pro plan.">
+  Billing
+</DropdownMenuItem>
+```
+
 ## Nested panels
 
 Dropdown Menu includes three reusable nested-panel forms:

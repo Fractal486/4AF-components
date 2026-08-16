@@ -113,7 +113,7 @@ The catalog currently contains 42 installable UI items. Verify the count and nam
 | `popover` | `Popover` parts | Interactive anchored panels with optional modal behavior. |
 | `selection-toolbar` | `SelectionToolbar`, button/action-button/toggle/action-toggle/toggle-group/separator parts | Actions over selected text — copy, highlight, quote. Anchored to the range, hands the captured text and range to every action. Plain items dismiss the bar on press; async and toggle items keep it up so their state is visible. |
 | `hover-card` | `HoverCard`, trigger/content parts, `HoverCardSkeleton` | Rich previews opened by hover or keyboard focus, with built-in loading placeholders. |
-| `dropdown-menu` | Menu, checkbox/radio/submenu, shortcut, and nested-select parts | Keyboard menus, safe submenus, destructive items, Kbd hints, and searchable selection panels. |
+| `dropdown-menu` | Menu, checkbox/radio/submenu, shortcut, and nested-select parts | Keyboard menus, safe submenus, destructive items, Kbd hints, searchable selection panels, and immediate disabled-reason tooltips. |
 
 ## Bundled APIs and composition
 
@@ -248,6 +248,15 @@ active on the way into a panel.
 Select-style triggers keep their label or placeholder on the left and show the selected value or
 count, dimmed, before the chevron. Their optional search field is text-only, and the no-results
 state matches the height of one select row.
+
+Disabled rows accept an optional `disabledReason`. The disabled row itself becomes an immediate
+right-side tooltip trigger on hover, while remaining unavailable for selection:
+
+```tsx
+<DropdownMenuItem disabled disabledReason="Billing is available on the Pro plan.">
+  Billing
+</DropdownMenuItem>
+```
 
 `DropdownMenuCheckboxItem` takes `children` as `(checked, status) => …` and
 `indicator={false}` to drop the tick, so the icon and label carry the state. Wrap swapping
