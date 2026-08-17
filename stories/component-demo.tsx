@@ -35,6 +35,7 @@ export type ComponentDemoName =
   | "progress"
   | "radio"
   | "select"
+  | "select-sort"
   | "select-motion"
   | "select-motion-search"
   | "select-search"
@@ -134,6 +135,7 @@ const demos: Record<Exclude<ComponentDemoName, "ascii-loader">, ComponentType> =
   progress: lazyEntry(async () => (await import("@/inspector/entries/progress")).progressEntry),
   radio: lazyEntry(async () => (await import("@/inspector/entries/radio")).radioEntry),
   select: lazyEntry(async () => (await import("@/inspector/entries/select")).selectEntry),
+  "select-sort": lazyEntry(async () => (await import("@/inspector/entries/select-sort")).selectSortEntry),
   "select-motion": lazyEntry(async () => (await import("@/inspector/entries/select-motion")).selectMotionEntry),
   "select-motion-search": lazyEntry(async () => (await import("@/inspector/entries/select-motion-search")).selectMotionSearchEntry),
   "select-search": lazyEntry(async () => (await import("@/inspector/entries/select-search")).selectSearchEntry),

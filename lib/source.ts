@@ -40,7 +40,6 @@ export const source = loader({
           const componentFolders: Node[] = [];
           for (const group of COMPONENT_FAMILIES) {
             const { name, slugs } = group;
-            const indexSlug = "index" in group ? group.index : undefined;
             const children = slugs.flatMap((slug) => {
               const page = componentPagesBySlug.get(slug);
               if (!page) return [];
@@ -53,13 +52,13 @@ export const source = loader({
               if (child) componentFolders.push(child);
               continue;
             }
-            const index = indexSlug ? componentPagesBySlug.get(indexSlug) : undefined;
+            // Omitting `index` makes Fumadocs render the parent as a folder trigger,
+            // instead of linking it to a separate family overview page.
             componentFolders.push({
               type: "folder",
               name,
               defaultOpen: false,
               collapsible: true,
-              ...(index ? { index } : {}),
               children,
             });
           }

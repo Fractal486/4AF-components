@@ -111,7 +111,12 @@ describe("component documentation", () => {
       "action-toggle": ["revertAfter={Infinity}", "onPressedChange"],
       "copy-button": ["Promise<string>", "<CopyButton icon="],
       badge: ["animateLayout={false}", "FLIP-animates"],
-      select: ["SelectSortTrigger", "clearable", "iconForValue"],
+      select: [
+        "SelectSortTrigger",
+        'ComponentDemo name="select-sort"',
+        "clearable",
+        "iconForValue",
+      ],
       "select-overview": ["32px", "36px"],
       "select-search": ["readonly any[]", "SearchSelectItem"],
       "command-palette": [
