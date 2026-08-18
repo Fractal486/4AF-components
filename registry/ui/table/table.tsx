@@ -61,6 +61,7 @@ interface TableContextValue {
   selectable: boolean;
   size: TableVariants["size"];
   bordered: TableVariants["bordered"];
+  stickyHeader: boolean;
   selected: readonly string[];
   allSelected: boolean;
   someSelected: boolean;
@@ -75,6 +76,7 @@ const TableContext = createContext<TableContextValue>({
   selectable: false,
   size: "md",
   bordered: false,
+  stickyHeader: true,
   selected: [],
   allSelected: false,
   someSelected: false,
@@ -104,6 +106,11 @@ export interface TableProps extends Omit<ComponentProps<"table">, "className">, 
    * row rules are there either way — this is the vertical half of the grid plus the edges.
    */
   bordered?: boolean;
+  /**
+   * Pin the header row to the top of the scroll container. It only has somewhere to pin to
+   * once that container is bounded, so give it a height through `wrapperClassName`.
+   */
+  stickyHeader?: boolean;
   /** Add the checkbox column on the left. */
   selectable?: boolean;
   /**
@@ -138,6 +145,7 @@ export function Table({
   wrapperClassName,
   size = "md",
   bordered = false,
+  stickyHeader = true,
   selectable = false,
   rows,
   value,
@@ -219,6 +227,7 @@ export function Table({
       selectable,
       size,
       bordered,
+      stickyHeader,
       selected,
       allSelected,
       someSelected,
@@ -232,6 +241,7 @@ export function Table({
       selectable,
       size,
       bordered,
+      stickyHeader,
       selected,
       allSelected,
       someSelected,
@@ -283,7 +293,8 @@ export function TableBody({ className, ...props }: ComponentProps<"tbody">) {
         data-slot="table-body"
         // The last row's rule would otherwise land on the table's own bottom edge, where it
         // reads as a stray line under the data rather than as a separator between rows.
-        className={cn("[&>tr:last-child]:border-0", className)}
+        // Reached through the cells, since `border-separate` gives a `<tr>` nothing to drop.
+        className={cn("[&>tr:last-child>*]:border-b-0", className)}
         {...props}
       />
     </TableSectionContext.Provider>
@@ -295,7 +306,12 @@ export function TableFooter({ className, ...props }: ComponentProps<"tfoot">) {
     <TableSectionContext.Provider value="footer">
       <tfoot
         data-slot="table-footer"
-        className={cn("border-t border-border font-medium [&>tr]:border-0", className)}
+        // Its cells carry the rule above the footer and drop the one below it, for the same
+        // reason: in this border model a row group can't draw either.
+        className={cn(
+          "font-medium [&>tr>*]:border-t [&>tr>*]:border-border [&>tr>*]:border-b-0",
+          className,
+        )}
         {...props}
       />
     </TableSectionContext.Provider>
@@ -328,6 +344,7 @@ export function TableRow({
     selectable,
     size,
     bordered,
+    stickyHeader,
     selected,
     allSelected,
     someSelected,
@@ -350,7 +367,10 @@ export function TableRow({
       {...props}
     >
       {selectable && section === "header" && (
-        <th scope="col" className={tableSelectCellVariants({ size, bordered })}>
+        <th
+          scope="col"
+          className={tableSelectCellVariants({ size, bordered, sticky: stickyHeader })}
+        >
           <span className="flex items-center">
             <Checkbox
               size="sm"
@@ -402,7 +422,7 @@ export function TableHead({
   children,
   ...props
 }: TableHeadProps) {
-  const { size, bordered, sort, toggleSort } = useContext(TableContext);
+  const { size, bordered, stickyHeader, sort, toggleSort } = useContext(TableContext);
   const reduceMotion = useReducedMotion();
   const active = sortKey !== undefined && sort?.column === sortKey;
 
@@ -422,7 +442,11 @@ export function TableHead({
               : "descending"
             : "none"
       }
-      className={cn(tableHeadVariants({ size, bordered }), sortKey && "group/sort", className)}
+      className={cn(
+        tableHeadVariants({ size, bordered, sticky: stickyHeader }),
+        sortKey && "group/sort",
+        className,
+      )}
       {...props}
     >
       {sortKey === undefined ? (

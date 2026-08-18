@@ -23,6 +23,7 @@ is Base UI's; the rest is plain HTML.
 | --- | --- | --- | --- |
 | `size` | `"sm" \| "md"` | `"md"` | Row density. |
 | `bordered` | `boolean` | `false` | Frame around the table and a rule between every pair of columns. Row rules are always drawn. |
+| `stickyHeader` | `boolean` | `true` | Pins the header row to the top of the scroll container. |
 | `selectable` | `boolean` | `false` | Adds the checkbox column on the left. |
 | `rows` | `readonly string[]` | `[]` | Row values the select-all covers. |
 | `value` | `readonly string[]` | — | Selected row values, controlled. |
@@ -79,6 +80,21 @@ const rows = useMemo(() => sortPeople(people, sort), [people, sort]);
 
 ## Layout
 
-The table ships inside a horizontal scroll container, styled with `wrapperClassName`. With
-`bordered` the frame is drawn on that container rather than on the table, so its corners round;
-`border-collapse` ignores `border-radius`.
+The table ships inside a scroll container carrying the library's thin scrollbar, styled with
+`wrapperClassName`. With `bordered` the frame is drawn on that container rather than on the
+table, so its corners round; `border-collapse` ignores `border-radius`.
+
+The header pins to that container, which needs a bounded height before it has anywhere to pin
+to:
+
+```tsx
+<Table wrapperClassName="max-h-80">
+```
+
+Pinned header cells take `bg-background`, since rows scroll underneath them. Pass another fill
+through `className` on `TableHead` when the table sits on a raised surface. They also sit at
+`z-20`, above cell content that positions itself — a Badge's label is at `relative z-10`.
+
+Borders are separated (`border-separate` with zero spacing) rather than collapsed, because a
+collapsed border belongs to the table and a pinned cell would travel without its edge. Every
+rule therefore lives on the cells; a `<tr>` draws only its background.

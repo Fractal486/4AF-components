@@ -321,6 +321,7 @@ own.
 | --- | --- |
 | Show the checkbox column | `selectable` |
 | Frame plus rules between columns | `bordered` (row rules are always on) |
+| Pin the header | `stickyHeader` (on by default; needs a bounded `wrapperClassName` height) |
 | Sortable column | `sortKey` on `TableHead`; read `sort` / `onSortChange` and order the rows yourself |
 | What select-all covers | `rows` (the page you are rendering, not every row you have) |
 | Selection state | `value` / `onValueChange`, or `defaultValue` |
@@ -329,6 +330,12 @@ own.
 Sorting cycles ascending → descending → unsorted; switching columns restarts at ascending. The
 component does not sort rows — it owns the control, the state and `aria-sort`, and reports
 `{ column, direction } | null`.
+
+The scroll container carries the library's thin scrollbar. Pinned header cells take
+`bg-background` because rows scroll under them — override through `className` on `TableHead`
+for a table on a raised surface — and sit at `z-20`, clearing cell content that positions
+itself. Borders are separated, not collapsed, so a pinned cell keeps its own edge; every rule
+lives on the cells and a `<tr>` draws only its background.
 
 A row is selectable when it has a `value`; one without still gets an empty cell so columns stay
 aligned. Select-all is a union, so selected rows outside `rows` survive it. Rows expose

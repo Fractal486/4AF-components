@@ -112,6 +112,33 @@ describe("Table", () => {
     expect(onValueChange).toHaveBeenLastCalledWith(["offscreen"]);
   });
 
+  it("pins the header and gives the scroll container the library scrollbar", () => {
+    const { container, rerender } = render(<People selectable />);
+
+    const wrapper = container.querySelector('[data-slot="table-wrapper"]')!;
+    expect(wrapper.className).toContain("[scrollbar-width:thin]");
+    expect(wrapper.className).toContain("[&::-webkit-scrollbar]:h-1.5");
+
+    const headerCells = () => [...container.querySelectorAll("thead th")];
+    // Both the column headers and the select-all cell, or the pinned row has a hole in it.
+    expect(headerCells()).toHaveLength(2);
+    expect(headerCells().every((cell) => cell.className.includes("sticky"))).toBe(true);
+    // Above cell content that positions itself — a Badge's label sits at `relative z-10`,
+    // which lands in the table's stacking context and wins a tie on source order.
+    expect(headerCells().every((cell) => cell.className.includes("z-20"))).toBe(true);
+    // Overhanging the scrollport by a pixel, so a fractional sticky boundary can't open a
+    // seam above the header for the rows behind it to show through.
+    expect(headerCells().every((cell) => cell.className.includes("-top-px"))).toBe(true);
+    // Separated borders, or a pinned cell travels without its edge and the collapsed one it
+    // left behind shows as a sliver at the top of the scrollport.
+    expect(container.querySelector("table")!.className).toContain("border-separate");
+    expect(headerCells().every((cell) => cell.className.includes("border-b"))).toBe(true);
+
+    rerender(<People selectable stickyHeader={false} />);
+
+    expect(headerCells().some((cell) => cell.className.includes("sticky"))).toBe(false);
+  });
+
   it("cycles a sortable column through ascending, descending and back out", () => {
     const onSortChange = vi.fn();
     render(

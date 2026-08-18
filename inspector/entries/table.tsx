@@ -21,6 +21,10 @@ const RELEASES = [
   { id: "4.2.0-rc.1", version: "4.2.0-rc.1", channel: "preview", downloads: 942, published: "5 Mar" },
   { id: "4.1.3", version: "4.1.3", channel: "stable", downloads: 26_781, published: "18 Feb" },
   { id: "4.1.2", version: "4.1.2", channel: "stable", downloads: 9_310, published: "2 Feb" },
+  { id: "4.1.1", version: "4.1.1", channel: "stable", downloads: 14_502, published: "21 Jan" },
+  { id: "4.1.0", version: "4.1.0", channel: "stable", downloads: 31_044, published: "9 Jan" },
+  { id: "4.1.0-beta.2", version: "4.1.0-beta.2", channel: "preview", downloads: 610, published: "2 Jan" },
+  { id: "4.0.7", version: "4.0.7", channel: "stable", downloads: 22_118, published: "14 Dec" },
 ] as const;
 
 const NUMBER = new Intl.NumberFormat("en-GB");
@@ -63,14 +67,16 @@ export const tableEntry = defineEntry({
     size: select(SIZES, "md"),
     selectable: bool(true, "Checkbox column"),
     bordered: bool(false, "Grid lines"),
+    scroll: bool(true, "Bounded height"),
     footer: bool(false, "Footer"),
   },
-  render({ size, selectable, bordered, footer }) {
+  render({ size, selectable, bordered, scroll, footer }) {
     return (
       <TableDemo
         size={size}
         selectable={selectable}
         bordered={bordered}
+        scroll={scroll}
         footer={footer}
       />
     );
@@ -81,11 +87,13 @@ function TableDemo({
   size,
   selectable,
   bordered,
+  scroll,
   footer,
 }: {
   size: (typeof SIZES)[number];
   selectable: boolean;
   bordered: boolean;
+  scroll: boolean;
   footer: boolean;
 }) {
   const [selected, setSelected] = useState<string[]>(["4.1.3"]);
@@ -105,6 +113,8 @@ function TableDemo({
         size={size}
         selectable={selectable}
         bordered={bordered}
+        // The header pins to the scroll container, so it needs one with a height to pin to.
+        wrapperClassName={scroll ? "max-h-64" : undefined}
         sort={sort}
         onSortChange={setSort}
         rows={RELEASES.map((release) => release.id)}

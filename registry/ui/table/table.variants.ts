@@ -9,31 +9,50 @@ import { cva, type VariantProps } from "class-variance-authority";
  * On the wrapper it rounds — and the wrapper already clips, because setting `overflow-x`
  * forces the other axis out of `visible` too, so the corners cut the cells cleanly.
  */
-export const tableWrapperVariants = cva("w-full overflow-x-auto", {
-  variants: {
-    bordered: {
-      true: "rounded-md border border-border",
-      false: "",
+export const tableWrapperVariants = cva(
+  [
+    "w-full overflow-x-auto",
+    // The library's thin scrollbar, same declaration the menu, dialog and select panels
+    // use. `h-1.5` as well as `w-1.5`, because this is the first of them that can scroll
+    // sideways and the webkit rule sizes each axis separately. Firefox reads the first two
+    // properties and ignores the pseudo-elements.
+    "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent]",
+    "[&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar]:w-1.5",
+    "[&::-webkit-scrollbar-track]:bg-transparent",
+    "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong",
+    "[&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground",
+  ],
+  {
+    variants: {
+      bordered: {
+        true: "rounded-md border border-border",
+        false: "",
+      },
     },
+    defaultVariants: { bordered: false },
   },
-  defaultVariants: { bordered: false },
-});
+);
 
 /**
- * The `<table>` itself. `border-collapse` so the row rules meet cleanly at the cell
- * boundaries rather than doubling.
+ * The `<table>` itself.
+ *
+ * `border-separate` with zero spacing, not `border-collapse`, and the pinned header is the
+ * whole reason. Collapsed borders belong to the *table*, not to the cells that appear to
+ * carry them — so a sticky header cell travels without its edge, and the collapsed border
+ * it left behind stays in flow as a sliver at the top of the scrollport with the rows
+ * running through it. Separated borders belong to each cell and pin with it.
+ *
+ * The cost is that a `<tr>` can no longer draw anything: in this model borders on rows and
+ * row groups are ignored outright. Every rule below therefore lives on the cells, and the
+ * row is left owning only its background.
  */
-export const tableVariants = cva("w-full border-collapse text-sm");
+export const tableVariants = cva("w-full border-separate border-spacing-0 text-sm");
 
 /**
  * Row density, and the only axis this component has. `md` is a comfortable reading table;
  * `sm` is the one you reach for when the point is to see many rows at once.
  */
 export const tableRowVariants = cva([
-  // A real border, not a shadow. The design foundation is explicit that table cells are
-  // where borders belong: the job here is separation between rows, not lifting one off
-  // the page.
-  "border-b border-border",
   // No transition. A row wash is feedback about where the cursor *is*, and easing it in
   // makes the pointer arrive before the answer does; the eye reads that as lag rather than
   // as polish. The colours below are quiet enough that there is nothing to soften anyway.
@@ -59,6 +78,8 @@ export const tableHeadVariants = cva(
     // Muted and small: a column header names the data, it isn't part of it. `whitespace-nowrap`
     // because a wrapped header changes the height of the whole header row.
     "text-left align-middle font-medium whitespace-nowrap text-muted-foreground",
+    // The row rule, on the cell because `border-separate` ignores it anywhere else.
+    "border-b border-border",
   ],
   {
     variants: {
@@ -75,12 +96,36 @@ export const tableHeadVariants = cva(
         true: "border-border not-last:border-r",
         false: "",
       },
+      /**
+       * Pinned to the top of the scroll container.
+       *
+       * A fill is not optional here — the rows scroll *under* the header, and a transparent
+       * cell would let them show through. `bg-background` is the page's own ground; a table
+       * sitting on a raised surface should pass its fill through `className`.
+       *
+       * Pinned a pixel *above* the scrollport rather than flush with it. A sticky element
+       * settles on a fractional boundary whenever the scroll offset or the container's own
+       * position lands off the device-pixel grid, and the sub-pixel that opens above it is a
+       * window onto the rows travelling behind — which is why the seam flickers while
+       * scrolling instead of sitting there. Overhanging by 1px means there is nothing to
+       * open: the strip is clipped by the container, and the cell has no top border to lose.
+       *
+       * `z-20`, not `z-10`. Cell content routinely positions itself — a Badge's label sits at
+       * `relative z-10` — and none of those wrappers create a stacking context of their own,
+       * so they land in the table's context at the header's level. A tie is broken by source
+       * order, and `<tbody>` comes after `<thead>`, which is how a badge ends up painted over
+       * a pinned header.
+       */
+      sticky: {
+        true: "sticky -top-px z-20 bg-background",
+        false: "",
+      },
     },
-    defaultVariants: { size: "md", bordered: false },
+    defaultVariants: { size: "md", bordered: false, sticky: false },
   },
 );
 
-export const tableCellVariants = cva(["align-middle text-foreground"], {
+export const tableCellVariants = cva(["border-b border-border align-middle text-foreground"], {
   variants: {
     size: {
       sm: "h-9 px-2.5 py-1.5",
@@ -138,7 +183,7 @@ export const tableSortChevronVariants = cva([
  * The selection column. `w-px` collapses it to its content — a checkbox plus padding — so
  * it takes the narrowest column the table can give it and the data columns keep the rest.
  */
-export const tableSelectCellVariants = cva("w-px align-middle", {
+export const tableSelectCellVariants = cva("w-px border-b border-border align-middle", {
   variants: {
     size: {
       sm: "px-2.5",
@@ -153,8 +198,27 @@ export const tableSelectCellVariants = cva("w-px align-middle", {
       true: "border-border not-last:border-r",
       false: "",
     },
+    /**
+     * Pinned to the top of the scroll container.
+     *
+     * A fill is not optional here — the rows scroll *under* the header, and a transparent
+     * cell would let them show through. `bg-background` is the page's own ground; a table
+     * sitting on a raised surface should pass its fill through `className`.
+     *
+     * Pinned a pixel above the scrollport, not flush with it: a sticky element settling on a
+     * fractional boundary opens a sub-pixel seam above itself, through which the rows behind
+     * it show as they travel. Overhanging leaves nothing to open.
+     *
+     * `z-20`, not `z-10`: cell content that positions itself — a Badge's label sits at
+     * `relative z-10` — lands in the table's stacking context at the header's own level, and
+     * a tie is broken by source order in `<tbody>`'s favour.
+     */
+    sticky: {
+      true: "sticky -top-px z-20 bg-background",
+      false: "",
+    },
   },
-  defaultVariants: { size: "md", bordered: false },
+  defaultVariants: { size: "md", bordered: false, sticky: false },
 });
 
 export type TableVariants = VariantProps<typeof tableCellVariants>;
