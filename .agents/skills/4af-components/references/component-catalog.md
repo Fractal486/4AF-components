@@ -95,7 +95,7 @@ The catalog currently contains 43 installable UI items. Verify the count and nam
 | --- | --- | --- |
 | `tabs` | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | Segment, pill, or underline tabs with a traveling indicator. |
 | `collapsible` | `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` | Disclosure rows (`plain`/`card`) with a rotating chevron, a height slide so following rows travel rather than jump, and a blur-fade on the content. |
-| `table` | `Table` and header/body/footer/row/head/cell parts | Data tables in two densities, with an optional checkbox column: `selectable` adds it, `rows` sets what select-all covers, and the header box goes indeterminate on a partial selection. `bordered` adds the frame and column rules; a `sortKey` on a header adds a three-step sort control. |
+| `table` | `Table` and header/body/footer/row/head/cell parts | Data tables in two densities, with an optional checkbox column: `selectable` adds it, `rows` sets what select-all covers, and the header box goes indeterminate on a partial selection. `loading` fills the body with placeholders shaped by the header; `bordered` adds the frame and column rules; a `sortKey` on a header adds a three-step sort control. |
 | `table-of-contents` | `TableOfContents` | Heading navigation with a dashed inactive rail, smooth scrolling, long-prose fallback, and `span` or `single` active marker variants. |
 | `table-of-contents-lines` | `TableOfContentsLines` | Dense line-based heading navigation with one active heading, a longer header rule, equal shorter rules between headings (none below the final heading), heading-relative indentation, and an expanding hover treatment. |
 | `separator` | `Separator` | An accessible horizontal or vertical divider built on Base UI Separator. |
@@ -319,6 +319,7 @@ cell to each row, `TableRow` renders its own.
 | Need | Prop |
 | --- | --- |
 | Show the checkbox column | `selectable` |
+| Loading placeholders | `loading` (+ `loadingRows`); shape is read off the header, sets `aria-busy` |
 | Frame plus rules between columns | `bordered` (row rules are always on) |
 | Pin the header | `stickyHeader` (on by default; needs a bounded `wrapperClassName` height) |
 | Sortable column | `sortKey` on `TableHead`; read `sort` / `onSortChange` and order the rows yourself |

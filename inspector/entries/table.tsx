@@ -71,9 +71,10 @@ export const tableEntry = defineEntry({
     selectionBar: bool(true, "Selection action row"),
     bordered: bool(false, "Grid lines"),
     scroll: bool(true, "Bounded height"),
+    loading: bool(false, "Loading"),
     footer: bool(false, "Footer"),
   },
-  render({ size, selectable, selectionBar, bordered, scroll, footer }) {
+  render({ size, selectable, selectionBar, bordered, scroll, loading, footer }) {
     return (
       <TableDemo
         size={size}
@@ -81,6 +82,7 @@ export const tableEntry = defineEntry({
         selectionBar={selectionBar}
         bordered={bordered}
         scroll={scroll}
+        loading={loading}
         footer={footer}
       />
     );
@@ -93,6 +95,7 @@ function TableDemo({
   selectionBar,
   bordered,
   scroll,
+  loading,
   footer,
 }: {
   size: (typeof SIZES)[number];
@@ -100,6 +103,7 @@ function TableDemo({
   selectionBar: boolean;
   bordered: boolean;
   scroll: boolean;
+  loading: boolean;
   footer: boolean;
 }) {
   const [selected, setSelected] = useState<string[]>(["4.1.3"]);
@@ -119,6 +123,7 @@ function TableDemo({
         size={size}
         selectable={selectable}
         bordered={bordered}
+        loading={loading}
         selectionBar={selectionBar}
         selectionActions={
           <>

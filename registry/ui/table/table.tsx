@@ -5,6 +5,8 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   Children,
   createContext,
+  Fragment,
+  isValidElement,
   useCallback,
   useContext,
   useMemo,
@@ -15,6 +17,7 @@ import {
 import { cn } from "@/registry/lib/cn";
 import { duration, ease } from "@/registry/lib/motion";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
+import { Skeleton } from "@/registry/ui/skeleton/skeleton";
 import {
   tableCellVariants,
   tableHeadContentVariants,
@@ -75,6 +78,9 @@ interface TableContextValue {
   selectionBar: boolean;
   selectionActions: ReactNode;
   selectedCount: number;
+  loading: boolean;
+  loadingRows: number;
+  columns: number;
   sort: TableSort | null;
   toggleRow: (value: string, next: boolean) => void;
   toggleAll: (next: boolean) => void;
@@ -93,6 +99,9 @@ const TableContext = createContext<TableContextValue>({
   selectionBar: false,
   selectionActions: null,
   selectedCount: 0,
+  loading: false,
+  loadingRows: 5,
+  columns: 0,
   sort: null,
   toggleRow: () => {},
   toggleAll: () => {},
@@ -147,6 +156,14 @@ export interface TableProps extends Omit<ComponentProps<"table">, "className">, 
   selectionBar?: boolean;
   /** Buttons for the right end of the action row. */
   selectionActions?: ReactNode;
+  /**
+   * Fill the body with placeholder rows instead of its children, and mark the table busy.
+   * The header keeps its labels — the columns are known before the data is — with its
+   * controls disabled.
+   */
+  loading?: boolean;
+  /** How many placeholder rows to draw. @default 5 */
+  loadingRows?: number;
   /** The column doing the sorting, controlled. `null` is unsorted. */
   sort?: TableSort | null;
   /** The column doing the sorting, uncontrolled. */
@@ -173,6 +190,8 @@ export function Table({
   selectAllLabel = "Select all rows",
   selectionBar = false,
   selectionActions,
+  loading = false,
+  loadingRows = 5,
   sort,
   defaultSort = null,
   onSortChange,
@@ -203,6 +222,8 @@ export function Table({
   // Memoised on `rows` itself: `rows ?? []` mints a new array every render, which would
   // give `toggleAll` a new identity every render, which would give the context a new one —
   // and re-render every cell in the table on every keystroke happening anywhere above it.
+  const columns = useMemo(() => countColumns(children), [children]);
+
   const [uncontrolledSort, setUncontrolledSort] = useState<TableSort | null>(defaultSort);
   const sortIsControlled = sort !== undefined;
   const activeSort = sortIsControlled ? sort : uncontrolledSort;
@@ -258,6 +279,11 @@ export function Table({
       selectionBar: selectionBar && selectable && selected.length > 0,
       selectionActions,
       selectedCount: selected.length,
+      loading,
+      loadingRows,
+      // Counted from the header the caller wrote, so a placeholder row is the same shape as
+      // a real one. The select column isn't in the tally: `TableRow` adds its own cell.
+      columns,
       sort: activeSort,
       toggleRow,
       toggleAll,
@@ -274,6 +300,9 @@ export function Table({
       selectAllLabel,
       selectionBar,
       selectionActions,
+      loading,
+      loadingRows,
+      columns,
       activeSort,
       toggleRow,
       toggleAll,
@@ -296,6 +325,7 @@ export function Table({
           data-size={size}
           data-bordered={bordered || undefined}
           data-selectable={selectable || undefined}
+          aria-busy={loading || undefined}
           className={cn(tableVariants(), className)}
           {...props}
         >
@@ -306,6 +336,44 @@ export function Table({
   );
 }
 
+/**
+ * How many data columns the caller declared, read off the header they wrote.
+ *
+ * Inspecting children is a last resort, and it earns its place here: a placeholder row has to
+ * be the same shape as a real one, and the only other way to know that is a `columns` prop
+ * duplicating what the `TableHead`s already say. Fragments are flattened first, since a mapped
+ * or conditional set of headers arrives wrapped in one. The select column is deliberately not
+ * counted — `TableRow` adds that cell itself.
+ */
+function countColumns(children: ReactNode): number {
+  for (const child of flattenChildren(children)) {
+    if (!isValidElement<{ children?: ReactNode }>(child) || child.type !== TableHeader) continue;
+
+    for (const row of flattenChildren(child.props.children)) {
+      if (isValidElement<{ children?: ReactNode }>(row)) {
+        return flattenChildren(row.props.children).length;
+      }
+    }
+  }
+
+  return 0;
+}
+
+function flattenChildren(children: ReactNode): ReactNode[] {
+  return Children.toArray(children).flatMap((child) =>
+    isValidElement<{ children?: ReactNode }>(child) && child.type === Fragment
+      ? flattenChildren(child.props.children)
+      : [child],
+  );
+}
+
+/**
+ * Placeholder widths, cycled by column rather than drawn at random: a table rendered on the
+ * server and again on the client has to produce the same markup, and `Math.random()` in a
+ * skeleton is the quiet way to a hydration mismatch.
+ */
+const SKELETON_WIDTHS = ["w-24", "w-16", "w-28", "w-20"];
+
 export function TableHeader({ className, ...props }: ComponentProps<"thead">) {
   return (
     <TableSectionContext.Provider value="header">
@@ -314,7 +382,9 @@ export function TableHeader({ className, ...props }: ComponentProps<"thead">) {
   );
 }
 
-export function TableBody({ className, ...props }: ComponentProps<"tbody">) {
+export function TableBody({ className, children, ...props }: ComponentProps<"tbody">) {
+  const { loading, loadingRows, columns } = useContext(TableContext);
+
   return (
     <TableSectionContext.Provider value="body">
       <tbody
@@ -324,7 +394,23 @@ export function TableBody({ className, ...props }: ComponentProps<"tbody">) {
         // Reached through the cells, since `border-separate` gives a `<tr>` nothing to drop.
         className={cn("[&>tr:last-child>*]:border-b-0", className)}
         {...props}
-      />
+      >
+        {loading
+          ? Array.from({ length: loadingRows }, (_, row) => (
+              // No `value`, so these rows get the selection column's empty cell and no
+              // checkbox: there is nothing yet to select.
+              <TableRow key={`skeleton-${row}`} data-slot="table-skeleton-row">
+                {Array.from({ length: columns }, (_, column) => (
+                  <TableCell key={column}>
+                    <Skeleton
+                      className={cn("h-4", SKELETON_WIDTHS[column % SKELETON_WIDTHS.length])}
+                    />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          : children}
+      </tbody>
     </TableSectionContext.Provider>
   );
 }
@@ -376,6 +462,7 @@ export function TableRow({
     selectionBar,
     selectionActions,
     selectedCount,
+    loading,
     selected,
     allSelected,
     someSelected,
@@ -418,6 +505,9 @@ export function TableRow({
             <Checkbox
               size="sm"
               aria-label={selectAllLabel}
+              // Nothing to select yet, and an indeterminate box over a body of placeholders
+              // would be claiming otherwise.
+              disabled={loading}
               checked={allSelected}
               // A partial selection is indeterminate, and pressing it from there checks —
               // which is what the control's own semantics say a press does, and what a
@@ -497,7 +587,7 @@ export function TableHead({
   children,
   ...props
 }: TableHeadProps) {
-  const { size, bordered, stickyHeader, selectionBar, sort, toggleSort } =
+  const { size, bordered, stickyHeader, selectionBar, loading, sort, toggleSort } =
     useContext(TableContext);
   const reduceMotion = useReducedMotion();
   const active = sortKey !== undefined && sort?.column === sortKey;
@@ -536,6 +626,9 @@ export function TableHead({
           <button
             type="button"
             data-slot="table-sort"
+            // The labels are known before the data is, so the header keeps them — but there
+            // is nothing to order until the rows arrive.
+            disabled={loading}
             className={tableSortButtonVariants()}
             onClick={() => toggleSort(sortKey)}
           >

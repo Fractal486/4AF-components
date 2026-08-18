@@ -214,6 +214,7 @@ export const tableSortButtonVariants = cva([
   "transition-[color] duration-(--duration-fast) ease-out",
   "outline-none focus-visible:ring-2 focus-visible:ring-ring",
   "focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+  "disabled:cursor-default",
   // The header stays muted until it is the one doing the sorting, and then it reads at full
   // strength: a bright chevron beside a muted label looks like a stray glyph rather than
   // like a column that is active.

@@ -12,7 +12,7 @@ description: A semantic data table with optional selection, column sorting, and 
 `TableCell`, `TableSort`
 
 Native `<table>` semantics with the library's row rules, two densities, an optional checkbox
-column, optional grid lines, and three-step column sorting. The Checkbox in the selection column
+column, optional grid lines, three-step column sorting, and a loading state. The Checkbox in the selection column
 is Base UI's; the rest is plain HTML.
 
 ## Props
@@ -35,6 +35,8 @@ is Base UI's; the rest is plain HTML.
 | `sort` | `TableSort \| null` | — | Active column and direction, controlled. |
 | `defaultSort` | `TableSort \| null` | `null` | Active column and direction, uncontrolled. |
 | `onSortChange` | `(sort: TableSort \| null) => void` | — | Fired with the next step of the cycle. |
+| `loading` | `boolean` | `false` | Fill the body with placeholder rows and mark the table busy. |
+| `loadingRows` | `number` | `5` | How many placeholder rows to draw. |
 | `wrapperClassName` | `string` | — | Class for the scroll container. |
 
 ### TableRow
@@ -92,6 +94,19 @@ const rows = useMemo(() => sortPeople(people, sort), [people, sort]);
 <Table sort={sort} onSortChange={setSort}>
   <TableHead sortKey="name">Name</TableHead>
 ```
+
+## Loading
+
+`loading` replaces the body's rows with placeholders and sets `aria-busy` on the table. The
+header keeps its labels — the columns are known before the data is — with its sort controls and
+select-all disabled.
+
+```tsx
+<Table loading={isLoading} loadingRows={8}>
+```
+
+Placeholder rows take their shape from the header you wrote, so they line up with the real
+columns. Give the header the columns you intend to render.
 
 ## Layout
 

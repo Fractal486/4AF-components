@@ -176,6 +176,46 @@ describe("Table", () => {
     expect(headerRow().className).not.toContain("sticky");
   });
 
+  it("stands in for the rows while loading, in the shape the header declares", () => {
+    const { container, rerender } = render(<People selectable loading loadingRows={3} />);
+
+    expect(container.querySelector("table")).toHaveAttribute("aria-busy", "true");
+    // The header's own row is not a placeholder, so only the body's are counted.
+    const bodyRows = () => [...container.querySelectorAll("tbody tr")];
+    expect(bodyRows()).toHaveLength(3);
+    expect(screen.queryByText("Ada Lovelace")).not.toBeInTheDocument();
+
+    // One placeholder per declared column, plus the selection column's empty cell.
+    expect(container.querySelectorAll('[data-slot="skeleton"]')).toHaveLength(3);
+    expect(bodyRows()[0]!.children).toHaveLength(2);
+
+    // Nothing to order or select yet.
+    expect(selectAll()).toBeDisabled();
+
+    rerender(<People selectable />);
+    expect(container.querySelector("table")).not.toHaveAttribute("aria-busy");
+    expect(screen.getByText("Ada Lovelace")).toBeInTheDocument();
+  });
+
+  it("disables the sort controls while loading", () => {
+    render(
+      <Table loading>
+        <TableHeader>
+          <TableRow>
+            <TableHead sortKey="name">Name</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            <TableCell>Ada Lovelace</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>,
+    );
+
+    expect(screen.getByRole("button", { name: "Name" })).toBeDisabled();
+  });
+
   it("cycles a sortable column through ascending, descending and back out", () => {
     const onSortChange = vi.fn();
     render(
