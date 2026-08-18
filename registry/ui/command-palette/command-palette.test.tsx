@@ -32,7 +32,7 @@ describe("CommandPalette", () => {
     );
 
     const input = screen.getByPlaceholderText("Type a command or search…");
-    expect(input).toHaveClass("h-[38px]");
+    expect(input).toHaveClass("h-12");
     await user.type(input, "status");
     expect(await screen.findByRole("alert")).toHaveTextContent("Service unavailable");
   });
@@ -223,8 +223,8 @@ describe("CommandPalette", () => {
 
     await user.click(await screen.findByRole("option", { name: "Projects" }));
     const input = screen.getByLabelText("Search projects");
-    expect(input).toHaveClass("h-[38px]");
-    expect(input.parentElement).toHaveClass("h-[38px]");
+    expect(input).toHaveClass("h-12");
+    expect(input.parentElement).toHaveClass("h-12");
     await waitFor(() =>
       expect(input.parentElement?.querySelector('span[aria-hidden="true"]')).toBeInTheDocument(),
     );

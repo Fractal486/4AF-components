@@ -1046,7 +1046,7 @@ export function CommandPalette({
             <>
               <div
                 className={cn(
-                  "flex h-[38px] shrink-0 items-center gap-2.5 border-b border-border pl-4 pr-3",
+                  "flex h-12 shrink-0 items-center gap-2.5 border-b border-border pl-4 pr-3",
                 )}
               >
                 <button
@@ -1097,7 +1097,7 @@ export function CommandPalette({
                       }}
                       placeholder={panelInput.placeholder ?? placeholder}
                       className={cn(
-                        "h-[38px] min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-subtle-foreground [&::-webkit-search-cancel-button]:appearance-none",
+                        "h-12 min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-subtle-foreground [&::-webkit-search-cancel-button]:appearance-none",
                         panelInput.className,
                       )}
                     />
@@ -1144,7 +1144,7 @@ export function CommandPalette({
           >
             <div
               data-searching={searching ? "" : undefined}
-              className="flex h-[38px] items-center gap-2.5 border-b border-border pl-4 pr-3"
+              className="flex h-12 items-center gap-2.5 border-b border-border pl-4 pr-3"
             >
               <CommandIcon className="text-subtle-foreground" aria-hidden>
                 <Search />
@@ -1191,7 +1191,7 @@ export function CommandPalette({
                     goToDepth(pages.length - 1);
                   }
                 }}
-                className="h-[38px] min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-subtle-foreground"
+                className="h-12 min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-subtle-foreground"
               />
 
               {searching && hasVisibleItems && (
