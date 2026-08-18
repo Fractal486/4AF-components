@@ -54,9 +54,8 @@ is Base UI's; the rest is plain HTML.
 
 ## Selection
 
-`selectable` adds the column; the rows are unchanged. Each `TableRow` renders its own cell: a
-select-all `<th>` in the header, a checkbox `<td>` in the body, and an empty cell in a footer or
-for a row without a `value`, so columns stay aligned.
+`selectable` adds the column; the rows are unchanged. A row is selectable when it has a `value`;
+one without still gets an empty cell, so a "no results" row keeps the columns aligned.
 
 `rows` sets what select-all covers — pass the page being rendered, not every row held. Selecting
 all is a union, so selected values outside `rows` are kept. The header checkbox is indeterminate
@@ -64,10 +63,11 @@ while the selection is partial and checks from there.
 
 Rows expose `data-selected`. `aria-selected` is not set, being invalid on a plain `table` row.
 
-With `selectionBar`, the header row becomes an action row for as long as something is selected:
-the column labels give way to a count, `selectionActions` sits at the right end, and the
-select-all checkbox stays where it is, since it is how the selection gets cleared. The count
-covers the whole selection, not only the part `rows` covers.
+`selectionBar` turns the header into an action row while anything is selected: the labels give
+way to a count, `selectionActions` sits at the right end, and the select-all checkbox stays, so
+the selection can still be cleared. The count covers the whole selection, not only the part
+`rows` covers. The bar fades and slides in from above and leaves the same way; the labels are
+`inert` while it covers them.
 
 ```tsx
 <Table
@@ -76,18 +76,6 @@ covers the whole selection, not only the part `rows` covers.
   selectionActions={<Button size="sm" variant="ghost">Export</Button>}
 >
 ```
-
-The bar is laid *over* the labels rather than replacing them, so the columns keep their widths
-and nothing reflows as the selection comes and goes. It fades in and slides down from above and
-leaves the same way, while the labels underneath cross-fade against it on the same clock. They
-are made `inert` while covered, so nothing hidden stays tabbable.
-
-The labels fade by their contents, not as whole cells: a cell at `opacity: 0` takes its fill
-and borders with it, and the fill is what stops rows scrolling under a pinned header from
-showing through.
-
-Pinning lives on the header `<tr>` rather than its cells, since an overlay can only pin if its
-containing block does.
 
 ## Sorting
 
@@ -107,9 +95,8 @@ const rows = useMemo(() => sortPeople(people, sort), [people, sort]);
 
 ## Layout
 
-The table ships inside a scroll container carrying the library's thin scrollbar, styled with
-`wrapperClassName`. With `bordered` the frame is drawn on that container rather than on the
-table, so its corners round; `border-collapse` ignores `border-radius`.
+The table sits in a scroll container carrying the library's thin scrollbar; style it with
+`wrapperClassName`. With `bordered`, the frame is drawn on that container, so it rounds with it.
 
 The header pins to that container, which needs a bounded height before it has anywhere to pin
 to:
@@ -119,9 +106,4 @@ to:
 ```
 
 Pinned header cells take `bg-background`, since rows scroll underneath them. Pass another fill
-through `className` on `TableHead` when the table sits on a raised surface. They also sit at
-`z-20`, above cell content that positions itself — a Badge's label is at `relative z-10`.
-
-Borders are separated (`border-separate` with zero spacing) rather than collapsed, because a
-collapsed border belongs to the table and a pinned cell would travel without its edge. Every
-rule therefore lives on the cells; a `<tr>` draws only its background.
+through `className` on `TableHead` when the table sits on a raised surface.
