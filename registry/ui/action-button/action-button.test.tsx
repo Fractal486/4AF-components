@@ -54,6 +54,12 @@ describe("ActionButton", () => {
     await waitFor(() => expect(button).toHaveAttribute("data-status", "error"));
   });
 
+  it("centres a label-only action despite the reserved status glyph slot", () => {
+    render(<ActionButton action={() => undefined}>Save</ActionButton>);
+
+    expect(screen.getByRole("button").firstElementChild).toHaveClass("-translate-x-3");
+  });
+
   it("morphs the glyph without dragging the label through the swap", () => {
     render(
       <ActionButton action={() => new Promise(() => {})} icon={<span>@</span>}>

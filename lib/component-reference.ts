@@ -284,6 +284,34 @@ import { Button } from "@/components/ui/button";
 
 <Switch aria-label="Enable notifications" />`,
   },
+  table: {
+    importName: "Table",
+    usage: `import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+<Table selectable rows={people.map((person) => person.id)} onValueChange={setSelected}>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Name</TableHead>
+      <TableHead>Role</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {people.map((person) => (
+      <TableRow key={person.id} value={person.id} selectLabel={\`Select \${person.name}\`}>
+        <TableCell>{person.name}</TableCell>
+        <TableCell>{person.role}</TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>`,
+  },
   "table-of-contents": {
     importName: "TableOfContents",
     usage: `import { TableOfContents } from "@/components/ui/table-of-contents";

@@ -45,7 +45,7 @@ These entries install transitively:
 
 ## Installable catalog
 
-The catalog currently contains 42 installable UI items. Verify the count and names with
+The catalog currently contains 43 installable UI items. Verify the count and names with
 `pnpm 4af list` before making registry-wide claims.
 
 ### Actions
@@ -95,6 +95,7 @@ The catalog currently contains 42 installable UI items. Verify the count and nam
 | --- | --- | --- |
 | `tabs` | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | Segment, pill, or underline tabs with a traveling indicator. |
 | `collapsible` | `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` | Disclosure rows (`plain`/`card`) with a rotating chevron, a height slide so following rows travel rather than jump, and a blur-fade on the content. |
+| `table` | `Table` and header/body/footer/row/head/cell/caption parts | Data tables in two densities, with an optional checkbox column: `selectable` adds it, `rows` sets what select-all covers, and the header box goes indeterminate on a partial selection. `bordered` adds the frame and column rules. |
 | `table-of-contents` | `TableOfContents` | Heading navigation with a dashed inactive rail, smooth scrolling, long-prose fallback, and `span` or `single` active marker variants. |
 | `table-of-contents-lines` | `TableOfContentsLines` | Dense line-based heading navigation with one active heading, a longer header rule, equal shorter rules between headings (none below the final heading), heading-relative indentation, and an expanding hover treatment. |
 | `separator` | `Separator` | An accessible horizontal or vertical divider built on Base UI Separator. |
@@ -309,6 +310,24 @@ opts a button out.
 
 `sidebar-layout` is the optional shell: content surface, page header, collapse control,
 title, header actions.
+
+### Table
+
+`<table>` semantics, not a headless primitive — the Checkbox in the selection column is the only
+Base UI part. `selectable` on the root adds the column; do not add the cell to each row yourself,
+`TableRow` fills in its own on whichever side of the header line it is on.
+
+| Need | Prop |
+| --- | --- |
+| Show the checkbox column | `selectable` |
+| Frame plus rules between columns | `bordered` (row rules are always on) |
+| What select-all covers | `rows` (the page you are rendering, not every row you have) |
+| Selection state | `value` / `onValueChange`, or `defaultValue` |
+| Name a row's checkbox | `selectLabel` on `TableRow` — give it the row's subject |
+
+A row is selectable when it has a `value`; one without still gets an empty cell so the columns
+stay aligned. Select-all is a union, so selected rows outside `rows` survive it. Rows expose
+`data-selected` and deliberately not `aria-selected`, which is invalid on a plain table row.
 
 ### Toast
 

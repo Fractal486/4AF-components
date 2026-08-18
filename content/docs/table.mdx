@@ -1,0 +1,77 @@
+---
+title: Table
+description: A semantic data table with two densities and an optional selection column.
+---
+
+<ComponentDemo name="table" />
+<ComponentReference name="table" />
+
+## API
+
+**Main exports:** `Table`, `TableHeader`, `TableBody`, `TableFooter`, `TableRow`, `TableHead`,
+`TableCell`, `TableCaption`
+
+Plain `<table>` semantics with the design foundation's row rules and two densities (`size="sm"`
+and the default `md`). `selectable` on the root adds a checkbox column on the left; the rows
+themselves are unchanged. `bordered` completes the grid — a frame around the table and a rule
+between every pair of columns.
+
+## The selection column is one prop
+
+Rows don't grow a cell for the checkbox. `selectable` adds the column and every `TableRow`
+fills in its own cell, choosing a select-all `<th>` in the header, a per-row `<td>` in the body,
+and an empty one in a footer. Writing that cell by hand in each row is the version of this API
+where one row eventually goes missing and the whole column shifts.
+
+A row is selectable when it has a `value`. A row without one — a "no results" line, a spanning
+summary — still gets the column's empty cell, so the columns stay lined up.
+
+```tsx
+<TableRow value={person.id} selectLabel={`Select ${person.name}`}>
+```
+
+Give `selectLabel` the row's subject. "Select row" repeated down a column tells a screen reader
+user nothing about which row they are on.
+
+## `rows` is the select-all's reach
+
+`rows` lists the values the select-all covers, and it is deliberately explicit rather than
+collected from the rows as they mount. The difference shows the moment a table is paginated:
+select-all should apply to the page in front of you, not to every row that exists, and only the
+caller knows which of those it is rendering. Selecting all is a union — a selected row from a
+page that isn't rendered is not the select-all's to discard.
+
+The header checkbox goes indeterminate while the selection is partial, and pressing it from
+there checks, which is what the control's own semantics promise a press will do.
+
+Selection is controlled with `value` / `onValueChange` and uncontrolled with `defaultValue`.
+
+## `bordered` draws the rest of the grid
+
+Row rules are always there; `bordered` adds the vertical half and the edges. The frame goes on
+the scroll container rather than on the table, because `border-collapse` ignores
+`border-radius` — a border on a collapsed table could only ever be a square one. On the wrapper
+it rounds, and the wrapper already clips: setting `overflow-x` forces the other axis out of
+`visible`, so the corners cut the cells cleanly.
+
+Each cell owns the rule on its right edge and the last cell in a row goes without, since the
+frame is already drawn there and a second line on top of it reads heavier than the rest of the
+grid. A `<caption>` can only be a child of its table, so with a frame it necessarily sits inside
+one and picks up matching padding rather than touching the border.
+
+## Rows carry `data-selected`, not `aria-selected`
+
+`aria-selected` is only meaningful on a row inside a `grid` or `treegrid`; on a plain `table`
+row it is invalid rather than merely unhelpful. The checkbox already announces the state, so
+the row exposes `data-selected` for styling and tests and nothing more.
+
+## No primitive, on purpose
+
+There is no Base UI table here because `<table>` already carries every semantic a data table
+needs — the row and column relationships, the header associations, the announcement of
+position — and no headless library improves on HTML it can only re-describe. The Checkbox in
+the selection column *is* Base UI's, indeterminate state and all.
+
+The table ships inside a horizontal scroll container. A table sizes itself to its content and
+will push a page sideways rather than wrap, and `overflow` on the table doesn't apply to the
+table's own layout box, so the wrapper is not optional. Style it with `wrapperClassName`.

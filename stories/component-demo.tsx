@@ -47,6 +47,7 @@ export type ComponentDemoName =
   | "skeleton"
   | "slider"
   | "switch"
+  | "table"
   | "table-of-contents"
   | "table-of-contents-lines"
   | "tabs"
@@ -147,6 +148,7 @@ const demos: Record<Exclude<ComponentDemoName, "ascii-loader">, ComponentType> =
   skeleton: lazyEntry(async () => (await import("@/inspector/entries/skeleton")).skeletonEntry),
   slider: lazyEntry(async () => (await import("@/inspector/entries/slider")).sliderEntry),
   switch: lazyEntry(async () => (await import("@/inspector/entries/switch")).switchEntry),
+  table: lazyEntry(async () => (await import("@/inspector/entries/table")).tableEntry),
   "table-of-contents": lazyEntry(async () => (await import("@/inspector/entries/table-of-contents")).tableOfContentsEntry),
   "table-of-contents-lines": lazyEntry(async () => (await import("@/inspector/entries/table-of-contents-lines")).tableOfContentsLinesEntry),
   tabs: lazyEntry(async () => (await import("@/inspector/entries/tabs")).tabsEntry),

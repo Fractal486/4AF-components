@@ -27,6 +27,21 @@ describe("component documentation", () => {
     expect(missing).toEqual([]);
   });
 
+  it("lists every installable component in the docs sidebar", () => {
+    // The page tree is built from the families in `component-catalog`, but only out of the
+    // pages Fumadocs was given — and it is given the ones `meta.json` names. A component
+    // with a page, a family and a registry entry still has no sidebar entry without this.
+    const meta = JSON.parse(readFileSync(resolve("content/docs/meta.json"), "utf8")) as {
+      pages: string[];
+    };
+    const missing = registry.items
+      .filter((item) => item.type === "registry:ui")
+      .map((item) => item.name)
+      .filter((name) => !meta.pages.includes(name));
+
+    expect(missing).toEqual([]);
+  });
+
   it("renders every component page as standalone agent-friendly Markdown", () => {
     const incomplete = registry.items
       .filter((item) => item.type === "registry:ui")

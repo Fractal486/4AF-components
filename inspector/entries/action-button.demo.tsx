@@ -9,12 +9,14 @@ export function ActionButtonDemo({
   revertAfter,
   duration,
   fail,
+  withIcon,
 }: {
   variant: "primary" | "outline" | "plain" | "destructive";
   size: "sm" | "md" | "lg";
   revertAfter: number;
   duration: number;
   fail: boolean;
+  withIcon: boolean;
 }) {
   async function deploy() {
     await new Promise((resolve, reject) =>
@@ -26,12 +28,12 @@ export function ActionButtonDemo({
     <ActionButton
       // Remounted when the settings change so it starts from idle rather than
       // mid-flight — an uncontrolled state machine ignores changed props otherwise.
-      key={`${variant}-${size}-${revertAfter}-${duration}-${fail}`}
+      key={`${variant}-${size}-${revertAfter}-${duration}-${fail}-${withIcon}`}
       action={deploy}
       variant={variant}
       size={size}
       revertAfter={revertAfter}
-      icon={<Rocket />}
+      icon={withIcon ? <Rocket /> : undefined}
       labels={{ pending: "Deploying", success: "Deployed", error: "Failed" }}
       announce={{
         pending: "Deploying",

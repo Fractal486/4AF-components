@@ -40,6 +40,7 @@ export const COMPONENT_FAMILIES = [
   { name: "Skeleton", slugs: ["skeleton"] },
   { name: "Slider", slugs: ["slider"] },
   { name: "Switch", slugs: ["switch"] },
+  { name: "Table", slugs: ["table"] },
   {
     name: "Table of Contents",
     index: "table-of-contents-overview",
@@ -98,6 +99,7 @@ export const COMPONENT_CATEGORIES = [
     slugs: [
       "tabs",
       "collapsible",
+      "table",
       "table-of-contents",
       "table-of-contents-lines",
       "separator",
@@ -156,6 +158,7 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   skeleton: "Skeleton",
   slider: "Slider",
   switch: "Switch",
+  table: "Table, TableHeader, TableBody, TableFooter, TableRow, TableHead, TableCell, TableCaption",
   "table-of-contents": "TableOfContents",
   "table-of-contents-lines": "TableOfContentsLines",
   tabs: "Tabs, TabsList, TabsTab, TabsPanel",

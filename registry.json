@@ -736,6 +736,31 @@
       ]
     },
     {
+      "name": "table",
+      "type": "registry:ui",
+      "description": "A semantic data table with two densities and an optional selection column: one prop adds the checkboxes, and the select-all goes indeterminate while the selection is partial.",
+      "dependencies": [
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/checkbox.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/table/table.tsx",
+          "type": "registry:ui",
+          "target": "@ui/table.tsx"
+        },
+        {
+          "path": "registry/ui/table/table.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/table.variants.ts"
+        }
+      ]
+    },
+    {
       "name": "table-of-contents",
       "type": "registry:ui",
       "description": "A table of contents that tracks visible headings, keeps the last passed section active through long prose, and offers spanning or single-heading markers.",

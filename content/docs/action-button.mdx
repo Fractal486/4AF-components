@@ -13,6 +13,9 @@ description: A button that confirms an asynchronous action with loading, success
 Runs asynchronous work and presents idle, pending, success, and error states without changing
 width, then reverts.
 
+When no resting icon is provided, the visible label remains centred even though the pending and
+outcome glyphs reserve their space. Actions with an icon keep the icon-and-label group centred.
+
 ## Waiting states
 
 Every waiting state in the library is the ASCII loader: Button's `loading`, Action Button and
