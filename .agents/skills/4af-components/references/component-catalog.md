@@ -326,6 +326,7 @@ own.
 | What select-all covers | `rows` (the page you are rendering, not every row you have) |
 | Selection state | `value` / `onValueChange`, or `defaultValue` |
 | Name a row's checkbox | `selectLabel` on `TableRow` — give it the row's subject |
+| Header becomes an action row while selecting | `selectionBar` + `selectionActions` (needs `selectable`) |
 
 Sorting cycles ascending → descending → unsorted; switching columns restarts at ascending. The
 component does not sort rows — it owns the control, the state and `aria-sort`, and reports
@@ -336,6 +337,12 @@ The scroll container carries the library's thin scrollbar. Pinned header cells t
 for a table on a raised surface — and sit at `z-20`, clearing cell content that positions
 itself. Borders are separated, not collapsed, so a pinned cell keeps its own edge; every rule
 lives on the cells and a `<tr>` draws only its background.
+
+`selectionBar` swaps the column labels for an `N selected` count and puts `selectionActions` at
+the right end, keeping the select-all in place. It is laid over the labels rather than replacing them —
+columns keep their widths, nothing reflows, and the covered labels are `inert`. It fades and slides in from
+above and leaves the same way, cross-fading with the labels. Pinning is on the header `<tr>`, not its cells, because
+the bar is an overlay and needs a containing block that pins.
 
 A row is selectable when it has a `value`; one without still gets an empty cell so columns stay
 aligned. Select-all is a union, so selected rows outside `rows` survive it. Rows expose

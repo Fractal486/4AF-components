@@ -30,6 +30,8 @@ is Base UI's; the rest is plain HTML.
 | `defaultValue` | `readonly string[]` | `[]` | Selected row values, uncontrolled. |
 | `onValueChange` | `(value: string[]) => void` | — | Fired with the next selection. |
 | `selectAllLabel` | `string` | `"Select all rows"` | Names the select-all checkbox. |
+| `selectionBar` | `boolean` | `false` | Turn the header into an action row while anything is selected. |
+| `selectionActions` | `ReactNode` | — | Buttons for the right end of that row. |
 | `sort` | `TableSort \| null` | — | Active column and direction, controlled. |
 | `defaultSort` | `TableSort \| null` | `null` | Active column and direction, uncontrolled. |
 | `onSortChange` | `(sort: TableSort \| null) => void` | — | Fired with the next step of the cycle. |
@@ -61,6 +63,31 @@ all is a union, so selected values outside `rows` are kept. The header checkbox 
 while the selection is partial and checks from there.
 
 Rows expose `data-selected`. `aria-selected` is not set, being invalid on a plain `table` row.
+
+With `selectionBar`, the header row becomes an action row for as long as something is selected:
+the column labels give way to a count, `selectionActions` sits at the right end, and the
+select-all checkbox stays where it is, since it is how the selection gets cleared. The count
+covers the whole selection, not only the part `rows` covers.
+
+```tsx
+<Table
+  selectable
+  selectionBar
+  selectionActions={<Button size="sm" variant="ghost">Export</Button>}
+>
+```
+
+The bar is laid *over* the labels rather than replacing them, so the columns keep their widths
+and nothing reflows as the selection comes and goes. It fades in and slides down from above and
+leaves the same way, while the labels underneath cross-fade against it on the same clock. They
+are made `inert` while covered, so nothing hidden stays tabbable.
+
+The labels fade by their contents, not as whole cells: a cell at `opacity: 0` takes its fill
+and borders with it, and the fill is what stops rows scrolling under a pinned header from
+showing through.
+
+Pinning lives on the header `<tr>` rather than its cells, since an overlay can only pin if its
+containing block does.
 
 ## Sorting
 

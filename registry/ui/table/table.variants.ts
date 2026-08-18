@@ -52,6 +52,55 @@ export const tableVariants = cva("w-full border-separate border-spacing-0 text-s
  * Row density, and the only axis this component has. `md` is a comfortable reading table;
  * `sm` is the one you reach for when the point is to see many rows at once.
  */
+/**
+ * The header row, which is the element that actually pins.
+ *
+ * `-top-px` rather than flush: a sticky element settling on a fractional boundary opens a
+ * sub-pixel seam above itself that the rows behind show through, which is why the seam
+ * flickers while scrolling. Overhanging leaves nothing to open.
+ *
+ * `z-20`, not `z-10`, because cell content routinely positions itself — a Badge's label sits
+ * at `relative z-10` — and a tie is broken by source order, in `<tbody>`'s favour.
+ *
+ * Positioned either way: unpinned it still needs to be a containing block, or the selection
+ * bar it holds would be laid out against the scroll container instead of against the row.
+ */
+export const tableHeaderRowVariants = cva("", {
+  variants: {
+    pinned: {
+      true: "sticky -top-px z-20",
+      false: "relative",
+    },
+  },
+  defaultVariants: { pinned: false },
+});
+
+/**
+ * The selection bar: an absolutely positioned cell laid over the labels, which stay in place
+ * underneath it. Left padding clears the select-all column — 16px of checkbox between the
+ * cell's own padding — so the count begins where the first label would.
+ *
+ * No fill of its own, so the labels can be seen crossing under it as they fade. The cells it
+ * covers keep theirs, which is what stops the rows scrolling underneath a pinned header from
+ * showing through — and is why the labels fade by their *content* rather than as whole cells:
+ * a cell at `opacity: 0` takes its background and its borders with it.
+ */
+export const tableSelectionBarVariants = cva(
+  [
+    "absolute inset-0 flex items-center justify-between gap-3",
+    "text-left text-xs font-medium text-foreground",
+  ],
+  {
+    variants: {
+      size: {
+        sm: "pr-2.5 pl-9",
+        md: "pr-3 pl-10",
+      },
+    },
+    defaultVariants: { size: "md" },
+  },
+);
+
 export const tableRowVariants = cva([
   // No transition. A row wash is feedback about where the cursor *is*, and easing it in
   // makes the pointer arrive before the answer does; the eye reads that as lag rather than
@@ -97,31 +146,37 @@ export const tableHeadVariants = cva(
         false: "",
       },
       /**
-       * Pinned to the top of the scroll container.
+       * A fill, and only a fill: the pinning itself is on the row now, because an overlay can
+       * pin only if its containing block does — and the selection bar is that overlay. What
+       * the cells still have to do is be opaque, since the rows travel underneath them.
        *
-       * A fill is not optional here — the rows scroll *under* the header, and a transparent
-       * cell would let them show through. `bg-background` is the page's own ground; a table
-       * sitting on a raised surface should pass its fill through `className`.
-       *
-       * Pinned a pixel *above* the scrollport rather than flush with it. A sticky element
-       * settles on a fractional boundary whenever the scroll offset or the container's own
-       * position lands off the device-pixel grid, and the sub-pixel that opens above it is a
-       * window onto the rows travelling behind — which is why the seam flickers while
-       * scrolling instead of sitting there. Overhanging by 1px means there is nothing to
-       * open: the strip is clipped by the container, and the cell has no top border to lose.
-       *
-       * `z-20`, not `z-10`. Cell content routinely positions itself — a Badge's label sits at
-       * `relative z-10` — and none of those wrappers create a stacking context of their own,
-       * so they land in the table's context at the header's level. A tie is broken by source
-       * order, and `<tbody>` comes after `<thead>`, which is how a badge ends up painted over
-       * a pinned header.
+       * `bg-background` is the page's own ground; a table on a raised surface should pass its
+       * fill through `className`.
        */
-      sticky: {
-        true: "sticky -top-px z-20 bg-background",
+      pinned: {
+        true: "bg-background",
         false: "",
       },
     },
-    defaultVariants: { size: "md", bordered: false, sticky: false },
+    defaultVariants: { size: "md", bordered: false, pinned: false },
+  },
+);
+
+/**
+ * The contents of a column header, which fade out under the selection bar and back in when it
+ * leaves. On the same clock as the bar's own animation, so the two cross rather than one
+ * finishing before the other starts.
+ */
+export const tableHeadContentVariants = cva(
+  "block transition-[opacity] duration-(--duration-slow) ease-out",
+  {
+    variants: {
+      covered: {
+        true: "opacity-0",
+        false: "opacity-100",
+      },
+    },
+    defaultVariants: { covered: false },
   },
 );
 
@@ -198,27 +253,13 @@ export const tableSelectCellVariants = cva("w-px border-b border-border align-mi
       true: "border-border not-last:border-r",
       false: "",
     },
-    /**
-     * Pinned to the top of the scroll container.
-     *
-     * A fill is not optional here — the rows scroll *under* the header, and a transparent
-     * cell would let them show through. `bg-background` is the page's own ground; a table
-     * sitting on a raised surface should pass its fill through `className`.
-     *
-     * Pinned a pixel above the scrollport, not flush with it: a sticky element settling on a
-     * fractional boundary opens a sub-pixel seam above itself, through which the rows behind
-     * it show as they travel. Overhanging leaves nothing to open.
-     *
-     * `z-20`, not `z-10`: cell content that positions itself — a Badge's label sits at
-     * `relative z-10` — lands in the table's stacking context at the header's own level, and
-     * a tie is broken by source order in `<tbody>`'s favour.
-     */
-    sticky: {
-      true: "sticky -top-px z-20 bg-background",
+    /** A fill, so rows travelling underneath don't show through. See `tableHeadVariants`. */
+    pinned: {
+      true: "bg-background",
       false: "",
     },
   },
-  defaultVariants: { size: "md", bordered: false, sticky: false },
+  defaultVariants: { size: "md", bordered: false, pinned: false },
 });
 
 export type TableVariants = VariantProps<typeof tableCellVariants>;

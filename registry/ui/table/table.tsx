@@ -1,21 +1,27 @@
 "use client";
 
 import { ChevronUp } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
+  Children,
   createContext,
   useCallback,
   useContext,
   useMemo,
   useState,
   type ComponentProps,
+  type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
+import { duration, ease } from "@/registry/lib/motion";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import {
   tableCellVariants,
+  tableHeadContentVariants,
   tableHeadVariants,
+  tableHeaderRowVariants,
   tableRowVariants,
+  tableSelectionBarVariants,
   tableSelectCellVariants,
   tableSortButtonVariants,
   tableSortChevronVariants,
@@ -66,6 +72,9 @@ interface TableContextValue {
   allSelected: boolean;
   someSelected: boolean;
   selectAllLabel: string;
+  selectionBar: boolean;
+  selectionActions: ReactNode;
+  selectedCount: number;
   sort: TableSort | null;
   toggleRow: (value: string, next: boolean) => void;
   toggleAll: (next: boolean) => void;
@@ -81,6 +90,9 @@ const TableContext = createContext<TableContextValue>({
   allSelected: false,
   someSelected: false,
   selectAllLabel: "Select all rows",
+  selectionBar: false,
+  selectionActions: null,
+  selectedCount: 0,
   sort: null,
   toggleRow: () => {},
   toggleAll: () => {},
@@ -128,6 +140,13 @@ export interface TableProps extends Omit<ComponentProps<"table">, "className">, 
   onValueChange?: (value: string[]) => void;
   /** Names the select-all checkbox. */
   selectAllLabel?: string;
+  /**
+   * Turn the header row into an action row while anything is selected: the column labels
+   * give way to a count, and `selectionActions` sits at the right end. Needs `selectable`.
+   */
+  selectionBar?: boolean;
+  /** Buttons for the right end of the action row. */
+  selectionActions?: ReactNode;
   /** The column doing the sorting, controlled. `null` is unsorted. */
   sort?: TableSort | null;
   /** The column doing the sorting, uncontrolled. */
@@ -152,6 +171,8 @@ export function Table({
   defaultValue,
   onValueChange,
   selectAllLabel = "Select all rows",
+  selectionBar = false,
+  selectionActions,
   sort,
   defaultSort = null,
   onSortChange,
@@ -232,6 +253,11 @@ export function Table({
       allSelected,
       someSelected,
       selectAllLabel,
+      // The whole selection, not just the part `rows` covers: with a page's worth of rows on
+      // screen the count still has to speak for everything the user has picked.
+      selectionBar: selectionBar && selectable && selected.length > 0,
+      selectionActions,
+      selectedCount: selected.length,
       sort: activeSort,
       toggleRow,
       toggleAll,
@@ -246,6 +272,8 @@ export function Table({
       allSelected,
       someSelected,
       selectAllLabel,
+      selectionBar,
+      selectionActions,
       activeSort,
       toggleRow,
       toggleAll,
@@ -345,6 +373,9 @@ export function TableRow({
     size,
     bordered,
     stickyHeader,
+    selectionBar,
+    selectionActions,
+    selectedCount,
     selected,
     allSelected,
     someSelected,
@@ -353,23 +384,35 @@ export function TableRow({
     toggleAll,
   } = useContext(TableContext);
   const section = useContext(TableSectionContext);
+  const reduceMotion = useReducedMotion();
   const isSelected = value !== undefined && selected.includes(value);
+  const isActionRow = section === "header" && selectionBar;
 
   return (
     <tr
       data-slot="table-row"
+      data-action-row={isActionRow || undefined}
       // `data-selected`, and deliberately not `aria-selected`: that attribute is only
       // meaningful on a row inside a `grid` or `treegrid`, and on a plain `table` row it is
       // invalid rather than merely unhelpful. The checkbox already announces the state,
       // which is the honest place for it to live.
       data-selected={isSelected || undefined}
-      className={cn(tableRowVariants(), className)}
+      className={cn(
+        tableRowVariants(),
+        section === "header" && tableHeaderRowVariants({ pinned: stickyHeader }),
+        className,
+      )}
       {...props}
     >
       {selectable && section === "header" && (
         <th
           scope="col"
-          className={tableSelectCellVariants({ size, bordered, sticky: stickyHeader })}
+          // Above the selection bar, which covers the rest of the row: the checkbox is how
+          // the selection gets cleared, so it is the one control that must stay reachable.
+          className={cn(
+            tableSelectCellVariants({ size, bordered, pinned: stickyHeader }),
+            "relative z-10",
+          )}
         >
           <span className="flex items-center">
             <Checkbox
@@ -403,6 +446,38 @@ export function TableRow({
       )}
 
       {children}
+
+      {/* Laid *over* the labels rather than replacing them: the columns keep their widths,
+          nothing reflows as the selection comes and goes, and the bar has something to
+          arrive on top of. An absolutely positioned cell is still a valid child of a row —
+          it simply stops taking part in the column layout, which is the point. */}
+      {section === "header" && (
+        <AnimatePresence initial={false}>
+          {isActionRow && (
+            <motion.th
+              key="selection-bar"
+              data-slot="table-selection-bar"
+              colSpan={Children.toArray(children).length || undefined}
+              className={tableSelectionBarVariants({ size })}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              // The entrance run backwards, so the bar leaves the way it arrived and the
+              // labels come back up through it.
+              exit={{ opacity: 0, y: -8 }}
+              transition={
+                reduceMotion ? { duration: 0 } : { duration: duration.slow, ease: ease.out }
+              }
+            >
+              {/* Polite, so the count is read after whatever the checkbox itself announced
+                  rather than cutting across it. */}
+              <span aria-live="polite">{selectedCount} selected</span>
+              {selectionActions ? (
+                <span className="flex items-center gap-1">{selectionActions}</span>
+              ) : null}
+            </motion.th>
+          )}
+        </AnimatePresence>
+      )}
     </tr>
   );
 }
@@ -422,7 +497,8 @@ export function TableHead({
   children,
   ...props
 }: TableHeadProps) {
-  const { size, bordered, stickyHeader, sort, toggleSort } = useContext(TableContext);
+  const { size, bordered, stickyHeader, selectionBar, sort, toggleSort } =
+    useContext(TableContext);
   const reduceMotion = useReducedMotion();
   const active = sortKey !== undefined && sort?.column === sortKey;
 
@@ -442,39 +518,45 @@ export function TableHead({
               : "descending"
             : "none"
       }
+      // Covered by the selection bar, so out of the way entirely: a label that can still be
+      // tabbed to and sorted from behind an opaque overlay is a control nobody can see.
+      inert={selectionBar || undefined}
+      aria-hidden={selectionBar || undefined}
       className={cn(
-        tableHeadVariants({ size, bordered, sticky: stickyHeader }),
+        tableHeadVariants({ size, bordered, pinned: stickyHeader }),
         sortKey && "group/sort",
         className,
       )}
       {...props}
     >
-      {sortKey === undefined ? (
-        children
-      ) : (
-        <button
-          type="button"
-          data-slot="table-sort"
-          className={tableSortButtonVariants()}
-          onClick={() => toggleSort(sortKey)}
-        >
-          {children}
-          {/* The Select trigger's chevron, down to the numbers: same spring, same
-              reduced-motion collapse, so the two flip identically. Up is the resting pose
-              here rather than down — an unsorted column is offering ascending, and the
-              descending state is that same glyph turned over. */}
-          <motion.span
-            aria-hidden="true"
-            className="inline-flex"
-            animate={{ rotate: active && sort?.direction === "desc" ? 180 : 0 }}
-            transition={
-              reduceMotion ? { duration: 0 } : { type: "spring", duration: 0.4, bounce: 0 }
-            }
+      <span className={tableHeadContentVariants({ covered: selectionBar })}>
+        {sortKey === undefined ? (
+          children
+        ) : (
+          <button
+            type="button"
+            data-slot="table-sort"
+            className={tableSortButtonVariants()}
+            onClick={() => toggleSort(sortKey)}
           >
-            <ChevronUp className={tableSortChevronVariants()} />
-          </motion.span>
-        </button>
-      )}
+            {children}
+            {/* The Select trigger's chevron, down to the numbers: same spring, same
+                reduced-motion collapse, so the two flip identically. Up is the resting pose
+                here rather than down — an unsorted column is offering ascending, and the
+                descending state is that same glyph turned over. */}
+            <motion.span
+              aria-hidden="true"
+              className="inline-flex"
+              animate={{ rotate: active && sort?.direction === "desc" ? 180 : 0 }}
+              transition={
+                reduceMotion ? { duration: 0 } : { type: "spring", duration: 0.4, bounce: 0 }
+              }
+            >
+              <ChevronUp className={tableSortChevronVariants()} />
+            </motion.span>
+          </button>
+        )}
+      </span>
     </th>
   );
 }

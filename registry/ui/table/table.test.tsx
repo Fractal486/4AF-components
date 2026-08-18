@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import {
   Table,
   TableBody,
@@ -112,6 +112,36 @@ describe("Table", () => {
     expect(onValueChange).toHaveBeenLastCalledWith(["offscreen"]);
   });
 
+  it("turns the header into an action row while a selection stands", async () => {
+    const { rerender } = render(
+      <People
+        selectable
+        selectionBar
+        defaultValue={["ada", "alan"]}
+        selectionActions={<button type="button">Export</button>}
+      />,
+    );
+
+    expect(screen.getByText("2 selected")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Export" })).toBeInTheDocument();
+    // The select-all stays, because it is how the selection is cleared.
+    expect(selectAll()).toBeInTheDocument();
+    // The labels are covered rather than removed — still in the layout holding the column
+    // widths, but out of the accessibility tree and out of the tab order.
+    expect(screen.getByText("Name")).toBeInTheDocument();
+    expect(screen.queryByRole("columnheader", { name: "Name" })).not.toBeInTheDocument();
+
+    // Clearing the selection hands the header back, once the bar has finished leaving.
+    fireEvent.click(selectAll());
+    fireEvent.click(selectAll());
+    await waitFor(() => expect(screen.queryByText(/selected$/)).not.toBeInTheDocument());
+    expect(screen.getByRole("columnheader", { name: "Name" })).toBeInTheDocument();
+
+    // And it stays a plain header when the feature isn't asked for.
+    rerender(<People selectable defaultValue={["ada"]} />);
+    expect(screen.queryByText("1 selected")).not.toBeInTheDocument();
+  });
+
   it("pins the header and gives the scroll container the library scrollbar", () => {
     const { container, rerender } = render(<People selectable />);
 
@@ -119,16 +149,23 @@ describe("Table", () => {
     expect(wrapper.className).toContain("[scrollbar-width:thin]");
     expect(wrapper.className).toContain("[&::-webkit-scrollbar]:h-1.5");
 
+    const headerRow = () => container.querySelector("thead tr")!;
     const headerCells = () => [...container.querySelectorAll("thead th")];
-    // Both the column headers and the select-all cell, or the pinned row has a hole in it.
-    expect(headerCells()).toHaveLength(2);
-    expect(headerCells().every((cell) => cell.className.includes("sticky"))).toBe(true);
+
+    // The row pins, not its cells: an overlay can only pin if its containing block does, and
+    // the selection bar is laid over this row.
+    expect(headerRow().className).toContain("sticky");
     // Above cell content that positions itself — a Badge's label sits at `relative z-10`,
     // which lands in the table's stacking context and wins a tie on source order.
-    expect(headerCells().every((cell) => cell.className.includes("z-20"))).toBe(true);
+    expect(headerRow().className).toContain("z-20");
     // Overhanging the scrollport by a pixel, so a fractional sticky boundary can't open a
     // seam above the header for the rows behind it to show through.
-    expect(headerCells().every((cell) => cell.className.includes("-top-px"))).toBe(true);
+    expect(headerRow().className).toContain("-top-px");
+
+    // Both the column header and the select-all cell need a fill, or the rows travelling
+    // underneath show through the pinned row.
+    expect(headerCells()).toHaveLength(2);
+    expect(headerCells().every((cell) => cell.className.includes("bg-background"))).toBe(true);
     // Separated borders, or a pinned cell travels without its edge and the collapsed one it
     // left behind shows as a sliver at the top of the scrollport.
     expect(container.querySelector("table")!.className).toContain("border-separate");
@@ -136,7 +173,7 @@ describe("Table", () => {
 
     rerender(<People selectable stickyHeader={false} />);
 
-    expect(headerCells().some((cell) => cell.className.includes("sticky"))).toBe(false);
+    expect(headerRow().className).not.toContain("sticky");
   });
 
   it("cycles a sortable column through ascending, descending and back out", () => {

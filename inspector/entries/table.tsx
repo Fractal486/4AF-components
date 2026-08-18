@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Badge } from "@/registry/ui/badge/badge";
+import { Button } from "@/registry/ui/button/button";
+import { CopyButton } from "@/registry/ui/copy-button/copy-button";
 import {
   Table,
   type TableSort,
@@ -66,15 +68,17 @@ export const tableEntry = defineEntry({
   controls: {
     size: select(SIZES, "md"),
     selectable: bool(true, "Checkbox column"),
+    selectionBar: bool(true, "Selection action row"),
     bordered: bool(false, "Grid lines"),
     scroll: bool(true, "Bounded height"),
     footer: bool(false, "Footer"),
   },
-  render({ size, selectable, bordered, scroll, footer }) {
+  render({ size, selectable, selectionBar, bordered, scroll, footer }) {
     return (
       <TableDemo
         size={size}
         selectable={selectable}
+        selectionBar={selectionBar}
         bordered={bordered}
         scroll={scroll}
         footer={footer}
@@ -86,12 +90,14 @@ export const tableEntry = defineEntry({
 function TableDemo({
   size,
   selectable,
+  selectionBar,
   bordered,
   scroll,
   footer,
 }: {
   size: (typeof SIZES)[number];
   selectable: boolean;
+  selectionBar: boolean;
   bordered: boolean;
   scroll: boolean;
   footer: boolean;
@@ -113,6 +119,23 @@ function TableDemo({
         size={size}
         selectable={selectable}
         bordered={bordered}
+        selectionBar={selectionBar}
+        selectionActions={
+          <>
+            {/* Real actions, both of them: the count on its own tells you nothing about
+                whether the row is wired up. */}
+            <CopyButton
+              size="sm"
+              variant="ghost"
+              value={() => totals.map((release) => release.version).join("\n")}
+            >
+              Copy
+            </CopyButton>
+            <Button size="sm" variant="ghost" onClick={() => setSelected([])}>
+              Clear
+            </Button>
+          </>
+        }
         // The header pins to the scroll container, so it needs one with a height to pin to.
         wrapperClassName={scroll ? "max-h-64" : undefined}
         sort={sort}
