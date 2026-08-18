@@ -4,8 +4,8 @@ import { useState } from "react";
 import { Badge } from "@/registry/ui/badge/badge";
 import {
   Table,
+  type TableSort,
   TableBody,
-  TableCaption,
   TableCell,
   TableFooter,
   TableHead,
@@ -25,6 +25,37 @@ const RELEASES = [
 
 const NUMBER = new Intl.NumberFormat("en-GB");
 
+type Release = (typeof RELEASES)[number];
+
+/**
+ * What each sortable column is worth, per row. The table owns the control and the state; the
+ * rows are the demo's to order, because only the demo knows that "18,204" is a number and
+ * "18 Feb" is a date rather than the string it is printed as.
+ */
+const SORT_VALUES: Record<string, (release: Release) => string | number> = {
+  version: (release) => release.version,
+  channel: (release) => release.channel,
+  downloads: (release) => release.downloads,
+  published: (release) => RELEASES.findIndex((entry) => entry.id === release.id),
+};
+
+function sorted(releases: readonly Release[], sort: TableSort | null): readonly Release[] {
+  if (!sort) return releases;
+
+  const value = SORT_VALUES[sort.column];
+  if (!value) return releases;
+
+  const direction = sort.direction === "asc" ? 1 : -1;
+  return [...releases].sort((a, b) => {
+    const left = value(a);
+    const right = value(b);
+    if (typeof left === "number" && typeof right === "number") {
+      return (left - right) * direction;
+    }
+    return String(left).localeCompare(String(right)) * direction;
+  });
+}
+
 export const tableEntry = defineEntry({
   slug: "table",
   name: "Table",
@@ -32,16 +63,14 @@ export const tableEntry = defineEntry({
     size: select(SIZES, "md"),
     selectable: bool(true, "Checkbox column"),
     bordered: bool(false, "Grid lines"),
-    caption: bool(false, "Caption"),
     footer: bool(false, "Footer"),
   },
-  render({ size, selectable, bordered, caption, footer }) {
+  render({ size, selectable, bordered, footer }) {
     return (
       <TableDemo
         size={size}
         selectable={selectable}
         bordered={bordered}
-        caption={caption}
         footer={footer}
       />
     );
@@ -52,16 +81,16 @@ function TableDemo({
   size,
   selectable,
   bordered,
-  caption,
   footer,
 }: {
   size: (typeof SIZES)[number];
   selectable: boolean;
   bordered: boolean;
-  caption: boolean;
   footer: boolean;
 }) {
   const [selected, setSelected] = useState<string[]>(["4.1.3"]);
+  const [sort, setSort] = useState<TableSort | null>(null);
+  const releases = sorted(RELEASES, sort);
   const totals = RELEASES.filter((release) => selected.includes(release.id));
   // Spread rather than the readonly tuple: a union of two differently-shaped array types
   // loses `reduce`'s inference, and the accumulator comes back as a release.
@@ -76,29 +105,28 @@ function TableDemo({
         size={size}
         selectable={selectable}
         bordered={bordered}
+        sort={sort}
+        onSortChange={setSort}
         rows={RELEASES.map((release) => release.id)}
         value={selected}
         onValueChange={setSelected}
       >
-        {caption && (
-          <TableCaption>
-            {selected.length > 0
-              ? `${selected.length} of ${RELEASES.length} releases selected.`
-              : "Every published release of the package."}
-          </TableCaption>
-        )}
         <TableHeader>
           <TableRow>
-            <TableHead>Version</TableHead>
-            <TableHead>Channel</TableHead>
+            <TableHead sortKey="version">Version</TableHead>
+            <TableHead sortKey="channel">Channel</TableHead>
             {/* Numbers right-align so their digits stack; `tabular-nums` stops the column
                 twitching as the figures change width. */}
-            <TableHead className="text-right">Downloads</TableHead>
-            <TableHead className="text-right">Published</TableHead>
+            <TableHead sortKey="downloads" className="text-right">
+              Downloads
+            </TableHead>
+            <TableHead sortKey="published" className="text-right">
+              Published
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {RELEASES.map((release) => (
+          {releases.map((release) => (
             <TableRow
               key={release.id}
               value={release.id}

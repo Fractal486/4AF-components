@@ -22,9 +22,16 @@
  *   3. Motion     — durations/easings as vars, so the inspector can scale time.
  */
 
-/* Theme is set by an inline script on <html> before paint, so there's no flash
-   and no need to duplicate every value inside a prefers-color-scheme query. */
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+/* Theme is set on <html> before paint, so there's no flash and no need to duplicate every
+   value inside a prefers-color-scheme query.
+
+   Both selectors, and they have to be: the token block below already answers to `.dark` or
+   `[data-theme="dark"]`, while this variant answered only to the second. Fumadocs' provider
+   switches themes with `next-themes` in its default `attribute: "class"` mode, so the page
+   goes dark through `.dark` — the tokens repoint correctly and every `dark:` utility in the
+   library silently does nothing, which looks like the utility being wrong rather than the
+   variant never matching. */
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
 
 /* ---------------------------------------------------------------------------
  * 1. Ramps

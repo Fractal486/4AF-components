@@ -112,6 +112,89 @@ describe("Table", () => {
     expect(onValueChange).toHaveBeenLastCalledWith(["offscreen"]);
   });
 
+  it("cycles a sortable column through ascending, descending and back out", () => {
+    const onSortChange = vi.fn();
+    render(
+      <Table onSortChange={onSortChange}>
+        <TableHeader>
+          <TableRow>
+            <TableHead sortKey="name">Name</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            <TableCell>Ada Lovelace</TableCell>
+            <TableCell>Edit</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>,
+    );
+
+    const header = screen.getByRole("columnheader", { name: "Name" });
+    const control = screen.getByRole("button", { name: "Name" });
+    expect(header).toHaveAttribute("aria-sort", "none");
+
+    fireEvent.click(control);
+    expect(onSortChange).toHaveBeenLastCalledWith({ column: "name", direction: "asc" });
+    expect(header).toHaveAttribute("aria-sort", "ascending");
+
+    fireEvent.click(control);
+    expect(onSortChange).toHaveBeenLastCalledWith({ column: "name", direction: "desc" });
+    expect(header).toHaveAttribute("aria-sort", "descending");
+
+    // The third press has to put it back: a table that can be sorted but never unsorted
+    // loses the order it was authored in.
+    fireEvent.click(control);
+    expect(onSortChange).toHaveBeenLastCalledWith(null);
+    expect(header).toHaveAttribute("aria-sort", "none");
+  });
+
+  it("leaves a column without a sortKey unsortable", () => {
+    render(
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead sortKey="name">Name</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            <TableCell>Ada Lovelace</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>,
+    );
+
+    expect(screen.getAllByRole("button")).toHaveLength(1);
+    expect(screen.getByRole("columnheader", { name: "Actions" })).not.toHaveAttribute("aria-sort");
+  });
+
+  it("moves the sort to another column at ascending, not wherever the last one was", () => {
+    render(
+      <Table defaultSort={{ column: "name", direction: "desc" }}>
+        <TableHeader>
+          <TableRow>
+            <TableHead sortKey="name">Name</TableHead>
+            <TableHead sortKey="role">Role</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            <TableCell>Ada Lovelace</TableCell>
+            <TableCell>Engineer</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Role" }));
+
+    expect(screen.getByRole("columnheader", { name: "Role" })).toHaveAttribute("aria-sort", "ascending");
+    expect(screen.getByRole("columnheader", { name: "Name" })).toHaveAttribute("aria-sort", "none");
+  });
+
   it("draws the grid only when asked, and never past the last column", () => {
     const { container, rerender } = render(<People selectable />);
 

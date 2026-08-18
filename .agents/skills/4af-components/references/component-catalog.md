@@ -95,7 +95,7 @@ The catalog currently contains 43 installable UI items. Verify the count and nam
 | --- | --- | --- |
 | `tabs` | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | Segment, pill, or underline tabs with a traveling indicator. |
 | `collapsible` | `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` | Disclosure rows (`plain`/`card`) with a rotating chevron, a height slide so following rows travel rather than jump, and a blur-fade on the content. |
-| `table` | `Table` and header/body/footer/row/head/cell/caption parts | Data tables in two densities, with an optional checkbox column: `selectable` adds it, `rows` sets what select-all covers, and the header box goes indeterminate on a partial selection. `bordered` adds the frame and column rules. |
+| `table` | `Table` and header/body/footer/row/head/cell parts | Data tables in two densities, with an optional checkbox column: `selectable` adds it, `rows` sets what select-all covers, and the header box goes indeterminate on a partial selection. `bordered` adds the frame and column rules; a `sortKey` on a header adds a three-step sort control. |
 | `table-of-contents` | `TableOfContents` | Heading navigation with a dashed inactive rail, smooth scrolling, long-prose fallback, and `span` or `single` active marker variants. |
 | `table-of-contents-lines` | `TableOfContentsLines` | Dense line-based heading navigation with one active heading, a longer header rule, equal shorter rules between headings (none below the final heading), heading-relative indentation, and an expanding hover treatment. |
 | `separator` | `Separator` | An accessible horizontal or vertical divider built on Base UI Separator. |
@@ -313,21 +313,26 @@ title, header actions.
 
 ### Table
 
-`<table>` semantics, not a headless primitive — the Checkbox in the selection column is the only
-Base UI part. `selectable` on the root adds the column; do not add the cell to each row yourself,
-`TableRow` fills in its own on whichever side of the header line it is on.
+Native `<table>` semantics; the Checkbox in the selection column is the only Base UI part.
+`selectable` on the root adds the column — do not add a cell to each row, `TableRow` renders its
+own.
 
 | Need | Prop |
 | --- | --- |
 | Show the checkbox column | `selectable` |
 | Frame plus rules between columns | `bordered` (row rules are always on) |
+| Sortable column | `sortKey` on `TableHead`; read `sort` / `onSortChange` and order the rows yourself |
 | What select-all covers | `rows` (the page you are rendering, not every row you have) |
 | Selection state | `value` / `onValueChange`, or `defaultValue` |
 | Name a row's checkbox | `selectLabel` on `TableRow` — give it the row's subject |
 
-A row is selectable when it has a `value`; one without still gets an empty cell so the columns
-stay aligned. Select-all is a union, so selected rows outside `rows` survive it. Rows expose
-`data-selected` and deliberately not `aria-selected`, which is invalid on a plain table row.
+Sorting cycles ascending → descending → unsorted; switching columns restarts at ascending. The
+component does not sort rows — it owns the control, the state and `aria-sort`, and reports
+`{ column, direction } | null`.
+
+A row is selectable when it has a `value`; one without still gets an empty cell so columns stay
+aligned. Select-all is a union, so selected rows outside `rows` survive it. Rows expose
+`data-selected`, not `aria-selected`, which is invalid on a plain table row.
 
 ### Toast
 

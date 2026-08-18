@@ -158,7 +158,7 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   skeleton: "Skeleton",
   slider: "Slider",
   switch: "Switch",
-  table: "Table, TableHeader, TableBody, TableFooter, TableRow, TableHead, TableCell, TableCaption",
+  table: "Table, TableHeader, TableBody, TableFooter, TableRow, TableHead, TableCell",
   "table-of-contents": "TableOfContents",
   "table-of-contents-lines": "TableOfContentsLines",
   tabs: "Tabs, TabsList, TabsTab, TabsPanel",

@@ -1,5 +1,7 @@
 "use client";
 
+import { ChevronUp } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import {
   createContext,
   useCallback,
@@ -11,11 +13,12 @@ import {
 import { cn } from "@/registry/lib/cn";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import {
-  tableCaptionVariants,
   tableCellVariants,
   tableHeadVariants,
   tableRowVariants,
   tableSelectCellVariants,
+  tableSortButtonVariants,
+  tableSortChevronVariants,
   tableVariants,
   tableWrapperVariants,
   type TableVariants,
@@ -46,6 +49,14 @@ import {
  * splitting a table across two files to save a few bytes on `<td>` is the worse trade.
  */
 
+export type TableSortDirection = "asc" | "desc";
+
+export interface TableSort {
+  /** The `sortKey` of the column doing the sorting. */
+  column: string;
+  direction: TableSortDirection;
+}
+
 interface TableContextValue {
   selectable: boolean;
   size: TableVariants["size"];
@@ -54,8 +65,10 @@ interface TableContextValue {
   allSelected: boolean;
   someSelected: boolean;
   selectAllLabel: string;
+  sort: TableSort | null;
   toggleRow: (value: string, next: boolean) => void;
   toggleAll: (next: boolean) => void;
+  toggleSort: (column: string) => void;
 }
 
 const TableContext = createContext<TableContextValue>({
@@ -66,8 +79,10 @@ const TableContext = createContext<TableContextValue>({
   allSelected: false,
   someSelected: false,
   selectAllLabel: "Select all rows",
+  sort: null,
   toggleRow: () => {},
   toggleAll: () => {},
+  toggleSort: () => {},
 });
 
 /**
@@ -106,6 +121,16 @@ export interface TableProps extends Omit<ComponentProps<"table">, "className">, 
   onValueChange?: (value: string[]) => void;
   /** Names the select-all checkbox. */
   selectAllLabel?: string;
+  /** The column doing the sorting, controlled. `null` is unsorted. */
+  sort?: TableSort | null;
+  /** The column doing the sorting, uncontrolled. */
+  defaultSort?: TableSort | null;
+  /**
+   * Fired with the next state of the three-step cycle: ascending, descending, then back to
+   * `null`. The table owns the control and the state; the rows are yours to order, because
+   * only you know what the values in them actually are.
+   */
+  onSortChange?: (sort: TableSort | null) => void;
 }
 
 export function Table({
@@ -119,6 +144,9 @@ export function Table({
   defaultValue,
   onValueChange,
   selectAllLabel = "Select all rows",
+  sort,
+  defaultSort = null,
+  onSortChange,
   children,
   ...props
 }: TableProps) {
@@ -146,6 +174,28 @@ export function Table({
   // Memoised on `rows` itself: `rows ?? []` mints a new array every render, which would
   // give `toggleAll` a new identity every render, which would give the context a new one —
   // and re-render every cell in the table on every keystroke happening anywhere above it.
+  const [uncontrolledSort, setUncontrolledSort] = useState<TableSort | null>(defaultSort);
+  const sortIsControlled = sort !== undefined;
+  const activeSort = sortIsControlled ? sort : uncontrolledSort;
+
+  const toggleSort = useCallback(
+    (column: string) => {
+      // Three steps and then out: ascending, descending, unsorted. The third press has to
+      // exist — without it a table can be sorted but never put back, and the order it was
+      // authored in is usually meaningful.
+      const next: TableSort | null =
+        activeSort?.column !== column
+          ? { column, direction: "asc" }
+          : activeSort.direction === "asc"
+            ? { column, direction: "desc" }
+            : null;
+
+      if (!sortIsControlled) setUncontrolledSort(next);
+      onSortChange?.(next);
+    },
+    [activeSort, sortIsControlled, onSortChange],
+  );
+
   const coverage = useMemo(() => rows ?? [], [rows]);
   const selectedCount = coverage.filter((row) => selected.includes(row)).length;
   const allSelected = coverage.length > 0 && selectedCount === coverage.length;
@@ -173,8 +223,10 @@ export function Table({
       allSelected,
       someSelected,
       selectAllLabel,
+      sort: activeSort,
       toggleRow,
       toggleAll,
+      toggleSort,
     }),
     [
       selectable,
@@ -184,8 +236,10 @@ export function Table({
       allSelected,
       someSelected,
       selectAllLabel,
+      activeSort,
       toggleRow,
       toggleAll,
+      toggleSort,
     ],
   );
 
@@ -333,16 +387,71 @@ export function TableRow({
   );
 }
 
-export function TableHead({ className, scope = "col", ...props }: ComponentProps<"th">) {
-  const { size, bordered } = useContext(TableContext);
+export interface TableHeadProps extends ComponentProps<"th"> {
+  /**
+   * Makes the column sortable and names it in `TableSort.column`. Omit it for a column that
+   * can't be ordered — an actions column, a thumbnail — and it stays a plain header.
+   */
+  sortKey?: string;
+}
+
+export function TableHead({
+  className,
+  scope = "col",
+  sortKey,
+  children,
+  ...props
+}: TableHeadProps) {
+  const { size, bordered, sort, toggleSort } = useContext(TableContext);
+  const reduceMotion = useReducedMotion();
+  const active = sortKey !== undefined && sort?.column === sortKey;
 
   return (
     <th
       data-slot="table-head"
       scope={scope}
-      className={cn(tableHeadVariants({ size, bordered }), className)}
+      // On the `<th>`, because that is where `aria-sort` is defined — for a column header,
+      // not for a control inside one. The button and the chevron both read their state back
+      // off it rather than carrying a second copy of it.
+      aria-sort={
+        sortKey === undefined
+          ? undefined
+          : active
+            ? sort?.direction === "asc"
+              ? "ascending"
+              : "descending"
+            : "none"
+      }
+      className={cn(tableHeadVariants({ size, bordered }), sortKey && "group/sort", className)}
       {...props}
-    />
+    >
+      {sortKey === undefined ? (
+        children
+      ) : (
+        <button
+          type="button"
+          data-slot="table-sort"
+          className={tableSortButtonVariants()}
+          onClick={() => toggleSort(sortKey)}
+        >
+          {children}
+          {/* The Select trigger's chevron, down to the numbers: same spring, same
+              reduced-motion collapse, so the two flip identically. Up is the resting pose
+              here rather than down — an unsorted column is offering ascending, and the
+              descending state is that same glyph turned over. */}
+          <motion.span
+            aria-hidden="true"
+            className="inline-flex"
+            animate={{ rotate: active && sort?.direction === "desc" ? 180 : 0 }}
+            transition={
+              reduceMotion ? { duration: 0 } : { type: "spring", duration: 0.4, bounce: 0 }
+            }
+          >
+            <ChevronUp className={tableSortChevronVariants()} />
+          </motion.span>
+        </button>
+      )}
+    </th>
   );
 }
 
@@ -353,23 +462,6 @@ export function TableCell({ className, ...props }: ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       className={cn(tableCellVariants({ size, bordered }), className)}
-      {...props}
-    />
-  );
-}
-
-/**
- * The table's own description. Worth writing even when the page around it already has a
- * heading: a screen reader can jump straight to a table, and the caption is what tells
- * someone who arrives that way what they have landed in.
- */
-export function TableCaption({ className, ...props }: ComponentProps<"caption">) {
-  const { bordered } = useContext(TableContext);
-
-  return (
-    <caption
-      data-slot="table-caption"
-      className={cn(tableCaptionVariants({ bordered }), className)}
       {...props}
     />
   );

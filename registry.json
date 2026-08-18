@@ -738,9 +738,11 @@
     {
       "name": "table",
       "type": "registry:ui",
-      "description": "A semantic data table with two densities and an optional selection column: one prop adds the checkboxes, and the select-all goes indeterminate while the selection is partial.",
+      "description": "A semantic data table with two densities, optional grid lines, and an optional selection column: one prop adds the checkboxes, the select-all goes indeterminate while the selection is partial, and column headers cycle through ascending, descending and unsorted.",
       "dependencies": [
-        "class-variance-authority"
+        "class-variance-authority",
+        "lucide-react",
+        "motion"
       ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",

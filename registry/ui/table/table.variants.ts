@@ -21,10 +21,9 @@ export const tableWrapperVariants = cva("w-full overflow-x-auto", {
 
 /**
  * The `<table>` itself. `border-collapse` so the row rules meet cleanly at the cell
- * boundaries rather than doubling, and `caption-bottom` because a caption below the data
- * reads as a note about it, while one above competes with the column headers.
+ * boundaries rather than doubling.
  */
-export const tableVariants = cva("w-full caption-bottom border-collapse text-sm");
+export const tableVariants = cva("w-full border-collapse text-sm");
 
 /**
  * Row density, and the only axis this component has. `md` is a comfortable reading table;
@@ -35,13 +34,24 @@ export const tableRowVariants = cva([
   // where borders belong: the job here is separation between rows, not lifting one off
   // the page.
   "border-b border-border",
-  "transition-[background-color] duration-(--duration-fast) ease-out",
+  // No transition. A row wash is feedback about where the cursor *is*, and easing it in
+  // makes the pointer arrive before the answer does; the eye reads that as lag rather than
+  // as polish. The colours below are quiet enough that there is nothing to soften anyway.
+  //
+  // A wash rather than a fill: white on hover, one step above it when selected. The
+  // `bg-white/[…]` form states the colour exactly — `oklch(1 0 0)` *is* white — while
+  // sidestepping the arbitrary-value parser that reads a bare `/` inside `bg-[oklch(…)]`
+  // as an opacity modifier.
+  //
+  // Mirrored to black for the light theme, because white over a white surface is nothing at
+  // all and a row that gives no feedback under the cursor reads as inert.
+  //
   // `not-data-[selected]` rather than trusting source order: a hover rule and a
   // data-attribute rule have identical specificity, so which one won a selected-and-hovered
   // row would come down to whatever order Tailwind happened to emit them in. Scoping the
   // hover out of the selected case settles it in the class list instead.
-  "hover:not-data-[selected]:bg-muted/60",
-  "data-[selected]:bg-muted",
+  "hover:not-data-[selected]:bg-black/[0.01] dark:hover:not-data-[selected]:bg-white/[0.01]",
+  "data-[selected]:bg-black/[0.02] dark:data-[selected]:bg-white/[0.02]",
 ]);
 
 export const tableHeadVariants = cva(
@@ -90,6 +100,41 @@ export const tableCellVariants = cva(["align-middle text-foreground"], {
 });
 
 /**
+ * The button a sortable column header wears. `inline-flex` rather than `flex`, because an
+ * inline-level box is still placed by the cell's `text-align` — so a right-aligned numeric
+ * column keeps its header against the right edge without the call site having to say so a
+ * second time in flex terms.
+ *
+ * Both this and the chevron key off `aria-sort`, which lives on the `<th>`: that attribute
+ * is defined for a column header, not for a button inside one, so the state is read from
+ * the cell rather than duplicated onto the control.
+ */
+export const tableSortButtonVariants = cva([
+  "inline-flex cursor-pointer items-center gap-1.5 rounded-sm align-middle select-none",
+  "transition-[color] duration-(--duration-fast) ease-out",
+  "outline-none focus-visible:ring-2 focus-visible:ring-ring",
+  "focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+  // The header stays muted until it is the one doing the sorting, and then it reads at full
+  // strength: a bright chevron beside a muted label looks like a stray glyph rather than
+  // like a column that is active.
+  "group-aria-[sort=ascending]/sort:text-foreground",
+  "group-aria-[sort=descending]/sort:text-foreground",
+]);
+
+/**
+ * The chevron, dimmer than the label beside it so an unsorted column reads as *offering* a
+ * sort rather than announcing one. Hovering the header lifts it to the label's weight —
+ * that is the affordance — and sorting lifts it past that.
+ */
+export const tableSortChevronVariants = cva([
+  "size-3.5 shrink-0",
+  "transition-[color] duration-(--duration-fast) ease-out",
+  "text-subtle-foreground group-hover/sort:text-muted-foreground",
+  "group-aria-[sort=ascending]/sort:text-foreground",
+  "group-aria-[sort=descending]/sort:text-foreground",
+]);
+
+/**
  * The selection column. `w-px` collapses it to its content — a checkbox plus padding — so
  * it takes the narrowest column the table can give it and the data columns keep the rest.
  */
@@ -110,21 +155,6 @@ export const tableSelectCellVariants = cva("w-px align-middle", {
     },
   },
   defaultVariants: { size: "md", bordered: false },
-});
-
-/**
- * The caption. A `<caption>` can only be a child of its table, so with a frame drawn it
- * necessarily sits inside one — which means it needs the padding the cells have, or it ends
- * up touching the border it is enclosed by.
- */
-export const tableCaptionVariants = cva("mt-3 text-xs text-subtle-foreground", {
-  variants: {
-    bordered: {
-      true: "px-3 pb-3",
-      false: "",
-    },
-  },
-  defaultVariants: { bordered: false },
 });
 
 export type TableVariants = VariantProps<typeof tableCellVariants>;
