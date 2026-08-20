@@ -11,9 +11,19 @@ export function getSliderFillOffset(
   position: number,
   isRtl: boolean,
   thumbWidthPx: number,
+  fillCapRadiusPx = 0,
+  thumbTravelInsetPx = thumbWidthPx / 2,
+  keepStartCap = false,
 ): number {
   const progress = isRtl ? 100 - position : position;
-  return position <= 0 || position >= 100
-    ? 0
-    : thumbWidthPx * (0.5 - progress / 100);
+  if (!keepStartCap && fillCapRadiusPx === 0) {
+    return position <= 0 || position >= 100
+      ? 0
+      : thumbWidthPx * (0.5 - progress / 100);
+  }
+  if (progress >= 100) return 0;
+  if (progress <= 0) {
+    return keepStartCap ? thumbTravelInsetPx + fillCapRadiusPx : 0;
+  }
+  return thumbTravelInsetPx * (1 - 2 * progress / 100) + fillCapRadiusPx;
 }

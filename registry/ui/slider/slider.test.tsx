@@ -5,6 +5,17 @@ import { getSliderControlWidth, getSliderFillOffset } from "./slider-geometry";
 import { Slider } from "./slider";
 
 describe("Slider", () => {
+  it("keeps the knob one size step smaller at rest", () => {
+    const { container, rerender } = render(
+      <Slider aria-label="Volume" thumb="knob" size="md" />,
+    );
+
+    expect(container.querySelector('[data-slot="slider-thumb"]')).toHaveClass("size-4");
+
+    rerender(<Slider aria-label="Volume" thumb="knob" size="sm" />);
+    expect(container.querySelector('[data-slot="slider-thumb"]')).toHaveClass("size-3");
+  });
+
   it("shows a live value tooltip above the thumb when enabled", async () => {
     const user = userEvent.setup();
 
@@ -91,6 +102,10 @@ describe("Slider", () => {
     expect(getSliderFillOffset(40, false, 20)).toBeCloseTo(2);
     expect(getSliderFillOffset(80, false, 20)).toBeCloseTo(-6);
     expect(getSliderFillOffset(80, true, 20)).toBeCloseTo(6);
+    expect(getSliderFillOffset(80, false, 20, 14)).toBeCloseTo(8);
+    expect(getSliderFillOffset(80, false, 20, 14, 14)).toBeCloseTo(5.6);
+    expect(getSliderFillOffset(0, false, 20, 14, 14, true)).toBe(28);
+    expect(getSliderFillOffset(100, true, 20, 14, 14, true)).toBe(28);
     expect(getSliderFillOffset(0, false, 20)).toBe(0);
     expect(getSliderFillOffset(100, false, 20)).toBe(0);
   });

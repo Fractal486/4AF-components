@@ -66,9 +66,9 @@ export interface SliderProps
   /** Text shown above the track on the left, opposite the value. */
   label?: ReactNode;
   /**
-   * The thumb shape. `bar` is the thin vertical handle; `circle` is a round knob that
-   * fills a fully-rounded track; `knob` is that same round knob on a thin rail (about half
-   * the knob's diameter), so it overhangs — the classic slider look.
+   * The thumb shape. `bar` is the thin vertical handle; `circle` is a round knob centered
+   * in a thick, fully-rounded track; `knob` is that same round knob on a thin rail (about
+   * half the knob's diameter), so it overhangs — the classic slider look.
    */
   thumb?: "bar" | "circle" | "knob";
   /** Overall scale. `sm` is a more compact rail — useful in dense panels. */
@@ -78,21 +78,27 @@ export interface SliderProps
 // Every size-dependent value in one place, keyed by shape then size, so the rail height
 // and rounding, the thumb, the pixel width the fill/tick maths needs, and the tick inset
 // (half that width) never drift out of step. `rail` positions the track within the
-// control — `inset-0` fills it (thumb == rail height); a fixed height centres a thin rail
-// the thumb overhangs.
+// control — `inset-0` fills a thick circle rail; a fixed height centres a thin rail so
+// the knob thumb overhangs.
 const DIMS = {
   circle: {
-    md: { control: "h-5", rail: "inset-0", thumb: "size-5 rounded-full", thumbPx: 20, tooltipSideOffset: 8, tickInset: "inset-x-2.5", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
-    sm: { control: "h-4", rail: "inset-0", thumb: "size-4 rounded-full", thumbPx: 16, tooltipSideOffset: 8, tickInset: "inset-x-2", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    md: { control: "h-7", rail: "inset-0", thumb: "size-5 rounded-full", thumbPx: 20, fillCapRadiusPx: 14, tooltipSideOffset: 8, tickInset: "inset-x-3.5", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    sm: { control: "h-6", rail: "inset-0", thumb: "size-4 rounded-full", thumbPx: 16, fillCapRadiusPx: 12, tooltipSideOffset: 8, tickInset: "inset-x-3", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
   },
   knob: {
-    md: { control: "h-5", rail: "inset-x-0 top-1/2 h-2.5 -translate-y-1/2", thumb: "size-5 rounded-full", thumbPx: 20, tooltipSideOffset: 8, tickInset: "inset-x-2.5", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
-    sm: { control: "h-4", rail: "inset-x-0 top-1/2 h-2 -translate-y-1/2", thumb: "size-4 rounded-full", thumbPx: 16, tooltipSideOffset: 8, tickInset: "inset-x-2", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    md: { control: "h-5", rail: "inset-x-0 top-1/2 h-2.5 -translate-y-1/2", thumb: "size-4 rounded-full", thumbPx: 16, fillCapRadiusPx: 0, tooltipSideOffset: 8, tickInset: "inset-x-2", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    sm: { control: "h-4", rail: "inset-x-0 top-1/2 h-2 -translate-y-1/2", thumb: "size-3 rounded-full", thumbPx: 12, fillCapRadiusPx: 0, tooltipSideOffset: 8, tickInset: "inset-x-1.5", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
   },
   bar: {
-    md: { control: "h-10", rail: "inset-0", thumb: "h-5 w-1.5 rounded-sm", thumbPx: 6, tooltipSideOffset: -2, tickInset: "inset-x-[3px]", tick: "h-2 rounded-none", tickCenterX: "", tickHairline: true },
-    sm: { control: "h-8", rail: "inset-0", thumb: "h-4 w-1.5 rounded-sm", thumbPx: 6, tooltipSideOffset: 0, tickInset: "inset-x-[3px]", tick: "h-1.5 rounded-none", tickCenterX: "", tickHairline: true },
+    md: { control: "h-10", rail: "inset-0", thumb: "h-5 w-1.5 rounded-sm", thumbPx: 6, fillCapRadiusPx: 0, tooltipSideOffset: -2, tickInset: "inset-x-[3px]", tick: "h-2 rounded-none", tickCenterX: "", tickHairline: true },
+    sm: { control: "h-8", rail: "inset-0", thumb: "h-4 w-1.5 rounded-sm", thumbPx: 6, fillCapRadiusPx: 0, tooltipSideOffset: 0, tickInset: "inset-x-[3px]", tick: "h-1.5 rounded-none", tickCenterX: "", tickHairline: true },
   },
+} as const;
+
+// Knobs rest one size step smaller, then grow to the former resting size while grabbed.
+const KNOB_GRAB_SCALE = {
+  md: 1.25,
+  sm: 4 / 3,
 } as const;
 
 export function Slider({
@@ -113,7 +119,10 @@ export function Slider({
   ...props
 }: SliderProps) {
   const isBar = thumb === "bar";
+  const isCircle = thumb === "circle";
   const dims = DIMS[thumb][size];
+  const roundThumbGrabScale = thumb === "knob" ? KNOB_GRAB_SCALE[size] : 1.12;
+  const thumbTravelInsetPx = isCircle ? dims.fillCapRadiusPx : dims.thumbPx / 2;
   const reduceMotion = useReducedMotion();
   const direction = useDirection();
   const isRtl = direction === "rtl";
@@ -163,9 +172,10 @@ export function Slider({
     const measure = () => {
       const nextWidth = getSliderControlWidth(control);
       setControlWidth(nextWidth);
+      const travelWidth = Math.max(nextWidth - thumbTravelInsetPx * 2, 0);
       setTooltipAlignOffset(
-        (visualPercentRef.current / 100) * Math.max(nextWidth - dims.thumbPx, 0) +
-          dims.thumbPx / 2 -
+        (visualPercentRef.current / 100) * travelWidth +
+          thumbTravelInsetPx -
           nextWidth / 2,
       );
       // Captured with the width because ticks are snapped to the *device* pixel grid, and
@@ -176,10 +186,13 @@ export function Slider({
     const observer = new ResizeObserver(measure);
     observer.observe(control);
     return () => observer.disconnect();
-  }, [dims.thumbPx]);
+  }, [dims.thumbPx, thumbTravelInsetPx]);
   const thumbX = useTransform(
     pos,
-    (p) => (p / 100) * Math.max(controlWidth - dims.thumbPx, 0),
+    (p) =>
+      (p / 100) * Math.max(controlWidth - thumbTravelInsetPx * 2, 0) +
+      thumbTravelInsetPx -
+      dims.thumbPx / 2,
   );
 
   // Base UI's tooltip positioner listens for layout changes, but the slider thumb moves
@@ -201,11 +214,26 @@ export function Slider({
   // from the same spring-driven position as the thumb; using the raw target value or a
   // second spring lets the fill get ahead while the thumb is still settling.
   const offset = useTransform(pos, (position) => {
-    return getSliderFillOffset(position, isRtl, thumbWidthPx);
+    return getSliderFillOffset(
+      position,
+      isRtl,
+      thumbWidthPx,
+      dims.fillCapRadiusPx,
+      thumbTravelInsetPx,
+      isCircle,
+    );
   });
   const ltrFillClip = useMotionTemplate`inset(0 calc(100% - ${fillProgress}% - ${offset}px) 0 0)`;
   const rtlFillClip = useMotionTemplate`inset(0 0 0 calc(100% - ${fillProgress}% - ${offset}px))`;
-  const fillClip = isRtl ? rtlFillClip : ltrFillClip;
+  const ltrCircleFillClip = useMotionTemplate`inset(0 calc(100% - ${fillProgress}% - ${offset}px) 0 0 round ${dims.fillCapRadiusPx}px)`;
+  const rtlCircleFillClip = useMotionTemplate`inset(0 0 0 calc(100% - ${fillProgress}% - ${offset}px) round ${dims.fillCapRadiusPx}px)`;
+  const fillClip = isCircle
+    ? isRtl
+      ? rtlCircleFillClip
+      : ltrCircleFillClip
+    : isRtl
+      ? rtlFillClip
+      : ltrFillClip;
 
   const stepCount = Math.floor((normalizedMax - normalizedMin) / normalizedStep);
   const ticks =
@@ -283,8 +311,7 @@ export function Slider({
         onLostPointerCapture={handlePointerEnd}
         className={cn(
           "group relative flex w-full touch-none items-center select-none",
-          // The circle variant is half as thick; its round thumb is sized to the rail
-          // height, so it matches the rail's rounded end-caps.
+          // Circle uses a thick rounded rail; bar uses a thin vertical handle.
           dims.control,
           disabled
             ? "cursor-not-allowed opacity-50"
@@ -295,9 +322,8 @@ export function Slider({
                 : "cursor-e-resize",
         )}
       >
-        {/* The rail — clipped to its own shape so the fill rounds with it. The thumb
-            sits *outside* this clip, so a circle that fills the rail can grow past its
-            edges when grabbed rather than being flattened against them. */}
+        {/* The rail — clipped to its own shape so the fill rounds with it. The visual thumb
+            sits above this clip, while the knob can still overhang its thin rail. */}
         <div
           className={cn(
             "absolute overflow-hidden bg-muted",
@@ -305,7 +331,8 @@ export function Slider({
             isBar ? "rounded-lg" : "rounded-full",
           )}
         >
-          {/* Fill — inline start to the thumb's centre, easing to the rail edges at the ends. */}
+          {/* Fill — a circle gets a rounded cap centred on the thumb, so the fill
+              encapsulates it; other variants end at the thumb's centre. */}
           <motion.div
             aria-hidden
             data-slot="slider-fill"
@@ -335,7 +362,7 @@ export function Slider({
               // crisp 1px lines and blurred 2px ones. The width is already measured here
               // for the thumb, so rounding costs nothing. Only the *centring* translate
               // stays, and only on the axis the tick has no odd half-pixel on.
-              const trackPx = Math.max(controlWidth - dims.thumbPx, 0);
+              const trackPx = Math.max(controlWidth - thumbTravelInsetPx * 2, 0);
               // Snapped to the device pixel grid, not the CSS one. On a display scaled to
               // 125% or 150% — the common Windows case — a whole CSS pixel still lands
               // mid-device-pixel, so the browser spreads a hairline across two and the run
@@ -412,7 +439,7 @@ export function Slider({
               ? undefined
               : isBar
                 ? { scaleY: dragging ? 1.35 : 1 }
-                : { scale: dragging ? 1.12 : 1 }
+                : { scale: dragging ? roundThumbGrabScale : 1 }
           }
           transition={SPRING_GRAB}
         />

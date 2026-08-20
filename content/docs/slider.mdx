@@ -11,8 +11,10 @@ description: A Base UI range control with multiple thumb styles, labels, ticks, 
 **Main export:** `Slider`
 
 A controlled or uncontrolled numeric slider with a spring-gliding fill and three thumb variants:
-`bar` for a thin handle, `circle` for a round thumb filling the rail, and `knob` for a round thumb
-over a thin rail. Optional display props include `label`, `showValue`, and `showTicks`.
+`bar` for a thin handle, `circle` for a round thumb centered in a thick rounded rail whose fill
+encapsulates it and remains behind it at the minimum, and `knob` for a round thumb over a thin
+rail. The knob rests one size step smaller and grows to its former resting size while dragged.
+Optional display props include `label`, `showValue`, and `showTicks`.
 `showValueTooltip` is off by default; enable it to show the live value above the thumb while the
 thumb is hovered or keyboard-focused. It stays visible during pointer drag, follows the thumb
 continuously during motion, and closes after release when the pointer is no longer over the thumb.
