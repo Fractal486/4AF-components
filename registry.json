@@ -622,7 +622,7 @@
     {
       "name": "slider",
       "type": "registry:ui",
-      "description": "A slider whose thumb springs between steps and grabs while held, with optional ticks, labels, and a live value tooltip. Base UI behaviour.",
+      "description": "A slider whose thumb springs between steps and grabs while held, with optional range mode, ticks, labels, and a live value tooltip. Base UI behaviour.",
       "dependencies": [
         "@base-ui/react",
         "lucide-react",

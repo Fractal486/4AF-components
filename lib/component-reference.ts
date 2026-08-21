@@ -276,7 +276,9 @@ import { Button } from "@/components/ui/button";
     importName: "Slider",
     usage: `import { Slider } from "@/components/ui/slider";
 
-<Slider aria-label="Volume" defaultValue={60} showValueTooltip />`,
+<Slider aria-label="Volume" defaultValue={60} showValueTooltip />
+
+<Slider aria-label="Price range" range defaultValue={[20, 80]} />`,
   },
   switch: {
     importName: "Switch",
