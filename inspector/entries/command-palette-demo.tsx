@@ -7,7 +7,6 @@ import {
   Bell,
   BellOff,
   Copy,
-  CornerDownLeft,
   FileText,
   FolderOpen,
   Home,
@@ -35,8 +34,6 @@ import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import {
   CommandPalette,
   CommandPanelRow,
-  CommandPanelAction,
-  CommandPanelActions,
   CommandPanelBody,
   CommandPanelFooter,
   CommandPanelList,
@@ -503,11 +500,7 @@ function RenamePanel({
         </p>
       </CommandPanelBody>
 
-      <CommandPanelFooter>
-        <CommandPanelAction type="submit" keys={[<CornerDownLeft key="enter" className="size-2.5" />]}>
-          Save
-        </CommandPanelAction>
-      </CommandPanelFooter>
+      <CommandPanelFooter enter={{ label: "Save", type: "submit" }} />
     </form>
   );
 }
@@ -707,19 +700,16 @@ function ProjectsPanel({
         )}
       </CommandPanelList>
 
-      <CommandPanelFooter>
-        <CommandPanelAction
-          onClick={() => {
+      <CommandPanelFooter
+        enter={{
+          label: "Open",
+          onClick: () => {
             onDone(`Opened ${selected}`);
             helpers.close();
-          }}
-          keys={[<CornerDownLeft key="enter" className="size-2.5" />]}
-        >
-          Open
-        </CommandPanelAction>
-        {/* Rightmost, so the menu hangs off the bottom-right corner. */}
-        <CommandPanelActions groups={actionGroups} />
-      </CommandPanelFooter>
+          },
+        }}
+        actions={{ groups: actionGroups }}
+      />
     </div>
   );
 }
@@ -788,11 +778,7 @@ function NewProjectPanel({
         </div>
       </CommandPanelBody>
 
-      <CommandPanelFooter>
-        <CommandPanelAction type="submit" keys={[<CornerDownLeft key="enter" className="size-2.5" />]}>
-          Create
-        </CommandPanelAction>
-      </CommandPanelFooter>
+      <CommandPanelFooter enter={{ label: "Create", type: "submit" }} />
     </form>
   );
 }
@@ -902,11 +888,7 @@ function SettingsPanel({
         </div>
       </CommandPanelBody>
 
-      <CommandPanelFooter>
-        <CommandPanelAction type="submit" keys={[<CornerDownLeft key="enter" className="size-2.5" />]}>
-          Save
-        </CommandPanelAction>
-      </CommandPanelFooter>
+      <CommandPanelFooter enter={{ label: "Save", type: "submit" }} />
     </form>
   );
 }

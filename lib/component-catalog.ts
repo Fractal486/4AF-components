@@ -135,7 +135,7 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   "button-group": "ButtonGroup",
   checkbox: "Checkbox",
   collapsible: "Collapsible, CollapsibleTrigger, CollapsibleContent",
-  "command-palette": "CommandPalette, panel/list/row/action parts, useCommandSearch, useCommandPanelHighlight",
+  "command-palette": "CommandPalette, panel/list/row/footer parts, useCommandSearch, useCommandPanelHighlight",
   "copy-button": "CopyButton",
   "delete-button": "DeleteButton",
   dialog: "Dialog and composition parts, DialogSteps, DialogStep",

@@ -7,7 +7,6 @@ import { vi } from "vitest";
 const DOUBLE_PRESS_GUARD_MS = 400;
 import {
   CommandPalette,
-  CommandPanelActions,
   CommandPanelBody,
   CommandPanelFooter,
   CommandPanelList,
@@ -92,9 +91,7 @@ describe("CommandPalette", () => {
                       <CommandPanelRow value="alpha">Alpha</CommandPanelRow>
                       <CommandPanelRow value="beta">Beta</CommandPanelRow>
                     </CommandPanelList>
-                    <CommandPanelFooter>
-                      <CommandPanelActions items={[{ id: "rename", label: "Rename" }]} />
-                    </CommandPanelFooter>
+                    <CommandPanelFooter actions={{ items: [{ id: "rename", label: "Rename" }] }} />
                   </CommandPanelBody>
                 ),
               },
@@ -253,9 +250,9 @@ describe("CommandPalette", () => {
                     <CommandPanelList>
                       <CommandPanelRow value="alpha">Alpha</CommandPanelRow>
                     </CommandPanelList>
-                    <CommandPanelFooter>
-                      <CommandPanelActions
-                        items={[
+                    <CommandPanelFooter
+                      actions={{
+                        items: [
                           {
                             id: "save",
                             label: "Save",
@@ -269,9 +266,9 @@ describe("CommandPalette", () => {
                             labels: { checked: "Starred" },
                             onCheckedChange,
                           },
-                        ]}
-                      />
-                    </CommandPanelFooter>
+                        ],
+                      }}
+                    />
                   </CommandPanelBody>
                 ),
               },
@@ -324,9 +321,9 @@ describe("CommandPalette", () => {
                     <CommandPanelList>
                       <CommandPanelRow value="alpha">Alpha</CommandPanelRow>
                     </CommandPanelList>
-                    <CommandPanelFooter>
-                      <CommandPanelActions
-                        items={[
+                    <CommandPanelFooter
+                      actions={{
+                        items: [
                           {
                             id: "delete",
                             label: "Delete project",
@@ -334,9 +331,9 @@ describe("CommandPalette", () => {
                             confirm: { label: "Confirm?" },
                             onSelect,
                           },
-                        ]}
-                      />
-                    </CommandPanelFooter>
+                        ],
+                      }}
+                    />
                   </CommandPanelBody>
                 ),
               },
@@ -395,9 +392,7 @@ describe("CommandPalette", () => {
                       <CommandPanelList>
                         <CommandPanelRow value="alpha">Alpha</CommandPanelRow>
                       </CommandPanelList>
-                      <CommandPanelFooter>
-                        <CommandPanelActions items={items} />
-                      </CommandPanelFooter>
+                      <CommandPanelFooter actions={{ items }} />
                     </CommandPanelBody>
                   ),
                 },

@@ -49,6 +49,29 @@ The registry item includes more than the root popup:
 The demo's Projects, Rename Project, and New Project flows are examples built from these public
 APIs, not hard-coded private behaviour.
 
+## Panel footer
+
+A custom panel's footer has the escape hint on the left and two optional slots on the right,
+in this order:
+
+| Slot | Prop | Key |
+| --- | --- | --- |
+| The primary action | `enter` | Return, fixed |
+| The contextual actions menu | `actions` | Cmd/Ctrl + J, fixed |
+
+```tsx
+<CommandPanelFooter
+  enter={{ label: "Save", type: "submit" }}
+  actions={{ groups: actionGroups }}
+/>
+```
+
+Neither chord is configurable and nothing else can go in that corner. Both slots print their
+key, so a palette whose panels chose their own would teach a different keyboard on every page.
+`enter` takes `label`, `onClick`, `disabled`, and `type` — `"submit"` submits the panel's form
+instead of calling `onClick`. `actions` takes the menu's own props: `items` or `groups`, plus
+`label`, `searchPlaceholder`, and `emptyMessage`.
+
 An actions row normally chooses and closes the menu. Three optional fields make it report in
 place instead, keeping the menu open—the same shapes Dropdown Menu offers, expressed as data
 because a palette action is data:
@@ -61,12 +84,14 @@ because a palette action is data:
 | Asks, then commits and closes | `confirm` + `onSelect` | `DeleteButton` |
 
 ```tsx
-<CommandPanelActions
-  items={[
-    { id: "sync", label: "Sync now", action: sync, labels: { pending: "Syncing…", success: "Synced" } },
-    { id: "watch", label: "Watch", defaultChecked: false, action: watch, labels: { checked: "Watching" } },
-    { id: "star", label: "Star", defaultChecked: false, labels: { checked: "Starred" } },
-  ]}
+<CommandPanelFooter
+  actions={{
+    items: [
+      { id: "sync", label: "Sync now", action: sync, labels: { pending: "Syncing…", success: "Synced" } },
+      { id: "watch", label: "Watch", defaultChecked: false, action: watch, labels: { checked: "Watching" } },
+      { id: "star", label: "Star", defaultChecked: false, labels: { checked: "Starred" } },
+    ],
+  }}
 />
 ```
 

@@ -100,7 +100,7 @@ The catalog currently contains 44 installable UI items. Verify the count and nam
 | `table-of-contents` | `TableOfContents` | Heading navigation with a dashed inactive rail, smooth scrolling, long-prose fallback, and `span` or `single` active marker variants. |
 | `table-of-contents-lines` | `TableOfContentsLines` | Dense line-based heading navigation with one active heading, a longer header rule, equal shorter rules between headings (none below the final heading), heading-relative indentation, and an expanding hover treatment. |
 | `separator` | `Separator` | An accessible horizontal or vertical divider built on Base UI Separator. |
-| `command-palette` | `CommandPalette`, panel/list/row/action parts, and `useCommandSearch` | Fuzzy command search, groups, nested/custom panels, async/server-driven search, configurable headers, keybinds (default ⌘K/Ctrl+K), selection, actions, and Dialog-style enter/exit motion. |
+| `command-palette` | `CommandPalette`, panel/list/row/footer parts, and `useCommandSearch` | Fuzzy command search, groups, nested/custom panels, async/server-driven search, configurable headers, keybinds (default ⌘K/Ctrl+K), selection, actions, and Dialog-style enter/exit motion. |
 | `sidebar` | Provider, panel, group/menu/submenu/action/badge/skeleton parts | Default/floating/inset and split/split-floating/split-inset sidebars, collapse, sections, nested rows, split rail/panel selection, actions, badges, skeletons. |
 | `sidebar-layout` | `SidebarLayout` | Optional page shell around Sidebar with inset surface, title, collapse control, and actions. |
 
@@ -249,6 +249,11 @@ out-of-order dropping, loading, and rejected searches are handled. In a custom p
 `useCommandSearch(helpers.query, source)`, render `CommandPanelLoading` while
 `searching && results === null`, and use the returned `error` for a panel-specific failure
 state.
+
+A custom panel's footer has two optional slots on the right and nothing else: `enter` (the
+primary action, always the return key) and `actions` (the contextual menu, always Cmd/Ctrl+J).
+Neither chord is configurable, and there is no children slot — do not try to put a third
+affordance in that corner.
 
 ### Dropdown Menu
 

@@ -1463,30 +1463,63 @@ export function CommandPanelRow({
 }
 
 /** The action bar for a panel page — see `CommandPanelBody` for the expected structure. */
-export function CommandPanelFooter({
-  className,
-  start,
-  children,
-}: {
+export interface CommandPanelFooterProps {
   className?: string;
-  /** Extra affordances on the left, beside the `esc Close` hint — e.g. `CommandPanelActions`. */
-  start?: ReactNode;
-  children?: ReactNode;
-}) {
+  /**
+   * The panel's primary action — the one Enter runs. Its key chip is always the return
+   * glyph: the bar describes the keyboard rather than configuring it, and a footer claiming
+   * some other key would be describing a binding the panel does not have.
+   */
+  enter?: {
+    label: ReactNode;
+    onClick?: () => void;
+    /** `"submit"` submits the panel's form instead of calling `onClick`. @default "button" */
+    type?: "button" | "submit";
+    disabled?: boolean;
+  };
+  /** The contextual actions menu, opened with a fixed Cmd/Ctrl + J. */
+  actions?: CommandPanelActionsProps;
+}
+
+/**
+ * The footer of a custom panel: the escape hint on the left, and at most two things on the
+ * right — the Enter action, then the actions menu.
+ *
+ * Both are named slots rather than children, and that is the point. An open footer grows a
+ * different set of affordances on every panel, each with its own key chip, so the same
+ * palette ends up teaching a different keyboard depending on how deep you have drilled. Two
+ * slots with fixed chords mean the bar can only ever say "return" and "Cmd J", and both
+ * always mean the same thing.
+ *
+ * The menu is rightmost so it hangs off the bottom-right corner as it opens upward.
+ */
+export function CommandPanelFooter({ className, enter, actions }: CommandPanelFooterProps) {
   return (
     <div
       className={cn(
         // Same px/py as the list's hint bar, so both footers are exactly the same height.
-        // `text-2xs` sets the scale for whatever children get passed in.
         "flex shrink-0 items-center justify-between gap-3 border-t border-border px-1.5 py-2 text-2xs",
         className,
       )}
     >
-      <div className="flex items-center gap-3">
-        <EscapeHint />
-        {start}
+      <EscapeHint />
+      <div className="flex items-center gap-2">
+        {enter && (
+          <FooterAction
+            type={enter.type ?? "button"}
+            onClick={enter.onClick}
+            disabled={enter.disabled}
+          >
+            {enter.label}
+            <span className="flex items-center gap-0.5">
+              <Kbd>
+                <CornerDownLeft className="size-2.5" />
+              </Kbd>
+            </span>
+          </FooterAction>
+        )}
+        {actions && <CommandPanelActions {...actions} />}
       </div>
-      <div className="flex items-center gap-2">{children}</div>
     </div>
   );
 }
@@ -1498,8 +1531,6 @@ export interface CommandPanelActionsProps {
   groups?: CommandGroup[];
   /** Trigger label. @default "Actions" */
   label?: string;
-  /** A single key, combined with ⌘/Ctrl, that opens the menu. @default "j" */
-  hotkey?: string;
   searchPlaceholder?: string;
   emptyMessage?: ReactNode;
 }
@@ -1518,11 +1549,11 @@ export interface CommandPanelActionsProps {
  * section labels; each action can also provide an icon, `destructive`, and an executable
  * `keybind` that works while this menu is closed.
  */
-export function CommandPanelActions({
+/** Rendered only by `CommandPanelFooter`'s `actions` slot — see its note on the two slots. */
+function CommandPanelActions({
   items,
   groups,
   label = "Actions",
-  hotkey = "j",
   searchPlaceholder = "Search actions…",
   emptyMessage = "No actions found.",
 }: CommandPanelActionsProps) {
@@ -1619,11 +1650,13 @@ export function CommandPanelActions({
     return () => window.removeEventListener("keydown", onKeyDown, true);
   }, [actionItems, runAction]);
 
-  // ⌘/Ctrl + hotkey. Deliberately not `k` — that's the palette's own global toggle, and
-  // one chord can't mean both "close the palette" and "open this menu".
+  // Cmd/Ctrl + J, and fixed. Deliberately not `k` — that is the palette's own global toggle,
+  // and one chord cannot mean both "close the palette" and "open this menu". Not
+  // configurable either: the chord is printed on the trigger, so panels choosing their own
+  // would have the footer teaching a different keyboard on every page.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key.toLowerCase() === hotkey.toLowerCase() && (event.metaKey || event.ctrlKey)) {
+      if (event.key.toLowerCase() === ACTIONS_HOTKEY && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
         setMenuOpen((current) => !current);
       }
@@ -1635,7 +1668,7 @@ export function CommandPanelActions({
     return () => window.removeEventListener("keydown", onKeyDown, true);
     // `setMenuOpen` is memoised on a `useState` setter from context, so listing it here
     // doesn't churn the listener the way an inline callback would.
-  }, [hotkey, setMenuOpen]);
+  }, [setMenuOpen]);
 
   return (
     <Select<string | null>
@@ -1651,7 +1684,7 @@ export function CommandPanelActions({
         {label}
         <span className="flex items-center gap-0.5">
           <Kbd>⌘</Kbd>
-          <Kbd>{hotkey.toUpperCase()}</Kbd>
+          <Kbd>{ACTIONS_HOTKEY.toUpperCase()}</Kbd>
         </span>
       </SelectTrigger>
       <SelectContent
@@ -1945,6 +1978,9 @@ const ACTION_CLASS = cn(
   "disabled:pointer-events-none disabled:opacity-50",
 );
 
+/** The actions menu's chord, fixed so the footer can print it and always be right. */
+const ACTIONS_HOTKEY = "j";
+
 const INERT_HINT_CLASS =
   "flex items-center gap-1 rounded-xs -my-1 px-1.5 py-1 text-2xs text-subtle-foreground";
 
@@ -2045,27 +2081,18 @@ function Hint({
 }
 
 /**
- * A footer action — the palette is keyboard-first, so this reads as a hint with a key
- * chip ("Save ⏎"), not as a button. The label leads and the key trails, mirroring the
- * `esc Close` hint on the other end of the bar. It's still a real `<button>`, so it
+ * The Enter slot's button. The palette is keyboard-first, so it reads as a hint with a key
+ * chip ("Open" + return) rather than as a button: the label leads and the key trails,
+ * mirroring the escape hint at the other end of the bar. Still a real `<button>`, so it
  * stays clickable and `type="submit"` submits the panel's form.
+ *
+ * Not exported. The footer is the only thing that may put something in that corner, and the
+ * chip it draws is fixed.
  */
-export function CommandPanelAction({
-  keys,
-  children,
-  className,
-  ...props
-}: ComponentProps<"button"> & { keys?: ReactNode[] }) {
+function FooterAction({ children, className, ...props }: ComponentProps<"button">) {
   return (
-    <button type="button" className={cn(ACTION_CLASS, className)} {...props}>
+    <button className={cn(ACTION_CLASS, className)} {...props}>
       {children}
-      {keys && keys.length > 0 && (
-        <span className="flex items-center gap-0.5">
-          {keys.map((key, i) => (
-            <Kbd key={i}>{key}</Kbd>
-          ))}
-        </span>
-      )}
     </button>
   );
 }
