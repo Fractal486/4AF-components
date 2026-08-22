@@ -714,7 +714,7 @@ export function SelectItem({
   }, [register, unregister, value, label]);
 
   const itemClassName = cn(
-    "flex w-full cursor-pointer items-center rounded-xs px-2.5 py-1.5 text-left outline-none",
+    "flex w-full items-center rounded-xs px-2.5 py-1.5 text-left outline-none",
     SIZE[ctx.size].row,
     ctx.multiple ? "gap-2.5" : "gap-2",
     ctx.multiple

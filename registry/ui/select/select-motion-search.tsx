@@ -451,7 +451,7 @@ export function MotionSearchSelectItem({
     <Combobox.Item
       value={value}
       className={cn(
-        "flex cursor-pointer items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
+        "flex items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
         "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
@@ -502,7 +502,7 @@ export function MotionSearchMultiSelectItem({
     <Combobox.Item
       value={value}
       className={cn(
-        "flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 outline-none select-none",
+        "flex items-center gap-2.5 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
         "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",

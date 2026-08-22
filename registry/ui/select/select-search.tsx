@@ -451,7 +451,7 @@ export function SearchSelectItem({
     <Combobox.Item
       value={value}
       className={cn(
-        "flex cursor-pointer items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
+        "flex items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
         // Base UI moves this highlight with the keyboard as well as the pointer; it snaps
@@ -505,7 +505,7 @@ export function SearchMultiSelectItem({
     <Combobox.Item
       value={value}
       className={cn(
-        "flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 outline-none select-none",
+        "flex items-center gap-2.5 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
         "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",

@@ -1078,7 +1078,7 @@ export function SelectItem({
           if (!event.defaultPrevented) setActiveItem(value);
         }}
         className={cn(
-          "flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 outline-none select-none",
+          "flex items-center gap-2.5 rounded-xs px-2.5 py-1.5 outline-none select-none",
           SIZE[size].row,
           "text-muted-foreground",
           !panelSearch && "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
@@ -1121,7 +1121,7 @@ export function SelectItem({
           if (!event.defaultPrevented) setActiveItem(value);
         }}
       className={cn(
-        "flex cursor-pointer items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
+        "flex items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
         // Base UI moves this highlight with the keyboard as well as the pointer; it snaps
