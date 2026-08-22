@@ -118,10 +118,15 @@ const SelectContext = createContext<SelectContextValue>({
 });
 
 const EASE_OUT = [0.16, 1, 0.3, 1] as const;
-// The pane blurs and scales in as one piece — no height unfold, no per-item stagger.
-// Scales from `--transform-origin` (the trigger edge).
-const FADE_HIDDEN = { opacity: 0, scale: 0.98, filter: "blur(4px)" };
+// The panel blurs and scales in from `--transform-origin`, and every select in the family
+// uses these same numbers: 0.95 and a 3px blur entering, a shorter 0.97 and 2px leaving, over
+// `--duration-base` on the expo curve. Three selects sat in one form that scale by different
+// amounts is the kind of difference you feel without being able to name.
+const FADE_HIDDEN = { opacity: 0, scale: 0.95, filter: "blur(3px)" };
 const FADE_SHOW = { opacity: 1, scale: 1, filter: "blur(0px)" };
+// Leaving is its own pose, not the entrance reversed: less travel and less blur, so the panel
+// is gone before it can draw attention to going.
+const FADE_EXIT = { opacity: 0, scale: 0.97, filter: "blur(2px)" };
 
 // A thin custom scrollbar, shown only when the list overflows. Firefox reads the first
 // two properties; WebKit the pseudo-element rules.
@@ -914,7 +919,7 @@ export function SelectContent({
                   ? { opacity: open ? 1 : 0 }
                   : open
                     ? FADE_SHOW
-                    : FADE_HIDDEN
+                    : FADE_EXIT
               }
               transition={reduceMotion ? { duration: 0 } : { duration: 0.2, ease: EASE_OUT }}
             />

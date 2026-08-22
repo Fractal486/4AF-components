@@ -922,6 +922,26 @@
       ]
     },
     {
+      "name": "select-aligned",
+      "type": "registry:ui",
+      "description": "A select that opens on its trigger rather than below it: the panel takes the trigger's width and the selected row lands on the value it replaces, the macOS pop-up button behaviour.",
+      "dependencies": [
+        "@base-ui/react",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/select/select-aligned.tsx",
+          "type": "registry:ui",
+          "target": "@ui/select-aligned.tsx"
+        }
+      ]
+    },
+    {
       "name": "select-motion",
       "type": "registry:ui",
       "description": "A hand-animated select with an unfolding panel. It supports single or multiple selection and optional in-panel search.",

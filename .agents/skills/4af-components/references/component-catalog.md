@@ -45,7 +45,7 @@ These entries install transitively:
 
 ## Installable catalog
 
-The catalog currently contains 43 installable UI items. Verify the count and names with
+The catalog currently contains 44 installable UI items. Verify the count and names with
 `pnpm 4af list` before making registry-wide claims.
 
 ### Actions
@@ -72,6 +72,7 @@ The catalog currently contains 43 installable UI items. Verify the count and nam
 | `radio` | `RadioGroup`, `Radio` | Single-choice selection groups. |
 | `slider` | `Slider` | Numeric input with `bar`, `circle`, and `knob` thumbs, optional ticks/labels, `range` mode with two draggable thumbs, and an opt-in `showValueTooltip` that follows the active thumb during drag. |
 | `select` | `Select`, trigger/content/item parts, `SelectSortTrigger` | Base UI single/multi select, optional panel search and clear footer, compact sort/filter trigger. |
+| `select-aligned` | `AlignedSelect` and trigger/content/item parts | A select that opens *on* its trigger: panel at the trigger's width, selected row landing on the value it replaces, `ChevronsUpDown` glyph. The macOS pop-up button. |
 | `select-search` | `SearchSelect` and input/content/item parts | Editable Combobox trigger with filtering and single/multi selection. |
 | `select-motion` | `Select` and trigger/content/item parts | Button-triggered select with a hand-animated unfolding panel and optional panel search. |
 | `select-motion-search` | `MotionSearchSelect` and parts | Editable Combobox whose panel unfolds from the field. |
@@ -186,12 +187,19 @@ the pill FLIP-animates as the row moves.
 | Install name | Trigger | Panel entrance | Search location |
 | --- | --- | --- | --- |
 | `select` | Button/field | Scale, blur, fade | Optional inside panel |
+| `select-aligned` | Button/field | Fade, opening *over* the trigger | None |
 | `select-search` | Editable Combobox | Standard positioned panel | Trigger field |
 | `select-motion` | Button/field | Unfolding panel | Optional inside panel |
 | `select-motion-search` | Editable Combobox | Unfolds from field | Trigger field |
 
 All support single and multi selection (multi uses Checkbox) and take `size="sm" | "md"`,
-default `sm`. Inside a Command Palette keep `sm`.
+default `sm`. Inside a Command Palette keep `sm`. `select-aligned` is single selection only.
+
+`select-aligned` overlaps the trigger through Base UI's `alignItemWithTrigger`, which applies
+to pointer input only and switches off when there is no room — it falls back to an ordinary
+dropdown, so do not try to force it. Row padding plus panel padding equals the trigger's
+padding, and that is what lines the selected label up with the value it covers; restyle one and
+restyle all three.
 
 For an icon on a closed trigger before the panel has ever opened:
 

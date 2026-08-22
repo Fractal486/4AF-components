@@ -1,10 +1,11 @@
 ---
 title: Select
-description: Four single and multi-select models with button or editable triggers and two motion styles.
+description: Five select models with button, editable, or trigger-overlapping panels and two motion styles.
 ---
 
 <Cards>
   <Card title="Select" description="A composable Base UI select with rich items, sizing, and positioning options." href="/docs/select" />
+  <Card title="Select Aligned" description="A select whose panel opens on the trigger, with the selected row landing on the value it replaces." href="/docs/select-aligned" />
   <Card title="Select Search" description="A searchable Base UI select for larger option sets." href="/docs/select-search" />
   <Card title="Select Motion" description="A single or multi-select with an unfolding panel and optional in-panel search." href="/docs/select-motion" />
   <Card title="Select Motion Search" description="A searchable Combobox whose panel unfolds from the input field." href="/docs/select-motion-search" />
@@ -15,12 +16,15 @@ description: Four single and multi-select models with button or editable trigger
 | Component | Trigger model | Panel motion | Search model |
 | --- | --- | --- | --- |
 | Select | Button or field trigger | Scale, blur, and fade | Optional search inside the panel |
+| Select Aligned | Button or field trigger | Opens *on* the trigger, scaling from the selected row | None |
 | Select Search | Editable Combobox input | Standard positioned entrance | The trigger is the search field |
 | Select Motion | Button or field trigger | Hand-animated unfolding panel | Optional search inside the panel |
 | Select Motion Search | Editable Combobox input | Unfolds from the field | The trigger is the search field |
 
-All four support single and multiple selection. Multi-selection uses the Checkbox component.
-The compact `SelectSortTrigger` belongs to the base Select item.
+All support single and multiple selection except Select Aligned, which is single only — its
+panel is positioned by the selected row, and there is no single row to align to once several
+are chosen. Multi-selection uses the Checkbox component. The compact `SelectSortTrigger` belongs
+to the base Select item.
 
 Every implementation accepts `size="sm" | "md"`, defaulting to `sm`. The compact size is 32px
 with 12px text and 14px glyphs; `md` is 36px and matches a medium Button and Input in form rows.

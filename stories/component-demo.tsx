@@ -36,6 +36,7 @@ export type ComponentDemoName =
   | "radio"
   | "select"
   | "select-sort"
+  | "select-aligned"
   | "select-motion"
   | "select-motion-search"
   | "select-search"
@@ -137,6 +138,7 @@ const demos: Record<Exclude<ComponentDemoName, "ascii-loader">, ComponentType> =
   radio: lazyEntry(async () => (await import("@/inspector/entries/radio")).radioEntry),
   select: lazyEntry(async () => (await import("@/inspector/entries/select")).selectEntry),
   "select-sort": lazyEntry(async () => (await import("@/inspector/entries/select-sort")).selectSortEntry),
+  "select-aligned": lazyEntry(async () => (await import("@/inspector/entries/select-aligned")).selectAlignedEntry),
   "select-motion": lazyEntry(async () => (await import("@/inspector/entries/select-motion")).selectMotionEntry),
   "select-motion-search": lazyEntry(async () => (await import("@/inspector/entries/select-motion-search")).selectMotionSearchEntry),
   "select-search": lazyEntry(async () => (await import("@/inspector/entries/select-search")).selectSearchEntry),

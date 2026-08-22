@@ -207,6 +207,23 @@ import { Button } from "@/components/ui/button";
   <SelectItem value="apple">Apple</SelectItem>
 </Select>`,
   },
+  "select-aligned": {
+    importName: "AlignedSelect",
+    usage: `import {
+  AlignedSelect,
+  AlignedSelectContent,
+  AlignedSelectItem,
+  AlignedSelectTrigger,
+} from "@/components/ui/select-aligned";
+
+<AlignedSelect value={city} onValueChange={setCity}>
+  <AlignedSelectTrigger placeholder="Pick a city" />
+  <AlignedSelectContent>
+    <AlignedSelectItem value="Lisbon">Lisbon</AlignedSelectItem>
+    <AlignedSelectItem value="Oslo">Oslo</AlignedSelectItem>
+  </AlignedSelectContent>
+</AlignedSelect>`,
+  },
   "select-motion": {
     importName: "Select",
     usage: `import { Select } from "@/components/ui/select-motion";
