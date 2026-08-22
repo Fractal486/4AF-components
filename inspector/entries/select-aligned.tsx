@@ -4,6 +4,8 @@ import { useState } from "react";
 import {
   AlignedSelect,
   AlignedSelectContent,
+  AlignedSelectGroup,
+  AlignedSelectGroupLabel,
   AlignedSelectItem,
   AlignedSelectTrigger,
 } from "@/registry/ui/select/select-aligned";
@@ -29,23 +31,43 @@ const CITIES = [
   "Vienna",
 ];
 
+/** The same cities, grouped, so the sections have something to divide. */
+const REGIONS = [
+  { label: "Northern", cities: ["Copenhagen", "Dublin", "Oslo", "Reykjavík"] },
+  { label: "Central", cities: ["Amsterdam", "Berlin", "Prague", "Vienna"] },
+  { label: "Southern", cities: ["Istanbul", "Lisbon"] },
+];
+
 export const selectAlignedEntry = defineEntry({
   slug: "select-aligned",
   name: "Aligned",
   controls: {
     size: select(SIZES, "sm"),
+    sections: bool(false, "Sections"),
+    searchable: bool(false, "Search field"),
     disabled: bool(false, "Disabled"),
   },
-  render({ size, disabled }) {
-    return <AlignedSelectDemo size={size} disabled={disabled} />;
+  render({ size, sections, searchable, disabled }) {
+    return (
+      <AlignedSelectDemo
+        size={size}
+        sections={sections}
+        searchable={searchable}
+        disabled={disabled}
+      />
+    );
   },
 });
 
 function AlignedSelectDemo({
   size,
+  sections,
+  searchable,
   disabled,
 }: {
   size: (typeof SIZES)[number];
+  sections: boolean;
+  searchable: boolean;
   disabled: boolean;
 }) {
   const [value, setValue] = useState<string | null>("Istanbul");
@@ -60,12 +82,23 @@ function AlignedSelectDemo({
         items={CITIES.map((city) => ({ value: city, label: city }))}
       >
         <AlignedSelectTrigger placeholder="Pick a city" />
-        <AlignedSelectContent>
-          {CITIES.map((city) => (
-            <AlignedSelectItem key={city} value={city}>
-              {city}
-            </AlignedSelectItem>
-          ))}
+        <AlignedSelectContent searchable={searchable}>
+          {sections
+            ? REGIONS.map((region) => (
+                <AlignedSelectGroup key={region.label}>
+                  <AlignedSelectGroupLabel>{region.label}</AlignedSelectGroupLabel>
+                  {region.cities.map((city) => (
+                    <AlignedSelectItem key={city} value={city}>
+                      {city}
+                    </AlignedSelectItem>
+                  ))}
+                </AlignedSelectGroup>
+              ))
+            : CITIES.map((city) => (
+                <AlignedSelectItem key={city} value={city}>
+                  {city}
+                </AlignedSelectItem>
+              ))}
         </AlignedSelectContent>
       </AlignedSelect>
     </div>

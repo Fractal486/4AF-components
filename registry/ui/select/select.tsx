@@ -946,7 +946,16 @@ export function SelectContent({
             <BaseSelect.List ref={listRef}>{children}</BaseSelect.List>
           </div>
           {noResults && (
-            <div className={cn("m-1 flex h-8 items-center justify-center px-2.5 text-center text-muted-foreground", SIZE[size].row)}>
+            <div
+              // One row tall, exactly: `m-1` mirrors the list's `p-1` and `py-1.5` is the
+              // row's own vertical padding, so an empty panel and a panel holding a single
+              // result come to the same height at every size. A fixed `h-8` only matched at
+              // `md` and stood 4px proud at `sm`.
+              className={cn(
+                "m-1 flex items-center justify-center px-2.5 py-1.5 text-center text-muted-foreground",
+                SIZE[size].row,
+              )}
+            >
               {emptyMessage}
             </div>
           )}

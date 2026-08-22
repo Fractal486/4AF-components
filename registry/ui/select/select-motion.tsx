@@ -639,7 +639,14 @@ export function SelectContent({
           {children}
         </motion.div>
         {noResults && (
-          <div className={cn("m-1 flex h-8 items-center justify-center px-2.5 text-center text-muted-foreground", SIZE[ctx.size].row)}>
+          <div
+            // One row tall, exactly — `m-1` mirrors the list's `p-1` and `py-1.5` is the
+            // row's own vertical padding. See the note in `select.tsx`.
+            className={cn(
+              "m-1 flex items-center justify-center px-2.5 py-1.5 text-center text-muted-foreground",
+              SIZE[ctx.size].row,
+            )}
+          >
             {emptyMessage}
           </div>
         )}

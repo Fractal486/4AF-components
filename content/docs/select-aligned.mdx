@@ -9,7 +9,7 @@ description: A select whose panel opens on the trigger, with the selected row la
 ## API
 
 **Main exports:** `AlignedSelect`, `AlignedSelectTrigger`, `AlignedSelectContent`,
-`AlignedSelectItem`
+`AlignedSelectItem`, `AlignedSelectGroup`, `AlignedSelectGroupLabel`
 
 A single-select whose panel opens over the trigger at the trigger's width, positioned so the
 selected row lands on the value it replaces and scaling out of that row. The trigger carries a
@@ -26,6 +26,34 @@ Row labels line up with the trigger's value because the panel's padding plus a r
 equals the trigger's padding. Restyle one and restyle the others, or the selected label lands
 beside the value it should cover. The selected check occupies a reserved slot at the end of a
 row for the same reason; a leading check would indent every label.
+
+## Sections
+
+Wrap rows in `AlignedSelectGroup` with an `AlignedSelectGroupLabel` for a dimmed heading. Base
+UI ties the heading to its own options, and a section hides itself once a search has filtered
+every row out of it.
+
+```tsx
+<AlignedSelectGroup>
+  <AlignedSelectGroupLabel>Northern</AlignedSelectGroupLabel>
+  <AlignedSelectItem value="Oslo">Oslo</AlignedSelectItem>
+</AlignedSelectGroup>
+```
+
+## Search
+
+Add `searchable` to `AlignedSelectContent` for a search field pinned above the list. It takes
+focus when the panel opens; the arrow keys move into the list, and Enter takes the top match.
+The query clears when the panel closes.
+
+Filtered rows leave the list rather than hiding, so the panel resizes to what is left. Rows
+match on their text, which only works when the children are a plain string — give a row built
+from elements an explicit `searchValue`. `emptyMessage` replaces the list when a query
+matches nothing, and `searchPlaceholder` and `searchLabel` name the field.
+
+The panel is positioned by the selected row, so a pinned header sits that far above the
+trigger. With a selection deep in a long list there may be no room for the overlap, in which
+case the panel opens as an ordinary dropdown.
 
 ## Sizing
 

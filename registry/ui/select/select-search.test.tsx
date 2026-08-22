@@ -110,7 +110,11 @@ describe("Search Select", () => {
     await user.click(input);
     await user.type(input, "pear");
 
-    expect(await screen.findByText("No fruit found.")).toHaveClass("m-1", "h-8");
+    // The row's own vertical padding inside a margin mirroring the list's, rather than a
+    // fixed height — that is what makes it one row tall at `sm` as well as `md`.
+    const empty = await screen.findByText("No fruit found.");
+    expect(empty).toHaveClass("m-1", "py-1.5");
+    expect(empty).not.toHaveClass("h-8");
     expect(screen.getByRole("listbox")).toHaveClass("empty:hidden");
   });
 

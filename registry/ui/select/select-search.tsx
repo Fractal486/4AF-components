@@ -377,7 +377,14 @@ export function SearchSelectContent({
           {/* Base UI keeps this div mounted and only nulls its children when there are
               matches; `empty:hidden` collapses it then, so it doesn't reserve blank space
               above the results. */}
-          <Combobox.Empty className={cn("m-1 flex h-8 items-center justify-center px-2.5 text-center text-muted-foreground empty:hidden", SIZE[size].row)}>
+          <Combobox.Empty
+            // One row tall, exactly — `m-1` mirrors the list's `p-1` and `py-1.5` is the
+            // row's own vertical padding. See the note in `select.tsx`.
+            className={cn(
+              "m-1 flex items-center justify-center px-2.5 py-1.5 text-center text-muted-foreground empty:hidden",
+              SIZE[size].row,
+            )}
+          >
             {emptyMessage}
           </Combobox.Empty>
           <Combobox.List

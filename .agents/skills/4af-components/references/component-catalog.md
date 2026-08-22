@@ -72,7 +72,7 @@ The catalog currently contains 44 installable UI items. Verify the count and nam
 | `radio` | `RadioGroup`, `Radio` | Single-choice selection groups. |
 | `slider` | `Slider` | Numeric input with `bar`, `circle`, and `knob` thumbs, optional ticks/labels, `range` mode with two draggable thumbs, and an opt-in `showValueTooltip` that follows the active thumb during drag. |
 | `select` | `Select`, trigger/content/item parts, `SelectSortTrigger` | Base UI single/multi select, optional panel search and clear footer, compact sort/filter trigger. |
-| `select-aligned` | `AlignedSelect` and trigger/content/item parts | A select that opens *on* its trigger: panel at the trigger's width, selected row landing on the value it replaces, `ChevronsUpDown` glyph. The macOS pop-up button. |
+| `select-aligned` | `AlignedSelect` and trigger/content/item/group parts | A select that opens *on* its trigger: panel at the trigger's width, selected row landing on the value it replaces, `ChevronsUpDown` glyph. The macOS pop-up button. |
 | `select-search` | `SearchSelect` and input/content/item parts | Editable Combobox trigger with filtering and single/multi selection. |
 | `select-motion` | `Select` and trigger/content/item parts | Button-triggered select with a hand-animated unfolding panel and optional panel search. |
 | `select-motion-search` | `MotionSearchSelect` and parts | Editable Combobox whose panel unfolds from the field. |
@@ -187,13 +187,15 @@ the pill FLIP-animates as the row moves.
 | Install name | Trigger | Panel entrance | Search location |
 | --- | --- | --- | --- |
 | `select` | Button/field | Scale, blur, fade | Optional inside panel |
-| `select-aligned` | Button/field | Fade, opening *over* the trigger | None |
 | `select-search` | Editable Combobox | Standard positioned panel | Trigger field |
+| `select-aligned` | Button/field | Fade, opening *over* the trigger | Optional pinned field |
 | `select-motion` | Button/field | Unfolding panel | Optional inside panel |
 | `select-motion-search` | Editable Combobox | Unfolds from field | Trigger field |
 
 All support single and multi selection (multi uses Checkbox) and take `size="sm" | "md"`,
-default `sm`. Inside a Command Palette keep `sm`. `select-aligned` is single selection only.
+default `sm`. Inside a Command Palette keep `sm`. `select-aligned` is single selection only. It takes optional sections
+(`AlignedSelectGroup` + `AlignedSelectGroupLabel`, which hide themselves when a search empties
+them) and an optional pinned search field (`searchable` on the content).
 
 `select-aligned` overlaps the trigger through Base UI's `alignItemWithTrigger`, which applies
 to pointer input only and switches off when there is no room — it falls back to an ordinary

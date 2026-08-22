@@ -31,7 +31,7 @@ export const COMPONENT_FAMILIES = [
   {
     name: "Select",
     index: "select-overview",
-    slugs: ["select", "select-aligned", "select-search", "select-motion", "select-motion-search"],
+    slugs: ["select", "select-search", "select-aligned", "select-motion", "select-motion-search"],
   },
   { name: "Selection Toolbar", slugs: ["selection-toolbar"] },
   { name: "Separator", slugs: ["separator"] },
@@ -76,8 +76,8 @@ export const COMPONENT_CATEGORIES = [
       "radio",
       "slider",
       "select",
-      "select-aligned",
       "select-search",
+      "select-aligned",
       "select-motion",
       "select-motion-search",
     ],

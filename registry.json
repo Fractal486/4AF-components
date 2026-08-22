@@ -924,14 +924,15 @@
     {
       "name": "select-aligned",
       "type": "registry:ui",
-      "description": "A select that opens on its trigger rather than below it: the panel takes the trigger's width and the selected row lands on the value it replaces, the macOS pop-up button behaviour.",
+      "description": "A select that opens on its trigger rather than below it: the panel takes the trigger's width and the selected row lands on the value it replaces, the macOS pop-up button behaviour. Optional dimmed sections and a pinned in-panel search field.",
       "dependencies": [
         "@base-ui/react",
         "lucide-react"
       ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/input.json"
       ],
       "files": [
         {
