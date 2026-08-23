@@ -60,10 +60,17 @@ interface AlignedSelectContextValue {
   query: string;
   setQuery: (query: string) => void;
   matches: (text: string) => boolean;
-  registerOption: (value: unknown, text: string) => void;
+  registerOption: (value: unknown, text: string, disabled: boolean) => void;
   unregisterOption: (value: unknown) => void;
-  /** The first option still passing the query, or `undefined` once a search empties the list. */
-  firstVisible: unknown;
+  /** Whether any option still passes the query. `false` is what puts up the empty message. */
+  hasMatches: boolean;
+  /**
+   * The row the panel opens ready on: the current selection while the list is whole, the
+   * first selectable option once a query narrows it. Boxed so an option valued `null` or
+   * `undefined` can still be it, and `null` for "none" — which a query matching only disabled
+   * rows can produce.
+   */
+  openingItem: { value: unknown } | null;
 }
 
 const AlignedSelectContext = createContext<AlignedSelectContextValue>({
@@ -74,8 +81,17 @@ const AlignedSelectContext = createContext<AlignedSelectContextValue>({
   matches: () => true,
   registerOption: () => {},
   unregisterOption: () => {},
-  firstVisible: undefined,
+  hasMatches: true,
+  openingItem: null,
 });
+
+/**
+ * The row the panel is offering — `data-panel-active`, the same active-row state the other
+ * selects, the searchable menu and the palette carry. Provided by the content, because only
+ * it knows whether the field still holds the keyboard; read by every option, so the row that
+ * looks taken is the row Enter takes.
+ */
+const AlignedSelectActiveContext = createContext<{ value: unknown } | null>(null);
 
 /** Moves focus out of the search field and into the list, where Base UI's roving takes over. */
 function focusEdgeOption(list: HTMLElement | null, edge: "first" | "last") {
@@ -96,26 +112,36 @@ export interface AlignedSelectProps<Value>
   size?: AlignedSelectSize;
 }
 
+interface RegisteredOption {
+  text: string;
+  disabled: boolean;
+}
+
 export function AlignedSelect<Value>({
   size = "sm",
   onOpenChange,
   onOpenChangeComplete,
+  value,
+  defaultValue,
+  onValueChange,
   ...props
 }: AlignedSelectProps<Value>) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [optionTexts, setOptionTexts] = useState<Map<unknown, string>>(new Map());
+  const [options, setOptions] = useState<Map<unknown, RegisteredOption>>(new Map());
 
   // The same shape the base Select uses: a Map in state whose setter bails out when nothing
   // changed, so an item re-registering its own unchanged text cannot loop.
-  const registerOption = useCallback((value: unknown, text: string) => {
-    setOptionTexts((current) =>
-      current.get(value) === text ? current : new Map(current).set(value, text),
-    );
+  const registerOption = useCallback((value: unknown, text: string, disabled: boolean) => {
+    setOptions((current) => {
+      const existing = current.get(value);
+      if (existing?.text === text && existing.disabled === disabled) return current;
+      return new Map(current).set(value, { text, disabled });
+    });
   }, []);
 
   const unregisterOption = useCallback((value: unknown) => {
-    setOptionTexts((current) => {
+    setOptions((current) => {
       if (!current.has(value)) return current;
       const next = new Map(current);
       next.delete(value);
@@ -131,10 +157,33 @@ export function AlignedSelect<Value>({
     [query],
   );
 
-  const firstVisible = useMemo(() => {
-    for (const [value, text] of optionTexts) if (matches(text)) return value;
-    return undefined;
-  }, [optionTexts, matches]);
+  // Base UI owns the value; this mirrors it only to work out which row the panel opens on.
+  const [uncontrolledValue, setUncontrolledValue] = useState<unknown>(() => defaultValue ?? null);
+  const selected = value !== undefined ? value : uncontrolledValue;
+
+  // Registration order is mount order, so the first entry that survives the query is the top
+  // row of the panel. Disabled rows count towards "the list isn't empty" but can't be offered.
+  //
+  // A select opens on its own answer: the current selection, which is also the row the panel
+  // is physically sitting on. Only once a query narrows the list does the top match take over
+  // — by then the selection may not even be in the list, and what was typed is the better
+  // guess at what Enter should take.
+  const { hasMatches, openingItem } = useMemo(() => {
+    const searching = query.trim() !== "";
+    let found = false;
+    let first: { value: unknown } | null = null;
+    let chosen: { value: unknown } | null = null;
+    for (const [optionValue, option] of options) {
+      if (!matches(option.text)) continue;
+      found = true;
+      if (option.disabled) continue;
+      if (first === null) first = { value: optionValue };
+      if (chosen === null && !searching && Object.is(optionValue, selected)) {
+        chosen = { value: optionValue };
+      }
+    }
+    return { hasMatches: found, openingItem: chosen ?? first };
+  }, [matches, options, query, selected]);
 
   const context = useMemo<AlignedSelectContextValue>(
     () => ({
@@ -145,9 +194,10 @@ export function AlignedSelect<Value>({
       matches,
       registerOption,
       unregisterOption,
-      firstVisible,
+      hasMatches,
+      openingItem,
     }),
-    [size, open, query, matches, registerOption, unregisterOption, firstVisible],
+    [size, open, query, matches, registerOption, unregisterOption, hasMatches, openingItem],
   );
 
   return (
@@ -156,6 +206,12 @@ export function AlignedSelect<Value>({
         onOpenChange={(next, details) => {
           setOpen(next);
           onOpenChange?.(next, details);
+        }}
+        value={value}
+        defaultValue={defaultValue}
+        onValueChange={(next, details) => {
+          setUncontrolledValue(next);
+          onValueChange?.(next, details);
         }}
         // A query belongs to one visit to the panel — but it is cleared *after* the exit, not
         // on the way into it. Clearing on close puts every filtered row back first, so the
@@ -223,6 +279,11 @@ export interface AlignedSelectContentProps extends ComponentProps<typeof BaseSel
   searchable?: boolean;
   /** Shown in place of the list when a query matches nothing. */
   emptyMessage?: ReactNode;
+  /**
+   * Make the first row active when a searchable panel opens, so Enter has an answer without
+   * an arrow press. Turn it off for menu-like uses. @default true
+   */
+  autoFocusFirstItem?: boolean;
   /** Names the search field for screen readers. */
   searchLabel?: string;
   /** Placeholder for the search field. */
@@ -238,16 +299,39 @@ export function AlignedSelectContent({
   className,
   searchable = false,
   emptyMessage = "No results.",
+  autoFocusFirstItem = true,
   searchLabel = "Search options",
   searchPlaceholder = "Search…",
   positionerProps,
   children,
   ...props
 }: AlignedSelectContentProps) {
-  const { size, open, query, setQuery, firstVisible } = useContext(AlignedSelectContext);
+  const { size, open, query, setQuery, hasMatches, openingItem } =
+    useContext(AlignedSelectContext);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const noResults = searchable && query.trim() !== "" && firstVisible === undefined;
+  const noResults = searchable && query.trim() !== "" && !hasMatches;
+
+  // The field holds the keyboard until an arrow hands it to the list, and only until then can
+  // it offer a row. Once Base UI's roving highlight is live, a second lit row would be a lie
+  // about what Enter does.
+  // Adjusted during render rather than in an effect, the same way the base Select drops its
+  // active row on close: an effect would leave one frame with the panel reopened and the
+  // previous visit's list focus still standing.
+  const [listFocused, setListFocused] = useState(false);
+  const [wasOpen, setWasOpen] = useState(open);
+  if (wasOpen !== open) {
+    setWasOpen(open);
+    if (!open) setListFocused(false);
+  }
+
+  // A panel never sits with nothing ready: a row is active from the moment it opens, before
+  // anything is typed, so Enter always has an answer and the arrows start somewhere visible.
+  // See `openingItem` for which row that is.
+  //
+  // Searchable panels only. Without a field the keyboard is already in the list and Base UI's
+  // own highlight is on the selected row, which is the row this panel is sitting on.
+  const activeItem = searchable && autoFocusFirstItem && !listFocused ? openingItem : null;
 
   // Base UI opens by focusing the selected row, which is right without a search field and
   // wrong with one — the caret has to be where the typing is going to go.
@@ -303,6 +387,7 @@ export function AlignedSelectContent({
                 variant="plain"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
+                onFocus={() => setListFocused(false)}
                 onKeyDown={(event) => {
                   // The arrows hand focus to the list and Base UI's roving takes it from
                   // there, so Enter lands on a row that genuinely has focus rather than one
@@ -312,15 +397,17 @@ export function AlignedSelectContent({
                     focusEdgeOption(listRef.current, event.key === "ArrowDown" ? "first" : "last");
                     return;
                   }
-                  // Enter without arrowing first takes the top match — the row the list is
-                  // showing as the answer to what has been typed.
+                  // Enter without arrowing first takes the active row — read off the DOM by
+                  // the attribute that paints it, so what the user sees offered and what gets
+                  // taken can't come apart.
                   if (event.key === "Enter") {
-                    const first = listRef.current?.querySelector<HTMLElement>(
-                      '[role="option"]:not([data-disabled])',
-                    );
-                    if (first) {
+                    const list = listRef.current;
+                    const target =
+                      list?.querySelector<HTMLElement>('[role="option"][data-panel-active]') ??
+                      list?.querySelector<HTMLElement>('[role="option"]:not([data-disabled])');
+                    if (target) {
                       event.preventDefault();
-                      first.click();
+                      target.click();
                     }
                     return;
                   }
@@ -358,13 +445,18 @@ export function AlignedSelectContent({
               its own number governs; an 18rem ceiling here would fight it. */}
           <BaseSelect.List
             ref={listRef}
+            // An arrow key focuses a row, and from that moment the list's own highlight is the
+            // only one — capture, because the focus lands on the row, not on the list.
+            onFocusCapture={() => setListFocused(true)}
             className={cn(
               "max-h-[var(--available-height)] overflow-y-auto overscroll-contain p-1",
               SCROLLBAR,
               noResults && "hidden",
             )}
           >
-            {children}
+            <AlignedSelectActiveContext.Provider value={activeItem}>
+              {children}
+            </AlignedSelectActiveContext.Provider>
           </BaseSelect.List>
 
           {noResults && (
@@ -452,13 +544,15 @@ export function AlignedSelectItem({
   ...props
 }: AlignedSelectItemProps) {
   const { size, matches, registerOption, unregisterOption } = useContext(AlignedSelectContext);
+  const activeItem = useContext(AlignedSelectActiveContext);
   const text = searchValue ?? (typeof children === "string" ? children : String(value));
   const filteredOut = !matches(text);
+  const panelActive = activeItem !== null && Object.is(activeItem.value, value);
 
   useEffect(() => {
-    registerOption(value, text);
+    registerOption(value, text, disabled);
     return () => unregisterOption(value);
-  }, [registerOption, unregisterOption, value, text]);
+  }, [registerOption, unregisterOption, value, text, disabled]);
 
   // Unmounted rather than hidden, and the difference is the panel's height. In aligned mode
   // Base UI measures the list and writes an inline height so the selected row can sit on the
@@ -475,10 +569,17 @@ export function AlignedSelectItem({
       data-slot="aligned-select-item"
       value={value}
       disabled={disabled}
+      // Base UI's `data-highlighted` belongs to the list's roving focus, which a panel whose
+      // keyboard is in the search field never has. `data-panel-active` is the library's own
+      // active row — the same attribute the other selects, the searchable menu and the
+      // palette carry — wearing the same fill, so "what Enter takes" reads identically
+      // wherever the keyboard happens to be.
+      data-panel-active={panelActive || undefined}
       className={cn(
         "flex items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
+        "data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
         "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
         "data-[selected]:text-foreground",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",

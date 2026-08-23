@@ -114,6 +114,34 @@ function useSelectContext(component: string) {
   return ctx;
 }
 
+function panelOptions(list: HTMLElement) {
+  return Array.from(list.querySelectorAll<HTMLElement>('[role="option"]')).filter(
+    (option) =>
+      !option.hidden &&
+      option.getAttribute("aria-disabled") !== "true" &&
+      !(option instanceof HTMLButtonElement && option.disabled),
+  );
+}
+
+/**
+ * The row a panel opens on: the most recent of the selected values that is still in the list,
+ * and the first row when nothing is selected or a query has filtered the selection away.
+ * Most recent rather than topmost because that is how Base UI's Combobox resolves it, and all
+ * five selects open on the same row.
+ */
+function focusOpeningOption(list: HTMLElement | null, values: readonly string[]) {
+  if (!list) return undefined;
+
+  const options = panelOptions(list);
+  let option: HTMLElement | undefined;
+  for (let index = values.length - 1; index >= 0 && !option; index -= 1) {
+    option = options.find((candidate) => candidate.dataset.selectValue === values[index]);
+  }
+  option ??= options[0];
+  option?.focus();
+  return option;
+}
+
 function focusPanelOption(
   list: HTMLElement | null,
   current: HTMLElement | null,
@@ -121,12 +149,7 @@ function focusPanelOption(
 ) {
   if (!list) return undefined;
 
-  const options = Array.from(list.querySelectorAll<HTMLElement>('[role="option"]')).filter(
-    (option) =>
-      !option.hidden &&
-      option.getAttribute("aria-disabled") !== "true" &&
-      !(option instanceof HTMLButtonElement && option.disabled),
-  );
+  const options = panelOptions(list);
   const currentIndex = current ? options.indexOf(current) : -1;
   const nextIndex =
     direction === "next"
@@ -472,17 +495,18 @@ export function SelectContent({
   const [height, setHeight] = useState(0);
   const [measuredEmpty, setMeasuredEmpty] = useState(false);
   const open = ctx.open;
-  const { setActiveItem, setPlacement, searchQuery } = ctx;
+  const { setActiveItem, setPlacement, searchQuery, values } = ctx;
 
-  // Unlike the Base UI popup, this inline panel does not manage an active row for us.
-  // Always mark the first visible option active; searchable panels then return DOM focus
-  // to their input so typing remains immediate.
+  // Unlike the Base UI popup, this inline panel does not manage an active row for us. A panel
+  // never opens with nothing ready: it opens on the current selection, and on its first row
+  // when there is none or when a query has narrowed the list past it. Searchable panels then
+  // return DOM focus to their input so typing remains immediate.
   useLayoutEffect(() => {
     if (!open) return;
-    const option = focusPanelOption(listRef.current, null, "next");
+    const option = focusOpeningOption(listRef.current, searchQuery.trim() === "" ? values : []);
     setActiveItem(option?.dataset.selectValue);
     if (searchable) searchRef.current?.focus();
-  }, [open, searchable, searchQuery, setActiveItem]);
+  }, [open, searchable, searchQuery, setActiveItem, values]);
 
   // Whether the filter emptied the list can only be answered by the DOM — Base UI hides
   // the rows itself, so there's nothing in React state to count. That measurement is a

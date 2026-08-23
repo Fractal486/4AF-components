@@ -91,6 +91,23 @@ worth reusing; a component that skips a line here is a component we'll rewrite l
 - **State on the element.** `data-variant`, `data-loading`, `data-state`. Styling and tests
   hook off attributes, not off conditional `className` strings.
 - **Controlled and uncontrolled** both work (`value` / `defaultValue` / `onValueChange`).
+- **A list panel never opens with nothing ready.** Any panel of rows — select, searchable
+  menu, command palette — marks a row the moment it opens, before anything is typed, so Enter
+  always has an answer and the arrows always start somewhere visible. Nobody presses Down to
+  get out of a search field. The row is the **current selection** where there is one, so
+  reopening a select on its value and pressing Enter confirms that value rather than quietly
+  moving it to the top of the list; otherwise it's the **first row**. With several rows chosen
+  it's the **most recent** of them — that is how Base UI's Combobox resolves it internally
+  (`selectedIndex` comes off the last entry of the value array), and the hand-rolled selects
+  follow it so all five open on the same row. A query overrides both:
+  once the list is narrowed, the top match is the better guess at what Enter should take, and
+  the selection may not even be in the list any more. The mark is `data-panel-active`, or Base
+  UI's `data-highlighted` where the primitive owns the highlight — and there
+  `autoHighlight="always"` pins row one unconditionally, so it's for the *nothing selected*
+  case only; the plain mode restores the selected row and still jumps to the top match on
+  every keystroke. Pair it with `keepHighlight`, or the pointer merely leaving the panel clears
+  the active row and `autoHighlight` re-aims Enter at row one.
+  `autoFocusFirstItem={false}` is the opt-out, for menu-like uses.
 - **Motion is compositor-only.** Animate `transform`/`scale`, `opacity`, `filter`,
   `clip-path`. Never `width`, `height`, `top`, `left` — those relayout every frame.
 - **Name the properties you transition.** `transition-[scale,opacity]`, never bare

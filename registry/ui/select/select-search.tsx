@@ -49,8 +49,6 @@ const FADE_EXIT = { opacity: 0, scale: 0.97, filter: "blur(2px)" };
 const SCROLLBAR =
   "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground";
 
-const EMPTY_ITEMS: readonly never[] = [];
-
 /**
  * The two sizes, mirroring Button. `sm` (32px) is the compact default; `md` (36px) matches
  * Button's `md` and the Input for form rows. The size flows through context so the input
@@ -127,6 +125,9 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
   items,
   iconForValue,
   size = "sm",
+  value,
+  defaultValue,
+  onValueChange,
   ...props
 }: SearchSelectProps<Value, Multiple>) {
   const [uncontrolled, setUncontrolled] = useState(defaultOpen ?? false);
@@ -165,25 +166,20 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
         : (iconForValue?.(value as Value) ?? iconFromValue(value))),
     [iconForValue, icons],
   );
-  const [closedRegistryCleared, setClosedRegistryCleared] = useState(
-    () => !isOpen && items !== undefined,
+  // Base UI owns the value; this mirrors it only to answer "is anything chosen", which is
+  // what picks the highlight mode below.
+  const [uncontrolledValue, setUncontrolledValue] = useState<unknown>(() => defaultValue ?? null);
+  const selected = value !== undefined ? value : uncontrolledValue;
+  const hasSelection = Array.isArray(selected) ? selected.length > 0 : selected != null;
+  const handleValueChange = useCallback<
+    NonNullable<SearchSelectProps<Value, Multiple>["onValueChange"]>
+  >(
+    (next, details) => {
+      setUncontrolledValue(next);
+      onValueChange?.(next, details);
+    },
+    [onValueChange],
   );
-
-  // Adjusted during render, and it has to be: `visibleItems` below reads this in the same
-  // pass. From an effect the latch would still be set on the render that opens the panel,
-  // so the list would mount empty for a frame and only fill on the following render.
-  const [wasOpen, setWasOpen] = useState(isOpen);
-  if (wasOpen !== isOpen) {
-    setWasOpen(isOpen);
-    if (isOpen) setClosedRegistryCleared(false);
-  }
-
-  // Base UI normally restores the selected item as the active row. Search selects instead
-  // start at the first visible match, so clear that lookup after the close transition. The
-  // actual items remain available to the exiting panel and return in the same render that
-  // opens the list.
-  const visibleItems =
-    !isOpen && closedRegistryCleared && items !== undefined ? EMPTY_ITEMS : items;
 
   const handleOpenChange = useCallback<
     NonNullable<SearchSelectProps<Value, Multiple>["onOpenChange"]>
@@ -202,17 +198,6 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
     [isControlled, multiple, onOpenChange],
   );
 
-  const handleOpenChangeComplete = useCallback(
-    (next: boolean) => {
-      if (!next && !isOpen && items !== undefined) {
-        setClosedRegistryCleared(true);
-      }
-
-      onOpenChangeComplete?.(next);
-    },
-    [isOpen, items, onOpenChangeComplete],
-  );
-
   return (
     <SearchContext.Provider
       value={{ open: isOpen, multiple: Boolean(multiple), size, registerIcon, unregisterIcon, iconFor }}
@@ -220,14 +205,28 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
       <Combobox.Root<Value, Multiple>
         open={isOpen}
         onOpenChange={handleOpenChange}
-        onOpenChangeComplete={handleOpenChangeComplete}
+        onOpenChangeComplete={onOpenChangeComplete}
         defaultOpen={defaultOpen}
         multiple={multiple}
-        items={visibleItems}
+        items={items}
+        value={value}
+        defaultValue={defaultValue}
+        onValueChange={handleValueChange}
         {...props}
-        // Base UI exposes this richer mode on its lower-level Combobox API. It keeps the
-        // first visible row active on open and after a search changes, so Enter is direct.
-        autoHighlight={"always" as never}
+        // Hovering moves the highlight; leaving the list must not throw it away. Base UI
+        // otherwise resets the active row on pointer-leave, and `autoHighlight` then puts it
+        // straight back on row one — so a pointer that wandered out of the panel would silently
+        // re-aim Enter at the top of the list. The other selects keep the last hovered row.
+        // (Spread, not a named prop: Base UI leaves this one off the public Combobox type
+        // altogether rather than narrowing it, so there is no cast that would satisfy it.)
+        {...({ keepHighlight: true } as Record<string, unknown>)}
+        // The two halves of "a panel never opens with nothing ready", and they have to be
+        // two: Base UI's `always` pins the first row unconditionally, overriding the active
+        // row it otherwise restores from the selection. So `always` is for a select with
+        // nothing chosen, and the plain mode — which restores the selected row on open and
+        // still jumps to the top match on every keystroke — is for one that has an answer
+        // already. (The prop is on the lower-level Combobox API, hence the cast.)
+        autoHighlight={(hasSelection ? true : "always") as never}
       >
         {children}
       </Combobox.Root>

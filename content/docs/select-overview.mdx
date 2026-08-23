@@ -26,6 +26,14 @@ panel is positioned by the selected row, and there is no single row to align to 
 are chosen. Multi-selection uses the Checkbox component. The compact `SelectSortTrigger` belongs
 to the base Select item.
 
+Every panel opens with a row already active, before anything is typed: the selected row where
+there is one, otherwise the first row. Enter takes that row, so reopening a select on its value
+and pressing Enter confirms the value rather than moving it to the top of the list. A multi-select
+opens on the most recently chosen of its rows. Typing hands the mark to the top match, and
+hovering moves it — leaving the panel keeps it where the pointer left it rather than resetting. Panels with their own active row carry `data-panel-active`; the two
+Combobox implementations use Base UI's `data-highlighted`. Base Select's
+`autoFocusFirstItem={false}` opts out, which is what `SelectSortTrigger` uses.
+
 Every implementation accepts `size="sm" | "md"`, defaulting to `sm`. The compact size is 32px
 with 12px text and 14px glyphs; `md` is 36px and matches a medium Button and Input in form rows.
 The size scales the trigger and option rows together. Inside Command Palette, always use `sm` so

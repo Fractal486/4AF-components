@@ -16,6 +16,12 @@ vary, but behavior, composition, state, styling, and installation remain predict
 - State is exposed on the element through attributes such as `data-state`, `data-variant`, and
   `data-loading` so styling and tests do not depend on hidden implementation branches.
 - Components use semantic theme tokens rather than fixed colors or raw palette utilities.
+- A panel of rows — select, searchable menu, command palette — opens with a row already
+  active, before anything is typed: the current selection where there is one — the most recent
+  of them when several are chosen — otherwise the first row. A query overrides both and marks
+  the top match instead. Hovering moves the mark and leaving the panel keeps it. The row carries
+  `data-panel-active`, or Base UI's `data-highlighted` where the primitive owns the highlight.
+  `autoFocusFirstItem={false}` opts out for menu-like uses.
 
 ## Motion contract
 

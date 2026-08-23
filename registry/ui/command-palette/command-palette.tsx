@@ -820,10 +820,6 @@ export function CommandPalette({
     [setOpen, goToDepth, pages.length],
   );
 
-  // Reported by an actions menu when it opens; freezes the highlight on the row that owns
-  // it. Base UI keeps driving the keyboard highlight, so arrows and Enter inside the menu
-  // are unaffected — only the pointer stops moving the row behind it.
-  const [actionsOpen, setActionsOpen] = useState(false);
   // Only ever the last *real* highlight. Opening the menu blurs the list, which reports
   // `undefined` — so reading the live value at that moment would always come up empty.
   const lastHighlightedRef = useRef<unknown>(undefined);
@@ -832,8 +828,10 @@ export function CommandPalette({
   // or two after focus returns to the list, and dropping ours the instant the menu closes
   // leaves that gap unlit — the highlight blinks off and back on the same row. The handover
   // happens below instead, when the real highlight actually arrives.
+  // Reported by an actions menu when it opens: the row that owns the menu keeps its
+  // highlight while focus is inside it. Base UI still drives the keyboard highlight, so the
+  // arrows and Enter within the menu are unaffected.
   const reportActionsOpen = useCallback((open: boolean) => {
-    setActionsOpen(open);
     if (open) setFrozenRow(lastHighlightedRef.current);
   }, []);
 
@@ -1030,9 +1028,13 @@ export function CommandPalette({
               inline
               open
               mode="none"
-              autoHighlight
+              // `"always"`, not a bare `true`: `true` waits for the user to type, so a list
+              // that opens on an empty query sits with no row ready and Enter does nothing
+              // until an arrow press.
+              autoHighlight="always"
               loopFocus={false}
-              highlightItemOnHover={!actionsOpen}
+              // The pointer never moves the selection — see the note on the root list below.
+              highlightItemOnHover={false}
               onItemHighlighted={notifyItemHighlighted}
               value={panelInputValue}
               onValueChange={setPanelInputValue}
@@ -1135,11 +1137,23 @@ export function CommandPalette({
             value={query}
             onValueChange={setQuery}
             itemToStringValue={(item: CommandItem) => item.label}
-            // Keep the top match ready so Enter runs it without an arrow press first.
-            autoHighlight
+            // The first row carries the selection from the moment the list appears, and the
+            // first *match* once a query narrows it, so Enter always has an answer and the
+            // arrows start somewhere visible. A bare `true` would only do this after typing.
+            autoHighlight="always"
             loopFocus={false}
-            // Inert while an actions menu is open — see ActionsOpenContext.
-            highlightItemOnHover={!actionsOpen}
+            // Two highlights, not one. `data-highlighted` is the *selection* — what the
+            // arrows move and what Enter runs — and the pointer must not move it: with it
+            // on, resting the cursor over a row while arrowing through the list silently
+            // reassigns Enter to whatever happens to be under the mouse. Hover gets its own,
+            // weaker fill through plain `:hover`, which is exactly what Base UI says this
+            // prop is for: "Disabling this prop allows CSS `:hover` to be differentiated
+            // from the `:focus` (`data-highlighted`) state."
+            //
+            // Clicking still runs the row. A palette is a menu, and menus act on one click;
+            // the split is what makes that safe, because the pointer can no longer change
+            // what the keyboard had chosen.
+            highlightItemOnHover={false}
             onItemHighlighted={rememberHighlight}
           >
             <div
@@ -1429,6 +1443,10 @@ export function CommandPanelRow({
         destructive
           ? "text-destructive data-highlighted:bg-muted data-highlighted:text-destructive data-frozen:bg-muted data-frozen:text-destructive"
           : "data-highlighted:bg-muted data-highlighted:text-foreground data-frozen:bg-muted data-frozen:text-foreground",
+        // Hover is a fill at half strength and nothing else: no text lift, so it cannot
+        // be mistaken for the selection. Scoped out of the selected and frozen states so
+        // the two never compete for the same row.
+        interactive && "not-data-highlighted:not-data-frozen:hover:bg-muted/50",
         className,
       )}
     >
@@ -2131,6 +2149,10 @@ function CommandRow({
         item.destructive
           ? "data-highlighted:bg-muted text-destructive data-highlighted:text-destructive data-frozen:bg-muted data-frozen:text-destructive"
           : "data-highlighted:bg-muted data-highlighted:text-foreground data-frozen:bg-muted data-frozen:text-foreground",
+        // Hover is a fill at half strength and nothing else: no text lift, so it cannot
+        // be mistaken for the selection. Scoped out of the selected and frozen states so
+        // the two never compete for the same row.
+        "not-data-highlighted:not-data-frozen:hover:bg-muted/50",
         "data-disabled:pointer-events-none data-disabled:opacity-50",
       )}
     >

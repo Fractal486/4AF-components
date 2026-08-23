@@ -197,6 +197,14 @@ default `sm`. Inside a Command Palette keep `sm`. `select-aligned` is single sel
 (`AlignedSelectGroup` + `AlignedSelectGroupLabel`, which hide themselves when a search empties
 them) and an optional pinned search field (`searchable` on the content).
 
+Every panel in the family opens with a row already active, before anything is typed: the
+current selection where there is one (the most recent, when several are chosen), otherwise the
+first row, and the top match once a query narrows the list. Hovering moves the mark; leaving the
+panel keeps it. The mark is `data-panel-active`; the search variants use Base UI's
+`data-highlighted` via `autoHighlight` plus `keepHighlight`, where `"always"` is only for a
+select with nothing chosen because it pins row one over the selection. `autoFocusFirstItem={false}` opts out, for
+menu-like uses such as a sort control.
+
 `select-aligned` overlaps the trigger through Base UI's `alignItemWithTrigger`, which applies
 to pointer input only and switches off when there is no room — it falls back to an ordinary
 dropdown, so do not try to force it. Row padding plus panel padding equals the trigger's

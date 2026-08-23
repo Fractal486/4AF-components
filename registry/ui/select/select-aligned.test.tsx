@@ -115,6 +115,54 @@ describe("AlignedSelect", () => {
     expect(screen.getAllByRole("option")).toHaveLength(1);
   });
 
+  it("opens with the first row offered, and follows the query", async () => {
+    const user = userEvent.setup();
+    render(<Fruits searchable />);
+
+    await user.click(screen.getByRole("combobox"));
+
+    // Nothing chosen, so the top row is what Enter takes — and it says so.
+    await waitFor(() =>
+      expect(screen.getByRole("option", { name: "Apple" })).toHaveAttribute("data-panel-active"),
+    );
+
+    await user.type(await screen.findByRole("textbox", { name: "Search options" }), "err");
+    expect(screen.getByRole("option", { name: "Cherry" })).toHaveAttribute("data-panel-active");
+  });
+
+  it("opens on the selected row, and hands over to the top match while filtering", async () => {
+    const user = userEvent.setup();
+    render(<Fruits searchable defaultValue="Banana" />);
+
+    await user.click(screen.getByRole("combobox"));
+
+    // The row the panel is physically sitting on is also the row Enter takes — reopening on
+    // "Banana" and pressing Enter confirms Banana rather than jumping to the top of the list.
+    const banana = await screen.findByRole("option", { name: "Banana" });
+    await waitFor(() => expect(banana).toHaveAttribute("data-panel-active"));
+    expect(screen.getByRole("option", { name: "Apple" })).not.toHaveAttribute(
+      "data-panel-active",
+    );
+
+    // A query is the better guess from then on, and the selection may not even survive it.
+    await user.type(await screen.findByRole("textbox", { name: "Search options" }), "err");
+    expect(screen.getByRole("option", { name: "Cherry" })).toHaveAttribute("data-panel-active");
+  });
+
+  it("hands the offer to the list once an arrow moves into it", async () => {
+    const user = userEvent.setup();
+    render(<Fruits searchable />);
+
+    await user.click(screen.getByRole("combobox"));
+    const apple = await screen.findByRole("option", { name: "Apple" });
+    await waitFor(() => expect(apple).toHaveAttribute("data-panel-active"));
+
+    // Base UI's roving highlight is the real one from here on, and two lit rows would be a
+    // lie about which one Enter takes.
+    await user.keyboard("{ArrowDown}");
+    await waitFor(() => expect(apple).not.toHaveAttribute("data-panel-active"));
+  });
+
   it("offers the empty message when a query matches nothing", async () => {
     const user = userEvent.setup();
     render(<Fruits searchable />);

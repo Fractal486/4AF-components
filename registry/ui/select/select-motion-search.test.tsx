@@ -122,7 +122,26 @@ describe("Motion Search Select", () => {
     expect(input).toHaveValue("Mango");
   });
 
-  it("opens a single select on the first choice instead of its later selection", async () => {
+  it("leaves the highlight where the pointer left it", async () => {
+    const user = userEvent.setup();
+    render(<FruitSearch />);
+
+    const input = screen.getByRole("combobox", { name: "Fruit" });
+    await user.click(input);
+
+    const mango = await screen.findByRole("option", { name: "Mango" });
+    await user.hover(mango);
+    expect(mango).toHaveAttribute("data-highlighted");
+
+    // `keepHighlight`. Without it the active row is cleared on pointer-leave and
+    // `autoHighlight` puts it straight back on row one, silently re-aiming Enter.
+    await user.unhover(mango);
+    await user.hover(input);
+    expect(mango).toHaveAttribute("data-highlighted");
+    expect(screen.getByRole("option", { name: "Apple" })).not.toHaveAttribute("data-highlighted");
+  });
+
+  it("opens and reopens a single select on its selection", async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
     render(<FruitSearch defaultValue={FRUITS[1]} onValueChange={onValueChange} />);
@@ -130,7 +149,7 @@ describe("Motion Search Select", () => {
     const input = screen.getByRole("combobox", { name: "Fruit" });
     await user.click(input);
 
-    expect(await screen.findByRole("option", { name: "Apple" })).toHaveAttribute(
+    expect(await screen.findByRole("option", { name: "Mango" })).toHaveAttribute(
       "data-highlighted",
     );
 
@@ -138,12 +157,14 @@ describe("Motion Search Select", () => {
     await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
 
     await user.click(input);
-    expect(await screen.findByRole("option", { name: "Apple" })).toHaveAttribute(
+    expect(await screen.findByRole("option", { name: "Mango" })).toHaveAttribute(
       "data-highlighted",
     );
 
+    // Enter on an untouched panel confirms the standing choice rather than quietly moving it
+    // to the top of the list.
     await user.keyboard("{Enter}");
-    await waitFor(() => expect(onValueChange).toHaveBeenCalledWith(FRUITS[0], expect.anything()));
+    await waitFor(() => expect(onValueChange).toHaveBeenCalledWith(FRUITS[1], expect.anything()));
   });
 
   it("shows the supplied empty state when filtering finds no items", async () => {
@@ -162,7 +183,7 @@ describe("Motion Search Select", () => {
     expect(screen.getByRole("listbox")).toHaveClass("empty:hidden");
   });
 
-  it("starts on the first visible choice even when a later choice is selected", async () => {
+  it("opens a multi-select on a chosen row, and typing moves to the top match", async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
     render(<FruitSearchMulti defaultValue={[FRUITS[1]]} onValueChange={onValueChange} />);
@@ -170,14 +191,13 @@ describe("Motion Search Select", () => {
     const input = screen.getByRole("combobox", { name: "Fruits" });
     await user.click(input);
 
-    expect(await screen.findByRole("option", { name: "Apple" })).toHaveAttribute(
+    expect(await screen.findByRole("option", { name: "Mango" })).toHaveAttribute(
       "data-highlighted",
     );
 
-    await user.keyboard("{Escape}");
-    await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
-
-    await user.click(input);
+    // A query is a better guess at what Enter should take than a choice made earlier, so the
+    // mark leaves the selection as soon as the list is narrowed.
+    await user.type(input, "app");
     expect(await screen.findByRole("option", { name: "Apple" })).toHaveAttribute(
       "data-highlighted",
     );

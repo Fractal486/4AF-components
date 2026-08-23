@@ -73,6 +73,33 @@ describe("CommandPalette", () => {
     expect(input).toHaveValue("settings");
   });
 
+  it("opens with the first row selected, before anything is typed", async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+
+    render(
+      <CommandPalette
+        open
+        groups={[
+          {
+            items: [
+              { id: "settings", label: "Settings", onSelect },
+              { id: "profile", label: "Profile" },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    // No arrow press, no query: a list view never sits with nothing ready.
+    expect(await screen.findByRole("option", { name: "Settings" })).toHaveAttribute(
+      "data-highlighted",
+    );
+
+    await user.keyboard("{Enter}");
+    expect(onSelect).toHaveBeenCalled();
+  });
+
   it("freezes the row highlight while an actions menu is open", async () => {
     const user = userEvent.setup();
 
@@ -106,8 +133,15 @@ describe("CommandPalette", () => {
     const alpha = await screen.findByRole("option", { name: "Alpha" });
     const beta = screen.getByRole("option", { name: "Beta" });
 
-    await user.hover(alpha);
+    // The list arrives with its first row already selected — no arrow press to get there.
     expect(alpha).toHaveAttribute("data-highlighted");
+
+    // And the pointer must not take it away again: hovering the next row gives that row a
+    // hover fill and nothing more, so Enter still runs the row the arrows chose.
+    await user.hover(beta);
+    expect(beta).not.toHaveAttribute("data-highlighted");
+    expect(alpha).toHaveAttribute("data-highlighted");
+    await user.unhover(beta);
 
     await user.click(screen.getByText("Actions"));
     await screen.findByRole("option", { name: "Rename" });

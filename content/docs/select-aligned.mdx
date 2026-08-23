@@ -43,8 +43,11 @@ every row out of it.
 ## Search
 
 Add `searchable` to `AlignedSelectContent` for a search field pinned above the list. It takes
-focus when the panel opens; the arrow keys move into the list, and Enter takes the top match.
-The query clears when the panel closes.
+focus when the panel opens, with a row already active — the selected row, or the first row
+when nothing is chosen — so Enter takes that row without an arrow press. Typing moves the mark
+to the top match. The active row carries `data-panel-active`. The arrow keys move focus into
+the list, and Base UI's own highlight takes over from there. The query clears when the panel
+closes. `autoFocusFirstItem={false}` opens the panel with no active row.
 
 Filtered rows leave the list rather than hiding, so the panel resizes to what is left. Rows
 match on their text, which only works when the children are a plain string — give a row built

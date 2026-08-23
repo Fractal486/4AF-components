@@ -49,6 +49,18 @@ The registry item includes more than the root popup:
 The demo's Projects, Rename Project, and New Project flows are examples built from these public
 APIs, not hard-coded private behaviour.
 
+## Selection and hover
+
+Every list — the root list and each custom panel's — opens with its first row selected, before
+anything is typed, and moves the selection to the new first row as a query narrows the list.
+Enter runs the selected row without an arrow press first.
+
+The selection and the pointer are separate. `data-highlighted` is the selection, moved by the
+arrow keys and by a click; hovering a row gives it a weaker fill and nothing else, so resting
+the cursor over the list never changes what Enter runs. A single click runs a row. While a
+row's actions menu is open that row holds the selection and carries `data-frozen`, styled
+identically.
+
 ## Panel footer
 
 A custom panel's footer has the escape hint on the left and two optional slots on the right,

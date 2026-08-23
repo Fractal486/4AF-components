@@ -41,10 +41,10 @@ describe("Base UI Select", () => {
     expect(trigger).toHaveTextContent("Apple");
   });
 
-  it("starts a normal select on its first option instead of the selected one", async () => {
+  it("opens a select on its selected option, and on its first when there is none", async () => {
     const user = userEvent.setup();
 
-    render(
+    const { unmount } = render(
       <Select items={FRUITS} defaultValue="banana">
         <SelectTrigger aria-label="Fruit">
           <SelectValue placeholder="Pick a fruit" />
@@ -53,7 +53,22 @@ describe("Base UI Select", () => {
       </Select>,
     );
 
+    // A panel with no field has no separate keyboard: focus is the highlight, so the row the
+    // panel marks active is the row that takes it.
     await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    await waitFor(() => expect(screen.getByRole("option", { name: "Banana" })).toHaveFocus());
+    unmount();
+
+    render(
+      <Select items={FRUITS}>
+        <SelectTrigger aria-label="Empty fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <FruitOptions />
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Empty fruit" }));
     await waitFor(() => expect(screen.getByRole("option", { name: "Apple" })).toHaveFocus());
   });
 
@@ -242,7 +257,7 @@ describe("Base UI Select", () => {
     expect(await screen.findByText("No results.")).toBeInTheDocument();
   });
 
-  it("starts panel-search selects on the first row instead of selected rows", async () => {
+  it("opens panel-search selects on their selected rows", async () => {
     const user = userEvent.setup();
 
     render(
@@ -270,17 +285,23 @@ describe("Base UI Select", () => {
       </>,
     );
 
+    // The field keeps DOM focus while the mark sits on the selection, so Enter confirms the
+    // standing choice rather than silently moving it to the top of the list.
     await user.click(screen.getByRole("combobox", { name: "Single fruit" }));
     await waitFor(() =>
-      expect(screen.getByRole("option", { name: "Apple" })).toHaveAttribute("data-panel-active"),
+      expect(screen.getByRole("option", { name: "Banana" })).toHaveAttribute("data-panel-active"),
     );
-    expect(screen.getByRole("option", { name: "Banana" })).not.toHaveAttribute("data-panel-active");
+    expect(screen.getByRole("option", { name: "Apple" })).not.toHaveAttribute("data-panel-active");
 
+    // Several selections: the most recent one, which is how Base UI's Combobox resolves it in
+    // the two search variants. All five open on the same row or none of this is a rule.
     await user.click(screen.getByRole("combobox", { name: "Multiple fruits" }));
     await waitFor(() =>
-      expect(screen.getByRole("option", { name: "Apple" })).toHaveAttribute("data-panel-active"),
+      expect(screen.getByRole("option", { name: "Mango" })).toHaveAttribute("data-panel-active"),
     );
-    expect(screen.getByRole("option", { name: "Mango" })).not.toHaveAttribute("data-panel-active");
+    expect(screen.getByRole("option", { name: "Banana" })).not.toHaveAttribute(
+      "data-panel-active",
+    );
   });
 
   it("runs the highlighted row on Enter, straight from the search field", async () => {

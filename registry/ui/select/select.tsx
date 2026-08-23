@@ -80,8 +80,10 @@ interface SelectContextValue {
   unregisterOptionText: (value: unknown) => void;
   /** True when the text passes the current panel-search query (or there is none). */
   matchesQuery: (text: string) => boolean;
-  /** The first item still visible under the current query — what the panel highlights. */
+  /** The first item still visible under the current query. */
   firstVisibleItem: unknown;
+  /** The row a panel opens on: the selection while the list is whole, else the first row. */
+  openingItem: unknown;
   activeItem: unknown;
   setActiveItem: (value: unknown) => void;
   panelSearch: boolean;
@@ -108,6 +110,7 @@ const SelectContext = createContext<SelectContextValue>({
   unregisterOptionText: () => {},
   matchesQuery: () => true,
   firstVisibleItem: undefined,
+  openingItem: undefined,
   activeItem: undefined,
   setActiveItem: () => {},
   panelSearch: false,
@@ -176,7 +179,7 @@ function iconFromItems(items: unknown, value: unknown): ReactNode | undefined {
 
 function focusPanelOption(
   list: HTMLElement | null,
-  direction: "next" | "previous",
+  direction: "next" | "previous" | "active",
 ) {
   if (!list) return;
 
@@ -186,7 +189,14 @@ function focusPanelOption(
       option.getAttribute("aria-disabled") !== "true" &&
       !(option instanceof HTMLButtonElement && option.disabled),
   );
-  const option = direction === "next" ? options[0] : options.at(-1);
+  // `active` reads the mark off the DOM rather than recomputing which row it should be, so
+  // the row that paints as active is provably the row that takes focus.
+  const option =
+    direction === "active"
+      ? (options.find((candidate) => candidate.hasAttribute("data-panel-active")) ?? options[0])
+      : direction === "next"
+        ? options[0]
+        : options.at(-1);
   option?.focus();
 }
 
@@ -329,6 +339,29 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
     }
     return undefined;
   }, [optionTexts, matchesQuery]);
+
+  // The row a panel opens on. A select opens on its own answer: the current selection, which
+  // is also the row the eye is already looking for. Only once a query narrows the list does
+  // the top match take over — by then the selection may not even be in the list, and what
+  // was typed is the better guess at what Enter should take.
+  //
+  // Read from the end, so a multi-select opens on the *most recent* choice. That's the one
+  // point where several rows could claim it, and it's settled this way because Base UI's own
+  // Combobox settles it this way — its `selectedIndex` is the last entry of the value array,
+  // and the two search variants inherit that. Matching it here is what keeps all five selects
+  // opening on the same row; the alternative would be reordering the array handed to the
+  // primitive, which would change what `onValueChange` reports.
+  //
+  // Guarded on the item being registered, so a value with no option in the list (stale, or
+  // supplied before the rows mount) falls through to the top row instead of arming nothing.
+  const openingItem = useMemo(() => {
+    if (searchQuery.trim() === "") {
+      for (let index = values.length - 1; index >= 0; index -= 1) {
+        if (optionTexts.has(values[index])) return values[index];
+      }
+    }
+    return firstVisibleItem;
+  }, [firstVisibleItem, optionTexts, searchQuery, values]);
   const [activeItem, setActiveItem] = useState<unknown>(undefined);
   const [panelSearch, setPanelSearch] = useState(false);
 
@@ -424,6 +457,7 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
         unregisterOptionText,
         matchesQuery,
         firstVisibleItem,
+        openingItem,
         activeItem,
         setActiveItem,
         panelSearch,
@@ -749,6 +783,7 @@ export function SelectContent({
     clear,
     size,
     firstVisibleItem,
+    openingItem,
     setActiveItem,
     setPanelSearch,
     searchQuery,
@@ -806,21 +841,22 @@ export function SelectContent({
     return () => observer.disconnect();
   }, [positionerNode, open, searchable, width, searchQuery]);
 
-  // Every non-sort select begins on its first row, even when another value is selected.
-  // Searchable panels retain DOM focus in their field, but carry the same active-row state.
-  // Keyed on the first *visible* item, so as a query narrows the list the highlight moves
-  // to the new top row rather than being stranded on one the filter just hid.
+  // A panel never opens with nothing ready. It opens on the current selection, and on its
+  // first row when there is none — see `openingItem`, which also moves to the new top row as
+  // a query narrows the list rather than stranding the mark on a row the filter just hid.
+  // Searchable panels keep DOM focus in their field but carry the same active-row state.
   useEffect(() => {
-    if (!open || !autoFocusFirstItem || firstVisibleItem === undefined) return;
+    if (!open || !autoFocusFirstItem || openingItem === undefined) return;
 
-    setActiveItem(firstVisibleItem);
+    setActiveItem(openingItem);
     if (searchable) return;
 
+    // Focus follows the mark, because in a panel without a field focus *is* the highlight.
     const frame = requestAnimationFrame(() => {
-      focusPanelOption(listRef.current, "next");
+      focusPanelOption(listRef.current, "active");
     });
     return () => cancelAnimationFrame(frame);
-  }, [autoFocusFirstItem, firstVisibleItem, open, searchable, setActiveItem]);
+  }, [autoFocusFirstItem, openingItem, open, searchable, setActiveItem]);
 
   // Built once and placed at whichever end `searchPosition` names, so the two layouts
   // can't drift apart. The hairline goes on the side facing the options.
