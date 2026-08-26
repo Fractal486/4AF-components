@@ -100,6 +100,99 @@ describe("CommandPalette", () => {
     expect(onSelect).toHaveBeenCalled();
   });
 
+
+  it("moves the selection to a clicked panel row", async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+
+    render(
+      <CommandPalette
+        open
+        groups={[
+          {
+            items: [
+              {
+                id: "projects",
+                label: "Projects",
+                panel: () => (
+                  <CommandPanelBody>
+                    <CommandPanelList>
+                      <CommandPanelRow value="alpha" checkbox onSelect={onSelect}>
+                        Alpha
+                      </CommandPanelRow>
+                      <CommandPanelRow value="beta" checkbox onSelect={onSelect}>
+                        Beta
+                      </CommandPanelRow>
+                    </CommandPanelList>
+                  </CommandPanelBody>
+                ),
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    await user.click(await screen.findByRole("option", { name: "Projects" }));
+    const alpha = await screen.findByRole("option", { name: "Alpha" });
+    const beta = screen.getByRole("option", { name: "Beta" });
+    expect(alpha).toHaveAttribute("data-highlighted");
+
+    // Hovering it first must not be what moves the selection — the press is.
+    await user.hover(beta);
+    expect(alpha).toHaveAttribute("data-highlighted");
+
+    // A panel that stays open after a press — a checkbox list — is where a stranded
+    // selection shows: the row runs, and the selection has to be on the row that ran.
+    await user.click(beta);
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(beta).toHaveAttribute("data-highlighted");
+    expect(alpha).not.toHaveAttribute("data-highlighted");
+  });
+
+  it("highlights a panel's first row on open, with the header field focused", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <CommandPalette
+        open
+        groups={[
+          {
+            items: [
+              {
+                id: "projects",
+                label: "Projects",
+                // The panel root runs without an `items` collection, so `autoHighlight`
+                // cannot prime it. A header field takes the focus, which is the case where
+                // an unprimed panel left the first arrow press lighting a row rather than
+                // moving between them.
+                panelInput: { type: "search", label: "Search projects" },
+                panel: () => (
+                  <CommandPanelList autoFocus={false}>
+                    <CommandPanelRow value="new">New project</CommandPanelRow>
+                    <CommandPanelRow value="alpha" checkbox>
+                      Alpha
+                    </CommandPanelRow>
+                  </CommandPanelList>
+                ),
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    await user.click(await screen.findByRole("option", { name: "Projects" }));
+
+    const first = await screen.findByRole("option", { name: "New project" });
+    await waitFor(() => expect(first).toHaveAttribute("data-highlighted"));
+
+    // The first arrow press moves the highlight rather than creating it.
+    await user.keyboard("{ArrowDown}");
+    expect(screen.getByRole("option", { name: "Alpha" })).toHaveAttribute("data-highlighted");
+    expect(first).not.toHaveAttribute("data-highlighted");
+  });
+
   it("freezes the row highlight while an actions menu is open", async () => {
     const user = userEvent.setup();
 
@@ -136,8 +229,8 @@ describe("CommandPalette", () => {
     // The list arrives with its first row already selected — no arrow press to get there.
     expect(alpha).toHaveAttribute("data-highlighted");
 
-    // And the pointer must not take it away again: hovering the next row gives that row a
-    // hover fill and nothing more, so Enter still runs the row the arrows chose.
+    // Hovering the next row gives it a fill and nothing more, so Enter still runs the row
+    // the arrows chose.
     await user.hover(beta);
     expect(beta).not.toHaveAttribute("data-highlighted");
     expect(alpha).toHaveAttribute("data-highlighted");

@@ -55,16 +55,21 @@ Every list — the root list and each custom panel's — opens with its first ro
 anything is typed, and moves the selection to the new first row as a query narrows the list.
 Enter runs the selected row without an arrow press first.
 
-The selection and the pointer are separate. `data-highlighted` is the selection, moved by the
-arrow keys and by a click; hovering a row gives it a weaker fill and nothing else, so resting
-the cursor over the list never changes what Enter runs. A single click runs a row. While a
-row's actions menu is open that row holds the selection and carries `data-frozen`, styled
-identically.
+Selection and hover are separate states. The selected row carries `data-highlighted` and is
+moved by the arrow keys and by pressing a row; hovering gives a row a weaker fill and nothing
+else, so sweeping the cursor across the list never changes what Enter runs. A single press both
+selects a row and runs it, which is what keeps a panel that stays open — a checkbox list —
+from stranding its selection on the first row. Moving the pointer out of the list leaves the
+selection where it was.
+
+While a row's actions menu is open, that row carries `data-frozen`, styled identically to the
+selection — Base UI drops its own highlight while focus is inside the menu.
 
 ## Panel footer
 
-A custom panel's footer has the escape hint on the left and two optional slots on the right,
-in this order:
+The root list's bar has the escape hint and the navigation hint on the left, and the Enter
+hint pinned right. A custom panel's footer keeps those two ends — escape on the left, Enter on
+the right — and fills the right corner with two optional slots, in this order:
 
 | Slot | Prop | Key |
 | --- | --- | --- |

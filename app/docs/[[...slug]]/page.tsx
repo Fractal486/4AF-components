@@ -26,8 +26,7 @@ export default async function Page({ params }: DocsPageProps) {
   const isSidebarLayoutPage = page.url === "/docs/sidebar-layout";
   const isDemoPage =
     page.url !== "/docs" &&
-    !page.url.includes("/reference/") &&
-    !page.url.endsWith("-overview");
+    !page.url.includes("/reference/");
 
   return (
     <DocsPage toc={page.data.toc}>

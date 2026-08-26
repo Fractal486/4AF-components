@@ -19,7 +19,9 @@ vary, but behavior, composition, state, styling, and installation remain predict
 - A panel of rows — select, searchable menu, command palette — opens with a row already
   active, before anything is typed: the current selection where there is one — the most recent
   of them when several are chosen — otherwise the first row. A query overrides both and marks
-  the top match instead. Hovering moves the mark and leaving the panel keeps it. The row carries
+  the top match instead. In the selects the pointer moves the mark by hovering; the command
+  palette keeps the two apart, where hover only paints and a press moves the selection. Either
+  way the pointer leaving the panel keeps the mark rather than resetting it. The row carries
   `data-panel-active`, or Base UI's `data-highlighted` where the primitive owns the highlight.
   `autoFocusFirstItem={false}` opts out for menu-like uses.
 

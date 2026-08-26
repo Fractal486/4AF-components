@@ -93,6 +93,9 @@ const AlignedSelectContext = createContext<AlignedSelectContextValue>({
  */
 const AlignedSelectActiveContext = createContext<{ value: unknown } | null>(null);
 
+/** Moves that row, from whichever modality focused it. */
+const AlignedSelectActivateContext = createContext<(value: unknown) => void>(() => {});
+
 /** Moves focus out of the search field and into the list, where Base UI's roving takes over. */
 function focusEdgeOption(list: HTMLElement | null, edge: "first" | "last") {
   const options = list?.querySelectorAll<HTMLElement>(
@@ -312,26 +315,31 @@ export function AlignedSelectContent({
   const inputRef = useRef<HTMLInputElement>(null);
   const noResults = searchable && query.trim() !== "" && !hasMatches;
 
-  // The field holds the keyboard until an arrow hands it to the list, and only until then can
-  // it offer a row. Once Base UI's roving highlight is live, a second lit row would be a lie
-  // about what Enter does.
-  // Adjusted during render rather than in an effect, the same way the base Select drops its
-  // active row on close: an effect would leave one frame with the panel reopened and the
-  // previous visit's list focus still standing.
-  const [listFocused, setListFocused] = useState(false);
-  const [wasOpen, setWasOpen] = useState(open);
-  if (wasOpen !== open) {
-    setWasOpen(open);
-    if (!open) setListFocused(false);
-  }
+  // The panel owns its active row rather than reading Base UI's highlight, which is the same
+  // arrangement the base Select uses and for the same reason: Base UI clears the highlight
+  // when the pointer leaves the list, and Select — unlike Combobox — has no `keepHighlight`
+  // to turn that off. Reading it would mean the row you last pointed at silently un-marks
+  // itself the moment the cursor crosses the panel edge, and the mark snapping back to
+  // whatever the panel opened on.
+  //
+  // The row moves on focus, which covers both modalities: this Select is roving-focus rather
+  // than `aria-activedescendant`, so hovering a row focuses it and the arrows focus the next
+  // one. Base UI's own highlight lands on the same row whenever it has one, so the two marks
+  // can only ever coincide — ours simply outlives it.
+  const [pointedItem, setPointedItem] = useState<{ value: unknown } | null>(null);
+  const setActiveItem = useCallback((value: unknown) => setPointedItem({ value }), []);
 
   // A panel never sits with nothing ready: a row is active from the moment it opens, before
   // anything is typed, so Enter always has an answer and the arrows start somewhere visible.
-  // See `openingItem` for which row that is.
-  //
-  // Searchable panels only. Without a field the keyboard is already in the list and Base UI's
-  // own highlight is on the selected row, which is the row this panel is sitting on.
-  const activeItem = searchable && autoFocusFirstItem && !listFocused ? openingItem : null;
+  // See `openingItem` for which row that is. Adjusted during render rather than from an
+  // effect — opening the panel and narrowing the list both re-offer a row, and an effect
+  // would paint one frame with the previous visit's row still marked.
+  const [lastOffered, setLastOffered] = useState(openingItem);
+  if (lastOffered !== openingItem) {
+    setLastOffered(openingItem);
+    setPointedItem(null);
+  }
+  const activeItem = autoFocusFirstItem ? (pointedItem ?? openingItem) : pointedItem;
 
   // Base UI opens by focusing the selected row, which is right without a search field and
   // wrong with one — the caret has to be where the typing is going to go.
@@ -387,7 +395,6 @@ export function AlignedSelectContent({
                 variant="plain"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                onFocus={() => setListFocused(false)}
                 onKeyDown={(event) => {
                   // The arrows hand focus to the list and Base UI's roving takes it from
                   // there, so Enter lands on a row that genuinely has focus rather than one
@@ -445,9 +452,6 @@ export function AlignedSelectContent({
               its own number governs; an 18rem ceiling here would fight it. */}
           <BaseSelect.List
             ref={listRef}
-            // An arrow key focuses a row, and from that moment the list's own highlight is the
-            // only one — capture, because the focus lands on the row, not on the list.
-            onFocusCapture={() => setListFocused(true)}
             className={cn(
               "max-h-[var(--available-height)] overflow-y-auto overscroll-contain p-1",
               SCROLLBAR,
@@ -455,7 +459,9 @@ export function AlignedSelectContent({
             )}
           >
             <AlignedSelectActiveContext.Provider value={activeItem}>
-              {children}
+              <AlignedSelectActivateContext.Provider value={setActiveItem}>
+                {children}
+              </AlignedSelectActivateContext.Provider>
             </AlignedSelectActiveContext.Provider>
           </BaseSelect.List>
 
@@ -541,10 +547,12 @@ export function AlignedSelectItem({
   value,
   searchValue,
   disabled = false,
+  onFocusCapture,
   ...props
 }: AlignedSelectItemProps) {
   const { size, matches, registerOption, unregisterOption } = useContext(AlignedSelectContext);
   const activeItem = useContext(AlignedSelectActiveContext);
+  const setActiveItem = useContext(AlignedSelectActivateContext);
   const text = searchValue ?? (typeof children === "string" ? children : String(value));
   const filteredOut = !matches(text);
   const panelActive = activeItem !== null && Object.is(activeItem.value, value);
@@ -575,6 +583,11 @@ export function AlignedSelectItem({
       // palette carry — wearing the same fill, so "what Enter takes" reads identically
       // wherever the keyboard happens to be.
       data-panel-active={panelActive || undefined}
+      // Hover focuses a row here and so do the arrows, so this one handler carries both.
+      onFocusCapture={(event) => {
+        onFocusCapture?.(event);
+        if (!event.defaultPrevented) setActiveItem(value);
+      }}
       className={cn(
         "flex items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,

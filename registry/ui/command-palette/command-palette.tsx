@@ -25,6 +25,7 @@ import {
   useState,
   type ComponentProps,
   type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
@@ -1033,8 +1034,9 @@ export function CommandPalette({
               // until an arrow press.
               autoHighlight="always"
               loopFocus={false}
-              // The pointer never moves the selection — see the note on the root list below.
-              highlightItemOnHover={false}
+              // See the note on the root list below.
+              {...({ keepHighlight: true } as Record<string, unknown>)}
+              highlightItemOnHover
               onItemHighlighted={notifyItemHighlighted}
               value={panelInputValue}
               onValueChange={setPanelInputValue}
@@ -1142,18 +1144,18 @@ export function CommandPalette({
             // arrows start somewhere visible. A bare `true` would only do this after typing.
             autoHighlight="always"
             loopFocus={false}
-            // Two highlights, not one. `data-highlighted` is the *selection* — what the
-            // arrows move and what Enter runs — and the pointer must not move it: with it
-            // on, resting the cursor over a row while arrowing through the list silently
-            // reassigns Enter to whatever happens to be under the mouse. Hover gets its own,
-            // weaker fill through plain `:hover`, which is exactly what Base UI says this
-            // prop is for: "Disabling this prop allows CSS `:hover` to be differentiated
-            // from the `:focus` (`data-highlighted`) state."
+            // Two states, not one. `data-highlighted` is the *selection* — what Enter runs —
+            // and hovering must not move it, or sweeping the cursor across the list on the way
+            // to somewhere else quietly reassigns what Enter does. Pressing a row does move it.
             //
-            // Clicking still runs the row. A palette is a menu, and menus act on one click;
-            // the split is what makes that safe, because the pointer can no longer change
-            // what the keyboard had chosen.
-            highlightItemOnHover={false}
+            // Base UI has one gate for both (see `usePointerSelection`, which is why this stays
+            // on): the rows filter hover out and let a press through, so the prop is left open
+            // for the press to travel down.
+            highlightItemOnHover
+            // Leaving the list keeps the row rather than resetting it — without this,
+            // `autoHighlight` would put the selection straight back on row one the moment the
+            // pointer wandered out of the panel.
+            {...({ keepHighlight: true } as Record<string, unknown>)}
             onItemHighlighted={rememberHighlight}
           >
             <div
@@ -1260,10 +1262,17 @@ export function CommandPalette({
             </Autocomplete.Empty>
 
             {footer && (
-              <div className="flex shrink-0 items-center gap-3 border-t border-border px-1.5 py-2">
-                <Hint keys={["↑", "↓"]}>Navigate</Hint>
-                <Hint keys={[<CornerDownLeft key="enter" className="size-2.5" />]}>Select</Hint>
-                <EscapeHint />
+              // The same two ends as a panel footer: escape at the left, the Enter action
+              // pinned right. Drilling into a panel then swaps what sits between them, rather
+              // than moving both of the things that are always there.
+              <div className="flex shrink-0 items-center justify-between gap-3 border-t border-border px-1.5 py-2">
+                <div className="flex items-center gap-3">
+                  <EscapeHint />
+                  <Hint keys={["↑", "↓"]}>Navigate</Hint>
+                </div>
+                <Hint trailingKeys keys={[<CornerDownLeft key="enter" className="size-2.5" />]}>
+                  Select
+                </Hint>
               </div>
             )}
           </Autocomplete.Root>
@@ -1325,6 +1334,22 @@ export function CommandPanelList({
   autoFocus?: boolean;
   children?: ReactNode;
 }) {
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // The panel root runs `mode="none"` with no `items` collection, so Base UI's
+  // `autoHighlight` has nothing to pick a first row from — a panel opened with the header
+  // field focused sat with no row ready, and the first arrow press was spent lighting one up
+  // rather than moving. Rows register in the DOM, so prime off that instead, using the same
+  // channel a press uses. No dependency array: rows come and go as a panel's query filters
+  // them, and the guard means this only acts when the panel has no highlight at all.
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list || list.querySelector("[data-highlighted]")) return;
+
+    const first = list.querySelector<HTMLElement>('[role="option"]');
+    if (first) dispatchSelectionMove(first);
+  });
+
   return (
     <>
       {autoFocus && (
@@ -1335,6 +1360,7 @@ export function CommandPanelList({
         />
       )}
       <Autocomplete.List
+        ref={listRef}
         className={cn(
           "min-h-0 flex-1 overflow-y-auto overscroll-contain p-1.5",
           SCROLLBAR,
@@ -1374,8 +1400,59 @@ export function CommandPanelLoading({
   );
 }
 
+/**
+ * Lets the pointer *press* a row into the selection without letting it *hover* one there.
+ *
+ * `Autocomplete` is `aria-activedescendant` driven — no row is ever focused — so the only
+ * route from the pointer to the selection is the item's own `mousemove`, which Base UI gates
+ * behind `highlightItemOnHover`. That gate is all-or-nothing, and both settings are wrong for
+ * a palette: on, and sweeping the cursor across the list quietly reassigns what Enter runs;
+ * off, and clicking a row doesn't select it either, which strands the selection on the first
+ * row of any panel that stays open after a press — a checkbox list, most visibly.
+ *
+ * So the gate stays open and the events are filtered instead. Hover's `mousemove` is stopped
+ * in the capture phase, before Base UI's handler on the same element can see it (React's
+ * `stopPropagation` stops the native event at the root container, so the bubble pass never
+ * runs). A press then dispatches one `mousemove` of its own and waves it through. Base UI
+ * resolves that exactly as it would a real one — `listRef.indexOf(event.currentTarget)` — so
+ * the row pressed is the row selected, and there is no second highlight state to keep in sync
+ * with the one Enter actually reads.
+ */
+let passingSyntheticMove = false;
+
+/**
+ * Hands Base UI a row to resolve as highlighted, through the one channel it listens on.
+ *
+ * Module scope rather than a per-row ref because the priming below dispatches onto a row it
+ * does not own. The dispatch is synchronous, so the flag is only ever set across the single
+ * handler it is meant to wave through.
+ */
+function dispatchSelectionMove(row: HTMLElement) {
+  passingSyntheticMove = true;
+  row.dispatchEvent(new MouseEvent("mousemove", { bubbles: true }));
+  passingSyntheticMove = false;
+}
+
+function usePointerSelection() {
+  return useMemo(
+    () => ({
+      onMouseMoveCapture(event: ReactMouseEvent<HTMLElement>) {
+        if (passingSyntheticMove) return;
+        event.stopPropagation();
+      },
+      onPointerDown(event: ReactPointerEvent<HTMLElement>) {
+        dispatchSelectionMove(event.currentTarget);
+      },
+    }),
+    [],
+  );
+}
+
 export interface CommandPanelRowProps
-  extends Omit<ComponentProps<"div">, "children" | "onClick" | "onKeyDown"> {
+  extends Omit<
+    ComponentProps<"div">,
+    "children" | "onClick" | "onKeyDown" | "onPointerDown" | "onMouseMoveCapture"
+  > {
   /** A stable value used by Base UI's keyboard navigation. Defaults to the row label. */
   value?: string;
   /** A leading icon rendered in the standard 16px palette icon slot. */
@@ -1421,10 +1498,14 @@ export function CommandPanelRow({
   const interactive = onSelect != null || onActivate != null;
   const itemValue = value ?? props.id ?? String(children ?? "");
   const frozen = useFrozen(itemValue);
+  const pointerSelection = usePointerSelection();
 
   return (
     <Autocomplete.Item
       {...props}
+      // Hover paints; a press selects. See `usePointerSelection`. The row owns both handlers,
+      // which is why they are omitted from its props.
+      {...pointerSelection}
       value={itemValue}
       aria-selected={interactive ? selected : undefined}
       onClick={interactive ? (event) => {
@@ -1443,9 +1524,9 @@ export function CommandPanelRow({
         destructive
           ? "text-destructive data-highlighted:bg-muted data-highlighted:text-destructive data-frozen:bg-muted data-frozen:text-destructive"
           : "data-highlighted:bg-muted data-highlighted:text-foreground data-frozen:bg-muted data-frozen:text-foreground",
-        // Hover is a fill at half strength and nothing else: no text lift, so it cannot
-        // be mistaken for the selection. Scoped out of the selected and frozen states so
-        // the two never compete for the same row.
+        // Hover is a fill at half strength and nothing else: no text lift, so it cannot be
+        // mistaken for the selection. Scoped out of the selected and frozen states so the two
+        // never compete for the same row.
         interactive && "not-data-highlighted:not-data-frozen:hover:bg-muted/50",
         className,
       )}
@@ -2066,19 +2147,34 @@ function Hint({
   keys,
   children,
   onClick,
+  trailingKeys = false,
 }: {
   keys: ReactNode[];
   children: ReactNode;
   /** Given one, the hint becomes a real button that performs what it describes. */
   onClick?: () => void;
+  /**
+   * Put the key chip after the label. That is the bottom-right corner's convention — see
+   * `FooterAction` — so a hint pinned to that corner reads the same way the panel footers'
+   * Enter slot does.
+   */
+  trailingKeys?: boolean;
 }) {
-  const content = (
+  const chips = (
+    <span className="flex items-center gap-0.5">
+      {keys.map((key, i) => (
+        <Kbd key={i}>{key}</Kbd>
+      ))}
+    </span>
+  );
+  const content = trailingKeys ? (
     <>
-      <span className="flex items-center gap-0.5">
-        {keys.map((key, i) => (
-          <Kbd key={i}>{key}</Kbd>
-        ))}
-      </span>
+      {children}
+      {chips}
+    </>
+  ) : (
+    <>
+      {chips}
       {children}
     </>
   );
@@ -2131,12 +2227,15 @@ function CommandRow({
   const hasChildren = item.panel != null || (item.items != null && item.items.length > 0);
   const compactRow = Boolean(item.badge) && !item.description;
   const frozen = useFrozen(item);
+  const pointerSelection = usePointerSelection();
 
   return (
     <Autocomplete.Item
       value={item}
       disabled={item.disabled}
       onClick={() => onRun(item)}
+      // Hover paints; a press selects. See `usePointerSelection`.
+      {...pointerSelection}
       // See CommandPanelRow: `data-frozen` stands in for the highlight Base UI drops when
       // an actions menu takes focus.
       data-frozen={frozen ? "" : undefined}
@@ -2149,9 +2248,9 @@ function CommandRow({
         item.destructive
           ? "data-highlighted:bg-muted text-destructive data-highlighted:text-destructive data-frozen:bg-muted data-frozen:text-destructive"
           : "data-highlighted:bg-muted data-highlighted:text-foreground data-frozen:bg-muted data-frozen:text-foreground",
-        // Hover is a fill at half strength and nothing else: no text lift, so it cannot
-        // be mistaken for the selection. Scoped out of the selected and frozen states so
-        // the two never compete for the same row.
+        // Hover is a fill at half strength and nothing else: no text lift, so it cannot be
+        // mistaken for the selection. Scoped out of the selected and frozen states so the two
+        // never compete for the same row.
         "not-data-highlighted:not-data-frozen:hover:bg-muted/50",
         "data-disabled:pointer-events-none data-disabled:opacity-50",
       )}

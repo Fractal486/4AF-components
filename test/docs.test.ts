@@ -132,7 +132,6 @@ describe("component documentation", () => {
         "clearable",
         "iconForValue",
       ],
-      "select-overview": ["32px", "36px"],
       "select-search": ["readonly any[]", "SearchSelectItem"],
       "command-palette": [
         "helpers.openPanel",
@@ -159,5 +158,17 @@ describe("component documentation", () => {
       const page = readFileSync(resolve("content/docs", `${name}.mdx`), "utf8");
       for (const phrase of phrases) expect(page, `${name}: ${phrase}`).toContain(phrase);
     }
+  });
+
+  it("keeps the former family-overview guidance in the agent skill reference", () => {
+    const reference = readFileSync(
+      resolve(".agents/skills/4af-components/references/component-catalog.md"),
+      "utf8",
+    );
+
+    // Select sizing, from the deleted select-overview page.
+    for (const phrase of ["32px", "36px"]) expect(reference).toContain(phrase);
+    // Why sidebar and sidebar-layout stay separate, from the deleted sidebar-overview page.
+    expect(reference).toContain("viewport and scrolling strategy");
   });
 });

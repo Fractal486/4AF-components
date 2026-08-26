@@ -149,7 +149,7 @@ describe("AlignedSelect", () => {
     expect(screen.getByRole("option", { name: "Cherry" })).toHaveAttribute("data-panel-active");
   });
 
-  it("hands the offer to the list once an arrow moves into it", async () => {
+  it("moves the offer with the arrows, and with the pointer", async () => {
     const user = userEvent.setup();
     render(<Fruits searchable />);
 
@@ -157,10 +157,35 @@ describe("AlignedSelect", () => {
     const apple = await screen.findByRole("option", { name: "Apple" });
     await waitFor(() => expect(apple).toHaveAttribute("data-panel-active"));
 
-    // Base UI's roving highlight is the real one from here on, and two lit rows would be a
-    // lie about which one Enter takes.
+    // This Select is roving-focus rather than `aria-activedescendant`, so the mark rides on
+    // focus and one rule covers both modalities: whichever row has focus is the marked row.
     await user.keyboard("{ArrowDown}");
-    await waitFor(() => expect(apple).not.toHaveAttribute("data-panel-active"));
+    await waitFor(() => {
+      const focused = document.activeElement as HTMLElement;
+      expect(focused).toHaveAttribute("role", "option");
+      expect(focused).toHaveAttribute("data-panel-active");
+    });
+  });
+
+  it("keeps the offer where the pointer left it", async () => {
+    const user = userEvent.setup();
+    render(<Fruits searchable />);
+
+    await user.click(screen.getByRole("combobox"));
+    const banana = await screen.findByRole("option", { name: "Banana" });
+
+    await user.hover(banana);
+    await waitFor(() => expect(banana).toHaveAttribute("data-panel-active"));
+
+    // Base UI drops its own highlight when the pointer leaves the list and Select has no
+    // `keepHighlight` to stop it, so reading that highlight would snap the mark back to the
+    // row the panel opened on. This one is the panel's own and simply outlives it.
+    await user.unhover(banana);
+    await user.hover(screen.getByRole("combobox"));
+    expect(banana).toHaveAttribute("data-panel-active");
+    expect(screen.getByRole("option", { name: "Apple" })).not.toHaveAttribute(
+      "data-panel-active",
+    );
   });
 
   it("offers the empty message when a query matches nothing", async () => {

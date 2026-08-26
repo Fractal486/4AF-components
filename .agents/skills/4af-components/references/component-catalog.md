@@ -193,7 +193,9 @@ the pill FLIP-animates as the row moves.
 | `select-motion-search` | Editable Combobox | Unfolds from field | Trigger field |
 
 All support single and multi selection (multi uses Checkbox) and take `size="sm" | "md"`,
-default `sm`. Inside a Command Palette keep `sm`. `select-aligned` is single selection only. It takes optional sections
+default `sm`. `sm` is a 32px control with 12px text and 14px glyphs; `md` is 36px and lines
+up with a medium Button or Input in a form row; the size scales the trigger and the option
+rows together. Inside a Command Palette keep `sm`. `select-aligned` is single selection only. It takes optional sections
 (`AlignedSelectGroup` + `AlignedSelectGroupLabel`, which hide themselves when a search empties
 them) and an optional pinned search field (`searchable` on the content).
 
@@ -235,6 +237,17 @@ and the exit fades and blurs without reversing the entrance. Use `keepMounted`/
 The root `shortcut` prop defaults to `true` (`⌘K` / `Ctrl+K`). The inspector demo turns that
 binding off on the component and uses `⌘⇧P` / `Ctrl+Shift+P` instead so it does not compete with
 Fumadocs' own command shortcut.
+
+Every list — the root list and every custom panel's — opens with its first row already
+selected, before anything is typed, and follows the new first row as a query narrows the list;
+Enter runs it without an arrow press. Selection and hover are separate: the selected row carries
+`data-highlighted` and moves on arrow keys or a press, while hover is a weaker fill only, so
+sweeping the cursor never changes what Enter runs. A row whose actions menu is open carries
+`data-frozen`, styled identically.
+
+The root list primes that first row from its `items` collection via `autoHighlight`. A custom
+panel has no such collection, so `CommandPanelList` primes its own first row from the DOM after
+commit — do not remove that, and do not assume `autoHighlight` covers panels.
 
 Escape clears a non-empty header field only when that header is `type="search"`; other
 headers go back. Keep Select controls in headers at `size="sm"`.
@@ -330,6 +343,10 @@ controlled or observed.
 A header takes one full-width `SidebarHeaderButton`, or two wrapped in `SidebarHeaderRow`,
 which splits the width and stacks them when the sidebar collapses; `className="flex-none"`
 opts a button out.
+
+`sidebar` is the low-level navigation family and `sidebar-layout` the optional frame around
+it; they stay separate so a consumer can take the responsive sidebar without also taking one
+viewport and scrolling strategy.
 
 `sidebar-layout` is the optional shell: content surface, page header, collapse control,
 title, header actions.
