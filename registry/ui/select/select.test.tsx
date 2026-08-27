@@ -225,6 +225,43 @@ describe("Base UI Select", () => {
     expect(mango.querySelector('[role="checkbox"]')).toHaveAttribute("aria-checked", "true");
   });
 
+  it("supports nested options in the multi-select filter trigger", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+
+    render(
+      <Select<string, true>
+        multiple
+        items={{ active: "Active", archived: "Archived" }}
+        defaultValue={["active"]}
+        onValueChange={onValueChange}
+      >
+        <SelectSortTrigger label="Filter" aria-label="Filter projects" />
+        <SelectContent>
+          <SelectItem value="active">Active</SelectItem>
+          <SelectSub>
+            <SelectSubTrigger>More statuses</SelectSubTrigger>
+            <SelectSubContent>
+              <SelectItem value="archived">Archived</SelectItem>
+            </SelectSubContent>
+          </SelectSub>
+        </SelectContent>
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("combobox", { name: "Filter projects" });
+    await user.click(trigger);
+    await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "true"));
+    await user.click(await screen.findByRole("option", { name: "More statuses" }));
+    await user.click(await screen.findByRole("option", { name: "Archived" }));
+
+    await waitFor(() =>
+      expect(onValueChange).toHaveBeenLastCalledWith(["active", "archived"], expect.anything()),
+    );
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(trigger).toHaveTextContent("Filter: Active, Archived");
+  });
+
   it("selects a nested option when a touchpad tap omits pointerdown", async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();

@@ -4,6 +4,9 @@ import {
   SelectContent,
   SelectItem,
   SelectSortTrigger,
+  SelectSub,
+  SelectSubContent,
+  SelectSubTrigger,
 } from "@/registry/ui/select/select";
 import { bool, defineEntry, select } from "../schema";
 
@@ -18,6 +21,8 @@ const FILTER_OPTIONS = {
   paused: "Paused",
   archived: "Archived",
 } as const;
+
+const NESTED_FILTER_OPTIONS = ["archived"] as const;
 
 export const selectSortEntry = defineEntry({
   slug: "select-sort",
@@ -52,11 +57,33 @@ export const selectSortEntry = defineEntry({
         autoFocusFirstItem={false}
         className={variant === "default" ? "min-w-40" : undefined}
       >
-        {Object.entries(options).map(([value, label]) => (
-          <SelectItem key={value} value={value}>
-            {label}
-          </SelectItem>
-        ))}
+        {multiple ? (
+          <>
+            {Object.entries(options)
+              .filter(([value]) => !NESTED_FILTER_OPTIONS.includes(value as (typeof NESTED_FILTER_OPTIONS)[number]))
+              .map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            <SelectSub>
+              <SelectSubTrigger>More statuses</SelectSubTrigger>
+              <SelectSubContent>
+                {NESTED_FILTER_OPTIONS.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {FILTER_OPTIONS[value]}
+                  </SelectItem>
+                ))}
+              </SelectSubContent>
+            </SelectSub>
+          </>
+        ) : (
+          Object.entries(options).map(([value, label]) => (
+            <SelectItem key={value} value={value}>
+              {label}
+            </SelectItem>
+          ))
+        )}
       </SelectContent>
     );
 

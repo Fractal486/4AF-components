@@ -94,6 +94,10 @@ Install `select`, then use `SelectSortTrigger`. It automatically:
 Use `variant="plain"` for a transparent, borderless sort/filter trigger. Its label/value and
 dropdown chevron remain adjacent, and a supplied sort/filter `icon` remains leading.
 
+When `multiple` is enabled, the same trigger becomes a filter control and supports the nested
+`SelectSub` panels described above. Nested rows participate in the multi-selection and keep the
+panel open while choices are toggled.
+
 The clear footer is independently optional. Add `clearable` to `SelectContent` when the panel
 should offer it.
 
