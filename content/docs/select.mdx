@@ -50,6 +50,10 @@ in the main panel. When the parent `SelectContent` is searchable, its field also
 nested rows: a matching parent trigger remains in the main panel, and opening it reveals the
 matching child rows. Nested panels can be nested again.
 
+Nested panels open immediately when their parent row is hovered. Pass a positive `delay` to
+`SelectSubTrigger` only when a deliberate hover pause is wanted. The initially focused nested row
+stays unhighlighted until it is hovered or reached through keyboard navigation.
+
 ```tsx
 import {
   Select,

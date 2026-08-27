@@ -168,6 +168,9 @@ describe("Base UI Select", () => {
       return content;
     });
     expect(subContent).toHaveAttribute("data-slot", "select-sub-content");
+    const firstNestedOption = screen.getByRole("option", { name: "Banana" });
+    expect(firstNestedOption).not.toHaveClass("data-[highlighted]:bg-muted");
+    expect(firstNestedOption).toHaveClass("hover:bg-muted");
     expect(
       document.querySelector('[data-slot="select-content-positioner"]')?.contains(subContent),
     ).toBe(false);
@@ -373,7 +376,7 @@ describe("Base UI Select", () => {
         </SelectTrigger>
         <SelectContent>
           <SelectSub>
-            <SelectSubTrigger delay={0} closeDelay={0}>
+            <SelectSubTrigger closeDelay={0}>
               More fruit
             </SelectSubTrigger>
             <SelectSubContent>
@@ -387,7 +390,7 @@ describe("Base UI Select", () => {
     await user.click(screen.getByRole("combobox", { name: "Fruit" }));
     const subTrigger = await screen.findByRole("option", { name: "More fruit" });
     await user.hover(subTrigger);
-    await waitFor(() => expect(subTrigger).toHaveAttribute("aria-expanded", "true"));
+    expect(subTrigger).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("option", { name: "Banana" })).toBeInTheDocument();
 
     await user.unhover(subTrigger);

@@ -1481,9 +1481,9 @@ export interface SelectSubTriggerProps
   label?: string;
   disabled?: boolean;
   id?: string;
-  /** Open the nested panel after the pointer rests on this row. @default true */
+  /** Open the nested panel when the pointer enters this row. @default true */
   openOnHover?: boolean;
-  /** Hover delay in milliseconds. @default 100 */
+  /** Hover delay in milliseconds. @default 0 */
   delay?: number;
   /** Hover close delay in milliseconds. @default 100 */
   closeDelay?: number;
@@ -1508,7 +1508,7 @@ export function SelectSubTrigger({
   onPointerMove: onPointerMoveProp,
   onPointerLeave: onPointerLeaveProp,
   openOnHover = true,
-  delay = 100,
+  delay = 0,
   closeDelay = 100,
   ...props
 }: SelectSubTriggerProps) {
@@ -1746,6 +1746,7 @@ export function SelectSubContent({
       open={subOpen}
       value={nestedValue as never}
       multiple={select.multiple}
+      highlightItemOnHover={false}
       modal={false}
       readOnly={select.readOnly}
       onOpenChange={handleNestedOpenChange}
@@ -1986,8 +1987,9 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
           "flex items-center gap-2.5 rounded-xs px-2.5 py-1.5 outline-none select-none",
           SIZE[size].row,
           "text-muted-foreground",
-          (!panelSearch || nestedPanel) &&
-            "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
+          nestedPanel
+            ? "hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground"
+            : !panelSearch && "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
           "data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
           "data-[selected]:text-foreground",
           "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
@@ -2047,10 +2049,12 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
         "flex items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
-        // Base UI moves this highlight with the keyboard as well as the pointer; it snaps
-        // (no transition) so it keeps up with arrow-key navigation rather than lagging.
-        (!panelSearch || nestedPanel) &&
-          "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
+        // The main panel follows Base UI's keyboard highlight. Nested panels disable Base
+        // UI's pointer-driven active row so their initial focus doesn't paint; CSS hover and
+        // focus-visible keep actual pointer and keyboard movement visible.
+        nestedPanel
+          ? "hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground"
+          : !panelSearch && "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
         "data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
         "data-[selected]:text-foreground",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",

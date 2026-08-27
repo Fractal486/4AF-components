@@ -41,7 +41,12 @@ export const DropdownMenu = BaseMenu.Root;
 export const DropdownMenuTrigger = BaseMenu.Trigger;
 export const DropdownMenuGroup = BaseMenu.Group;
 export const DropdownMenuRadioGroup = BaseMenu.RadioGroup;
-export const DropdownMenuSub = BaseMenu.SubmenuRoot;
+export function DropdownMenuSub({
+  highlightItemOnHover = false,
+  ...props
+}: ComponentProps<typeof BaseMenu.SubmenuRoot>) {
+  return <BaseMenu.SubmenuRoot highlightItemOnHover={highlightItemOnHover} {...props} />;
+}
 
 type DropdownMenuSelectValue<Value, Multiple extends boolean | undefined> = Multiple extends true
   ? Value[]
@@ -271,7 +276,7 @@ const itemBase = cn(
   // Compact rows: 12px text and 14px glyphs, a denser treatment than the 14px overlays.
   "relative flex items-center gap-2 rounded-sm px-2.5 py-1.5 text-xs text-foreground outline-none select-none",
   // Instant — no transition, so the highlight tracks the keyboard rather than trailing it.
-  "data-[highlighted]:bg-muted data-[popup-open]:bg-muted",
+  "data-[highlighted]:bg-muted hover:bg-muted focus-visible:bg-muted data-[popup-open]:bg-muted",
   "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
   // Size/inert every glyph, but only mute the *leading* icons (direct children) — the
   // nested check/dot indicators keep the item's foreground ink.
@@ -311,7 +316,7 @@ const INDICATOR_SLOT =
 
 const selectItemBase = cn(
   "relative flex items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-xs outline-none select-none",
-  "text-muted-foreground data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
+  "text-muted-foreground data-[highlighted]:bg-muted data-[highlighted]:text-foreground hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground",
   "data-[checked]:text-foreground",
   "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
 );
@@ -823,12 +828,17 @@ export function DropdownMenuShortcut({ className, ...props }: ComponentProps<"kb
 }
 
 export interface DropdownMenuSelectTriggerProps
-  extends Omit<ComponentProps<typeof BaseMenu.SubmenuTrigger>, "children" | "className"> {
+  extends Omit<
+    ComponentProps<typeof BaseMenu.SubmenuTrigger>,
+    "children" | "className" | "delay"
+  > {
   /** An optional leading icon for the menu row. */
   icon?: ReactNode;
   /** The label shown on the left side of the trigger. */
   placeholder?: ReactNode;
   className?: string;
+  /** Hover delay in milliseconds. @default 0 */
+  delay?: number;
 }
 
 /**
@@ -1120,14 +1130,26 @@ export function DropdownMenuSelectItem({
 }
 
 export interface DropdownMenuSubTriggerProps
-  extends Omit<ComponentProps<typeof BaseMenu.SubmenuTrigger>, "children"> {
+  extends Omit<ComponentProps<typeof BaseMenu.SubmenuTrigger>, "children" | "delay"> {
   inset?: boolean;
   children?: ReactNode;
+  /** Hover delay in milliseconds. @default 0 */
+  delay?: number;
 }
 
-export function DropdownMenuSubTrigger({ className, inset, children, ...props }: DropdownMenuSubTriggerProps) {
+export function DropdownMenuSubTrigger({
+  className,
+  inset,
+  children,
+  delay = 0,
+  ...props
+}: DropdownMenuSubTriggerProps) {
   return (
-    <BaseMenu.SubmenuTrigger className={cn(itemBase, inset && "pl-8", className)} {...props}>
+    <BaseMenu.SubmenuTrigger
+      className={cn(itemBase, inset && "pl-8", className)}
+      delay={delay}
+      {...props}
+    >
       {children}
       <ChevronRight className="ml-auto size-4 text-muted-foreground" />
     </BaseMenu.SubmenuTrigger>

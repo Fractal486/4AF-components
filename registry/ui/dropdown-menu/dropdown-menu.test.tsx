@@ -9,6 +9,9 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "./dropdown-menu";
 
@@ -102,6 +105,34 @@ describe("DropdownMenu", () => {
     expect(
       await screen.findByText("Billing is available on the Pro plan."),
     ).toBeInTheDocument();
+  });
+
+  it("opens a nested panel as soon as its row is hovered", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger aria-label="More actions" />
+        <DropdownMenuContent>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>More actions</DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem>Nested action</DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+    const subTrigger = await screen.findByRole("menuitem", { name: "More actions" });
+    await user.hover(subTrigger);
+
+    expect(subTrigger).toHaveAttribute("aria-expanded", "true");
+    const nestedItem = screen.getByRole("menuitem", { name: "Nested action" });
+    expect(nestedItem).toBeInTheDocument();
+    expect(nestedItem).not.toHaveAttribute("data-highlighted");
+    expect(nestedItem).toHaveClass("hover:bg-muted");
   });
 
   it("left-aligns a Morph inside a row, so a toggling label doesn't sit indented", async () => {
