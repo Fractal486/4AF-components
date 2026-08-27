@@ -2,7 +2,7 @@
 
 import { Separator as BaseSeparator } from "@base-ui/react/separator";
 import { Collapsible as BaseCollapsible } from "@base-ui/react/collapsible";
-import { PanelLeft } from "lucide-react";
+import { PanelLeft, PanelRight } from "lucide-react";
 import {
   createContext,
   useCallback,
@@ -530,23 +530,33 @@ export function SidebarTrigger({
   onClick,
   ...props
 }: ComponentProps<typeof Button>) {
-  const { toggleSidebar } = useSidebar();
+  const { isMobile, openMobile, state, toggleSidebar } = useSidebar();
+  const isOpen = isMobile ? openMobile : state === "expanded";
 
   return (
-    <Button
-      data-slot="sidebar-trigger"
-      variant="ghost"
-      size="icon-sm"
-      aria-label="Toggle sidebar"
-      className={className}
-      onClick={(event) => {
-        onClick?.(event);
-        if (!event.defaultPrevented) toggleSidebar();
-      }}
-      {...props}
-    >
-      <PanelLeft />
-    </Button>
+    <TooltipProvider delay={500}>
+      <Tooltip
+        content={
+          <kbd>⌘B</kbd>
+        }
+        delay={500}
+      >
+        <Button
+          data-slot="sidebar-trigger"
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Toggle sidebar"
+          className={className}
+          onClick={(event) => {
+            onClick?.(event);
+            if (!event.defaultPrevented) toggleSidebar();
+          }}
+          {...props}
+        >
+          {isOpen ? <PanelLeft aria-hidden="true" /> : <PanelRight aria-hidden="true" />}
+        </Button>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
