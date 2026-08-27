@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { FileText } from "lucide-react";
+import { FileText, Maximize2 } from "lucide-react";
 import {
   DocsBody,
   DocsDescription,
@@ -23,10 +23,10 @@ export default async function Page({ params }: DocsPageProps) {
   const MdxContent = page.data.body;
   const markdownUrl = `${page.url}.md`;
   const isAgentSkillOverview = page.url === "/docs/reference/agent-skill";
+  const isSidebarLayoutPage = page.url === "/docs/sidebar-layout";
   const isDemoPage =
     page.url !== "/docs" &&
-    !page.url.includes("/reference/") &&
-    !page.url.endsWith("-overview");
+    !page.url.includes("/reference/");
 
   return (
     <DocsPage toc={page.data.toc}>
@@ -47,6 +47,22 @@ export default async function Page({ params }: DocsPageProps) {
             <FileText className="size-3.5" aria-hidden="true" />
             View as Markdown
           </a>
+          {isSidebarLayoutPage ? (
+            <a
+              href="/full/sidebar-layout"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Open Sidebar Layout fullscreen in a new tab"
+              className={buttonVariants({
+                color: "secondary",
+                size: "sm",
+                className: "gap-2",
+              })}
+            >
+              <Maximize2 className="size-3.5" aria-hidden="true" />
+              Open in new tab
+            </a>
+          ) : null}
           {isAgentSkillOverview ? <DownloadSkillButton /> : null}
         </div>
         {isDemoPage ? null : (

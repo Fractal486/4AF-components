@@ -36,8 +36,6 @@ import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 const SCROLLBAR =
   "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground";
 
-const EMPTY_ITEMS: readonly never[] = [];
-
 /**
  * The two sizes, mirroring Button. `sm` (32px) is the compact default; `md` (36px) matches
  * Button's `md` and the Input for form rows. The size flows through context so the input
@@ -113,6 +111,9 @@ export function MotionSearchSelect<Value, Multiple extends boolean | undefined =
   items,
   iconForValue,
   size = "sm",
+  value,
+  defaultValue,
+  onValueChange,
   ...props
 }: MotionSearchSelectProps<Value, Multiple>) {
   const [uncontrolled, setUncontrolled] = useState(defaultOpen ?? false);
@@ -151,25 +152,20 @@ export function MotionSearchSelect<Value, Multiple extends boolean | undefined =
         : (iconForValue?.(value as Value) ?? iconFromValue(value))),
     [iconForValue, icons],
   );
-  const [closedRegistryCleared, setClosedRegistryCleared] = useState(
-    () => !isOpen && items !== undefined,
+  // Base UI owns the value; this mirrors it only to answer "is anything chosen", which is
+  // what picks the highlight mode below.
+  const [uncontrolledValue, setUncontrolledValue] = useState<unknown>(() => defaultValue ?? null);
+  const selected = value !== undefined ? value : uncontrolledValue;
+  const hasSelection = Array.isArray(selected) ? selected.length > 0 : selected != null;
+  const handleValueChange = useCallback<
+    NonNullable<MotionSearchSelectProps<Value, Multiple>["onValueChange"]>
+  >(
+    (next, details) => {
+      setUncontrolledValue(next);
+      onValueChange?.(next, details);
+    },
+    [onValueChange],
   );
-
-  // Adjusted during render, above `visibleItems` so it reads the released latch in this
-  // same pass. From an effect the latch would still be set on the render that opens the
-  // panel, so the list would mount empty for a frame and fill on the following render.
-  const [wasOpen, setWasOpen] = useState(isOpen);
-  if (wasOpen !== isOpen) {
-    setWasOpen(isOpen);
-    if (isOpen) setClosedRegistryCleared(false);
-  }
-
-  // Base UI normally remembers the selected item as the starting point for the next open.
-  // Search selects instead begin at the first visible choice, so clear that registry only
-  // after its close transition completes. The real items remain in the exiting panel and
-  // are restored in the same render that opens the list.
-  const visibleItems =
-    !isOpen && closedRegistryCleared && items !== undefined ? EMPTY_ITEMS : items;
 
   const handleOpenChange = useCallback<
     NonNullable<MotionSearchSelectProps<Value, Multiple>["onOpenChange"]>
@@ -189,17 +185,6 @@ export function MotionSearchSelect<Value, Multiple extends boolean | undefined =
     [isControlled, multiple, onOpenChange],
   );
 
-  const handleOpenChangeComplete = useCallback(
-    (next: boolean) => {
-      if (!next && !isOpen && items !== undefined) {
-        setClosedRegistryCleared(true);
-      }
-
-      onOpenChangeComplete?.(next);
-    },
-    [isOpen, items, onOpenChangeComplete],
-  );
-
   return (
     <MotionSearchContext.Provider
       value={{
@@ -214,14 +199,28 @@ export function MotionSearchSelect<Value, Multiple extends boolean | undefined =
       <Combobox.Root<Value, Multiple>
         open={isOpen}
         onOpenChange={handleOpenChange}
-        onOpenChangeComplete={handleOpenChangeComplete}
+        onOpenChangeComplete={onOpenChangeComplete}
         defaultOpen={defaultOpen}
         multiple={multiple}
-        items={visibleItems}
+        items={items}
+        value={value}
+        defaultValue={defaultValue}
+        onValueChange={handleValueChange}
         {...props}
-        // Base UI's public Combobox type narrows this richer Aria Combobox mode to a
-        // boolean. Runtime support for `always` keeps the first visible row highlighted.
-        autoHighlight={"always" as never}
+        // Hovering moves the highlight; leaving the list must not throw it away. Base UI
+        // otherwise resets the active row on pointer-leave, and `autoHighlight` then puts it
+        // straight back on row one — so a pointer that wandered out of the panel would silently
+        // re-aim Enter at the top of the list. The other selects keep the last hovered row.
+        // (Spread, not a named prop: Base UI leaves this one off the public Combobox type
+        // altogether rather than narrowing it, so there is no cast that would satisfy it.)
+        {...({ keepHighlight: true } as Record<string, unknown>)}
+        // Two modes, because Base UI's `always` pins the first row unconditionally and would
+        // override the active row it otherwise restores from the selection: `always` for a
+        // select with nothing chosen, the plain mode — which restores the selected row and
+        // still jumps to the top match on every keystroke — for one that has an answer
+        // already. (Base UI's public Combobox type narrows this richer Aria Combobox mode to
+        // a boolean, hence the cast.)
+        autoHighlight={(hasSelection ? true : "always") as never}
       >
         {children}
       </Combobox.Root>
@@ -376,7 +375,14 @@ export function MotionSearchSelectContent({
           )}
           {...props}
         >
-          <Combobox.Empty className={cn("m-1 flex h-8 items-center justify-center px-2.5 text-center text-muted-foreground empty:hidden", SIZE[size].row)}>
+          <Combobox.Empty
+            // One row tall, exactly — `m-1` mirrors the list's `p-1` and `py-1.5` is the
+            // row's own vertical padding. See the note in `select.tsx`.
+            className={cn(
+              "m-1 flex items-center justify-center px-2.5 py-1.5 text-center text-muted-foreground empty:hidden",
+              SIZE[size].row,
+            )}
+          >
             {emptyMessage}
           </Combobox.Empty>
           <Combobox.List
@@ -444,7 +450,7 @@ export function MotionSearchSelectItem({
     <Combobox.Item
       value={value}
       className={cn(
-        "flex cursor-pointer items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
+        "flex items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
         "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
@@ -495,7 +501,7 @@ export function MotionSearchMultiSelectItem({
     <Combobox.Item
       value={value}
       className={cn(
-        "flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 outline-none select-none",
+        "flex items-center gap-2.5 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
         "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",

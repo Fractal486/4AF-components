@@ -2,7 +2,7 @@
 
 import { Separator as BaseSeparator } from "@base-ui/react/separator";
 import { Collapsible as BaseCollapsible } from "@base-ui/react/collapsible";
-import { PanelLeft } from "lucide-react";
+import { PanelLeft, PanelRight } from "lucide-react";
 import {
   createContext,
   useCallback,
@@ -63,7 +63,7 @@ const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
-const SIDEBAR_WIDTH_SPLIT_RAIL = "3.5rem";
+const SIDEBAR_WIDTH_SPLIT_RAIL = "3rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
 const MOBILE_BREAKPOINT = 768;
 const SIDEBAR_SCROLLBAR =
@@ -271,9 +271,13 @@ export function Sidebar({
   const splitFloating = variant === "split-floating";
   const splitInset = variant === "split-inset";
   const splitFramed = splitFloating || splitInset;
-  const splitExpandedWidth = splitFramed
-    ? "w-[calc(var(--sidebar-width)+var(--sidebar-width-icon)+(--spacing(4)))]"
-    : "w-[calc(var(--sidebar-width)+var(--sidebar-width-icon))]";
+  // Framed sidebars spend 1rem on horizontal padding. Keep the wide panel's visible
+  // surface the same width as the corresponding default sidebar surface instead of
+  // making that padding expand the panel.
+  const splitPanelWidth = splitFramed
+    ? "w-[calc(var(--sidebar-width)-(--spacing(4)))]"
+    : "w-(--sidebar-width)";
+  const splitExpandedWidth = "w-[calc(var(--sidebar-width)+var(--sidebar-width-icon))]";
   const splitCollapsedWidth = splitFramed
     ? "group-data-[state=collapsed]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]"
     : "group-data-[state=collapsed]:w-(--sidebar-width-icon)";
@@ -399,15 +403,23 @@ export function Sidebar({
           <div
             className={cn(
               "flex h-full w-full min-w-0 overflow-hidden",
-              splitFramed && "rounded-lg shadow-border",
+              splitFloating
+                ? "rounded-lg shadow-border"
+                : splitInset
+                  ? "rounded-lg shadow-border"
+                  : undefined,
             )}
           >
             <div
               data-slot="sidebar-rail-column"
               className={cn(
-                "flex h-full w-(--sidebar-width-icon) shrink-0 flex-col items-center gap-2 overflow-y-auto bg-surface p-2",
+                // The border leaves the padded rail one pixel narrower than its 32px
+                // controls; never turn that intentional edge overlap into an x-scrollbar.
+                "flex h-full w-(--sidebar-width-icon) shrink-0 flex-col items-center gap-2 overflow-x-hidden overflow-y-auto bg-surface p-2",
                 SIDEBAR_SCROLLBAR,
-                "border-r border-border",
+                // Once the wide panel closes, this internal divider meets the
+                // container's outer edge border; keep the outer line only.
+                "border-r border-border group-data-[state=collapsed]:border-r-0",
               )}
             >
               {rail}
@@ -420,7 +432,8 @@ export function Sidebar({
                 way out should stop taking clicks immediately. */}
             <div
               className={cn(
-                "flex h-full w-(--sidebar-width) shrink-0 flex-col overflow-hidden bg-surface",
+                "flex h-full shrink-0 flex-col overflow-hidden bg-surface",
+                splitPanelWidth,
                 "transition-[width,opacity,visibility] duration-(--duration-slow) ease-out",
                 "group-data-[state=collapsed]:pointer-events-none group-data-[state=collapsed]:invisible",
                 "group-data-[state=collapsed]:w-0 group-data-[state=collapsed]:opacity-0",
@@ -431,7 +444,7 @@ export function Sidebar({
                   its text on the way down to zero, which is far louder than the slide. */}
               <div
                 data-slot="sidebar-inner"
-                className="flex h-full w-(--sidebar-width) flex-col text-foreground"
+                className={cn("flex h-full flex-col text-foreground", splitPanelWidth)}
               >
                 {children}
               </div>
@@ -517,23 +530,33 @@ export function SidebarTrigger({
   onClick,
   ...props
 }: ComponentProps<typeof Button>) {
-  const { toggleSidebar } = useSidebar();
+  const { isMobile, openMobile, state, toggleSidebar } = useSidebar();
+  const isOpen = isMobile ? openMobile : state === "expanded";
 
   return (
-    <Button
-      data-slot="sidebar-trigger"
-      variant="ghost"
-      size="icon-sm"
-      aria-label="Toggle sidebar"
-      className={className}
-      onClick={(event) => {
-        onClick?.(event);
-        if (!event.defaultPrevented) toggleSidebar();
-      }}
-      {...props}
-    >
-      <PanelLeft />
-    </Button>
+    <TooltipProvider delay={500}>
+      <Tooltip
+        content={
+          <kbd>⌘B</kbd>
+        }
+        delay={500}
+      >
+        <Button
+          data-slot="sidebar-trigger"
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Toggle sidebar"
+          className={className}
+          onClick={(event) => {
+            onClick?.(event);
+            if (!event.defaultPrevented) toggleSidebar();
+          }}
+          {...props}
+        >
+          {isOpen ? <PanelLeft aria-hidden="true" /> : <PanelRight aria-hidden="true" />}
+        </Button>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
@@ -589,6 +612,7 @@ export function SidebarRailButton({
     <Tooltip
       content={tooltip}
       side="right"
+      disableHoverablePopup
       // The popup is portalled, but the positioner itself still needs a stacking
       // level so an expanded contextual column cannot paint over the rail tooltip.
       positionerProps={{ className: "z-50" }}
@@ -669,7 +693,7 @@ export function SidebarInset({ className, ...props }: ComponentProps<"main">) {
         "relative flex w-full flex-1 flex-col bg-background",
         "md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=split-inset]:m-2",
         "md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=split-inset]:ml-0",
-        "md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=split-inset]:rounded-xl",
+        "md:peer-data-[variant=inset]:rounded-lg md:peer-data-[variant=split-inset]:rounded-lg",
         "md:peer-data-[variant=inset]:shadow-border md:peer-data-[variant=split-inset]:shadow-border",
         className,
       )}
@@ -818,7 +842,7 @@ export function SidebarContent({ className, ...props }: ComponentProps<"div">) {
         SIDEBAR_SCROLLBAR,
         // Collapsed, the labels are wider than the rail; clipping beats a scrollbar
         // appearing every time the sidebar closes.
-        "group-data-[collapsible=icon]:overflow-hidden",
+        "group-data-[collapsible=icon]:overflow-hidden group-data-[collapsible=icon]:gap-0",
         className,
       )}
       {...props}
@@ -832,7 +856,13 @@ export function SidebarGroup({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
       data-slot="sidebar-group"
-      className={cn("relative flex w-full min-w-0 flex-col p-2", className)}
+      className={cn(
+        "relative flex w-full min-w-0 flex-col p-2 group-data-[collapsible=icon]:pb-0",
+        // Collapsed section labels disappear; preserve the boundary above each
+        // subsequent section as a short line in the icon rail.
+        "not-first:group-data-[collapsible=icon]:before:pointer-events-none not-first:group-data-[collapsible=icon]:before:absolute not-first:group-data-[collapsible=icon]:before:top-0 not-first:group-data-[collapsible=icon]:before:left-1/2 not-first:group-data-[collapsible=icon]:before:h-px not-first:group-data-[collapsible=icon]:before:w-4 not-first:group-data-[collapsible=icon]:before:-translate-x-1/2 not-first:group-data-[collapsible=icon]:before:bg-border not-first:group-data-[collapsible=icon]:before:content-['']",
+        className,
+      )}
       {...props}
     />
   );
@@ -1068,7 +1098,7 @@ export function SidebarMenuAction({
         // existing 20px visual box and row geometry.
         "absolute top-1.5 right-1.5 z-[1] size-5 cursor-pointer rounded-md p-0",
         nested && "top-1 right-[7px]",
-        "text-muted-foreground outline-none hover:bg-transparent hover:text-primary-foreground dark:hover:text-foreground",
+        "text-muted-foreground outline-none hover:bg-transparent hover:text-foreground",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0",
         "after:absolute after:-inset-2 md:after:hidden",
         "peer-data-[size=sm]/menu-button:top-1",

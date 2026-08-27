@@ -7,7 +7,6 @@ import {
   Bell,
   BellOff,
   Copy,
-  CornerDownLeft,
   FileText,
   FolderOpen,
   Home,
@@ -35,8 +34,6 @@ import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import {
   CommandPalette,
   CommandPanelRow,
-  CommandPanelAction,
-  CommandPanelActions,
   CommandPanelBody,
   CommandPanelFooter,
   CommandPanelList,
@@ -56,6 +53,8 @@ import {
 } from "@/registry/ui/select/select";
 import { Slider } from "@/registry/ui/slider/slider";
 import { Switch } from "@/registry/ui/switch/switch";
+
+const DEMO_SHORTCUT_KEY = "p";
 
 // `items` doubles as the value→label map the sort chip reads to show "Recently updated"
 // for its `defaultValue` before the panel is ever opened, and the source the rows render
@@ -272,6 +271,26 @@ export function CommandPaletteDemo({
 
   const run = (label: string) => () => setLastRun(label);
 
+  useEffect(() => {
+    if (!shortcut) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key.toLowerCase() !== DEMO_SHORTCUT_KEY ||
+        !event.shiftKey ||
+        !(event.metaKey || event.ctrlKey)
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      setOpen((current) => !current);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [shortcut]);
+
   // A mock server search: waits out a latency, honours the abort signal so superseded
   // keystrokes cancel, and returns already-ranked results (here, a plain substring match).
   const searchSource = async (q: string, signal: AbortSignal): Promise<CommandGroup[]> => {
@@ -413,11 +432,16 @@ export function CommandPaletteDemo({
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <Button variant="outline" onClick={() => setOpen(true)}>
+      <Button
+        variant="outline"
+        onClick={() => setOpen(true)}
+        aria-keyshortcuts="Control+Shift+P Meta+Shift+P"
+      >
         Open palette
         <span className="ml-1 flex items-center gap-0.5 text-subtle-foreground">
           <kbd className="rounded-xs border border-current/50 px-1 py-0.5 font-mono text-2xs">⌘</kbd>
-          <kbd className="rounded-xs border border-current/50 px-1 py-0.5 font-mono text-2xs">K</kbd>
+          <kbd className="rounded-xs border border-current/50 px-1 py-0.5 font-mono text-2xs">⇧</kbd>
+          <kbd className="rounded-xs border border-current/50 px-1 py-0.5 font-mono text-2xs">P</kbd>
         </span>
       </Button>
 
@@ -441,7 +465,9 @@ export function CommandPaletteDemo({
         // With async on, the static groups become the resting state (shown while the query
         // is empty) and the mock server takes over the moment you type.
         onSearch={search ? searchSource : undefined}
-        shortcut={shortcut}
+        // The demo owns a separate shortcut so the component's default ⌘K binding does not
+        // compete with the docs shell while this page is being inspected.
+        shortcut={false}
         open={open}
         onOpenChange={setOpen}
       />
@@ -474,11 +500,7 @@ function RenamePanel({
         </p>
       </CommandPanelBody>
 
-      <CommandPanelFooter>
-        <CommandPanelAction type="submit" keys={[<CornerDownLeft key="enter" className="size-2.5" />]}>
-          Save
-        </CommandPanelAction>
-      </CommandPanelFooter>
+      <CommandPanelFooter enter={{ label: "Save", type: "submit" }} />
     </form>
   );
 }
@@ -678,19 +700,16 @@ function ProjectsPanel({
         )}
       </CommandPanelList>
 
-      <CommandPanelFooter>
-        <CommandPanelAction
-          onClick={() => {
+      <CommandPanelFooter
+        enter={{
+          label: "Open",
+          onClick: () => {
             onDone(`Opened ${selected}`);
             helpers.close();
-          }}
-          keys={[<CornerDownLeft key="enter" className="size-2.5" />]}
-        >
-          Open
-        </CommandPanelAction>
-        {/* Rightmost, so the menu hangs off the bottom-right corner. */}
-        <CommandPanelActions groups={actionGroups} />
-      </CommandPanelFooter>
+          },
+        }}
+        actions={{ groups: actionGroups }}
+      />
     </div>
   );
 }
@@ -759,11 +778,7 @@ function NewProjectPanel({
         </div>
       </CommandPanelBody>
 
-      <CommandPanelFooter>
-        <CommandPanelAction type="submit" keys={[<CornerDownLeft key="enter" className="size-2.5" />]}>
-          Create
-        </CommandPanelAction>
-      </CommandPanelFooter>
+      <CommandPanelFooter enter={{ label: "Create", type: "submit" }} />
     </form>
   );
 }
@@ -873,11 +888,7 @@ function SettingsPanel({
         </div>
       </CommandPanelBody>
 
-      <CommandPanelFooter>
-        <CommandPanelAction type="submit" keys={[<CornerDownLeft key="enter" className="size-2.5" />]}>
-          Save
-        </CommandPanelAction>
-      </CommandPanelFooter>
+      <CommandPanelFooter enter={{ label: "Save", type: "submit" }} />
     </form>
   );
 }

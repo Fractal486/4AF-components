@@ -2,8 +2,13 @@
 
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Input } from "@/registry/ui/input/input";
+import {
+  AlignedSelect,
+  AlignedSelectContent,
+  AlignedSelectItem,
+  AlignedSelectTrigger,
+} from "@/registry/ui/select/select-aligned";
 import { Slider } from "@/registry/ui/slider/slider";
-import { Tabs, TabsList, TabsTab } from "@/registry/ui/tabs/tabs";
 import { cn } from "@/registry/lib/cn";
 import type { ControlDef, ControlSchema, ControlValues } from "./schema";
 
@@ -24,23 +29,18 @@ export function Controls<S extends ControlSchema>({
   const entries = Object.entries(schema) as [keyof S & string, ControlDef][];
 
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-[15px] leading-5 font-semibold text-fd-foreground">
-        Settings
-      </p>
-      <div className="flex flex-col gap-3">
-        {entries.map(([key, def]) => (
-          <Control
-            key={key}
-            id={idPrefix ? `${idPrefix}-${key}` : key}
-            def={def}
-            label={def.label ?? humanizeLabel(key)}
-            value={values[key]}
-            values={values as Record<string, unknown>}
-            onChange={(v) => onChange(key, v)}
-          />
-        ))}
-      </div>
+    <div className="flex w-full flex-col gap-3">
+      {entries.map(([key, def]) => (
+        <Control
+          key={key}
+          id={idPrefix ? `${idPrefix}-${key}` : key}
+          def={def}
+          label={def.label ?? humanizeLabel(key)}
+          value={values[key]}
+          values={values as Record<string, unknown>}
+          onChange={(v) => onChange(key, v)}
+        />
+      ))}
     </div>
   );
 }
@@ -74,11 +74,11 @@ function Control({
     return (
       <label
         className={cn(
-          "flex items-center gap-2",
+          "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-4",
           disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
         )}
       >
-        <span className="text-sm text-muted-foreground select-none">{label}</span>
+        <span className="min-w-0 text-sm text-muted-foreground select-none">{label}</span>
         <Checkbox
           size="sm"
           checked={value as boolean}
@@ -91,28 +91,32 @@ function Control({
 
   if (def.kind === "select") {
     const labelId = `${id}-label`;
+    const selectedLabel = humanizeLabel(value as string);
 
     return (
-      <div className="flex min-w-0 items-center gap-2">
-        <span id={labelId} className="shrink-0 text-sm text-muted-foreground">
-          {label}:
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,auto)] items-center gap-4">
+        <span id={labelId} className="min-w-0 text-sm text-muted-foreground">
+          {label}
         </span>
-        <Tabs
-          value={value as string}
-          onValueChange={(next) => onChange(next)}
-          className="min-w-0"
+        <AlignedSelect<string>
+          value={selectedLabel}
+          onValueChange={(next) => {
+            const option = def.options.find((candidate) => humanizeLabel(candidate) === next);
+            if (option !== undefined) onChange(option);
+          }}
         >
-          <TabsList
-            aria-label={label}
-            className="max-w-full overflow-x-auto"
-          >
+          <AlignedSelectTrigger
+            aria-labelledby={labelId}
+            className="w-32 justify-self-end"
+          />
+          <AlignedSelectContent>
             {def.options.map((option) => (
-              <TabsTab key={option} value={option}>
+              <AlignedSelectItem key={option} value={humanizeLabel(option)}>
                 {humanizeLabel(option)}
-              </TabsTab>
+              </AlignedSelectItem>
             ))}
-          </TabsList>
-        </Tabs>
+          </AlignedSelectContent>
+        </AlignedSelect>
       </div>
     );
   }
@@ -121,24 +125,26 @@ function Control({
     // Keep the label, rail, and value in one compact row so numeric props follow their
     // names instead of taking a full-width line in the settings strip.
     return (
-      <div className="flex min-w-52 items-center gap-2">
-        <span className="shrink-0 text-sm text-muted-foreground">{label}:</span>
-        <Slider
-          aria-label={label}
-          className="w-28 shrink-0"
-          thumb="knob"
-          size="sm"
-          showTicks={false}
-          showValue={false}
-          min={def.min}
-          max={def.max}
-          step={def.step}
-          value={value as number}
-          onValueChange={onChange}
-        />
-        <output className="min-w-8 text-right text-sm tabular-nums text-foreground">
-          {value as number}
-        </output>
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
+        <span className="min-w-0 text-sm text-muted-foreground">{label}</span>
+        <div className="flex min-w-0 items-center gap-2 justify-self-end">
+          <Slider
+            aria-label={label}
+            className="w-28 shrink-0"
+            thumb="knob"
+            size="sm"
+            showTicks={false}
+            showValue={false}
+            min={def.min}
+            max={def.max}
+            step={def.step}
+            value={value as number}
+            onValueChange={onChange}
+          />
+          <output className="min-w-8 text-right text-sm tabular-nums text-foreground">
+            {value as number}
+          </output>
+        </div>
       </div>
     );
   }
@@ -146,15 +152,15 @@ function Control({
   const labelId = `${id}-label`;
 
   return (
-    <label className="flex items-center gap-2">
-      <span id={labelId} className="shrink-0 text-sm text-muted-foreground">
-        {label}:
+    <label className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,12rem)] items-center gap-4">
+      <span id={labelId} className="min-w-0 text-sm text-muted-foreground">
+        {label}
       </span>
       <Input
         id={id}
         aria-labelledby={labelId}
         tone="accent"
-        className="w-48"
+        className="w-full max-w-48 justify-self-end"
         value={value as string}
         placeholder={def.placeholder}
         onChange={(e) => onChange(e.target.value)}

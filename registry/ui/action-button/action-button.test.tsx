@@ -54,6 +54,12 @@ describe("ActionButton", () => {
     await waitFor(() => expect(button).toHaveAttribute("data-status", "error"));
   });
 
+  it("centres a label-only action despite the reserved status glyph slot", () => {
+    render(<ActionButton action={() => undefined}>Save</ActionButton>);
+
+    expect(screen.getByRole("button").firstElementChild).toHaveClass("-translate-x-3");
+  });
+
   it("centres the pending status icon and label as a group", async () => {
     let resolveAction: () => void;
     const action = vi.fn(

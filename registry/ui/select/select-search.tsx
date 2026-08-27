@@ -34,17 +34,20 @@ import { Checkbox } from "@/registry/ui/checkbox/checkbox";
  */
 
 const EASE_OUT = [0.16, 1, 0.3, 1] as const;
-// The panel blurs and scales in from the trigger edge (`--transform-origin`), matching
-// the Base UI select.
-const FADE_HIDDEN = { opacity: 0, scale: 0.98, filter: "blur(4px)" };
+// The panel blurs and scales in from `--transform-origin`, and every select in the family
+// uses these same numbers: 0.95 and a 3px blur entering, a shorter 0.97 and 2px leaving, over
+// `--duration-base` on the expo curve. Three selects sat in one form that scale by different
+// amounts is the kind of difference you feel without being able to name.
+const FADE_HIDDEN = { opacity: 0, scale: 0.95, filter: "blur(3px)" };
 const FADE_SHOW = { opacity: 1, scale: 1, filter: "blur(0px)" };
+// Leaving is its own pose, not the entrance reversed: less travel and less blur, so the panel
+// is gone before it can draw attention to going.
+const FADE_EXIT = { opacity: 0, scale: 0.97, filter: "blur(2px)" };
 
 // A thin custom scrollbar, shown only when the list overflows. Firefox reads the first
 // two properties; WebKit the pseudo-element rules.
 const SCROLLBAR =
   "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground";
-
-const EMPTY_ITEMS: readonly never[] = [];
 
 /**
  * The two sizes, mirroring Button. `sm` (32px) is the compact default; `md` (36px) matches
@@ -122,6 +125,9 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
   items,
   iconForValue,
   size = "sm",
+  value,
+  defaultValue,
+  onValueChange,
   ...props
 }: SearchSelectProps<Value, Multiple>) {
   const [uncontrolled, setUncontrolled] = useState(defaultOpen ?? false);
@@ -160,25 +166,20 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
         : (iconForValue?.(value as Value) ?? iconFromValue(value))),
     [iconForValue, icons],
   );
-  const [closedRegistryCleared, setClosedRegistryCleared] = useState(
-    () => !isOpen && items !== undefined,
+  // Base UI owns the value; this mirrors it only to answer "is anything chosen", which is
+  // what picks the highlight mode below.
+  const [uncontrolledValue, setUncontrolledValue] = useState<unknown>(() => defaultValue ?? null);
+  const selected = value !== undefined ? value : uncontrolledValue;
+  const hasSelection = Array.isArray(selected) ? selected.length > 0 : selected != null;
+  const handleValueChange = useCallback<
+    NonNullable<SearchSelectProps<Value, Multiple>["onValueChange"]>
+  >(
+    (next, details) => {
+      setUncontrolledValue(next);
+      onValueChange?.(next, details);
+    },
+    [onValueChange],
   );
-
-  // Adjusted during render, and it has to be: `visibleItems` below reads this in the same
-  // pass. From an effect the latch would still be set on the render that opens the panel,
-  // so the list would mount empty for a frame and only fill on the following render.
-  const [wasOpen, setWasOpen] = useState(isOpen);
-  if (wasOpen !== isOpen) {
-    setWasOpen(isOpen);
-    if (isOpen) setClosedRegistryCleared(false);
-  }
-
-  // Base UI normally restores the selected item as the active row. Search selects instead
-  // start at the first visible match, so clear that lookup after the close transition. The
-  // actual items remain available to the exiting panel and return in the same render that
-  // opens the list.
-  const visibleItems =
-    !isOpen && closedRegistryCleared && items !== undefined ? EMPTY_ITEMS : items;
 
   const handleOpenChange = useCallback<
     NonNullable<SearchSelectProps<Value, Multiple>["onOpenChange"]>
@@ -197,17 +198,6 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
     [isControlled, multiple, onOpenChange],
   );
 
-  const handleOpenChangeComplete = useCallback(
-    (next: boolean) => {
-      if (!next && !isOpen && items !== undefined) {
-        setClosedRegistryCleared(true);
-      }
-
-      onOpenChangeComplete?.(next);
-    },
-    [isOpen, items, onOpenChangeComplete],
-  );
-
   return (
     <SearchContext.Provider
       value={{ open: isOpen, multiple: Boolean(multiple), size, registerIcon, unregisterIcon, iconFor }}
@@ -215,14 +205,28 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
       <Combobox.Root<Value, Multiple>
         open={isOpen}
         onOpenChange={handleOpenChange}
-        onOpenChangeComplete={handleOpenChangeComplete}
+        onOpenChangeComplete={onOpenChangeComplete}
         defaultOpen={defaultOpen}
         multiple={multiple}
-        items={visibleItems}
+        items={items}
+        value={value}
+        defaultValue={defaultValue}
+        onValueChange={handleValueChange}
         {...props}
-        // Base UI exposes this richer mode on its lower-level Combobox API. It keeps the
-        // first visible row active on open and after a search changes, so Enter is direct.
-        autoHighlight={"always" as never}
+        // Hovering moves the highlight; leaving the list must not throw it away. Base UI
+        // otherwise resets the active row on pointer-leave, and `autoHighlight` then puts it
+        // straight back on row one — so a pointer that wandered out of the panel would silently
+        // re-aim Enter at the top of the list. The other selects keep the last hovered row.
+        // (Spread, not a named prop: Base UI leaves this one off the public Combobox type
+        // altogether rather than narrowing it, so there is no cast that would satisfy it.)
+        {...({ keepHighlight: true } as Record<string, unknown>)}
+        // The two halves of "a panel never opens with nothing ready", and they have to be
+        // two: Base UI's `always` pins the first row unconditionally, overriding the active
+        // row it otherwise restores from the selection. So `always` is for a select with
+        // nothing chosen, and the plain mode — which restores the selected row on open and
+        // still jumps to the top match on every keystroke — is for one that has an answer
+        // already. (The prop is on the lower-level Combobox API, hence the cast.)
+        autoHighlight={(hasSelection ? true : "always") as never}
       >
         {children}
       </Combobox.Root>
@@ -362,7 +366,7 @@ export function SearchSelectContent({
                   ? { opacity: open ? 1 : 0 }
                   : open
                     ? FADE_SHOW
-                    : FADE_HIDDEN
+                    : FADE_EXIT
               }
               transition={reduceMotion ? { duration: 0 } : { duration: 0.2, ease: EASE_OUT }}
             />
@@ -372,7 +376,14 @@ export function SearchSelectContent({
           {/* Base UI keeps this div mounted and only nulls its children when there are
               matches; `empty:hidden` collapses it then, so it doesn't reserve blank space
               above the results. */}
-          <Combobox.Empty className={cn("m-1 flex h-8 items-center justify-center px-2.5 text-center text-muted-foreground empty:hidden", SIZE[size].row)}>
+          <Combobox.Empty
+            // One row tall, exactly — `m-1` mirrors the list's `p-1` and `py-1.5` is the
+            // row's own vertical padding. See the note in `select.tsx`.
+            className={cn(
+              "m-1 flex items-center justify-center px-2.5 py-1.5 text-center text-muted-foreground empty:hidden",
+              SIZE[size].row,
+            )}
+          >
             {emptyMessage}
           </Combobox.Empty>
           <Combobox.List
@@ -439,7 +450,7 @@ export function SearchSelectItem({
     <Combobox.Item
       value={value}
       className={cn(
-        "flex cursor-pointer items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
+        "flex items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
         // Base UI moves this highlight with the keyboard as well as the pointer; it snaps
@@ -493,7 +504,7 @@ export function SearchMultiSelectItem({
     <Combobox.Item
       value={value}
       className={cn(
-        "flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 outline-none select-none",
+        "flex items-center gap-2.5 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
         "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",

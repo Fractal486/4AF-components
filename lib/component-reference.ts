@@ -126,6 +126,9 @@ import { Button } from "@/components/ui/button";
 <DropdownMenu>
   <DropdownMenuTrigger>Actions</DropdownMenuTrigger>
   <DropdownMenuItem>Edit</DropdownMenuItem>
+  <DropdownMenuItem disabled disabledReason="Billing is available on the Pro plan.">
+    Billing
+  </DropdownMenuItem>
 </DropdownMenu>`,
   },
   empty: {
@@ -195,14 +198,46 @@ import { Button } from "@/components/ui/button";
     importName: "Select",
     usage: `import {
   Select,
+  SelectContent,
   SelectItem,
+  SelectSub,
+  SelectSubContent,
+  SelectSubTrigger,
   SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 
 <Select defaultValue="apple">
-  <SelectTrigger />
-  <SelectItem value="apple">Apple</SelectItem>
+  <SelectTrigger variant="plain">
+    <SelectValue />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="apple">Apple</SelectItem>
+    <SelectSub>
+      <SelectSubTrigger>More fruit</SelectSubTrigger>
+      <SelectSubContent>
+        <SelectItem value="banana">Banana</SelectItem>
+      </SelectSubContent>
+    </SelectSub>
+  </SelectContent>
 </Select>`,
+  },
+  "select-aligned": {
+    importName: "AlignedSelect",
+    usage: `import {
+  AlignedSelect,
+  AlignedSelectContent,
+  AlignedSelectItem,
+  AlignedSelectTrigger,
+} from "@/components/ui/select-aligned";
+
+<AlignedSelect value={city} onValueChange={setCity}>
+  <AlignedSelectTrigger variant="plain" placeholder="Pick a city" />
+  <AlignedSelectContent>
+    <AlignedSelectItem value="Lisbon">Lisbon</AlignedSelectItem>
+    <AlignedSelectItem value="Oslo">Oslo</AlignedSelectItem>
+  </AlignedSelectContent>
+</AlignedSelect>`,
   },
   "select-motion": {
     importName: "Select",
@@ -273,13 +308,43 @@ import { Button } from "@/components/ui/button";
     importName: "Slider",
     usage: `import { Slider } from "@/components/ui/slider";
 
-<Slider aria-label="Volume" defaultValue={60} />`,
+<Slider aria-label="Volume" defaultValue={60} showValueTooltip />
+
+<Slider aria-label="Price range" range defaultValue={[20, 80]} />`,
   },
   switch: {
     importName: "Switch",
     usage: `import { Switch } from "@/components/ui/switch";
 
 <Switch aria-label="Enable notifications" />`,
+  },
+  table: {
+    importName: "Table",
+    usage: `import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+<Table selectable rows={people.map((person) => person.id)} onValueChange={setSelected}>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Name</TableHead>
+      <TableHead>Role</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {people.map((person) => (
+      <TableRow key={person.id} value={person.id} selectLabel={\`Select \${person.name}\`}>
+        <TableCell>{person.name}</TableCell>
+        <TableCell>{person.role}</TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>`,
   },
   "table-of-contents": {
     importName: "TableOfContents",
@@ -316,6 +381,12 @@ import { Button } from "@/components/ui/button";
     usage: `import { TextShimmer } from "@/components/ui/text-shimmer";
 
 <TextShimmer>Syncing changes…</TextShimmer>`,
+  },
+  "scramble-text": {
+    importName: "ScrambleText",
+    usage: `import { ScrambleText } from "@/components/ui/scramble-text";
+
+<ScrambleText>Deploying changes…</ScrambleText>`,
   },
   textarea: {
     importName: "Textarea",

@@ -27,6 +27,21 @@ describe("component documentation", () => {
     expect(missing).toEqual([]);
   });
 
+  it("lists every installable component in the docs sidebar", () => {
+    // The page tree is built from the families in `component-catalog`, but only out of the
+    // pages Fumadocs was given — and it is given the ones `meta.json` names. A component
+    // with a page, a family and a registry entry still has no sidebar entry without this.
+    const meta = JSON.parse(readFileSync(resolve("content/docs/meta.json"), "utf8")) as {
+      pages: string[];
+    };
+    const missing = registry.items
+      .filter((item) => item.type === "registry:ui")
+      .map((item) => item.name)
+      .filter((name) => !meta.pages.includes(name));
+
+    expect(missing).toEqual([]);
+  });
+
   it("renders every component page as standalone agent-friendly Markdown", () => {
     const incomplete = registry.items
       .filter((item) => item.type === "registry:ui")
@@ -111,8 +126,12 @@ describe("component documentation", () => {
       "action-toggle": ["revertAfter={Infinity}", "onPressedChange"],
       "copy-button": ["Promise<string>", "<CopyButton icon="],
       badge: ["animateLayout={false}", "FLIP-animates"],
-      select: ["SelectSortTrigger", "clearable", "iconForValue"],
-      "select-overview": ["32px", "36px"],
+      select: [
+        "SelectSortTrigger",
+        'ComponentDemo name="select-sort"',
+        "clearable",
+        "iconForValue",
+      ],
       "select-search": ["readonly any[]", "SearchSelectItem"],
       "command-palette": [
         "helpers.openPanel",
@@ -139,5 +158,17 @@ describe("component documentation", () => {
       const page = readFileSync(resolve("content/docs", `${name}.mdx`), "utf8");
       for (const phrase of phrases) expect(page, `${name}: ${phrase}`).toContain(phrase);
     }
+  });
+
+  it("keeps the former family-overview guidance in the agent skill reference", () => {
+    const reference = readFileSync(
+      resolve(".agents/skills/4af-components/references/component-catalog.md"),
+      "utf8",
+    );
+
+    // Select sizing, from the deleted select-overview page.
+    for (const phrase of ["32px", "36px"]) expect(reference).toContain(phrase);
+    // Why sidebar and sidebar-layout stay separate, from the deleted sidebar-overview page.
+    expect(reference).toContain("viewport and scrolling strategy");
   });
 });

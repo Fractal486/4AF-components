@@ -56,6 +56,14 @@ export interface TooltipProps {
   align?: "start" | "center" | "end";
   /** Gap between trigger and tooltip, in px. */
   sideOffset?: number;
+  /** How long to wait before opening, in milliseconds. */
+  delay?: number;
+  /** Whether pressing the trigger closes an open tooltip. */
+  closeOnClick?: boolean;
+  /** Controlled open state. Omit this for the default hover/focus behavior. */
+  open?: boolean;
+  /** Close as soon as the pointer leaves the trigger instead of entering the popup. */
+  disableHoverablePopup?: boolean;
   /** Class for the popup. */
   className?: string;
   /** Forwarded to Base UI's positioner (collision padding, sticky, etc.). */
@@ -71,6 +79,10 @@ export function Tooltip({
   side = "top",
   align = "center",
   sideOffset = 8,
+  delay,
+  closeOnClick = true,
+  open,
+  disableHoverablePopup = false,
   className,
   positionerProps,
 }: TooltipProps) {
@@ -78,8 +90,8 @@ export function Tooltip({
   if (content == null || content === "") return children;
 
   return (
-    <BaseTooltip.Root>
-      <BaseTooltip.Trigger render={children} />
+    <BaseTooltip.Root open={open} disableHoverablePopup={disableHoverablePopup}>
+      <BaseTooltip.Trigger render={children} delay={delay} closeOnClick={closeOnClick} />
       <BaseTooltip.Portal>
         <BaseTooltip.Positioner
           side={side}

@@ -15,13 +15,15 @@ A keyboard-first command and search dialog with fuzzy ranking, groups, nested an
 async, server-driven, and paginated search, header text fields, per-panel header actions, badges,
 checkboxes, keybinds, destructive actions, and keyboard navigation.
 
+The `shortcut` prop is enabled by default and binds `⌘K` / `Ctrl+K` to toggle the palette. The
+inspector demo disables that component binding and uses `⌘⇧P` / `Ctrl+Shift+P` instead, so it does
+not compete with Fumadocs' own command shortcut.
+
 ## Composition
 
-It opens and closes with no enter or exit animation on either the backdrop or the panel. That is
-deliberate: a palette is summoned mid-thought and typing usually begins before it has finished
-arriving, so an entrance is time spent between deciding and typing. With nothing to play out,
-the portal mounts and unmounts under Base UI directly—no `keepMounted`, no `AnimatePresence`—and
-the item carries no Motion dependency.
+It uses the same slight enter and exit treatment as Dialog: the backdrop fades, the panel scales
+in from a small blur, and the exit fades and blurs without reversing the entrance. Reduced motion
+snaps the transition, and `keepMounted` lets the exit finish before Base UI tears the portal down.
 
 The registry item includes more than the root popup:
 
@@ -47,6 +49,46 @@ The registry item includes more than the root popup:
 The demo's Projects, Rename Project, and New Project flows are examples built from these public
 APIs, not hard-coded private behaviour.
 
+## Selection and hover
+
+Every list — the root list and each custom panel's — opens with its first row selected, before
+anything is typed, and moves the selection to the new first row as a query narrows the list.
+Enter runs the selected row without an arrow press first.
+
+Selection and hover are separate states. The selected row carries `data-highlighted` and is
+moved by the arrow keys and by pressing a row; hovering gives a row a weaker fill and nothing
+else, so sweeping the cursor across the list never changes what Enter runs. A single press both
+selects a row and runs it, which is what keeps a panel that stays open — a checkbox list —
+from stranding its selection on the first row. Moving the pointer out of the list leaves the
+selection where it was.
+
+While a row's actions menu is open, that row carries `data-frozen`, styled identically to the
+selection — Base UI drops its own highlight while focus is inside the menu.
+
+## Panel footer
+
+The root list's bar has the escape hint and the navigation hint on the left, and the Enter
+hint pinned right. A custom panel's footer keeps those two ends — escape on the left, Enter on
+the right — and fills the right corner with two optional slots, in this order:
+
+| Slot | Prop | Key |
+| --- | --- | --- |
+| The primary action | `enter` | Return, fixed |
+| The contextual actions menu | `actions` | Cmd/Ctrl + J, fixed |
+
+```tsx
+<CommandPanelFooter
+  enter={{ label: "Save", type: "submit" }}
+  actions={{ groups: actionGroups }}
+/>
+```
+
+Neither chord is configurable and nothing else can go in that corner. Both slots print their
+key, so a palette whose panels chose their own would teach a different keyboard on every page.
+`enter` takes `label`, `onClick`, `disabled`, and `type` — `"submit"` submits the panel's form
+instead of calling `onClick`. `actions` takes the menu's own props: `items` or `groups`, plus
+`label`, `searchPlaceholder`, and `emptyMessage`.
+
 An actions row normally chooses and closes the menu. Three optional fields make it report in
 place instead, keeping the menu open—the same shapes Dropdown Menu offers, expressed as data
 because a palette action is data:
@@ -59,12 +101,14 @@ because a palette action is data:
 | Asks, then commits and closes | `confirm` + `onSelect` | `DeleteButton` |
 
 ```tsx
-<CommandPanelActions
-  items={[
-    { id: "sync", label: "Sync now", action: sync, labels: { pending: "Syncing…", success: "Synced" } },
-    { id: "watch", label: "Watch", defaultChecked: false, action: watch, labels: { checked: "Watching" } },
-    { id: "star", label: "Star", defaultChecked: false, labels: { checked: "Starred" } },
-  ]}
+<CommandPanelFooter
+  actions={{
+    items: [
+      { id: "sync", label: "Sync now", action: sync, labels: { pending: "Syncing…", success: "Synced" } },
+      { id: "watch", label: "Watch", defaultChecked: false, action: watch, labels: { checked: "Watching" } },
+      { id: "star", label: "Star", defaultChecked: false, labels: { checked: "Starred" } },
+    ],
+  }}
 />
 ```
 

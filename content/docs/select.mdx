@@ -9,13 +9,83 @@ description: A composable Base UI select with rich items, sizing, and positionin
 ## API
 
 **Main exports:** `Select`, `SelectTrigger`, `SelectSortTrigger`, `SelectValue`, `SelectContent`,
-`SelectItem`
+`SelectItem`, `SelectSub`, `SelectSubTrigger`, `SelectSubContent`
 
 An accessible Base UI single or multi-select with icons declarable on `items` so a preselected
 value resolves before mount, optional in-panel search, a clear footer, content sizing, and the
 compact sort/filter trigger.
 
+### Trigger variants
+
+`SelectTrigger` and `SelectSortTrigger` accept `variant="default" | "plain"`. The default is the
+boxed field or chip. `plain` removes the background, border, and horizontal padding, leaving the
+label/value with the dropdown icon immediately after it. In plain sort triggers, an optional
+`icon` remains leading, while the dropdown chevron follows the label. The focus ring remains for
+keyboard users. The older `outline={false}` form is still supported as a compatibility alias for
+`variant="plain"`.
+
+When `SelectContent` has no explicit `width`, it follows the trigger: default triggers keep a
+trigger-width panel, while plain triggers use content width — the longest option label plus the
+reserved checkmark slot. Set `width="trigger"` or `width="content"` to override that default.
+
+```tsx
+<Select defaultValue="active" items={{ active: "Active", paused: "Paused" }}>
+  <SelectTrigger variant="plain">
+    <SelectValue />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="active">Active</SelectItem>
+    <SelectItem value="paused">Paused</SelectItem>
+  </SelectContent>
+</Select>
+```
+
+## Nested select panels
+
+Use `SelectSub` to put a second select panel behind a row in `SelectContent`. The trigger keeps
+the chevron after its label, opens on hover or with `ArrowRight`/`Enter`, and `ArrowLeft` or
+`Escape` returns focus to the parent row. Its children are ordinary `SelectItem`s: they use the
+same single- or multi-select value, check state, keyboard navigation, and close behavior as rows
+in the main panel. When the parent `SelectContent` is searchable, its field also searches these
+nested rows: a matching parent trigger remains in the main panel, and opening it reveals the
+matching child rows. Nested panels can be nested again.
+
+Nested panels open immediately when their parent row is hovered. Pass a positive `delay` to
+`SelectSubTrigger` only when a deliberate hover pause is wanted. The initially focused nested row
+stays unhighlighted until it is hovered or reached through keyboard navigation.
+
+```tsx
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectSub,
+  SelectSubContent,
+  SelectSubTrigger,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+<Select defaultValue="apple" items={{ apple: "Apple", banana: "Banana", mango: "Mango" }}>
+  <SelectTrigger aria-label="Fruit">
+    <SelectValue />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="apple">Apple</SelectItem>
+    <SelectSub>
+      <SelectSubTrigger>More fruit</SelectSubTrigger>
+      <SelectSubContent>
+        <SelectItem value="banana">Banana</SelectItem>
+        <SelectItem value="mango">Mango</SelectItem>
+      </SelectSubContent>
+    </SelectSub>
+  </SelectContent>
+</Select>
+```
+
 ## Sort and filter trigger
+
+<ComponentDemo name="select-sort" />
 
 Install `select`, then use `SelectSortTrigger`. It automatically:
 
@@ -24,6 +94,13 @@ Install `select`, then use `SelectSortTrigger`. It automatically:
 - remains filled while its panel is open;
 - reads and displays the selected label or labels from Select context;
 - rotates the chevron with the same treatment as the normal Select trigger.
+
+Use `variant="plain"` for a transparent, borderless sort/filter trigger. Its label/value and
+dropdown chevron remain adjacent, and a supplied sort/filter `icon` remains leading.
+
+When `multiple` is enabled, the same trigger becomes a filter control and supports the nested
+`SelectSub` panels described above. Nested rows participate in the multi-selection and keep the
+panel open while choices are toggled.
 
 The clear footer is independently optional. Add `clearable` to `SelectContent` when the panel
 should offer it.
@@ -37,8 +114,8 @@ import {
 } from "@/components/ui/select";
 
 <Select<string>>
-  <SelectSortTrigger label="Status" />
-  <SelectContent width="content" clearable autoFocusFirstItem={false}>
+  <SelectSortTrigger label="Status" variant="plain" />
+  <SelectContent clearable autoFocusFirstItem={false}>
     <SelectItem value="active">Active</SelectItem>
     <SelectItem value="paused">Paused</SelectItem>
   </SelectContent>

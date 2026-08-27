@@ -5,8 +5,8 @@ export const commandPaletteEntry = defineEntry({
   slug: "command-palette",
   name: "Command Palette",
   controls: {
-    // Bind ⌘K / Ctrl-K globally. On here so you can summon it without the button.
-    shortcut: bool(true, "⌘K shortcut"),
+    // Bind the demo's own shortcut globally, separate from the component's ⌘K / Ctrl-K default.
+    shortcut: bool(true, "⌘⇧P shortcut"),
     // Section the commands under headings, or run them as one flat list.
     grouped: bool(true, "Grouped"),
     // Drive results from a mock async source while typing, with a loading indicator.

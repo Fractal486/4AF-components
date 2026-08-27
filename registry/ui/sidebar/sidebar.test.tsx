@@ -53,6 +53,29 @@ describe("SidebarRail", () => {
 });
 
 describe("cancellable sidebar controls", () => {
+  it("uses panel-left while open and panel-right while closed", () => {
+    const { unmount } = render(
+      <SidebarProvider persist={false}>
+        <SidebarTrigger />
+      </SidebarProvider>,
+    );
+
+    const openTrigger = screen.getByRole("button", { name: "Toggle sidebar" });
+    expect(openTrigger.querySelector(".lucide-panel-left")).toBeInTheDocument();
+    expect(openTrigger.querySelector(".lucide-panel-right")).toBeNull();
+
+    unmount();
+    render(
+      <SidebarProvider defaultOpen={false} persist={false}>
+        <SidebarTrigger />
+      </SidebarProvider>,
+    );
+
+    const closedTrigger = screen.getByRole("button", { name: "Toggle sidebar" });
+    expect(closedTrigger.querySelector(".lucide-panel-left")).toBeNull();
+    expect(closedTrigger.querySelector(".lucide-panel-right")).toBeInTheDocument();
+  });
+
   it("does not toggle when a SidebarTrigger consumer prevents the click", () => {
     const onOpenChange = vi.fn();
     render(

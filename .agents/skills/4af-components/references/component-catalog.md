@@ -45,7 +45,7 @@ These entries install transitively:
 
 ## Installable catalog
 
-The catalog currently contains 42 installable UI items. Verify the count and names with
+The catalog currently contains 45 installable UI items. Verify the count and names with
 `pnpm 4af list` before making registry-wide claims.
 
 ### Actions
@@ -70,8 +70,9 @@ The catalog currently contains 42 installable UI items. Verify the count and nam
 | `switch` | `Switch` | Binary on/off state with a sliding, press-squishing thumb. |
 | `checkbox` | `Checkbox` | Boolean or indeterminate selection with animated tick and optional label. |
 | `radio` | `RadioGroup`, `Radio` | Single-choice selection groups. |
-| `slider` | `Slider` | Numeric input with `bar`, `circle`, and `knob` thumb variants. |
-| `select` | `Select`, trigger/content/item parts, `SelectSortTrigger` | Base UI single/multi select, optional panel search and clear footer, compact sort/filter trigger. |
+| `slider` | `Slider` | Numeric input with `bar`, `circle`, and `knob` thumbs, optional ticks/labels, `range` mode with two draggable thumbs, and an opt-in `showValueTooltip` that follows the active thumb during drag. |
+| `select` | `Select`, trigger/content/item parts, `SelectSortTrigger`, `SelectSub` parts | Base UI single/multi select, optional panel search and clear footer, compact sort/filter trigger, and nested option panels. |
+| `select-aligned` | `AlignedSelect` and trigger/content/item/group parts | A select that opens *on* its trigger: default panel at the trigger's width, plain panel at the longest row plus check slot, selected row landing on the value it replaces, `ChevronsUpDown` glyph. The macOS pop-up button. |
 | `select-search` | `SearchSelect` and input/content/item parts | Editable Combobox trigger with filtering and single/multi selection. |
 | `select-motion` | `Select` and trigger/content/item parts | Button-triggered select with a hand-animated unfolding panel and optional panel search. |
 | `select-motion-search` | `MotionSearchSelect` and parts | Editable Combobox whose panel unfolds from the field. |
@@ -86,6 +87,7 @@ The catalog currently contains 42 installable UI items. Verify the count and nam
 | `skeleton` | `Skeleton` | Generic loading placeholders; animation respects reduced motion. |
 | `empty` | `Empty` and composition parts | Empty states with optional dashed placeholder treatment. |
 | `text-shimmer` | `TextShimmer` | Theme-aware looping highlight for working labels. |
+| `scramble-text` | `ScrambleText` | Reveals text through a short per-grapheme scramble animation, preserving whitespace and honoring reduced motion. |
 | `toast` | `ToastProvider`, `useToast`, `createToastManager` | Managed notifications with default or title-only content, swipe dismissal, placement/stack modes, and up to three actions. |
 | `ascii-loader` | `AsciiLoader` | A looping braille spinner for compact async status affordances. |
 
@@ -95,25 +97,26 @@ The catalog currently contains 42 installable UI items. Verify the count and nam
 | --- | --- | --- |
 | `tabs` | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | Segment, pill, or underline tabs with a traveling indicator. |
 | `collapsible` | `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` | Disclosure rows (`plain`/`card`) with a rotating chevron, a height slide so following rows travel rather than jump, and a blur-fade on the content. |
+| `table` | `Table` and header/body/footer/row/head/cell parts | Data tables in two densities, with an optional checkbox column: `selectable` adds it, `rows` sets what select-all covers, and the header box goes indeterminate on a partial selection. `loading` fills the body with placeholders shaped by the header; `bordered` adds the frame and column rules; a `sortKey` on a header adds a three-step sort control. |
 | `table-of-contents` | `TableOfContents` | Heading navigation with a dashed inactive rail, smooth document scrolling, long-prose fallback, and `span` or `single` active marker variants. A height-constrained rail hides its browser scrollbar and smoothly centers every active entry, including endpoints; pass `rootRef` for an independently scrolling article. |
 | `table-of-contents-lines` | `TableOfContentsLines` | Dense line-based heading navigation with one active heading, a longer header rule, equal shorter rules between headings (none below the final heading), heading-relative indentation, and an expanding hover treatment. A height-constrained rail hides its browser scrollbar and smoothly centers every active entry, including endpoints; pass `rootRef` for an independently scrolling article. |
 | `separator` | `Separator` | An accessible horizontal or vertical divider built on Base UI Separator. |
-| `command-palette` | `CommandPalette`, panel/list/row/action parts, and `useCommandSearch` | Fuzzy command search, groups, nested/custom panels, async/server-driven search, configurable headers, keybinds, selection, and actions. |
-| `sidebar` | Provider, panel, group/menu/submenu/action/badge/skeleton parts | Default/floating/inset and split sidebars, collapse, sections, nested rows, actions, badges, skeletons. |
+| `command-palette` | `CommandPalette`, panel/list/row/footer parts, and `useCommandSearch` | Fuzzy command search, groups, nested/custom panels, async/server-driven search, configurable headers, keybinds (default ⌘K/Ctrl+K), selection, actions, and Dialog-style enter/exit motion. |
+| `sidebar` | Provider, panel, group/menu/submenu/action/badge/skeleton parts | Default/floating/inset and split/split-floating/split-inset sidebars, collapse, sections, nested rows, split rail/panel selection, actions, badges, skeletons. |
 | `sidebar-layout` | `SidebarLayout` | Optional page shell around Sidebar with inset surface, title, collapse control, and actions. |
 
 ### Overlays and menus
 
 | Install name | Main API | Use it for |
 | --- | --- | --- |
-| `tooltip` | `TooltipProvider`, `Tooltip` | Delayed hover/focus descriptions with collision-aware placement. |
+| `tooltip` | `TooltipProvider`, `Tooltip` | Delayed hover/focus descriptions with collision-aware placement, optional controlled `open`, press behavior, and hoverable-popup control. |
 | `sheet` | `Sheet` and composition parts | Focus-trapped edge dialogs. |
 | `dialog` | `Dialog` parts, `DialogSteps`, `DialogStep` | Centered modals and optional validated multi-step flows. |
 | `alert-dialog` | `AlertDialog` parts | Decision-forcing modal that cannot dismiss by clicking away. |
 | `popover` | `Popover` parts | Interactive anchored panels with optional modal behavior. |
 | `selection-toolbar` | `SelectionToolbar`, button/action-button/toggle/action-toggle/toggle-group/separator parts | Actions over selected text — copy, highlight, quote. Anchored to the range, hands the captured text and range to every action. Plain items dismiss the bar on press; async and toggle items keep it up so their state is visible. |
 | `hover-card` | `HoverCard`, trigger/content parts, `HoverCardSkeleton` | Rich previews opened by hover or keyboard focus, with built-in loading placeholders. |
-| `dropdown-menu` | Menu, checkbox/radio/submenu, shortcut, and nested-select parts | Keyboard menus, safe submenus, destructive items, Kbd hints, and searchable selection panels. |
+| `dropdown-menu` | Menu, checkbox/radio/submenu, shortcut, and nested-select parts | Keyboard menus, safe submenus, destructive items, Kbd hints, searchable selection panels, and immediate disabled-reason tooltips. |
 
 ## Bundled APIs and composition
 
@@ -180,17 +183,45 @@ the pill FLIP-animates as the row moves.
 ### Select family
 
 `SelectSortTrigger` ships inside `select` (there is no `select-sort` item); `clearable` on
-`SelectContent` adds the clear footer.
+`SelectContent` adds the clear footer. `SelectSub`, `SelectSubTrigger`, and `SelectSubContent`
+add nested panels whose child `SelectItem`s use the parent select's value and check state.
 
 | Install name | Trigger | Panel entrance | Search location |
 | --- | --- | --- | --- |
 | `select` | Button/field | Scale, blur, fade | Optional inside panel |
 | `select-search` | Editable Combobox | Standard positioned panel | Trigger field |
+| `select-aligned` | Button/field | Fade, opening *over* the trigger | Optional pinned field |
 | `select-motion` | Button/field | Unfolding panel | Optional inside panel |
 | `select-motion-search` | Editable Combobox | Unfolds from field | Trigger field |
 
 All support single and multi selection (multi uses Checkbox) and take `size="sm" | "md"`,
-default `sm`. Inside a Command Palette keep `sm`.
+default `sm`. `sm` is a 32px control with 12px text and 14px glyphs; `md` is 36px and lines
+up with a medium Button or Input in a form row; the size scales the trigger and the option
+rows together. Inside a Command Palette keep `sm`. `select-aligned` is single selection only. It takes optional sections
+(`AlignedSelectGroup` + `AlignedSelectGroupLabel`, which hide themselves when a search empties
+them) and an optional pinned search field (`searchable` on the content).
+
+`select`'s `SelectTrigger` and `SelectSortTrigger`, plus `select-aligned`'s
+`AlignedSelectTrigger`, accept `variant="default" | "plain"`. `plain` removes the trigger
+surface, border, and horizontal padding, leaving the label/value and dropdown glyph adjacent.
+The older `outline={false}` prop remains a compatibility alias for `variant="plain"`.
+When panel `width` is omitted, default triggers keep a trigger-width panel and plain triggers
+use the longest row plus the reserved check slot; pass `width="trigger" | "content"` to
+override it.
+
+Every panel in the family opens with a row already active, before anything is typed: the
+current selection where there is one (the most recent, when several are chosen), otherwise the
+first row, and the top match once a query narrows the list. Hovering moves the mark; leaving the
+panel keeps it. The mark is `data-panel-active`; the search variants use Base UI's
+`data-highlighted` via `autoHighlight` plus `keepHighlight`, where `"always"` is only for a
+select with nothing chosen because it pins row one over the selection. `autoFocusFirstItem={false}` opts out, for
+menu-like uses such as a sort control.
+
+`select-aligned` overlaps the trigger through Base UI's `alignItemWithTrigger`, which applies
+to pointer input only and switches off when there is no room — it falls back to an ordinary
+dropdown, so do not try to force it. Row padding plus panel padding equals the trigger's
+padding, and that is what lines the selected label up with the value it covers; restyle one and
+restyle all three.
 
 For an icon on a closed trigger before the panel has ever opened:
 
@@ -209,8 +240,24 @@ Root groups/rows, nested lists, custom panels via `helpers.openPanel`, search or
 text-field panel headers, per-panel header actions, badges, checkboxes, Kbd hints,
 destructive states, action panels.
 
-No enter or exit animation, deliberately — do not add one, or `keepMounted`/
-`AnimatePresence`.
+Enter and exit mirror Dialog: the backdrop fades, the panel scales in from a small blur,
+and the exit fades and blurs without reversing the entrance. Use `keepMounted`/
+`AnimatePresence` and honor reduced motion.
+
+The root `shortcut` prop defaults to `true` (`⌘K` / `Ctrl+K`). The inspector demo turns that
+binding off on the component and uses `⌘⇧P` / `Ctrl+Shift+P` instead so it does not compete with
+Fumadocs' own command shortcut.
+
+Every list — the root list and every custom panel's — opens with its first row already
+selected, before anything is typed, and follows the new first row as a query narrows the list;
+Enter runs it without an arrow press. Selection and hover are separate: the selected row carries
+`data-highlighted` and moves on arrow keys or a press, while hover is a weaker fill only, so
+sweeping the cursor never changes what Enter runs. A row whose actions menu is open carries
+`data-frozen`, styled identically.
+
+The root list primes that first row from its `items` collection via `autoHighlight`. A custom
+panel has no such collection, so `CommandPanelList` primes its own first row from the DOM after
+commit — do not remove that, and do not assume `autoHighlight` covers panels.
 
 Escape clears a non-empty header field only when that header is `type="search"`; other
 headers go back. Keep Select controls in headers at `size="sm"`.
@@ -234,11 +281,29 @@ out-of-order dropping, loading, and rejected searches are handled. In a custom p
 `searching && results === null`, and use the returned `error` for a panel-specific failure
 state.
 
+A custom panel's footer has two optional slots on the right and nothing else: `enter` (the
+primary action, always the return key) and `actions` (the contextual menu, always Cmd/Ctrl+J).
+Neither chord is configurable, and there is no children slot — do not try to put a third
+affordance in that corner.
+
 ### Dropdown Menu
 
 Three nested-panel forms: navigation submenu, single-select with a trailing checkmark, and
 checkbox multi-select. Selection panels can search. Safe pointer travel keeps the parent
 active on the way into a panel.
+
+Select-style triggers keep their label or placeholder on the left and show the selected value or
+count, dimmed, before the chevron. Their optional search field is text-only, and the no-results
+state matches the height of one select row.
+
+Disabled rows accept an optional `disabledReason`. The disabled row itself becomes an immediate
+right-side tooltip trigger on hover, while remaining unavailable for selection:
+
+```tsx
+<DropdownMenuItem disabled disabledReason="Billing is available on the Pro plan.">
+  Billing
+</DropdownMenuItem>
+```
 
 `DropdownMenuCheckboxItem` takes `children` as `(checked, status) => …` and
 `indicator={false}` to drop the tick, so the icon and label carry the state. Wrap swapping
@@ -280,12 +345,53 @@ outside, so the hook reads the right selection.
 actions, badges, nested rows, search/button headers, and row skeletons. Compose a row
 action with `dropdown-menu`.
 
+Split variants are `split`, `split-floating`, and `split-inset`. Provide the fixed `rail` with
+`SidebarRailButton` controls and `SidebarPanel` sections; use `activePanel`,
+`defaultActivePanel`, and `onActivePanelChange` when the wide panel selection needs to be
+controlled or observed.
+
 A header takes one full-width `SidebarHeaderButton`, or two wrapped in `SidebarHeaderRow`,
 which splits the width and stacks them when the sidebar collapses; `className="flex-none"`
 opts a button out.
 
+`sidebar` is the low-level navigation family and `sidebar-layout` the optional frame around
+it; they stay separate so a consumer can take the responsive sidebar without also taking one
+viewport and scrolling strategy.
+
 `sidebar-layout` is the optional shell: content surface, page header, collapse control,
 title, header actions.
+
+### Table
+
+Native `<table>` semantics. `selectable` on the root adds the checkbox column — do not add a
+cell to each row, `TableRow` renders its own.
+
+| Need | Prop |
+| --- | --- |
+| Show the checkbox column | `selectable` |
+| Loading placeholders | `loading` (+ `loadingRows`); shape is read off the header, sets `aria-busy` |
+| Frame plus rules between columns | `bordered` (row rules are always on) |
+| Pin the header | `stickyHeader` (on by default; needs a bounded `wrapperClassName` height) |
+| Sortable column | `sortKey` on `TableHead`; read `sort` / `onSortChange` and order the rows yourself |
+| What select-all covers | `rows` (the page you are rendering, not every row you have) |
+| Selection state | `value` / `onValueChange`, or `defaultValue` |
+| Name a row's checkbox | `selectLabel` on `TableRow` — give it the row's subject |
+| Header becomes an action row while selecting | `selectionBar` + `selectionActions` (needs `selectable`) |
+
+Sorting cycles ascending → descending → unsorted; switching columns restarts at ascending. The
+component does not sort rows — it owns the control, the state and `aria-sort`, and reports
+`{ column, direction } | null`.
+
+`selectionBar` swaps the column labels for an `N selected` count and puts `selectionActions` at
+the right end, keeping the select-all in place. The count covers the whole selection, not only
+the part `rows` covers.
+
+The scroll container carries the library's thin scrollbar. Pinned header cells take
+`bg-background`; override through `className` on `TableHead` for a table on a raised surface.
+
+A row is selectable when it has a `value`; one without still gets an empty cell so columns stay
+aligned. Select-all is a union, so selected rows outside `rows` survive it. Rows expose
+`data-selected`, not `aria-selected`, which is invalid on a plain table row.
 
 ### Toast
 

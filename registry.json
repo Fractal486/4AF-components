@@ -634,7 +634,7 @@
     {
       "name": "slider",
       "type": "registry:ui",
-      "description": "A slider whose thumb springs between steps and grabs while held. Bar or circle thumb. Base UI behaviour.",
+      "description": "A slider whose thumb springs between steps and grabs while held, with optional range mode, ticks, labels, and a live value tooltip. Base UI behaviour.",
       "dependencies": [
         "@base-ui/react",
         "lucide-react",
@@ -642,7 +642,8 @@
       ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/tooltip.json"
       ],
       "files": [
         {
@@ -747,6 +748,35 @@
       ]
     },
     {
+      "name": "table",
+      "type": "registry:ui",
+      "description": "A semantic data table with two densities, optional grid lines, a pinned header, a loading skeleton state, and an optional selection column whose header can become an action row; column headers cycle through ascending, descending and unsorted.",
+      "dependencies": [
+        "class-variance-authority",
+        "lucide-react",
+        "motion"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/motion.json",
+        "http://localhost:3000/r/checkbox.json",
+        "http://localhost:3000/r/skeleton.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/table/table.tsx",
+          "type": "registry:ui",
+          "target": "@ui/table.tsx"
+        },
+        {
+          "path": "registry/ui/table/table.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/table.variants.ts"
+        }
+      ]
+    },
+    {
       "name": "table-of-contents",
       "type": "registry:ui",
       "description": "A table of contents that tracks visible headings, keeps the last passed section active through long prose, and offers spanning or single-heading markers.",
@@ -838,11 +868,29 @@
       ]
     },
     {
+      "name": "scramble-text",
+      "type": "registry:ui",
+      "description": "A short encrypted-character reveal for text that is appearing or changing, with whitespace preservation and reduced-motion support.",
+      "dependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/scramble-text/scramble-text.tsx",
+          "type": "registry:ui",
+          "target": "@ui/scramble-text.tsx"
+        }
+      ]
+    },
+    {
       "name": "select",
       "type": "registry:ui",
-      "description": "A single or multi-select on Base UI — keyboard, typeahead and collision-aware positioning — whose panel blurs and scales in from the trigger. Multi-select keeps the panel open while animated checkbox rows are toggled; an optional plain panel search filters options in place.",
+      "description": "A single or multi-select on Base UI — keyboard, typeahead and collision-aware positioning — with default and plain trigger variants. Plain panels size to the longest option plus the check slot by default. The panel blurs and scales in from the trigger; multi-select keeps it open while animated checkbox rows are toggled, and optional nested panels and panel search keep related choices in place.",
       "dependencies": [
         "@base-ui/react",
+        "class-variance-authority",
         "lucide-react",
         "motion"
       ],
@@ -858,6 +906,11 @@
           "path": "registry/ui/select/select.tsx",
           "type": "registry:ui",
           "target": "@ui/select.tsx"
+        },
+        {
+          "path": "registry/ui/select/select.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/select.variants.ts"
         }
       ]
     },
@@ -902,6 +955,33 @@
           "path": "registry/ui/ascii-loader/ascii-loader.tsx",
           "type": "registry:ui",
           "target": "@ui/ascii-loader.tsx"
+        }
+      ]
+    },
+    {
+      "name": "select-aligned",
+      "type": "registry:ui",
+      "description": "A select with default and plain trigger variants that opens on its trigger rather than below it: the default panel takes the trigger's width, while plain panels size to the longest option plus the check slot; the selected row lands on the value it replaces, the macOS pop-up button behaviour. Optional dimmed sections and a pinned in-panel search field.",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/input.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/select/select-aligned.tsx",
+          "type": "registry:ui",
+          "target": "@ui/select-aligned.tsx"
+        },
+        {
+          "path": "registry/ui/select/select-aligned.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/select-aligned.variants.ts"
         }
       ]
     },
@@ -1139,7 +1219,7 @@
     {
       "name": "dropdown-menu",
       "type": "registry:ui",
-      "description": "A dropdown menu on Base UI Menu (keyboard nav, submenus, checkbox/radio items). Instant row highlight; CSS scale-and-blur panel enter.",
+      "description": "A dropdown menu on Base UI Menu (keyboard nav, submenus, checkbox/radio items, searchable selection panels, and immediate disabled-reason tooltips). Instant row highlight; CSS scale-and-blur panel enter.",
       "dependencies": [
         "@base-ui/react",
         "lucide-react",
@@ -1152,6 +1232,7 @@
         "http://localhost:3000/r/morph.json",
         "http://localhost:3000/r/checkbox.json",
         "http://localhost:3000/r/input.json",
+        "http://localhost:3000/r/tooltip.json",
         "http://localhost:3000/r/use-action.json",
         "http://localhost:3000/r/ascii-loader.json"
       ],

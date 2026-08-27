@@ -3,6 +3,7 @@
 import { Autocomplete } from "@base-ui/react/autocomplete";
 import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import { Select as BaseSelect } from "@base-ui/react/select";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   Check,
   ChevronLeft,
@@ -24,9 +25,11 @@ import {
   useState,
   type ComponentProps,
   type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
+import { ease, spring } from "@/registry/lib/motion";
 import { useAction } from "@/registry/lib/use-action";
 import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
@@ -61,11 +64,9 @@ import {
  * Custom panels can push another panel with `helpers.openPanel` when a flow needs a
  * second form step.
  *
- * It opens and closes without motion — no fade, no scale, no blur, on the backdrop or the
- * panel. A palette is summoned mid-thought and the query usually starts before it has
- * finished arriving; an entrance is time spent between deciding and typing. Nothing here
- * animates in or out, so the portal mounts and unmounts under Base UI directly rather
- * than being held open for an exit.
+ * Its enter and exit mirror Dialog: the backdrop fades, the panel scales in from a small
+ * blur, and the exit fades and blurs without reversing the entrance. Base UI's `keepMounted`
+ * hands the unmount timing to AnimatePresence so the exit can finish before teardown.
  */
 
 /**
@@ -693,6 +694,7 @@ export function CommandPalette({
   const [uncontrolled, setUncontrolled] = useState(defaultOpen);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : uncontrolled;
+  const reduceMotion = useReducedMotion();
   const [query, setQuery] = useState("");
   const [pages, setPages] = useState<Page[]>([]);
   const generatedPanelInputId = useId();
@@ -819,10 +821,6 @@ export function CommandPalette({
     [setOpen, goToDepth, pages.length],
   );
 
-  // Reported by an actions menu when it opens; freezes the highlight on the row that owns
-  // it. Base UI keeps driving the keyboard highlight, so arrows and Enter inside the menu
-  // are unaffected — only the pointer stops moving the row behind it.
-  const [actionsOpen, setActionsOpen] = useState(false);
   // Only ever the last *real* highlight. Opening the menu blurs the list, which reports
   // `undefined` — so reading the live value at that moment would always come up empty.
   const lastHighlightedRef = useRef<unknown>(undefined);
@@ -831,8 +829,10 @@ export function CommandPalette({
   // or two after focus returns to the list, and dropping ours the instant the menu closes
   // leaves that gap unlit — the highlight blinks off and back on the same row. The handover
   // happens below instead, when the real highlight actually arrives.
+  // Reported by an actions menu when it opens: the row that owns the menu keeps its
+  // highlight while focus is inside it. Base UI still drives the keyboard highlight, so the
+  // arrows and Enter within the menu are unaffected.
   const reportActionsOpen = useCallback((open: boolean) => {
-    setActionsOpen(open);
     if (open) setFrozenRow(lastHighlightedRef.current);
   }, []);
 
@@ -959,11 +959,9 @@ export function CommandPalette({
   // no label. It filters/sorts nothing here — that already happened above.
   const items = visibleGroups.map((group) => ({ heading: group.heading, items: group.items }));
 
-  if (!isOpen) return null;
-
   return (
     <BaseDialog.Root
-      open
+      open={isOpen}
       onOpenChange={(next, details) => {
         if (next) return;
         // Escape inside a drilled-in page steps back out of it instead of dismissing
@@ -977,19 +975,50 @@ export function CommandPalette({
         setOpen(false);
       }}
     >
-      {/* No `keepMounted`: nothing has to be held on screen for an exit, so Base UI
-          tears the tree down as soon as it closes. */}
-      <BaseDialog.Portal>
-        <BaseDialog.Backdrop className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" />
-        <BaseDialog.Popup
-          // Top-anchored and x-centred. The vertical offset is a plain `top`, and the
-          // horizontal centring a `-translate-x-1/2` that now has nothing composing
-          // on top of it.
-          className={cn(
-            "fixed top-[14vh] left-1/2 z-50 flex max-h-[min(34rem,calc(100dvh-16vh))] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 flex-col overflow-hidden rounded-md border border-border bg-surface-raised shadow-overlay-drop outline-none",
-            className,
-          )}
-        >
+      <AnimatePresence>
+        {isOpen && (
+          // keepMounted on the Portal keeps the subtree in the DOM so AnimatePresence, not
+          // Base UI, owns when it's torn down.
+          <BaseDialog.Portal keepMounted>
+            <BaseDialog.Backdrop
+              render={
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0, transition: { duration: reduceMotion ? 0 : 0.18 } }}
+                  transition={{ duration: reduceMotion ? 0 : 0.25, ease: ease.out }}
+                  className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+                />
+              }
+            />
+            <BaseDialog.Popup
+              // Top-anchored and x-centred. The vertical offset is a plain `top`, and the
+              // horizontal centring a `-translate-x-1/2` now composes with Motion's scale.
+              className={cn(
+                "fixed top-[14vh] left-1/2 z-50 flex max-h-[min(34rem,calc(100dvh-16vh))] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 flex-col overflow-hidden rounded-md border border-border bg-surface-raised shadow-overlay-drop outline-none",
+                className,
+              )}
+              render={
+                <motion.div
+                  initial={
+                    reduceMotion
+                      ? { opacity: 0 }
+                      : { opacity: 0, scale: 0.96, filter: "blur(4px)" }
+                  }
+                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                  exit={
+                    reduceMotion
+                      ? { opacity: 0, transition: { duration: 0 } }
+                      : {
+                          opacity: 0,
+                          filter: "blur(8px)",
+                          transition: { duration: 0.2, ease: ease.out },
+                        }
+                  }
+                  transition={reduceMotion ? { duration: 0 } : spring.smooth}
+                />
+              }
+            >
           <BaseDialog.Title className="sr-only">Command palette</BaseDialog.Title>
 
           <PaletteControlsContext.Provider value={controls}>
@@ -1000,9 +1029,14 @@ export function CommandPalette({
               inline
               open
               mode="none"
-              autoHighlight
+              // `"always"`, not a bare `true`: `true` waits for the user to type, so a list
+              // that opens on an empty query sits with no row ready and Enter does nothing
+              // until an arrow press.
+              autoHighlight="always"
               loopFocus={false}
-              highlightItemOnHover={!actionsOpen}
+              // See the note on the root list below.
+              {...({ keepHighlight: true } as Record<string, unknown>)}
+              highlightItemOnHover
               onItemHighlighted={notifyItemHighlighted}
               value={panelInputValue}
               onValueChange={setPanelInputValue}
@@ -1105,16 +1139,28 @@ export function CommandPalette({
             value={query}
             onValueChange={setQuery}
             itemToStringValue={(item: CommandItem) => item.label}
-            // Keep the top match ready so Enter runs it without an arrow press first.
-            autoHighlight
+            // The first row carries the selection from the moment the list appears, and the
+            // first *match* once a query narrows it, so Enter always has an answer and the
+            // arrows start somewhere visible. A bare `true` would only do this after typing.
+            autoHighlight="always"
             loopFocus={false}
-            // Inert while an actions menu is open — see ActionsOpenContext.
-            highlightItemOnHover={!actionsOpen}
+            // Two states, not one. `data-highlighted` is the *selection* — what Enter runs —
+            // and hovering must not move it, or sweeping the cursor across the list on the way
+            // to somewhere else quietly reassigns what Enter does. Pressing a row does move it.
+            //
+            // Base UI has one gate for both (see `usePointerSelection`, which is why this stays
+            // on): the rows filter hover out and let a press through, so the prop is left open
+            // for the press to travel down.
+            highlightItemOnHover
+            // Leaving the list keeps the row rather than resetting it — without this,
+            // `autoHighlight` would put the selection straight back on row one the moment the
+            // pointer wandered out of the panel.
+            {...({ keepHighlight: true } as Record<string, unknown>)}
             onItemHighlighted={rememberHighlight}
           >
             <div
               data-searching={searching ? "" : undefined}
-              className="flex items-center gap-2.5 border-b border-border pl-4 pr-3"
+              className="flex h-12 items-center gap-2.5 border-b border-border pl-4 pr-3"
             >
               <CommandIcon className="text-subtle-foreground" aria-hidden>
                 <Search />
@@ -1216,10 +1262,17 @@ export function CommandPalette({
             </Autocomplete.Empty>
 
             {footer && (
-              <div className="flex shrink-0 items-center gap-3 border-t border-border px-1.5 py-2">
-                <Hint keys={["↑", "↓"]}>Navigate</Hint>
-                <Hint keys={[<CornerDownLeft key="enter" className="size-2.5" />]}>Select</Hint>
-                <EscapeHint />
+              // The same two ends as a panel footer: escape at the left, the Enter action
+              // pinned right. Drilling into a panel then swaps what sits between them, rather
+              // than moving both of the things that are always there.
+              <div className="flex shrink-0 items-center justify-between gap-3 border-t border-border px-1.5 py-2">
+                <div className="flex items-center gap-3">
+                  <EscapeHint />
+                  <Hint keys={["↑", "↓"]}>Navigate</Hint>
+                </div>
+                <Hint trailingKeys keys={[<CornerDownLeft key="enter" className="size-2.5" />]}>
+                  Select
+                </Hint>
               </div>
             )}
           </Autocomplete.Root>
@@ -1227,8 +1280,10 @@ export function CommandPalette({
           </FrozenRowContext.Provider>
           </ActionsOpenContext.Provider>
           </PaletteControlsContext.Provider>
-        </BaseDialog.Popup>
-      </BaseDialog.Portal>
+            </BaseDialog.Popup>
+          </BaseDialog.Portal>
+        )}
+      </AnimatePresence>
     </BaseDialog.Root>
   );
 }
@@ -1279,6 +1334,22 @@ export function CommandPanelList({
   autoFocus?: boolean;
   children?: ReactNode;
 }) {
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // The panel root runs `mode="none"` with no `items` collection, so Base UI's
+  // `autoHighlight` has nothing to pick a first row from — a panel opened with the header
+  // field focused sat with no row ready, and the first arrow press was spent lighting one up
+  // rather than moving. Rows register in the DOM, so prime off that instead, using the same
+  // channel a press uses. No dependency array: rows come and go as a panel's query filters
+  // them, and the guard means this only acts when the panel has no highlight at all.
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list || list.querySelector("[data-highlighted]")) return;
+
+    const first = list.querySelector<HTMLElement>('[role="option"]');
+    if (first) dispatchSelectionMove(first);
+  });
+
   return (
     <>
       {autoFocus && (
@@ -1289,6 +1360,7 @@ export function CommandPanelList({
         />
       )}
       <Autocomplete.List
+        ref={listRef}
         className={cn(
           "min-h-0 flex-1 overflow-y-auto overscroll-contain p-1.5",
           SCROLLBAR,
@@ -1328,8 +1400,59 @@ export function CommandPanelLoading({
   );
 }
 
+/**
+ * Lets the pointer *press* a row into the selection without letting it *hover* one there.
+ *
+ * `Autocomplete` is `aria-activedescendant` driven — no row is ever focused — so the only
+ * route from the pointer to the selection is the item's own `mousemove`, which Base UI gates
+ * behind `highlightItemOnHover`. That gate is all-or-nothing, and both settings are wrong for
+ * a palette: on, and sweeping the cursor across the list quietly reassigns what Enter runs;
+ * off, and clicking a row doesn't select it either, which strands the selection on the first
+ * row of any panel that stays open after a press — a checkbox list, most visibly.
+ *
+ * So the gate stays open and the events are filtered instead. Hover's `mousemove` is stopped
+ * in the capture phase, before Base UI's handler on the same element can see it (React's
+ * `stopPropagation` stops the native event at the root container, so the bubble pass never
+ * runs). A press then dispatches one `mousemove` of its own and waves it through. Base UI
+ * resolves that exactly as it would a real one — `listRef.indexOf(event.currentTarget)` — so
+ * the row pressed is the row selected, and there is no second highlight state to keep in sync
+ * with the one Enter actually reads.
+ */
+let passingSyntheticMove = false;
+
+/**
+ * Hands Base UI a row to resolve as highlighted, through the one channel it listens on.
+ *
+ * Module scope rather than a per-row ref because the priming below dispatches onto a row it
+ * does not own. The dispatch is synchronous, so the flag is only ever set across the single
+ * handler it is meant to wave through.
+ */
+function dispatchSelectionMove(row: HTMLElement) {
+  passingSyntheticMove = true;
+  row.dispatchEvent(new MouseEvent("mousemove", { bubbles: true }));
+  passingSyntheticMove = false;
+}
+
+function usePointerSelection() {
+  return useMemo(
+    () => ({
+      onMouseMoveCapture(event: ReactMouseEvent<HTMLElement>) {
+        if (passingSyntheticMove) return;
+        event.stopPropagation();
+      },
+      onPointerDown(event: ReactPointerEvent<HTMLElement>) {
+        dispatchSelectionMove(event.currentTarget);
+      },
+    }),
+    [],
+  );
+}
+
 export interface CommandPanelRowProps
-  extends Omit<ComponentProps<"div">, "children" | "onClick" | "onKeyDown"> {
+  extends Omit<
+    ComponentProps<"div">,
+    "children" | "onClick" | "onKeyDown" | "onPointerDown" | "onMouseMoveCapture"
+  > {
   /** A stable value used by Base UI's keyboard navigation. Defaults to the row label. */
   value?: string;
   /** A leading icon rendered in the standard 16px palette icon slot. */
@@ -1375,10 +1498,14 @@ export function CommandPanelRow({
   const interactive = onSelect != null || onActivate != null;
   const itemValue = value ?? props.id ?? String(children ?? "");
   const frozen = useFrozen(itemValue);
+  const pointerSelection = usePointerSelection();
 
   return (
     <Autocomplete.Item
       {...props}
+      // Hover paints; a press selects. See `usePointerSelection`. The row owns both handlers,
+      // which is why they are omitted from its props.
+      {...pointerSelection}
       value={itemValue}
       aria-selected={interactive ? selected : undefined}
       onClick={interactive ? (event) => {
@@ -1397,6 +1524,10 @@ export function CommandPanelRow({
         destructive
           ? "text-destructive data-highlighted:bg-muted data-highlighted:text-destructive data-frozen:bg-muted data-frozen:text-destructive"
           : "data-highlighted:bg-muted data-highlighted:text-foreground data-frozen:bg-muted data-frozen:text-foreground",
+        // Hover is a fill at half strength and nothing else: no text lift, so it cannot be
+        // mistaken for the selection. Scoped out of the selected and frozen states so the two
+        // never compete for the same row.
+        interactive && "not-data-highlighted:not-data-frozen:hover:bg-muted/50",
         className,
       )}
     >
@@ -1431,30 +1562,63 @@ export function CommandPanelRow({
 }
 
 /** The action bar for a panel page — see `CommandPanelBody` for the expected structure. */
-export function CommandPanelFooter({
-  className,
-  start,
-  children,
-}: {
+export interface CommandPanelFooterProps {
   className?: string;
-  /** Extra affordances on the left, beside the `esc Close` hint — e.g. `CommandPanelActions`. */
-  start?: ReactNode;
-  children?: ReactNode;
-}) {
+  /**
+   * The panel's primary action — the one Enter runs. Its key chip is always the return
+   * glyph: the bar describes the keyboard rather than configuring it, and a footer claiming
+   * some other key would be describing a binding the panel does not have.
+   */
+  enter?: {
+    label: ReactNode;
+    onClick?: () => void;
+    /** `"submit"` submits the panel's form instead of calling `onClick`. @default "button" */
+    type?: "button" | "submit";
+    disabled?: boolean;
+  };
+  /** The contextual actions menu, opened with a fixed Cmd/Ctrl + J. */
+  actions?: CommandPanelActionsProps;
+}
+
+/**
+ * The footer of a custom panel: the escape hint on the left, and at most two things on the
+ * right — the Enter action, then the actions menu.
+ *
+ * Both are named slots rather than children, and that is the point. An open footer grows a
+ * different set of affordances on every panel, each with its own key chip, so the same
+ * palette ends up teaching a different keyboard depending on how deep you have drilled. Two
+ * slots with fixed chords mean the bar can only ever say "return" and "Cmd J", and both
+ * always mean the same thing.
+ *
+ * The menu is rightmost so it hangs off the bottom-right corner as it opens upward.
+ */
+export function CommandPanelFooter({ className, enter, actions }: CommandPanelFooterProps) {
   return (
     <div
       className={cn(
         // Same px/py as the list's hint bar, so both footers are exactly the same height.
-        // `text-2xs` sets the scale for whatever children get passed in.
         "flex shrink-0 items-center justify-between gap-3 border-t border-border px-1.5 py-2 text-2xs",
         className,
       )}
     >
-      <div className="flex items-center gap-3">
-        <EscapeHint />
-        {start}
+      <EscapeHint />
+      <div className="flex items-center gap-2">
+        {enter && (
+          <FooterAction
+            type={enter.type ?? "button"}
+            onClick={enter.onClick}
+            disabled={enter.disabled}
+          >
+            {enter.label}
+            <span className="flex items-center gap-0.5">
+              <Kbd>
+                <CornerDownLeft className="size-2.5" />
+              </Kbd>
+            </span>
+          </FooterAction>
+        )}
+        {actions && <CommandPanelActions {...actions} />}
       </div>
-      <div className="flex items-center gap-2">{children}</div>
     </div>
   );
 }
@@ -1466,8 +1630,6 @@ export interface CommandPanelActionsProps {
   groups?: CommandGroup[];
   /** Trigger label. @default "Actions" */
   label?: string;
-  /** A single key, combined with ⌘/Ctrl, that opens the menu. @default "j" */
-  hotkey?: string;
   searchPlaceholder?: string;
   emptyMessage?: ReactNode;
 }
@@ -1486,11 +1648,11 @@ export interface CommandPanelActionsProps {
  * section labels; each action can also provide an icon, `destructive`, and an executable
  * `keybind` that works while this menu is closed.
  */
-export function CommandPanelActions({
+/** Rendered only by `CommandPanelFooter`'s `actions` slot — see its note on the two slots. */
+function CommandPanelActions({
   items,
   groups,
   label = "Actions",
-  hotkey = "j",
   searchPlaceholder = "Search actions…",
   emptyMessage = "No actions found.",
 }: CommandPanelActionsProps) {
@@ -1587,11 +1749,13 @@ export function CommandPanelActions({
     return () => window.removeEventListener("keydown", onKeyDown, true);
   }, [actionItems, runAction]);
 
-  // ⌘/Ctrl + hotkey. Deliberately not `k` — that's the palette's own global toggle, and
-  // one chord can't mean both "close the palette" and "open this menu".
+  // Cmd/Ctrl + J, and fixed. Deliberately not `k` — that is the palette's own global toggle,
+  // and one chord cannot mean both "close the palette" and "open this menu". Not
+  // configurable either: the chord is printed on the trigger, so panels choosing their own
+  // would have the footer teaching a different keyboard on every page.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key.toLowerCase() === hotkey.toLowerCase() && (event.metaKey || event.ctrlKey)) {
+      if (event.key.toLowerCase() === ACTIONS_HOTKEY && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
         setMenuOpen((current) => !current);
       }
@@ -1603,7 +1767,7 @@ export function CommandPanelActions({
     return () => window.removeEventListener("keydown", onKeyDown, true);
     // `setMenuOpen` is memoised on a `useState` setter from context, so listing it here
     // doesn't churn the listener the way an inline callback would.
-  }, [hotkey, setMenuOpen]);
+  }, [setMenuOpen]);
 
   return (
     <Select<string | null>
@@ -1619,7 +1783,7 @@ export function CommandPanelActions({
         {label}
         <span className="flex items-center gap-0.5">
           <Kbd>⌘</Kbd>
-          <Kbd>{hotkey.toUpperCase()}</Kbd>
+          <Kbd>{ACTIONS_HOTKEY.toUpperCase()}</Kbd>
         </span>
       </SelectTrigger>
       <SelectContent
@@ -1913,6 +2077,9 @@ const ACTION_CLASS = cn(
   "disabled:pointer-events-none disabled:opacity-50",
 );
 
+/** The actions menu's chord, fixed so the footer can print it and always be right. */
+const ACTIONS_HOTKEY = "j";
+
 const INERT_HINT_CLASS =
   "flex items-center gap-1 rounded-xs -my-1 px-1.5 py-1 text-2xs text-subtle-foreground";
 
@@ -1980,19 +2147,34 @@ function Hint({
   keys,
   children,
   onClick,
+  trailingKeys = false,
 }: {
   keys: ReactNode[];
   children: ReactNode;
   /** Given one, the hint becomes a real button that performs what it describes. */
   onClick?: () => void;
+  /**
+   * Put the key chip after the label. That is the bottom-right corner's convention — see
+   * `FooterAction` — so a hint pinned to that corner reads the same way the panel footers'
+   * Enter slot does.
+   */
+  trailingKeys?: boolean;
 }) {
-  const content = (
+  const chips = (
+    <span className="flex items-center gap-0.5">
+      {keys.map((key, i) => (
+        <Kbd key={i}>{key}</Kbd>
+      ))}
+    </span>
+  );
+  const content = trailingKeys ? (
     <>
-      <span className="flex items-center gap-0.5">
-        {keys.map((key, i) => (
-          <Kbd key={i}>{key}</Kbd>
-        ))}
-      </span>
+      {children}
+      {chips}
+    </>
+  ) : (
+    <>
+      {chips}
       {children}
     </>
   );
@@ -2013,27 +2195,18 @@ function Hint({
 }
 
 /**
- * A footer action — the palette is keyboard-first, so this reads as a hint with a key
- * chip ("Save ⏎"), not as a button. The label leads and the key trails, mirroring the
- * `esc Close` hint on the other end of the bar. It's still a real `<button>`, so it
+ * The Enter slot's button. The palette is keyboard-first, so it reads as a hint with a key
+ * chip ("Open" + return) rather than as a button: the label leads and the key trails,
+ * mirroring the escape hint at the other end of the bar. Still a real `<button>`, so it
  * stays clickable and `type="submit"` submits the panel's form.
+ *
+ * Not exported. The footer is the only thing that may put something in that corner, and the
+ * chip it draws is fixed.
  */
-export function CommandPanelAction({
-  keys,
-  children,
-  className,
-  ...props
-}: ComponentProps<"button"> & { keys?: ReactNode[] }) {
+function FooterAction({ children, className, ...props }: ComponentProps<"button">) {
   return (
-    <button type="button" className={cn(ACTION_CLASS, className)} {...props}>
+    <button className={cn(ACTION_CLASS, className)} {...props}>
       {children}
-      {keys && keys.length > 0 && (
-        <span className="flex items-center gap-0.5">
-          {keys.map((key, i) => (
-            <Kbd key={i}>{key}</Kbd>
-          ))}
-        </span>
-      )}
     </button>
   );
 }
@@ -2054,12 +2227,15 @@ function CommandRow({
   const hasChildren = item.panel != null || (item.items != null && item.items.length > 0);
   const compactRow = Boolean(item.badge) && !item.description;
   const frozen = useFrozen(item);
+  const pointerSelection = usePointerSelection();
 
   return (
     <Autocomplete.Item
       value={item}
       disabled={item.disabled}
       onClick={() => onRun(item)}
+      // Hover paints; a press selects. See `usePointerSelection`.
+      {...pointerSelection}
       // See CommandPanelRow: `data-frozen` stands in for the highlight Base UI drops when
       // an actions menu takes focus.
       data-frozen={frozen ? "" : undefined}
@@ -2072,6 +2248,10 @@ function CommandRow({
         item.destructive
           ? "data-highlighted:bg-muted text-destructive data-highlighted:text-destructive data-frozen:bg-muted data-frozen:text-destructive"
           : "data-highlighted:bg-muted data-highlighted:text-foreground data-frozen:bg-muted data-frozen:text-foreground",
+        // Hover is a fill at half strength and nothing else: no text lift, so it cannot be
+        // mistaken for the selection. Scoped out of the selected and frozen states so the two
+        // never compete for the same row.
+        "not-data-highlighted:not-data-frozen:hover:bg-muted/50",
         "data-disabled:pointer-events-none data-disabled:opacity-50",
       )}
     >

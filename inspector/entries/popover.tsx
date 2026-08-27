@@ -1,6 +1,14 @@
 import { Button } from "@/registry/ui/button/button";
 import { Input } from "@/registry/ui/input/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/registry/ui/select/select";
+import { Switch } from "@/registry/ui/switch/switch";
+import {
   Popover,
   PopoverClose,
   PopoverContent,
@@ -12,6 +20,11 @@ import {
 import { bool, defineEntry, select } from "../schema";
 
 const SIDES = ["bottom", "top", "right", "left"] as const;
+const UNITS = [
+  { value: "px", label: "Pixels" },
+  { value: "%", label: "Percent" },
+  { value: "rem", label: "Rem" },
+] as const;
 
 export const popoverEntry = defineEntry({
   slug: "popover",
@@ -52,6 +65,29 @@ export const popoverEntry = defineEntry({
                 <Input tone="accent" defaultValue={value} className="h-8" />
               </label>
             ))}
+          </div>
+
+          <div className="mt-4 flex flex-col gap-3 border-t border-border pt-4">
+            <div className="grid grid-cols-[5rem_1fr] items-center gap-3">
+              <span className="text-sm text-muted-foreground">Units</span>
+              <Select items={UNITS} defaultValue="px" size="sm">
+                <SelectTrigger aria-label="Units">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent width="trigger">
+                  {UNITS.map((unit) => (
+                    <SelectItem key={unit.value} value={unit.value}>
+                      {unit.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm text-muted-foreground">Lock aspect ratio</span>
+              <Switch defaultChecked aria-label="Lock aspect ratio" />
+            </div>
           </div>
 
           <div className="mt-4 flex justify-end">

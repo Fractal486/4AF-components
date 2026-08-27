@@ -31,16 +31,10 @@ export const source = loader({
           const componentPagesBySlug = new Map(
             componentPages.map((page) => [page.url.split("/").pop(), page]),
           );
-          const groupIndexSlugs = new Set<string>(
-            COMPONENT_FAMILIES.flatMap((group) =>
-              "index" in group && group.index ? [group.index] : [],
-            ),
-          );
           const groupedSlugs = new Set<string>();
           const componentFolders: Node[] = [];
           for (const group of COMPONENT_FAMILIES) {
             const { name, slugs } = group;
-            const indexSlug = "index" in group ? group.index : undefined;
             const children = slugs.flatMap((slug) => {
               const page = componentPagesBySlug.get(slug);
               if (!page) return [];
@@ -53,20 +47,21 @@ export const source = loader({
               if (child) componentFolders.push(child);
               continue;
             }
-            const index = indexSlug ? componentPagesBySlug.get(indexSlug) : undefined;
+            // No `index`, so Fumadocs renders the parent as a folder trigger. The family
+            // overview pages this used to skip are gone: unreachable from the sidebar by
+            // design, their content now lives in the agent skill reference.
             componentFolders.push({
               type: "folder",
               name,
               defaultOpen: false,
               collapsible: true,
-              ...(index ? { index } : {}),
               children,
             });
           }
           const ungroupedComponentPages = componentPages.filter(
             (page) => {
               const slug = page.url.split("/").pop() ?? "";
-              return !groupedSlugs.has(slug) && !groupIndexSlugs.has(slug);
+              return !groupedSlugs.has(slug);
             },
           );
 

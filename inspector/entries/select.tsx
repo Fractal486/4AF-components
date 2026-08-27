@@ -3,6 +3,9 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSub,
+  SelectSubContent,
+  SelectSubTrigger,
   SelectTrigger,
   SelectValue,
 } from "@/registry/ui/select/select";
@@ -20,6 +23,40 @@ const FRUITS = {
   watermelon: "Watermelon",
 } as const;
 
+const NESTED_FRUITS = ["banana", "mango"] as const;
+
+function FruitOptions({ icons }: { icons: boolean }) {
+  return (
+    <>
+      {Object.entries(FRUITS)
+        .filter(([value]) => !NESTED_FRUITS.includes(value as (typeof NESTED_FRUITS)[number]))
+        .map(([value, label]) => (
+          <SelectItem
+            key={value}
+            value={value}
+            icon={icons ? <FruitIcon value={value} /> : undefined}
+          >
+            {label}
+          </SelectItem>
+        ))}
+      <SelectSub>
+        <SelectSubTrigger>More fruit</SelectSubTrigger>
+        <SelectSubContent>
+          {NESTED_FRUITS.map((value) => (
+            <SelectItem
+              key={value}
+              value={value}
+              icon={icons ? <FruitIcon value={value} /> : undefined}
+            >
+              {FRUITS[value]}
+            </SelectItem>
+          ))}
+        </SelectSubContent>
+      </SelectSub>
+    </>
+  );
+}
+
 export const selectEntry = defineEntry({
   slug: "select",
   name: "BaseUI",
@@ -29,10 +66,10 @@ export const selectEntry = defineEntry({
     multiple: bool(false),
     searchable: bool(false, "Search in panel"),
     icons: bool(true),
-    outline: bool(true),
+    variant: select(["default", "plain"] as const, "default", "Variant"),
     invalid: bool(false),
   },
-  render({ size, disabled, multiple, searchable, icons, outline, invalid }) {
+  render({ size, disabled, multiple, searchable, icons, variant, invalid }) {
     return (
       <div className="w-full max-w-56">
         {multiple ? (
@@ -46,27 +83,18 @@ export const selectEntry = defineEntry({
           >
             <SelectTrigger
               aria-label="Fruits"
-              outline={outline}
+              variant={variant}
               aria-invalid={invalid ? true : undefined}
               aria-describedby={invalid ? "select-error" : undefined}
             >
               <SelectValue placeholder="Pick fruits" />
             </SelectTrigger>
             <SelectContent
-              width={outline ? "trigger" : "content"}
               searchable={searchable}
               searchPlaceholder="Search fruits…"
               emptyMessage="No fruit found."
             >
-              {Object.entries(FRUITS).map(([value, label]) => (
-                <SelectItem
-                  key={value}
-                  value={value}
-                  icon={icons ? <FruitIcon value={value} /> : undefined}
-                >
-                  {label}
-                </SelectItem>
-              ))}
+              <FruitOptions icons={icons} />
             </SelectContent>
           </Select>
         ) : (
@@ -80,27 +108,18 @@ export const selectEntry = defineEntry({
           >
             <SelectTrigger
               aria-label="Fruit"
-              outline={outline}
+              variant={variant}
               aria-invalid={invalid ? true : undefined}
               aria-describedby={invalid ? "select-error" : undefined}
             >
               <SelectValue placeholder="Pick a fruit" />
             </SelectTrigger>
             <SelectContent
-              width={outline ? "trigger" : "content"}
               searchable={searchable}
               searchPlaceholder="Search fruits…"
               emptyMessage="No fruit found."
             >
-              {Object.entries(FRUITS).map(([value, label]) => (
-                <SelectItem
-                  key={value}
-                  value={value}
-                  icon={icons ? <FruitIcon value={value} /> : undefined}
-                >
-                  {label}
-                </SelectItem>
-              ))}
+              <FruitOptions icons={icons} />
             </SelectContent>
           </Select>
         )}

@@ -14,6 +14,16 @@ nested-select parts
 A Base UI menu with keyboard navigation, safe submenu pointer travel, Kbd-style shortcuts,
 destructive rows, original submenus, and searchable single and multi-select subpanels.
 
+Disabled rows can take an optional `disabledReason`. When present, hovering the row opens an
+immediate right-side tooltip explaining why it is unavailable. This use case skips the normal
+tooltip delay:
+
+```tsx
+<DropdownMenuItem disabled disabledReason="Billing is available on the Pro plan.">
+  Billing
+</DropdownMenuItem>
+```
+
 ## Nested panels
 
 Dropdown Menu includes three reusable nested-panel forms:
@@ -26,6 +36,14 @@ Dropdown Menu includes three reusable nested-panel forms:
 Single- and multi-select panels can include in-panel search. Their parent highlight stays active
 while the pointer is on the parent, inside the nested panel, or moving through the safe pointer
 corridor.
+
+Nested panels open immediately when their parent row is hovered; the safe pointer corridor still
+keeps them open while the pointer moves into the panel. The initially focused child row stays
+unhighlighted until it is hovered or reached through keyboard navigation.
+
+Select-style triggers keep their label or placeholder on the left and show the selected value or
+selection count, dimmed, immediately before the chevron. Searchable panels use a plain text field
+without a leading search icon, and the no-results state is the same height as one option row.
 
 A checkbox item can also read as a toggle button rather than a ticked row. Its `children` may be
 a function of checked state, and `indicator={false}` drops the left tick and its indent so the

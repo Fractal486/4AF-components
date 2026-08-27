@@ -1,7 +1,7 @@
 "use client";
 
 import { Menu as BaseMenu } from "@base-ui/react/menu";
-import { Check, ChevronRight, Search, TriangleAlert } from "lucide-react";
+import { Check, ChevronRight, TriangleAlert } from "lucide-react";
 import {
   createContext,
   useCallback,
@@ -11,6 +11,7 @@ import {
   useRef,
   useState,
   type ComponentProps,
+  type ReactElement,
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
@@ -19,6 +20,7 @@ import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Input } from "@/registry/ui/input/input";
 import { Morph } from "@/registry/ui/morph/morph";
+import { Tooltip } from "@/registry/ui/tooltip/tooltip";
 
 /**
  * A dropdown menu.
@@ -39,7 +41,12 @@ export const DropdownMenu = BaseMenu.Root;
 export const DropdownMenuTrigger = BaseMenu.Trigger;
 export const DropdownMenuGroup = BaseMenu.Group;
 export const DropdownMenuRadioGroup = BaseMenu.RadioGroup;
-export const DropdownMenuSub = BaseMenu.SubmenuRoot;
+export function DropdownMenuSub({
+  highlightItemOnHover = false,
+  ...props
+}: ComponentProps<typeof BaseMenu.SubmenuRoot>) {
+  return <BaseMenu.SubmenuRoot highlightItemOnHover={highlightItemOnHover} {...props} />;
+}
 
 type DropdownMenuSelectValue<Value, Multiple extends boolean | undefined> = Multiple extends true
   ? Value[]
@@ -267,9 +274,9 @@ export function DropdownMenuSelect<Value, Multiple extends boolean | undefined =
 
 const itemBase = cn(
   // Compact rows: 12px text and 14px glyphs, a denser treatment than the 14px overlays.
-  "relative flex cursor-pointer items-center gap-2 rounded-sm px-2.5 py-1.5 text-xs text-foreground outline-none select-none",
+  "relative flex items-center gap-2 rounded-sm px-2.5 py-1.5 text-xs text-foreground outline-none select-none",
   // Instant — no transition, so the highlight tracks the keyboard rather than trailing it.
-  "data-[highlighted]:bg-muted data-[popup-open]:bg-muted",
+  "data-[highlighted]:bg-muted hover:bg-muted focus-visible:bg-muted data-[popup-open]:bg-muted",
   "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
   // Size/inert every glyph, but only mute the *leading* icons (direct children) — the
   // nested check/dot indicators keep the item's foreground ink.
@@ -308,14 +315,32 @@ const INDICATOR_SLOT =
   "pointer-events-none absolute left-2.5 flex size-3.5 items-center justify-center";
 
 const selectItemBase = cn(
-  "relative flex cursor-pointer items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-xs outline-none select-none",
-  "text-muted-foreground data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
+  "relative flex items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-xs outline-none select-none",
+  "text-muted-foreground data-[highlighted]:bg-muted data-[highlighted]:text-foreground hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground",
   "data-[checked]:text-foreground",
   "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
 );
 
 const selectItemIcon =
   "pointer-events-none flex size-3.5 shrink-0 items-center justify-center text-muted-foreground [&>svg]:size-3.5 [&>svg]:shrink-0 [&>svg]:text-muted-foreground";
+
+function DisabledReasonTooltip({
+  disabled,
+  reason,
+  children,
+}: {
+  disabled?: boolean;
+  reason?: ReactNode;
+  children: ReactElement;
+}) {
+  if (!disabled || reason == null || reason === "") return children;
+
+  return (
+    <Tooltip content={reason} side="right" sideOffset={6} delay={0}>
+      {children}
+    </Tooltip>
+  );
+}
 
 function focusDropdownMenuSelectItem(
   list: HTMLElement | null,
@@ -343,10 +368,15 @@ const popupClassName = cn(
   "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong",
   // Scale-and-blur enter from the trigger edge; only these properties change, so only
   // these are named. Base UI unmounts on transitionend, which fires because it's set.
+  //
+  // The Select family's numbers exactly — 0.95 and 3px in, 0.97 and 2px out, over
+  // `--duration-base`. A menu and a select panel are the same object to a user: a list of
+  // choices hanging off a control, often sat next to each other in the same toolbar. Two
+  // lists that open at different speeds is a difference you feel without being able to name.
   "origin-[var(--transform-origin)] blur-0",
-  "transition-[opacity,scale,filter] duration-(--duration-fast) ease-out",
-  "data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[starting-style]:blur-[4px]",
-  "data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[ending-style]:blur-[3px]",
+  "transition-[opacity,scale,filter] duration-(--duration-base) ease-out",
+  "data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[starting-style]:blur-[3px]",
+  "data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[ending-style]:blur-[2px]",
 );
 
 export interface DropdownMenuContentProps
@@ -390,6 +420,8 @@ export function DropdownMenuContent({
 export interface DropdownMenuItemProps extends ComponentProps<typeof BaseMenu.Item> {
   variant?: "default" | "destructive";
   inset?: boolean;
+  /** Explain why a disabled row is unavailable. Hovering the row shows the explanation. */
+  disabledReason?: ReactNode;
 }
 
 export function DropdownMenuItem({
@@ -397,21 +429,32 @@ export function DropdownMenuItem({
   variant = "default",
   inset,
   children,
+  disabled,
+  disabledReason,
   ...props
 }: DropdownMenuItemProps) {
-  return (
+  const hasReason = disabled && disabledReason != null && disabledReason !== "";
+  const item = (
     <BaseMenu.Item
       className={cn(
         itemBase,
         inset && "pl-8",
+        hasReason && "data-[disabled]:pointer-events-auto",
         // Red ink only — the highlight stays the same neutral wash as any other row.
         variant === "destructive" && "text-destructive [&>svg]:text-destructive",
         className,
       )}
+      disabled={disabled}
       {...props}
     >
       {children}
     </BaseMenu.Item>
+  );
+
+  return (
+    <DisabledReasonTooltip disabled={disabled} reason={disabledReason}>
+      {item}
+    </DisabledReasonTooltip>
   );
 }
 
@@ -579,6 +622,8 @@ export interface DropdownMenuCheckboxItemProps
       failure are otherwise silent. */
   announce?: { pending?: string; error?: string };
   onError?: (error: unknown) => void;
+  /** Explain why a disabled row is unavailable. Hovering the row shows the explanation. */
+  disabledReason?: ReactNode;
 }
 
 export function DropdownMenuCheckboxItem({
@@ -594,10 +639,12 @@ export function DropdownMenuCheckboxItem({
   pendingDelay,
   announce,
   disabled,
+  disabledReason,
   onError,
   ...props
 }: DropdownMenuCheckboxItemProps) {
   const deferred = action !== undefined;
+  const hasReason = disabled && disabledReason != null && disabledReason !== "";
   const [uncontrolled, setUncontrolled] = useState(defaultChecked ?? false);
   const isControlled = checked !== undefined;
   const current = isControlled ? checked : uncontrolled;
@@ -635,6 +682,7 @@ export function DropdownMenuCheckboxItem({
         className={cn(
           itemBase,
           indicator && "pr-2 pl-8",
+          hasReason && "data-[disabled]:pointer-events-auto",
           fillIcon && [
             "[&_svg]:transition-[fill] [&_svg]:duration-(--duration-fast) [&_svg]:ease-out",
             "data-[checked]:[&_svg]:fill-current",
@@ -644,36 +692,38 @@ export function DropdownMenuCheckboxItem({
         // Render function to read `checked`: the tick can Morph in and out (draw itself
         // in, blur out) instead of snapping, and `children` can swap on it.
         render={(itemProps, state) => (
-          <div {...itemProps}>
-            {indicator && (
-              <span className={INDICATOR_SLOT}>
-                {/* The tick slot doubles as the status slot: while the action is in
-                    flight the loader sits exactly where the tick will land, which is
-                    what makes the wait read as "not yet" rather than as "nothing
-                    happened". Both extra keys are unreachable without an `action`.
+          <DisabledReasonTooltip disabled={disabled} reason={disabledReason}>
+            <div {...itemProps}>
+              {indicator && (
+                <span className={INDICATOR_SLOT}>
+                  {/* The tick slot doubles as the status slot: while the action is in
+                      flight the loader sits exactly where the tick will land, which is
+                      what makes the wait read as "not yet" rather than as "nothing
+                      happened". Both extra keys are unreachable without an `action`.
 
-                    No size on the glyphs: `itemBase` sizes every svg in the row, and its
-                    `.row svg` beats a class on the element itself, so anything set here
-                    would be a statement the CSS quietly overrules. */}
-                <Morph
-                  activeKey={
-                    status === "pending" || status === "error"
-                      ? status
-                      : state.checked
-                        ? "on"
-                        : "off"
-                  }
-                  items={{
-                    on: <Check />,
-                    off: null,
-                    pending: <AsciiLoader />,
-                    error: <TriangleAlert />,
-                  }}
-                />
-              </span>
-            )}
-            {typeof children === "function" ? children(state.checked, status) : children}
-          </div>
+                      No size on the glyphs: `itemBase` sizes every svg in the row, and its
+                      `.row svg` beats a class on the element itself, so anything set here
+                      would be a statement the CSS quietly overrules. */}
+                  <Morph
+                    activeKey={
+                      status === "pending" || status === "error"
+                        ? status
+                        : state.checked
+                          ? "on"
+                          : "off"
+                    }
+                    items={{
+                      on: <Check />,
+                      off: null,
+                      pending: <AsciiLoader />,
+                      error: <TriangleAlert />,
+                    }}
+                  />
+                </span>
+              )}
+              {typeof children === "function" ? children(state.checked, status) : children}
+            </div>
+          </DisabledReasonTooltip>
         )}
         {...control}
         {...props}
@@ -692,13 +742,30 @@ export function DropdownMenuCheckboxItem({
   );
 }
 
+export interface DropdownMenuRadioItemProps extends ComponentProps<typeof BaseMenu.RadioItem> {
+  /** Explain why a disabled row is unavailable. Hovering the row shows the explanation. */
+  disabledReason?: ReactNode;
+}
+
 export function DropdownMenuRadioItem({
   className,
   children,
+  disabled,
+  disabledReason,
   ...props
-}: ComponentProps<typeof BaseMenu.RadioItem>) {
-  return (
-    <BaseMenu.RadioItem className={cn(itemBase, "pr-2 pl-8", className)} {...props}>
+}: DropdownMenuRadioItemProps) {
+  const hasReason = disabled && disabledReason != null && disabledReason !== "";
+  const item = (
+    <BaseMenu.RadioItem
+      className={cn(
+        itemBase,
+        "pr-2 pl-8",
+        hasReason && "data-[disabled]:pointer-events-auto",
+        className,
+      )}
+      disabled={disabled}
+      {...props}
+    >
       <span className={INDICATOR_SLOT}>
         {/* Base UI's own indicator, styled like the standalone Radio's dot. `keepMounted`
             matters: without it the indicator is transition-status-gated and can miss the
@@ -714,6 +781,12 @@ export function DropdownMenuRadioItem({
       </span>
       {children}
     </BaseMenu.RadioItem>
+  );
+
+  return (
+    <DisabledReasonTooltip disabled={disabled} reason={disabledReason}>
+      {item}
+    </DisabledReasonTooltip>
   );
 }
 
@@ -755,19 +828,25 @@ export function DropdownMenuShortcut({ className, ...props }: ComponentProps<"kb
 }
 
 export interface DropdownMenuSelectTriggerProps
-  extends Omit<ComponentProps<typeof BaseMenu.SubmenuTrigger>, "children" | "className"> {
+  extends Omit<
+    ComponentProps<typeof BaseMenu.SubmenuTrigger>,
+    "children" | "className" | "delay"
+  > {
   /** An optional leading icon for the menu row. */
   icon?: ReactNode;
-  /** Shown until a single value is selected, or until a multiple select has picks. */
+  /** The label shown on the left side of the trigger. */
   placeholder?: ReactNode;
   className?: string;
+  /** Hover delay in milliseconds. @default 0 */
+  delay?: number;
 }
 
 /**
  * The row that opens a select panel from inside a dropdown menu.
  *
  * It is a real submenu trigger for arrow-key navigation and hover-safe pointer movement.
- * Single selects show their selected label; multiple selects show the selected count.
+ * The trigger keeps its label on the left and shows the selected value or count before
+ * the chevron.
  */
 export function DropdownMenuSelectTrigger({
   icon,
@@ -800,14 +879,10 @@ export function DropdownMenuSelectTrigger({
           {icon}
         </span>
       )}
-      <span
-        className={cn(
-          "min-w-0 flex-1 truncate",
-          !hasSelection && "text-muted-foreground",
-        )}
-      >
-        {summary}
-      </span>
+      <span className="min-w-0 flex-1 truncate text-foreground">{label ?? placeholder}</span>
+      {hasSelection && (
+        <span className="ml-auto max-w-[50%] shrink-0 truncate text-muted-foreground">{summary}</span>
+      )}
     </DropdownMenuSubTrigger>
   );
 }
@@ -865,18 +940,17 @@ export function DropdownMenuSelectContent({
   );
 
   const searchField = searchable ? (
-    // A fixed 37px row, flush to the panel edge: the negative margins cancel the popup's
+    // A fixed 38px row, flush to the panel edge: the negative margins cancel the popup's
     // `p-1` so the strip runs from the panel's top edge to its separator line at exactly
-    // 37px (the popup's `overflow-hidden` clips it to the rounded corners). Denser than the
-    // standalone Select's inset field, matching the submenu's compact rows. Icon and input
-    // are centred flex children rather than an absolute icon over a padded input.
+    // 38px (the popup's `overflow-hidden` clips it to the rounded corners). `px-3.5` matches
+    // the standalone Select's search inset and its 4px list + 10px row icon inset. Icon and
+    // input are centred flex children rather than an absolute icon over a padded input.
     <div
       className={cn(
-        "-mx-1 flex h-[37px] shrink-0 items-center gap-2 px-3",
+        "-mx-1 flex h-[38px] shrink-0 items-center gap-2 px-3.5",
         searchPosition === "bottom" ? "-mb-1 border-t border-border" : "-mt-1 border-b border-border",
       )}
     >
-      <Search aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />
       <Input
         ref={searchInputRef}
         aria-label="Search options"
@@ -932,7 +1006,9 @@ export function DropdownMenuSelectContent({
         {items}
       </div>
       {noResults && (
-        <div className="m-1 flex h-8 items-center justify-center px-2.5 text-center text-xs text-muted-foreground">
+        // `m-1` supplies the same 4px inset as the list's `p-1`; `h-7` matches one
+        // select row, keeping the full panel height identical to a single result.
+        <div className="m-1 flex h-7 items-center justify-center px-2.5 text-center text-xs text-muted-foreground">
           {emptyMessage}
         </div>
       )}
@@ -947,6 +1023,8 @@ export interface DropdownMenuSelectItemProps {
   icon?: ReactNode;
   label?: string;
   disabled?: boolean;
+  /** Explain why a disabled option is unavailable. Hovering the row shows the explanation. */
+  disabledReason?: ReactNode;
   className?: string;
   /** Text used by an ancestor searchable select panel to match this option. */
   searchValue?: string;
@@ -958,6 +1036,7 @@ export function DropdownMenuSelectItem({
   icon,
   label,
   disabled,
+  disabledReason,
   className,
   searchValue,
 }: DropdownMenuSelectItemProps) {
@@ -965,6 +1044,8 @@ export function DropdownMenuSelectItem({
   const itemLabel = label ?? (typeof children === "string" ? children : String(value));
   const optionText = searchValue ?? (typeof children === "string" ? children : itemLabel);
   const hiddenBySearch = !context.matchesQuery(optionText);
+  const isDisabled = disabled || context.disabled;
+  const hasReason = isDisabled && disabledReason != null && disabledReason !== "";
   const checked = context.values.some((current) => Object.is(current, value));
   const {
     registerLabel,
@@ -987,41 +1068,40 @@ export function DropdownMenuSelectItem({
       <BaseMenu.CheckboxItem
         checked={checked}
         onCheckedChange={(nextChecked) => context.toggleValue(value, nextChecked)}
-        disabled={disabled || context.disabled || hiddenBySearch}
+        disabled={isDisabled || hiddenBySearch}
         hidden={hiddenBySearch}
         label={itemLabel}
-        className={cn(
-          selectItemBase,
-          className,
-        )}
+        className={cn(selectItemBase, hasReason && "data-[disabled]:pointer-events-auto", className)}
         render={(itemProps, state) => (
-          <div {...itemProps}>
-            <Checkbox
-              checked={state.checked}
-              size="sm"
-              aria-hidden
-              tabIndex={-1}
-              className="pointer-events-none shrink-0"
-            />
-            {icon && (
-              <span aria-hidden="true" className={selectItemIcon}>
-                {icon}
-              </span>
-            )}
-            <span className="min-w-0 flex-1 truncate">{children}</span>
-          </div>
+          <DisabledReasonTooltip disabled={isDisabled} reason={disabledReason}>
+            <div {...itemProps}>
+              <Checkbox
+                checked={state.checked}
+                size="sm"
+                aria-hidden
+                tabIndex={-1}
+                className="pointer-events-none shrink-0"
+              />
+              {icon && (
+                <span aria-hidden="true" className={selectItemIcon}>
+                  {icon}
+                </span>
+              )}
+              <span className="min-w-0 flex-1 truncate">{children}</span>
+            </div>
+          </DisabledReasonTooltip>
         )}
       />
     );
   }
 
-  return (
+  const item = (
     <BaseMenu.RadioItem
       value={value}
-      disabled={disabled || context.disabled || hiddenBySearch}
+      disabled={isDisabled || hiddenBySearch}
       hidden={hiddenBySearch}
       label={itemLabel}
-      className={cn(selectItemBase, className)}
+      className={cn(selectItemBase, hasReason && "data-[disabled]:pointer-events-auto", className)}
     >
       {icon && (
         <span aria-hidden="true" className={selectItemIcon}>
@@ -1041,17 +1121,35 @@ export function DropdownMenuSelectItem({
       </BaseMenu.RadioItemIndicator>
     </BaseMenu.RadioItem>
   );
+
+  return (
+    <DisabledReasonTooltip disabled={isDisabled} reason={disabledReason}>
+      {item}
+    </DisabledReasonTooltip>
+  );
 }
 
 export interface DropdownMenuSubTriggerProps
-  extends Omit<ComponentProps<typeof BaseMenu.SubmenuTrigger>, "children"> {
+  extends Omit<ComponentProps<typeof BaseMenu.SubmenuTrigger>, "children" | "delay"> {
   inset?: boolean;
   children?: ReactNode;
+  /** Hover delay in milliseconds. @default 0 */
+  delay?: number;
 }
 
-export function DropdownMenuSubTrigger({ className, inset, children, ...props }: DropdownMenuSubTriggerProps) {
+export function DropdownMenuSubTrigger({
+  className,
+  inset,
+  children,
+  delay = 0,
+  ...props
+}: DropdownMenuSubTriggerProps) {
   return (
-    <BaseMenu.SubmenuTrigger className={cn(itemBase, inset && "pl-8", className)} {...props}>
+    <BaseMenu.SubmenuTrigger
+      className={cn(itemBase, inset && "pl-8", className)}
+      delay={delay}
+      {...props}
+    >
       {children}
       <ChevronRight className="ml-auto size-4 text-muted-foreground" />
     </BaseMenu.SubmenuTrigger>
@@ -1063,7 +1161,7 @@ export function DropdownMenuSubContent({
   children,
   side = "right",
   align = "start",
-  sideOffset = 4,
+  sideOffset = 8,
   keepMounted = false,
   // Pull up by the popup's own top padding (`p-1`) so the first item lines up with the
   // trigger row rather than sitting a few pixels low.

@@ -1,0 +1,20 @@
+---
+title: Scramble Text
+description: A short encrypted-character reveal for text that is appearing or changing.
+---
+
+<ComponentDemo name="scramble-text" />
+<ComponentReference name="scramble-text" />
+
+## API
+
+**Main export:** `ScrambleText`
+
+A one-shot reveal that progressively replaces encrypted characters with the supplied text.
+Grapheme-aware segmentation keeps emoji and combined characters intact, whitespace is shown
+immediately, and `prefers-reduced-motion` shows the final text without the scramble.
+
+- `children` — the string to reveal.
+- `intervalMs` — milliseconds between reveal steps. Defaults to `32`; values at or below `0`
+  show the final text immediately.
+- `className` — forwarded to the outer inline wrapper.

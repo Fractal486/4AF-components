@@ -6,6 +6,7 @@ import {
   motion,
   useMotionTemplate,
   useMotionValue,
+  useMotionValueEvent,
   useReducedMotion,
   useSpring,
   useTransform,
@@ -18,8 +19,13 @@ import {
   type ComponentProps,
   type ReactNode,
 } from "react";
-import { getSliderControlWidth, getSliderFillOffset } from "./slider-geometry";
 import { cn } from "@/registry/lib/cn";
+import { Tooltip } from "@/registry/ui/tooltip/tooltip";
+import {
+  getSliderControlWidth,
+  getSliderFillOffset,
+  getSliderRangeFillInset,
+} from "./slider-geometry";
 
 /**
  * A slider.
@@ -46,25 +52,81 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
+export type SliderRange = readonly [number, number];
+export type SliderValue = number | readonly number[];
+
+function isSliderRange(value: unknown): value is SliderRange {
+  return (
+    Array.isArray(value) &&
+    value.length >= 2 &&
+    typeof value[0] === "number" &&
+    typeof value[1] === "number"
+  );
+}
+
+function normalizeSliderValue(
+  value: SliderValue | readonly number[] | undefined,
+  min: number,
+  max: number,
+): number {
+  const candidate = Array.isArray(value) ? value[0] : value;
+  return clamp(
+    typeof candidate === "number" && Number.isFinite(candidate) ? candidate : min,
+    min,
+    max,
+  );
+}
+
+function normalizeSliderRange(
+  value: SliderValue | readonly number[] | undefined,
+  min: number,
+  max: number,
+): SliderRange {
+  const source = isSliderRange(value)
+    ? value
+    : typeof value === "number"
+      ? ([min, value] as const)
+      : ([min, max] as const);
+  const first = clamp(
+    Number.isFinite(source[0]) ? source[0] : min,
+    min,
+    max,
+  );
+  const second = clamp(
+    Number.isFinite(source[1]) ? source[1] : max,
+    min,
+    max,
+  );
+
+  return first <= second ? [first, second] : [second, first];
+}
+
+type ThumbValues = [number, number];
+type ThumbFlags = [boolean, boolean];
+
 export interface SliderProps
   extends Omit<
     ComponentProps<typeof BaseSlider.Root>,
     "className" | "render" | "value" | "defaultValue" | "onValueChange"
   > {
-  value?: number;
-  defaultValue?: number;
-  onValueChange?: (value: number) => void;
+  value?: SliderValue;
+  defaultValue?: SliderValue;
+  onValueChange?: ((value: number) => void) | ((value: SliderRange) => void);
   className?: string;
+  /** Render two independently draggable thumbs with the fill between them. */
+  range?: boolean;
   /** A dot at each step. Hidden automatically past 50 steps, where they'd be noise. */
   showTicks?: boolean;
   /** The current value, shown above the track on the right. */
   showValue?: boolean;
+  /** Show the live value in a tooltip above the thumb while it is hovered or focused. */
+  showValueTooltip?: boolean;
   /** Text shown above the track on the left, opposite the value. */
   label?: ReactNode;
   /**
-   * The thumb shape. `bar` is the thin vertical handle; `circle` is a round knob that
-   * fills a fully-rounded track; `knob` is that same round knob on a thin rail (about half
-   * the knob's diameter), so it overhangs — the classic slider look.
+   * The thumb shape. `bar` is the thin vertical handle; `circle` is a round knob centered
+   * in a thick, fully-rounded track; `knob` is that same round knob on a thin rail (about
+   * half the knob's diameter), so it overhangs — the classic slider look.
    */
   thumb?: "bar" | "circle" | "knob";
   /** Overall scale. `sm` is a more compact rail — useful in dense panels. */
@@ -74,79 +136,132 @@ export interface SliderProps
 // Every size-dependent value in one place, keyed by shape then size, so the rail height
 // and rounding, the thumb, the pixel width the fill/tick maths needs, and the tick inset
 // (half that width) never drift out of step. `rail` positions the track within the
-// control — `inset-0` fills it (thumb == rail height); a fixed height centres a thin rail
-// the thumb overhangs.
+// control — `inset-0` fills a thick circle rail; a fixed height centres a thin rail so
+// the knob thumb overhangs.
 const DIMS = {
   circle: {
-    md: { control: "h-5", rail: "inset-0", thumb: "size-5 rounded-full", thumbPx: 20, tickInset: "inset-x-2.5", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
-    sm: { control: "h-4", rail: "inset-0", thumb: "size-4 rounded-full", thumbPx: 16, tickInset: "inset-x-2", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    md: { control: "h-7", rail: "inset-0", thumb: "size-5 rounded-full", thumbPx: 20, fillCapRadiusPx: 14, tooltipSideOffset: 8, tickInset: "inset-x-3.5", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    sm: { control: "h-6", rail: "inset-0", thumb: "size-4 rounded-full", thumbPx: 16, fillCapRadiusPx: 12, tooltipSideOffset: 8, tickInset: "inset-x-3", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
   },
   knob: {
-    md: { control: "h-5", rail: "inset-x-0 top-1/2 h-2.5 -translate-y-1/2", thumb: "size-5 rounded-full", thumbPx: 20, tickInset: "inset-x-2.5", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
-    sm: { control: "h-4", rail: "inset-x-0 top-1/2 h-2 -translate-y-1/2", thumb: "size-4 rounded-full", thumbPx: 16, tickInset: "inset-x-2", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    md: { control: "h-5", rail: "inset-x-0 top-1/2 h-2.5 -translate-y-1/2", thumb: "size-4 rounded-full", thumbPx: 16, fillCapRadiusPx: 0, tooltipSideOffset: 8, tickInset: "inset-x-2", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    sm: { control: "h-4", rail: "inset-x-0 top-1/2 h-2 -translate-y-1/2", thumb: "size-3 rounded-full", thumbPx: 12, fillCapRadiusPx: 0, tooltipSideOffset: 8, tickInset: "inset-x-1.5", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
   },
   bar: {
-    md: { control: "h-10", rail: "inset-0", thumb: "h-5 w-1.5 rounded-sm", thumbPx: 6, tickInset: "inset-x-[3px]", tick: "h-2 rounded-none", tickCenterX: "", tickHairline: true },
-    sm: { control: "h-8", rail: "inset-0", thumb: "h-4 w-1.5 rounded-sm", thumbPx: 6, tickInset: "inset-x-[3px]", tick: "h-1.5 rounded-none", tickCenterX: "", tickHairline: true },
+    md: { control: "h-10", rail: "inset-0", thumb: "h-5 w-1.5 rounded-sm", thumbPx: 6, fillCapRadiusPx: 0, tooltipSideOffset: -2, tickInset: "inset-x-[3px]", tick: "h-2 rounded-none", tickCenterX: "", tickHairline: true },
+    sm: { control: "h-8", rail: "inset-0", thumb: "h-4 w-1.5 rounded-sm", thumbPx: 6, fillCapRadiusPx: 0, tooltipSideOffset: 0, tickInset: "inset-x-[3px]", tick: "h-1.5 rounded-none", tickCenterX: "", tickHairline: true },
   },
+} as const;
+
+// Knobs rest one size step smaller, then grow to the former resting size while grabbed.
+const KNOB_GRAB_SCALE = {
+  md: 1.25,
+  sm: 4 / 3,
 } as const;
 
 export function Slider({
   value,
-  defaultValue = 0,
+  defaultValue,
   onValueChange,
   min = 0,
   max = 100,
   step = 1,
   showTicks = true,
   showValue = true,
+  showValueTooltip = false,
   label,
   thumb = "bar",
   size = "md",
+  range = false,
   disabled,
   className,
   ...props
 }: SliderProps) {
   const isBar = thumb === "bar";
+  const isCircle = thumb === "circle";
   const dims = DIMS[thumb][size];
+  const roundThumbGrabScale = thumb === "knob" ? KNOB_GRAB_SCALE[size] : 1.12;
+  const thumbTravelInsetPx = isCircle ? dims.fillCapRadiusPx : dims.thumbPx / 2;
   const reduceMotion = useReducedMotion();
   const direction = useDirection();
   const isRtl = direction === "rtl";
   const normalizedMin = Number.isFinite(min) ? min : 0;
   const normalizedMax = Number.isFinite(max) && max > normalizedMin ? max : normalizedMin + 1;
   const normalizedStep = Number.isFinite(step) && step > 0 ? step : 1;
-  const [internal, setInternal] = useState(defaultValue);
-  const [dragging, setDragging] = useState(false);
+  const isRange = range || isSliderRange(value) || isSliderRange(defaultValue);
+  const [internal, setInternal] = useState<SliderValue | undefined>(defaultValue);
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
+  const [thumbHovered, setThumbHovered] = useState<ThumbFlags>([false, false]);
+  const [thumbFocused, setThumbFocused] = useState<ThumbFlags>([false, false]);
   const controlRef = useRef<HTMLDivElement>(null);
+  const thumb0Ref = useRef<HTMLDivElement>(null);
+  const thumb1Ref = useRef<HTMLDivElement>(null);
+  const thumbRefs = [thumb0Ref, thumb1Ref] as const;
+  const pointerInteractionRef = useRef(false);
+  const activeThumbIndexRef = useRef<number | null>(null);
   const [pixelRatio, setPixelRatio] = useState(1);
   const [controlWidth, setControlWidth] = useState(0);
 
   const controlled = value !== undefined;
   const current = controlled ? value : internal;
-  const normalizedCurrent = clamp(
-    Number.isFinite(current) ? current : normalizedMin,
-    normalizedMin,
-    normalizedMax,
-  );
-  const percent = ((normalizedCurrent - normalizedMin) / (normalizedMax - normalizedMin)) * 100;
-  const visualPercent = isRtl ? 100 - percent : percent;
+  const normalizedValue = isRange
+    ? normalizeSliderRange(current, normalizedMin, normalizedMax)
+    : normalizeSliderValue(current, normalizedMin, normalizedMax);
+  const normalizedThumbValues: ThumbValues = Array.isArray(normalizedValue)
+    ? [normalizedValue[0], normalizedValue[1]]
+    : [normalizedValue, normalizedValue];
+  const visualPercent0 =
+    isRtl
+      ? 100 -
+        ((normalizedThumbValues[0] - normalizedMin) /
+          (normalizedMax - normalizedMin)) *
+        100
+      : ((normalizedThumbValues[0] - normalizedMin) /
+          (normalizedMax - normalizedMin)) *
+        100;
+  const visualPercent1 =
+    isRtl
+      ? 100 -
+        ((normalizedThumbValues[1] - normalizedMin) /
+          (normalizedMax - normalizedMin)) *
+        100
+      : ((normalizedThumbValues[1] - normalizedMin) /
+          (normalizedMax - normalizedMin)) *
+        100;
 
   const thumbWidthPx = dims.thumbPx;
 
   // Spring-smoothed position drives transform-only visual layers.
-  const target = useMotionValue(visualPercent);
+  const target0 = useMotionValue(visualPercent0);
+  const target1 = useMotionValue(visualPercent1);
   useEffect(() => {
-    target.set(visualPercent);
-  }, [target, visualPercent]);
-  const smooth = useSpring(target, SPRING_GLIDE);
-  const pos = reduceMotion ? target : smooth;
+    target0.set(visualPercent0);
+    target1.set(visualPercent1);
+  }, [target0, target1, visualPercent0, visualPercent1]);
+  const smooth0 = useSpring(target0, SPRING_GLIDE);
+  const smooth1 = useSpring(target1, SPRING_GLIDE);
+  const pos0 = reduceMotion ? target0 : smooth0;
+  const pos1 = reduceMotion ? target1 : smooth1;
+  const [tooltipAlignOffsets, setTooltipAlignOffsets] = useState<ThumbValues>([0, 0]);
+  const visualPercentsRef = useRef<ThumbValues>([visualPercent0, visualPercent1]);
+  useLayoutEffect(() => {
+    visualPercentsRef.current = [visualPercent0, visualPercent1];
+  }, [visualPercent0, visualPercent1]);
   // Translate in pixels rather than changing `left` every animation frame. The control is
   // measured only when its size changes; the spring itself stays on the compositor.
   useLayoutEffect(() => {
     const control = controlRef.current;
     if (!control) return;
     const measure = () => {
-      setControlWidth(getSliderControlWidth(control));
+      const nextWidth = getSliderControlWidth(control);
+      setControlWidth(nextWidth);
+      const travelWidth = Math.max(nextWidth - thumbTravelInsetPx * 2, 0);
+      setTooltipAlignOffsets(
+        visualPercentsRef.current.map(
+          (percent) =>
+            (percent / 100) * travelWidth + thumbTravelInsetPx - nextWidth / 2,
+        ) as ThumbValues,
+      );
       // Captured with the width because ticks are snapped to the *device* pixel grid, and
       // that ratio changes when the window moves to a monitor with different scaling.
       setPixelRatio(window.devicePixelRatio || 1);
@@ -155,28 +270,111 @@ export function Slider({
     const observer = new ResizeObserver(measure);
     observer.observe(control);
     return () => observer.disconnect();
-  }, []);
-  const thumbX = useTransform(
-    pos,
-    (p) => (p / 100) * Math.max(controlWidth - dims.thumbPx, 0),
+  }, [dims.thumbPx, thumbTravelInsetPx]);
+  const thumbX0 = useTransform(
+    pos0,
+    (p) =>
+      (p / 100) * Math.max(controlWidth - thumbTravelInsetPx * 2, 0) +
+      thumbTravelInsetPx -
+      dims.thumbPx / 2,
+  );
+  const thumbX1 = useTransform(
+    pos1,
+    (p) =>
+      (p / 100) * Math.max(controlWidth - thumbTravelInsetPx * 2, 0) +
+      thumbTravelInsetPx -
+      dims.thumbPx / 2,
   );
 
-  // `pos` is a physical left-to-right position for the thumb. In RTL the fill still
-  // grows from the inline start (the right edge), so it needs the inverse progress.
-  const fillProgress = useTransform(pos, (position) => (isRtl ? 100 - position : position));
+  // Base UI's tooltip positioner listens for layout changes, but the slider thumb moves
+  // through a transform-driven spring. Feed the positioner the thumb's current cross-axis
+  // offset so the portalled popup follows every drag frame instead of only settling after
+  // the value changes.
+  useMotionValueEvent(thumbX0, "change", (latest) => {
+    if (showValueTooltip) {
+      setTooltipAlignOffsets((previous) => [
+        latest + dims.thumbPx / 2 - controlWidth / 2,
+        previous[1],
+      ]);
+    }
+  });
+  useMotionValueEvent(thumbX1, "change", (latest) => {
+    if (showValueTooltip) {
+      setTooltipAlignOffsets((previous) => [
+        previous[0],
+        latest + dims.thumbPx / 2 - controlWidth / 2,
+      ]);
+    }
+  });
+
+  // Each `pos` is a physical left-to-right position for a thumb. In RTL the single-thumb
+  // fill still grows from the inline start (the right edge), so it needs the inverse progress.
+  const fillProgress = useTransform(pos0, (position) => (isRtl ? 100 - position : position));
   // The fill ends at the thumb's *centre*. `pos%` alone would lag the (edge-aligned)
   // thumb on the left and overrun it on the right — off by up to half a thumb — so the
   // fill carries a correction of `thumbWidth·(0.5 − pos/100)`. Derive that correction
   // from the same spring-driven position as the thumb; using the raw target value or a
   // second spring lets the fill get ahead while the thumb is still settling.
-  const offset = useTransform(pos, (position) => {
-    return getSliderFillOffset(position, isRtl, thumbWidthPx);
+  const valueRange = normalizedMax - normalizedMin;
+  const stepCount = Math.floor(valueRange / normalizedStep);
+  const firstFieldPercent = Math.min((normalizedStep / valueRange) * 100, 100);
+  const remainder = valueRange - stepCount * normalizedStep;
+  const lastFieldPercent =
+    remainder > normalizedStep * 1e-9
+      ? (remainder / valueRange) * 100
+      : firstFieldPercent;
+  const offset = useTransform(pos0, (position) => {
+    return getSliderFillOffset(
+      position,
+      isRtl,
+      thumbWidthPx,
+      dims.fillCapRadiusPx,
+      thumbTravelInsetPx,
+      isCircle,
+      firstFieldPercent,
+      lastFieldPercent,
+    );
   });
   const ltrFillClip = useMotionTemplate`inset(0 calc(100% - ${fillProgress}% - ${offset}px) 0 0)`;
   const rtlFillClip = useMotionTemplate`inset(0 0 0 calc(100% - ${fillProgress}% - ${offset}px))`;
-  const fillClip = isRtl ? rtlFillClip : ltrFillClip;
+  const ltrCircleFillClip = useMotionTemplate`inset(0 calc(100% - ${fillProgress}% - ${offset}px) 0 0 round ${dims.fillCapRadiusPx}px)`;
+  const rtlCircleFillClip = useMotionTemplate`inset(0 0 0 calc(100% - ${fillProgress}% - ${offset}px) round ${dims.fillCapRadiusPx}px)`;
+  const rangeStartPosition = isRtl ? pos1 : pos0;
+  const rangeEndPosition = isRtl ? pos0 : pos1;
+  const rangeBoundaryInset = isCircle ? dims.fillCapRadiusPx : 0;
+  const rangeStartInset = useTransform(rangeStartPosition, (position) => {
+    return getSliderRangeFillInset(
+      position,
+      true,
+      controlWidth,
+      thumbTravelInsetPx,
+      rangeBoundaryInset,
+      firstFieldPercent,
+      lastFieldPercent,
+    );
+  });
+  const rangeEndInset = useTransform(rangeEndPosition, (position) => {
+    return getSliderRangeFillInset(
+      position,
+      false,
+      controlWidth,
+      thumbTravelInsetPx,
+      rangeBoundaryInset,
+      firstFieldPercent,
+      lastFieldPercent,
+    );
+  });
+  const rangeFillClip = useMotionTemplate`inset(0 calc(100% - ${rangeEndInset}px) 0 ${rangeStartInset}px${isCircle ? ` round ${dims.fillCapRadiusPx}px` : ""})`;
+  const fillClip = isRange
+    ? rangeFillClip
+    : isCircle
+      ? isRtl
+        ? rtlCircleFillClip
+        : ltrCircleFillClip
+      : isRtl
+        ? rtlFillClip
+        : ltrFillClip;
 
-  const stepCount = Math.floor((normalizedMax - normalizedMin) / normalizedStep);
   const ticks =
     showTicks && stepCount > 0 && stepCount <= 50
       ? Array.from(
@@ -185,20 +383,121 @@ export function Slider({
         )
       : [];
 
-  const handleValueChange = (next: number) => {
-    const nextValue = clamp(next, normalizedMin, normalizedMax);
+  const handleValueChange = (next: number | readonly number[]) => {
+    const nextValue = isRange
+      ? normalizeSliderRange(next, normalizedMin, normalizedMax)
+      : normalizeSliderValue(next, normalizedMin, normalizedMax);
     if (!controlled) setInternal(nextValue);
-    onValueChange?.(nextValue);
+    if (isRange) {
+      (onValueChange as ((value: SliderRange) => void) | undefined)?.(
+        nextValue as SliderRange,
+      );
+    } else {
+      (onValueChange as ((value: number) => void) | undefined)?.(
+        nextValue as number,
+      );
+    }
+  };
+
+  const isPointerOverThumb = (
+    index: number,
+    event: { clientX: number; clientY: number },
+  ) => {
+    const thumb = thumbRefs[index]?.current;
+    if (!thumb) return false;
+    const rect = thumb.getBoundingClientRect();
+    return (
+      event.clientX >= rect.left &&
+      event.clientX <= rect.right &&
+      event.clientY >= rect.top &&
+      event.clientY <= rect.bottom
+    );
+  };
+
+  const handlePointerEnd = (event: { clientX: number; clientY: number }) => {
+    pointerInteractionRef.current = false;
+    activeThumbIndexRef.current = null;
+    setDraggingIndex(null);
+    setThumbFocused([false, false]);
+    setThumbHovered([
+      isPointerOverThumb(0, event),
+      isRange && isPointerOverThumb(1, event),
+    ]);
+  };
+
+  const handlePointerDown = (event: {
+    clientX: number;
+    clientY: number;
+  }) => {
+    if (disabled) return;
+    pointerInteractionRef.current = true;
+    setThumbFocused([false, false]);
+    const activeThumbIndex =
+      activeThumbIndexRef.current ?? getClosestThumbIndex(event);
+    activeThumbIndexRef.current = activeThumbIndex;
+    setDraggingIndex(activeThumbIndex);
+  };
+
+  const handleThumbPointerDown = (index: number) => {
+    if (disabled) return;
+    activeThumbIndexRef.current = index;
+    pointerInteractionRef.current = true;
+    setThumbFocused([false, false]);
+    setDraggingIndex(index);
+  };
+
+  const setThumbHover = (index: number, hovered: boolean) => {
+    setThumbHovered((previous) => {
+      const next = [...previous] as ThumbFlags;
+      next[index] = hovered;
+      return next;
+    });
+  };
+
+  const setThumbFocus = (index: number, focused: boolean) => {
+    setThumbFocused((previous) => {
+      const next = [...previous] as ThumbFlags;
+      next[index] = focused;
+      return next;
+    });
+  };
+
+  const isTooltipOpen = (index: number) =>
+    showValueTooltip &&
+    (draggingIndex === index || thumbHovered[index] || thumbFocused[index]);
+
+  const thumbIndices = isRange ? ([0, 1] as const) : ([0] as const);
+
+  const getClosestThumbIndex = (event: { clientX: number; clientY: number }) => {
+    let closestIndex = 0;
+    let closestDistance = Number.POSITIVE_INFINITY;
+
+    for (const index of thumbIndices) {
+      const rect = thumbRefs[index]?.current?.getBoundingClientRect();
+      if (!rect) continue;
+
+      const distance = Math.hypot(
+        event.clientX - (rect.left + rect.width / 2),
+        event.clientY - (rect.top + rect.height / 2),
+      );
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = index;
+      }
+    }
+
+    return closestIndex;
   };
 
   return (
     <BaseSlider.Root
-      value={normalizedCurrent}
+      value={normalizedValue}
       onValueChange={handleValueChange as never}
       min={normalizedMin}
       max={normalizedMax}
       step={normalizedStep}
       disabled={disabled}
+      data-range={isRange ? "true" : undefined}
       className={cn("relative w-full", className)}
       {...props}
     >
@@ -221,13 +520,29 @@ export function Slider({
 
       <BaseSlider.Control
         ref={controlRef}
-        onPointerDown={() => !disabled && setDragging(true)}
-        onPointerUp={() => setDragging(false)}
-        onLostPointerCapture={() => setDragging(false)}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerEnd}
+        onLostPointerCapture={handlePointerEnd}
+        render={(renderProps, state) => {
+          const activeThumbIndex =
+            state.activeThumbIndex >= 0
+              ? state.activeThumbIndex
+              : (activeThumbIndexRef.current ?? -1);
+
+          return (
+            <div
+              {...renderProps}
+              data-dragging-index={
+                state.dragging && activeThumbIndex >= 0
+                  ? activeThumbIndex
+                  : undefined
+              }
+            />
+          );
+        }}
         className={cn(
           "group relative flex w-full touch-none items-center select-none",
-          // The circle variant is half as thick; its round thumb is sized to the rail
-          // height, so it matches the rail's rounded end-caps.
+          // Circle uses a thick rounded rail; bar uses a thin vertical handle.
           dims.control,
           disabled
             ? "cursor-not-allowed opacity-50"
@@ -238,9 +553,8 @@ export function Slider({
                 : "cursor-e-resize",
         )}
       >
-        {/* The rail — clipped to its own shape so the fill rounds with it. The thumb
-            sits *outside* this clip, so a circle that fills the rail can grow past its
-            edges when grabbed rather than being flattened against them. */}
+        {/* The rail — clipped to its own shape so the fill rounds with it. The visual thumb
+            sits above this clip, while the knob can still overhang its thin rail. */}
         <div
           className={cn(
             "absolute overflow-hidden bg-muted",
@@ -248,7 +562,8 @@ export function Slider({
             isBar ? "rounded-lg" : "rounded-full",
           )}
         >
-          {/* Fill — inline start to the thumb's centre, easing to the rail edges at the ends. */}
+          {/* Fill — a circle gets a rounded cap centred on the thumb, so the fill
+              encapsulates it; other variants end at the thumb's centre. */}
           <motion.div
             aria-hidden
             data-slot="slider-fill"
@@ -278,7 +593,7 @@ export function Slider({
               // crisp 1px lines and blurred 2px ones. The width is already measured here
               // for the thumb, so rounding costs nothing. Only the *centring* translate
               // stays, and only on the axis the tick has no odd half-pixel on.
-              const trackPx = Math.max(controlWidth - dims.thumbPx, 0);
+              const trackPx = Math.max(controlWidth - thumbTravelInsetPx * 2, 0);
               // Snapped to the device pixel grid, not the CSS one. On a display scaled to
               // 125% or 150% — the common Windows case — a whole CSS pixel still lands
               // mid-device-pixel, so the browser spreads a hairline across two and the run
@@ -310,33 +625,90 @@ export function Slider({
         </div>
 
         {/* Base UI's thumb: the input lives here for focus, keyboard and ARIA. Hidden,
-            because the visual thumb below is what's seen. */}
-        <BaseSlider.Thumb className="opacity-0" />
+            because the visual thumb below is what's seen. When opted in, the same thumb
+            is the tooltip anchor, so the value popup follows Base UI's real thumb position. */}
+        {thumbIndices.map((index) => {
+          const baseThumb = (
+            <BaseSlider.Thumb
+              key={`slider-thumb-${index}`}
+              ref={thumbRefs[index]}
+              index={index}
+              className={cn("opacity-0", dims.thumb)}
+              onPointerDown={() => handleThumbPointerDown(index)}
+              onPointerEnter={() => setThumbHover(index, true)}
+              onPointerLeave={() => setThumbHover(index, false)}
+              onFocus={() =>
+                setThumbFocus(index, !pointerInteractionRef.current)
+              }
+              onBlur={() => setThumbFocus(index, false)}
+            />
+          );
 
-        {/* The visual thumb — spring-positioned, grab-stretched. The focus ring lights up
-            when the hidden input is focus-visible (`group-has`), so keyboard focus shows
-            on the thing you can actually see. */}
-        <motion.div
-          aria-hidden
-          data-slot="slider-thumb"
-          className={cn(
-            "pointer-events-none absolute top-1/2 bg-foreground shadow-sm",
-            // A thin vertical handle, or a round knob the height of the rail.
-            dims.thumb,
-            "group-has-[:focus-visible]:ring-4 group-has-[:focus-visible]:ring-ring/40",
-          )}
-          style={{ left: 0, x: thumbX, y: "-50%" }}
-          // The bar grabs by stretching taller; a round knob can't stretch one axis
-          // without going oval, so it grabs by growing evenly.
-          animate={
-            reduceMotion
-              ? undefined
-              : isBar
-                ? { scaleY: dragging ? 1.35 : 1 }
-                : { scale: dragging ? 1.12 : 1 }
-          }
-          transition={SPRING_GRAB}
-        />
+          return showValueTooltip ? (
+            <Tooltip
+              key={`slider-tooltip-${index}`}
+              content={normalizedThumbValues[index]}
+              open={isTooltipOpen(index)}
+              side="top"
+              sideOffset={dims.tooltipSideOffset}
+              delay={0}
+              closeOnClick={false}
+              positionerProps={{
+                anchor: controlRef,
+                alignOffset: tooltipAlignOffsets[index] ?? 0,
+              }}
+            >
+              {baseThumb}
+            </Tooltip>
+          ) : (
+            baseThumb
+          );
+        })}
+
+        {/* The visual thumb uses a positioning wrapper and a separate shape. Keeping the
+            grab scale off the Motion-positioned element prevents a press from changing its
+            pixel position. The focus ring lights up when the hidden input is focus-visible
+            (`group-has`), so keyboard focus shows on the thing you can actually see. */}
+        {thumbIndices.map((index) => (
+          <motion.div
+            key={`visual-slider-thumb-${index}`}
+            aria-hidden
+            data-slot="slider-thumb-positioner"
+            className={cn(
+              "pointer-events-none absolute top-1/2",
+              dims.thumb,
+            )}
+            style={{
+              left: 0,
+              x: index === 0 ? thumbX0 : thumbX1,
+              y: "-50%",
+            }}
+          >
+            <motion.div
+              data-slot="slider-thumb"
+              className={cn(
+                "absolute inset-0 origin-center bg-foreground shadow-sm",
+                // A thin vertical handle, or a round knob the height of the rail.
+                dims.thumb,
+                "group-has-[:focus-visible]:ring-4 group-has-[:focus-visible]:ring-ring/40",
+              )}
+              // The bar grabs by stretching taller; a round knob can't stretch one axis
+              // without going oval, so it grabs by growing evenly. Keep this on the inner
+              // shape so the Motion position wrapper never moves during the resize.
+              animate={
+                reduceMotion
+                  ? undefined
+                  : isBar
+                    ? { scaleY: draggingIndex === index ? 1.35 : 1 }
+                    : {
+                        scale:
+                          draggingIndex === index ? roundThumbGrabScale : 1,
+                      }
+              }
+              transition={SPRING_GRAB}
+            />
+          </motion.div>
+        ))}
       </BaseSlider.Control>
     </BaseSlider.Root>
   );

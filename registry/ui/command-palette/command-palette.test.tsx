@@ -7,7 +7,6 @@ import { vi } from "vitest";
 const DOUBLE_PRESS_GUARD_MS = 400;
 import {
   CommandPalette,
-  CommandPanelActions,
   CommandPanelBody,
   CommandPanelFooter,
   CommandPanelList,
@@ -31,7 +30,9 @@ describe("CommandPalette", () => {
       />,
     );
 
-    await user.type(screen.getByPlaceholderText("Type a command or search…"), "status");
+    const input = screen.getByPlaceholderText("Type a command or search…");
+    expect(input).toHaveClass("h-12");
+    await user.type(input, "status");
     expect(await screen.findByRole("alert")).toHaveTextContent("Service unavailable");
   });
 
@@ -72,6 +73,126 @@ describe("CommandPalette", () => {
     expect(input).toHaveValue("settings");
   });
 
+  it("opens with the first row selected, before anything is typed", async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+
+    render(
+      <CommandPalette
+        open
+        groups={[
+          {
+            items: [
+              { id: "settings", label: "Settings", onSelect },
+              { id: "profile", label: "Profile" },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    // No arrow press, no query: a list view never sits with nothing ready.
+    expect(await screen.findByRole("option", { name: "Settings" })).toHaveAttribute(
+      "data-highlighted",
+    );
+
+    await user.keyboard("{Enter}");
+    expect(onSelect).toHaveBeenCalled();
+  });
+
+
+  it("moves the selection to a clicked panel row", async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+
+    render(
+      <CommandPalette
+        open
+        groups={[
+          {
+            items: [
+              {
+                id: "projects",
+                label: "Projects",
+                panel: () => (
+                  <CommandPanelBody>
+                    <CommandPanelList>
+                      <CommandPanelRow value="alpha" checkbox onSelect={onSelect}>
+                        Alpha
+                      </CommandPanelRow>
+                      <CommandPanelRow value="beta" checkbox onSelect={onSelect}>
+                        Beta
+                      </CommandPanelRow>
+                    </CommandPanelList>
+                  </CommandPanelBody>
+                ),
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    await user.click(await screen.findByRole("option", { name: "Projects" }));
+    const alpha = await screen.findByRole("option", { name: "Alpha" });
+    const beta = screen.getByRole("option", { name: "Beta" });
+    expect(alpha).toHaveAttribute("data-highlighted");
+
+    // Hovering it first must not be what moves the selection — the press is.
+    await user.hover(beta);
+    expect(alpha).toHaveAttribute("data-highlighted");
+
+    // A panel that stays open after a press — a checkbox list — is where a stranded
+    // selection shows: the row runs, and the selection has to be on the row that ran.
+    await user.click(beta);
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(beta).toHaveAttribute("data-highlighted");
+    expect(alpha).not.toHaveAttribute("data-highlighted");
+  });
+
+  it("highlights a panel's first row on open, with the header field focused", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <CommandPalette
+        open
+        groups={[
+          {
+            items: [
+              {
+                id: "projects",
+                label: "Projects",
+                // The panel root runs without an `items` collection, so `autoHighlight`
+                // cannot prime it. A header field takes the focus, which is the case where
+                // an unprimed panel left the first arrow press lighting a row rather than
+                // moving between them.
+                panelInput: { type: "search", label: "Search projects" },
+                panel: () => (
+                  <CommandPanelList autoFocus={false}>
+                    <CommandPanelRow value="new">New project</CommandPanelRow>
+                    <CommandPanelRow value="alpha" checkbox>
+                      Alpha
+                    </CommandPanelRow>
+                  </CommandPanelList>
+                ),
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    await user.click(await screen.findByRole("option", { name: "Projects" }));
+
+    const first = await screen.findByRole("option", { name: "New project" });
+    await waitFor(() => expect(first).toHaveAttribute("data-highlighted"));
+
+    // The first arrow press moves the highlight rather than creating it.
+    await user.keyboard("{ArrowDown}");
+    expect(screen.getByRole("option", { name: "Alpha" })).toHaveAttribute("data-highlighted");
+    expect(first).not.toHaveAttribute("data-highlighted");
+  });
+
   it("freezes the row highlight while an actions menu is open", async () => {
     const user = userEvent.setup();
 
@@ -90,9 +211,7 @@ describe("CommandPalette", () => {
                       <CommandPanelRow value="alpha">Alpha</CommandPanelRow>
                       <CommandPanelRow value="beta">Beta</CommandPanelRow>
                     </CommandPanelList>
-                    <CommandPanelFooter>
-                      <CommandPanelActions items={[{ id: "rename", label: "Rename" }]} />
-                    </CommandPanelFooter>
+                    <CommandPanelFooter actions={{ items: [{ id: "rename", label: "Rename" }] }} />
                   </CommandPanelBody>
                 ),
               },
@@ -107,11 +226,21 @@ describe("CommandPalette", () => {
     const alpha = await screen.findByRole("option", { name: "Alpha" });
     const beta = screen.getByRole("option", { name: "Beta" });
 
-    await user.hover(alpha);
+    // The list arrives with its first row already selected — no arrow press to get there.
     expect(alpha).toHaveAttribute("data-highlighted");
+
+    // Hovering the next row gives it a fill and nothing more, so Enter still runs the row
+    // the arrows chose.
+    await user.hover(beta);
+    expect(beta).not.toHaveAttribute("data-highlighted");
+    expect(alpha).toHaveAttribute("data-highlighted");
+    await user.unhover(beta);
 
     await user.click(screen.getByText("Actions"));
     await screen.findByRole("option", { name: "Rename" });
+    const searchInput = screen.getByRole("textbox", { name: "Search options" });
+    expect(searchInput).toHaveClass("h-full");
+    expect(searchInput.parentElement).toHaveClass("h-[38px]");
 
     // Base UI drops its own highlight when the menu takes focus, so the row paints the
     // frozen one instead — the two are styled identically.
@@ -218,6 +347,8 @@ describe("CommandPalette", () => {
 
     await user.click(await screen.findByRole("option", { name: "Projects" }));
     const input = screen.getByLabelText("Search projects");
+    expect(input).toHaveClass("h-12");
+    expect(input.parentElement).toHaveClass("h-12");
     await waitFor(() =>
       expect(input.parentElement?.querySelector('span[aria-hidden="true"]')).toBeInTheDocument(),
     );
@@ -246,9 +377,9 @@ describe("CommandPalette", () => {
                     <CommandPanelList>
                       <CommandPanelRow value="alpha">Alpha</CommandPanelRow>
                     </CommandPanelList>
-                    <CommandPanelFooter>
-                      <CommandPanelActions
-                        items={[
+                    <CommandPanelFooter
+                      actions={{
+                        items: [
                           {
                             id: "save",
                             label: "Save",
@@ -262,9 +393,9 @@ describe("CommandPalette", () => {
                             labels: { checked: "Starred" },
                             onCheckedChange,
                           },
-                        ]}
-                      />
-                    </CommandPanelFooter>
+                        ],
+                      }}
+                    />
                   </CommandPanelBody>
                 ),
               },
@@ -317,9 +448,9 @@ describe("CommandPalette", () => {
                     <CommandPanelList>
                       <CommandPanelRow value="alpha">Alpha</CommandPanelRow>
                     </CommandPanelList>
-                    <CommandPanelFooter>
-                      <CommandPanelActions
-                        items={[
+                    <CommandPanelFooter
+                      actions={{
+                        items: [
                           {
                             id: "delete",
                             label: "Delete project",
@@ -327,9 +458,9 @@ describe("CommandPalette", () => {
                             confirm: { label: "Confirm?" },
                             onSelect,
                           },
-                        ]}
-                      />
-                    </CommandPanelFooter>
+                        ],
+                      }}
+                    />
                   </CommandPanelBody>
                 ),
               },
@@ -388,9 +519,7 @@ describe("CommandPalette", () => {
                       <CommandPanelList>
                         <CommandPanelRow value="alpha">Alpha</CommandPanelRow>
                       </CommandPanelList>
-                      <CommandPanelFooter>
-                        <CommandPanelActions items={items} />
-                      </CommandPanelFooter>
+                      <CommandPanelFooter actions={{ items }} />
                     </CommandPanelBody>
                   ),
                 },

@@ -61,6 +61,9 @@ Follow the component contract in the root `AGENTS.md`: Base UI for behaviour, fo
 refs and props, controlled and uncontrolled state, CVA variants in the sibling
 `.variants.ts`, state exposed as `data-*` attributes, semantic tokens, named transition
 properties and duration tokens, no animated layout properties, no needless Motion runtime.
+A panel of rows opens with a row already active (`data-panel-active`, or Base UI's
+`autoHighlight`) before anything is typed: the current selection, else the first row, and the
+top match once a query narrows the list (the most recent choice when several are selected).
 Preserve unrelated work in a dirty worktree.
 
 For a component change:

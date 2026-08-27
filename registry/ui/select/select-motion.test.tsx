@@ -29,8 +29,9 @@ describe("Motion Select", () => {
     fireEvent.click(trigger);
 
     expect(screen.getByRole("listbox")).toHaveAttribute("aria-multiselectable", "true");
-    expect(screen.getByRole("option", { name: "Apple" })).toHaveAttribute("data-panel-active");
-    expect(screen.getByRole("option", { name: "Banana" })).not.toHaveAttribute(
+    // The panel opens on what is already chosen, not on the top of the list.
+    expect(screen.getByRole("option", { name: "Banana" })).toHaveAttribute("data-panel-active");
+    expect(screen.getByRole("option", { name: "Apple" })).not.toHaveAttribute(
       "data-panel-active",
     );
 
@@ -41,6 +42,30 @@ describe("Motion Select", () => {
     expect(trigger).toHaveAttribute("aria-expanded", "true");
     expect(apple).toHaveAttribute("aria-selected", "true");
     expect(screen.getByRole("button", { name: "2 selected" })).toBeInTheDocument();
+  });
+
+  it("holds the active row while a multi-select's checkboxes are toggled", () => {
+    render(
+      <Select multiple defaultValue={["banana", "mango"]}>
+        <SelectTrigger>
+          <SelectValue placeholder="Pick fruits" />
+        </SelectTrigger>
+        <FruitOptions />
+      </Select>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "2 selected" }));
+    const mango = screen.getByRole("option", { name: "Mango" });
+    expect(mango).toHaveAttribute("data-panel-active");
+
+    // The opening row is decided once, on the way in. Toggling a checkbox changes the
+    // selection but not where the user is in the list, and this panel *focuses* its opening
+    // row — so re-deriving it here would drag focus off the row being clicked.
+    fireEvent.click(mango);
+    expect(mango).toHaveAttribute("data-panel-active");
+    expect(screen.getByRole("option", { name: "Banana" })).not.toHaveAttribute(
+      "data-panel-active",
+    );
   });
 
   it("keeps the original single-select close-on-choice behaviour", () => {
@@ -61,8 +86,8 @@ describe("Motion Select", () => {
     expect(screen.getByRole("button", { name: "Apple" })).toBeInTheDocument();
   });
 
-  it("starts a normal select on its first option instead of the selected one", () => {
-    render(
+  it("opens a select on its selected option, and on its first when there is none", () => {
+    const { unmount } = render(
       <Select defaultValue="banana">
         <SelectTrigger>
           <SelectValue placeholder="Pick a fruit" />
@@ -71,7 +96,22 @@ describe("Motion Select", () => {
       </Select>,
     );
 
+    // This panel has no roving focus of its own, so the opening row takes DOM focus and the
+    // arrow keys walk from there.
     fireEvent.click(screen.getByRole("button", { name: "Banana" }));
+    expect(screen.getByRole("option", { name: "Banana" })).toHaveFocus();
+    unmount();
+
+    render(
+      <Select>
+        <SelectTrigger>
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <FruitOptions />
+      </Select>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Pick a fruit" }));
     expect(screen.getByRole("option", { name: "Apple" })).toHaveFocus();
   });
 
@@ -138,6 +178,10 @@ describe("Motion Select", () => {
     const input = screen.getByRole("textbox", { name: "Search options" });
     expect(input).toHaveAttribute("placeholder", "Search fruit");
     expect(input).toHaveFocus();
+    expect(input).toHaveClass("h-full");
+    expect(input).toHaveClass("p-0");
+    expect(input.parentElement).toHaveClass("h-[38px]", "px-3.5");
+    expect(input.parentElement?.querySelector("svg")).not.toBeInTheDocument();
 
     fireEvent.keyDown(input, { key: "ArrowDown" });
     const apple = screen.getByRole("option", { name: "Apple" });

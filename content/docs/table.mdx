@@ -1,0 +1,124 @@
+---
+title: Table
+description: A semantic data table with optional selection, column sorting, and grid lines.
+---
+
+<ComponentDemo name="table" />
+<ComponentReference name="table" />
+
+## API
+
+**Main exports:** `Table`, `TableHeader`, `TableBody`, `TableFooter`, `TableRow`, `TableHead`,
+`TableCell`, `TableSort`
+
+Native `<table>` semantics with the library's row rules, two densities, an optional checkbox
+column, optional grid lines, three-step column sorting, and a loading state. The Checkbox in the selection column
+is Base UI's; the rest is plain HTML.
+
+## Props
+
+### Table
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `size` | `"sm" \| "md"` | `"md"` | Row density. |
+| `bordered` | `boolean` | `false` | Frame around the table and a rule between every pair of columns. Row rules are always drawn. |
+| `stickyHeader` | `boolean` | `true` | Pins the header row to the top of the scroll container. |
+| `selectable` | `boolean` | `false` | Adds the checkbox column on the left. |
+| `rows` | `readonly string[]` | `[]` | Row values the select-all covers. |
+| `value` | `readonly string[]` | — | Selected row values, controlled. |
+| `defaultValue` | `readonly string[]` | `[]` | Selected row values, uncontrolled. |
+| `onValueChange` | `(value: string[]) => void` | — | Fired with the next selection. |
+| `selectAllLabel` | `string` | `"Select all rows"` | Names the select-all checkbox. |
+| `selectionBar` | `boolean` | `false` | Turn the header into an action row while anything is selected. |
+| `selectionActions` | `ReactNode` | — | Buttons for the right end of that row. |
+| `sort` | `TableSort \| null` | — | Active column and direction, controlled. |
+| `defaultSort` | `TableSort \| null` | `null` | Active column and direction, uncontrolled. |
+| `onSortChange` | `(sort: TableSort \| null) => void` | — | Fired with the next step of the cycle. |
+| `loading` | `boolean` | `false` | Fill the body with placeholder rows and mark the table busy. |
+| `loadingRows` | `number` | `5` | How many placeholder rows to draw. |
+| `wrapperClassName` | `string` | — | Class for the scroll container. |
+
+### TableRow
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `value` | `string` | Makes the row selectable and names it in the selection. |
+| `selectLabel` | `string` | Names this row's checkbox. Defaults to `"Select row"`. |
+
+### TableHead
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `sortKey` | `string` | Makes the column sortable and names it in `TableSort.column`. |
+
+`TableSort` is `{ column: string; direction: "asc" \| "desc" }`.
+
+## Selection
+
+`selectable` adds the column; the rows are unchanged. A row is selectable when it has a `value`;
+one without still gets an empty cell, so a "no results" row keeps the columns aligned.
+
+`rows` sets what select-all covers — pass the page being rendered, not every row held. Selecting
+all is a union, so selected values outside `rows` are kept. The header checkbox is indeterminate
+while the selection is partial and checks from there.
+
+Rows expose `data-selected`. `aria-selected` is not set, being invalid on a plain `table` row.
+
+`selectionBar` turns the header into an action row while anything is selected: the labels give
+way to a count, `selectionActions` sits at the right end, and the select-all checkbox stays, so
+the selection can still be cleared. The count covers the whole selection, not only the part
+`rows` covers. The bar fades and slides in from above and leaves the same way; the labels are
+`inert` while it covers them.
+
+```tsx
+<Table
+  selectable
+  selectionBar
+  selectionActions={<Button size="sm" variant="ghost">Export</Button>}
+>
+```
+
+## Sorting
+
+`sortKey` turns a header into a button that cycles ascending, descending, unsorted. Switching
+columns restarts at ascending. `aria-sort` is set on the `<th>`, and a header without a
+`sortKey` stays a plain header.
+
+Ordering the rows is the caller's, since only the call site knows what the values are:
+
+```tsx
+const [sort, setSort] = useState<TableSort | null>(null);
+const rows = useMemo(() => sortPeople(people, sort), [people, sort]);
+
+<Table sort={sort} onSortChange={setSort}>
+  <TableHead sortKey="name">Name</TableHead>
+```
+
+## Loading
+
+`loading` replaces the body's rows with placeholders and sets `aria-busy` on the table. The
+header keeps its labels — the columns are known before the data is — with its sort controls and
+select-all disabled.
+
+```tsx
+<Table loading={isLoading} loadingRows={8}>
+```
+
+Placeholder rows take their shape from the header you wrote, so they line up with the real
+columns. Give the header the columns you intend to render.
+
+## Layout
+
+The table sits in a scroll container carrying the library's thin scrollbar; style it with
+`wrapperClassName`. With `bordered`, the frame is drawn on that container, so it rounds with it.
+
+The header pins to that container, which needs a bounded height before it has anywhere to pin
+to:
+
+```tsx
+<Table wrapperClassName="max-h-80">
+```
+
+Pinned header cells take `bg-background`, since rows scroll underneath them. Pass another fill
+through `className` on `TableHead` when the table sits on a raised surface.

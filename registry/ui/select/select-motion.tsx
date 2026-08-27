@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronDown, Search } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { motion, type Transition, useReducedMotion, type Variants } from "motion/react";
 import {
   createContext,
@@ -83,6 +83,8 @@ const SIZE: Record<SelectSize, { field: string; glyph: string; iconSlot: string;
 interface SelectContextValue {
   value: string | undefined;
   values: readonly string[];
+  /** The selection as it stood when the panel opened — the row it opens on. */
+  openingValues: readonly string[];
   multiple: boolean;
   size: SelectSize;
   open: boolean;
@@ -114,6 +116,34 @@ function useSelectContext(component: string) {
   return ctx;
 }
 
+function panelOptions(list: HTMLElement) {
+  return Array.from(list.querySelectorAll<HTMLElement>('[role="option"]')).filter(
+    (option) =>
+      !option.hidden &&
+      option.getAttribute("aria-disabled") !== "true" &&
+      !(option instanceof HTMLButtonElement && option.disabled),
+  );
+}
+
+/**
+ * The row a panel opens on: the most recent of the selected values that is still in the list,
+ * and the first row when nothing is selected or a query has filtered the selection away.
+ * Most recent rather than topmost because that is how Base UI's Combobox resolves it, and all
+ * five selects open on the same row.
+ */
+function focusOpeningOption(list: HTMLElement | null, values: readonly string[]) {
+  if (!list) return undefined;
+
+  const options = panelOptions(list);
+  let option: HTMLElement | undefined;
+  for (let index = values.length - 1; index >= 0 && !option; index -= 1) {
+    option = options.find((candidate) => candidate.dataset.selectValue === values[index]);
+  }
+  option ??= options[0];
+  option?.focus();
+  return option;
+}
+
 function focusPanelOption(
   list: HTMLElement | null,
   current: HTMLElement | null,
@@ -121,12 +151,7 @@ function focusPanelOption(
 ) {
   if (!list) return undefined;
 
-  const options = Array.from(list.querySelectorAll<HTMLElement>('[role="option"]')).filter(
-    (option) =>
-      !option.hidden &&
-      option.getAttribute("aria-disabled") !== "true" &&
-      !(option instanceof HTMLButtonElement && option.disabled),
-  );
+  const options = panelOptions(list);
   const currentIndex = current ? options.indexOf(current) : -1;
   const nextIndex =
     direction === "next"
@@ -211,6 +236,12 @@ export function Select({
   );
   const selectedValue = multiple ? undefined : values[0];
 
+  // The selection as it stood when the panel opened, not as it stands now. A multi-select
+  // stays open while its checkboxes are toggled, and reading the live selection below would
+  // re-aim — and re-focus — the opening row on every toggle, yanking the highlight off the
+  // row under a pointer that hasn't moved. Where the panel opens is asked once, on the way in.
+  const [openingValues, setOpeningValues] = useState<readonly string[]>(values);
+
   // A panel filter belongs to this open session only. Reopening shows the full list.
   // Adjusted during render rather than from an effect: this is state derived from the
   // open/closed transition, not a synchronisation with anything outside React, so an
@@ -218,7 +249,9 @@ export function Select({
   const [wasOpen, setWasOpen] = useState(open);
   if (wasOpen !== open) {
     setWasOpen(open);
-    if (!open) {
+    if (open) {
+      setOpeningValues(values);
+    } else {
       setSearchQuery("");
       setActiveItem(undefined);
     }
@@ -295,6 +328,7 @@ export function Select({
     () => ({
       value: selectedValue,
       values,
+      openingValues,
       multiple,
       open,
       setOpen,
@@ -321,6 +355,7 @@ export function Select({
     [
       selectedValue,
       values,
+      openingValues,
       multiple,
       size,
       open,
@@ -472,17 +507,21 @@ export function SelectContent({
   const [height, setHeight] = useState(0);
   const [measuredEmpty, setMeasuredEmpty] = useState(false);
   const open = ctx.open;
-  const { setActiveItem, setPlacement, searchQuery } = ctx;
+  const { setActiveItem, setPlacement, searchQuery, openingValues } = ctx;
 
-  // Unlike the Base UI popup, this inline panel does not manage an active row for us.
-  // Always mark the first visible option active; searchable panels then return DOM focus
-  // to their input so typing remains immediate.
+  // Unlike the Base UI popup, this inline panel does not manage an active row for us. A panel
+  // never opens with nothing ready: it opens on the current selection, and on its first row
+  // when there is none or when a query has narrowed the list past it. Searchable panels then
+  // return DOM focus to their input so typing remains immediate.
   useLayoutEffect(() => {
     if (!open) return;
-    const option = focusPanelOption(listRef.current, null, "next");
+    const option = focusOpeningOption(
+      listRef.current,
+      searchQuery.trim() === "" ? openingValues : [],
+    );
     setActiveItem(option?.dataset.selectValue);
     if (searchable) searchRef.current?.focus();
-  }, [open, searchable, searchQuery, setActiveItem]);
+  }, [open, openingValues, searchable, searchQuery, setActiveItem]);
 
   // Whether the filter emptied the list can only be answered by the DOM — Base UI hides
   // the rows itself, so there's nothing in React state to count. That measurement is a
@@ -599,11 +638,7 @@ export function SelectContent({
         // `innerRef` still measures both parts, so the panel's unfold includes it.
       >
         {searchable && (
-          <div className="relative border-b border-border px-2 py-1">
-            <Search
-              aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 left-4 size-3.5 -translate-y-1/2 text-muted-foreground"
-            />
+          <div className="relative flex h-[38px] items-center border-b border-border px-3.5">
             <Input
               ref={searchRef}
               aria-label="Search options"
@@ -623,7 +658,7 @@ export function SelectContent({
                 if (event.key !== "Escape") event.stopPropagation();
               }}
               placeholder={searchPlaceholder}
-              className="h-8 pl-8"
+              className="h-full p-0"
             />
           </div>
         )}
@@ -643,7 +678,14 @@ export function SelectContent({
           {children}
         </motion.div>
         {noResults && (
-          <div className={cn("m-1 flex h-8 items-center justify-center px-2.5 text-center text-muted-foreground", SIZE[ctx.size].row)}>
+          <div
+            // One row tall, exactly — `m-1` mirrors the list's `p-1` and `py-1.5` is the
+            // row's own vertical padding. See the note in `select.tsx`.
+            className={cn(
+              "m-1 flex items-center justify-center px-2.5 py-1.5 text-center text-muted-foreground",
+              SIZE[ctx.size].row,
+            )}
+          >
             {emptyMessage}
           </div>
         )}
@@ -711,7 +753,7 @@ export function SelectItem({
   }, [register, unregister, value, label]);
 
   const itemClassName = cn(
-    "flex w-full cursor-pointer items-center rounded-xs px-2.5 py-1.5 text-left outline-none",
+    "flex w-full items-center rounded-xs px-2.5 py-1.5 text-left outline-none",
     SIZE[ctx.size].row,
     ctx.multiple ? "gap-2.5" : "gap-2",
     ctx.multiple

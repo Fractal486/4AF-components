@@ -110,7 +110,11 @@ describe("Search Select", () => {
     await user.click(input);
     await user.type(input, "pear");
 
-    expect(await screen.findByText("No fruit found.")).toHaveClass("m-1", "h-8");
+    // The row's own vertical padding inside a margin mirroring the list's, rather than a
+    // fixed height — that is what makes it one row tall at `sm` as well as `md`.
+    const empty = await screen.findByText("No fruit found.");
+    expect(empty).toHaveClass("m-1", "py-1.5");
+    expect(empty).not.toHaveClass("h-8");
     expect(screen.getByRole("listbox")).toHaveClass("empty:hidden");
   });
 
@@ -134,7 +138,7 @@ describe("Search Select", () => {
     expect(input).toHaveValue("Mango");
   });
 
-  it("opens a single select on the first choice instead of its later selection", async () => {
+  it("opens and reopens a single select on its selection", async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
     render(<FruitSearch defaultValue={FRUITS[1]} onValueChange={onValueChange} />);
@@ -142,7 +146,7 @@ describe("Search Select", () => {
     const input = screen.getByRole("combobox", { name: "Fruit" });
     await user.click(input);
 
-    expect(await screen.findByRole("option", { name: "Apple" })).toHaveAttribute(
+    expect(await screen.findByRole("option", { name: "Mango" })).toHaveAttribute(
       "data-highlighted",
     );
 
@@ -150,15 +154,17 @@ describe("Search Select", () => {
     await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
 
     await user.click(input);
-    expect(await screen.findByRole("option", { name: "Apple" })).toHaveAttribute(
+    expect(await screen.findByRole("option", { name: "Mango" })).toHaveAttribute(
       "data-highlighted",
     );
 
+    // Enter on an untouched panel confirms the standing choice instead of quietly moving it
+    // to the top of the list.
     await user.keyboard("{Enter}");
-    await waitFor(() => expect(onValueChange).toHaveBeenCalledWith(FRUITS[0], expect.anything()));
+    await waitFor(() => expect(onValueChange).toHaveBeenCalledWith(FRUITS[1], expect.anything()));
   });
 
-  it("opens and reopens on the first visible choice, even with a later selection", async () => {
+  it("opens a multi-select on a chosen row, and typing moves to the top match", async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
     render(<FruitSearchMulti defaultValue={[FRUITS[1]]} onValueChange={onValueChange} />);
@@ -166,14 +172,13 @@ describe("Search Select", () => {
     const input = screen.getByRole("combobox", { name: "Fruits" });
     await user.click(input);
 
-    expect(await screen.findByRole("option", { name: "Apple" })).toHaveAttribute(
+    expect(await screen.findByRole("option", { name: "Mango" })).toHaveAttribute(
       "data-highlighted",
     );
 
-    await user.keyboard("{Escape}");
-    await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
-
-    await user.click(input);
+    // A query is a better guess at what Enter should take than a choice made earlier, so the
+    // mark leaves the selection as soon as the list is narrowed.
+    await user.type(input, "app");
     expect(await screen.findByRole("option", { name: "Apple" })).toHaveAttribute(
       "data-highlighted",
     );
@@ -182,6 +187,58 @@ describe("Search Select", () => {
     await waitFor(() =>
       expect(onValueChange).toHaveBeenCalledWith([FRUITS[1], FRUITS[0]], expect.anything()),
     );
+  });
+
+  it("opens with the first row selected when nothing is chosen yet", async () => {
+    const user = userEvent.setup();
+    render(<FruitSearch />);
+
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+
+    // `autoHighlight="always"` covers the empty case; a bare `true` would wait for a
+    // keystroke, and a panel never opens with nothing ready.
+    expect(await screen.findByRole("option", { name: "Apple" })).toHaveAttribute(
+      "data-highlighted",
+    );
+  });
+
+  it("holds the highlight on a multi-select row that is toggled off", async () => {
+    const user = userEvent.setup();
+    render(<FruitSearchMulti defaultValue={[FRUITS[1]]} />);
+
+    const input = screen.getByRole("combobox", { name: "Fruits" });
+    await user.click(input);
+
+    const mango = await screen.findByRole("option", { name: "Mango" });
+    expect(mango).toHaveAttribute("data-highlighted");
+
+    // Unchecking the row under the pointer must not send the highlight anywhere — not to
+    // another chosen row, and not back to the top of the list.
+    await user.click(mango);
+    expect(mango).toHaveAttribute("data-highlighted");
+    expect(screen.getByRole("option", { name: "Apple" })).not.toHaveAttribute(
+      "data-highlighted",
+    );
+  });
+
+  it("leaves the highlight where the pointer left it", async () => {
+    const user = userEvent.setup();
+    render(<FruitSearch />);
+
+    const input = screen.getByRole("combobox", { name: "Fruit" });
+    await user.click(input);
+
+    const mango = await screen.findByRole("option", { name: "Mango" });
+    await user.hover(mango);
+    expect(mango).toHaveAttribute("data-highlighted");
+
+    // `keepHighlight`. Without it Base UI clears the active row on pointer-leave and
+    // `autoHighlight` puts it straight back on row one, so a pointer that merely wandered out
+    // of the panel would silently re-aim Enter at the top of the list.
+    await user.unhover(mango);
+    await user.hover(input);
+    expect(mango).toHaveAttribute("data-highlighted");
+    expect(screen.getByRole("option", { name: "Apple" })).not.toHaveAttribute("data-highlighted");
   });
 
   it("keeps checkbox selection open and starts at the first filtered result", async () => {
@@ -273,3 +330,4 @@ describe("Search Select", () => {
     expect(container.querySelector('[data-testid="mango-icon"]')).not.toBeInTheDocument();
   });
 });
+

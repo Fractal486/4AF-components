@@ -1,7 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState, type ComponentType } from "react";
+import { RotateCcw } from "lucide-react";
+import { Fragment, useState, type ComponentType } from "react";
 import { Controls } from "@/inspector/controls";
 import {
   initialValues,
@@ -9,7 +10,9 @@ import {
   type Entry,
 } from "@/inspector/schema";
 import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
+import { Button } from "@/registry/ui/button/button";
 import { cn } from "@/registry/lib/cn";
+import { Tooltip } from "@/registry/ui/tooltip/tooltip";
 
 export type ComponentDemoName =
   | "action-button"
@@ -35,6 +38,8 @@ export type ComponentDemoName =
   | "progress"
   | "radio"
   | "select"
+  | "select-sort"
+  | "select-aligned"
   | "select-motion"
   | "select-motion-search"
   | "select-search"
@@ -46,9 +51,11 @@ export type ComponentDemoName =
   | "skeleton"
   | "slider"
   | "switch"
+  | "table"
   | "table-of-contents"
   | "table-of-contents-lines"
   | "tabs"
+  | "scramble-text"
   | "text-shimmer"
   | "textarea"
   | "toast"
@@ -57,34 +64,61 @@ export type ComponentDemoName =
 
 function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
   const [values, setValues] = useState(() => initialValues(entry.controls));
+  const [replayKey, setReplayKey] = useState(0);
   const hasControls = Object.keys(entry.controls).length > 0;
   const isAppShell = entry.slug === "sidebar";
+  const isScrambleText = entry.slug === "scramble-text";
 
   return (
-    <div className="not-prose first:mt-0 my-6 space-y-4">
+    <div className="not-prose first:mt-0 my-6">
       <div
         className={cn(
-          "relative grid min-h-72 min-w-0 place-items-center overflow-hidden rounded-xl bg-background p-6 shadow-border",
-          isAppShell && "block min-h-0 p-3",
+          "relative grid h-[42rem] min-w-0 grid-rows-[minmax(0,1fr)_auto] items-center justify-items-center gap-8 overflow-hidden rounded-xl bg-background p-6 shadow-border",
+          isAppShell && "min-h-0 items-stretch justify-items-stretch gap-3 p-3",
         )}
       >
-        {entry.render(values)}
-      </div>
-      {hasControls ? (
-        <section
-          aria-label={`${entry.name} settings`}
-          className="pt-5"
+        <div
+          className={cn(
+            "flex min-h-0 w-full min-w-0 items-center justify-center",
+            isAppShell && "items-stretch",
+          )}
         >
-          <Controls
-            idPrefix={`docs-${entry.slug}`}
-            schema={entry.controls}
-            values={values}
-            onChange={(key, value) =>
-              setValues((current) => ({ ...current, [key]: value }))
-            }
-          />
-        </section>
-      ) : null}
+          {isScrambleText ? (
+            <>
+              <Tooltip content="Replay animation" delay={0}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Replay Scramble Text animation"
+                  className="absolute top-3 right-3 z-10"
+                  onClick={() => setReplayKey((current) => current + 1)}
+                >
+                  <RotateCcw />
+                </Button>
+              </Tooltip>
+              <Fragment key={replayKey}>{entry.render(values)}</Fragment>
+            </>
+          ) : (
+            entry.render(values)
+          )}
+        </div>
+        {hasControls ? (
+          <section
+            aria-label={`${entry.name} settings`}
+            className="mx-auto w-[400px] px-3 py-2"
+          >
+            <Controls
+              idPrefix={`docs-${entry.slug}`}
+              schema={entry.controls}
+              values={values}
+              onChange={(key, value) =>
+                setValues((current) => ({ ...current, [key]: value }))
+              }
+            />
+          </section>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -134,6 +168,8 @@ const demos: Record<Exclude<ComponentDemoName, "ascii-loader">, ComponentType> =
   progress: lazyEntry(async () => (await import("@/inspector/entries/progress")).progressEntry),
   radio: lazyEntry(async () => (await import("@/inspector/entries/radio")).radioEntry),
   select: lazyEntry(async () => (await import("@/inspector/entries/select")).selectEntry),
+  "select-sort": lazyEntry(async () => (await import("@/inspector/entries/select-sort")).selectSortEntry),
+  "select-aligned": lazyEntry(async () => (await import("@/inspector/entries/select-aligned")).selectAlignedEntry),
   "select-motion": lazyEntry(async () => (await import("@/inspector/entries/select-motion")).selectMotionEntry),
   "select-motion-search": lazyEntry(async () => (await import("@/inspector/entries/select-motion-search")).selectMotionSearchEntry),
   "select-search": lazyEntry(async () => (await import("@/inspector/entries/select-search")).selectSearchEntry),
@@ -145,9 +181,11 @@ const demos: Record<Exclude<ComponentDemoName, "ascii-loader">, ComponentType> =
   skeleton: lazyEntry(async () => (await import("@/inspector/entries/skeleton")).skeletonEntry),
   slider: lazyEntry(async () => (await import("@/inspector/entries/slider")).sliderEntry),
   switch: lazyEntry(async () => (await import("@/inspector/entries/switch")).switchEntry),
+  table: lazyEntry(async () => (await import("@/inspector/entries/table")).tableEntry),
   "table-of-contents": lazyEntry(async () => (await import("@/inspector/entries/table-of-contents")).tableOfContentsEntry),
   "table-of-contents-lines": lazyEntry(async () => (await import("@/inspector/entries/table-of-contents-lines")).tableOfContentsLinesEntry),
   tabs: lazyEntry(async () => (await import("@/inspector/entries/tabs")).tabsEntry),
+  "scramble-text": lazyEntry(async () => (await import("@/inspector/entries/scramble-text")).scrambleTextEntry),
   "text-shimmer": lazyEntry(async () => (await import("@/inspector/entries/text-shimmer")).textShimmerEntry),
   textarea: lazyEntry(async () => (await import("@/inspector/entries/textarea")).textareaEntry),
   toast: lazyEntry(async () => (await import("@/inspector/entries/toast")).toastEntry),
