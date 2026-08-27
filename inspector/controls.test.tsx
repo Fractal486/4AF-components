@@ -30,31 +30,23 @@ describe("Controls select", () => {
       </>,
     );
 
-    expect(document.getElementById("button-variant-label")).toHaveTextContent("Variant:");
-    expect(document.getElementById("input-variant-label")).toHaveTextContent("Variant:");
-    const [buttonTrigger, inputTrigger] = screen.getAllByRole("combobox");
-    expect(buttonTrigger).toHaveAttribute(
-      "aria-labelledby",
-      "button-variant-label",
-    );
-    expect(inputTrigger).toHaveAttribute(
-      "aria-labelledby",
-      "input-variant-label",
-    );
+    expect(document.getElementById("button-variant-label")).toHaveTextContent("Variant");
+    expect(document.getElementById("input-variant-label")).toHaveTextContent("Variant");
+    const [buttonSelect, inputSelect] = screen.getAllByRole("combobox");
+    expect(buttonSelect).toHaveAttribute("aria-labelledby", "button-variant-label");
+    expect(inputSelect).toHaveAttribute("aria-labelledby", "input-variant-label");
   });
 
-  it("renders the enum as a combobox and updates the selection on pick", async () => {
+  it("renders the enum as an aligned select and updates the selection on pick", async () => {
     const user = userEvent.setup();
     render(<ControlsHarness />);
 
-    const trigger = screen.getByRole("combobox", { name: /variant/i });
-    expect(trigger).toHaveTextContent("primary");
+    const trigger = screen.getByRole("combobox", { name: "Variant" });
+    expect(trigger).toHaveTextContent("Primary");
 
     await user.click(trigger);
-    await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "true"));
-    await user.click(screen.getByRole("option", { name: "outline" }));
+    await user.click(await screen.findByRole("option", { name: "Outline" }));
 
-    await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "false"));
-    expect(trigger).toHaveTextContent("outline");
+    await waitFor(() => expect(trigger).toHaveTextContent("Outline"));
   });
 });

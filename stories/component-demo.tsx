@@ -70,48 +70,55 @@ function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
   const isScrambleText = entry.slug === "scramble-text";
 
   return (
-    <div className="not-prose first:mt-0 my-6 space-y-4">
+    <div className="not-prose first:mt-0 my-6">
       <div
         className={cn(
-          "relative grid min-h-72 min-w-0 place-items-center overflow-hidden rounded-xl bg-background p-6 shadow-border",
-          isAppShell && "block min-h-0 p-3",
+          "relative grid h-[42rem] min-w-0 grid-rows-[minmax(0,1fr)_auto] items-center justify-items-center gap-8 overflow-hidden rounded-xl bg-background p-6 shadow-border",
+          isAppShell && "min-h-0 items-stretch justify-items-stretch gap-3 p-3",
         )}
       >
-        {isScrambleText ? (
-          <>
-            <Tooltip content="Replay animation" delay={0}>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Replay Scramble Text animation"
-                className="absolute top-3 right-3 z-10"
-                onClick={() => setReplayKey((current) => current + 1)}
-              >
-                <RotateCcw />
-              </Button>
-            </Tooltip>
-            <Fragment key={replayKey}>{entry.render(values)}</Fragment>
-          </>
-        ) : (
-          entry.render(values)
-        )}
-      </div>
-      {hasControls ? (
-        <section
-          aria-label={`${entry.name} settings`}
-          className="pt-5"
+        <div
+          className={cn(
+            "flex min-h-0 w-full min-w-0 items-center justify-center",
+            isAppShell && "items-stretch",
+          )}
         >
-          <Controls
-            idPrefix={`docs-${entry.slug}`}
-            schema={entry.controls}
-            values={values}
-            onChange={(key, value) =>
-              setValues((current) => ({ ...current, [key]: value }))
-            }
-          />
-        </section>
-      ) : null}
+          {isScrambleText ? (
+            <>
+              <Tooltip content="Replay animation" delay={0}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Replay Scramble Text animation"
+                  className="absolute top-3 right-3 z-10"
+                  onClick={() => setReplayKey((current) => current + 1)}
+                >
+                  <RotateCcw />
+                </Button>
+              </Tooltip>
+              <Fragment key={replayKey}>{entry.render(values)}</Fragment>
+            </>
+          ) : (
+            entry.render(values)
+          )}
+        </div>
+        {hasControls ? (
+          <section
+            aria-label={`${entry.name} settings`}
+            className="mx-auto w-[400px] px-3 py-2"
+          >
+            <Controls
+              idPrefix={`docs-${entry.slug}`}
+              schema={entry.controls}
+              values={values}
+              onChange={(key, value) =>
+                setValues((current) => ({ ...current, [key]: value }))
+              }
+            />
+          </section>
+        ) : null}
+      </div>
     </div>
   );
 }
