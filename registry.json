@@ -854,6 +854,23 @@
       ]
     },
     {
+      "name": "scramble-text",
+      "type": "registry:ui",
+      "description": "A short encrypted-character reveal for text that is appearing or changing, with whitespace preservation and reduced-motion support.",
+      "dependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/scramble-text/scramble-text.tsx",
+          "type": "registry:ui",
+          "target": "@ui/scramble-text.tsx"
+        }
+      ]
+    },
+    {
       "name": "select",
       "type": "registry:ui",
       "description": "A single or multi-select on Base UI — keyboard, typeahead and collision-aware positioning — whose panel blurs and scales in from the trigger. Multi-select keeps the panel open while animated checkbox rows are toggled; an optional plain panel search filters options in place.",

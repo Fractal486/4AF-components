@@ -359,6 +359,12 @@ import { Button } from "@/components/ui/button";
 
 <TextShimmer>Syncing changes…</TextShimmer>`,
   },
+  "scramble-text": {
+    importName: "ScrambleText",
+    usage: `import { ScrambleText } from "@/components/ui/scramble-text";
+
+<ScrambleText>Deploying changes…</ScrambleText>`,
+  },
   textarea: {
     importName: "Textarea",
     usage: `import { Textarea } from "@/components/ui/textarea";

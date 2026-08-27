@@ -1,7 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState, type ComponentType } from "react";
+import { RotateCcw } from "lucide-react";
+import { Fragment, useState, type ComponentType } from "react";
 import { Controls } from "@/inspector/controls";
 import {
   initialValues,
@@ -9,7 +10,9 @@ import {
   type Entry,
 } from "@/inspector/schema";
 import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
+import { Button } from "@/registry/ui/button/button";
 import { cn } from "@/registry/lib/cn";
+import { Tooltip } from "@/registry/ui/tooltip/tooltip";
 
 export type ComponentDemoName =
   | "action-button"
@@ -52,6 +55,7 @@ export type ComponentDemoName =
   | "table-of-contents"
   | "table-of-contents-lines"
   | "tabs"
+  | "scramble-text"
   | "text-shimmer"
   | "textarea"
   | "toast"
@@ -60,8 +64,10 @@ export type ComponentDemoName =
 
 function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
   const [values, setValues] = useState(() => initialValues(entry.controls));
+  const [replayKey, setReplayKey] = useState(0);
   const hasControls = Object.keys(entry.controls).length > 0;
   const isAppShell = entry.slug === "sidebar";
+  const isScrambleText = entry.slug === "scramble-text";
 
   return (
     <div className="not-prose first:mt-0 my-6 space-y-4">
@@ -71,7 +77,25 @@ function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
           isAppShell && "block min-h-0 p-3",
         )}
       >
-        {entry.render(values)}
+        {isScrambleText ? (
+          <>
+            <Tooltip content="Replay animation" delay={0}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Replay Scramble Text animation"
+                className="absolute top-3 right-3 z-10"
+                onClick={() => setReplayKey((current) => current + 1)}
+              >
+                <RotateCcw />
+              </Button>
+            </Tooltip>
+            <Fragment key={replayKey}>{entry.render(values)}</Fragment>
+          </>
+        ) : (
+          entry.render(values)
+        )}
       </div>
       {hasControls ? (
         <section
@@ -154,6 +178,7 @@ const demos: Record<Exclude<ComponentDemoName, "ascii-loader">, ComponentType> =
   "table-of-contents": lazyEntry(async () => (await import("@/inspector/entries/table-of-contents")).tableOfContentsEntry),
   "table-of-contents-lines": lazyEntry(async () => (await import("@/inspector/entries/table-of-contents-lines")).tableOfContentsLinesEntry),
   tabs: lazyEntry(async () => (await import("@/inspector/entries/tabs")).tabsEntry),
+  "scramble-text": lazyEntry(async () => (await import("@/inspector/entries/scramble-text")).scrambleTextEntry),
   "text-shimmer": lazyEntry(async () => (await import("@/inspector/entries/text-shimmer")).textShimmerEntry),
   textarea: lazyEntry(async () => (await import("@/inspector/entries/textarea")).textareaEntry),
   toast: lazyEntry(async () => (await import("@/inspector/entries/toast")).toastEntry),

@@ -45,7 +45,7 @@ These entries install transitively:
 
 ## Installable catalog
 
-The catalog currently contains 44 installable UI items. Verify the count and names with
+The catalog currently contains 45 installable UI items. Verify the count and names with
 `pnpm 4af list` before making registry-wide claims.
 
 ### Actions
@@ -87,6 +87,7 @@ The catalog currently contains 44 installable UI items. Verify the count and nam
 | `skeleton` | `Skeleton` | Generic loading placeholders; animation respects reduced motion. |
 | `empty` | `Empty` and composition parts | Empty states with optional dashed placeholder treatment. |
 | `text-shimmer` | `TextShimmer` | Theme-aware looping highlight for working labels. |
+| `scramble-text` | `ScrambleText` | Reveals text through a short per-grapheme scramble animation, preserving whitespace and honoring reduced motion. |
 | `toast` | `ToastProvider`, `useToast`, `createToastManager` | Managed notifications with default or title-only content, swipe dismissal, placement/stack modes, and up to three actions. |
 | `ascii-loader` | `AsciiLoader` | A looping braille spinner for compact async status affordances. |
 
