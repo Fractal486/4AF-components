@@ -2,6 +2,7 @@
 
 import { Check, TriangleAlert } from "lucide-react";
 import type { ReactNode } from "react";
+import { cn } from "@/registry/lib/cn";
 import { useAction, type ActionStatus } from "@/registry/lib/use-action";
 import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
 import { Button, type ButtonProps } from "@/registry/ui/button/button";
@@ -79,6 +80,19 @@ export function ActionButton({
   const labelled =
     Boolean(children) ||
     Boolean(labels && (labels.pending ?? labels.success ?? labels.error));
+  // While idle, a label-only action still reserves the status glyph's width so its button
+  // never resizes when it runs. That leading-only slot would otherwise push the visible
+  // label to the right, so centre the idle label by half the reserved slot and gap. Once a
+  // status glyph is visible, the icon-and-label group should be centred as a group.
+  // Intentional icon-plus-label actions stay centred in every state.
+  const labelOnlyOffset =
+    !icon && labelled && status === "idle"
+      ? size === "sm"
+        ? "-translate-x-2.5"
+        : size === "icon-sm" || size === "icon" || size === "icon-lg"
+          ? "-translate-x-2"
+          : "-translate-x-3"
+      : undefined;
 
   return (
     <>
@@ -101,7 +115,7 @@ export function ActionButton({
         {/* One box, so `iconEdges` still sees a single child and the padding doesn't move
             — and `gap-[inherit]` so the space between glyph and label is the button's own,
             per size, rather than a second copy of that number. */}
-        <span className="inline-flex items-center gap-[inherit]">
+        <span className={cn("inline-flex items-center gap-[inherit]", labelOnlyOffset)}>
           {/* The glyph morphs in its own box, separately from the label, and that split is
               the whole point. The loader is a text glyph — roughly half the advance width
               of a 16px icon — so morphing the two together centres the narrower state and

@@ -285,13 +285,21 @@ import { Button } from "@/components/ui/button";
     importName: "TableOfContents",
     usage: `import { TableOfContents } from "@/components/ui/table-of-contents";
 
-<TableOfContents items={headings} />`,
+<TableOfContents
+  items={headings}
+  rootRef={articleRef}
+  className="max-h-80"
+/>`,
   },
   "table-of-contents-lines": {
     importName: "TableOfContentsLines",
     usage: `import { TableOfContentsLines } from "@/components/ui/table-of-contents-lines";
 
-<TableOfContentsLines items={headings} />`,
+<TableOfContentsLines
+  items={headings}
+  rootRef={articleRef}
+  className="max-h-80"
+/>`,
   },
   tabs: {
     importName: "Tabs",

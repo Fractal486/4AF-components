@@ -41,6 +41,12 @@ describe("TableOfContentsLines", () => {
       "data-variant",
       "lines",
     );
+    expect(screen.getByRole("navigation", { name: "Table of contents" })).toHaveClass(
+      "overflow-y-auto",
+      "overscroll-y-contain",
+      "[overflow-anchor:none]",
+      "[scrollbar-width:none]",
+    );
     expect(screen.getByRole("navigation", { name: "Table of contents" })).not.toHaveAttribute(
       "data-density",
     );

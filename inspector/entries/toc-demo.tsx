@@ -94,7 +94,7 @@ export function TocDemo({ variant }: { variant?: TableOfContentsProps["variant"]
         items={SECTIONS.map(({ id, title, level }) => ({ id, title, level }))}
         rootRef={scrollRef}
         variant={variant}
-        className="sticky top-0 w-44 shrink-0 self-start"
+        className="sticky top-0 h-40 w-44 shrink-0 self-start"
       />
     </div>
   );
@@ -111,7 +111,7 @@ export function TocLinesDemo() {
         aria-label="Table of contents lines"
         items={sections.map(({ id, title, level }) => ({ id, title, level }))}
         rootRef={scrollRef}
-        className="sticky top-0 w-44 shrink-0 self-start"
+        className="sticky top-0 h-40 w-44 shrink-0 self-start"
       />
     </div>
   );

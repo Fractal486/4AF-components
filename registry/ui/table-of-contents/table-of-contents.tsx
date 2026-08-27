@@ -13,6 +13,10 @@ import {
 } from "react";
 import { cn } from "@/registry/lib/cn";
 import {
+  useCenterActiveTableOfContentsItem,
+  useTableOfContentsEdgePadding,
+} from "@/registry/lib/table-of-contents-scroll";
+import {
   tableOfContentsVariants,
   type TableOfContentsVariants,
 } from "./table-of-contents.variants";
@@ -75,6 +79,7 @@ export function TableOfContents({
   className,
   ...props
 }: TableOfContentsProps) {
+  const navRef = useRef<HTMLElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const [visibleIds, setVisibleIds] = useState<string[]>([]);
   const [currentId, setCurrentId] = useState<string>();
@@ -338,15 +343,23 @@ export function TableOfContents({
     ? `M 1 ${geometry.top + MARKER_PAD} L 1 ${geometry.top + geometry.total - MARKER_PAD}`
     : "";
   const markerPath = geometry ? `M 1 ${geometry.top} L 1 ${geometry.top + geometry.total}` : "";
+  const edgePadding = useTableOfContentsEdgePadding(navRef, items);
+
+  useCenterActiveTableOfContentsItem(navRef, currentHighlightId, items, edgePadding);
 
   return (
     <nav
+      ref={navRef}
       aria-label="Table of contents"
       data-variant={variant}
       className={cn(tableOfContentsVariants({ variant }), className)}
       {...props}
     >
-      <ul ref={listRef} className="relative">
+      <ul
+        ref={listRef}
+        className="relative"
+        style={{ paddingBlockStart: edgePadding.start, paddingBlockEnd: edgePadding.end }}
+      >
         {geometry && (
           <svg
             aria-hidden

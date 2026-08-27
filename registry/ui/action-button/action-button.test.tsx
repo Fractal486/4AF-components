@@ -54,6 +54,34 @@ describe("ActionButton", () => {
     await waitFor(() => expect(button).toHaveAttribute("data-status", "error"));
   });
 
+  it("centres the pending status icon and label as a group", async () => {
+    let resolveAction: () => void;
+    const action = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveAction = resolve;
+        }),
+    );
+
+    render(
+      <ActionButton action={action} size="md" labels={{ pending: "Generating" }}>
+        Generate
+      </ActionButton>,
+    );
+
+    const button = screen.getByRole("button", { name: "Generate" });
+    const content = button.querySelector('[data-slot="morph"]')?.parentElement;
+
+    expect(content).not.toBeNull();
+    expect(content).toHaveClass("-translate-x-3");
+
+    fireEvent.click(button);
+    expect(button).toHaveAttribute("data-status", "pending");
+    expect(content).not.toHaveClass("-translate-x-3");
+
+    await act(async () => resolveAction!());
+  });
+
   it("morphs the glyph without dragging the label through the swap", () => {
     render(
       <ActionButton action={() => new Promise(() => {})} icon={<span>@</span>}>

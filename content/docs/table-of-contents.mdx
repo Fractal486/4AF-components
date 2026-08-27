@@ -10,5 +10,10 @@ description: A navigable heading outline that tracks the active document section
 
 **Main export:** `TableOfContents`
 
-Heading navigation with a dashed inactive rail, smooth scrolling, a long-prose fallback, and
-`span` or `single` active-marker variants.
+Heading navigation with a dashed inactive rail, smooth document scrolling, a long-prose fallback,
+and `span` or `single` active-marker variants. When its height is constrained, the TOC remains
+scrollable without exposing a browser scrollbar and smoothly keeps the active entry centered,
+including first and last entries through internal scroll space at the rail's edges.
+
+`rootRef` is the document's scroll root. Pass it whenever the article scrolls inside a container;
+the TOC uses it to track the active heading, while its own navigation rail scrolls independently.

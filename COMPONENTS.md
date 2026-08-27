@@ -13,3 +13,7 @@ Component-specific APIs and composition guidance live on the matching page under
 [`content/docs/`](content/docs/). Agents can print one page as plain Markdown with
 `pnpm 4af docs <component>`. `registry.json`, component source, and `pnpm 4af list` remain
 authoritative for installable items.
+
+Both Table of Contents variants own their constrained navigation rail: set a height with
+`className`, pass `rootRef` for an independently scrolling article, and they will keep the active
+entry centered while hiding only the rail's browser scrollbar.

@@ -12,4 +12,9 @@ description: A compact document outline visualized as interactive depth-aware li
 
 Dense line-based heading navigation with one active heading, a longer header rule, equal shorter
 rules between headings with none below the final heading, heading-relative indentation, and an
-expanding hover treatment.
+expanding hover treatment. When its height is constrained, it remains scrollable without exposing
+a browser scrollbar and smoothly keeps the active entry centered, including first and last entries
+through internal scroll space at the rail's edges.
+
+`rootRef` is the document's scroll root. Pass it whenever the article scrolls inside a container;
+the TOC uses it to track the active heading, while its own navigation rail scrolls independently.

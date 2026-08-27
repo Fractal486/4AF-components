@@ -12,6 +12,10 @@ import {
 } from "react";
 import { cn } from "@/registry/lib/cn";
 import {
+  useCenterActiveTableOfContentsItem,
+  useTableOfContentsEdgePadding,
+} from "@/registry/lib/table-of-contents-scroll";
+import {
   tableOfContentsLinesVariants,
   type TableOfContentsLinesVariants,
 } from "./table-of-contents-lines.variants";
@@ -42,6 +46,7 @@ export function TableOfContentsLines({
   className,
   ...props
 }: TableOfContentsLinesProps) {
+  const navRef = useRef<HTMLElement>(null);
   const [currentId, setCurrentId] = useState<string>();
   const [scrollTargetId, setScrollTargetId] = useState<string>();
   const [settledTargetId, setSettledTargetId] = useState<string>();
@@ -171,15 +176,19 @@ export function TableOfContentsLines({
   }, [items, rootRef]);
 
   const activeId = scrollTargetId ?? settledTargetId ?? currentId;
+  const edgePadding = useTableOfContentsEdgePadding(navRef, items);
+
+  useCenterActiveTableOfContentsItem(navRef, activeId, items, edgePadding);
 
   return (
     <nav
+      ref={navRef}
       aria-label="Table of contents"
       data-variant="lines"
       className={cn(tableOfContentsLinesVariants(), className)}
       {...props}
     >
-      <ul>
+      <ul style={{ paddingBlockStart: edgePadding.start, paddingBlockEnd: edgePadding.end }}>
         {items.map((item, itemIndex) => {
           const hasFollowingHeading = itemIndex < items.length - 1;
           const active = item.id === activeId;

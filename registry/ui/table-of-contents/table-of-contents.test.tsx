@@ -54,6 +54,13 @@ describe("TableOfContents", () => {
       />,
     );
 
+    expect(screen.getByRole("navigation", { name: "Table of contents" })).toHaveClass(
+      "overflow-y-auto",
+      "overscroll-y-contain",
+      "[overflow-anchor:none]",
+      "[scrollbar-width:none]",
+    );
+
     expect(screen.getByRole("link", { name: "First section" })).toHaveAttribute(
       "aria-current",
       "location",
