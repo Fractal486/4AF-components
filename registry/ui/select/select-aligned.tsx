@@ -15,15 +15,20 @@ import {
 } from "react";
 import { cn } from "@/registry/lib/cn";
 import { Input } from "@/registry/ui/input/input";
+import {
+  alignedSelectTriggerVariants,
+  type AlignedSelectTriggerVariant,
+} from "./select-aligned.variants";
 
 /**
  * A select that opens **on** its trigger rather than below it.
  *
- * The panel takes the trigger's width and is positioned so the selected row lands exactly
- * where the trigger's value was — press it and the current choice doesn't move, the other
- * options simply appear around it. It's the macOS pop-up button, and the reason to reach
- * for it over the plain Select is that it keeps the eye where it already is: nothing
- * travels, so there's nothing to re-find.
+ * The default panel takes the trigger's width and is positioned so the selected row lands
+ * exactly where the trigger's value was — press it and the current choice doesn't move, the
+ * other options simply appear around it. A plain trigger instead lets the panel shrink-wrap to
+ * its longest row plus the reserved check slot while keeping that same selected-row alignment.
+ * It's the macOS pop-up button, and the reason to reach for it over the plain Select is that it
+ * keeps the eye where it already is: nothing travels, so there's nothing to re-find.
  *
  * The positioning is Base UI's `alignItemWithTrigger`, not arithmetic here — which matters
  * for the two cases it handles that hand-rolled maths gets wrong. It applies to **pointer
@@ -56,6 +61,8 @@ const SIZE: Record<AlignedSelectSize, { field: string; row: string; glyph: strin
 
 interface AlignedSelectContextValue {
   size: AlignedSelectSize;
+  triggerVariant: AlignedSelectTriggerVariant;
+  setTriggerVariant: (variant: AlignedSelectTriggerVariant) => void;
   open: boolean;
   query: string;
   setQuery: (query: string) => void;
@@ -75,6 +82,8 @@ interface AlignedSelectContextValue {
 
 const AlignedSelectContext = createContext<AlignedSelectContextValue>({
   size: "sm",
+  triggerVariant: "default",
+  setTriggerVariant: () => {},
   open: false,
   query: "",
   setQuery: () => {},
@@ -131,6 +140,8 @@ export function AlignedSelect<Value>({
 }: AlignedSelectProps<Value>) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [triggerVariant, setTriggerVariant] =
+    useState<AlignedSelectTriggerVariant>("default");
   const [options, setOptions] = useState<Map<unknown, RegisteredOption>>(new Map());
 
   // The same shape the base Select uses: a Map in state whose setter bails out when nothing
@@ -191,6 +202,8 @@ export function AlignedSelect<Value>({
   const context = useMemo<AlignedSelectContextValue>(
     () => ({
       size,
+      triggerVariant,
+      setTriggerVariant,
       open,
       query,
       setQuery,
@@ -200,7 +213,17 @@ export function AlignedSelect<Value>({
       hasMatches,
       openingItem,
     }),
-    [size, open, query, matches, registerOption, unregisterOption, hasMatches, openingItem],
+    [
+      size,
+      triggerVariant,
+      open,
+      query,
+      matches,
+      registerOption,
+      unregisterOption,
+      hasMatches,
+      openingItem,
+    ],
   );
 
   return (
@@ -233,28 +256,33 @@ export interface AlignedSelectTriggerProps
   extends Omit<ComponentProps<typeof BaseSelect.Trigger>, "children"> {
   /** Shown until something is selected. */
   placeholder?: ReactNode;
+  /** Field by default; `plain` removes the surface, border and horizontal padding. */
+  variant?: AlignedSelectTriggerVariant;
+  /** @deprecated Use `variant="plain"` or `variant="default"`. */
+  outline?: boolean;
 }
 
 export function AlignedSelectTrigger({
   className,
   placeholder,
+  variant,
+  outline,
   ...props
 }: AlignedSelectTriggerProps) {
-  const { size } = useContext(AlignedSelectContext);
+  const { size, setTriggerVariant } = useContext(AlignedSelectContext);
+  const resolvedVariant = variant ?? (outline === false ? "plain" : "default");
+
+  useEffect(() => {
+    setTriggerVariant(resolvedVariant);
+  }, [resolvedVariant, setTriggerVariant]);
 
   return (
     <BaseSelect.Trigger
       data-slot="aligned-select-trigger"
+      data-variant={resolvedVariant}
       className={cn(
-        "group flex w-full cursor-pointer items-center justify-between gap-2",
-        "rounded-md border border-border bg-surface px-3.5 text-foreground",
         SIZE[size].field,
-        "outline-none select-none",
-        "transition-[background-color,border-color] duration-(--duration-base) ease-out",
-        "hover:border-border-strong data-[popup-open]:border-border-strong",
-        "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        "aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",
-        "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
+        alignedSelectTriggerVariants({ variant: resolvedVariant }),
         className,
       )}
       {...props}
@@ -271,6 +299,12 @@ export function AlignedSelectTrigger({
 }
 
 export interface AlignedSelectContentProps extends ComponentProps<typeof BaseSelect.Popup> {
+  /**
+   * `trigger` keeps the panel the trigger's width; `content` sizes it to the longest row plus
+   * the reserved check slot. When omitted, this follows the trigger variant: `plain` uses
+   * `content`, while `default` uses `trigger`.
+   */
+  width?: "trigger" | "content";
   /**
    * Pin a search field to the top of the panel and filter the rows as it is typed in.
    *
@@ -300,6 +334,7 @@ export interface AlignedSelectContentProps extends ComponentProps<typeof BaseSel
 
 export function AlignedSelectContent({
   className,
+  width: widthProp,
   searchable = false,
   emptyMessage = "No results.",
   autoFocusFirstItem = true,
@@ -309,8 +344,9 @@ export function AlignedSelectContent({
   children,
   ...props
 }: AlignedSelectContentProps) {
-  const { size, open, query, setQuery, hasMatches, openingItem } =
+  const { size, open, query, setQuery, hasMatches, openingItem, triggerVariant } =
     useContext(AlignedSelectContext);
+  const width = widthProp ?? (triggerVariant === "plain" ? "content" : "trigger");
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const noResults = searchable && query.trim() !== "" && !hasMatches;
@@ -352,10 +388,14 @@ export function AlignedSelectContent({
   return (
     <BaseSelect.Portal>
       <BaseSelect.Positioner
+        data-slot="aligned-select-positioner"
         // The whole variant, in one prop. Base UI overlaps the trigger and offsets the
         // panel by the selected item's position inside it.
         alignItemWithTrigger
-        className="z-50 w-[var(--anchor-width)] outline-none"
+        className={cn(
+          "z-50 outline-none",
+          width === "trigger" ? "w-[var(--anchor-width)]" : "w-max",
+        )}
         {...positionerProps}
       >
         <BaseSelect.Popup

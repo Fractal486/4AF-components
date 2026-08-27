@@ -44,6 +44,30 @@ describe("Motion Select", () => {
     expect(screen.getByRole("button", { name: "2 selected" })).toBeInTheDocument();
   });
 
+  it("holds the active row while a multi-select's checkboxes are toggled", () => {
+    render(
+      <Select multiple defaultValue={["banana", "mango"]}>
+        <SelectTrigger>
+          <SelectValue placeholder="Pick fruits" />
+        </SelectTrigger>
+        <FruitOptions />
+      </Select>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "2 selected" }));
+    const mango = screen.getByRole("option", { name: "Mango" });
+    expect(mango).toHaveAttribute("data-panel-active");
+
+    // The opening row is decided once, on the way in. Toggling a checkbox changes the
+    // selection but not where the user is in the list, and this panel *focuses* its opening
+    // row — so re-deriving it here would drag focus off the row being clicked.
+    fireEvent.click(mango);
+    expect(mango).toHaveAttribute("data-panel-active");
+    expect(screen.getByRole("option", { name: "Banana" })).not.toHaveAttribute(
+      "data-panel-active",
+    );
+  });
+
   it("keeps the original single-select close-on-choice behaviour", () => {
     render(
       <Select defaultValue="banana">

@@ -29,10 +29,10 @@ export const selectEntry = defineEntry({
     multiple: bool(false),
     searchable: bool(false, "Search in panel"),
     icons: bool(true),
-    outline: bool(true),
+    variant: select(["default", "plain"] as const, "default", "Variant"),
     invalid: bool(false),
   },
-  render({ size, disabled, multiple, searchable, icons, outline, invalid }) {
+  render({ size, disabled, multiple, searchable, icons, variant, invalid }) {
     return (
       <div className="w-full max-w-56">
         {multiple ? (
@@ -46,14 +46,13 @@ export const selectEntry = defineEntry({
           >
             <SelectTrigger
               aria-label="Fruits"
-              outline={outline}
+              variant={variant}
               aria-invalid={invalid ? true : undefined}
               aria-describedby={invalid ? "select-error" : undefined}
             >
               <SelectValue placeholder="Pick fruits" />
             </SelectTrigger>
             <SelectContent
-              width={outline ? "trigger" : "content"}
               searchable={searchable}
               searchPlaceholder="Search fruits…"
               emptyMessage="No fruit found."
@@ -80,14 +79,13 @@ export const selectEntry = defineEntry({
           >
             <SelectTrigger
               aria-label="Fruit"
-              outline={outline}
+              variant={variant}
               aria-invalid={invalid ? true : undefined}
               aria-describedby={invalid ? "select-error" : undefined}
             >
               <SelectValue placeholder="Pick a fruit" />
             </SelectTrigger>
             <SelectContent
-              width={outline ? "trigger" : "content"}
               searchable={searchable}
               searchPlaceholder="Search fruits…"
               emptyMessage="No fruit found."

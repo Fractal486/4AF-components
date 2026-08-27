@@ -200,10 +200,13 @@ import { Button } from "@/components/ui/button";
   Select,
   SelectItem,
   SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 
 <Select defaultValue="apple">
-  <SelectTrigger />
+  <SelectTrigger variant="plain">
+    <SelectValue />
+  </SelectTrigger>
   <SelectItem value="apple">Apple</SelectItem>
 </Select>`,
   },
@@ -217,7 +220,7 @@ import { Button } from "@/components/ui/button";
 } from "@/components/ui/select-aligned";
 
 <AlignedSelect value={city} onValueChange={setCity}>
-  <AlignedSelectTrigger placeholder="Pick a city" />
+  <AlignedSelectTrigger variant="plain" placeholder="Pick a city" />
   <AlignedSelectContent>
     <AlignedSelectItem value="Lisbon">Lisbon</AlignedSelectItem>
     <AlignedSelectItem value="Oslo">Oslo</AlignedSelectItem>

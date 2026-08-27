@@ -202,6 +202,25 @@ describe("Search Select", () => {
     );
   });
 
+  it("holds the highlight on a multi-select row that is toggled off", async () => {
+    const user = userEvent.setup();
+    render(<FruitSearchMulti defaultValue={[FRUITS[1]]} />);
+
+    const input = screen.getByRole("combobox", { name: "Fruits" });
+    await user.click(input);
+
+    const mango = await screen.findByRole("option", { name: "Mango" });
+    expect(mango).toHaveAttribute("data-highlighted");
+
+    // Unchecking the row under the pointer must not send the highlight anywhere — not to
+    // another chosen row, and not back to the top of the list.
+    await user.click(mango);
+    expect(mango).toHaveAttribute("data-highlighted");
+    expect(screen.getByRole("option", { name: "Apple" })).not.toHaveAttribute(
+      "data-highlighted",
+    );
+  });
+
   it("leaves the highlight where the pointer left it", async () => {
     const user = userEvent.setup();
     render(<FruitSearch />);

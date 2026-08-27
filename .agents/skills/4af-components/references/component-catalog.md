@@ -72,7 +72,7 @@ The catalog currently contains 45 installable UI items. Verify the count and nam
 | `radio` | `RadioGroup`, `Radio` | Single-choice selection groups. |
 | `slider` | `Slider` | Numeric input with `bar`, `circle`, and `knob` thumbs, optional ticks/labels, `range` mode with two draggable thumbs, and an opt-in `showValueTooltip` that follows the active thumb during drag. |
 | `select` | `Select`, trigger/content/item parts, `SelectSortTrigger` | Base UI single/multi select, optional panel search and clear footer, compact sort/filter trigger. |
-| `select-aligned` | `AlignedSelect` and trigger/content/item/group parts | A select that opens *on* its trigger: panel at the trigger's width, selected row landing on the value it replaces, `ChevronsUpDown` glyph. The macOS pop-up button. |
+| `select-aligned` | `AlignedSelect` and trigger/content/item/group parts | A select that opens *on* its trigger: default panel at the trigger's width, plain panel at the longest row plus check slot, selected row landing on the value it replaces, `ChevronsUpDown` glyph. The macOS pop-up button. |
 | `select-search` | `SearchSelect` and input/content/item parts | Editable Combobox trigger with filtering and single/multi selection. |
 | `select-motion` | `Select` and trigger/content/item parts | Button-triggered select with a hand-animated unfolding panel and optional panel search. |
 | `select-motion-search` | `MotionSearchSelect` and parts | Editable Combobox whose panel unfolds from the field. |
@@ -199,6 +199,14 @@ up with a medium Button or Input in a form row; the size scales the trigger and 
 rows together. Inside a Command Palette keep `sm`. `select-aligned` is single selection only. It takes optional sections
 (`AlignedSelectGroup` + `AlignedSelectGroupLabel`, which hide themselves when a search empties
 them) and an optional pinned search field (`searchable` on the content).
+
+`select`'s `SelectTrigger` and `SelectSortTrigger`, plus `select-aligned`'s
+`AlignedSelectTrigger`, accept `variant="default" | "plain"`. `plain` removes the trigger
+surface, border, and horizontal padding, leaving the label/value and dropdown glyph adjacent.
+The older `outline={false}` prop remains a compatibility alias for `variant="plain"`.
+When panel `width` is omitted, default triggers keep a trigger-width panel and plain triggers
+use the longest row plus the reserved check slot; pass `width="trigger" | "content"` to
+override it.
 
 Every panel in the family opens with a row already active, before anything is typed: the
 current selection where there is one (the most recent, when several are chosen), otherwise the

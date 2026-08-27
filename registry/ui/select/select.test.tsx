@@ -1,7 +1,14 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectSortTrigger,
+  SelectTrigger,
+  SelectValue,
+} from "./select";
 
 const FRUITS = {
   apple: "Apple",
@@ -20,6 +27,86 @@ function FruitOptions() {
 }
 
 describe("Base UI Select", () => {
+  it("renders the plain trigger as a transparent label and chevron", () => {
+    render(
+      <Select items={FRUITS} defaultValue="banana">
+        <SelectTrigger variant="plain" aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <FruitOptions />
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("combobox", { name: "Fruit" });
+    expect(trigger).toHaveAttribute("data-variant", "plain");
+    expect(trigger).toHaveClass("w-auto", "justify-start", "gap-1.5", "border-0", "bg-transparent", "px-0");
+    expect(trigger).not.toHaveClass("bg-surface", "border-border");
+    expect(trigger).toHaveTextContent("Banana");
+    expect(trigger.querySelector("svg")).toBeInTheDocument();
+  });
+
+  it("keeps the sort icon leading and puts the chevron after the label", () => {
+    render(
+      <Select items={FRUITS} defaultValue="banana">
+        <SelectSortTrigger
+          variant="plain"
+          icon={<span data-testid="sort-icon" />}
+          label="Sort"
+          aria-label="Sort fruit"
+        />
+        <FruitOptions />
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("combobox", { name: "Sort fruit" });
+    expect(trigger).toHaveAttribute("data-variant", "plain");
+    expect(trigger).toHaveClass("border-0", "bg-transparent", "px-0");
+    expect(trigger).not.toHaveClass("bg-muted", "border-border");
+    const sortIcon = screen.getByTestId("sort-icon").parentElement;
+    expect(sortIcon).toBe(trigger.firstElementChild);
+    expect(screen.getByText("Sort").parentElement).not.toHaveClass("order-1");
+    expect(sortIcon).not.toHaveClass("order-2");
+    expect(trigger.lastElementChild).toHaveClass("order-3");
+  });
+
+  it("sizes a plain panel to its longest option and check slot by default", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <Select items={FRUITS} defaultValue="banana">
+        <SelectTrigger variant="plain" aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <FruitOptions />
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    await screen.findByRole("option", { name: "Mango" });
+
+    // `w-max` lets the rows establish the panel width. Each row reserves its trailing check
+    // slot, so the widest label determines the visible box without the trigger's width floor.
+    expect(container.ownerDocument.querySelector('[data-slot="select-content-positioner"]')).toHaveClass(
+      "w-max",
+    );
+  });
+
+  it("uses content width for a plain sort panel by default", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <Select items={FRUITS} defaultValue="banana">
+        <SelectSortTrigger variant="plain" label="Sort" aria-label="Sort fruit" />
+        <FruitOptions />
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Sort fruit" }));
+    await screen.findByRole("option", { name: "Mango" });
+
+    expect(container.ownerDocument.querySelector('[data-slot="select-content-positioner"]')).toHaveClass(
+      "w-max",
+    );
+  });
+
   it("keeps the original single-select close-on-choice behaviour", async () => {
     const user = userEvent.setup();
 
@@ -159,7 +246,8 @@ describe("Base UI Select", () => {
     expect(trigger.querySelector('[data-testid="fruit-icon"]')).toBeInTheDocument();
     await user.click(trigger);
 
-    expect(screen.getByRole("option", { name: "Apple" }).querySelector('[data-testid="fruit-icon"]')?.parentElement).toHaveAttribute(
+    const option = await screen.findByRole("option", { name: "Apple" });
+    expect(option.querySelector('[data-testid="fruit-icon"]')?.parentElement).toHaveAttribute(
       "aria-hidden",
       "true",
     );
@@ -234,7 +322,9 @@ describe("Base UI Select", () => {
     );
 
     await user.click(screen.getByRole("combobox", { name: "Fruit" }));
-    const input = screen.getByRole("textbox", { name: "Search options" });
+    // Awaited: the panel is portalled and mounts through AnimatePresence, so under load the
+    // field can land a tick after the click.
+    const input = await screen.findByRole("textbox", { name: "Search options" });
     expect(input).toHaveAttribute("placeholder", "Search fruit");
     expect(input).toHaveClass("h-full");
     expect(input).toHaveClass("p-0");
@@ -300,6 +390,45 @@ describe("Base UI Select", () => {
       expect(screen.getByRole("option", { name: "Mango" })).toHaveAttribute("data-panel-active"),
     );
     expect(screen.getByRole("option", { name: "Banana" })).not.toHaveAttribute(
+      "data-panel-active",
+    );
+  });
+
+  it("holds the active row while a multi-select's checkboxes are toggled", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Select multiple items={FRUITS} defaultValue={["banana", "mango"]}>
+        <SelectTrigger aria-label="Fruits">
+          <SelectValue placeholder="Pick fruits" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectItem value="banana">Banana</SelectItem>
+          <SelectItem value="mango">Mango</SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruits" }));
+    const mango = await screen.findByRole("option", { name: "Mango" });
+    await waitFor(() => expect(mango).toHaveAttribute("data-panel-active"));
+
+    // The opening row is decided once, when the panel opens. Toggling a checkbox changes the
+    // selection but not where the user is in the list — the panel stays open under a pointer
+    // that has not moved, so anything that re-aims the active row yanks it out from under it.
+    await user.click(mango);
+    expect(mango).toHaveAttribute("data-panel-active");
+    expect(screen.getByRole("option", { name: "Banana" })).not.toHaveAttribute(
+      "data-panel-active",
+    );
+
+    // And the same on the way to an empty selection, which would otherwise fall back to the
+    // top row. The active row is the row that was pressed, both times.
+    const banana = screen.getByRole("option", { name: "Banana" });
+    await user.click(banana);
+    expect(banana).toHaveAttribute("data-panel-active");
+    expect(screen.getByRole("option", { name: "Apple" })).not.toHaveAttribute(
       "data-panel-active",
     );
   });

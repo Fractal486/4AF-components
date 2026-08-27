@@ -83,6 +83,8 @@ const SIZE: Record<SelectSize, { field: string; glyph: string; iconSlot: string;
 interface SelectContextValue {
   value: string | undefined;
   values: readonly string[];
+  /** The selection as it stood when the panel opened — the row it opens on. */
+  openingValues: readonly string[];
   multiple: boolean;
   size: SelectSize;
   open: boolean;
@@ -234,6 +236,12 @@ export function Select({
   );
   const selectedValue = multiple ? undefined : values[0];
 
+  // The selection as it stood when the panel opened, not as it stands now. A multi-select
+  // stays open while its checkboxes are toggled, and reading the live selection below would
+  // re-aim — and re-focus — the opening row on every toggle, yanking the highlight off the
+  // row under a pointer that hasn't moved. Where the panel opens is asked once, on the way in.
+  const [openingValues, setOpeningValues] = useState<readonly string[]>(values);
+
   // A panel filter belongs to this open session only. Reopening shows the full list.
   // Adjusted during render rather than from an effect: this is state derived from the
   // open/closed transition, not a synchronisation with anything outside React, so an
@@ -241,7 +249,9 @@ export function Select({
   const [wasOpen, setWasOpen] = useState(open);
   if (wasOpen !== open) {
     setWasOpen(open);
-    if (!open) {
+    if (open) {
+      setOpeningValues(values);
+    } else {
       setSearchQuery("");
       setActiveItem(undefined);
     }
@@ -318,6 +328,7 @@ export function Select({
     () => ({
       value: selectedValue,
       values,
+      openingValues,
       multiple,
       open,
       setOpen,
@@ -344,6 +355,7 @@ export function Select({
     [
       selectedValue,
       values,
+      openingValues,
       multiple,
       size,
       open,
@@ -495,7 +507,7 @@ export function SelectContent({
   const [height, setHeight] = useState(0);
   const [measuredEmpty, setMeasuredEmpty] = useState(false);
   const open = ctx.open;
-  const { setActiveItem, setPlacement, searchQuery, values } = ctx;
+  const { setActiveItem, setPlacement, searchQuery, openingValues } = ctx;
 
   // Unlike the Base UI popup, this inline panel does not manage an active row for us. A panel
   // never opens with nothing ready: it opens on the current selection, and on its first row
@@ -503,10 +515,13 @@ export function SelectContent({
   // return DOM focus to their input so typing remains immediate.
   useLayoutEffect(() => {
     if (!open) return;
-    const option = focusOpeningOption(listRef.current, searchQuery.trim() === "" ? values : []);
+    const option = focusOpeningOption(
+      listRef.current,
+      searchQuery.trim() === "" ? openingValues : [],
+    );
     setActiveItem(option?.dataset.selectValue);
     if (searchable) searchRef.current?.focus();
-  }, [open, searchable, searchQuery, setActiveItem, values]);
+  }, [open, openingValues, searchable, searchQuery, setActiveItem]);
 
   // Whether the filter emptied the list can only be answered by the DOM — Base UI hides
   // the rows itself, so there's nothing in React state to count. That measurement is a

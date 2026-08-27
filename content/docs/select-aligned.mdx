@@ -11,16 +11,34 @@ description: A select whose panel opens on the trigger, with the selected row la
 **Main exports:** `AlignedSelect`, `AlignedSelectTrigger`, `AlignedSelectContent`,
 `AlignedSelectItem`, `AlignedSelectGroup`, `AlignedSelectGroupLabel`
 
-A single-select whose panel opens over the trigger at the trigger's width, positioned so the
-selected row lands on the value it replaces and scaling out of that row. The trigger carries a
+A single-select whose panel opens over the trigger, positioned so the selected row lands on the
+value it replaces and scaling out of that row. Default panels use the trigger's width; plain
+panels use the longest option label plus the reserved checkmark slot. The trigger carries a
 `ChevronsUpDown` glyph rather than a chevron, since the list extends in both directions.
+
+## Trigger variants
+
+`AlignedSelectTrigger` accepts `variant="default" | "plain"`. The default is the full-width
+field. `plain` removes the background, border, and horizontal padding, leaving the selected label
+and the `ChevronsUpDown` glyph directly beside it. The focus ring remains for keyboard users.
+The older `outline={false}` form is still supported as a compatibility alias.
+
+When `AlignedSelectContent` has no explicit `width`, it follows the trigger: default triggers
+keep a trigger-width panel, while plain triggers use content width — the longest option label
+plus the reserved checkmark slot. Set `width="trigger"` or `width="content"` to override that
+default.
+
+```tsx
+<AlignedSelectTrigger variant="plain" placeholder="Pick a city" />
+```
 
 ## Overlapping the trigger
 
 The overlap applies to pointer input only, and switches off when there is no room for it — a
-trigger near a viewport edge, or a list too long to centre on the selected row. In both cases
-the panel opens as an ordinary dropdown below the trigger, and it does the same when opened
-from the keyboard.
+trigger near a viewport edge, or a list too long to centre on the selected row. The default
+panel matches the trigger's width; a plain panel shrink-wraps to its longest row plus the
+reserved checkmark slot. In both cases the panel opens as an ordinary dropdown below the
+trigger when overlap is unavailable, and it does the same when opened from the keyboard.
 
 Row labels line up with the trigger's value because the panel's padding plus a row's padding
 equals the trigger's padding. Restyle one and restyle the others, or the selected label lands

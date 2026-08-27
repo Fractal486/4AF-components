@@ -13,11 +13,15 @@ const FRUITS = ["Apple", "Banana", "Cherry"];
 
 function Fruits({
   searchable,
+  variant,
   ...props
-}: Partial<React.ComponentProps<typeof AlignedSelect>> & { searchable?: boolean }) {
+}: Partial<React.ComponentProps<typeof AlignedSelect>> & {
+  searchable?: boolean;
+  variant?: "default" | "plain";
+}) {
   return (
     <AlignedSelect {...props}>
-      <AlignedSelectTrigger placeholder="Pick a fruit" />
+      <AlignedSelectTrigger variant={variant} placeholder="Pick a fruit" />
       <AlignedSelectContent searchable={searchable}>
         {FRUITS.map((fruit) => (
           <AlignedSelectItem key={fruit} value={fruit}>
@@ -30,6 +34,17 @@ function Fruits({
 }
 
 describe("AlignedSelect", () => {
+  it("renders the plain trigger as a transparent label and glyph", () => {
+    render(<Fruits variant="plain" />);
+
+    const trigger = screen.getByRole("combobox");
+    expect(trigger).toHaveAttribute("data-variant", "plain");
+    expect(trigger).toHaveClass("w-auto", "justify-start", "gap-1.5", "border-0", "bg-transparent", "px-0");
+    expect(trigger).not.toHaveClass("bg-surface", "border-border");
+    expect(trigger).toHaveTextContent("Pick a fruit");
+    expect(trigger.lastElementChild?.querySelector("svg")).toBeInTheDocument();
+  });
+
   it("shows the placeholder until something is chosen", () => {
     render(<Fruits />);
 
@@ -49,8 +64,8 @@ describe("AlignedSelect", () => {
     await user.click(screen.getByRole("combobox"));
 
     const positioner = container.ownerDocument.querySelector(
-      '[data-slot="aligned-select-content"]',
-    )!.parentElement!;
+      '[data-slot="aligned-select-positioner"]',
+    )!;
     // The panel matches the button rather than its own content, and Base UI is told to
     // overlap so the selected row lands on the trigger.
     expect(positioner.className).toContain("w-[var(--anchor-width)]");
@@ -58,6 +73,21 @@ describe("AlignedSelect", () => {
       "data-selected",
       "",
     );
+  });
+
+  it("uses content width for a plain panel while keeping the aligned positioner", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<Fruits variant="plain" defaultValue="Banana" />);
+
+    await user.click(screen.getByRole("combobox"));
+
+    const positioner = container.ownerDocument.querySelector(
+      '[data-slot="aligned-select-content"]',
+    )!.parentElement!;
+    // Plain panels use their longest row plus the reserved check slot; Base UI still owns the
+    // selected-row alignment inside that content-sized positioner.
+    expect(positioner.className).toContain("w-max");
+    expect(positioner.className).not.toContain("w-[var(--anchor-width)]");
   });
 
   it("grows from the row it opens on, not from its own centre", async () => {

@@ -19,6 +19,11 @@ import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Input } from "@/registry/ui/input/input";
+import {
+  selectSortTriggerVariants,
+  selectTriggerVariants,
+  type SelectTriggerVariant,
+} from "./select.variants";
 
 /**
  * A single or multi-select — the accessible version, on Base UI.
@@ -67,6 +72,8 @@ interface SelectContextValue {
   open: boolean;
   multiple: boolean;
   size: SelectSize;
+  triggerVariant: SelectTriggerVariant;
+  setTriggerVariant: (variant: SelectTriggerVariant) => void;
   /** The current selection, always as an array (one entry for single-select). */
   values: unknown[];
   registerIcon: (value: unknown, icon: ReactNode | undefined) => void;
@@ -98,6 +105,8 @@ const SelectContext = createContext<SelectContextValue>({
   open: false,
   multiple: false,
   size: "sm",
+  triggerVariant: "default",
+  setTriggerVariant: () => {},
   values: [],
   registerIcon: () => {},
   unregisterIcon: () => {},
@@ -245,6 +254,7 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : uncontrolled;
   const [searchQuery, setSearchQuery] = useState("");
+  const [triggerVariant, setTriggerVariant] = useState<SelectTriggerVariant>("default");
 
   // Mirror the selection so a trigger can read it for its own display and styling — a
   // filter chip that shows its picks and dashes its border while nothing is chosen. Base
@@ -354,14 +364,22 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   //
   // Guarded on the item being registered, so a value with no option in the list (stale, or
   // supplied before the rows mount) falls through to the top row instead of arming nothing.
+  // The selection as it stood when the panel opened, not as it stands now. A multi-select
+  // stays open while its checkboxes are toggled, and reading the live selection here would
+  // re-aim the active row on every toggle: unchecking the row under the pointer would send
+  // the highlight to whatever the selection fell back to — another chosen row, or the top of
+  // the list — while the pointer hasn't moved at all. Where the panel opens is a question
+  // asked once, on the way in.
+  const [openingValues, setOpeningValues] = useState<unknown[]>(values);
+
   const openingItem = useMemo(() => {
     if (searchQuery.trim() === "") {
-      for (let index = values.length - 1; index >= 0; index -= 1) {
-        if (optionTexts.has(values[index])) return values[index];
+      for (let index = openingValues.length - 1; index >= 0; index -= 1) {
+        if (optionTexts.has(openingValues[index])) return openingValues[index];
       }
     }
     return firstVisibleItem;
-  }, [firstVisibleItem, optionTexts, searchQuery, values]);
+  }, [firstVisibleItem, openingValues, optionTexts, searchQuery]);
   const [activeItem, setActiveItem] = useState<unknown>(undefined);
   const [panelSearch, setPanelSearch] = useState(false);
 
@@ -384,8 +402,12 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   const [wasOpen, setWasOpen] = useState(isOpen);
   if (wasOpen !== isOpen) {
     setWasOpen(isOpen);
-    if (isOpen) setSearchQuery("");
-    else setActiveItem(undefined);
+    if (isOpen) {
+      setSearchQuery("");
+      setOpeningValues(values);
+    } else {
+      setActiveItem(undefined);
+    }
   }
 
   const clear = useCallback(() => {
@@ -445,6 +467,8 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
         open: isOpen,
         multiple: Boolean(multiple),
         size,
+        triggerVariant,
+        setTriggerVariant,
         values,
         registerIcon,
         unregisterIcon,
@@ -543,49 +567,42 @@ export function SelectValue({
   );
 }
 
+export interface SelectTriggerProps
+  extends Omit<ComponentProps<typeof BaseSelect.Trigger>, "className"> {
+  className?: string;
+  children?: ReactNode;
+  /** Boxed field by default; `plain` removes the surface, border and horizontal padding. */
+  variant?: SelectTriggerVariant;
+  /** @deprecated Use `variant="plain"` or `variant="default"`. */
+  outline?: boolean;
+  /** The trailing chevron. */
+  chevron?: boolean;
+}
+
 export function SelectTrigger({
   className,
   children,
-  outline = true,
+  variant,
+  outline,
   chevron = true,
   ...props
-}: Omit<ComponentProps<typeof BaseSelect.Trigger>, "className"> & {
-  className?: string;
-  children?: ReactNode;
-  /**
-   * The bordered field box. Off leaves just the value and the chevron — a borderless,
-   * fit-to-content trigger for a toolbar or inline label.
-   */
-  outline?: boolean;
-  /**
-   * The trailing chevron. Off when the trigger already reads as openable on its own — a
-   * keyboard-hinted menu affordance, say, where a chevron would just be noise.
-   */
-  chevron?: boolean;
-}) {
-  const { open, size } = useContext(SelectContext);
+}: SelectTriggerProps) {
+  const { open, size, setTriggerVariant } = useContext(SelectContext);
   const reduceMotion = useReducedMotion();
+  const resolvedVariant = variant ?? (outline === false ? "plain" : "default");
+
+  useEffect(() => {
+    setTriggerVariant(resolvedVariant);
+  }, [resolvedVariant, setTriggerVariant]);
 
   return (
     <BaseSelect.Trigger
+      data-variant={resolvedVariant}
       className={cn(
         // `md` (h-9) matches Button's default and the Input — a select beside either in a
         // form row lines up with it. `sm` (h-8, the default) is the compact toolbar size.
-        "group flex items-center gap-2 rounded-md text-foreground",
         SIZE[size].field,
-        "cursor-pointer outline-none select-none",
-        "transition-[background-color,border-color] duration-(--duration-base) ease-out",
-        "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
-        outline
-          ? cn(
-              "w-full justify-between border border-border bg-surface px-3.5",
-              "hover:border-border-strong data-[popup-open]:border-border-strong",
-              // Invalid mirrors the Input's treatment — red border + 3px red ring — so a
-              // select in a form reads its error the same way. Pair with `Alert`.
-              "aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",
-            )
-          : "w-auto justify-between gap-1.5 px-0",
+        selectTriggerVariants({ variant: resolvedVariant }),
         className,
       )}
       {...props}
@@ -610,12 +627,14 @@ export function SelectTrigger({
 export interface SelectSortTriggerProps
   extends Omit<ComponentProps<typeof BaseSelect.Trigger>, "className" | "children"> {
   className?: string;
+  /** Chip by default; `plain` removes the surface, border and horizontal padding. */
+  variant?: SelectTriggerVariant;
+  /** @deprecated Use `variant="plain"` or `variant="default"`. */
+  outline?: boolean;
   /** A leading icon. Optional — omit for a text-only chip. */
   icon?: ReactNode;
   /** A prefix, e.g. "Sort" or "Status", shown before the value(s). Optional. */
   label?: ReactNode;
-  /** Draw the border and fill. Off makes it a borderless text button. */
-  outline?: boolean;
   /** Append the selected value(s) after the label — "Status: Active, Paused". */
   showValue?: boolean;
   /** Shown (muted) in place of the value(s) while nothing is selected. */
@@ -636,13 +655,19 @@ export function SelectSortTrigger({
   className,
   icon,
   label,
+  variant,
   outline = true,
   showValue = true,
   placeholder = "Any",
   ...props
 }: SelectSortTriggerProps) {
-  const { open, values, labelFor, size } = useContext(SelectContext);
+  const { open, values, labelFor, size, setTriggerVariant } = useContext(SelectContext);
   const reduceMotion = useReducedMotion();
+  const resolvedVariant = variant ?? (outline === false ? "plain" : "default");
+
+  useEffect(() => {
+    setTriggerVariant(resolvedVariant);
+  }, [resolvedVariant, setTriggerVariant]);
   const selected = values.map((v) => labelFor(v) ?? (typeof v === "string" ? v : String(v)));
   const isUnset = selected.length === 0;
   // With no label and no value shown, the chip is a bare icon button — the chevron would
@@ -652,24 +677,15 @@ export function SelectSortTrigger({
 
   return (
     <BaseSelect.Trigger
+      data-variant={resolvedVariant}
       data-unset={isUnset || undefined}
       className={cn(
-        "group inline-flex max-w-full cursor-pointer items-center gap-2 rounded-md text-foreground outline-none select-none",
         SIZE[size].chip,
-        "transition-[background-color,border-color] duration-(--duration-base) ease-out",
-        "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
-        outline
-          ? cn(
-              "border hover:border-border-strong",
-              // Unset: dashed border on the plain surface. Set: solid border and a brighter
-              // fill that persists (the chip reads as "active"). Open keeps that fill too.
-              isUnset
-                ? "border-dashed border-border-strong bg-surface"
-                : "border-border bg-muted",
-              "data-[popup-open]:border-border-strong data-[popup-open]:bg-muted",
-            )
-          : "hover:bg-muted data-[popup-open]:bg-muted",
+        selectSortTriggerVariants({ variant: resolvedVariant }),
+        resolvedVariant === "default" &&
+          (isUnset
+            ? "border-dashed border-border-strong bg-surface"
+            : "border-border bg-muted"),
         className,
       )}
       {...props}
@@ -718,7 +734,10 @@ export function SelectSortTrigger({
         // Same Motion spring as `SelectTrigger`, so the two chevrons flip identically.
         <motion.span
           aria-hidden
-          className="shrink-0 text-muted-foreground"
+          className={cn(
+            "shrink-0 text-muted-foreground",
+            resolvedVariant === "plain" && "order-3",
+          )}
           animate={{ rotate: open ? 180 : 0 }}
           transition={
             reduceMotion ? { duration: 0 } : { type: "spring", duration: 0.4, bounce: 0 }
@@ -737,7 +756,7 @@ export function SelectContent({
   sideOffset = 6,
   side = "bottom",
   align = "start",
-  width = "trigger",
+  width: widthProp,
   searchable = false,
   searchPosition = "top",
   searchPlaceholder = "Search…",
@@ -755,7 +774,8 @@ export function SelectContent({
   align?: ComponentProps<typeof BaseSelect.Positioner>["align"];
   /**
    * `trigger` keeps the panel the trigger's width (a bordered field select); `content`
-   * sizes it to its own rows — for a narrow, borderless trigger or the sort chip.
+   * sizes it to its own rows — the longest label plus the reserved check slot. When omitted,
+   * this follows the trigger: `plain` uses `content`, while `default` uses `trigger`.
    */
   width?: "trigger" | "content";
   /** Adds a plain filter field beside the list, separated from the options by a hairline. */
@@ -788,7 +808,9 @@ export function SelectContent({
     setPanelSearch,
     searchQuery,
     setSearchQuery,
+    triggerVariant,
   } = useContext(SelectContext);
+  const width = widthProp ?? (triggerVariant === "plain" ? "content" : "trigger");
   const listRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   // A state node, not a ref: Base UI mounts the popup lazily, so on the first open the
@@ -914,6 +936,7 @@ export function SelectContent({
           at the trigger's edge, so the unfold grows *from* the trigger whichever side it
           lands on. */}
       <BaseSelect.Positioner
+        data-slot="select-content-positioner"
         ref={setPositionerNode}
         sideOffset={sideOffset}
         align={align}
