@@ -7,6 +7,14 @@ import {
   type ActionButtonProps,
 } from "@/registry/ui/action-button/action-button";
 
+export type CopyButtonSize = "sm" | "md" | "lg";
+
+const ICON_SIZE: Record<CopyButtonSize, "icon-sm" | "icon" | "icon-lg"> = {
+  sm: "icon-sm",
+  md: "icon",
+  lg: "icon-lg",
+};
+
 export interface CopyButtonProps
   extends Omit<
     ActionButtonProps,
@@ -16,7 +24,14 @@ export interface CopyButtonProps
     // `value` is likewise a native `<button value>` attribute. It was compatible by
     // accident while ours was a plain string; the function form isn't, and forwarding a
     // form value through a copy button was never meaningful anyway.
-    "action" | "icon" | "labels" | "announce" | "children" | "onCopy" | "value"
+    | "action"
+    | "icon"
+    | "labels"
+    | "announce"
+    | "children"
+    | "onCopy"
+    | "size"
+    | "value"
   > {
   /**
    * The text placed on the clipboard.
@@ -28,6 +43,8 @@ export interface CopyButtonProps
    * button's own pending state covers the wait.
    */
   value: string | (() => string | Promise<string>);
+  /** The button size. Omit it for the default square icon-only button when unlabeled. */
+  size?: CopyButtonSize;
   /**
    * The resting glyph. Defaults to the copy icon.
    *
@@ -74,6 +91,7 @@ export function CopyButton({
   // isn't knowable until the action has run, and `onCopy` fires from `onSuccess` — one
   // step later — so the resolved text has to survive the gap between them.
   const copied = useRef("");
+  const buttonSize = children ? (size ?? "md") : size ? ICON_SIZE[size] : "icon";
 
   return (
     <ActionButton
@@ -84,7 +102,7 @@ export function CopyButton({
       }}
       icon={icon}
       variant={variant}
-      size={size ?? (children ? "md" : "icon")}
+      size={buttonSize}
       // Just long enough to tell "already done" from "actually waiting", and no longer.
       //
       // A resolved string, or a function that returns one, finishes within a microtask —

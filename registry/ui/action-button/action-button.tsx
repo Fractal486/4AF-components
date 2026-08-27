@@ -126,7 +126,7 @@ export function ActionButton({
             taking the label out of flow would make the button shrink while it is busy. */}
         <span
           data-slot="action-button-content"
-          className="relative inline-grid place-items-center"
+          className="relative inline-grid place-items-center gap-[inherit]"
         >
           {/* One box, so `iconEdges` still sees a single child and the padding doesn't move
               — and `gap-[inherit]` so the space between glyph and label is the button's own,

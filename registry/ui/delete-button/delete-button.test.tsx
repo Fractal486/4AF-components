@@ -35,4 +35,22 @@ describe("DeleteButton", () => {
     act(() => vi.advanceTimersByTime(500));
     expect(button).not.toHaveAttribute("data-armed");
   });
+
+  it("uses the shared size-specific icon-label gap", () => {
+    const { rerender } = render(<DeleteButton size="sm">Remove</DeleteButton>);
+    const getContents = () =>
+      Array.from(screen.getByRole("button").querySelectorAll('[data-slot="delete-button-content"]'));
+
+    for (const [size, gap] of [
+      ["sm", "gap-2"],
+      ["md", "gap-2.5"],
+      ["lg", "gap-3"],
+    ] as const) {
+      rerender(<DeleteButton size={size}>Remove</DeleteButton>);
+      const contents = getContents();
+
+      expect(contents).not.toHaveLength(0);
+      for (const content of contents) expect(content).toHaveClass(gap);
+    }
+  });
 });

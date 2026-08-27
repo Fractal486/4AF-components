@@ -136,6 +136,21 @@ describe("ActionButton", () => {
     expect(pendingIcon).toHaveClass("opacity-0");
   });
 
+  it("passes the button gap through the pending centering wrapper", () => {
+    render(
+      <ActionButton action={() => undefined} icon={<span>@</span>}>
+        Copy
+      </ActionButton>,
+    );
+
+    const content = screen
+      .getByRole("button")
+      .querySelector('[data-slot="action-button-content"]');
+
+    expect(content).toHaveClass("gap-[inherit]");
+    expect(content?.firstElementChild).toHaveClass("gap-[inherit]");
+  });
+
   it("morphs the glyph without dragging the label through the swap", () => {
     render(
       <ActionButton action={() => new Promise(() => {})} icon={<span>@</span>}>

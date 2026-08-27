@@ -12,6 +12,11 @@ description: A clipboard action with transient success feedback and icon morphin
 
 A clipboard-specialized Action Button with visual and screen-reader confirmation.
 
+`size` controls the overall scale and accepts `sm`, `md`, or `lg`. With a label, those map to
+the standard button sizes. Without a label, they map to the corresponding square
+`icon-sm`, `icon`, or `icon-lg` button. When omitted on an icon-only button, the default is
+the square `icon` size.
+
 ## Resolve values on press
 
 `value` takes a function as well as a string:

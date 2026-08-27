@@ -100,7 +100,7 @@ import { Button } from "@/components/ui/button";
     importName: "CopyButton",
     usage: `import { CopyButton } from "@/components/ui/copy-button";
 
-<CopyButton value="Text to copy" />`,
+<CopyButton value="Text to copy" size="md">Copy</CopyButton>`,
   },
   "delete-button": {
     importName: "DeleteButton",

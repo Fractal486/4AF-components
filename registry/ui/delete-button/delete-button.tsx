@@ -4,6 +4,7 @@ import { Check, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
 import { Button, type ButtonProps } from "@/registry/ui/button/button";
+import { buttonContentGap } from "@/registry/ui/button/button.variants";
 import { Morph } from "@/registry/ui/morph/morph";
 
 /**
@@ -81,6 +82,7 @@ export function DeleteButton({
   const [uncontrolled, setUncontrolled] = useState(defaultArmed);
   const isControlled = armed !== undefined;
   const isArmed = isControlled ? armed : uncontrolled;
+  const contentGap = buttonContentGap({ size: size ?? "md" });
   const armedAt = useRef(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -145,10 +147,9 @@ export function DeleteButton({
       >
         <Morph
           activeKey={isArmed ? "armed" : "idle"}
-          className="gap-2"
           items={{
-            idle: <Content icon={icon}>{children}</Content>,
-            armed: <Content icon={confirmIcon}>{confirmLabel}</Content>,
+            idle: <Content gap={contentGap} icon={icon}>{children}</Content>,
+            armed: <Content gap={contentGap} icon={confirmIcon}>{confirmLabel}</Content>,
           }}
         />
       </Button>
@@ -162,9 +163,9 @@ export function DeleteButton({
   );
 }
 
-function Content({ icon, children }: { icon?: ReactNode; children?: ReactNode }) {
+function Content({ gap, icon, children }: { gap: string; icon?: ReactNode; children?: ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-2">
+    <span data-slot="delete-button-content" className={cn("inline-flex items-center", gap)}>
       {icon}
       {children}
     </span>

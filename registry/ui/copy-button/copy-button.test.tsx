@@ -18,6 +18,37 @@ function trackStatus(button: HTMLElement) {
 }
 
 describe("CopyButton", () => {
+  it("applies an explicit size to the labelled button", () => {
+    render(
+      <CopyButton value="hello" size="lg">
+        Copy
+      </CopyButton>,
+    );
+
+    const button = screen.getByRole("button", { name: "Copy" });
+    expect(button).toHaveAttribute("data-size", "lg");
+    expect(button).toHaveClass("h-11", "px-5");
+  });
+
+  it("maps an explicit size to the corresponding square icon button", () => {
+    render(<CopyButton value="hello" size="sm" />);
+
+    const button = screen.getByRole("button", { name: "Copy" });
+    expect(button).toHaveAttribute("data-size", "icon-sm");
+    expect(button).toHaveClass("size-8");
+  });
+
+  it("uses the standard action-button icon-label gap", () => {
+    render(<CopyButton value="hello">Copy</CopyButton>);
+
+    const content = screen
+      .getByRole("button", { name: "Copy" })
+      .querySelector('[data-slot="action-button-content"]');
+
+    expect(content).toHaveClass("gap-[inherit]");
+    expect(content?.firstElementChild).toHaveClass("gap-[inherit]");
+  });
+
   it("composes onCopy with the inherited onSuccess callback", async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     const onCopy = vi.fn();

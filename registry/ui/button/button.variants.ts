@@ -1,5 +1,26 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
+/**
+ * The inline space between a button's icon and label. Components that put their
+ * content behind a wrapper (for example, DeleteButton's Morph) use this same
+ * size-aware token instead of guessing at the gap again.
+ */
+export const buttonContentGap = cva("", {
+  variants: {
+    size: {
+      sm: "gap-2",
+      md: "gap-2.5",
+      lg: "gap-3",
+      "icon-sm": "gap-0",
+      icon: "gap-0",
+      "icon-lg": "gap-0",
+    },
+  },
+  defaultVariants: {
+    size: "md",
+  },
+});
+
 export const buttonVariants = cva(
   [
     // Layout. `relative` anchors both the loading spinner and the hit-area
@@ -71,9 +92,9 @@ export const buttonVariants = cva(
         link: "text-foreground underline decoration-border underline-offset-4 hover:decoration-current",
       },
       size: {
-        sm: "h-8 gap-1.5 rounded-md px-3 text-xs [&_svg]:size-3.5",
-        md: "h-9 gap-2 rounded-md px-3.5 text-sm [&_svg]:size-4",
-        lg: "h-11 gap-2 rounded-lg px-5 text-base [&_svg]:size-4",
+        sm: `h-8 ${buttonContentGap({ size: "sm" })} rounded-md px-3 text-xs [&_svg]:size-3.5`,
+        md: `h-9 ${buttonContentGap({ size: "md" })} rounded-md px-3.5 text-sm [&_svg]:size-4`,
+        lg: `h-11 ${buttonContentGap({ size: "lg" })} rounded-lg px-5 text-base [&_svg]:size-4`,
         "icon-sm": "size-8 rounded-md [&_svg]:size-3.5",
         icon: "size-9 rounded-md [&_svg]:size-4",
         "icon-lg": "size-11 rounded-lg [&_svg]:size-4",
