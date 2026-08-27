@@ -483,7 +483,7 @@
     {
       "name": "action-button",
       "type": "registry:ui",
-      "description": "Runs an async action, shows pending/success/error, and reverts. Never resizes.",
+      "description": "Runs an async action, shows pending/success/error, and reverts without resizing; pending can keep its label or show a centered loader only.",
       "dependencies": [
         "lucide-react"
       ],

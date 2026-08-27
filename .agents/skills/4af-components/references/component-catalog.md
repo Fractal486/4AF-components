@@ -56,7 +56,7 @@ The catalog currently contains 45 installable UI items. Verify the count and nam
 | `button-group` | `ButtonGroup` | Joining two or more Buttons into one control: flattened inner corners, one hairline per seam, a single outline around the run, horizontal or vertical. |
 | `toggle` | `Toggle` | Base UI pressed/unpressed controls using Button visuals and sizes. |
 | `morph` | `Morph` | Animated icon or text replacement that reserves stable space. |
-| `action-button` | `ActionButton` | Async actions with idle, pending, success, and error states, then a revert to idle. |
+| `action-button` | `ActionButton` | Async actions with idle, pending, success, and error states, then a revert to idle; pending can keep its label or show a centered loader only without resizing. |
 | `action-toggle` | `ActionToggle` | An async toggle: waits on the action, lands when it succeeds, stays put when it fails. Follow/Following, Subscribe/Subscribed. |
 | `copy-button` | `CopyButton` | Clipboard actions with visual and screen-reader confirmation. |
 | `delete-button` | `DeleteButton` | Quiet destructive, two-step confirmation with Escape, blur, and timeout disarming. |
@@ -159,7 +159,10 @@ Glyph and label morph in separate boxes (the loader is a text glyph, far narrowe
 icon; morphing them together slides the label). So a label with no per-state override does
 not animate — pass `labels={{ pending: … }}` only when the word should change. `ActionToggle`
 with `fillIcon` and no `icons.pressed` does not swap the glyph either; the fill is the
-animation. Do not wrap the label and icon in one `Morph` when building something similar.
+animation. `ActionButton` additionally takes `pendingMode="icon"` to hide the pending label and
+centre the loader over the reserved label-sized content box; the default `"label"` mode keeps
+the pending label beside it. Do not wrap the label and icon in one `Morph` when building
+something similar.
 
 ### Press scaling
 

@@ -57,7 +57,11 @@ describe("ActionButton", () => {
   it("centres a label-only action despite the reserved status glyph slot", () => {
     render(<ActionButton action={() => undefined}>Save</ActionButton>);
 
-    expect(screen.getByRole("button").firstElementChild).toHaveClass("-translate-x-3");
+    const content = screen
+      .getByRole("button")
+      .querySelector('[data-slot="action-button-content"]');
+
+    expect(content?.firstElementChild).toHaveClass("-translate-x-3");
   });
 
   it("centres the pending status icon and label as a group", async () => {
@@ -86,6 +90,50 @@ describe("ActionButton", () => {
     expect(content).not.toHaveClass("-translate-x-3");
 
     await act(async () => resolveAction!());
+  });
+
+  it("centres an icon-only pending state over the reserved labelled content", async () => {
+    let resolveAction: () => void;
+    const action = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveAction = resolve;
+        }),
+    );
+
+    render(
+      <ActionButton
+        action={action}
+        pendingMode="icon"
+        labels={{ pending: "Deploying", success: "Deployed" }}
+      >
+        Deploy
+      </ActionButton>,
+    );
+
+    const button = screen.getByRole("button", { name: "Deploy" });
+    const content = button.querySelector('[data-slot="action-button-content"]');
+    const group = content?.firstElementChild;
+    const pendingIcon = content?.querySelector('[data-slot="action-button-pending-icon"]');
+
+    expect(button).toHaveAttribute("data-pending-mode", "icon");
+    expect(content).toHaveClass("inline-grid");
+    expect(group).not.toBeNull();
+    expect(pendingIcon).toHaveClass("absolute", "inset-0", "place-items-center", "opacity-0");
+
+    fireEvent.click(button);
+
+    expect(button).toHaveAttribute("data-status", "pending");
+    expect(group).toHaveClass("opacity-0");
+    expect(pendingIcon).toHaveClass("opacity-100");
+    // The resting label remains the accessible name while the visible group is hidden.
+    expect(screen.getByRole("button", { name: "Deploy" })).toBe(button);
+
+    await act(async () => resolveAction!());
+
+    expect(button).toHaveAttribute("data-status", "success");
+    expect(group).not.toHaveClass("opacity-0");
+    expect(pendingIcon).toHaveClass("opacity-0");
   });
 
   it("morphs the glyph without dragging the label through the swap", () => {

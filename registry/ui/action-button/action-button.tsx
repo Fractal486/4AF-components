@@ -20,6 +20,8 @@ export interface ActionButtonProps
   icon?: ReactNode;
   /** Labels per state. Each falls back to the resting label. */
   labels?: { pending?: ReactNode; success?: ReactNode; error?: ReactNode };
+  /** Whether pending keeps its label beside the loader or shows only a centered loader. */
+  pendingMode?: "label" | "icon";
   /** How long the outcome holds before returning to idle, in ms. */
   revertAfter?: number;
   /**
@@ -53,6 +55,7 @@ export function ActionButton({
   children,
   icon,
   labels,
+  pendingMode = "label",
   revertAfter = 2000,
   pendingDelay = 0,
   announce,
@@ -72,11 +75,16 @@ export function ActionButton({
     onError,
   });
 
+  const pendingIconOnly = pendingMode === "icon" && status === "pending";
   // Which label is actually showing, and — the part that matters — whether it differs from
   // the resting one at all. A status with no override of its own keeps the idle key, so the
   // label doesn't animate a swap for a change that never touched it.
-  const override = status === "idle" ? undefined : labels?.[status];
-  const labelKey = override == null ? "idle" : status;
+  // Icon-only pending deliberately keeps the idle label in the hidden sizer. That preserves
+  // the button's accessible name while the centered loader is drawn over the whole content
+  // box.
+  const override = status === "idle" || pendingIconOnly ? undefined : labels?.[status];
+  const labelKey = pendingIconOnly ? "idle" : override == null ? "idle" : status;
+  const glyphKey = pendingIconOnly ? "idle" : status;
   const labelled =
     Boolean(children) ||
     Boolean(labels && (labels.pending ?? labels.success ?? labels.error));
@@ -110,42 +118,70 @@ export function ActionButton({
         disabled={disabled || status === "pending"}
         aria-busy={status === "pending" || undefined}
         data-status={status}
+        data-pending-mode={pendingMode}
         {...props}
       >
-        {/* One box, so `iconEdges` still sees a single child and the padding doesn't move
-            — and `gap-[inherit]` so the space between glyph and label is the button's own,
-            per size, rather than a second copy of that number. */}
-        <span className={cn("inline-flex items-center gap-[inherit]", labelOnlyOffset)}>
-          {/* The glyph morphs in its own box, separately from the label, and that split is
-              the whole point. The loader is a text glyph — roughly half the advance width
-              of a 16px icon — so morphing the two together centres the narrower state and
-              slides the label sideways every time the status changes. Apart, the glyph
-              swaps inside a box as wide as the widest glyph and the label holds still.
-              It's the same split the menu's action row makes, for the same reason.
+        {/* The outer grid keeps one intrinsic content box. In icon-only pending mode the
+            regular group remains as an invisible sizer, and the loader is centred over it;
+            taking the label out of flow would make the button shrink while it is busy. */}
+        <span
+          data-slot="action-button-content"
+          className="relative inline-grid place-items-center"
+        >
+          {/* One box, so `iconEdges` still sees a single child and the padding doesn't move
+              — and `gap-[inherit]` so the space between glyph and label is the button's own,
+              per size, rather than a second copy of that number. */}
+          <span
+            className={cn(
+              "inline-flex items-center gap-[inherit]",
+              labelOnlyOffset,
+              pendingIconOnly && "opacity-0",
+            )}
+          >
+            {/* The glyph morphs in its own box, separately from the label, and that split is
+                the whole point. The loader is a text glyph — roughly half the advance width
+                of a 16px icon — so morphing the two together centres the narrower state and
+                slides the label sideways every time the status changes. Apart, the glyph
+                swaps inside a box as wide as the widest glyph and the label holds still.
+                It's the same split the menu's action row makes, for the same reason.
 
-              Each Morph is handed every state at once, so the button reserves the width of
-              the widest and never resizes as it moves through them. A button that changes
-              width mid-action moves the target out from under the cursor — and here the
-              cursor is still on it, waiting. */}
-          <Morph
-            activeKey={status}
-            items={{
-              idle: icon,
-              pending: <AsciiLoader />,
-              success: <Check />,
-              error: <TriangleAlert />,
-            }}
-          />
-          {labelled && (
+                Each Morph is handed every state at once, so the button reserves the width of
+                the widest and never resizes as it moves through them. A button that changes
+                width mid-action moves the target out from under the cursor — and here the
+                cursor is still on it, waiting. */}
             <Morph
-              activeKey={labelKey}
+              activeKey={glyphKey}
               items={{
-                idle: children,
-                pending: labels?.pending,
-                success: labels?.success,
-                error: labels?.error,
+                idle: icon,
+                pending: <AsciiLoader />,
+                success: <Check />,
+                error: <TriangleAlert />,
               }}
             />
+            {labelled && (
+              <Morph
+                activeKey={labelKey}
+                items={{
+                  idle: children,
+                  pending: labels?.pending,
+                  success: labels?.success,
+                  error: labels?.error,
+                }}
+              />
+            )}
+          </span>
+
+          {pendingMode === "icon" && (
+            <span
+              data-slot="action-button-pending-icon"
+              aria-hidden="true"
+              className={cn(
+                "pointer-events-none absolute inset-0 inline-grid place-items-center transition-[opacity] duration-(--duration-fast) ease-out",
+                pendingIconOnly ? "opacity-100" : "opacity-0",
+              )}
+            >
+              <AsciiLoader />
+            </span>
           )}
         </span>
       </Button>

@@ -14,6 +14,10 @@ Component-specific APIs and composition guidance live on the matching page under
 `pnpm 4af docs <component>`. `registry.json`, component source, and `pnpm 4af list` remain
 authoritative for installable items.
 
+`ActionButton` defaults to a label beside its pending loader. Use `pendingMode="icon"` for a
+centered loader-only pending state; it keeps the label-sized content box so the button does not
+resize while the action runs.
+
 Both Table of Contents variants own their constrained navigation rail: set a height with
 `className`, pass `rootRef` for an independently scrolling article, and they will keep the active
 entry centered while hiding only the rail's browser scrollbar.

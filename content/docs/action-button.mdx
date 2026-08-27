@@ -16,6 +16,23 @@ width, then reverts.
 When no resting icon is provided, the visible label remains centred even though the pending and
 outcome glyphs reserve their space. Actions with an icon keep the icon-and-label group centred.
 
+`pendingMode` controls the pending presentation. It defaults to `"label"`, which keeps the
+pending label beside the ASCII loader. Set it to `"icon"` to hide the pending label and centre
+the loader over the same label-sized content box. The invisible sizer keeps the button width
+stable, and the resting label remains its accessible name while `aria-busy` and `announce`
+describe the work:
+
+```tsx
+<ActionButton
+  action={() => saveChanges()}
+  pendingMode="icon"
+  labels={{ success: "Saved", error: "Try again" }}
+  announce={{ pending: "Saving changes" }}
+>
+  Save changes
+</ActionButton>
+```
+
 ## Waiting states
 
 Every waiting state in the library is the ASCII loader: Button's `loading`, Action Button and
@@ -29,8 +46,9 @@ them together centres the narrower state and drags the label sideways on every s
 
 That split matters at the call site: a label with no per-state override does not animate. Pass
 `labels={{ pending: "Saving" }}` when the word should change, and leave it out when only the
-glyph should move—a word that never changed should not be scaled and blurred through a swap it
-had no part in.
+glyph should move in the default mode. Use `pendingMode="icon"` when the pending state should
+show only the centred loader; `labels.pending` is then ignored visually while the button keeps
+the label-sized geometry.
 
 Action Toggle follows the same rule for its glyph: with `fillIcon` and no `icons.pressed`, it
 does not swap the glyph on press because there is nothing to morph to, and a fill transition plus

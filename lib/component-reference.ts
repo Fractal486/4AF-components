@@ -8,7 +8,13 @@ export const componentReferences = {
     importName: "ActionButton",
     usage: `import { ActionButton } from "@/components/ui/action-button";
 
-<ActionButton action={() => saveChanges()}>Save changes</ActionButton>`,
+<ActionButton
+  action={() => saveChanges()}
+  pendingMode="icon"
+  labels={{ success: "Saved" }}
+>
+  Save changes
+</ActionButton>`,
   },
   "action-toggle": {
     importName: "ActionToggle",
