@@ -3,6 +3,9 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSub,
+  SelectSubContent,
+  SelectSubTrigger,
   SelectTrigger,
   SelectValue,
 } from "@/registry/ui/select/select";
@@ -19,6 +22,40 @@ const FRUITS = {
   strawberry: "Strawberry",
   watermelon: "Watermelon",
 } as const;
+
+const NESTED_FRUITS = ["banana", "mango"] as const;
+
+function FruitOptions({ icons }: { icons: boolean }) {
+  return (
+    <>
+      {Object.entries(FRUITS)
+        .filter(([value]) => !NESTED_FRUITS.includes(value as (typeof NESTED_FRUITS)[number]))
+        .map(([value, label]) => (
+          <SelectItem
+            key={value}
+            value={value}
+            icon={icons ? <FruitIcon value={value} /> : undefined}
+          >
+            {label}
+          </SelectItem>
+        ))}
+      <SelectSub>
+        <SelectSubTrigger>More fruit</SelectSubTrigger>
+        <SelectSubContent>
+          {NESTED_FRUITS.map((value) => (
+            <SelectItem
+              key={value}
+              value={value}
+              icon={icons ? <FruitIcon value={value} /> : undefined}
+            >
+              {FRUITS[value]}
+            </SelectItem>
+          ))}
+        </SelectSubContent>
+      </SelectSub>
+    </>
+  );
+}
 
 export const selectEntry = defineEntry({
   slug: "select",
@@ -57,15 +94,7 @@ export const selectEntry = defineEntry({
               searchPlaceholder="Search fruits…"
               emptyMessage="No fruit found."
             >
-              {Object.entries(FRUITS).map(([value, label]) => (
-                <SelectItem
-                  key={value}
-                  value={value}
-                  icon={icons ? <FruitIcon value={value} /> : undefined}
-                >
-                  {label}
-                </SelectItem>
-              ))}
+              <FruitOptions icons={icons} />
             </SelectContent>
           </Select>
         ) : (
@@ -90,15 +119,7 @@ export const selectEntry = defineEntry({
               searchPlaceholder="Search fruits…"
               emptyMessage="No fruit found."
             >
-              {Object.entries(FRUITS).map(([value, label]) => (
-                <SelectItem
-                  key={value}
-                  value={value}
-                  icon={icons ? <FruitIcon value={value} /> : undefined}
-                >
-                  {label}
-                </SelectItem>
-              ))}
+              <FruitOptions icons={icons} />
             </SelectContent>
           </Select>
         )}

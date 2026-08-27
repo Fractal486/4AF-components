@@ -198,7 +198,11 @@ import { Button } from "@/components/ui/button";
     importName: "Select",
     usage: `import {
   Select,
+  SelectContent,
   SelectItem,
+  SelectSub,
+  SelectSubContent,
+  SelectSubTrigger,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -207,7 +211,15 @@ import { Button } from "@/components/ui/button";
   <SelectTrigger variant="plain">
     <SelectValue />
   </SelectTrigger>
-  <SelectItem value="apple">Apple</SelectItem>
+  <SelectContent>
+    <SelectItem value="apple">Apple</SelectItem>
+    <SelectSub>
+      <SelectSubTrigger>More fruit</SelectSubTrigger>
+      <SelectSubContent>
+        <SelectItem value="banana">Banana</SelectItem>
+      </SelectSubContent>
+    </SelectSub>
+  </SelectContent>
 </Select>`,
   },
   "select-aligned": {

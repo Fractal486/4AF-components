@@ -9,7 +9,7 @@ description: A composable Base UI select with rich items, sizing, and positionin
 ## API
 
 **Main exports:** `Select`, `SelectTrigger`, `SelectSortTrigger`, `SelectValue`, `SelectContent`,
-`SelectItem`
+`SelectItem`, `SelectSub`, `SelectSubTrigger`, `SelectSubContent`
 
 An accessible Base UI single or multi-select with icons declarable on `items` so a preselected
 value resolves before mount, optional in-panel search, a clear footer, content sizing, and the
@@ -36,6 +36,45 @@ reserved checkmark slot. Set `width="trigger"` or `width="content"` to override 
   <SelectContent>
     <SelectItem value="active">Active</SelectItem>
     <SelectItem value="paused">Paused</SelectItem>
+  </SelectContent>
+</Select>
+```
+
+## Nested select panels
+
+Use `SelectSub` to put a second select panel behind a row in `SelectContent`. The trigger keeps
+the chevron after its label, opens on hover or with `ArrowRight`/`Enter`, and `ArrowLeft` or
+`Escape` returns focus to the parent row. Its children are ordinary `SelectItem`s: they use the
+same single- or multi-select value, check state, keyboard navigation, and close behavior as rows
+in the main panel. When the parent `SelectContent` is searchable, its field also searches these
+nested rows: a matching parent trigger remains in the main panel, and opening it reveals the
+matching child rows. Nested panels can be nested again.
+
+```tsx
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectSub,
+  SelectSubContent,
+  SelectSubTrigger,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+<Select defaultValue="apple" items={{ apple: "Apple", banana: "Banana", mango: "Mango" }}>
+  <SelectTrigger aria-label="Fruit">
+    <SelectValue />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="apple">Apple</SelectItem>
+    <SelectSub>
+      <SelectSubTrigger>More fruit</SelectSubTrigger>
+      <SelectSubContent>
+        <SelectItem value="banana">Banana</SelectItem>
+        <SelectItem value="mango">Mango</SelectItem>
+      </SelectSubContent>
+    </SelectSub>
   </SelectContent>
 </Select>
 ```

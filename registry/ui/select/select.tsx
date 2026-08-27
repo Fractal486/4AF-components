@@ -1,11 +1,14 @@
 "use client";
 
 import { Select as BaseSelect } from "@base-ui/react/select";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, ChevronRight } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import {
+  Children,
   createContext,
   Fragment,
+  forwardRef,
+  isValidElement,
   useCallback,
   useContext,
   useEffect,
@@ -13,6 +16,7 @@ import {
   useRef,
   useState,
   type ComponentProps,
+  type ForwardedRef,
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
@@ -71,6 +75,12 @@ const SIZE: Record<
 interface SelectContextValue {
   open: boolean;
   multiple: boolean;
+  disabled: boolean;
+  readOnly: boolean;
+  setOpen: (open: boolean, details?: unknown) => void;
+  setValue: (value: unknown, details?: unknown) => void;
+  registerNestedPanel: (node: HTMLElement | null) => void;
+  isNestedPanelTarget: (target: EventTarget | null) => boolean;
   size: SelectSize;
   triggerVariant: SelectTriggerVariant;
   setTriggerVariant: (variant: SelectTriggerVariant) => void;
@@ -83,12 +93,14 @@ interface SelectContextValue {
   unregisterLabel: (value: unknown) => void;
   labelFor: (value: unknown) => ReactNode | undefined;
   firstItem: unknown;
-  registerOptionText: (value: unknown, text: string) => void;
+  registerOptionText: (value: unknown, text: string, parentValue?: unknown) => void;
   unregisterOptionText: (value: unknown) => void;
   /** True when the text passes the current panel-search query (or there is none). */
   matchesQuery: (text: string) => boolean;
-  /** The first item still visible under the current query. */
+  /** The first top-level item still visible under the current query. */
   firstVisibleItem: unknown;
+  /** Whether an item has a matching row anywhere in its nested panels. */
+  hasMatchingDescendant: (value: unknown) => boolean;
   /** The row a panel opens on: the selection while the list is whole, else the first row. */
   openingItem: unknown;
   activeItem: unknown;
@@ -104,6 +116,12 @@ interface SelectContextValue {
 const SelectContext = createContext<SelectContextValue>({
   open: false,
   multiple: false,
+  disabled: false,
+  readOnly: false,
+  setOpen: () => {},
+  setValue: () => {},
+  registerNestedPanel: () => {},
+  isNestedPanelTarget: () => false,
   size: "sm",
   triggerVariant: "default",
   setTriggerVariant: () => {},
@@ -119,6 +137,7 @@ const SelectContext = createContext<SelectContextValue>({
   unregisterOptionText: () => {},
   matchesQuery: () => true,
   firstVisibleItem: undefined,
+  hasMatchingDescendant: () => false,
   openingItem: undefined,
   activeItem: undefined,
   setActiveItem: () => {},
@@ -128,6 +147,110 @@ const SelectContext = createContext<SelectContextValue>({
   setSearchQuery: () => {},
   clear: () => {},
 });
+
+type BaseUIEvent = { preventBaseUIHandler?: () => void };
+
+function preventBaseUIHandler(event: BaseUIEvent) {
+  event.preventBaseUIHandler?.();
+}
+
+interface SelectSubItemContextValue {
+  open: boolean;
+  parentValue: unknown;
+  registerItem: (value: unknown, node: HTMLElement | null) => void;
+}
+
+interface SelectOptionInfo {
+  text: string;
+  parentValue: unknown;
+}
+
+interface SelectOptionRegistration extends SelectOptionInfo {
+  count: number;
+}
+
+interface SelectSearchChildProps {
+  value?: unknown;
+  children?: ReactNode;
+  searchValue?: string;
+}
+
+interface SelectSearchOption {
+  value: unknown;
+  text: string;
+}
+
+/**
+ * Read the direct option elements of a nested panel before its popup mounts. Base UI keeps
+ * closed select portals out of the tree, so the real items cannot register their search text
+ * until the panel is opened. This lightweight pass only reads the public value/label props;
+ * the mounted items still own all rendering and interaction.
+ */
+function collectSelectSearchOptions(children: ReactNode): SelectSearchOption[] {
+  const options: SelectSearchOption[] = [];
+
+  Children.forEach(children, (child) => {
+    if (!isValidElement(child)) return;
+
+    const childProps = child.props as SelectSearchChildProps;
+
+    if (child.type === Fragment) {
+      options.push(...collectSelectSearchOptions(childProps.children));
+      return;
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(childProps, "value")) return;
+
+    options.push({
+      value: childProps.value,
+      text:
+        childProps.searchValue ??
+        (typeof childProps.children === "string"
+          ? childProps.children
+          : String(childProps.value)),
+    });
+  });
+
+  return options;
+}
+
+interface SelectSubContextValue {
+  open: boolean;
+  disabled: boolean;
+  anchor: HTMLElement | null;
+  triggerValue: symbol;
+  focusTrigger: () => void;
+  setTriggerNode: (node: HTMLElement | null) => void;
+  setCloseDelay: (delay: number) => void;
+  setOpen: (open: boolean, details?: unknown) => void;
+  openAndFocus: () => void;
+  scheduleOpen: (delay: number) => void;
+  scheduleClose: (delay?: number) => void;
+  cancelClose: () => void;
+}
+
+const SelectSubContext = createContext<SelectSubContextValue | null>(null);
+const SelectSubItemContext = createContext<SelectSubItemContextValue | null>(null);
+
+function setForwardedRef<T>(ref: ForwardedRef<T>, value: T | null) {
+  if (typeof ref === "function") {
+    ref(value);
+  } else if (ref) {
+    ref.current = value;
+  }
+}
+
+function useSelectSubContext() {
+  const context = useContext(SelectSubContext);
+
+  if (!context) {
+    throw new Error(
+      "SelectSubTrigger and SelectSubContent must be used inside SelectSub.",
+    );
+  }
+
+  return context;
+}
 
 const EASE_OUT = [0.16, 1, 0.3, 1] as const;
 // The panel blurs and scales in from `--transform-origin`, and every select in the family
@@ -209,6 +332,26 @@ function focusPanelOption(
   option?.focus();
 }
 
+function focusNestedOption(
+  items: Map<unknown, HTMLElement>,
+  values: unknown[],
+  multiple: boolean,
+) {
+  const isEnabled = (node: HTMLElement | undefined) =>
+    Boolean(
+      node &&
+        node.isConnected &&
+        !node.hidden &&
+        node.getAttribute("aria-disabled") !== "true" &&
+        !(node instanceof HTMLButtonElement && node.disabled),
+    );
+  const options = Array.from(items.values()).filter(isEnabled);
+  const selected = multiple
+    ? [...values].reverse().map((value) => items.get(value)).find(isEnabled)
+    : items.get(values[0]);
+  (isEnabled(selected) ? selected : options[0])?.focus();
+}
+
 export interface SelectProps<Value, Multiple extends boolean | undefined = false>
   extends Omit<ComponentProps<typeof BaseSelect.Root<Value, Multiple>>, "children" | "items"> {
   /**
@@ -255,6 +398,23 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   const isOpen = isControlled ? open : uncontrolled;
   const [searchQuery, setSearchQuery] = useState("");
   const [triggerVariant, setTriggerVariant] = useState<SelectTriggerVariant>("default");
+  const nestedPanelNodesRef = useRef<Set<HTMLElement>>(new Set());
+  const registerNestedPanel = useCallback((node: HTMLElement | null) => {
+    if (node) {
+      nestedPanelNodesRef.current.add(node);
+    } else {
+      for (const panel of nestedPanelNodesRef.current) {
+        if (!panel.isConnected) nestedPanelNodesRef.current.delete(panel);
+      }
+    }
+  }, []);
+  const isNestedPanelTarget = useCallback((target: EventTarget | null) => {
+    if (!(target instanceof Node)) return false;
+    for (const panel of nestedPanelNodesRef.current) {
+      if (panel.contains(target)) return true;
+    }
+    return false;
+  }, []);
 
   // Mirror the selection so a trigger can read it for its own display and styling — a
   // filter chip that shows its picks and dashes its border while nothing is chosen. Base
@@ -317,22 +477,61 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   );
   const firstItem = useMemo(() => labels.keys().next().value, [labels]);
 
-  // Items register the text a panel search matches against, so the panel can work out
-  // which row is first *after* filtering. One predicate, used by both the item deciding
-  // whether it's hidden and the panel deciding what to highlight — otherwise the two
-  // drift and the highlight lands on a row that isn't there.
-  const [optionTexts, setOptionTexts] = useState<Map<unknown, string>>(() => new Map());
-  const registerOptionText = useCallback((v: unknown, text: string) => {
-    setOptionTexts((current) => {
-      if (current.get(v) === text) return current;
-      return new Map(current).set(v, text);
-    });
-  }, []);
+  // Top-level items register the text a panel search matches against. Nested item text has its
+  // own registry because closed Base UI portals register their rows after the outer panel opens.
+  const [optionTexts, setOptionTexts] = useState<Map<unknown, SelectOptionRegistration>>(
+    () => new Map(),
+  );
+  const [nestedOptionTexts, setNestedOptionTexts] = useState<
+    Map<unknown, SelectOptionRegistration>
+  >(() => new Map());
+  const registerOptionText = useCallback(
+    (v: unknown, text: string, parentValue?: unknown) => {
+      if (parentValue !== undefined) {
+        setNestedOptionTexts((current) => {
+          const previous = current.get(v);
+          return new Map(current).set(v, {
+            text,
+            parentValue,
+            count: (previous?.count ?? 0) + 1,
+          });
+        });
+        return;
+      }
+
+      setOptionTexts((current) => {
+        const previous = current.get(v);
+        return new Map(current).set(v, {
+          text,
+          parentValue,
+          count: (previous?.count ?? 0) + 1,
+        });
+      });
+    },
+    [],
+  );
   const unregisterOptionText = useCallback((v: unknown) => {
-    setOptionTexts((current) => {
-      if (!current.has(v)) return current;
+    setNestedOptionTexts((current) => {
+      const previous = current.get(v);
+      if (!previous) return current;
       const next = new Map(current);
-      next.delete(v);
+      if (previous.count > 1) {
+        next.set(v, { ...previous, count: previous.count - 1 });
+      } else {
+        next.delete(v);
+      }
+      return next;
+    });
+
+    setOptionTexts((current) => {
+      const previous = current.get(v);
+      if (!previous) return current;
+      const next = new Map(current);
+      if (previous.count > 1) {
+        next.set(v, { ...previous, count: previous.count - 1 });
+      } else {
+        next.delete(v);
+      }
       return next;
     });
   }, []);
@@ -343,12 +542,39 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
     },
     [searchQuery],
   );
+  const hasMatchingDescendant = useCallback(
+    (parentValue: unknown) => {
+      if (searchQuery.trim() === "") return false;
+
+      const visited = new Set<unknown>();
+      const findMatch = (ancestor: unknown): boolean => {
+        const allOptions: [unknown, SelectOptionInfo][] = [
+          ...optionTexts,
+          ...nestedOptionTexts,
+        ];
+        for (const [value, option] of allOptions) {
+          if (!Object.is(option.parentValue, ancestor) || visited.has(value)) continue;
+          visited.add(value);
+          if (matchesQuery(option.text) || findMatch(value)) return true;
+        }
+        return false;
+      };
+
+      return findMatch(parentValue);
+    },
+    [matchesQuery, nestedOptionTexts, optionTexts, searchQuery],
+  );
   const firstVisibleItem = useMemo(() => {
-    for (const [value, text] of optionTexts) {
-      if (matchesQuery(text)) return value;
+    for (const [value, option] of optionTexts) {
+      if (
+        option.parentValue === undefined &&
+        (matchesQuery(option.text) || hasMatchingDescendant(value))
+      ) {
+        return value;
+      }
     }
     return undefined;
-  }, [optionTexts, matchesQuery]);
+  }, [hasMatchingDescendant, matchesQuery, optionTexts]);
 
   // The row a panel opens on. A select opens on its own answer: the current selection, which
   // is also the row the eye is already looking for. Only once a query narrows the list does
@@ -455,10 +681,27 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
     NonNullable<SelectProps<Value, Multiple>["onOpenChange"]>
   >(
     (next, details) => {
+      if (!next && details.reason === "outside-press" && isNestedPanelTarget(details.event.target)) {
+        // A nested panel is portaled outside the main popup to escape its clipping boundary,
+        // but it still belongs to this select. Let the nested root handle the child press.
+        details.cancel();
+      }
       onOpenChange?.(next, details);
       if (!isControlled && !details.isCanceled) setUncontrolled(next);
     },
-    [isControlled, onOpenChange],
+    [isControlled, isNestedPanelTarget, onOpenChange],
+  );
+  const setOpen = useCallback(
+    (nextOpen: boolean, details?: unknown) => {
+      handleOpenChange(nextOpen, details as never);
+    },
+    [handleOpenChange],
+  );
+  const setValue = useCallback(
+    (nextValue: unknown, details?: unknown) => {
+      handleValueChange(nextValue as never, details as never);
+    },
+    [handleValueChange],
   );
 
   return (
@@ -466,6 +709,12 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
       value={{
         open: isOpen,
         multiple: Boolean(multiple),
+        disabled: Boolean(props.disabled),
+        readOnly: Boolean(props.readOnly),
+        setOpen,
+        setValue,
+        registerNestedPanel,
+        isNestedPanelTarget,
         size,
         triggerVariant,
         setTriggerVariant,
@@ -481,6 +730,7 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
         unregisterOptionText,
         matchesQuery,
         firstVisibleItem,
+        hasMatchingDescendant,
         openingItem,
         activeItem,
         setActiveItem,
@@ -1042,6 +1292,502 @@ export function SelectContent({
   );
 }
 
+type SelectSubOpenChange = NonNullable<
+  ComponentProps<typeof BaseSelect.Root>["onOpenChange"]
+>;
+
+export interface SelectSubProps {
+  children?: ReactNode;
+  open?: boolean;
+  defaultOpen?: boolean;
+  disabled?: boolean;
+  onOpenChange?: SelectSubOpenChange;
+}
+
+/** Groups a nested select panel and its trigger. */
+export function SelectSub({
+  children,
+  open,
+  defaultOpen = false,
+  disabled = false,
+  onOpenChange,
+}: SelectSubProps) {
+  const select = useContext(SelectContext);
+  const parentPanelOpen = useContext(SelectSubItemContext);
+  const isControlled = open !== undefined;
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
+  const [triggerValue] = useState<symbol>(() => Symbol("select-sub-trigger"));
+  const triggerRef = useRef<HTMLElement>(null);
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  const openTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const closeDelayRef = useRef(100);
+  const openedByHoverRef = useRef(false);
+  const setTriggerNode = useCallback((node: HTMLElement | null) => {
+    triggerRef.current = node;
+    setAnchor((current) => (current === node ? current : node));
+  }, []);
+  const parentPanelAvailable = parentPanelOpen === null || parentPanelOpen.open;
+  const currentOpen =
+    select.open && parentPanelAvailable && (isControlled ? Boolean(open) : uncontrolledOpen);
+  const resolvedDisabled =
+    disabled || select.disabled || select.readOnly || !parentPanelAvailable;
+
+  const cancelOpen = useCallback(() => {
+    if (openTimerRef.current !== null) {
+      clearTimeout(openTimerRef.current);
+      openTimerRef.current = null;
+    }
+  }, []);
+  const cancelClose = useCallback(() => {
+    if (closeTimerRef.current !== null) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  }, []);
+  const setCloseDelay = useCallback((delay: number) => {
+    closeDelayRef.current = delay;
+  }, []);
+
+  const handleOpenChange = useCallback<SelectSubOpenChange>(
+    (nextOpen, details) => {
+      cancelOpen();
+      cancelClose();
+      onOpenChange?.(nextOpen, details);
+      if (!details?.isCanceled && !isControlled) setUncontrolledOpen(nextOpen);
+      if (!nextOpen && !details?.isCanceled) {
+        openedByHoverRef.current = false;
+      }
+    },
+    [cancelClose, cancelOpen, isControlled, onOpenChange],
+  );
+
+  const setOpen = useCallback(
+    (nextOpen: boolean, details?: unknown) => {
+      cancelOpen();
+      cancelClose();
+      if (!nextOpen) openedByHoverRef.current = false;
+      handleOpenChange(nextOpen, details as never);
+    },
+    [cancelClose, cancelOpen, handleOpenChange],
+  );
+
+  const openAndFocus = useCallback(() => {
+    if (resolvedDisabled) return;
+    cancelOpen();
+    cancelClose();
+    openedByHoverRef.current = false;
+    handleOpenChange(true, undefined as never);
+  }, [cancelClose, cancelOpen, handleOpenChange, resolvedDisabled]);
+
+  const openFromHover = useCallback(() => {
+    if (resolvedDisabled) return;
+    cancelOpen();
+    cancelClose();
+    openedByHoverRef.current = true;
+    handleOpenChange(true, undefined as never);
+  }, [cancelClose, cancelOpen, handleOpenChange, resolvedDisabled]);
+
+  const scheduleOpen = useCallback(
+    (delay: number) => {
+      if (resolvedDisabled || currentOpen) return;
+      cancelClose();
+      cancelOpen();
+      if (delay <= 0) {
+        openFromHover();
+        return;
+      }
+      openTimerRef.current = setTimeout(openFromHover, delay);
+    },
+    [cancelClose, cancelOpen, currentOpen, openFromHover, resolvedDisabled],
+  );
+
+  const scheduleClose = useCallback(
+    (delay = closeDelayRef.current) => {
+      cancelOpen();
+      if (!openedByHoverRef.current) return;
+      cancelClose();
+      const close = () => {
+        closeTimerRef.current = null;
+        openedByHoverRef.current = false;
+        handleOpenChange(false, undefined as never);
+      };
+      if (delay <= 0) {
+        close();
+        return;
+      }
+      closeTimerRef.current = setTimeout(close, delay);
+    },
+    [cancelClose, cancelOpen, handleOpenChange],
+  );
+
+  const focusTrigger = useCallback(() => {
+    triggerRef.current?.focus();
+  }, []);
+
+  const [wasAvailable, setWasAvailable] = useState(select.open && parentPanelAvailable);
+  const available = select.open && parentPanelAvailable;
+  if (wasAvailable !== available) {
+    setWasAvailable(available);
+    if (!available) {
+      if (!isControlled) setUncontrolledOpen(false);
+    }
+  }
+
+  useEffect(
+    () => () => {
+      cancelOpen();
+      cancelClose();
+    },
+    [cancelClose, cancelOpen],
+  );
+
+  useEffect(() => {
+    if (available) return;
+    cancelOpen();
+    cancelClose();
+    openedByHoverRef.current = false;
+  }, [available, cancelClose, cancelOpen]);
+
+  return (
+    <SelectSubContext.Provider
+      value={{
+        open: currentOpen,
+        disabled: resolvedDisabled,
+        anchor,
+        triggerValue,
+        focusTrigger,
+        setTriggerNode,
+        setOpen,
+        openAndFocus,
+        scheduleOpen,
+        scheduleClose,
+        cancelClose,
+        setCloseDelay,
+      }}
+    >
+      {children}
+    </SelectSubContext.Provider>
+  );
+}
+
+export interface SelectSubTriggerProps
+  extends Omit<
+    SelectItemProps,
+    "children" | "value" | "className" | "disabled" | "label" | "render" | "end"
+  > {
+  children?: ReactNode;
+  className?: string;
+  label?: string;
+  disabled?: boolean;
+  id?: string;
+  /** Open the nested panel after the pointer rests on this row. @default true */
+  openOnHover?: boolean;
+  /** Hover delay in milliseconds. @default 100 */
+  delay?: number;
+  /** Hover close delay in milliseconds. @default 100 */
+  closeDelay?: number;
+}
+
+type SelectSubTriggerClickEvent = Parameters<
+  NonNullable<SelectSubTriggerProps["onClick"]>
+>[0];
+type SelectSubTriggerKeyDownEvent = Parameters<
+  NonNullable<SelectSubTriggerProps["onKeyDown"]>
+>[0];
+
+/** A select row that opens a nested panel. */
+export function SelectSubTrigger({
+  children,
+  className,
+  disabled = false,
+  label,
+  id,
+  onClick: onClickProp,
+  onKeyDown: onKeyDownProp,
+  onPointerMove: onPointerMoveProp,
+  onPointerLeave: onPointerLeaveProp,
+  openOnHover = true,
+  delay = 100,
+  closeDelay = 100,
+  ...props
+}: SelectSubTriggerProps) {
+  const {
+    open: subOpen,
+    disabled: subDisabled,
+    triggerValue,
+    setOpen: setSubOpen,
+    setTriggerNode,
+    openAndFocus,
+    scheduleOpen,
+    scheduleClose,
+    cancelClose,
+    setCloseDelay,
+  } = useSelectSubContext();
+  const resolvedDisabled = disabled || subDisabled;
+  const triggerLabel =
+    typeof label === "string" ? label : typeof children === "string" ? children : undefined;
+
+  useEffect(() => {
+    setCloseDelay(closeDelay);
+  }, [closeDelay, setCloseDelay]);
+
+  const handleClick = (event: SelectSubTriggerClickEvent) => {
+    onClickProp?.(event);
+    if (event.defaultPrevented || resolvedDisabled) return;
+
+    // This row uses a private sentinel value only to participate in the outer select's
+    // composite list. It is a panel trigger, never a selectable value.
+    preventBaseUIHandler(event);
+    setSubOpen(true);
+  };
+
+  const handleKeyDown = (event: SelectSubTriggerKeyDownEvent) => {
+    onKeyDownProp?.(event);
+    if (event.defaultPrevented || resolvedDisabled) return;
+
+    if (event.key === "ArrowRight" || event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      event.stopPropagation();
+      preventBaseUIHandler(event);
+      openAndFocus();
+    }
+  };
+
+  const handlePointerMove: NonNullable<SelectSubTriggerProps["onPointerMove"]> = (event) => {
+    onPointerMoveProp?.(event);
+    if (event.defaultPrevented || resolvedDisabled || !openOnHover) return;
+    if (event.pointerType !== "mouse") return;
+    cancelClose();
+    scheduleOpen(delay);
+  };
+
+  const handlePointerLeave: NonNullable<SelectSubTriggerProps["onPointerLeave"]> = (event) => {
+    onPointerLeaveProp?.(event);
+    if (event.defaultPrevented || resolvedDisabled || !openOnHover) return;
+    scheduleClose(closeDelay);
+  };
+
+  return (
+    <SelectItem
+      {...props}
+      ref={setTriggerNode}
+      id={id}
+      value={triggerValue}
+      label={triggerLabel}
+      disabled={resolvedDisabled}
+      aria-haspopup="listbox"
+      aria-expanded={subOpen}
+      data-popup-open={subOpen || undefined}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+      className={cn("data-[popup-open]:bg-muted data-[popup-open]:text-foreground", className)}
+      end={
+        <ChevronRight
+          aria-hidden
+          className="size-3.5 shrink-0 text-muted-foreground"
+        />
+      }
+    >
+      {children}
+    </SelectItem>
+  );
+}
+
+export interface SelectSubContentProps
+  extends Omit<ComponentProps<typeof BaseSelect.Popup>, "className"> {
+  className?: string;
+  children?: ReactNode;
+  side?: ComponentProps<typeof BaseSelect.Positioner>["side"];
+  align?: ComponentProps<typeof BaseSelect.Positioner>["align"];
+  sideOffset?: number;
+  alignOffset?: number;
+  /** Keep the panel mounted so selected child labels remain available to the trigger. */
+  keepMounted?: boolean;
+}
+
+type SelectSubContentKeyDownEvent = Parameters<
+  NonNullable<SelectSubContentProps["onKeyDown"]>
+>[0];
+
+/** A nested select panel whose children are ordinary `SelectItem`s. */
+export function SelectSubContent({
+  className,
+  children,
+  side = "right",
+  align = "start",
+  sideOffset = 8,
+  alignOffset = -4,
+  keepMounted = true,
+  role: roleProp,
+  onKeyDown: onKeyDownProp,
+  ...props
+}: SelectSubContentProps) {
+  const select = useContext(SelectContext);
+  const { registerNestedPanel, registerOptionText, unregisterOptionText } = select;
+  const {
+    open: subOpen,
+    anchor,
+    triggerValue,
+    setOpen: setSubOpen,
+    focusTrigger,
+    scheduleClose,
+    cancelClose,
+  } = useSelectSubContext();
+  const nestedSearchOptions = useMemo(
+    () => collectSelectSearchOptions(children),
+    [children],
+  );
+  const nestedValue = select.multiple ? select.values : (select.values[0] ?? null);
+  const nestedItemsRef = useRef<Map<unknown, HTMLElement>>(new Map());
+  const [nestedItemsVersion, setNestedItemsVersion] = useState(0);
+  const registerItem = useCallback((value: unknown, node: HTMLElement | null) => {
+    const current = nestedItemsRef.current.get(value);
+    if (node) {
+      if (current === node) return;
+      nestedItemsRef.current.set(value, node);
+    } else {
+      if (!current) return;
+      nestedItemsRef.current.delete(value);
+    }
+    setNestedItemsVersion((version) => version + 1);
+  }, []);
+  const nestedItemContext = useMemo<SelectSubItemContextValue>(
+    () => ({ open: subOpen, parentValue: triggerValue, registerItem }),
+    [registerItem, subOpen, triggerValue],
+  );
+  const [openingNestedValues, setOpeningNestedValues] = useState<unknown[]>(select.values);
+  const [wasSubOpen, setWasSubOpen] = useState(subOpen);
+  if (wasSubOpen !== subOpen) {
+    setWasSubOpen(subOpen);
+    if (subOpen) setOpeningNestedValues(select.values);
+  }
+
+  useEffect(() => {
+    for (const option of nestedSearchOptions) {
+      registerOptionText(option.value, option.text, triggerValue);
+    }
+
+    return () => {
+      for (const option of nestedSearchOptions) {
+        unregisterOptionText(option.value);
+      }
+    };
+  }, [nestedSearchOptions, registerOptionText, triggerValue, unregisterOptionText]);
+
+  useEffect(() => {
+    if (!subOpen) return;
+
+    // Base UI focuses the popup itself because nested select options are intentionally
+    // non-tabbable until the composite gives one the active index. Choose the same row a
+    // regular panel would open on, then Base UI owns all subsequent arrow-key navigation.
+    const frame = requestAnimationFrame(() => {
+      focusNestedOption(nestedItemsRef.current, openingNestedValues, select.multiple);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [nestedItemsVersion, openingNestedValues, select.multiple, subOpen]);
+
+  const handleNestedOpenChange: NonNullable<
+    ComponentProps<typeof BaseSelect.Root>["onOpenChange"]
+  > = (nextOpen, details) => {
+    // The nested root owns the actual panel and its dismiss behaviour. An outside press closes
+    // only this panel; a child item press also closes the parent in single-select mode.
+    if (!nextOpen) {
+      setSubOpen(false, details);
+      if (!select.multiple && details.reason === "item-press") {
+        select.setOpen(false, details);
+      }
+    }
+  };
+
+  const handleKeyDown = (event: SelectSubContentKeyDownEvent) => {
+    onKeyDownProp?.(event);
+    if (event.defaultPrevented) return;
+
+    if (event.key === "ArrowLeft" || event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      setSubOpen(false);
+      requestAnimationFrame(focusTrigger);
+    }
+  };
+
+  const handlePointerEnter: NonNullable<SelectSubContentProps["onPointerEnter"]> = (event) => {
+    props.onPointerEnter?.(event);
+    if (!event.defaultPrevented) cancelClose();
+  };
+
+  const handlePointerLeave: NonNullable<SelectSubContentProps["onPointerLeave"]> = (event) => {
+    props.onPointerLeave?.(event);
+    if (!event.defaultPrevented) scheduleClose();
+  };
+
+  const setNestedPanelNode = useCallback(
+    (node: HTMLElement | null) => registerNestedPanel(node),
+    [registerNestedPanel],
+  );
+
+  const options = (
+    <SelectSubItemContext.Provider value={nestedItemContext}>
+      <BaseSelect.List
+        data-select-sub-options
+        aria-multiselectable={select.multiple || undefined}
+        className="flex min-w-0 flex-col"
+      >
+        {children}
+      </BaseSelect.List>
+    </SelectSubItemContext.Provider>
+  );
+
+  return (
+    <BaseSelect.Root
+      open={subOpen}
+      value={nestedValue as never}
+      multiple={select.multiple}
+      modal={false}
+      readOnly={select.readOnly}
+      onOpenChange={handleNestedOpenChange}
+      onValueChange={(nextValue, details) => select.setValue(nextValue, details)}
+    >
+      <BaseSelect.Portal>
+        <BaseSelect.Positioner
+          data-slot="select-sub-positioner"
+          ref={setNestedPanelNode}
+          anchor={anchor}
+          positionMethod="fixed"
+          side={side}
+          align={align}
+          alignItemWithTrigger={false}
+          sideOffset={sideOffset}
+          alignOffset={alignOffset}
+          className="z-50 outline-none"
+        >
+          <BaseSelect.Popup
+            {...props}
+            data-slot="select-sub-content"
+            role={roleProp ?? "presentation"}
+            onKeyDown={handleKeyDown}
+            onPointerEnter={handlePointerEnter}
+            onPointerLeave={handlePointerLeave}
+            className={cn(
+              "max-h-[min(var(--available-height),18rem)] w-max overflow-y-auto rounded-md border border-border bg-surface p-1 text-foreground shadow-overlay-drop outline-none",
+              SCROLLBAR,
+              "origin-[var(--transform-origin)] blur-0 transition-[opacity,scale,filter] duration-(--duration-base) ease-out",
+              "data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[starting-style]:blur-[3px]",
+              "data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[ending-style]:blur-[2px]",
+              className,
+            )}
+          >
+            {keepMounted || subOpen ? options : null}
+          </BaseSelect.Popup>
+        </BaseSelect.Positioner>
+      </BaseSelect.Portal>
+    </BaseSelect.Root>
+  );
+}
+
 export type SelectItemProps = Omit<
   ComponentProps<typeof BaseSelect.Item>,
   "className" | "disabled"
@@ -1051,8 +1797,10 @@ export type SelectItemProps = Omit<
   className?: string;
   children?: ReactNode;
   disabled?: boolean;
-  /** Optional trailing content in place of the single-select indicator. */
+  /** Optional trailing content in place of the selection indicator. */
   end?: ReactNode;
+  /** Optional element id. */
+  id?: string;
   /** Text used by an ancestor searchable `SelectContent` to match this option. */
   searchValue?: string;
 };
@@ -1078,17 +1826,26 @@ function SelectItemIcon({ icon, size }: { icon?: ReactNode; size: SelectSize }) 
   );
 }
 
-export function SelectItem({
-  className,
-  icon,
-  children,
-  value,
-  disabled = false,
-  end,
-  searchValue,
-  onFocusCapture,
-  ...props
-}: SelectItemProps) {
+export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function SelectItem(
+  {
+    className,
+    icon,
+    children,
+    value,
+    disabled = false,
+    end,
+    searchValue,
+    onClick: onClickProp,
+    onFocusCapture,
+    onMouseDown: onMouseDownProp,
+    onMouseUp: onMouseUpProp,
+    onPointerCancel: onPointerCancelProp,
+    onPointerDown: onPointerDownProp,
+    render: renderProp,
+    ...props
+  },
+  forwardedRef,
+) {
   const {
     multiple,
     size,
@@ -1103,21 +1860,103 @@ export function SelectItem({
     matchesQuery,
     registerOptionText,
     unregisterOptionText,
+    hasMatchingDescendant,
   } = useContext(SelectContext);
+  const nestedPanelContext = useContext(SelectSubItemContext);
+  const nestedPanel = nestedPanelContext !== null;
+  const nestedPanelOpen = nestedPanelContext?.open ?? false;
+  const parentValue = nestedPanelContext?.parentValue;
   const optionText = searchValue ?? (typeof children === "string" ? children : String(value));
-  const hiddenBySearch = !matchesQuery(optionText);
-  const itemDisabled = disabled || hiddenBySearch;
+  const hiddenBySearch = !matchesQuery(optionText) && !hasMatchingDescendant(value);
+  const itemDisabled = disabled || hiddenBySearch || (nestedPanel && !nestedPanelOpen);
+  const pointerStartedRef = useRef(false);
+  const bridgingPointerDownRef = useRef(false);
+  const itemRef = useCallback(
+    (node: HTMLElement | null) => {
+      setForwardedRef(forwardedRef, node);
+      nestedPanelContext?.registerItem(value, node);
+    },
+    [forwardedRef, nestedPanelContext, value],
+  );
 
   useEffect(() => {
-    registerOptionText(value, optionText);
+    registerOptionText(value, optionText, parentValue);
     return () => unregisterOptionText(value);
-  }, [optionText, registerOptionText, unregisterOptionText, value]);
+  }, [optionText, parentValue, registerOptionText, unregisterOptionText, value]);
   const panelActive = open && Object.is(activeItem, value);
 
   useEffect(() => {
     registerIcon(value, icon);
     return () => unregisterIcon(value);
   }, [icon, registerIcon, unregisterIcon, value]);
+
+  const bridgeMissingPointerDown = useCallback((target: HTMLElement) => {
+    if (bridgingPointerDownRef.current || !target.isConnected) return;
+
+    const view = target.ownerDocument.defaultView;
+    if (!view) return;
+
+    bridgingPointerDownRef.current = true;
+    try {
+      const event =
+        typeof view.PointerEvent === "function"
+          ? new view.PointerEvent("pointerdown", {
+              bubbles: true,
+              button: 0,
+              isPrimary: true,
+              pointerType: "mouse",
+            })
+          : new view.MouseEvent("pointerdown", { bubbles: true, button: 0 });
+      target.dispatchEvent(event);
+    } finally {
+      bridgingPointerDownRef.current = false;
+    }
+  }, []);
+
+  const handlePointerDown: NonNullable<SelectItemProps["onPointerDown"]> = (event) => {
+    if (!bridgingPointerDownRef.current) onPointerDownProp?.(event);
+    pointerStartedRef.current = true;
+  };
+
+  const handleMouseDown: NonNullable<SelectItemProps["onMouseDown"]> = (event) => {
+    onMouseDownProp?.(event);
+    if (
+      !event.defaultPrevented &&
+      nestedPanel &&
+      !itemDisabled &&
+      !pointerStartedRef.current &&
+      event.button === 0
+    ) {
+      // Some haptic touchpads synthesize the mouse activation without a pointerdown. Base UI
+      // uses pointerdown to arm its guarded click, so mirror that missing step for nested items.
+      bridgeMissingPointerDown(event.currentTarget);
+    }
+  };
+
+  const handleMouseUp: NonNullable<SelectItemProps["onMouseUp"]> = (event) => {
+    onMouseUpProp?.(event);
+    if (
+      !event.defaultPrevented &&
+      nestedPanel &&
+      !itemDisabled &&
+      !pointerStartedRef.current &&
+      event.button === 0
+    ) {
+      // Keep the fallback working for devices that omit both pointerdown and mousedown.
+      bridgeMissingPointerDown(event.currentTarget);
+    }
+    pointerStartedRef.current = false;
+  };
+
+  const handlePointerCancel: NonNullable<SelectItemProps["onPointerCancel"]> = (event) => {
+    onPointerCancelProp?.(event);
+    pointerStartedRef.current = false;
+  };
+
+  const handleClick: NonNullable<SelectItemProps["onClick"]> = (event) => {
+    onClickProp?.(event);
+    pointerStartedRef.current = false;
+  };
 
   // Register the label so a chip trigger can render the selected value(s) by name.
   useEffect(() => {
@@ -1128,19 +1967,27 @@ export function SelectItem({
   if (multiple) {
     return (
       <BaseSelect.Item
+        ref={itemRef}
         value={value}
         disabled={itemDisabled}
         hidden={hiddenBySearch}
+        render={renderProp}
         data-panel-active={panelActive || undefined}
+        onClick={handleClick}
         onFocusCapture={(event) => {
           onFocusCapture?.(event);
-          if (!event.defaultPrevented) setActiveItem(value);
+          if (!event.defaultPrevented && !nestedPanel) setActiveItem(value);
         }}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onPointerCancel={handlePointerCancel}
+        onPointerDown={handlePointerDown}
         className={cn(
           "flex items-center gap-2.5 rounded-xs px-2.5 py-1.5 outline-none select-none",
           SIZE[size].row,
           "text-muted-foreground",
-          !panelSearch && "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
+          (!panelSearch || nestedPanel) &&
+            "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
           "data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
           "data-[selected]:text-foreground",
           "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
@@ -1148,44 +1995,62 @@ export function SelectItem({
         )}
         {...props}
       >
-        <BaseSelect.ItemIndicator
-          keepMounted
-          className="shrink-0"
-          render={(indicatorProps, state) => (
-            <span {...indicatorProps}>
-              <Checkbox
-                checked={state.selected}
-                size="sm"
-                aria-hidden
-                tabIndex={-1}
-                className="pointer-events-none shrink-0"
-              />
-            </span>
-          )}
-        />
-        <SelectItemIcon icon={icon} size={size} />
-        <BaseSelect.ItemText className="flex-1 truncate">{children}</BaseSelect.ItemText>
+        {end ? (
+          <>
+            <SelectItemIcon icon={icon} size={size} />
+            <BaseSelect.ItemText className="flex-1 truncate">{children}</BaseSelect.ItemText>
+            {end}
+          </>
+        ) : (
+          <>
+            <BaseSelect.ItemIndicator
+              keepMounted
+              className="shrink-0"
+              render={(indicatorProps, state) => (
+                <span {...indicatorProps}>
+                  <Checkbox
+                    checked={state.selected}
+                    size="sm"
+                    aria-hidden
+                    tabIndex={-1}
+                    className="pointer-events-none shrink-0"
+                  />
+                </span>
+              )}
+            />
+            <SelectItemIcon icon={icon} size={size} />
+            <BaseSelect.ItemText className="flex-1 truncate">{children}</BaseSelect.ItemText>
+          </>
+        )}
       </BaseSelect.Item>
     );
   }
 
   return (
     <BaseSelect.Item
+      ref={itemRef}
       value={value}
       disabled={itemDisabled}
       hidden={hiddenBySearch}
+      render={renderProp}
       data-panel-active={panelActive || undefined}
-        onFocusCapture={(event) => {
-          onFocusCapture?.(event);
-          if (!event.defaultPrevented) setActiveItem(value);
-        }}
+      onClick={handleClick}
+      onFocusCapture={(event) => {
+        onFocusCapture?.(event);
+        if (!event.defaultPrevented && !nestedPanel) setActiveItem(value);
+      }}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onPointerCancel={handlePointerCancel}
+      onPointerDown={handlePointerDown}
       className={cn(
         "flex items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
         // Base UI moves this highlight with the keyboard as well as the pointer; it snaps
         // (no transition) so it keeps up with arrow-key navigation rather than lagging.
-        !panelSearch && "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
+        (!panelSearch || nestedPanel) &&
+          "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
         "data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
         "data-[selected]:text-foreground",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
@@ -1206,4 +2071,4 @@ export function SelectItem({
       )}
     </BaseSelect.Item>
   );
-}
+});

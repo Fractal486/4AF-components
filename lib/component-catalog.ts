@@ -145,7 +145,7 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   popover: "Popover and composition parts",
   progress: "Progress, ProgressLabel, ProgressValue",
   radio: "RadioGroup, Radio",
-  select: "Select, SelectTrigger (default/plain), SelectSortTrigger, SelectValue, SelectContent, SelectItem",
+  select: "Select, SelectTrigger (default/plain), SelectSortTrigger, SelectValue, SelectContent, SelectItem, SelectSub, SelectSubTrigger, SelectSubContent",
   "select-aligned": "AlignedSelect, AlignedSelectTrigger (default/plain), AlignedSelectContent, AlignedSelectItem",
   "select-motion": "Select, SelectTrigger, SelectValue, SelectContent, SelectItem",
   "select-motion-search": "MotionSearchSelect and input/content/item parts",

@@ -71,7 +71,7 @@ The catalog currently contains 45 installable UI items. Verify the count and nam
 | `checkbox` | `Checkbox` | Boolean or indeterminate selection with animated tick and optional label. |
 | `radio` | `RadioGroup`, `Radio` | Single-choice selection groups. |
 | `slider` | `Slider` | Numeric input with `bar`, `circle`, and `knob` thumbs, optional ticks/labels, `range` mode with two draggable thumbs, and an opt-in `showValueTooltip` that follows the active thumb during drag. |
-| `select` | `Select`, trigger/content/item parts, `SelectSortTrigger` | Base UI single/multi select, optional panel search and clear footer, compact sort/filter trigger. |
+| `select` | `Select`, trigger/content/item parts, `SelectSortTrigger`, `SelectSub` parts | Base UI single/multi select, optional panel search and clear footer, compact sort/filter trigger, and nested option panels. |
 | `select-aligned` | `AlignedSelect` and trigger/content/item/group parts | A select that opens *on* its trigger: default panel at the trigger's width, plain panel at the longest row plus check slot, selected row landing on the value it replaces, `ChevronsUpDown` glyph. The macOS pop-up button. |
 | `select-search` | `SearchSelect` and input/content/item parts | Editable Combobox trigger with filtering and single/multi selection. |
 | `select-motion` | `Select` and trigger/content/item parts | Button-triggered select with a hand-animated unfolding panel and optional panel search. |
@@ -183,7 +183,8 @@ the pill FLIP-animates as the row moves.
 ### Select family
 
 `SelectSortTrigger` ships inside `select` (there is no `select-sort` item); `clearable` on
-`SelectContent` adds the clear footer.
+`SelectContent` adds the clear footer. `SelectSub`, `SelectSubTrigger`, and `SelectSubContent`
+add nested panels whose child `SelectItem`s use the parent select's value and check state.
 
 | Install name | Trigger | Panel entrance | Search location |
 | --- | --- | --- | --- |

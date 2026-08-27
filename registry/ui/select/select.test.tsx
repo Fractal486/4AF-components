@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import {
@@ -6,6 +6,9 @@ import {
   SelectContent,
   SelectItem,
   SelectSortTrigger,
+  SelectSub,
+  SelectSubContent,
+  SelectSubTrigger,
   SelectTrigger,
   SelectValue,
 } from "./select";
@@ -126,6 +129,267 @@ describe("Base UI Select", () => {
 
     await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "false"));
     expect(trigger).toHaveTextContent("Apple");
+  });
+
+  it("opens a nested panel and commits its options through the outer select", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+
+    render(
+      <Select
+        items={FRUITS}
+        onValueChange={onValueChange}
+        defaultValue="apple"
+      >
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectSub>
+            <SelectSubTrigger>More fruit</SelectSubTrigger>
+            <SelectSubContent>
+              <SelectItem value="banana">Banana</SelectItem>
+              <SelectItem value="mango">Mango</SelectItem>
+            </SelectSubContent>
+          </SelectSub>
+        </SelectContent>
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("combobox", { name: "Fruit" });
+    await user.click(trigger);
+    const subTrigger = screen.getByRole("option", { name: "More fruit" });
+    await user.click(subTrigger);
+
+    const subContent = await waitFor(() => {
+      const content = document.querySelector<HTMLElement>('[data-slot="select-sub-content"]');
+      expect(content).not.toBeNull();
+      return content;
+    });
+    expect(subContent).toHaveAttribute("data-slot", "select-sub-content");
+    expect(
+      document.querySelector('[data-slot="select-content-positioner"]')?.contains(subContent),
+    ).toBe(false);
+    expect(screen.getByRole("option", { name: "Apple" })).toBeInTheDocument();
+    expect(
+      document.querySelector('[data-slot="select-sub-positioner"]'),
+    ).toHaveClass("z-50");
+
+    await user.click(screen.getByRole("option", { name: "Mango" }));
+
+    await waitFor(() => expect(onValueChange).toHaveBeenLastCalledWith("mango", expect.anything()));
+    await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "false"));
+    expect(trigger).toHaveTextContent("Mango");
+
+    await user.click(trigger);
+    await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "true"));
+    expect(trigger).toHaveTextContent("Mango");
+  });
+
+  it("keeps nested multi-select options open and renders their check state", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+
+    render(
+      <Select multiple onValueChange={onValueChange} items={FRUITS}>
+        <SelectTrigger aria-label="Fruits">
+          <SelectValue placeholder="Pick fruits" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectSub>
+            <SelectSubTrigger>More fruit</SelectSubTrigger>
+            <SelectSubContent>
+              <SelectItem value="banana">Banana</SelectItem>
+              <SelectItem value="mango">Mango</SelectItem>
+            </SelectSubContent>
+          </SelectSub>
+        </SelectContent>
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("combobox", { name: "Fruits" });
+    await user.click(trigger);
+    const subTrigger = await screen.findByRole("option", { name: "More fruit" });
+    await user.click(subTrigger);
+    expect(subTrigger.lastElementChild).toBe(subTrigger.querySelector("svg"));
+    const mango = await screen.findByRole("option", { name: "Mango" });
+    await user.click(mango);
+
+    await waitFor(() =>
+      expect(onValueChange).toHaveBeenLastCalledWith(["mango"], expect.anything()),
+    );
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(mango).toHaveAttribute("aria-selected", "true");
+    expect(mango.querySelector('[role="checkbox"]')).toHaveAttribute("aria-checked", "true");
+  });
+
+  it("selects a nested option when a touchpad tap omits pointerdown", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+
+    render(
+      <Select items={FRUITS} defaultValue="apple" onValueChange={onValueChange}>
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectSub>
+            <SelectSubTrigger>More fruit</SelectSubTrigger>
+            <SelectSubContent>
+              <SelectItem value="banana">Banana</SelectItem>
+              <SelectItem value="mango">Mango</SelectItem>
+            </SelectSubContent>
+          </SelectSub>
+        </SelectContent>
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("combobox", { name: "Fruit" });
+    await user.click(trigger);
+    await user.click(await screen.findByRole("option", { name: "More fruit" }));
+    const mango = await screen.findByRole("option", { name: "Mango" });
+
+    fireEvent.mouseDown(mango, { button: 0 });
+    fireEvent.mouseUp(mango, { button: 0 });
+    fireEvent.click(mango, { button: 0, detail: 1 });
+
+    await waitFor(() => expect(onValueChange).toHaveBeenLastCalledWith("mango", expect.anything()));
+    await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "false"));
+    expect(trigger).toHaveTextContent("Mango");
+  });
+
+  it("opens nested options from the keyboard and returns to the parent row", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Select items={FRUITS} defaultValue="apple">
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectSub>
+            <SelectSubTrigger>More fruit</SelectSubTrigger>
+            <SelectSubContent>
+              <SelectItem value="banana">Banana</SelectItem>
+              <SelectItem value="mango">Mango</SelectItem>
+            </SelectSubContent>
+          </SelectSub>
+        </SelectContent>
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("combobox", { name: "Fruit" });
+    await user.click(trigger);
+    await user.keyboard("{ArrowDown}{ArrowRight}");
+
+    const subContent = await waitFor(() => {
+      const content = document.querySelector<HTMLElement>('[data-slot="select-sub-content"]');
+      expect(content).not.toBeNull();
+      return content;
+    });
+    expect(document.activeElement).toBe(
+      subContent?.querySelector('[role="option"]:not([aria-disabled="true"])'),
+    );
+
+    await user.keyboard("{ArrowLeft}");
+    await waitFor(() =>
+      expect(screen.getByRole("option", { name: "More fruit" })).toHaveFocus(),
+    );
+  });
+
+  it("opens a nested panel on its selected option", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Select items={FRUITS} defaultValue="mango">
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectSub>
+            <SelectSubTrigger>More fruit</SelectSubTrigger>
+            <SelectSubContent>
+              <SelectItem value="banana">Banana</SelectItem>
+              <SelectItem value="mango">Mango</SelectItem>
+            </SelectSubContent>
+          </SelectSub>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    await user.click(await screen.findByRole("option", { name: "More fruit" }));
+    await waitFor(() => expect(screen.getByRole("option", { name: "Mango" })).toHaveFocus());
+  });
+
+  it("opens a nested panel from pointer hover", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Select items={FRUITS}>
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectSub>
+            <SelectSubTrigger delay={0} closeDelay={0}>
+              More fruit
+            </SelectSubTrigger>
+            <SelectSubContent>
+              <SelectItem value="banana">Banana</SelectItem>
+            </SelectSubContent>
+          </SelectSub>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    const subTrigger = await screen.findByRole("option", { name: "More fruit" });
+    await user.hover(subTrigger);
+    await waitFor(() => expect(subTrigger).toHaveAttribute("aria-expanded", "true"));
+    expect(screen.getByRole("option", { name: "Banana" })).toBeInTheDocument();
+
+    await user.unhover(subTrigger);
+    await waitFor(() => expect(subTrigger).toHaveAttribute("aria-expanded", "false"));
+  });
+
+  it("commits a nested option from the keyboard like a regular select item", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+
+    render(
+      <Select items={FRUITS} defaultValue="apple" onValueChange={onValueChange}>
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectSub>
+            <SelectSubTrigger>More fruit</SelectSubTrigger>
+            <SelectSubContent>
+              <SelectItem value="banana">Banana</SelectItem>
+              <SelectItem value="mango">Mango</SelectItem>
+            </SelectSubContent>
+          </SelectSub>
+        </SelectContent>
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("combobox", { name: "Fruit" });
+    await user.click(trigger);
+    await user.keyboard("{ArrowDown}{ArrowRight}");
+    await waitFor(() => expect(screen.getByRole("option", { name: "Banana" })).toHaveFocus());
+    await user.keyboard("{ArrowDown}");
+    await waitFor(() => expect(screen.getByRole("option", { name: "Mango" })).toHaveFocus());
+    await user.keyboard("{Enter}");
+
+    await waitFor(() => expect(onValueChange).toHaveBeenLastCalledWith("mango", expect.anything()));
+    await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "false"));
+    expect(trigger).toHaveTextContent("Mango");
   });
 
   it("opens a select on its selected option, and on its first when there is none", async () => {
@@ -345,6 +609,45 @@ describe("Base UI Select", () => {
     await user.clear(input);
     await user.type(input, "zzz");
     expect(await screen.findByText("No results.")).toBeInTheDocument();
+  });
+
+  it("includes rows from nested panels in the panel search", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+
+    render(
+      <Select items={FRUITS} defaultValue="apple" onValueChange={onValueChange}>
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <SelectContent searchable>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectSub>
+            <SelectSubTrigger>More fruit</SelectSubTrigger>
+            <SelectSubContent>
+              <SelectItem value="banana">Banana</SelectItem>
+              <SelectItem value="mango">Mango</SelectItem>
+            </SelectSubContent>
+          </SelectSub>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    const input = await screen.findByRole("textbox", { name: "Search options" });
+    await user.type(input, "mango");
+
+    const subTrigger = screen.getByRole("option", { name: "More fruit" });
+    expect(subTrigger).toHaveAttribute("data-panel-active");
+    expect(screen.queryByRole("option", { name: "Apple" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "Mango" })).not.toBeInTheDocument();
+
+    await user.click(subTrigger);
+    expect(screen.getByRole("option", { name: "Mango" })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "Banana" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("option", { name: "Mango" }));
+    await waitFor(() => expect(onValueChange).toHaveBeenLastCalledWith("mango", expect.anything()));
   });
 
   it("opens panel-search selects on their selected rows", async () => {

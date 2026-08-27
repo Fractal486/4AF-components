@@ -1139,7 +1139,7 @@ export function DropdownMenuSubContent({
   children,
   side = "right",
   align = "start",
-  sideOffset = 4,
+  sideOffset = 8,
   keepMounted = false,
   // Pull up by the popup's own top padding (`p-1`) so the first item lines up with the
   // trigger row rather than sitting a few pixels low.

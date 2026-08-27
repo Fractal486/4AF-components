@@ -873,7 +873,7 @@
     {
       "name": "select",
       "type": "registry:ui",
-      "description": "A single or multi-select on Base UI — keyboard, typeahead and collision-aware positioning — with default and plain trigger variants. Plain panels size to the longest option plus the check slot by default. The panel blurs and scales in from the trigger; multi-select keeps it open while animated checkbox rows are toggled, and an optional panel search filters options in place.",
+      "description": "A single or multi-select on Base UI — keyboard, typeahead and collision-aware positioning — with default and plain trigger variants. Plain panels size to the longest option plus the check slot by default. The panel blurs and scales in from the trigger; multi-select keeps it open while animated checkbox rows are toggled, and optional nested panels and panel search keep related choices in place.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
