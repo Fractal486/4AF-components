@@ -80,7 +80,7 @@ The catalog currently contains 45 installable UI items. Verify the count and nam
 
 | Install name | Main API | Use it for |
 | --- | --- | --- |
-| `input` | `Input` | Default, plain, and underline fields; a 34px/8px default field; compact 6px number steppers; invalid/disabled states. |
+| `input` | `Input` | Default, plain, and underline fields; a 34px/8px default field; an optional decorative `startIcon` on the leading edge; compact 6px number steppers; invalid/disabled states. |
 | `textarea` | `Textarea` | Matching 34px/8px form treatment with an optional 16px custom resize grip using 6px corners. |
 | `switch` | `Switch` | Binary on/off state with a sliding, press-squishing thumb. |
 | `checkbox` | `Checkbox` | Fixed 16px/4px boolean or indeterminate selection with an animated tick and optional label; it has no size axis. |
@@ -197,6 +197,19 @@ press target. The group owns the single outline; the buttons drop theirs. It is
 
 `animateLayout={false}` for a static badge in a list that filters or reorders; otherwise
 the pill FLIP-animates as the row moves.
+
+### Input
+
+`startIcon` takes any node and pins it inside the leading edge of the field; omit it and the
+component renders the bare `<input>` with no wrapper element at all. The glyph is decorative —
+`aria-hidden`, `pointer-events-none`, 16px — so it never earns a name and never steals the click
+that focuses the field. Still label the input itself; do not treat the icon as the label.
+
+The field carries `data-icon-start` and takes its leading padding from that attribute, so the
+padding follows the icon rather than a caller-supplied `className`. `default` and `plain` sit the
+glyph at the field's 12px inset; `underline` has no horizontal padding, so it goes flush. A number
+field composes with it: the icon owns the leading edge, the steppers keep the trailing one, and
+both share the single `data-slot="input-wrapper"` span.
 
 ### Select family
 

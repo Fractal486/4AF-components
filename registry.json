@@ -318,7 +318,7 @@
     {
       "name": "input",
       "type": "registry:ui",
-      "description": "A Base UI input with token-based surfaces, focus states, custom number steppers, and default, plain, and underline variants.",
+      "description": "A Base UI input with token-based surfaces, focus states, an optional leading icon, custom number steppers, and default, plain, and underline variants.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority"

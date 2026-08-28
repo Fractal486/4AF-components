@@ -9,6 +9,9 @@ export const inputVariants = cva(
   [
     "flex h-[34px] w-full min-w-0 rounded-[8px] bg-transparent px-3 py-1 text-sm",
     "text-foreground placeholder:text-muted-foreground",
+    // A leading icon is absolutely positioned over the field, so the text has to step
+    // aside for it: the icon's own inset (12px) plus its 16px box plus an 8px gap.
+    "data-[icon-start]:ps-9",
     "outline-none",
     "transition-[border-color,box-shadow,color,opacity] duration-(--duration-fast) ease-out",
     "disabled:cursor-not-allowed disabled:opacity-50",
@@ -29,8 +32,10 @@ export const inputVariants = cva(
         // exactly and follow the theme: `border` at rest, `border-strong` on hover.
         default: "border border-border hover:border-border-strong",
         plain: "border-0 shadow-none hover:border-0 focus:border-0 focus:shadow-none hover:bg-transparent",
+        // `px-0` pulls the leading icon flush to the edge as well, so the text only has
+        // to clear the 16px glyph plus the same 8px gap.
         underline:
-          "rounded-none border-0 border-b border-b-border px-0 shadow-none hover:border-b-border-strong",
+          "rounded-none border-0 border-b border-b-border px-0 shadow-none hover:border-b-border-strong data-[icon-start]:ps-6",
       },
       // The focus colour. `neutral` is a grey ring that stands apart from the accent;
       // `accent` uses the `--ring` token, so it matches every other focusable control

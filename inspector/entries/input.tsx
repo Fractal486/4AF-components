@@ -1,3 +1,4 @@
+import { Search } from "lucide-react";
 import { Alert } from "@/registry/ui/alert/alert";
 import { Input } from "@/registry/ui/input/input";
 import { bool, defineEntry, select, text } from "../schema";
@@ -14,10 +15,11 @@ export const inputEntry = defineEntry({
     tone: select(TONES, "neutral", "Focus tone"),
     type: select(TYPES, "text"),
     placeholder: text("Type something...", "Placeholder"),
+    startIcon: bool(false, "Leading icon"),
     disabled: bool(false),
     invalid: bool(false),
   },
-  render({ variant, tone, type, placeholder, disabled, invalid }) {
+  render({ variant, tone, type, placeholder, startIcon, disabled, invalid }) {
     return (
       <div className="w-full max-w-sm">
         <Input
@@ -25,6 +27,7 @@ export const inputEntry = defineEntry({
           tone={tone}
           type={type}
           placeholder={placeholder}
+          startIcon={startIcon ? <Search /> : undefined}
           disabled={disabled}
           aria-invalid={invalid ? true : undefined}
           aria-describedby={invalid ? "input-error" : undefined}

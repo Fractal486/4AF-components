@@ -39,6 +39,41 @@ describe("Input", () => {
     expect(input).toBeDisabled();
   });
 
+  it("renders an optional decorative leading icon and steps the text aside", () => {
+    render(
+      <Input
+        aria-label="Search"
+        startIcon={<svg data-testid="search-glyph" />}
+        placeholder="Search"
+      />,
+    );
+
+    const input = screen.getByRole("textbox", { name: "Search" });
+    expect(input).toHaveAttribute("data-icon-start", "true");
+    expect(input.className).toContain("data-[icon-start]:ps-9");
+
+    const icon = screen.getByTestId("search-glyph").parentElement;
+    expect(icon).toHaveAttribute("aria-hidden", "true");
+    // The glyph must never swallow the click that focuses the field.
+    expect(icon?.className).toContain("pointer-events-none");
+  });
+
+  it("pulls the leading icon flush on the underline variant", () => {
+    render(<Input aria-label="Title" variant="underline" startIcon={<svg data-testid="glyph" />} />);
+
+    const input = screen.getByRole("textbox", { name: "Title" });
+    expect(input.className).toContain("data-[icon-start]:ps-6");
+    expect(screen.getByTestId("glyph").parentElement?.className).toContain("start-0");
+  });
+
+  it("omits the icon slot and the wrapper entirely when no icon is given", () => {
+    const { container } = render(<Input aria-label="Name" />);
+
+    expect(container.querySelector("[data-slot=input-icon]")).toBeNull();
+    expect(container.querySelector("[data-slot=input-wrapper]")).toBeNull();
+    expect(screen.getByRole("textbox", { name: "Name" })).not.toHaveAttribute("data-icon-start");
+  });
+
   it("adds accessible custom steppers for number inputs", () => {
     const onChange = vi.fn();
     render(
@@ -66,5 +101,17 @@ describe("Input", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Decrease value" }));
     expect(input).toHaveValue(2);
+  });
+
+  it("composes a leading icon with the number steppers in one wrapper", () => {
+    const { container } = render(
+      <Input aria-label="Amount" type="number" startIcon={<svg data-testid="glyph" />} />,
+    );
+
+    const wrapper = container.querySelector("[data-slot=input-wrapper]");
+    expect(wrapper).toHaveAttribute("data-icon-start", "true");
+    expect(wrapper).toHaveAttribute("data-number-stepper", "true");
+    expect(wrapper).toContainElement(screen.getByTestId("glyph"));
+    expect(screen.getByRole("button", { name: "Increase value" })).toBeInTheDocument();
   });
 });
