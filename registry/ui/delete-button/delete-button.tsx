@@ -4,7 +4,7 @@ import { Check, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
 import { Button, type ButtonProps } from "@/registry/ui/button/button";
-import { buttonContentGap } from "@/registry/ui/button/button.variants";
+import { buttonContentGap } from "@/registry/ui/ui/button.variants";
 import { Morph } from "@/registry/ui/morph/morph";
 
 /**

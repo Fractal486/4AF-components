@@ -241,12 +241,24 @@
     {
       "name": "table-of-contents-scroll",
       "type": "registry:lib",
-      "description": "Smoothly centers a table-of-contents entry selected by an external scroll root.",
+      "description": "Table-of-contents scroll helpers for endpoint padding, active-entry centering, and overflow-edge affordances.",
       "files": [
         {
           "path": "registry/lib/table-of-contents-scroll.ts",
           "type": "registry:lib",
           "target": "@lib/table-of-contents-scroll.ts"
+        }
+      ]
+    },
+    {
+      "name": "table-of-contents-tracking",
+      "type": "registry:lib",
+      "description": "Shared heading tracking and click-to-scroll behavior for table-of-contents variants.",
+      "files": [
+        {
+          "path": "registry/lib/table-of-contents-tracking.ts",
+          "type": "registry:lib",
+          "target": "@lib/table-of-contents-tracking.ts"
         }
       ]
     },
@@ -787,7 +799,8 @@
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/table-of-contents-scroll.json"
+        "http://localhost:3000/r/table-of-contents-scroll.json",
+        "http://localhost:3000/r/table-of-contents-tracking.json"
       ],
       "files": [
         {
@@ -812,7 +825,8 @@
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/table-of-contents-scroll.json"
+        "http://localhost:3000/r/table-of-contents-scroll.json",
+        "http://localhost:3000/r/table-of-contents-tracking.json"
       ],
       "files": [
         {

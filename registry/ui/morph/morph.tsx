@@ -54,6 +54,29 @@ export function Morph<K extends string>({
   const transition = reduceMotion ? { duration: 0 } : spring.clean;
   const keys = Object.keys(items) as K[];
 
+  // A single state has nothing to reserve against. Keeping a hidden copy in that case
+  // duplicates readable text in the DOM (and makes assistive/query consumers see the same
+  // label twice), while providing no layout stability or animation benefit.
+  if (keys.length === 1) {
+    return (
+      <span data-slot="morph" className={cn("relative inline-grid place-items-center", className)}>
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.span
+            key={activeKey}
+            className="inline-grid place-items-center whitespace-nowrap"
+            variants={morph}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={transition}
+          >
+            {items[activeKey]}
+          </motion.span>
+        </AnimatePresence>
+      </span>
+    );
+  }
+
   return (
     // Every item lives in the same single grid cell, so the cell is as wide and as tall
     // as the largest of them and the box never changes size. `relative` also anchors

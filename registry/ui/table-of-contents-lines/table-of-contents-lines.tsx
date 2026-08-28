@@ -1,12 +1,9 @@
 "use client";
 
 import {
-  useEffect,
   useMemo,
   useRef,
-  useState,
   type ComponentProps,
-  type MouseEvent,
   type ReactNode,
   type RefObject,
 } from "react";
@@ -15,6 +12,7 @@ import {
   useCenterActiveTableOfContentsItem,
   useTableOfContentsEdgePadding,
 } from "@/registry/lib/table-of-contents-scroll";
+import { useTableOfContentsTracking } from "@/registry/lib/table-of-contents-tracking";
 import {
   tableOfContentsLinesVariants,
   type TableOfContentsLinesVariants,
@@ -37,9 +35,6 @@ export interface TableOfContentsLinesProps
   rootRef?: RefObject<HTMLElement | null>;
 }
 
-/** Fallback for browsers that do not emit `scrollend` after programmatic smooth scrolling. */
-const SCROLL_SETTLE_DELAY = 120;
-
 export function TableOfContentsLines({
   items,
   rootRef,
@@ -47,133 +42,15 @@ export function TableOfContentsLines({
   ...props
 }: TableOfContentsLinesProps) {
   const navRef = useRef<HTMLElement>(null);
-  const [currentId, setCurrentId] = useState<string>();
-  const [scrollTargetId, setScrollTargetId] = useState<string>();
-  const [settledTargetId, setSettledTargetId] = useState<string>();
-  const scrollCleanupRef = useRef<(() => void) | null>(null);
   const minLevel = useMemo(
     () => (items.length ? Math.min(...items.map((item) => item.level ?? 2)) : 2),
     [items],
   );
-
-  useEffect(
-    () => () => {
-      scrollCleanupRef.current?.();
-    },
-    [],
-  );
-
-  const scrollTo = (event: MouseEvent, id: string) => {
-    const element = document.getElementById(id);
-    if (!element) return;
-    event.preventDefault();
-
-    scrollCleanupRef.current?.();
-    setScrollTargetId(id);
-    setSettledTargetId(undefined);
-
-    const scrollRootElement = rootRef?.current ?? null;
-    const scrollRoot: HTMLElement | Window = scrollRootElement ?? window;
-    let settleTimer = 0;
-    let disposed = false;
-
-    const cleanup = () => {
-      if (disposed) return;
-      disposed = true;
-      window.clearTimeout(settleTimer);
-      scrollRoot.removeEventListener("scroll", scheduleFinish);
-      scrollRoot.removeEventListener("scrollend", finish);
-      if (scrollCleanupRef.current === cleanup) scrollCleanupRef.current = null;
-    };
-    const finish = () => {
-      cleanup();
-      setScrollTargetId((current) => (current === id ? undefined : current));
-      setSettledTargetId(id);
-    };
-    const scheduleFinish = () => {
-      window.clearTimeout(settleTimer);
-      settleTimer = window.setTimeout(finish, SCROLL_SETTLE_DELAY);
-    };
-
-    scrollRoot.addEventListener("scroll", scheduleFinish, { passive: true });
-    scrollRoot.addEventListener("scrollend", finish, { once: true });
-    scrollCleanupRef.current = cleanup;
-
-    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-    element.scrollIntoView?.({ behavior: reduce ? "auto" : "smooth", block: "start" });
-    scheduleFinish();
-  };
-
-  // Cache heading offsets when layout changes, then use a binary search during scroll. The scroll
-  // path reads only scrollTop/scrollY and schedules one state update per animation frame.
-  useEffect(() => {
-    const root = rootRef?.current ?? null;
-    const elements = items.flatMap((item) => {
-      const element = document.getElementById(item.id);
-      return element ? [element] : [];
-    });
-
-    let positions: { id: string; top: number }[] = [];
-    let frame = 0;
-
-    const updateCurrentId = () => {
-      if (positions.length === 0) {
-        setCurrentId((previous) => (previous === undefined ? previous : undefined));
-        return;
-      }
-
-      const scrollPosition = (root?.scrollTop ?? window.scrollY) + 1;
-      let low = 0;
-      let high = positions.length - 1;
-      let match = 0;
-      while (low <= high) {
-        const middle = Math.floor((low + high) / 2);
-        if (positions[middle]!.top <= scrollPosition) {
-          match = middle;
-          low = middle + 1;
-        } else {
-          high = middle - 1;
-        }
-      }
-      const nextId = positions[match]!.id;
-      setCurrentId((previous) => (previous === nextId ? previous : nextId));
-    };
-
-    const measurePositions = () => {
-      const viewportTop = root?.getBoundingClientRect().top ?? 0;
-      const scrollOffset = root?.scrollTop ?? window.scrollY;
-      positions = elements.map((element) => ({
-        id: element.id,
-        top: element.getBoundingClientRect().top - viewportTop + scrollOffset,
-      }));
-      updateCurrentId();
-    };
-
-    const scheduleUpdate = () => {
-      setSettledTargetId((current) => (current === undefined ? current : undefined));
-      if (frame !== 0) return;
-      frame = requestAnimationFrame(() => {
-        frame = 0;
-        updateCurrentId();
-      });
-    };
-
-    const scrollTarget: HTMLElement | Window = root ?? window;
-    scrollTarget.addEventListener("scroll", scheduleUpdate, { passive: true });
-    window.addEventListener("resize", measurePositions);
-    const resizeObserver =
-      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measurePositions);
-    resizeObserver?.observe(root ?? document.documentElement);
-    for (const element of elements) resizeObserver?.observe(element);
-    measurePositions();
-
-    return () => {
-      resizeObserver?.disconnect();
-      window.removeEventListener("resize", measurePositions);
-      scrollTarget.removeEventListener("scroll", scheduleUpdate);
-      if (frame !== 0) cancelAnimationFrame(frame);
-    };
-  }, [items, rootRef]);
+  const { currentId, scrollTargetId, settledTargetId, scrollTo } = useTableOfContentsTracking({
+    items,
+    rootRef,
+    settle: "pin",
+  });
 
   const activeId = scrollTargetId ?? settledTargetId ?? currentId;
   const edgePadding = useTableOfContentsEdgePadding(navRef, items);

@@ -21,6 +21,7 @@
       "@/components/*": ["./components/*"],
       "@/lib/*": ["./lib/*"],
       "@/registry/ui/ui/input.variants": ["./registry/ui/input/input.variants.ts"],
+      "@/registry/ui/ui/button.variants": ["./registry/ui/button/button.variants.ts"],
       "@/registry/*": ["./registry/*"],
       "@/inspector/*": ["./inspector/*"],
       "@/app/*": ["./app/*"],

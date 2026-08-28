@@ -6,7 +6,7 @@ import { motion, useReducedMotion, type HTMLMotionProps } from "motion/react";
 import type { ComponentProps } from "react";
 import { cn } from "@/registry/lib/cn";
 import { PRESS_SCALE, spring } from "@/registry/lib/motion";
-import { buttonVariants, type ButtonVariants } from "@/registry/ui/button/button.variants";
+import { buttonVariants, type ButtonVariants } from "@/registry/ui/ui/button.variants";
 
 /**
  * Pressed does not change the background. Two reasons, and the second is the one that

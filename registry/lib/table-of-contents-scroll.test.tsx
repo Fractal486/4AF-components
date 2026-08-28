@@ -1,7 +1,10 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { useRef, useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { useCenterActiveTableOfContentsItem } from "./table-of-contents-scroll";
+import {
+  useCenterActiveTableOfContentsItem,
+  useTableOfContentsEdgeFade,
+} from "./table-of-contents-scroll";
 
 const ITEMS = [{ id: "first" }, { id: "second" }, { id: "third" }];
 
@@ -26,6 +29,23 @@ function ScrollHarness({ initialActiveId = "first" }: { initialActiveId?: string
         </ul>
       </nav>
     </>
+  );
+}
+
+function EdgeFadeHarness() {
+  const navRef = useRef<HTMLElement>(null);
+  const edges = useTableOfContentsEdgeFade(navRef, ITEMS);
+
+  return (
+    <nav ref={navRef} aria-label="Fade contents" data-top={edges.top} data-bottom={edges.bottom}>
+      <ul>
+        {ITEMS.map((item) => (
+          <li key={item.id} data-toc-id={item.id}>
+            {item.id}
+          </li>
+        ))}
+      </ul>
+    </nav>
   );
 }
 
@@ -109,5 +129,25 @@ describe("useCenterActiveTableOfContentsItem", () => {
     }
 
     expect(nav.scrollTop).toBe(56);
+  });
+});
+
+describe("useTableOfContentsEdgeFade", () => {
+  it("reports only the edges with content past them", () => {
+    render(<EdgeFadeHarness />);
+    const nav = screen.getByRole("navigation", { name: "Fade contents" });
+    Object.defineProperties(nav, {
+      clientHeight: { configurable: true, value: 100 },
+      scrollHeight: { configurable: true, value: 300 },
+    });
+
+    fireEvent.scroll(nav);
+    expect(nav).toHaveAttribute("data-top", "false");
+    expect(nav).toHaveAttribute("data-bottom", "true");
+
+    nav.scrollTop = 200;
+    fireEvent.scroll(nav);
+    expect(nav).toHaveAttribute("data-top", "true");
+    expect(nav).toHaveAttribute("data-bottom", "false");
   });
 });

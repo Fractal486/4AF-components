@@ -8,11 +8,15 @@ description: A focus-trapped Base UI modal with asymmetric enter and exit motion
 
 ## API
 
-**Main exports:** `Dialog` and its content, title, and footer parts; `DialogSteps`, `DialogStep`
+**Main exports:** `Dialog`, `DialogTrigger`, `DialogClose`, and its content, title, and footer
+parts; `DialogSteps`, `DialogStep`, and `DialogPortalContainer`
 
 A centred modal with enter and exit motion and an optional validated multi-step flow.
 
 ## Notes
 
 Base UI owns focus trapping, dismissal, scroll locking, and accessible labelling. Motion
-keeps the popup mounted long enough for the exit animation to finish.
+keeps the popup mounted long enough for the exit animation to finish. `DialogContent` accepts
+`portalContainer` when a caller-owned mount point is needed and `backdropClassName` for extra
+backdrop styling. `DialogSteps` uses compositor-backed layout projection when its phases have
+different sizes.

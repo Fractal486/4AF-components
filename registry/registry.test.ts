@@ -53,6 +53,8 @@ describe("private registry", () => {
       const raw =
         specifier === "@/registry/ui/ui/input.variants"
           ? "registry/ui/input/input.variants"
+          : specifier === "@/registry/ui/ui/button.variants"
+            ? "registry/ui/button/button.variants"
           : specifier.startsWith("@/")
             ? specifier.slice(2)
             : specifier.startsWith(".")
@@ -156,6 +158,23 @@ describe("private registry", () => {
     );
     expect(readFileSync(resolve("registry/ui/textarea/textarea.tsx"), "utf8")).toContain(
       'from "@/registry/ui/ui/input.variants"',
+    );
+  });
+
+  it("installs shared Button variants at the flat UI alias", () => {
+    expect(items.get("button")?.files).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: "registry/ui/button/button.variants.ts",
+          target: "@ui/button.variants.ts",
+        }),
+      ]),
+    );
+    expect(readFileSync(resolve("registry/ui/delete-button/delete-button.tsx"), "utf8")).toContain(
+      'from "@/registry/ui/ui/button.variants"',
+    );
+    expect(readFileSync(resolve("registry/ui/toggle/toggle.tsx"), "utf8")).toContain(
+      'from "@/registry/ui/ui/button.variants"',
     );
   });
 

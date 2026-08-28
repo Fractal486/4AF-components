@@ -20,4 +20,5 @@ resize while the action runs.
 
 Both Table of Contents variants own their constrained navigation rail: set a height with
 `className`, pass `rootRef` for an independently scrolling article, and they will keep the active
-entry centered while hiding only the rail's browser scrollbar.
+entry centered while hiding only the rail's browser scrollbar. Their heading tracking and
+click-to-scroll behavior comes from the shared `table-of-contents-tracking` helper.

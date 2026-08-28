@@ -18,6 +18,29 @@ describe("DialogSteps", () => {
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
+  it("mounts into a custom portal container and accepts backdrop classes", () => {
+    const portal = document.createElement("div");
+    document.body.append(portal);
+
+    render(
+      <Dialog open>
+        <DialogContent
+          showClose={false}
+          portalContainer={portal}
+          backdropClassName="custom-dialog-backdrop"
+        >
+          Portal content
+        </DialogContent>
+      </Dialog>,
+    );
+
+    expect(portal.querySelector('[role="dialog"]')).toBeInTheDocument();
+    expect(portal.querySelector(".custom-dialog-backdrop")).toBeInTheDocument();
+    expect(screen.getByText("Portal content")).toBeInTheDocument();
+
+    portal.remove();
+  });
+
   it("navigates phases with arrows and clickable dots", async () => {
     const user = userEvent.setup();
 

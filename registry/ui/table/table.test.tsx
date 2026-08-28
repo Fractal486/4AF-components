@@ -67,6 +67,37 @@ describe("Table", () => {
     expect(screen.getByText("Alan Turing").closest("tr")).toHaveAttribute("data-selected");
   });
 
+  it("does not bubble selection interactions to a clickable row", () => {
+    const onRowClick = vi.fn();
+    const onRowKeyDown = vi.fn();
+
+    render(
+      <Table selectable rows={["ada"]}>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow
+            value="ada"
+            selectLabel="Select Ada Lovelace"
+            onClick={onRowClick}
+            onKeyDown={onRowKeyDown}
+          >
+            <TableCell>Ada Lovelace</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>,
+    );
+
+    fireEvent.click(rowBox("Ada Lovelace"));
+    fireEvent.keyDown(rowBox("Ada Lovelace"), { key: "Enter" });
+
+    expect(onRowClick).not.toHaveBeenCalled();
+    expect(onRowKeyDown).not.toHaveBeenCalled();
+  });
+
   it("holds a controlled value until its owner moves it", () => {
     const onValueChange = vi.fn();
     render(<People selectable value={[]} onValueChange={onValueChange} />);
@@ -188,6 +219,11 @@ describe("Table", () => {
     // One placeholder per declared column, plus the selection column's empty cell.
     expect(container.querySelectorAll('[data-slot="skeleton"]')).toHaveLength(3);
     expect(bodyRows()[0]!.children).toHaveLength(2);
+    expect(bodyRows()[0]).toHaveClass(
+      "data-[slot=table-skeleton-row]:hover:bg-transparent",
+      "dark:data-[slot=table-skeleton-row]:hover:bg-transparent",
+    );
+    expect(container.querySelector('[data-slot="skeleton"]')).toHaveClass("max-w-full");
 
     // Nothing to order or select yet.
     expect(selectAll()).toBeDisabled();

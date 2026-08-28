@@ -42,6 +42,8 @@ These entries install transitively:
 | `slot` | Local helper for `asChild` composition. |
 | `motion` | Shared Motion spring and easing presets. |
 | `use-action` | `useAction` — the run/pending/outcome/revert machine behind `ActionButton`, `ActionToggle`, `DropdownMenuActionItem`, and the command palette action rows. Use it directly for anything else that runs and reports. |
+| `table-of-contents-scroll` | Endpoint padding, active-entry centering, and optional overflow-edge state for a constrained contents rail. |
+| `table-of-contents-tracking` | Shared heading activation, visibility observation, click-to-scroll settling, and cleanup for contents variants. |
 
 ## Installable catalog
 

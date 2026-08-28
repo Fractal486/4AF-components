@@ -8,9 +8,7 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
-  useRef,
   useState,
   type ComponentProps,
   type ReactNode,
@@ -68,15 +66,23 @@ export const DialogClose = BaseDialog.Close;
 
 const backdropClassName = "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm";
 
+export type DialogPortalContainer = ComponentProps<typeof BaseDialog.Portal>["container"];
+
 export interface DialogContentProps
   extends Omit<ComponentProps<typeof BaseDialog.Popup>, "className" | "render"> {
   className?: string;
+  /** Optional extra classes for the backdrop (for image/full-screen dialogs). */
+  backdropClassName?: string;
+  /** Mount the dialog portal into a caller-owned surface instead of document.body. */
+  portalContainer?: DialogPortalContainer;
   showClose?: boolean;
   children?: ReactNode;
 }
 
 export function DialogContent({
   className,
+  backdropClassName: customBackdropClassName,
+  portalContainer,
   children,
   showClose = true,
   ...props
@@ -89,7 +95,7 @@ export function DialogContent({
       {open && (
         // keepMounted on the Portal keeps the subtree in the DOM so AnimatePresence, not
         // Base UI, owns when it's torn down.
-        <BaseDialog.Portal keepMounted>
+        <BaseDialog.Portal container={portalContainer} keepMounted>
           <BaseDialog.Backdrop
             render={
               <motion.div
@@ -97,7 +103,7 @@ export function DialogContent({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0, transition: { duration: reduceMotion ? 0 : 0.18 } }}
                 transition={{ duration: reduceMotion ? 0 : 0.25, ease: ease.out }}
-                className={backdropClassName}
+                className={cn(backdropClassName, customBackdropClassName)}
               />
             }
           />
@@ -267,48 +273,15 @@ const stepVariants = {
 };
 
 /**
- * The natural height of the phase currently rendered, so the container can be animated to
- * it. Measured rather than read from `height: auto`, because "auto" isn't a value you can
- * interpolate from.
- *
- * ResizeObserver delivers at the end of a frame but *before* paint, so a new phase is
- * measured and the container's target updated without the old height ever being painted
- * against the new content. The observed element's height doesn't depend on the container's,
- * so this can't feed back into itself.
- */
-function usePhaseHeight() {
-  const ref = useRef<HTMLDivElement>(null);
-  const [height, setHeight] = useState<number>();
-
-  useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
-
-    const observer = new ResizeObserver(([entry]) => {
-      if (!entry) return;
-      setHeight(entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height);
-    });
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
-  return [ref, height] as const;
-}
-
-/**
  * A phased dialog body with clickable progress dots and previous/next arrows.
  *
  * The arriving phase slides a short distance in the direction of travel while fading in
  * through a blur; the phase it replaces is cut on the same frame. See `stepVariants` for
  * why nothing animates on the way out.
  *
- * The body then animates to the new phase's height, which is the one place this component
- * animates a layout property on purpose. `CLAUDE.md` rules that out, and the exception is
- * narrow but real: Motion's layout projection — the sanctioned alternative — fakes the
- * container's size with a transform while the *actual* box jumps, so the popup would
- * re-centre on the first frame and slide out from under its own contents. Animating the
- * real height keeps one source of truth, and the navigation row, the popup's height and its
- * centring all follow from it for free.
+ * The body uses Motion's size layout projection, which animates the visual size with a
+ * compositor transform while the document layout updates immediately. That keeps the
+ * transition smooth without animating the `height` property itself.
  *
  * No AnimatePresence, and that's the point: with no exit to hold, the old phase can
  * unmount immediately, which is what makes overlapping content structurally impossible
@@ -350,11 +323,6 @@ export function DialogSteps({
   }
   const travel = reduceMotion ? 0 : direction;
 
-  const [phaseRef, phaseHeight] = usePhaseHeight();
-  // Clipped only while the height is in flight. Held permanently, it would shave the focus
-  // ring off whichever control sits against the top or bottom edge of the phase.
-  const [resizing, setResizing] = useState(false);
-
   const goToStep = useCallback(
     (nextStep: number) => {
       const next = clampStep(nextStep, phases.length);
@@ -379,28 +347,23 @@ export function DialogSteps({
       {...props}
     >
       <motion.div
-        // `initial={false}` so the first measurement lands without animating from nothing.
-        initial={false}
-        animate={{ height: phaseHeight ?? "auto" }}
+        // Motion's layout projection uses transforms for the size transition; unlike an
+        // explicit height animation, it does not force the browser to relayout every frame.
+        layout={reduceMotion ? false : "size"}
+        layoutDependency={activeStep}
         transition={{ duration: reduceMotion ? 0 : duration.slow, ease: ease.out }}
-        onAnimationStart={() => setResizing(true)}
-        onAnimationComplete={() => setResizing(false)}
-        className={cn("min-w-0", resizing && "overflow-hidden")}
+        className="min-w-0"
       >
-        {/* Measured separately from the animated box, so what's observed is the phase's
-            natural height and not the height we're currently animating it to. */}
-        <div ref={phaseRef}>
-          <motion.div
-            key={activeStep}
-            custom={travel}
-            variants={stepVariants}
-            initial={swapped ? "enter" : false}
-            animate="active"
-            className="min-w-0"
-          >
-            {phases[activeStep]}
-          </motion.div>
-        </div>
+        <motion.div
+          key={activeStep}
+          custom={travel}
+          variants={stepVariants}
+          initial={swapped ? "enter" : false}
+          animate="active"
+          className="min-w-0"
+        >
+          {phases[activeStep]}
+        </motion.div>
       </motion.div>
 
       <DialogStepsNavigation

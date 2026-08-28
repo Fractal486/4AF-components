@@ -12,6 +12,9 @@ export default defineConfig({
       "@/registry/ui/ui/input.variants": fileURLToPath(
         new URL("./registry/ui/input/input.variants.ts", import.meta.url),
       ),
+      "@/registry/ui/ui/button.variants": fileURLToPath(
+        new URL("./registry/ui/button/button.variants.ts", import.meta.url),
+      ),
       "@": root,
     },
   },

@@ -399,11 +399,15 @@ export function TableBody({ className, children, ...props }: ComponentProps<"tbo
           ? Array.from({ length: loadingRows }, (_, row) => (
               // No `value`, so these rows get the selection column's empty cell and no
               // checkbox: there is nothing yet to select.
-              <TableRow key={`skeleton-${row}`} data-slot="table-skeleton-row">
+              <TableRow
+                key={`skeleton-${row}`}
+                data-slot="table-skeleton-row"
+                className="data-[slot=table-skeleton-row]:hover:bg-transparent dark:data-[slot=table-skeleton-row]:hover:bg-transparent"
+              >
                 {Array.from({ length: columns }, (_, column) => (
                   <TableCell key={column}>
                     <Skeleton
-                      className={cn("h-4", SKELETON_WIDTHS[column % SKELETON_WIDTHS.length])}
+                      className={cn("h-4 max-w-full", SKELETON_WIDTHS[column % SKELETON_WIDTHS.length])}
                     />
                   </TableCell>
                 ))}
@@ -521,7 +525,11 @@ export function TableRow({
       )}
 
       {selectable && section !== "header" && (
-        <td className={tableSelectCellVariants({ size, bordered })}>
+        <td
+          className={tableSelectCellVariants({ size, bordered })}
+          onClick={(event) => event.stopPropagation()}
+          onKeyDown={(event) => event.stopPropagation()}
+        >
           {value !== undefined && (
             <span className="flex items-center">
               <Checkbox

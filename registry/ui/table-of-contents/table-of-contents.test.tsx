@@ -233,6 +233,39 @@ describe("TableOfContents", () => {
     root.remove();
   });
 
+  it("keeps tracking when the browser has no scrollIntoView method", () => {
+    vi.stubGlobal("IntersectionObserver", IntersectionObserverStub);
+
+    const root = document.createElement("div");
+    const heading = document.createElement("h2");
+    heading.id = "no-native-scroll";
+    root.append(heading);
+    document.body.append(root);
+    Object.defineProperty(heading, "scrollIntoView", {
+      configurable: true,
+      value: undefined,
+    });
+
+    vi.spyOn(root, "getBoundingClientRect").mockReturnValue({ top: 0 } as DOMRect);
+    vi.spyOn(heading, "getBoundingClientRect").mockReturnValue({ top: 0 } as DOMRect);
+
+    const rootRef = { current: root } as RefObject<HTMLElement | null>;
+    render(
+      <TableOfContents
+        rootRef={rootRef}
+        items={[{ id: heading.id, title: "No native scroll" }]}
+      />,
+    );
+
+    expect(() => fireEvent.click(screen.getByRole("link", { name: "No native scroll" }))).not.toThrow();
+    expect(screen.getByRole("link", { name: "No native scroll" })).toHaveAttribute(
+      "aria-current",
+      "location",
+    );
+
+    root.remove();
+  });
+
   it("keeps the span range while smooth scrolling crosses intermediate headings", () => {
     vi.stubGlobal("IntersectionObserver", IntersectionObserverStub);
 

@@ -17,4 +17,6 @@ motion.
 
 All possible items reserve the same grid cell, so the surrounding control never changes
 size during a swap. AnimatePresence keeps outgoing content alive for its exit animation;
-reduced motion changes the transition duration to zero.
+reduced motion changes the transition duration to zero. When there is only one item, Morph
+skips the hidden sizing copy so the content is exposed exactly once to the DOM and assistive
+technology.

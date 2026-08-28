@@ -63,6 +63,49 @@ export function useTableOfContentsEdgePadding(
 }
 
 /**
+ * Reports which edges of a scrollable contents list have content beyond them. Consumers can use
+ * the booleans for an optional fade or other overflow affordance without coupling the navigation
+ * behavior to a particular visual treatment.
+ */
+export function useTableOfContentsEdgeFade(
+  navRef: RefObject<HTMLElement | null>,
+  items: readonly unknown[],
+): { top: boolean; bottom: boolean } {
+  const [edges, setEdges] = useState({ top: false, bottom: false });
+
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+
+    const measure = () => {
+      const scrollable = nav.scrollHeight > nav.clientHeight + TOC_SCROLL_EPSILON;
+      const next = {
+        top: scrollable && nav.scrollTop > TOC_SCROLL_EPSILON,
+        bottom:
+          scrollable &&
+          nav.scrollTop + nav.clientHeight < nav.scrollHeight - TOC_SCROLL_EPSILON,
+      };
+      setEdges((current) =>
+        current.top === next.top && current.bottom === next.bottom ? current : next,
+      );
+    };
+
+    measure();
+    nav.addEventListener("scroll", measure, { passive: true });
+    const observer =
+      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measure);
+    observer?.observe(nav);
+    for (const row of nav.querySelectorAll<HTMLElement>("[data-toc-id]")) observer?.observe(row);
+    return () => {
+      nav.removeEventListener("scroll", measure);
+      observer?.disconnect();
+    };
+  }, [items, navRef]);
+
+  return edges;
+}
+
+/**
  * Keeps an active contents row near the middle of its own scroll viewport.
  *
  * The document and contents list scroll independently. The caller supplies the document-derived
