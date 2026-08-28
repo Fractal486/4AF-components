@@ -852,19 +852,16 @@ function SettingsPanel({
         <div className="flex flex-col gap-2.5">
           <span className="text-sm text-muted-foreground">Notifications</span>
           <Checkbox
-            size="sm"
             label="Product updates"
             checked={notifs.updates}
             onCheckedChange={(checked) => setNotifs((n) => ({ ...n, updates: checked }))}
           />
           <Checkbox
-            size="sm"
             label="Weekly digest"
             checked={notifs.digest}
             onCheckedChange={(checked) => setNotifs((n) => ({ ...n, digest: checked }))}
           />
           <Checkbox
-            size="sm"
             label="Mentions"
             checked={notifs.mentions}
             onCheckedChange={(checked) => setNotifs((n) => ({ ...n, mentions: checked }))}

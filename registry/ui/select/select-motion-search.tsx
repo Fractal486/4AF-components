@@ -43,9 +43,24 @@ const SCROLLBAR =
  */
 export type SelectSize = "sm" | "md";
 
-const SIZE: Record<SelectSize, { field: string; glyph: string; iconSlot: string; row: string }> = {
-  sm: { field: "h-[30px] text-xs", glyph: "size-3.5", iconSlot: "size-3.5 [&>svg]:size-3.5", row: "min-h-[30px] text-xs" },
-  md: { field: "h-[34px] text-sm", glyph: "size-4", iconSlot: "size-4 [&>svg]:size-4", row: "min-h-[34px] text-sm" },
+const SIZE: Record<
+  SelectSize,
+  { field: string; glyph: string; iconSlot: string; row: string; radius: string }
+> = {
+  sm: {
+    field: "h-[30px] text-xs",
+    glyph: "size-3.5",
+    iconSlot: "size-3.5 [&>svg]:size-3.5",
+    row: "min-h-[30px] text-xs",
+    radius: "rounded-[6px]",
+  },
+  md: {
+    field: "h-[34px] text-sm",
+    glyph: "size-4",
+    iconSlot: "size-4 [&>svg]:size-4",
+    row: "min-h-[34px] text-sm",
+    radius: "rounded-[8px]",
+  },
 };
 
 interface MotionSearchContextValue {
@@ -267,8 +282,9 @@ export function MotionSearchSelectInput({
               />
               <Combobox.Input
                 className={cn(
-                  "w-full rounded-md border border-border bg-surface pr-9 pl-3.5 text-foreground",
+                  "w-full border border-border bg-surface pr-9 pl-3.5 text-foreground",
                   SIZE[size].field,
+                  SIZE[size].radius,
                   "outline-none placeholder:text-muted-foreground",
                   "transition-[border-color,box-shadow,color] duration-(--duration-fast) ease-out",
                   "hover:border-border-strong disabled:cursor-not-allowed disabled:opacity-50",
@@ -518,7 +534,6 @@ export function MotionSearchMultiSelectItem({
           <span {...indicatorProps}>
             <Checkbox
               checked={state.selected}
-              size="sm"
               aria-hidden
               tabIndex={-1}
               className="pointer-events-none shrink-0"

@@ -42,7 +42,7 @@ describe("Base UI Select", () => {
     );
 
     const trigger = screen.getByRole("combobox", { name: "Fruit" });
-    expect(trigger).toHaveClass("h-[34px]");
+    expect(trigger).toHaveClass("h-[34px]", "rounded-[8px]");
     await user.click(trigger);
     expect(await screen.findByRole("option", { name: "Apple" })).toHaveClass("min-h-[34px]");
   });

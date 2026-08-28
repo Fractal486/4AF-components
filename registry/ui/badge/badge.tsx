@@ -12,7 +12,7 @@ import { badgeVariants, type BadgeVariants } from "./badge.variants";
  * A status badge whose glyph and label morph when they change.
  *
  * On a status or content change the library Morph swaps the outgoing glyph and label for
- * the new ones, while the pill springs to its new width. This is a real Motion case, not
+ * the new ones, while the badge springs to its new width. This is a real Motion case, not
  * decoration: the outgoing content has to keep animating after React would unmount it,
  * and the width change is a layout animation (FLIP). Everything animated is compositor-only.
  *
@@ -38,7 +38,7 @@ export interface BadgeProps
   /** Forces a label roll when the text stays the same object but should re-animate. */
   contentKey?: string | number;
   /**
-   * Animate the pill resizing when its content changes (the `layout` projection).
+   * Animate the badge resizing when its content changes (the `layout` projection).
    * Turn it **off** for a static badge inside a list that reorders — otherwise the badge
    * FLIP-animates its own *position* every time an ancestor row moves it, sliding within a
    * row that itself doesn't animate. A decorative label ("Beta") never morphs, so it loses
@@ -51,6 +51,7 @@ export function Badge({
   variant = "solid",
   status = "neutral",
   size = "sm",
+  shape = "rounded",
   children,
   icon,
   showIcon = true,
@@ -79,13 +80,17 @@ export function Badge({
   return (
     <motion.span
       // Full `layout` (not `"size"`): the whole box is projected, which reconciles with the
-      // `popLayout` exit so the pill resizes straight to the new width. `"size"` mis-measures
+      // `popLayout` exit so the badge resizes straight to the new width. `"size"` mis-measures
       // against the briefly-present outgoing label and resizes the wrong way first. Off when
       // `animateLayout` is false — a static badge in a reordering list shouldn't FLIP its
       // position as ancestors move it.
       layout={animateLayout && !reduce}
       transition={reduce ? { duration: 0 } : spring.snappy}
-      className={cn(badgeVariants({ variant, status, size }), "transition-colors duration-(--duration-base)", className)}
+      className={cn(
+        badgeVariants({ variant, status, size, shape }),
+        "transition-colors duration-(--duration-base)",
+        className,
+      )}
       {...rest}
     >
       {dot ? (

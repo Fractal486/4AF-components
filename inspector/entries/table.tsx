@@ -8,6 +8,7 @@ import {
   Table,
   type TableSort,
   TableBody,
+  TableCaption,
   TableCell,
   TableFooter,
   TableHead,
@@ -73,8 +74,9 @@ export const tableEntry = defineEntry({
     scroll: bool(true, "Bounded height"),
     loading: bool(false, "Loading"),
     footer: bool(false, "Footer"),
+    caption: bool(true, "Caption"),
   },
-  render({ size, selectable, selectionBar, bordered, scroll, loading, footer }) {
+  render({ size, selectable, selectionBar, bordered, scroll, loading, footer, caption }) {
     return (
       <TableDemo
         size={size}
@@ -84,6 +86,7 @@ export const tableEntry = defineEntry({
         scroll={scroll}
         loading={loading}
         footer={footer}
+        caption={caption}
       />
     );
   },
@@ -97,6 +100,7 @@ function TableDemo({
   scroll,
   loading,
   footer,
+  caption,
 }: {
   size: (typeof SIZES)[number];
   selectable: boolean;
@@ -105,6 +109,7 @@ function TableDemo({
   scroll: boolean;
   loading: boolean;
   footer: boolean;
+  caption: boolean;
 }) {
   const [selected, setSelected] = useState<string[]>(["4.1.3"]);
   const [sort, setSort] = useState<TableSort | null>(null);
@@ -130,13 +135,13 @@ function TableDemo({
             {/* Real actions, both of them: the count on its own tells you nothing about
                 whether the row is wired up. */}
             <CopyButton
-              size="sm"
+              size="xs"
               variant="ghost"
               value={() => totals.map((release) => release.version).join("\n")}
             >
               Copy
             </CopyButton>
-            <Button size="sm" variant="ghost" onClick={() => setSelected([])}>
+            <Button size="xs" variant="ghost" onClick={() => setSelected([])}>
               Clear
             </Button>
           </>
@@ -149,6 +154,7 @@ function TableDemo({
         value={selected}
         onValueChange={setSelected}
       >
+        {caption && <TableCaption>Release history</TableCaption>}
         <TableHeader>
           <TableRow>
             <TableHead sortKey="version">Version</TableHead>

@@ -62,7 +62,6 @@ export const dialogEntry = defineEntry({
                   {["Product updates", "Weekly digest", "Tips and tutorials"].map((label) => (
                     <Checkbox
                       key={label}
-                      size="sm"
                       defaultChecked={label !== "Tips and tutorials"}
                       label={label}
                     />

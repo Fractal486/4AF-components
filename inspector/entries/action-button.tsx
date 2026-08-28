@@ -6,7 +6,7 @@ export const actionButtonEntry = defineEntry({
   name: "Action Button",
   controls: {
     variant: select(["primary", "outline", "plain", "destructive"], "primary"),
-    size: select(["sm", "md", "lg"], "md"),
+    size: select(["xs", "sm", "md", "lg"], "md"),
     fail: bool(false, "Make it fail"),
     withIcon: bool(true, "Show leading icon"),
     pendingMode: select(["label", "icon"], "label", "Pending content"),

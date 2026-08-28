@@ -16,14 +16,14 @@ export const alignedSelectTriggerVariants = cva(
     variants: {
       variant: {
         default: [
-          "w-full justify-between rounded-md border border-border bg-surface px-3.5",
+          "w-full justify-between border border-border bg-surface px-3.5",
           "hover:border-border-strong data-[popup-open]:border-border-strong",
           "aria-invalid:border-destructive",
         ],
         // Plain keeps the compact control size while removing the field's surface, edge and
         // padding, so the static two-way glyph sits directly after the value.
         plain: [
-          "w-auto justify-start gap-1.5 rounded-md border-0 bg-transparent px-0",
+          "w-auto justify-start gap-1.5 border-0 bg-transparent px-0",
           "hover:border-0 hover:bg-transparent data-[popup-open]:border-0 data-[popup-open]:bg-transparent",
         ],
       },

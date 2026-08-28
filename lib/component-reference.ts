@@ -53,7 +53,7 @@ export const componentReferences = {
     importName: "Badge",
     usage: `import { Badge } from "@/components/ui/badge";
 
-<Badge variant="solid">Approved</Badge>`,
+<Badge variant="solid" shape="pill">Approved</Badge>`,
   },
   button: {
     importName: "Button",
@@ -329,6 +329,7 @@ import { Button } from "@/components/ui/button";
     usage: `import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -336,6 +337,7 @@ import { Button } from "@/components/ui/button";
 } from "@/components/ui/table";
 
 <Table selectable rows={people.map((person) => person.id)} onValueChange={setSelected}>
+  <TableCaption>People</TableCaption>
   <TableHeader>
     <TableRow>
       <TableHead>Name</TableHead>

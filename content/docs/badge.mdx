@@ -15,7 +15,8 @@ and glyph changes powered by the shared `Morph` component.
 
 The default size is `sm`. Boxed badges are 16px high with a 4px radius at `sm`, 20px high with
 a 4px radius at `md`, and 24px high with a 6px radius at `lg`. The `plain` variant remains
-boxless at every size.
+boxless at every size. The default `shape` is `rounded`; use `shape="pill"` for fully rounded
+boxed badges.
 
 ## Variants
 
@@ -23,9 +24,14 @@ boxless at every size.
 with the text and icon in the same, more visible status colour. `outline` has no fill and
 always uses a gray outline; only its text and icon colour changes with `status`.
 
+## Shape
+
+`rounded` preserves the compact corner radius used by default. `pill` gives `solid` and
+`outline` badges a fully rounded shape; it has no visible effect on the boxless `plain` variant.
+
 ## Layout animation
 
-Badge animates its pill resizing when its content changes. Set `animateLayout={false}` for a
+Badge animates its width when its content changes. Set `animateLayout={false}` for a
 static badge inside a list that filters or reorders, such as a Command Palette or table row.
 Otherwise it FLIP-animates its own position as the row moves—sliding within a row that does not
 animate and adding layout cost. A badge whose content actually changes keeps the default.

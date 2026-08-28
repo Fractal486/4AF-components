@@ -4,7 +4,7 @@ import { ButtonGroup } from "@/registry/ui/button-group/button-group";
 import { bool, defineEntry, num, select } from "../schema";
 
 const VARIANTS = ["outline", "primary", "destructive", "ghost"] as const;
-const SIZES = ["sm", "md", "lg"] as const;
+const SIZES = ["xs", "sm", "md", "lg"] as const;
 
 const ACTIONS = [
   { label: "Copy", icon: Copy },
@@ -15,7 +15,7 @@ const ACTIONS = [
 ];
 
 /** Icon-only buttons use the square sizes, so the group stays on one geometry. */
-const ICON_SIZE = { sm: "icon-sm", md: "icon", lg: "icon-lg" } as const;
+const ICON_SIZE = { xs: "icon-xs", sm: "icon-sm", md: "icon", lg: "icon-lg" } as const;
 
 export const buttonGroupEntry = defineEntry({
   slug: "button-group",

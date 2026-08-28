@@ -7,7 +7,7 @@ import { cva, type VariantProps } from "class-variance-authority";
  */
 export const inputVariants = cva(
   [
-    "flex h-[34px] w-full min-w-0 rounded-md bg-transparent px-3 py-1 text-sm",
+    "flex h-[34px] w-full min-w-0 rounded-[8px] bg-transparent px-3 py-1 text-sm",
     "text-foreground placeholder:text-muted-foreground",
     "outline-none",
     "transition-[border-color,box-shadow,color,opacity] duration-(--duration-fast) ease-out",

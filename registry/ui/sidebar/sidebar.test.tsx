@@ -4,6 +4,7 @@ import {
   SidebarHeader,
   SidebarHeaderButton,
   SidebarHeaderRow,
+  SidebarMenuButton,
   Sidebar,
   SidebarPanel,
   SidebarProvider,
@@ -240,5 +241,21 @@ describe("SidebarHeaderButton", () => {
       "data-variant",
       "outline",
     );
+  });
+});
+
+describe("Sidebar button geometry", () => {
+  it("uses the compact and medium shared radius tiers for menu controls", () => {
+    render(
+      <SidebarProvider persist={false}>
+        <SidebarMenuButton size="sm">Compact</SidebarMenuButton>
+        <SidebarMenuButton>Default</SidebarMenuButton>
+        <SidebarMenuButton size="lg">Large</SidebarMenuButton>
+      </SidebarProvider>,
+    );
+
+    expect(screen.getByRole("button", { name: "Compact" })).toHaveClass("rounded-[6px]");
+    expect(screen.getByRole("button", { name: "Default" })).toHaveClass("rounded-[8px]");
+    expect(screen.getByRole("button", { name: "Large" })).toHaveClass("rounded-[8px]");
   });
 });

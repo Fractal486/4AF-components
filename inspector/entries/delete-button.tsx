@@ -2,7 +2,7 @@ import { DeleteButton } from "@/registry/ui/delete-button/delete-button";
 import { defineEntry, num, select, text } from "../schema";
 
 const VARIANTS = ["outline", "ghost", "plain"] as const;
-const SIZES = ["sm", "md", "lg"] as const;
+const SIZES = ["xs", "sm", "md", "lg"] as const;
 
 export const deleteButtonEntry = defineEntry({
   slug: "delete-button",

@@ -56,10 +56,6 @@ const ITEM_VARIANTS: Variants = {
   show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.15, ease: ease.out } },
 };
 
-// Our resting corner is --radius-md (7px), matching the default Button; the keyframes
-// morph to and from it.
-const RADIUS = 7;
-
 // A thin custom scrollbar, shown only when the list overflows. Firefox reads the first
 // two properties; WebKit the pseudo-element rules.
 const SCROLLBAR =
@@ -74,9 +70,27 @@ type Placement = "bottom" | "top";
  */
 export type SelectSize = "sm" | "md";
 
-const SIZE: Record<SelectSize, { field: string; glyph: string; iconSlot: string; row: string }> = {
-  sm: { field: "h-[30px] text-xs", glyph: "size-3.5", iconSlot: "size-3.5 [&>svg]:size-3.5", row: "min-h-[30px] text-xs" },
-  md: { field: "h-[34px] text-sm", glyph: "size-4", iconSlot: "size-4 [&>svg]:size-4", row: "min-h-[34px] text-sm" },
+// The trigger/panel animation uses the same radius as the corresponding Button size.
+const RADIUS: Record<SelectSize, number> = { sm: 6, md: 8 };
+
+const SIZE: Record<
+  SelectSize,
+  { field: string; glyph: string; iconSlot: string; row: string; radius: string }
+> = {
+  sm: {
+    field: "h-[30px] text-xs",
+    glyph: "size-3.5",
+    iconSlot: "size-3.5 [&>svg]:size-3.5",
+    row: "min-h-[30px] text-xs",
+    radius: "rounded-[6px]",
+  },
+  md: {
+    field: "h-[34px] text-sm",
+    glyph: "size-4",
+    iconSlot: "size-4 [&>svg]:size-4",
+    row: "min-h-[34px] text-sm",
+    radius: "rounded-[8px]",
+  },
 };
 
 interface SelectContextValue {
@@ -395,9 +409,10 @@ export interface SelectTriggerProps {
 export function SelectTrigger({ className, children, ...aria }: SelectTriggerProps) {
   const ctx = useSelectContext("SelectTrigger");
   const isTop = ctx.placement === "top";
+  const radius = RADIUS[ctx.size];
   // The edge facing the panel flattens then rounds; the far edge stays rounded. All
   // four are specified so none gets stranded square when the placement flips.
-  const kf = ctx.open ? [0, 0, RADIUS] : [RADIUS, 0, RADIUS];
+  const kf = ctx.open ? [0, 0, radius] : [radius, 0, radius];
   const kfT: Transition = ctx.reduce
     ? INSTANT
     : ctx.open
@@ -417,10 +432,10 @@ export function SelectTrigger({ className, children, ...aria }: SelectTriggerPro
       // once the panel pulls away — the two pinch apart.
       initial={false}
       animate={{
-        borderTopLeftRadius: isTop ? kf : RADIUS,
-        borderTopRightRadius: isTop ? kf : RADIUS,
-        borderBottomLeftRadius: isTop ? RADIUS : kf,
-        borderBottomRightRadius: isTop ? RADIUS : kf,
+        borderTopLeftRadius: isTop ? kf : radius,
+        borderTopRightRadius: isTop ? kf : radius,
+        borderBottomLeftRadius: isTop ? radius : kf,
+        borderBottomRightRadius: isTop ? radius : kf,
       }}
       transition={{
         borderTopLeftRadius: isTop ? kfT : INSTANT,
@@ -429,8 +444,9 @@ export function SelectTrigger({ className, children, ...aria }: SelectTriggerPro
         borderBottomRightRadius: isTop ? INSTANT : kfT,
       }}
       className={cn(
-        "relative z-10 flex w-full cursor-pointer items-center justify-between gap-2 rounded-md border border-border bg-surface px-3.5 text-foreground outline-none transition-colors",
+        "relative z-10 flex w-full cursor-pointer items-center justify-between gap-2 border border-border bg-surface px-3.5 text-foreground outline-none transition-colors",
         SIZE[ctx.size].field,
+        SIZE[ctx.size].radius,
         "hover:border-border-strong focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         // Invalid mirrors the Input's treatment — red border + 3px red ring. Pair with `Alert`.
         "aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",
@@ -571,7 +587,8 @@ export function SelectContent({
   // corner when the placement flips between opens.
   const isTop = ctx.placement === "top";
   const nearGap = open ? 8 : 0;
-  const nearRadius = open ? RADIUS : 0;
+  const radius = RADIUS[ctx.size];
+  const nearRadius = open ? radius : 0;
 
   const gapT: Transition = open
     ? { type: "spring", duration: 0.2, bounce: 0, delay: 0.03 }
@@ -595,10 +612,10 @@ export function SelectContent({
               height: open ? height : 0,
               marginTop: isTop ? 0 : nearGap,
               marginBottom: isTop ? nearGap : 0,
-              borderTopLeftRadius: isTop ? RADIUS : nearRadius,
-              borderTopRightRadius: isTop ? RADIUS : nearRadius,
-              borderBottomLeftRadius: isTop ? nearRadius : RADIUS,
-              borderBottomRightRadius: isTop ? nearRadius : RADIUS,
+              borderTopLeftRadius: isTop ? radius : nearRadius,
+              borderTopRightRadius: isTop ? radius : nearRadius,
+              borderBottomLeftRadius: isTop ? nearRadius : radius,
+              borderBottomRightRadius: isTop ? nearRadius : radius,
             }
       }
       transition={
@@ -626,7 +643,8 @@ export function SelectContent({
         // Same `border` as the trigger so the two edges match, plus the ring-less
         // overlay lift (the full shadow-overlay adds its own hairline, which stacked
         // with this border into a doubled, too-heavy edge).
-        "absolute right-0 left-0 z-20 rounded-md border border-border bg-surface shadow-overlay-drop",
+        "absolute right-0 left-0 z-20 border border-border bg-surface shadow-overlay-drop",
+        SIZE[ctx.size].radius,
         isTop ? "bottom-full" : "top-full",
         className,
       )}
@@ -808,7 +826,6 @@ export function SelectItem({
         {/* The real Checkbox is inert: this option owns the click and listbox ARIA. */}
         <Checkbox
           checked={selected}
-          size="sm"
           aria-hidden
           tabIndex={-1}
           className="pointer-events-none shrink-0"

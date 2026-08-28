@@ -80,7 +80,6 @@ function Control({
       >
         <span className="min-w-0 text-sm text-muted-foreground select-none">{label}</span>
         <Checkbox
-          size="sm"
           checked={value as boolean}
           disabled={disabled}
           onCheckedChange={(checked) => onChange(checked)}

@@ -95,9 +95,9 @@ export function ActionButton({
   // Intentional icon-plus-label actions stay centred in every state.
   const labelOnlyOffset =
     !icon && labelled && status === "idle"
-      ? size === "sm"
+      ? size === "xs" || size === "sm"
         ? "-translate-x-2.5"
-        : size === "icon-sm" || size === "icon" || size === "icon-lg"
+        : size === "icon-xs" || size === "icon-sm" || size === "icon" || size === "icon-lg"
           ? "-translate-x-2"
           : "-translate-x-3"
       : undefined;

@@ -13,7 +13,7 @@ export function ActionButtonDemo({
   pendingMode,
 }: {
   variant: "primary" | "outline" | "plain" | "destructive";
-  size: "sm" | "md" | "lg";
+  size: "xs" | "sm" | "md" | "lg";
   revertAfter: number;
   duration: number;
   fail: boolean;

@@ -46,7 +46,13 @@ export const tableWrapperVariants = cva(
  * row groups are ignored outright. Every rule below therefore lives on the cells, and the
  * row is left owning only its background.
  */
-export const tableVariants = cva("w-full border-separate border-spacing-0 text-sm");
+export const tableVariants = cva("w-full border-separate border-spacing-0 caption-bottom text-sm");
+
+/**
+ * The composable native caption. `caption-bottom` on the table places it below the data while
+ * the browser's native caption treatment keeps it centered.
+ */
+export const tableCaptionVariants = cva("mt-4 text-center text-sm text-muted-foreground");
 
 /**
  * Row density, and the only axis this component has. `md` is a comfortable reading table;
@@ -205,12 +211,12 @@ export const tableCellVariants = cva(["border-b border-border align-middle text-
  * column keeps its header against the right edge without the call site having to say so a
  * second time in flex terms.
  *
- * Both this and the chevron key off `aria-sort`, which lives on the `<th>`: that attribute
+ * Both this and the sort icon key off `aria-sort`, which lives on the `<th>`: that attribute
  * is defined for a column header, not for a button inside one, so the state is read from
  * the cell rather than duplicated onto the control.
  */
 export const tableSortButtonVariants = cva([
-  "inline-flex cursor-pointer items-center gap-1.5 rounded-sm align-middle select-none",
+  "inline-flex cursor-pointer items-center gap-1.5 rounded-[6px] align-middle select-none",
   "transition-[color] duration-(--duration-fast) ease-out",
   "outline-none focus-visible:ring-2 focus-visible:ring-ring",
   "focus-visible:ring-offset-2 focus-visible:ring-offset-background",
@@ -223,11 +229,11 @@ export const tableSortButtonVariants = cva([
 ]);
 
 /**
- * The chevron, dimmer than the label beside it so an unsorted column reads as *offering* a
+ * The sort icon, dimmer than the label beside it so an unsorted column reads as *offering* a
  * sort rather than announcing one. Hovering the header lifts it to the label's weight —
  * that is the affordance — and sorting lifts it past that.
  */
-export const tableSortChevronVariants = cva([
+export const tableSortIconVariants = cva([
   "size-3.5 shrink-0",
   "transition-[color] duration-(--duration-fast) ease-out",
   "text-subtle-foreground group-hover/sort:text-muted-foreground",

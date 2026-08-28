@@ -86,7 +86,7 @@ export function Input({
           aria-label="Increase value"
           disabled={stepperDisabled}
           onClick={() => stepValue("up")}
-          className="flex h-3.5 w-7 items-center justify-center rounded-sm text-subtle-foreground transition-[color] duration-(--duration-fast) ease-out hover:text-foreground focus-visible:ring-2 focus-visible:ring-[oklch(0.390_0_0_/_0.502)] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex h-3.5 w-7 items-center justify-center rounded-[6px] text-subtle-foreground transition-[color] duration-(--duration-fast) ease-out hover:text-foreground focus-visible:ring-2 focus-visible:ring-[oklch(0.390_0_0_/_0.502)] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Chevron direction="up" />
         </button>
@@ -95,7 +95,7 @@ export function Input({
           aria-label="Decrease value"
           disabled={stepperDisabled}
           onClick={() => stepValue("down")}
-          className="flex h-3.5 w-7 items-center justify-center rounded-sm text-subtle-foreground transition-[color] duration-(--duration-fast) ease-out hover:text-foreground focus-visible:ring-2 focus-visible:ring-[oklch(0.390_0_0_/_0.502)] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex h-3.5 w-7 items-center justify-center rounded-[6px] text-subtle-foreground transition-[color] duration-(--duration-fast) ease-out hover:text-foreground focus-visible:ring-2 focus-visible:ring-[oklch(0.390_0_0_/_0.502)] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Chevron direction="down" />
         </button>

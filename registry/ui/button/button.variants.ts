@@ -8,9 +8,11 @@ import { cva, type VariantProps } from "class-variance-authority";
 export const buttonContentGap = cva("", {
   variants: {
     size: {
+      xs: "gap-2",
       sm: "gap-2",
       md: "gap-2.5",
       lg: "gap-3",
+      "icon-xs": "gap-0",
       "icon-sm": "gap-0",
       icon: "gap-0",
       "icon-lg": "gap-0",
@@ -92,12 +94,14 @@ export const buttonVariants = cva(
         link: "text-foreground underline decoration-border underline-offset-4 hover:decoration-current",
       },
       size: {
-        sm: `h-[30px] ${buttonContentGap({ size: "sm" })} rounded-md px-3 text-xs [&_svg]:size-3.5`,
-        md: `h-[34px] ${buttonContentGap({ size: "md" })} rounded-md px-3.5 text-sm [&_svg]:size-4`,
-        lg: `h-[38px] ${buttonContentGap({ size: "lg" })} rounded-lg px-5 text-base [&_svg]:size-4`,
-        "icon-sm": "size-[30px] rounded-md [&_svg]:size-3.5",
-        icon: "size-[34px] rounded-md [&_svg]:size-4",
-        "icon-lg": "size-[38px] rounded-lg [&_svg]:size-4",
+        xs: `h-6 ${buttonContentGap({ size: "xs" })} rounded-[6px] px-2.5 text-xs [&_svg]:size-3.5`,
+        sm: `h-[30px] ${buttonContentGap({ size: "sm" })} rounded-[6px] px-3 text-xs [&_svg]:size-3.5`,
+        md: `h-[34px] ${buttonContentGap({ size: "md" })} rounded-[8px] px-3.5 text-sm [&_svg]:size-4`,
+        lg: `h-[38px] ${buttonContentGap({ size: "lg" })} rounded-[8px] px-5 text-base [&_svg]:size-4`,
+        "icon-xs": "size-6 rounded-[6px] [&_svg]:size-3.5",
+        "icon-sm": "size-[30px] rounded-[6px] [&_svg]:size-3.5",
+        icon: "size-[34px] rounded-[8px] [&_svg]:size-4",
+        "icon-lg": "size-[38px] rounded-[8px] [&_svg]:size-4",
       },
     },
     compoundVariants: [
@@ -110,6 +114,7 @@ export const buttonVariants = cva(
       // text label is a text node — so in `<Button><Plus/>Save</Button>` the svg
       // is both the first and the last element child, and a pure-CSS rule can't
       // tell a leading icon from a trailing one.
+      { size: "xs", class: "data-[icon-start]:ps-2 data-[icon-end]:pe-2" },
       { size: "sm", class: "data-[icon-start]:ps-2.5 data-[icon-end]:pe-2.5" },
       { size: "md", class: "data-[icon-start]:ps-3 data-[icon-end]:pe-3" },
       { size: "lg", class: "data-[icon-start]:ps-4.5 data-[icon-end]:pe-4.5" },
@@ -117,7 +122,7 @@ export const buttonVariants = cva(
       // has no label to widen it. Extend the *hit area* with a pseudo-element
       // rather than the button: the target grows, the design doesn't.
       {
-        size: ["sm", "icon-sm", "icon"],
+        size: ["xs", "sm", "icon-xs", "icon-sm", "icon"],
         class:
           "after:absolute after:top-1/2 after:left-1/2 after:size-10 after:min-w-full after:-translate-1/2",
       },

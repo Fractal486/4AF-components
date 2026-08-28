@@ -1077,7 +1077,6 @@ export function DropdownMenuSelectItem({
             <div {...itemProps}>
               <Checkbox
                 checked={state.checked}
-                size="sm"
                 aria-hidden
                 tabIndex={-1}
                 className="pointer-events-none shrink-0"

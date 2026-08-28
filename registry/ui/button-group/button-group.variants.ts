@@ -34,8 +34,8 @@ export const buttonGroupVariants = cva(
       /** Matches the radius the buttons' size gave them — the group holds no padding,
           so outer and inner radius are the same number. */
       radius: {
-        md: "rounded-md",
-        lg: "rounded-lg",
+        md: "rounded-[6px]",
+        lg: "rounded-[8px]",
       },
     },
     defaultVariants: {

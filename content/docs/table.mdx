@@ -1,6 +1,6 @@
 ---
 title: Table
-description: A semantic data table with optional selection, column sorting, and grid lines.
+description: A semantic data table with optional selection, column sorting, grid lines, and a composable caption.
 ---
 
 <ComponentDemo name="table" />
@@ -8,12 +8,12 @@ description: A semantic data table with optional selection, column sorting, and 
 
 ## API
 
-**Main exports:** `Table`, `TableHeader`, `TableBody`, `TableFooter`, `TableRow`, `TableHead`,
-`TableCell`, `TableSort`
+**Main exports:** `Table`, `TableCaption`, `TableHeader`, `TableBody`, `TableFooter`, `TableRow`,
+`TableHead`, `TableCell`, `TableSort`
 
 Native `<table>` semantics with the library's row rules, two densities, an optional checkbox
-column, optional grid lines, three-step column sorting, and a loading state. The Checkbox in the selection column
-is Base UI's; the rest is plain HTML.
+column, optional composable caption, optional grid lines, three-step column sorting, and a loading state.
+The Checkbox in the selection column is Base UI's; the rest is plain HTML.
 
 ## Props
 
@@ -38,6 +38,25 @@ is Base UI's; the rest is plain HTML.
 | `loading` | `boolean` | `false` | Fill the body with placeholder rows and mark the table busy. |
 | `loadingRows` | `number` | `5` | How many placeholder rows to draw. |
 | `wrapperClassName` | `string` | — | Class for the scroll container. |
+
+## Caption
+
+Use `TableCaption` as the first child when the table needs a concise caption. The visible caption
+is centered below the scrolling table, while the table retains its native caption semantics for
+assistive technology.
+
+```tsx
+<Table>
+  <TableCaption>Release history</TableCaption>
+  <TableHeader>
+    {/* ... */}
+  </TableHeader>
+</Table>
+```
+
+### TableCaption
+
+Accepts the native `<caption>` props. Use `className` to add or override presentation details.
 
 ### TableRow
 
@@ -71,11 +90,13 @@ the selection can still be cleared. The count covers the whole selection, not on
 `rows` covers. The bar fades and slides in from above and leaves the same way; the labels are
 `inert` while it covers them.
 
+Use the button family's `size="xs"` for compact 24px actions in the row.
+
 ```tsx
 <Table
   selectable
   selectionBar
-  selectionActions={<Button size="sm" variant="ghost">Export</Button>}
+  selectionActions={<Button size="xs" variant="ghost">Export</Button>}
 >
 ```
 

@@ -38,6 +38,23 @@ describe("CopyButton", () => {
     expect(button).toHaveClass("size-[30px]");
   });
 
+  it("uses the 24px xs geometry for both labelled and icon-only buttons", () => {
+    render(
+      <>
+        <CopyButton value="hello" size="xs">
+          Copy
+        </CopyButton>
+        <CopyButton value="hello" size="xs" />
+      </>,
+    );
+
+    const buttons = screen.getAllByRole("button");
+    expect(buttons[0]).toHaveAttribute("data-size", "xs");
+    expect(buttons[0]).toHaveClass("h-6", "px-2.5");
+    expect(buttons[1]).toHaveAttribute("data-size", "icon-xs");
+    expect(buttons[1]).toHaveClass("size-6");
+  });
+
   it("uses the standard action-button icon-label gap", () => {
     render(<CopyButton value="hello">Copy</CopyButton>);
 

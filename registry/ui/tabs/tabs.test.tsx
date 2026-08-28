@@ -27,8 +27,8 @@ describe("Tabs", () => {
       </Tabs>,
     );
 
-    expect(container.querySelector('[role="tablist"]')).toHaveClass("rounded-md", "p-0.5");
-    expect(screen.getByRole("tab", { name: "One" })).toHaveClass("rounded-sm");
+    expect(container.querySelector('[role="tablist"]')).toHaveClass("rounded-[8px]", "p-0.5");
+    expect(screen.getByRole("tab", { name: "One" })).toHaveClass("rounded-[6px]");
   });
 
   it("does not force a pointer cursor on tabs", () => {

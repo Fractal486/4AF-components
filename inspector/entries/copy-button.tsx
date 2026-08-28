@@ -2,7 +2,7 @@ import { CopyButton } from "@/registry/ui/copy-button/copy-button";
 import { bool, defineEntry, num, select, text } from "../schema";
 
 const VARIANTS = ["outline", "ghost", "plain", "primary"] as const;
-const SIZES = ["sm", "md", "lg"] as const;
+const SIZES = ["xs", "sm", "md", "lg"] as const;
 
 export const copyButtonEntry = defineEntry({
   slug: "copy-button",

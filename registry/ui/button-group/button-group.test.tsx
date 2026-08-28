@@ -71,6 +71,27 @@ describe("ButtonGroup", () => {
     );
   });
 
+  it("matches its frame radius to the button size tier", () => {
+    const { container, rerender } = render(
+      <ButtonGroup size="sm">
+        <Button>Small</Button>
+        <Button>Button</Button>
+      </ButtonGroup>,
+    );
+
+    const group = () => container.querySelector('[data-slot="button-group"]')!;
+    expect(group()).toHaveClass("rounded-[6px]");
+
+    rerender(
+      <ButtonGroup size="md">
+        <Button>Medium</Button>
+        <Button>Button</Button>
+      </ButtonGroup>,
+    );
+
+    expect(group()).toHaveClass("rounded-[8px]");
+  });
+
   it("draws the outline once, on the group, and drops it on the buttons", () => {
     const { container } = render(
       <ButtonGroup variant="outline">

@@ -5,7 +5,7 @@ import { motion, useReducedMotion, type SVGMotionProps } from "motion/react";
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
 import { ease, PRESS_SCALE, spring } from "@/registry/lib/motion";
-import { checkboxVariants, type CheckboxVariants } from "./checkbox.variants";
+import { checkboxVariants } from "./checkbox.variants";
 
 /**
  * A checkbox.
@@ -24,8 +24,7 @@ import { checkboxVariants, type CheckboxVariants } from "./checkbox.variants";
  * different depending on what you're pointing with.
  */
 export interface CheckboxProps
-  extends Omit<ComponentProps<typeof BaseCheckbox.Root>, "className" | "render" | "nativeButton">,
-    CheckboxVariants {
+  extends Omit<ComponentProps<typeof BaseCheckbox.Root>, "className" | "render" | "nativeButton"> {
   className?: string;
   /**
    * Text beside the box. When set, the box and the text sit inside one `<label>`, so
@@ -40,7 +39,6 @@ export interface CheckboxProps
 
 export function Checkbox({
   className,
-  size,
   disabled,
   label,
   labelClassName,
@@ -61,7 +59,7 @@ export function Checkbox({
       // The render below is a native <button>, so tell Base UI as much — otherwise it
       // warns and would add synthetic button attributes on top of the native ones.
       nativeButton
-      className={cn(checkboxVariants({ size }), className)}
+      className={cn(checkboxVariants(), className)}
       // Element form, not a function: Base UI clones this and injects its own props,
       // so there's no explicit spread to collide with Motion's gesture props.
       render={

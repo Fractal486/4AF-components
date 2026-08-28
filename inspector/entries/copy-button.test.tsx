@@ -4,6 +4,7 @@ import { copyButtonEntry } from "./copy-button";
 describe("CopyButton inspector", () => {
   it("applies the selected button size when the label is enabled", () => {
     expect(copyButtonEntry.controls.size.options).toEqual([
+      "xs",
       "sm",
       "md",
       "lg",

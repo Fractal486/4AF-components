@@ -54,7 +54,7 @@ export type SelectSize = "sm" | "md";
 
 const SIZE: Record<
   SelectSize,
-  { field: string; chip: string; glyph: string; iconSlot: string; row: string }
+  { field: string; chip: string; glyph: string; iconSlot: string; row: string; radius: string }
 > = {
   sm: {
     field: "h-[30px] text-xs",
@@ -62,6 +62,7 @@ const SIZE: Record<
     glyph: "size-3.5",
     iconSlot: "size-3.5 [&_svg]:size-3.5",
     row: "min-h-[30px] text-xs",
+    radius: "rounded-[6px]",
   },
   md: {
     field: "h-[34px] text-sm",
@@ -69,6 +70,7 @@ const SIZE: Record<
     glyph: "size-4",
     iconSlot: "size-4 [&_svg]:size-4",
     row: "min-h-[34px] text-sm",
+    radius: "rounded-[8px]",
   },
 };
 
@@ -853,6 +855,7 @@ export function SelectTrigger({
         // form row lines up with it. `sm` (30px, the default) is the compact toolbar size.
         SIZE[size].field,
         selectTriggerVariants({ variant: resolvedVariant }),
+        SIZE[size].radius,
         className,
       )}
       {...props}
@@ -932,6 +935,7 @@ export function SelectSortTrigger({
       className={cn(
         SIZE[size].chip,
         selectSortTriggerVariants({ variant: resolvedVariant }),
+        SIZE[size].radius,
         resolvedVariant === "default" &&
           (isUnset
             ? "border-dashed border-border-strong bg-surface"
@@ -2012,7 +2016,6 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
                 <span {...indicatorProps}>
                   <Checkbox
                     checked={state.selected}
-                    size="sm"
                     aria-hidden
                     tabIndex={-1}
                     className="pointer-events-none shrink-0"

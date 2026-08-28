@@ -23,10 +23,10 @@ describe("Input", () => {
     expect(onChange).toHaveBeenCalledOnce();
   });
 
-  it("uses the shared 34px medium field height", () => {
+  it("uses the shared 34px medium field geometry", () => {
     render(<Input aria-label="Name" />);
 
-    expect(screen.getByRole("textbox", { name: "Name" })).toHaveClass("h-[34px]");
+    expect(screen.getByRole("textbox", { name: "Name" })).toHaveClass("h-[34px]", "rounded-[8px]");
   });
 
   it("supports an underline-only variant and a disabled cursor", () => {
@@ -55,6 +55,8 @@ describe("Input", () => {
 
     const input = screen.getByRole("spinbutton", { name: "Quantity" });
     expect(input).toHaveAttribute("data-number-stepper", "true");
+    expect(screen.getByRole("button", { name: "Increase value" })).toHaveClass("rounded-[6px]");
+    expect(screen.getByRole("button", { name: "Decrease value" })).toHaveClass("rounded-[6px]");
     expect(screen.getByRole("button", { name: "Increase value" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "Decrease value" })).toBeEnabled();
 

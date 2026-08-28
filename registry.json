@@ -265,7 +265,7 @@
     {
       "name": "button",
       "type": "registry:ui",
-      "description": "Six variants, six sizes, optical icon alignment, and a loading state that doesn't resize.",
+      "description": "Six variants, eight sizes, optical icon alignment, and a loading state that doesn't resize.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -692,7 +692,7 @@
     {
       "name": "badge",
       "type": "registry:ui",
-      "description": "A plain, solid, or gray-outline status badge that morphs its glyph and label on change, and springs to the new width. Uses the shared Morph animation for content swaps and layout motion; tokens for the status tints (amber warning, green success).",
+      "description": "A plain, solid, or gray-outline status badge with rounded or pill-shaped boxed geometry that morphs its glyph and label on change, and springs to the new width. Uses the shared Morph animation for content swaps and layout motion; tokens for the status tints (amber warning, green success).",
       "dependencies": [
         "class-variance-authority",
         "lucide-react",
@@ -763,7 +763,7 @@
     {
       "name": "table",
       "type": "registry:ui",
-      "description": "A semantic data table with two densities, optional grid lines, a pinned header, a loading skeleton state, and an optional selection column whose header can become an action row; column headers cycle through ascending, descending and unsorted.",
+      "description": "A semantic data table with a composable caption, two densities, optional grid lines, a pinned header, a loading skeleton state, and an optional selection column whose header can become an action row; column headers cycle through ascending, descending and unsorted.",
       "dependencies": [
         "class-variance-authority",
         "lucide-react",

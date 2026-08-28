@@ -33,6 +33,26 @@ describe("Badge", () => {
     expect(screen.getByTestId("badge")).toHaveClass(height, radius, gap);
   });
 
+  it("supports a pill shape alongside the current rounded shape", () => {
+    render(
+      <>
+        <Badge data-testid="rounded">Rounded</Badge>
+        <Badge data-testid="pill" shape="pill">
+          Pill
+        </Badge>
+        <Badge data-testid="outline-pill" variant="outline" shape="pill">
+          Outline pill
+        </Badge>
+      </>,
+    );
+
+    expect(screen.getByTestId("rounded")).toHaveClass("rounded-[4px]");
+    expect(screen.getByTestId("rounded")).not.toHaveClass("rounded-full");
+    expect(screen.getByTestId("pill")).toHaveClass("rounded-full");
+    expect(screen.getByTestId("pill")).not.toHaveClass("rounded-[4px]");
+    expect(screen.getByTestId("outline-pill")).toHaveClass("rounded-full");
+  });
+
   it("keeps plain unboxed, gives solid a status wash, and keeps outline gray", () => {
     render(
       <>

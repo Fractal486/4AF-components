@@ -5,10 +5,10 @@ export const tabsListVariants = cva("relative flex items-center", {
     variant: {
       /* A track wraps its tabs, so it must not stretch: the list is a flex child of a
          column, and would otherwise become a page-wide bar.
-         rounded-sm (5px) tabs inside a rounded-md (7px) track with 2px of padding —
-         concentric, so the inner corners sit parallel to the outer ones. The fill is set
-         per `solid` below. */
-      segment: "w-fit self-start gap-0.5 rounded-md p-0.5",
+         6px tabs inside an 8px track with 2px of padding — the shared button radius tiers,
+         so the inner corners sit parallel to the outer ones. The fill is set per `solid`
+         below. */
+      segment: "w-fit self-start gap-0.5 rounded-[8px] p-0.5",
       pill: "w-fit self-start gap-1 rounded-full p-1",
       /* The opposite: a rule *should* run the full width, so the tabs read as sitting
          on a line rather than in a box. A real border, not a shadow — its job here is
@@ -51,11 +51,11 @@ export const tabVariants = cva(
   {
     variants: {
       variant: {
-        segment: "rounded-sm px-2.5 py-1",
+        segment: "rounded-[6px] px-2.5 py-1",
         pill: "rounded-full px-3.5 py-1.5",
         // -1px pulls the tab over the list's border so the indicator sits on top of
         // it rather than below, and the two hairlines don't stack into 2px.
-        underline: "-mb-px rounded-t-md px-3 pt-1.5 pb-2.5",
+        underline: "-mb-px rounded-t-[8px] px-3 pt-1.5 pb-2.5",
       },
     },
     defaultVariants: { variant: "segment" },
@@ -72,7 +72,7 @@ export const tabVariants = cva(
 export const tabIndicatorVariants = cva("pointer-events-none absolute z-0", {
   variants: {
     variant: {
-      segment: "inset-y-0.5 rounded-sm",
+      segment: "inset-y-0.5 rounded-[6px]",
       pill: "inset-y-1 rounded-full",
       underline: "bottom-0 h-px bg-foreground",
     },

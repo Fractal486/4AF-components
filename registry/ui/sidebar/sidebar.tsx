@@ -906,7 +906,7 @@ export function SidebarGroupAction({
       className={cn(
         // The 14px inset centers this 16px glyph on the same vertical line as a menu
         // row's trailing icon inside its 8px right padding.
-        "absolute top-3.5 right-3.5 flex aspect-square w-5 cursor-pointer items-center justify-center rounded-md p-0",
+        "absolute top-3.5 right-3.5 flex aspect-square w-5 cursor-pointer items-center justify-center rounded-[6px] p-0",
         "text-muted-foreground outline-none hover:bg-transparent hover:text-white",
         "focus-visible:ring-2 focus-visible:ring-ring",
         // A 20px control is under the comfortable touch target, so the hit area is
@@ -1096,7 +1096,7 @@ export function SidebarMenuAction({
       className={cn(
         // Keep the Button's shared behavior, but preserve the compact action's
         // existing 20px visual box and row geometry.
-        "absolute top-1.5 right-1.5 z-[1] size-5 cursor-pointer rounded-md p-0",
+        "absolute top-1.5 right-1.5 z-[1] size-5 cursor-pointer rounded-[6px] p-0",
         nested && "top-1 right-[7px]",
         "text-muted-foreground outline-none hover:bg-transparent hover:text-foreground",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0",

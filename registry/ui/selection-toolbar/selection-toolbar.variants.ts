@@ -53,15 +53,15 @@ export const selectionToolbarButtonVariants = cva(
  * a tooltip is — not a panel you opened and will dismiss. Reusing the Popover's real
  * border and heavier lift would make it read as a much bigger commitment than it is.
  *
- * Radii are concentric: the `rounded-md` (7px) corners of the actions inside `p-1` (4px) of
- * padding want 11px, and `rounded-lg` (10px) is the token nearest it. A pixel tight rather
- * than a pixel loose, at a size where neither is visible.
+ * The shell uses the shared 8px button radius. The 6px action corners sit inside `p-1`
+ * (4px) of padding; the slight difference keeps the transient bar compact without inventing
+ * a one-off radius for it.
  *
  * No `overflow-hidden`: a focus ring is drawn 2px outside its button and the padding is
  * only 4px, so clipping here would shave the ring on the first and last action.
  */
 export const selectionToolbarVariants = cva([
-  "z-50 flex w-fit max-w-[calc(100vw-2rem)] items-center gap-0.5 rounded-lg bg-surface p-1",
+  "z-50 flex w-fit max-w-[calc(100vw-2rem)] items-center gap-0.5 rounded-[8px] bg-surface p-1",
   "text-foreground outline-none",
   // A single faint 1px ring plus a soft drop shadow. rgba, not oklch, so the `/` alpha
   // can't trip Tailwind's arbitrary parser.

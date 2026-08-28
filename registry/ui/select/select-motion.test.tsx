@@ -24,7 +24,7 @@ describe("Motion Select", () => {
     );
 
     const trigger = screen.getByRole("button", { name: "Pick a fruit" });
-    expect(trigger).toHaveClass("h-[34px]");
+    expect(trigger).toHaveClass("h-[34px]", "rounded-[8px]");
     fireEvent.click(trigger);
     expect(screen.getByRole("option", { name: "Apple" })).toHaveClass("min-h-[34px]");
   });

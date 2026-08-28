@@ -1,7 +1,9 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { Button } from "@/registry/ui/button/button";
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableFooter,
   TableHead,
@@ -15,9 +17,14 @@ const PEOPLE = [
   { id: "grace", name: "Grace Hopper" },
 ];
 
-function People(props: Partial<React.ComponentProps<typeof Table>>) {
+function People(
+  props: Partial<React.ComponentProps<typeof Table>> & { caption?: React.ReactNode },
+) {
+  const { caption, ...tableProps } = props;
+
   return (
-    <Table rows={PEOPLE.map((person) => person.id)} {...props}>
+    <Table rows={PEOPLE.map((person) => person.id)} {...tableProps}>
+      {caption != null && <TableCaption>{caption}</TableCaption>}
       <TableHeader>
         <TableRow>
           <TableHead>Name</TableHead>
@@ -38,6 +45,43 @@ const selectAll = () => screen.getByRole("checkbox", { name: "Select all rows" }
 const rowBox = (name: string) => screen.getByRole("checkbox", { name: `Select ${name}` });
 
 describe("Table", () => {
+  it("renders a composable caption as the table's first semantic child", () => {
+    const { container } = render(<People caption="People" />);
+
+    const table = container.querySelector("table")!;
+    const nativeCaption = table.querySelector('[data-slot="table-caption-native"]')!;
+    const caption = container.querySelector('[data-slot="table-caption"]')!;
+
+    expect(caption).toHaveTextContent("People");
+    expect(caption).toHaveAttribute("data-slot", "table-caption");
+    expect(caption.tagName).toBe("DIV");
+    expect(nativeCaption).toHaveTextContent("People");
+    expect(nativeCaption).toHaveClass("sr-only");
+    expect(caption.closest('[data-slot="table-wrapper"]')).toBeNull();
+    expect(caption.parentElement).toHaveAttribute("data-slot", "table-container");
+    expect(table).toHaveClass("caption-bottom");
+    expect(caption).toHaveClass("mt-4", "text-sm", "text-muted-foreground");
+    expect(table.firstElementChild).toBe(nativeCaption);
+  });
+
+  it("accepts xs-sized buttons in the selection action row", () => {
+    const { container } = render(
+      <People
+        selectable
+        selectionBar
+        defaultValue={["ada"]}
+        selectionActions={<Button size="xs">Clear</Button>}
+      />,
+    );
+
+    const actions = container.querySelector('[data-slot="table-selection-actions"]')!;
+    const button = screen.getByRole("button", { name: "Clear" });
+
+    expect(actions).toHaveClass("flex", "items-center", "gap-1");
+    expect(button).toHaveAttribute("data-size", "xs");
+    expect(button).toHaveClass("h-6", "px-2.5");
+  });
+
   it("has no selection column until it is asked for one", () => {
     render(<People />);
 
@@ -273,11 +317,14 @@ describe("Table", () => {
 
     const header = screen.getByRole("columnheader", { name: "Name" });
     const control = screen.getByRole("button", { name: "Name" });
+    expect(control).toHaveClass("rounded-[6px]");
     expect(header).toHaveAttribute("aria-sort", "none");
+    expect(control.querySelector("svg")).toHaveClass("lucide-chevrons-up-down");
 
     fireEvent.click(control);
     expect(onSortChange).toHaveBeenLastCalledWith({ column: "name", direction: "asc" });
     expect(header).toHaveAttribute("aria-sort", "ascending");
+    expect(control.querySelector("svg")).toHaveClass("lucide-chevron-up");
 
     fireEvent.click(control);
     expect(onSortChange).toHaveBeenLastCalledWith({ column: "name", direction: "desc" });
@@ -288,6 +335,7 @@ describe("Table", () => {
     fireEvent.click(control);
     expect(onSortChange).toHaveBeenLastCalledWith(null);
     expect(header).toHaveAttribute("aria-sort", "none");
+    expect(control.querySelector("svg")).toHaveClass("lucide-chevrons-up-down");
   });
 
   it("leaves a column without a sortKey unsortable", () => {

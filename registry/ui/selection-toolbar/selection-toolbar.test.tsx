@@ -48,7 +48,7 @@ describe("SelectionToolbar", () => {
     selectText("prose");
 
     // One element, not a dialog wrapping a toolbar — the popup *is* the toolbar.
-    expect(screen.getByRole("toolbar")).toBeInTheDocument();
+    expect(screen.getByRole("toolbar")).toHaveClass("rounded-[8px]");
     expect(screen.getByRole("button", { name: "Copy" })).toBeInTheDocument();
   });
 

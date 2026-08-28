@@ -1058,7 +1058,7 @@ export function CommandPalette({
                   onClick={() => goToDepth(pages.length - 1)}
                   aria-label="Back"
                   className={cn(
-                    "relative flex size-4 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors duration-(--duration-fast) before:absolute before:-inset-y-2 before:-left-2.5 before:w-9 before:rounded-sm before:content-[''] hover:text-foreground focus-visible:text-foreground",
+                    "relative flex size-4 shrink-0 items-center justify-center rounded-[6px] text-muted-foreground transition-colors duration-(--duration-fast) before:absolute before:-inset-y-2 before:-left-2.5 before:w-9 before:rounded-[6px] before:content-[''] hover:text-foreground focus-visible:text-foreground",
                   )}
                 >
                   <CommandIcon>
@@ -1172,7 +1172,7 @@ export function CommandPalette({
                   key={index}
                   type="button"
                   onClick={() => goToDepth(index)}
-                  className="flex shrink-0 items-center gap-1 rounded-sm bg-muted px-2 py-1 text-xs font-medium text-foreground transition-colors duration-(--duration-fast) hover:bg-border"
+                  className="flex shrink-0 items-center gap-1 rounded-[6px] bg-muted px-2 py-1 text-xs font-medium text-foreground transition-colors duration-(--duration-fast) hover:bg-border"
                 >
                   {page.title}
                 </button>
@@ -1548,7 +1548,6 @@ export function CommandPanelRow({
           {badge && <span className="shrink-0">{badge}</span>}
           {checkbox && (
             <Checkbox
-              size="sm"
               checked={selected}
               tabIndex={-1}
               aria-hidden="true"

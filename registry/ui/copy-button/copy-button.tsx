@@ -7,9 +7,10 @@ import {
   type ActionButtonProps,
 } from "@/registry/ui/action-button/action-button";
 
-export type CopyButtonSize = "sm" | "md" | "lg";
+export type CopyButtonSize = "xs" | "sm" | "md" | "lg";
 
-const ICON_SIZE: Record<CopyButtonSize, "icon-sm" | "icon" | "icon-lg"> = {
+const ICON_SIZE: Record<CopyButtonSize, "icon-xs" | "icon-sm" | "icon" | "icon-lg"> = {
+  xs: "icon-xs",
   sm: "icon-sm",
   md: "icon",
   lg: "icon-lg",

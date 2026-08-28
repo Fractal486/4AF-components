@@ -20,10 +20,12 @@ const CYCLE: { status: NonNullable<BadgeProps["status"]>; label: string }[] = [
 export function CyclingBadge({
   variant,
   size,
+  shape,
   dot,
 }: {
   variant: BadgeProps["variant"];
   size: BadgeProps["size"];
+  shape: BadgeProps["shape"];
   dot?: boolean;
 }) {
   const [index, setIndex] = useState(0);
@@ -35,7 +37,7 @@ export function CyclingBadge({
 
   const { status, label } = CYCLE[index] ?? CYCLE[0]!;
   return (
-    <Badge variant={variant} status={status} size={size} dot={dot}>
+    <Badge variant={variant} status={status} size={size} shape={shape} dot={dot}>
       {label}
     </Badge>
   );

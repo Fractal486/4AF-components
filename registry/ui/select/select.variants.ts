@@ -5,7 +5,7 @@ export type SelectTriggerVariant = "default" | "plain";
 /** The standard field trigger: a boxed field or a borderless text control. */
 export const selectTriggerVariants = cva(
   [
-    "group flex items-center gap-2 rounded-md text-foreground",
+    "group flex items-center gap-2 text-foreground",
     "cursor-pointer outline-none select-none",
     "transition-[background-color,border-color] duration-(--duration-base) ease-out",
     "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
@@ -36,7 +36,7 @@ export const selectTriggerVariants = cva(
 /** The compact sort/filter trigger: a chip or a borderless text control. */
 export const selectSortTriggerVariants = cva(
   [
-    "group inline-flex max-w-full cursor-pointer items-center gap-2 rounded-md text-foreground outline-none select-none",
+    "group inline-flex max-w-full cursor-pointer items-center gap-2 text-foreground outline-none select-none",
     "transition-[background-color,border-color] duration-(--duration-base) ease-out",
     "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
     "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",

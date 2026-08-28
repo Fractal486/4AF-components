@@ -297,7 +297,7 @@ function ButtonLoading({ label, children }: { label: string; children: ReactNode
             so a `loading` Button that span differently was the odd one out.
 
             Being text, it takes the button's font size rather than needing its own
-            dimensions, so it scales across `sm`/`md`/`lg` for free. */}
+            dimensions, so it scales across `xs`/`sm`/`md`/`lg` for free. */}
         <AsciiLoader />
         <span className="sr-only">{label}</span>
       </span>

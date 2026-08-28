@@ -110,7 +110,7 @@ describe("Search Select", () => {
     render(<FruitSearch size="md" />);
 
     const input = screen.getByRole("combobox", { name: "Fruit" });
-    expect(input).toHaveClass("h-[34px]");
+    expect(input).toHaveClass("h-[34px]", "rounded-[8px]");
     await user.click(input);
     expect(await screen.findByRole("option", { name: "Apple" })).toHaveClass("min-h-[34px]");
   });

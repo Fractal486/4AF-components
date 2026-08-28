@@ -42,6 +42,7 @@ describe("DeleteButton", () => {
       Array.from(screen.getByRole("button").querySelectorAll('[data-slot="delete-button-content"]'));
 
     for (const [size, gap] of [
+      ["xs", "gap-2"],
       ["sm", "gap-2"],
       ["md", "gap-2.5"],
       ["lg", "gap-3"],

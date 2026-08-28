@@ -5,6 +5,7 @@ import { CyclingBadge } from "./badge-cycling";
 const VARIANTS = ["plain", "solid", "outline"] as const;
 const STATUSES = ["neutral", "info", "success", "warning", "danger", "loading"] as const;
 const SIZES = ["sm", "md", "lg"] as const;
+const SHAPES = ["rounded", "pill"] as const;
 
 export const badgeEntry = defineEntry({
   slug: "badge",
@@ -15,18 +16,21 @@ export const badgeEntry = defineEntry({
     // Changing the status rolls the glyph and label over; changing the label rolls the text.
     status: select(STATUSES, "success"),
     size: select(SIZES, "sm"),
+    // The default compact corners or a fully rounded pill; `plain` remains boxless.
+    shape: select(SHAPES, "rounded"),
     label: text("Approved", "Label"),
     showIcon: bool(true, "Show icon"),
     // A status dot in place of the icon — works on every variant.
     dot: bool(false, "Dot"),
   },
-  render({ variant, status, size, label, showIcon, dot }) {
+  render({ variant, status, size, shape, label, showIcon, dot }) {
     return (
       <div className="flex flex-col items-center gap-8">
         <Badge
           variant={variant as BadgeProps["variant"]}
           status={status as BadgeProps["status"]}
           size={size as BadgeProps["size"]}
+          shape={shape as BadgeProps["shape"]}
           showIcon={showIcon}
           dot={dot}
         >
@@ -37,6 +41,7 @@ export const badgeEntry = defineEntry({
         <CyclingBadge
           variant={variant as BadgeProps["variant"]}
           size={size as BadgeProps["size"]}
+          shape={shape as BadgeProps["shape"]}
           dot={dot}
         />
       </div>

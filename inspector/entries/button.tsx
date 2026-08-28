@@ -3,14 +3,14 @@ import { Button } from "@/registry/ui/button/button";
 import { bool, defineEntry, select, text } from "../schema";
 
 const VARIANTS = ["primary", "outline", "ghost", "plain", "destructive", "link"] as const;
-const SIZES = ["sm", "md", "lg"] as const;
+const SIZES = ["xs", "sm", "md", "lg"] as const;
 
 export const buttonEntry = defineEntry({
   slug: "button",
   name: "Button",
   controls: {
     variant: select(VARIANTS, "primary"),
-    size: select([...SIZES, "icon-sm", "icon", "icon-lg"], "md"),
+    size: select([...SIZES, "icon-xs", "icon-sm", "icon", "icon-lg"], "md"),
     label: text("Deploy", "Label"),
     icon: select(["none", "leading", "trailing"], "none"),
     loading: bool(false),

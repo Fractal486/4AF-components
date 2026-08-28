@@ -11,7 +11,7 @@ import { cva, type VariantProps } from "class-variance-authority";
  */
 export const sidebarMenuButtonVariants = cva(
   [
-    "peer/menu-button flex w-full cursor-pointer items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm",
+    "peer/menu-button flex w-full cursor-pointer items-center gap-2 overflow-hidden p-2 text-left text-sm",
     "text-muted-foreground outline-none",
     "focus-visible:ring-2 focus-visible:ring-ring",
     "transition-[width,height,padding] duration-(--duration-slow) ease-out",
@@ -37,11 +37,11 @@ export const sidebarMenuButtonVariants = cva(
         outline: "bg-background shadow-border",
       },
       size: {
-        default: "h-8 text-sm",
-        sm: "h-7 text-xs",
+        default: "h-8 rounded-[8px] text-sm",
+        sm: "h-7 rounded-[6px] text-xs",
         // Tall rows keep their own padding when collapsed, so a two-line row doesn't
         // get squashed into the rail.
-        lg: "h-12 text-sm group-data-[collapsible=icon]:p-0!",
+        lg: "h-12 rounded-[8px] text-sm group-data-[collapsible=icon]:p-0!",
       },
     },
     defaultVariants: { variant: "default", size: "default" },
@@ -51,7 +51,7 @@ export const sidebarMenuButtonVariants = cva(
 /** The nested row under a parent item. Hidden entirely once the rail collapses. */
 export const sidebarMenuSubButtonVariants = cva(
   [
-    "flex h-7 w-full min-w-0 -translate-x-px cursor-pointer items-center gap-2 overflow-hidden rounded-md px-2 text-left",
+    "flex h-7 w-full min-w-0 -translate-x-px cursor-pointer items-center gap-2 overflow-hidden rounded-[6px] px-2 text-left",
     "text-muted-foreground outline-none",
     "focus-visible:ring-2 focus-visible:ring-ring",
     "hover:bg-muted hover:text-foreground",
@@ -81,7 +81,7 @@ export type SidebarMenuSubButtonVariants = VariantProps<typeof sidebarMenuSubBut
 
 /** Fixed icon-only controls used by the split sidebar rail. */
 export const sidebarRailButtonVariants = cva([
-  "group/rail-button flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md",
+  "group/rail-button flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-[8px]",
   "text-muted-foreground outline-none",
   "focus-visible:ring-2 focus-visible:ring-ring",
   "hover:bg-muted hover:text-foreground",

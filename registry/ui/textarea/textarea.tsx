@@ -89,7 +89,7 @@ export function Textarea({
           tabIndex={-1}
           disabled={disabled}
           onPointerDown={startResize}
-          className="absolute right-1 bottom-1 flex size-4 cursor-ns-resize touch-none items-center justify-center text-subtle-foreground outline-none transition-[color] duration-(--duration-fast) ease-out hover:text-foreground disabled:hidden"
+          className="absolute right-1 bottom-1 flex size-4 cursor-ns-resize touch-none items-center justify-center rounded-[6px] text-subtle-foreground outline-none transition-[color] duration-(--duration-fast) ease-out hover:text-foreground disabled:hidden"
         >
           <svg viewBox="0 0 12 12" fill="none" aria-hidden="true" className="size-3">
             <path

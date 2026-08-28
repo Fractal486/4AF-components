@@ -20,9 +20,13 @@ describe("Button", () => {
   it("uses the revised text and icon-control heights", () => {
     render(
       <>
+        <Button size="xs">Extra small</Button>
         <Button size="sm">Small</Button>
         <Button size="md">Medium</Button>
         <Button size="lg">Large</Button>
+        <Button size="icon-xs" aria-label="Extra small icon">
+          XS
+        </Button>
         <Button size="icon-sm" aria-label="Small icon">
           S
         </Button>
@@ -35,12 +39,14 @@ describe("Button", () => {
       </>,
     );
 
-    expect(screen.getByRole("button", { name: "Small" })).toHaveClass("h-[30px]");
-    expect(screen.getByRole("button", { name: "Medium" })).toHaveClass("h-[34px]");
-    expect(screen.getByRole("button", { name: "Large" })).toHaveClass("h-[38px]");
-    expect(screen.getByRole("button", { name: "Small icon" })).toHaveClass("size-[30px]");
-    expect(screen.getByRole("button", { name: "Medium icon" })).toHaveClass("size-[34px]");
-    expect(screen.getByRole("button", { name: "Large icon" })).toHaveClass("size-[38px]");
+    expect(screen.getByRole("button", { name: "Extra small" })).toHaveClass("h-6", "rounded-[6px]");
+    expect(screen.getByRole("button", { name: "Small" })).toHaveClass("h-[30px]", "rounded-[6px]");
+    expect(screen.getByRole("button", { name: "Medium" })).toHaveClass("h-[34px]", "rounded-[8px]");
+    expect(screen.getByRole("button", { name: "Large" })).toHaveClass("h-[38px]", "rounded-[8px]");
+    expect(screen.getByRole("button", { name: "Extra small icon" })).toHaveClass("size-6", "rounded-[6px]");
+    expect(screen.getByRole("button", { name: "Small icon" })).toHaveClass("size-[30px]", "rounded-[6px]");
+    expect(screen.getByRole("button", { name: "Medium icon" })).toHaveClass("size-[34px]", "rounded-[8px]");
+    expect(screen.getByRole("button", { name: "Large icon" })).toHaveClass("size-[38px]", "rounded-[8px]");
   });
 
   it("keeps the child link and its semantics with asChild", () => {

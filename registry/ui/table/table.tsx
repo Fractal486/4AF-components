@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronUp } from "lucide-react";
+import { ChevronUp, ChevronsUpDown } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   Children,
@@ -20,6 +20,7 @@ import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Skeleton } from "@/registry/ui/skeleton/skeleton";
 import {
   tableCellVariants,
+  tableCaptionVariants,
   tableHeadContentVariants,
   tableHeadVariants,
   tableHeaderRowVariants,
@@ -27,7 +28,7 @@ import {
   tableSelectionBarVariants,
   tableSelectCellVariants,
   tableSortButtonVariants,
-  tableSortChevronVariants,
+  tableSortIconVariants,
   tableVariants,
   tableWrapperVariants,
   type TableVariants,
@@ -228,6 +229,14 @@ export function Table({
   const sortIsControlled = sort !== undefined;
   const activeSort = sortIsControlled ? sort : uncontrolledSort;
 
+  const flattenedChildren = useMemo(() => flattenChildren(children), [children]);
+  const firstChild = flattenedChildren[0];
+  const captionElement =
+    isValidElement<ComponentProps<"caption">>(firstChild) && firstChild.type === TableCaption
+      ? firstChild
+      : null;
+  const tableChildren = captionElement ? flattenedChildren.slice(1) : flattenedChildren;
+
   const toggleSort = useCallback(
     (column: string) => {
       // Three steps and then out: ascending, descending, unsorted. The third press has to
@@ -312,27 +321,62 @@ export function Table({
 
   return (
     <TableContext.Provider value={context}>
-      {/* The scroll container is not optional. A table sizes itself to its content and will
-          push a page sideways rather than wrap, so something has to catch the overflow —
-          and it has to be a wrapper, because `overflow` on the table doesn't apply to the
-          table's own layout box. */}
       <div
-        data-slot="table-wrapper"
-        className={cn(tableWrapperVariants({ bordered }), wrapperClassName)}
+        data-slot="table-container"
+        className="w-full"
       >
-        <table
-          data-slot="table"
-          data-size={size}
-          data-bordered={bordered || undefined}
-          data-selectable={selectable || undefined}
-          aria-busy={loading || undefined}
-          className={cn(tableVariants(), className)}
-          {...props}
+        {/* The scroll container is not optional. A table sizes itself to its content and will
+            push a page sideways rather than wrap, so something has to catch the overflow —
+            and it has to be a wrapper, because `overflow` on the table doesn't apply to the
+            table's own layout box. */}
+        <div
+          data-slot="table-wrapper"
+          className={cn(tableWrapperVariants({ bordered }), wrapperClassName)}
         >
-          {children}
-        </table>
+          <table
+            data-slot="table"
+            data-size={size}
+            data-bordered={bordered || undefined}
+            data-selectable={selectable || undefined}
+            aria-busy={loading || undefined}
+            className={cn(tableVariants(), className)}
+            {...props}
+          >
+            {captionElement && (
+              <caption
+                data-slot="table-caption-native"
+                {...captionElement.props}
+                className="sr-only"
+              />
+            )}
+            {tableChildren}
+          </table>
+        </div>
+        {captionElement && (
+          <div
+            data-slot="table-caption"
+            aria-hidden="true"
+            className={cn(tableCaptionVariants(), captionElement.props.className)}
+          >
+            {captionElement.props.children}
+          </div>
+        )}
       </div>
     </TableContext.Provider>
+  );
+}
+
+/**
+ * The semantic caption slot. Keep it as the first child of `Table`, just as a native
+ * `<caption>` must be the first child of `<table>`; `caption-bottom` makes it render below.
+ */
+export function TableCaption({ className, ...props }: ComponentProps<"caption">) {
+  return (
+    <caption
+      data-slot="table-caption"
+      className={cn(tableCaptionVariants(), className)}
+      {...props}
+    />
   );
 }
 
@@ -507,7 +551,6 @@ export function TableRow({
         >
           <span className="flex items-center">
             <Checkbox
-              size="sm"
               aria-label={selectAllLabel}
               // Nothing to select yet, and an indeterminate box over a body of placeholders
               // would be claiming otherwise.
@@ -533,7 +576,6 @@ export function TableRow({
           {value !== undefined && (
             <span className="flex items-center">
               <Checkbox
-                size="sm"
                 aria-label={selectLabel}
                 checked={isSelected}
                 onCheckedChange={(next) => toggleRow(value, next)}
@@ -570,7 +612,9 @@ export function TableRow({
                   rather than cutting across it. */}
               <span aria-live="polite">{selectedCount} selected</span>
               {selectionActions ? (
-                <span className="flex items-center gap-1">{selectionActions}</span>
+                <span data-slot="table-selection-actions" className="flex items-center gap-1">
+                  {selectionActions}
+                </span>
               ) : null}
             </motion.th>
           )}
@@ -641,19 +685,25 @@ export function TableHead({
             onClick={() => toggleSort(sortKey)}
           >
             {children}
-            {/* The Select trigger's chevron, down to the numbers: same spring, same
-                reduced-motion collapse, so the two flip identically. Up is the resting pose
-                here rather than down — an unsorted column is offering ascending, and the
-                descending state is that same glyph turned over. */}
+            {/* An unsorted column offers both directions. Once active, the chevron indicates
+                the current direction; descending turns it over with the same spring and
+                reduced-motion behavior as the rest of the table control. Returning to the
+                unsorted icon is immediate, so the double-chevron never spins on the way in. */}
             <motion.span
               aria-hidden="true"
               className="inline-flex"
               animate={{ rotate: active && sort?.direction === "desc" ? 180 : 0 }}
               transition={
-                reduceMotion ? { duration: 0 } : { type: "spring", duration: 0.4, bounce: 0 }
+                reduceMotion || !active
+                  ? { duration: 0 }
+                  : { type: "spring", duration: 0.4, bounce: 0 }
               }
             >
-              <ChevronUp className={tableSortChevronVariants()} />
+              {active ? (
+                <ChevronUp className={tableSortIconVariants()} />
+              ) : (
+                <ChevronsUpDown className={tableSortIconVariants()} />
+              )}
             </motion.span>
           </button>
         )}

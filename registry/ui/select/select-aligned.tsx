@@ -54,9 +54,19 @@ import {
 
 type AlignedSelectSize = "sm" | "md";
 
-const SIZE: Record<AlignedSelectSize, { field: string; row: string; glyph: string }> = {
-  sm: { field: "h-[30px] text-xs", row: "min-h-[30px] text-xs", glyph: "size-3.5" },
-  md: { field: "h-[34px] text-sm", row: "min-h-[34px] text-sm", glyph: "size-4" },
+const SIZE: Record<AlignedSelectSize, { field: string; row: string; glyph: string; radius: string }> = {
+  sm: {
+    field: "h-[30px] text-xs",
+    row: "min-h-[30px] text-xs",
+    glyph: "size-3.5",
+    radius: "rounded-[6px]",
+  },
+  md: {
+    field: "h-[34px] text-sm",
+    row: "min-h-[34px] text-sm",
+    glyph: "size-4",
+    radius: "rounded-[8px]",
+  },
 };
 
 interface AlignedSelectContextValue {
@@ -283,6 +293,7 @@ export function AlignedSelectTrigger({
       className={cn(
         SIZE[size].field,
         alignedSelectTriggerVariants({ variant: resolvedVariant }),
+        SIZE[size].radius,
         className,
       )}
       {...props}

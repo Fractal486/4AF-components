@@ -29,8 +29,8 @@ const SEAM: Record<ButtonVariant, NonNullable<ButtonGroupItemVariants["seam"]>> 
   link: "none",
 };
 
-/** The two sizes that round to `rounded-lg`; everything else is `rounded-md`. */
-const LARGE_RADIUS: ButtonSize[] = ["lg", "icon-lg"];
+/** The two sizes that round to 8px; xs and sm use the 6px tier. */
+const LARGE_RADIUS: ButtonSize[] = ["md", "icon", "lg", "icon-lg"];
 
 type ItemProps = {
   className?: string;
