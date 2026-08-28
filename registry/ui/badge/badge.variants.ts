@@ -2,22 +2,19 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 /**
  * `status` sets the ink — the glyph and text colour — and it's the same across variants.
- * `solid` wraps it in a translucent pill (a ~10% wash of the same hue plus a hairline
- * border, fully rounded); `outline` is the same pill hollowed out — a border and no
- * fill. They share the radius on purpose: the two are the same object at two weights,
- * and a boxier outline reads as a different component rather than a quieter one.
- * `bare` drops the box entirely, leaving just the coloured glyph and text. `warning` spends the amber accent (that's what amber is *for*,
- * a caution signal) and `success` the green token; tints are translucent so a boxed badge
- * sits on any surface.
+ * `solid` adds a translucent wash of that status colour while keeping the text and glyph
+ * stronger; `outline` has a neutral gray outline and no fill; `plain` drops the box entirely.
+ * `warning` spends the amber accent (that's what amber is *for*, a caution signal) and
+ * `success` the green token; tints are translucent so a solid badge sits on any surface.
  */
 export const badgeVariants = cva(
   "relative inline-flex shrink-0 items-center overflow-hidden font-medium whitespace-nowrap tabular-nums",
   {
     variants: {
       variant: {
-        solid: "rounded-full border",
-        outline: "rounded-full border",
-        bare: "",
+        plain: "",
+        solid: "",
+        outline: "border border-border-strong",
       },
       status: {
         neutral: "text-muted-foreground",
@@ -28,28 +25,23 @@ export const badgeVariants = cva(
         loading: "text-muted-foreground",
       },
       size: {
-        sm: "gap-1.5 text-2xs",
-        md: "gap-2 text-xs",
+        sm: "gap-1 text-2xs",
+        md: "gap-1.5 text-xs",
+        lg: "gap-2 text-sm",
       },
     },
     compoundVariants: [
-      // Height and padding shape the boxed variants; `bare` stays box-less.
-      { variant: ["solid", "outline"], size: "sm", class: "h-6 px-2" },
-      { variant: ["solid", "outline"], size: "md", class: "h-8 px-3" },
-      // `solid`: border + translucent wash.
-      { variant: "solid", status: "neutral", class: "border-border bg-surface" },
-      { variant: "solid", status: "info", class: "border-primary/20 bg-primary/[0.06]" },
-      { variant: "solid", status: "success", class: "border-success/30 bg-success/10" },
-      { variant: "solid", status: "warning", class: "border-accent-500/30 bg-accent-500/10" },
-      { variant: "solid", status: "danger", class: "border-destructive/30 bg-destructive/10" },
-      { variant: "solid", status: "loading", class: "border-primary/20 bg-primary/[0.06]" },
-      // `outline`: border only, a touch stronger since there's no fill behind it.
-      { variant: "outline", status: "neutral", class: "border-border-strong" },
-      { variant: "outline", status: "info", class: "border-primary/25" },
-      { variant: "outline", status: "success", class: "border-success/40" },
-      { variant: "outline", status: "warning", class: "border-accent-500/40" },
-      { variant: "outline", status: "danger", class: "border-destructive/40" },
-      { variant: "outline", status: "loading", class: "border-primary/25" },
+      // Height, radius, and padding shape the boxed variants; `plain` stays box-less.
+      { variant: ["solid", "outline"], size: "sm", class: "h-4 rounded-[4px] px-1" },
+      { variant: ["solid", "outline"], size: "md", class: "h-5 rounded-[4px] px-1.5" },
+      { variant: ["solid", "outline"], size: "lg", class: "h-6 rounded-[6px] px-2" },
+      // `solid`: a translucent status wash with stronger status-coloured ink.
+      { variant: "solid", status: "neutral", class: "bg-muted-foreground/10" },
+      { variant: "solid", status: "info", class: "bg-primary/[0.06]" },
+      { variant: "solid", status: "success", class: "bg-success/10" },
+      { variant: "solid", status: "warning", class: "bg-accent-500/10" },
+      { variant: "solid", status: "danger", class: "bg-destructive/10" },
+      { variant: "solid", status: "loading", class: "bg-muted-foreground/10" },
     ],
     defaultVariants: { variant: "solid", status: "neutral", size: "sm" },
   },

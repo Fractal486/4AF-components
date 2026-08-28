@@ -11,9 +11,17 @@ description: A compact label for statuses, categories, and counts.
 **Main export:** `Badge`
 
 A status badge with outline and status treatments, an optional icon or dot, and animated label
-and glyph changes.
+and glyph changes powered by the shared `Morph` component.
 
-The default size is `sm`; use `size="md"` for the larger pill.
+The default size is `sm`. Boxed badges are 16px high with a 4px radius at `sm`, 20px high with
+a 4px radius at `md`, and 24px high with a 6px radius at `lg`. The `plain` variant remains
+boxless at every size.
+
+## Variants
+
+`plain` has no background or outline. `solid` uses a semi-transparent status-coloured fill,
+with the text and icon in the same, more visible status colour. `outline` has no fill and
+always uses a gray outline; only its text and icon colour changes with `status`.
 
 ## Layout animation
 

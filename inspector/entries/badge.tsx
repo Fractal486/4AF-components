@@ -2,15 +2,15 @@ import { Badge, type BadgeProps } from "@/registry/ui/badge/badge";
 import { bool, defineEntry, select, text } from "../schema";
 import { CyclingBadge } from "./badge-cycling";
 
-const VARIANTS = ["solid", "outline", "bare"] as const;
+const VARIANTS = ["plain", "solid", "outline"] as const;
 const STATUSES = ["neutral", "info", "success", "warning", "danger", "loading"] as const;
-const SIZES = ["sm", "md"] as const;
+const SIZES = ["sm", "md", "lg"] as const;
 
 export const badgeEntry = defineEntry({
   slug: "badge",
   name: "Badge",
   controls: {
-    // `outline` is the same pill hollowed out; `bare` drops the box entirely.
+    // `plain` drops the box; `solid` uses a translucent status wash; `outline` keeps a gray edge.
     variant: select(VARIANTS, "solid"),
     // Changing the status rolls the glyph and label over; changing the label rolls the text.
     status: select(STATUSES, "success"),

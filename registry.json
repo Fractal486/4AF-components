@@ -680,7 +680,7 @@
     {
       "name": "badge",
       "type": "registry:ui",
-      "description": "A status badge that rolls its glyph and label over on change, and springs to the new width. Motion for the exit/roll and layout; tokens for the status tints (amber warning, green success).",
+      "description": "A plain, solid, or gray-outline status badge that morphs its glyph and label on change, and springs to the new width. Uses the shared Morph animation for content swaps and layout motion; tokens for the status tints (amber warning, green success).",
       "dependencies": [
         "class-variance-authority",
         "lucide-react",
@@ -689,7 +689,8 @@
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json"
+        "http://localhost:3000/r/motion.json",
+        "http://localhost:3000/r/morph.json"
       ],
       "files": [
         {

@@ -1,54 +1,27 @@
 "use client";
 
-import { AlertTriangle, Check, Circle, Info, LoaderCircle, X, type LucideIcon } from "lucide-react";
-import {
-  AnimatePresence,
-  motion,
-  useReducedMotion,
-  type HTMLMotionProps,
-  type Variants,
-} from "motion/react";
+import { AlertTriangle, Check, Circle, Info, LoaderCircle, X } from "lucide-react";
+import { motion, useReducedMotion, type HTMLMotionProps } from "motion/react";
 import type { ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
-import { duration, ease, spring } from "@/registry/lib/motion";
+import { spring } from "@/registry/lib/motion";
+import { Morph } from "@/registry/ui/morph/morph";
 import { badgeVariants, type BadgeVariants } from "./badge.variants";
 
 /**
- * A status badge that fades directionally when it changes.
+ * A status badge whose glyph and label morph when they change.
  *
- * On a status or content change the outgoing glyph and label lift up and fade out while
- * the new ones rise into place from just below, and the pill springs to the new width.
- * This is a real Motion case, not decoration: the fade needs the outgoing content to keep
- * animating *after* React would unmount it (only AnimatePresence holds it), and the width
- * change is a layout animation (FLIP). Everything animated is compositor-only — `y` as a
- * percentage and `opacity`.
+ * On a status or content change the library Morph swaps the outgoing glyph and label for
+ * the new ones, while the pill springs to its new width. This is a real Motion case, not
+ * decoration: the outgoing content has to keep animating after React would unmount it,
+ * and the width change is a layout animation (FLIP). Everything animated is compositor-only.
  *
  * Under reduced motion the movement is dropped for a plain swap. The loading glyph spins
  * with CSS `animate-spin`, deliberately exempt — a status that has to keep reading as
  * "working", like every other spinner.
  */
 
-const ICONS: Record<NonNullable<BadgeVariants["status"]>, LucideIcon> = {
-  neutral: Circle,
-  info: Info,
-  success: Check,
-  warning: AlertTriangle,
-  danger: X,
-  loading: LoaderCircle,
-};
-
-const ICON_SIZE = { sm: "size-3", md: "size-3.5" } as const;
-
-// A directional fade — the same swap the icon and label both use. The outgoing content
-// lifts up and fades out while the new content rises into place from just below, so the
-// change reads as *advancing* rather than reversing. `y` is a small percentage, so it
-// scales with the glyph and any movement clips cleanly inside the pill's `overflow-hidden`.
-// Only compositor properties animate — `y` and `opacity`.
-const FADE: Variants = {
-  initial: { opacity: 0, y: "40%" },
-  animate: { opacity: 1, y: "0%" },
-  exit: { opacity: 0, y: "-40%" },
-};
+const ICON_SIZE = { sm: "size-2.5", md: "size-3", lg: "size-3.5" } as const;
 
 export interface BadgeProps
   extends Omit<HTMLMotionProps<"span">, "children">,
@@ -90,10 +63,18 @@ export function Badge({
   const reduce = useReducedMotion();
   const resolvedStatus = status ?? "neutral";
   const resolvedSize = size ?? "sm";
-  const Icon = ICONS[resolvedStatus];
-  const labelKey =
+  const labelKey = String(
     contentKey ??
-    (typeof children === "string" || typeof children === "number" ? children : resolvedStatus);
+      (typeof children === "string" || typeof children === "number" ? children : resolvedStatus),
+  );
+  const iconItems: Record<NonNullable<BadgeVariants["status"]>, ReactNode> = {
+    neutral: icon ?? <Circle className={ICON_SIZE[resolvedSize]} />,
+    info: icon ?? <Info className={ICON_SIZE[resolvedSize]} />,
+    success: icon ?? <Check className={ICON_SIZE[resolvedSize]} />,
+    warning: icon ?? <AlertTriangle className={ICON_SIZE[resolvedSize]} />,
+    danger: icon ?? <X className={ICON_SIZE[resolvedSize]} />,
+    loading: icon ?? <LoaderCircle className={cn(ICON_SIZE[resolvedSize], "animate-spin")} />,
+  };
 
   return (
     <motion.span
@@ -117,45 +98,15 @@ export function Badge({
       ) : (
         showIcon &&
         icon !== null && (
-          <span className="relative z-10 inline-flex items-center justify-center overflow-hidden">
-            <AnimatePresence mode="popLayout" initial={false}>
-              <motion.span
-                key={resolvedStatus}
-                aria-hidden
-                variants={FADE}
-                initial={reduce ? false : "initial"}
-                animate={reduce ? { opacity: 1 } : "animate"}
-                exit={reduce ? undefined : "exit"}
-                transition={reduce ? { duration: 0 } : { duration: duration.fast, ease: ease.out }}
-                className="inline-flex"
-              >
-                {icon ??
-                  (resolvedStatus === "loading" ? (
-                    <LoaderCircle className={cn(ICON_SIZE[resolvedSize], "animate-spin")} />
-                  ) : (
-                    <Icon className={ICON_SIZE[resolvedSize]} />
-                  ))}
-              </motion.span>
-            </AnimatePresence>
+          <span aria-hidden className="relative z-10 inline-flex items-center justify-center overflow-hidden">
+            <Morph activeKey={resolvedStatus} items={iconItems} />
           </span>
         )
       )}
 
       {children != null && (
         <span className="relative z-10 inline-flex overflow-hidden">
-          <AnimatePresence mode="popLayout" initial={false}>
-            <motion.span
-              key={labelKey}
-              variants={FADE}
-              initial={reduce ? false : "initial"}
-              animate={reduce ? { opacity: 1 } : "animate"}
-              exit={reduce ? undefined : "exit"}
-              transition={reduce ? { duration: 0 } : { duration: duration.fast, ease: ease.out }}
-              className="inline-block"
-            >
-              {children}
-            </motion.span>
-          </AnimatePresence>
+          <Morph activeKey={labelKey} items={{ [labelKey]: children }} />
         </span>
       )}
     </motion.span>
