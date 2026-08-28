@@ -18,6 +18,10 @@ roving tabindex. Its items may be plain, async with pending, success, and error 
 deferred toggle, or exclusive group. It swallows `mousedown` so a press cannot collapse the
 selection, and hands the captured text and range to every action.
 
+Toolbar action controls are compact 24px-high controls with 6px corners inside the toolbar's 8px
+shell. This fixed child geometry applies to the Button, Action Button, Toggle, and Action Toggle
+items, including their icon-only forms.
+
 ## Item kinds
 
 The bar's items mirror the menu's rows without nested panels. Each is the library component that

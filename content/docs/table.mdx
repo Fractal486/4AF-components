@@ -106,6 +106,10 @@ Use the button family's `size="xs"` for compact 24px actions in the row.
 columns restarts at ascending. `aria-sort` is set on the `<th>`, and a header without a
 `sortKey` stays a plain header.
 
+An unsorted sortable header shows `ChevronsUpDown` to offer both directions. Active sorting uses
+an up or down chevron; clearing a descending sort brings back `ChevronsUpDown` immediately rather
+than rotating the icon.
+
 Ordering the rows is the caller's, since only the call site knows what the values are:
 
 ```tsx

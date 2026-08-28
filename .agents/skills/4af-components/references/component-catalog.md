@@ -12,6 +12,7 @@ Markdown.
 
 - [Source-of-truth model](#source-of-truth-model)
 - [Shared foundation](#shared-foundation)
+- [Shared control geometry](#shared-control-geometry)
 - [Installable catalog](#installable-catalog)
 - [Bundled APIs and composition](#bundled-apis-and-composition)
 - [Inspector and registry parity](#inspector-and-registry-parity)
@@ -45,6 +46,18 @@ These entries install transitively:
 | `table-of-contents-scroll` | Endpoint padding, active-entry centering, and optional overflow-edge state for a constrained contents rail. |
 | `table-of-contents-tracking` | Shared heading activation, visibility observation, click-to-scroll settling, and cleanup for contents variants. |
 
+## Shared control geometry
+
+Button controls use four text/square tiers: `xs` is 24px, `sm` is 30px, `md` is 34px, and
+`lg` is 38px. Button corners are 6px at `xs`/`sm` and 8px at `md`/`lg`; the same two tiers
+apply to existing sizes of other rectangular controls such as Input and Select. Labeled button
+content gaps are 8px at `xs`/`sm`, 10px at `md`, and 12px at `lg`, with optical edge adjustment
+for leading and trailing icons.
+
+Checkbox is the fixed exception: it has one 16px box with a 4px radius and no `size` prop.
+Badge boxes keep their own size geometry and accept `shape="rounded" | "pill"`. Selection
+Toolbar action controls are fixed at 24px high with 6px corners inside an 8px toolbar shell.
+
 ## Installable catalog
 
 The catalog currently contains 45 installable UI items. Verify the count and names with
@@ -54,23 +67,23 @@ The catalog currently contains 45 installable UI items. Verify the count and nam
 
 | Install name | Main API | Use it for |
 | --- | --- | --- |
-| `button` | `Button` | Primary, outline, ghost, plain, destructive, link, and icon controls; loading; `asChild`; optional press scaling. |
-| `button-group` | `ButtonGroup` | Joining two or more Buttons into one control: flattened inner corners, one hairline per seam, a single outline around the run, horizontal or vertical. |
+| `button` | `Button` | Primary, outline, ghost, plain, destructive, link, and icon controls; the 24/30/34/38px `xs`/`sm`/`md`/`lg` scale; loading; `asChild`; optional press scaling. |
+| `button-group` | `ButtonGroup` | Joining two or more Buttons into one control: flattened inner corners, one hairline per seam, the shared Button scale including `xs`, a single outline around the run, horizontal or vertical. |
 | `toggle` | `Toggle` | Base UI pressed/unpressed controls using Button visuals and sizes. |
 | `morph` | `Morph` | Animated icon or text replacement that reserves stable space. |
-| `action-button` | `ActionButton` | Async actions with idle, pending, success, and error states, then a revert to idle; pending can keep its label or show a centered loader only without resizing. |
+| `action-button` | `ActionButton` | Async actions with the shared Button scale, idle/pending/success/error states, then a revert to idle; pending can keep its label or show a centered loader only without resizing. |
 | `action-toggle` | `ActionToggle` | An async toggle: waits on the action, lands when it succeeds, stays put when it fails. Follow/Following, Subscribe/Subscribed. |
-| `copy-button` | `CopyButton` | Clipboard actions with visual and screen-reader confirmation. |
-| `delete-button` | `DeleteButton` | Quiet destructive, two-step confirmation with Escape, blur, and timeout disarming. |
+| `copy-button` | `CopyButton` | Clipboard actions with visual and screen-reader confirmation; `size` follows the Button scale for both labeled and icon-only forms. |
+| `delete-button` | `DeleteButton` | Quiet destructive, two-step confirmation with Escape, blur, and timeout disarming; `size` follows the Button scale. |
 
 ### Fields and selection
 
 | Install name | Main API | Use it for |
 | --- | --- | --- |
-| `input` | `Input` | Default, plain, and underline fields; number steppers; invalid/disabled states. |
-| `textarea` | `Textarea` | Matching multiline fields with an optional custom resize grip. |
+| `input` | `Input` | Default, plain, and underline fields; a 34px/8px default field; compact 6px number steppers; invalid/disabled states. |
+| `textarea` | `Textarea` | Matching 34px/8px form treatment with an optional 16px custom resize grip using 6px corners. |
 | `switch` | `Switch` | Binary on/off state with a sliding, press-squishing thumb. |
-| `checkbox` | `Checkbox` | Boolean or indeterminate selection with animated tick and optional label. |
+| `checkbox` | `Checkbox` | Fixed 16px/4px boolean or indeterminate selection with an animated tick and optional label; it has no size axis. |
 | `radio` | `RadioGroup`, `Radio` | Single-choice selection groups. |
 | `slider` | `Slider` | Numeric input with `bar`, `circle`, and `knob` thumbs, optional ticks/labels, `range` mode with two draggable thumbs, and an opt-in `showValueTooltip` that follows the active thumb during drag. |
 | `select` | `Select`, trigger/content/item parts, `SelectSortTrigger`, `SelectSub` parts | Base UI single/multi select, optional panel search and clear footer, compact sort/filter trigger, and nested option panels. |
@@ -85,7 +98,7 @@ The catalog currently contains 45 installable UI items. Verify the count and nam
 | --- | --- | --- |
 | `progress` | `Progress`, `ProgressLabel`, `ProgressValue` | Determinate progress with transform-driven fill. |
 | `alert` | `Alert` | Inline status line (glyph + sentence, no surface): `error` (hexagon, `role="alert"`), `warning` (amber triangle), `success` (green check), `info` (neutral), `loading` (muted ASCII spinner); not tied to field context. |
-| `badge` | `Badge` | Outline/status labels with optional icon or dot and animated content changes. |
+| `badge` | `Badge` | Outline/status labels with optional icon or dot, animated content changes, and `shape="rounded" | "pill"` for boxed variants. |
 | `skeleton` | `Skeleton` | Generic loading placeholders; animation respects reduced motion. |
 | `empty` | `Empty` and composition parts | Empty states with optional dashed placeholder treatment. |
 | `text-shimmer` | `TextShimmer` | Theme-aware looping highlight for working labels. |
@@ -97,14 +110,14 @@ The catalog currently contains 45 installable UI items. Verify the count and nam
 
 | Install name | Main API | Use it for |
 | --- | --- | --- |
-| `tabs` | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | Segment, pill, or underline tabs with a traveling indicator. |
-| `collapsible` | `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` | Disclosure rows (`plain`/`card`) with a rotating chevron, a height slide so following rows travel rather than jump, and a blur-fade on the content. |
-| `table` | `Table` and header/body/footer/row/head/cell parts | Data tables in two densities, with an optional checkbox column: `selectable` adds it, `rows` sets what select-all covers, and the header box goes indeterminate on a partial selection. `loading` fills the body with placeholders shaped by the header; `bordered` adds the frame and column rules; a `sortKey` on a header adds a three-step sort control. |
+| `tabs` | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | Segment, pill, or underline tabs with a traveling indicator; segment tracks use 8px corners and their tabs use 6px corners. |
+| `collapsible` | `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` | Disclosure rows (`plain`/`card`) with a rotating chevron, shared 6px plain or 8px card trigger corners, a height slide so following rows travel rather than jump, and a blur-fade on the content. |
+| `table` | `Table`, `TableCaption`, and header/body/footer/row/head/cell parts | Data tables in two densities, with an optional checkbox column and a caption pinned below the scrolling box. `selectionActions` accepts compact 24px Button actions; a `sortKey` adds a three-step sort control with `ChevronsUpDown` when unsorted. |
 | `table-of-contents` | `TableOfContents` | Heading navigation with a dashed inactive rail, smooth document scrolling, long-prose fallback, and `span` or `single` active marker variants. A height-constrained rail hides its browser scrollbar and smoothly centers every active entry, including endpoints; pass `rootRef` for an independently scrolling article. |
 | `table-of-contents-lines` | `TableOfContentsLines` | Dense line-based heading navigation with one active heading, a longer header rule, equal shorter rules between headings (none below the final heading), heading-relative indentation, and an expanding hover treatment. A height-constrained rail hides its browser scrollbar and smoothly centers every active entry, including endpoints; pass `rootRef` for an independently scrolling article. |
 | `separator` | `Separator` | An accessible horizontal or vertical divider built on Base UI Separator. |
-| `command-palette` | `CommandPalette`, panel/list/row/footer parts, and `useCommandSearch` | Fuzzy command search, groups, nested/custom panels, async/server-driven search, configurable headers, keybinds (default ⌘K/Ctrl+K), selection, actions, and Dialog-style enter/exit motion. |
-| `sidebar` | Provider, panel, group/menu/submenu/action/badge/skeleton parts | Default/floating/inset and split/split-floating/split-inset sidebars, collapse, sections, nested rows, split rail/panel selection, actions, badges, skeletons. |
+| `command-palette` | `CommandPalette`, panel/list/row/footer parts, and `useCommandSearch` | Fuzzy command search, groups, nested/custom panels, async/server-driven search, configurable headers, 6px compact header navigation controls, keybinds (default ⌘K/Ctrl+K), selection, actions, and Dialog-style enter/exit motion. |
+| `sidebar` | Provider, panel, group/menu/submenu/action/badge/skeleton parts | Default/floating/inset and split/split-floating/split-inset sidebars, collapse, sections, nested rows, split rail/panel selection, actions, badges, skeletons, and shared 6px/8px menu and rail radii. |
 | `sidebar-layout` | `SidebarLayout` | Optional page shell around Sidebar with inset surface, title, collapse control, and actions. |
 
 ### Overlays and menus
@@ -116,7 +129,7 @@ The catalog currently contains 45 installable UI items. Verify the count and nam
 | `dialog` | `Dialog` parts, `DialogSteps`, `DialogStep` | Centered modals and optional validated multi-step flows. |
 | `alert-dialog` | `AlertDialog` parts | Decision-forcing modal that cannot dismiss by clicking away. |
 | `popover` | `Popover` parts | Interactive anchored panels with optional modal behavior. |
-| `selection-toolbar` | `SelectionToolbar`, button/action-button/toggle/action-toggle/toggle-group/separator parts | Actions over selected text — copy, highlight, quote. Anchored to the range, hands the captured text and range to every action. Plain items dismiss the bar on press; async and toggle items keep it up so their state is visible. |
+| `selection-toolbar` | `SelectionToolbar`, button/action-button/toggle/action-toggle/toggle-group/separator parts | Actions over selected text — copy, highlight, quote. Anchored to the range, hands the captured text and range to every action. Its Button-like actions are fixed at 24px high with 6px corners inside an 8px shell. Plain items dismiss the bar on press; async and toggle items keep it up so their state is visible. |
 | `hover-card` | `HoverCard`, trigger/content parts, `HoverCardSkeleton` | Rich previews opened by hover or keyboard focus, with built-in loading placeholders. |
 | `dropdown-menu` | Menu, checkbox/radio/submenu, shortcut, and nested-select parts | Keyboard menus, safe submenus, destructive items, Kbd hints, searchable selection panels, and immediate disabled-reason tooltips. |
 
@@ -200,9 +213,10 @@ add nested panels whose child `SelectItem`s use the parent select's value and ch
 | `select-motion-search` | Editable Combobox | Unfolds from field | Trigger field |
 
 All support single and multi selection (multi uses Checkbox) and take `size="sm" | "md"`,
-default `sm`. `sm` is a 32px control with 12px text and 14px glyphs; `md` is 36px and lines
+default `sm`. `sm` is a 30px control with compact text and 14px glyphs; `md` is 34px and lines
 up with a medium Button or Input in a form row; the size scales the trigger and the option
-rows together. Inside a Command Palette keep `sm`. `select-aligned` is single selection only. It takes optional sections
+rows together, with 6px corners at `sm` and 8px at `md`. Inside a Command Palette keep `sm`.
+`select-aligned` is single selection only. It takes optional sections
 (`AlignedSelectGroup` + `AlignedSelectGroupLabel`, which hide themselves when a search empties
 them) and an optional pinned search field (`searchable` on the content).
 
@@ -386,6 +400,12 @@ cell to each row, `TableRow` renders its own.
 Sorting cycles ascending → descending → unsorted; switching columns restarts at ascending. The
 component does not sort rows — it owns the control, the state and `aria-sort`, and reports
 `{ column, direction } | null`.
+
+`TableCaption` is the first child for a centered caption pinned below the scrolling table while
+the native caption remains available to assistive technology. `selectionActions` sits in the
+selection row and is intended for the Button family's compact `xs` actions. An unsorted sortable
+header shows `ChevronsUpDown`; clearing a descending sort swaps it back immediately without
+rotating the double-chevron.
 
 `selectionBar` swaps the column labels for an `N selected` count and puts `selectionActions` at
 the right end, keeping the select-all in place. The count covers the whole selection, not only

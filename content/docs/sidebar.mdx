@@ -17,6 +17,13 @@ header action; badges; and loading skeletons. Split layouts use `SidebarRailButt
 `value` and `SidebarPanel` sections; `activePanel`, `defaultActivePanel`, and
 `onActivePanelChange` support controlled or uncontrolled wide-panel selection.
 
+## Menu control geometry
+
+`SidebarMenuButton` supports `size="sm"`, `size="default"`, and `size="lg"`. The compact
+`sm` row uses a 6px radius; `default` and `lg` use an 8px radius. Nested
+`SidebarMenuSubButton` rows use a 6px radius, and fixed split-rail buttons are 32px squares
+with an 8px radius.
+
 ## Header composition
 
 A header contains one full-width `SidebarHeaderButton`, or two wrapped in `SidebarHeaderRow`:

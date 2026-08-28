@@ -65,11 +65,13 @@ leading and trailing icons beside text receive optical spacing through component
 rather than one-off margins.
 
 Button controls share a 24px/30px/34px/38px scale for `xs`/`sm`/`md`/`lg`; component-specific
-objects such as badges, radios, sliders, and table density keep their own geometry.
+objects such as badges, checkboxes, radios, sliders, and table density keep their own geometry.
 Their corner radii follow two tiers: 6px for `xs`/`sm` and 8px for `md`/`lg`.
-Other rectangular controls reuse the applicable tier for their existing sizes: compact
-controls use 6px and form-row controls use 8px. Circular, pill-shaped, status, and list-row
-objects keep their intentional geometry.
+Labeled button content uses an 8px icon-label gap at `xs`/`sm`, 10px at `md`, and 12px at `lg`;
+leading and trailing icons receive a small optical edge adjustment.
+Checkbox is fixed at 16px with a 4px radius. Other rectangular controls reuse the applicable
+tier for their existing sizes: compact controls use 6px and form-row controls use 8px. Circular,
+pill-shaped, status, and list-row objects keep their intentional geometry.
 
 ## Depth and elevation
 
