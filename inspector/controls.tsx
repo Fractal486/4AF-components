@@ -107,7 +107,8 @@ function Control({
         >
           <AlignedSelectTrigger
             aria-labelledby={labelId}
-            className="w-32 justify-self-end"
+            variant="plain"
+            className="justify-self-end"
           />
           <AlignedSelectContent>
             {def.options.map((option) => (

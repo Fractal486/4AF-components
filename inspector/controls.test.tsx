@@ -35,6 +35,12 @@ describe("Controls select", () => {
     const [buttonSelect, inputSelect] = screen.getAllByRole("combobox");
     expect(buttonSelect).toHaveAttribute("aria-labelledby", "button-variant-label");
     expect(inputSelect).toHaveAttribute("aria-labelledby", "input-variant-label");
+    expect(buttonSelect).toHaveAttribute("data-variant", "plain");
+    expect(inputSelect).toHaveAttribute("data-variant", "plain");
+    expect(buttonSelect).toHaveClass("w-auto", "justify-self-end");
+    expect(inputSelect).toHaveClass("w-auto", "justify-self-end");
+    expect(buttonSelect).not.toHaveClass("w-32");
+    expect(inputSelect).not.toHaveClass("w-32");
   });
 
   it("renders the enum as an aligned select and updates the selection on pick", async () => {
