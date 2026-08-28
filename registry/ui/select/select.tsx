@@ -46,7 +46,7 @@ import {
  */
 
 /**
- * The two sizes, mirroring Button. `sm` (32px) is the compact/toolbar default; `md` (36px)
+ * The two sizes, mirroring Button. `sm` (30px) is the compact/toolbar default; `md` (34px)
  * matches Button's `md` and the Input, so a select lines up with them in a form row. The
  * size flows through context so the trigger *and* the option rows scale together.
  */
@@ -57,18 +57,18 @@ const SIZE: Record<
   { field: string; chip: string; glyph: string; iconSlot: string; row: string }
 > = {
   sm: {
-    field: "h-8 text-xs",
-    chip: "h-8 px-2.5 text-xs",
+    field: "h-[30px] text-xs",
+    chip: "h-[30px] px-3 text-xs",
     glyph: "size-3.5",
     iconSlot: "size-3.5 [&_svg]:size-3.5",
-    row: "text-xs",
+    row: "min-h-[30px] text-xs",
   },
   md: {
-    field: "h-9 text-sm",
-    chip: "h-9 px-3 text-sm",
+    field: "h-[34px] text-sm",
+    chip: "h-[34px] px-3.5 text-sm",
     glyph: "size-4",
     iconSlot: "size-4 [&_svg]:size-4",
-    row: "text-sm",
+    row: "min-h-[34px] text-sm",
   },
 };
 
@@ -375,7 +375,7 @@ export interface SelectProps<Value, Multiple extends boolean | undefined = false
    * one declaration per option, and it resolves before mount either way.
    */
   iconForValue?: (value: Value) => ReactNode | undefined;
-  /** Compact 32px (`sm`, default) or the 36px form-row size (`md`). @default "sm" */
+  /** Compact 30px (`sm`, default) or the 34px form-row size (`md`). @default "sm" */
   size?: SelectSize;
   children: ReactNode;
 }
@@ -849,8 +849,8 @@ export function SelectTrigger({
     <BaseSelect.Trigger
       data-variant={resolvedVariant}
       className={cn(
-        // `md` (h-9) matches Button's default and the Input — a select beside either in a
-        // form row lines up with it. `sm` (h-8, the default) is the compact toolbar size.
+        // `md` (34px) matches Button's default and the Input — a select beside either in a
+        // form row lines up with it. `sm` (30px, the default) is the compact toolbar size.
         SIZE[size].field,
         selectTriggerVariants({ variant: resolvedVariant }),
         className,
@@ -1258,8 +1258,8 @@ export function SelectContent({
             <div
               // One row tall, exactly: `m-1` mirrors the list's `p-1` and `py-1.5` is the
               // row's own vertical padding, so an empty panel and a panel holding a single
-              // result come to the same height at every size. A fixed `h-8` only matched at
-              // `md` and stood 4px proud at `sm`.
+              // result come to the same height at every size. The shared row minimum keeps
+              // the empty state aligned with the 30px/34px control scale.
               className={cn(
                 "m-1 flex items-center justify-center px-2.5 py-1.5 text-center text-muted-foreground",
                 SIZE[size].row,

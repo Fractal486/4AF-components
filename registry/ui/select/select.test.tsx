@@ -30,6 +30,23 @@ function FruitOptions() {
 }
 
 describe("Base UI Select", () => {
+  it("uses the shared 30px/34px scale for the trigger and option rows", async () => {
+    const user = userEvent.setup();
+    render(
+      <Select items={FRUITS} size="md">
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <FruitOptions />
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("combobox", { name: "Fruit" });
+    expect(trigger).toHaveClass("h-[34px]");
+    await user.click(trigger);
+    expect(await screen.findByRole("option", { name: "Apple" })).toHaveClass("min-h-[34px]");
+  });
+
   it("renders the plain trigger as a transparent label and chevron", () => {
     render(
       <Select items={FRUITS} defaultValue="banana">

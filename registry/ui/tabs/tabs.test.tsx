@@ -31,6 +31,18 @@ describe("Tabs", () => {
     expect(screen.getByRole("tab", { name: "One" })).toHaveClass("rounded-sm");
   });
 
+  it("does not force a pointer cursor on tabs", () => {
+    render(
+      <Tabs defaultValue="one">
+        <TabsList aria-label="Examples">
+          <TabsTab value="one">One</TabsTab>
+        </TabsList>
+      </Tabs>,
+    );
+
+    expect(screen.getByRole("tab", { name: "One" })).not.toHaveClass("cursor-pointer");
+  });
+
   it("keeps inactive panels mounted and switches with keyboard navigation", async () => {
     const user = userEvent.setup();
     render(

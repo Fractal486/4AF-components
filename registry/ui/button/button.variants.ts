@@ -92,12 +92,12 @@ export const buttonVariants = cva(
         link: "text-foreground underline decoration-border underline-offset-4 hover:decoration-current",
       },
       size: {
-        sm: `h-8 ${buttonContentGap({ size: "sm" })} rounded-md px-3 text-xs [&_svg]:size-3.5`,
-        md: `h-9 ${buttonContentGap({ size: "md" })} rounded-md px-3.5 text-sm [&_svg]:size-4`,
-        lg: `h-11 ${buttonContentGap({ size: "lg" })} rounded-lg px-5 text-base [&_svg]:size-4`,
-        "icon-sm": "size-8 rounded-md [&_svg]:size-3.5",
-        icon: "size-9 rounded-md [&_svg]:size-4",
-        "icon-lg": "size-11 rounded-lg [&_svg]:size-4",
+        sm: `h-[30px] ${buttonContentGap({ size: "sm" })} rounded-md px-3 text-xs [&_svg]:size-3.5`,
+        md: `h-[34px] ${buttonContentGap({ size: "md" })} rounded-md px-3.5 text-sm [&_svg]:size-4`,
+        lg: `h-[38px] ${buttonContentGap({ size: "lg" })} rounded-lg px-5 text-base [&_svg]:size-4`,
+        "icon-sm": "size-[30px] rounded-md [&_svg]:size-3.5",
+        icon: "size-[34px] rounded-md [&_svg]:size-4",
+        "icon-lg": "size-[38px] rounded-lg [&_svg]:size-4",
       },
     },
     compoundVariants: [
@@ -113,7 +113,7 @@ export const buttonVariants = cva(
       { size: "sm", class: "data-[icon-start]:ps-2.5 data-[icon-end]:pe-2.5" },
       { size: "md", class: "data-[icon-start]:ps-3 data-[icon-end]:pe-3" },
       { size: "lg", class: "data-[icon-start]:ps-4.5 data-[icon-end]:pe-4.5" },
-      // A 32px control is below the 40px comfortable target, and an icon button
+      // A compact control is below the 40px comfortable target, and an icon button
       // has no label to widen it. Extend the *hit area* with a pseudo-element
       // rather than the button: the target grows, the design doesn't.
       {

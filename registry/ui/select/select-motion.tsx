@@ -68,16 +68,15 @@ const SCROLLBAR =
 type Placement = "bottom" | "top";
 
 /**
- * The two sizes, mirroring Button. `sm` (32px) is the compact default; `md` (36px) matches
+ * The two sizes, mirroring Button. `sm` (30px) is the compact default; `md` (34px) matches
  * Button's `md` and the Input for form rows. The size flows through context so the trigger
- * and the option rows scale together. This trigger is padding-sized (it animates its own
- * radius), so `field` carries `py`/text rather than a fixed height.
+ * and the option rows scale together.
  */
 export type SelectSize = "sm" | "md";
 
 const SIZE: Record<SelectSize, { field: string; glyph: string; iconSlot: string; row: string }> = {
-  sm: { field: "py-1.5 text-xs", glyph: "size-3.5", iconSlot: "size-3.5 [&>svg]:size-3.5", row: "text-xs" },
-  md: { field: "py-2 text-sm", glyph: "size-4", iconSlot: "size-4 [&>svg]:size-4", row: "text-sm" },
+  sm: { field: "h-[30px] text-xs", glyph: "size-3.5", iconSlot: "size-3.5 [&>svg]:size-3.5", row: "min-h-[30px] text-xs" },
+  md: { field: "h-[34px] text-sm", glyph: "size-4", iconSlot: "size-4 [&>svg]:size-4", row: "min-h-[34px] text-sm" },
 };
 
 interface SelectContextValue {
@@ -170,7 +169,7 @@ interface SelectBaseProps {
   className?: string;
   /** Resolves the icon shown in the closed single-select value. */
   iconForValue?: (value: string) => ReactNode | undefined;
-  /** Compact 32px (`sm`, default) or the 36px form-row size (`md`). @default "sm" */
+  /** Compact 30px (`sm`, default) or the 34px form-row size (`md`). @default "sm" */
   size?: SelectSize;
   children: ReactNode;
 }

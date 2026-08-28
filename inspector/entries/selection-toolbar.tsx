@@ -16,7 +16,6 @@ import {
 import { bool, defineEntry, select } from "../schema";
 
 const SIDES = ["top", "bottom"] as const;
-const KINDS = ["basic", "all"] as const;
 
 /**
  * Three highlighter colours, from the ramps rather than the semantic tokens: there is no
@@ -187,25 +186,20 @@ export const selectionToolbarEntry = defineEntry({
   name: "Selection Toolbar",
   controls: {
     side: select(SIDES, "top"),
-    kinds: select(KINDS, "all", "Items"),
     labels: bool(true, "Labels"),
     disabled: bool(false, "Disabled"),
   },
-  render({ side, kinds, labels, disabled }) {
-    return (
-      <SelectionToolbarDemo side={side} kinds={kinds} labels={labels} disabled={disabled} />
-    );
+  render({ side, labels, disabled }) {
+    return <SelectionToolbarDemo side={side} labels={labels} disabled={disabled} />;
   },
 });
 
 function SelectionToolbarDemo({
   side,
-  kinds,
   labels,
   disabled,
 }: {
   side: (typeof SIDES)[number];
-  kinds: (typeof KINDS)[number];
   labels: boolean;
   disabled: boolean;
 }) {
@@ -248,66 +242,50 @@ function SelectionToolbarDemo({
               {labels && "Copy"}
             </SelectionToolbarActionButton>
 
-            {kinds === "basic" ? (
-              <SelectionToolbarButton
-                size={size}
-                aria-label={named("Highlight")}
-                onAction={(_text, range) => {
-                  setSpans((current) => [...current, ...spansOf(range, tone)]);
-                  release();
-                }}
-              >
-                <Highlighter />
-                {labels && "Highlight"}
-              </SelectionToolbarButton>
-            ) : (
-              <>
-                <SelectionToolbarSeparator />
+            <SelectionToolbarSeparator />
 
-                <HighlightToggle
-                  spans={spans}
-                  tone={tone}
-                  labels={labels}
-                  onChange={(next) => {
-                    setSpans(next);
-                    release();
-                  }}
-                />
+            <HighlightToggle
+              spans={spans}
+              tone={tone}
+              labels={labels}
+              onChange={(next) => {
+                setSpans(next);
+                release();
+              }}
+            />
 
-                {/* An exclusive run: the colour the highlighter uses, which is a setting
-                    rather than an action, so it holds across selections. `fillIcon` fills
-                    the ring rather than swapping the glyph — same shape, more weight. */}
-                <SelectionToolbarToggleGroup
-                  value={[tone]}
-                  onValueChange={([next]) => next && setTone(next as Tone)}
+            {/* An exclusive run: the colour the highlighter uses, which is a setting
+                rather than an action, so it holds across selections. `fillIcon` fills
+                the ring rather than swapping the glyph — same shape, more weight. */}
+            <SelectionToolbarToggleGroup
+              value={[tone]}
+              onValueChange={([next]) => next && setTone(next as Tone)}
+            >
+              {(Object.keys(TONES) as Tone[]).map((key) => (
+                <SelectionToolbarToggle
+                  key={key}
+                  value={key}
+                  size="icon-sm"
+                  fillIcon
+                  aria-label={`${key.slice(0, 1).toUpperCase()}${key.slice(1)} highlighter`}
                 >
-                  {(Object.keys(TONES) as Tone[]).map((key) => (
-                    <SelectionToolbarToggle
-                      key={key}
-                      value={key}
-                      size="icon-sm"
-                      fillIcon
-                      aria-label={`${key.slice(0, 1).toUpperCase()}${key.slice(1)} highlighter`}
-                    >
-                      <Circle className={TONES[key].swatch} />
-                    </SelectionToolbarToggle>
-                  ))}
-                </SelectionToolbarToggleGroup>
+                  <Circle className={TONES[key].swatch} />
+                </SelectionToolbarToggle>
+              ))}
+            </SelectionToolbarToggleGroup>
 
-                <SelectionToolbarSeparator />
+            <SelectionToolbarSeparator />
 
-                <SelectionToolbarButton
-                  size={size}
-                  variant="destructive"
-                  aria-label={named("Clear")}
-                  disabled={spans.length === 0}
-                  onAction={() => setSpans([])}
-                >
-                  <Eraser />
-                  {labels && "Clear"}
-                </SelectionToolbarButton>
-              </>
-            )}
+            <SelectionToolbarButton
+              size={size}
+              variant="destructive"
+              aria-label={named("Clear")}
+              disabled={spans.length === 0}
+              onAction={() => setSpans([])}
+            >
+              <Eraser />
+              {labels && "Clear"}
+            </SelectionToolbarButton>
           </>
         }
       >

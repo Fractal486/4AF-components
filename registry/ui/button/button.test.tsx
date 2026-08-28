@@ -17,6 +17,32 @@ describe("Button", () => {
     expect(button.className).toContain("hover:bg-transparent");
   });
 
+  it("uses the revised text and icon-control heights", () => {
+    render(
+      <>
+        <Button size="sm">Small</Button>
+        <Button size="md">Medium</Button>
+        <Button size="lg">Large</Button>
+        <Button size="icon-sm" aria-label="Small icon">
+          S
+        </Button>
+        <Button size="icon" aria-label="Medium icon">
+          M
+        </Button>
+        <Button size="icon-lg" aria-label="Large icon">
+          L
+        </Button>
+      </>,
+    );
+
+    expect(screen.getByRole("button", { name: "Small" })).toHaveClass("h-[30px]");
+    expect(screen.getByRole("button", { name: "Medium" })).toHaveClass("h-[34px]");
+    expect(screen.getByRole("button", { name: "Large" })).toHaveClass("h-[38px]");
+    expect(screen.getByRole("button", { name: "Small icon" })).toHaveClass("size-[30px]");
+    expect(screen.getByRole("button", { name: "Medium icon" })).toHaveClass("size-[34px]");
+    expect(screen.getByRole("button", { name: "Large icon" })).toHaveClass("size-[38px]");
+  });
+
   it("keeps the child link and its semantics with asChild", () => {
     const onClick = vi.fn();
     render(

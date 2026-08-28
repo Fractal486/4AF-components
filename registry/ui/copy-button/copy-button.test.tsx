@@ -27,7 +27,7 @@ describe("CopyButton", () => {
 
     const button = screen.getByRole("button", { name: "Copy" });
     expect(button).toHaveAttribute("data-size", "lg");
-    expect(button).toHaveClass("h-11", "px-5");
+    expect(button).toHaveClass("h-[38px]", "px-5");
   });
 
   it("maps an explicit size to the corresponding square icon button", () => {
@@ -35,7 +35,7 @@ describe("CopyButton", () => {
 
     const button = screen.getByRole("button", { name: "Copy" });
     expect(button).toHaveAttribute("data-size", "icon-sm");
-    expect(button).toHaveClass("size-8");
+    expect(button).toHaveClass("size-[30px]");
   });
 
   it("uses the standard action-button icon-label gap", () => {

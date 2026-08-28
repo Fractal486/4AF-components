@@ -23,6 +23,12 @@ describe("Input", () => {
     expect(onChange).toHaveBeenCalledOnce();
   });
 
+  it("uses the shared 34px medium field height", () => {
+    render(<Input aria-label="Name" />);
+
+    expect(screen.getByRole("textbox", { name: "Name" })).toHaveClass("h-[34px]");
+  });
+
   it("supports an underline-only variant and a disabled cursor", () => {
     render(<Input aria-label="Title" variant="underline" disabled />);
 

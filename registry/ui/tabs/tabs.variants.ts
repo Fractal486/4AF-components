@@ -33,7 +33,7 @@ export const tabVariants = cva(
     // sibling at `z-0`; without a stacking order the tab's transparent box would still
     // let the indicator (a positioned element) paint over the label. z-10 keeps the
     // text on top of the chip, which is the whole point of a chip.
-    "relative z-10 inline-flex cursor-pointer items-center justify-center",
+    "relative z-10 inline-flex items-center justify-center",
     "text-sm font-medium whitespace-nowrap select-none",
     // Only the colour changes on hover — the indicator is a separate element and
     // moves under Motion, so naming `color` keeps the browser from watching the rest.

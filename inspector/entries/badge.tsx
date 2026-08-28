@@ -14,7 +14,7 @@ export const badgeEntry = defineEntry({
     variant: select(VARIANTS, "solid"),
     // Changing the status rolls the glyph and label over; changing the label rolls the text.
     status: select(STATUSES, "success"),
-    size: select(SIZES, "md"),
+    size: select(SIZES, "sm"),
     label: text("Approved", "Label"),
     showIcon: bool(true, "Show icon"),
     // A status dot in place of the icon — works on every variant.

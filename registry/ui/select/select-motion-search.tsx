@@ -37,15 +37,15 @@ const SCROLLBAR =
   "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground";
 
 /**
- * The two sizes, mirroring Button. `sm` (32px) is the compact default; `md` (36px) matches
+ * The two sizes, mirroring Button. `sm` (30px) is the compact default; `md` (34px) matches
  * Button's `md` and the Input for form rows. The size flows through context so the input
  * trigger and the option rows scale together.
  */
 export type SelectSize = "sm" | "md";
 
 const SIZE: Record<SelectSize, { field: string; glyph: string; iconSlot: string; row: string }> = {
-  sm: { field: "h-8 text-xs", glyph: "size-3.5", iconSlot: "size-3.5 [&>svg]:size-3.5", row: "text-xs" },
-  md: { field: "h-9 text-sm", glyph: "size-4", iconSlot: "size-4 [&>svg]:size-4", row: "text-sm" },
+  sm: { field: "h-[30px] text-xs", glyph: "size-3.5", iconSlot: "size-3.5 [&>svg]:size-3.5", row: "min-h-[30px] text-xs" },
+  md: { field: "h-[34px] text-sm", glyph: "size-4", iconSlot: "size-4 [&>svg]:size-4", row: "min-h-[34px] text-sm" },
 };
 
 interface MotionSearchContextValue {
@@ -96,7 +96,7 @@ export interface MotionSearchSelectProps<
    * computed rather than carried. Items that hold their own `icon` need no function.
    */
   iconForValue?: (value: Value) => ReactNode | undefined;
-  /** Compact 32px (`sm`, default) or the 36px form-row size (`md`). @default "sm" */
+  /** Compact 30px (`sm`, default) or the 34px form-row size (`md`). @default "sm" */
   size?: SelectSize;
   children: ReactNode;
 }

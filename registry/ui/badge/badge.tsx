@@ -77,7 +77,7 @@ export interface BadgeProps
 export function Badge({
   variant = "solid",
   status = "neutral",
-  size = "md",
+  size = "sm",
   children,
   icon,
   showIcon = true,
@@ -89,7 +89,7 @@ export function Badge({
 }: BadgeProps) {
   const reduce = useReducedMotion();
   const resolvedStatus = status ?? "neutral";
-  const resolvedSize = size ?? "md";
+  const resolvedSize = size ?? "sm";
   const Icon = ICONS[resolvedStatus];
   const labelKey =
     contentKey ??

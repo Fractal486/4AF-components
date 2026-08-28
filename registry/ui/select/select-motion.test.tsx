@@ -13,6 +13,22 @@ function FruitOptions() {
 }
 
 describe("Motion Select", () => {
+  it("uses the shared 34px medium trigger and row size", () => {
+    render(
+      <Select size="md">
+        <SelectTrigger>
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <FruitOptions />
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("button", { name: "Pick a fruit" });
+    expect(trigger).toHaveClass("h-[34px]");
+    fireEvent.click(trigger);
+    expect(screen.getByRole("option", { name: "Apple" })).toHaveClass("min-h-[34px]");
+  });
+
   it("supports checkbox multi-select without closing the panel", () => {
     const onValueChange = vi.fn();
 

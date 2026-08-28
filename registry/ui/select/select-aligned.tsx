@@ -55,8 +55,8 @@ import {
 type AlignedSelectSize = "sm" | "md";
 
 const SIZE: Record<AlignedSelectSize, { field: string; row: string; glyph: string }> = {
-  sm: { field: "h-8 text-xs", row: "text-xs", glyph: "size-3.5" },
-  md: { field: "h-9 text-sm", row: "text-sm", glyph: "size-4" },
+  sm: { field: "h-[30px] text-xs", row: "min-h-[30px] text-xs", glyph: "size-3.5" },
+  md: { field: "h-[34px] text-sm", row: "min-h-[34px] text-sm", glyph: "size-4" },
 };
 
 interface AlignedSelectContextValue {
@@ -120,7 +120,7 @@ const SCROLLBAR =
 
 export interface AlignedSelectProps<Value>
   extends ComponentProps<typeof BaseSelect.Root<Value, false>> {
-  /** Control height. `md` lines up with Button and Input in a form row. @default sm */
+  /** Control height: 30px (`sm`) or 34px (`md`). @default sm */
   size?: AlignedSelectSize;
 }
 

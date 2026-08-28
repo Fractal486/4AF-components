@@ -34,6 +34,16 @@ function Fruits({
 }
 
 describe("AlignedSelect", () => {
+  it("uses the shared 34px medium trigger and row size", async () => {
+    const user = userEvent.setup();
+    render(<Fruits size="md" />);
+
+    const trigger = screen.getByRole("combobox");
+    expect(trigger).toHaveClass("h-[34px]");
+    await user.click(trigger);
+    expect(await screen.findByRole("option", { name: "Apple" })).toHaveClass("min-h-[34px]");
+  });
+
   it("renders the plain trigger as a transparent label and glyph", () => {
     render(<Fruits variant="plain" />);
 

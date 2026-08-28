@@ -22,7 +22,7 @@ describe("CopyButton inspector", () => {
 
     const button = screen.getByRole("button", { name: "Copy command" });
     expect(button).toHaveAttribute("data-size", "lg");
-    expect(button).toHaveClass("h-11", "px-5");
+    expect(button).toHaveClass("h-[38px]", "px-5");
   });
 
   it("keeps the selected size square when the label is disabled", () => {
@@ -39,6 +39,6 @@ describe("CopyButton inspector", () => {
 
     const button = screen.getByRole("button", { name: "Copy" });
     expect(button).toHaveAttribute("data-size", "icon-lg");
-    expect(button).toHaveClass("size-11");
+    expect(button).toHaveClass("size-[38px]");
   });
 });

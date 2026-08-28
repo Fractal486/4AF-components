@@ -51,7 +51,7 @@ export const badgeVariants = cva(
       { variant: "outline", status: "danger", class: "border-destructive/40" },
       { variant: "outline", status: "loading", class: "border-primary/25" },
     ],
-    defaultVariants: { variant: "solid", status: "neutral", size: "md" },
+    defaultVariants: { variant: "solid", status: "neutral", size: "sm" },
   },
 );
 

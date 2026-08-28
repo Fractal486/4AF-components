@@ -20,15 +20,18 @@ type Fruit = (typeof FRUITS)[number];
 function FruitSearch({
   defaultValue,
   onValueChange,
+  size = "sm",
 }: {
   defaultValue?: Fruit;
   onValueChange?: (value: Fruit | null) => void;
+  size?: "sm" | "md";
 }) {
   return (
     <SearchSelect<Fruit>
       items={FRUITS}
       defaultValue={defaultValue}
       onValueChange={onValueChange}
+      size={size}
       iconForValue={(value) =>
         value.value === "apple" ? <span data-testid="fruit-icon" /> : undefined
       }
@@ -102,6 +105,16 @@ function DynamicMultiIcon() {
 }
 
 describe("Search Select", () => {
+  it("uses the shared 34px medium field and row size", async () => {
+    const user = userEvent.setup();
+    render(<FruitSearch size="md" />);
+
+    const input = screen.getByRole("combobox", { name: "Fruit" });
+    expect(input).toHaveClass("h-[34px]");
+    await user.click(input);
+    expect(await screen.findByRole("option", { name: "Apple" })).toHaveClass("min-h-[34px]");
+  });
+
   it("gives an empty result the same footprint as one option row", async () => {
     const user = userEvent.setup();
     render(<FruitSearch />);
@@ -330,4 +343,3 @@ describe("Search Select", () => {
     expect(container.querySelector('[data-testid="mango-icon"]')).not.toBeInTheDocument();
   });
 });
-
