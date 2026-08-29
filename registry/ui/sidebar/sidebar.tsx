@@ -1169,7 +1169,7 @@ export function SidebarMenuSkeleton({
       )}
       {...props}
     >
-      {showIcon && <Skeleton className="size-4 rounded-md" />}
+      {showIcon && <Skeleton className="size-4" />}
       <Skeleton className="h-4 max-w-(--skeleton-width) flex-1" style={{ "--skeleton-width": width } as CSSProperties} />
     </div>
   );

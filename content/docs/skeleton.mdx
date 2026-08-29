@@ -12,3 +12,14 @@ description: A placeholder surface for preserving layout while content loads.
 
 A generic loading placeholder sized by normal utility classes. Its pulse is disabled for reduced
 motion.
+
+## Shape
+
+There is no shape axis — size and shape it with utilities. It is square by default; corners are
+opt-in.
+
+```tsx
+<Skeleton className="h-4 w-2/3" />           {/* a line of text */}
+<Skeleton className="size-12 rounded-full" /> {/* an avatar */}
+<Skeleton className="aspect-video w-full rounded-lg" /> {/* a thumbnail */}
+```

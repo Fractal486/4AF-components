@@ -720,7 +720,7 @@
     {
       "name": "skeleton",
       "type": "registry:ui",
-      "description": "A loading placeholder — a muted block that pulses while content loads; reduced motion switches the pulse off rather than strobing.",
+      "description": "A loading placeholder — a square muted block that pulses while content loads, shaped entirely by utility classes; reduced motion switches the pulse off rather than strobing.",
       "dependencies": [],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
