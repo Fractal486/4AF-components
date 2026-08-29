@@ -4,7 +4,8 @@ export const COMPONENT_FAMILIES = [
   { name: "Alert", slugs: ["alert"] },
   { name: "Badge", slugs: ["badge"] },
   {
-    name: "Button",
+    name: "Button",
+
     slugs: [
       "button",
       "button-group",
@@ -28,7 +29,8 @@ export const COMPONENT_FAMILIES = [
   { name: "Progress", slugs: ["progress"] },
   { name: "Radio", slugs: ["radio"] },
   {
-    name: "Select",
+    name: "Select",
+
     slugs: ["select", "select-search", "select-aligned", "select-motion", "select-motion-search"],
   },
   { name: "Selection Toolbar", slugs: ["selection-toolbar"] },
@@ -38,9 +40,10 @@ export const COMPONENT_FAMILIES = [
   { name: "Skeleton", slugs: ["skeleton"] },
   { name: "Slider", slugs: ["slider"] },
   { name: "Switch", slugs: ["switch"] },
-  { name: "Table", slugs: ["table"] },
+  { name: "Table", slugs: ["table", "data-table"] },
   {
-    name: "Table of Contents",
+    name: "Table of Contents",
+
     slugs: ["table-of-contents", "table-of-contents-lines"],
   },
   { name: "Tabs", slugs: ["tabs"] },
@@ -99,6 +102,7 @@ export const COMPONENT_CATEGORIES = [
       "tabs",
       "collapsible",
       "table",
+      "data-table",
       "table-of-contents",
       "table-of-contents-lines",
       "separator",
@@ -158,7 +162,8 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   skeleton: "Skeleton",
   slider: "Slider",
   switch: "Switch",
-  table: "Table, TableHeader, TableBody, TableFooter, TableRow, TableHead, TableCell",
+  table: "Table, TableCaption, TableHeader, TableBody, TableFooter, TableRow, TableHead, TableCell",
+  "data-table": "DataTable, DataTableRow, DataTableHead, DataTableRowActions, and the re-exported table layout parts",
   "table-of-contents": "TableOfContents",
   "table-of-contents-lines": "TableOfContentsLines",
   tabs: "Tabs, TabsList, TabsTab, TabsPanel",

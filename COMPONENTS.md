@@ -18,6 +18,12 @@ authoritative for installable items.
 centered loader-only pending state; it keeps the label-sized content box so the button does not
 resize while the action runs.
 
+The table family is split on state. `table` presents rows — densities, borders, a pinned header,
+a caption, a loading state — and has no controls at all. `data-table` composes it and adds every
+control: the checkbox column, the selection action row, column sorting, and the per-row actions
+column. Open a gutter column on the root (`selectable`, `actionColumn`), never by writing cells
+into individual rows.
+
 Both Table of Contents variants own their constrained navigation rail: set a height with
 `className`, pass `rootRef` for an independently scrolling article, and they will keep the active
 entry centered while hiding only the rail's browser scrollbar. Their heading tracking and

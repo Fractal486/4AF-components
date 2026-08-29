@@ -336,7 +336,7 @@ import { Button } from "@/components/ui/button";
   TableRow,
 } from "@/components/ui/table";
 
-<Table selectable rows={people.map((person) => person.id)} onValueChange={setSelected}>
+<Table>
   <TableCaption>People</TableCaption>
   <TableHeader>
     <TableRow>
@@ -346,13 +346,61 @@ import { Button } from "@/components/ui/button";
   </TableHeader>
   <TableBody>
     {people.map((person) => (
-      <TableRow key={person.id} value={person.id} selectLabel={\`Select \${person.name}\`}>
+      <TableRow key={person.id}>
         <TableCell>{person.name}</TableCell>
         <TableCell>{person.role}</TableCell>
       </TableRow>
     ))}
   </TableBody>
 </Table>`,
+  },
+  "data-table": {
+    importName: "DataTable",
+    usage: `import {
+  DataTable,
+  DataTableHead,
+  DataTableRow,
+  DataTableRowActions,
+  TableBody,
+  TableCell,
+  TableHeader,
+} from "@/components/ui/data-table";
+
+<DataTable
+  selectable
+  selectionBar
+  actionColumn
+  rows={people.map((person) => person.id)}
+  value={selected}
+  onValueChange={setSelected}
+  sort={sort}
+  onSortChange={setSort}
+  selectionActions={<Button size="xs" variant="ghost">Export</Button>}
+>
+  <TableHeader>
+    <DataTableRow>
+      <DataTableHead sortKey="name">Name</DataTableHead>
+      <DataTableHead>Role</DataTableHead>
+    </DataTableRow>
+  </TableHeader>
+  <TableBody>
+    {sortPeople(people, sort).map((person) => (
+      <DataTableRow
+        key={person.id}
+        value={person.id}
+        selectLabel={\`Select \${person.name}\`}
+        actions={
+          <DataTableRowActions label={\`Actions for \${person.name}\`}>
+            <DropdownMenuItem>Edit</DropdownMenuItem>
+          </DataTableRowActions>
+        }
+      >
+        <TableCell>{person.name}</TableCell>
+        <TableCell>{person.role}</TableCell>
+      </DataTableRow>
+    ))}
+  </TableBody>
+</DataTable>`,
   },
   "table-of-contents": {
     importName: "TableOfContents",

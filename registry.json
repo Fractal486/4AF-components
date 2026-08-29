@@ -763,17 +763,13 @@
     {
       "name": "table",
       "type": "registry:ui",
-      "description": "A semantic data table with a composable caption, two densities, optional grid lines, a pinned header, a loading skeleton state, and an optional selection column whose header can become an action row; column headers cycle through ascending, descending and unsorted.",
+      "description": "A presentational semantic table with a composable caption, two densities, optional grid lines, a pinned header, and a loading skeleton state. It has no controls and no state; install data-table for selection, sorting and row actions.",
       "dependencies": [
-        "class-variance-authority",
-        "lucide-react",
-        "motion"
+        "class-variance-authority"
       ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json",
-        "http://localhost:3000/r/checkbox.json",
         "http://localhost:3000/r/skeleton.json"
       ],
       "files": [
@@ -786,6 +782,37 @@
           "path": "registry/ui/table/table.variants.ts",
           "type": "registry:ui",
           "target": "@ui/table.variants.ts"
+        }
+      ]
+    },
+    {
+      "name": "data-table",
+      "type": "registry:ui",
+      "description": "The stateful table: a checkbox column with an indeterminate select-all, a selection action row that covers the header, three-step column sorting, and a per-row actions column with a ready-made row menu that reveals on hover or focus. Composes the presentational table rather than replacing it.",
+      "dependencies": [
+        "class-variance-authority",
+        "lucide-react",
+        "motion"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/motion.json",
+        "http://localhost:3000/r/button.json",
+        "http://localhost:3000/r/checkbox.json",
+        "http://localhost:3000/r/dropdown-menu.json",
+        "http://localhost:3000/r/table.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/data-table/data-table.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-table.tsx"
+        },
+        {
+          "path": "registry/ui/data-table/data-table.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/data-table.variants.ts"
         }
       ]
     },

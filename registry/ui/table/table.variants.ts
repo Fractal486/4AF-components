@@ -51,63 +51,56 @@ export const tableVariants = cva("w-full border-separate border-spacing-0 captio
 /**
  * The composable native caption. `caption-bottom` on the table places it below the data while
  * the browser's native caption treatment keeps it centered.
+ *
+ * `text-xs`, matching the column headers rather than the data: both are meta-text *about* the
+ * table, and a caption set at the body's own size competes with the rows it is describing. At
+ * `text-sm` with a 16px gap this block stood 36px tall — one whole `sm` row — which is why it
+ * read as an extra row hanging off the bottom rather than as a label.
+ *
+ * Only the gap scales with density. The type doesn't, for the same reason the header's doesn't:
+ * meta-text has one size in this table, and it is the smaller one.
  */
-export const tableCaptionVariants = cva("mt-4 text-center text-sm text-muted-foreground");
+export const tableCaptionVariants = cva("text-center text-xs text-muted-foreground", {
+  variants: {
+    size: {
+      sm: "mt-2",
+      md: "mt-3",
+    },
+  },
+  defaultVariants: { size: "sm" },
+});
 
-/**
- * Row density, and the only axis this component has. `md` is a comfortable reading table;
- * `sm` is the one you reach for when the point is to see many rows at once.
- */
 /**
  * The header row, which is the element that actually pins.
  *
- * `-top-px` rather than flush: a sticky element settling on a fractional boundary opens a
- * sub-pixel seam above itself that the rows behind show through, which is why the seam
- * flickers while scrolling. Overhanging leaves nothing to open.
+ * `top-0`, flush. It used to be `-top-px`, to overhang the sub-pixel seam a sticky element opens
+ * above itself on a fractional scroll boundary — but a negative offset is not free: the header
+ * sits in flow at scroll 0 and pins a pixel higher the moment you scroll, so it visibly hops up
+ * and loses its top pixel on the first wheel notch. The seam is closed on the *cells* instead,
+ * with a 1px background-coloured shadow above each one, which paints over the gap without moving
+ * anything.
  *
  * `z-20`, not `z-10`, because cell content routinely positions itself — a Badge's label sits
  * at `relative z-10` — and a tie is broken by source order, in `<tbody>`'s favour.
  *
- * Positioned either way: unpinned it still needs to be a containing block, or the selection
- * bar it holds would be laid out against the scroll container instead of against the row.
+ * Positioned either way: unpinned it still needs to be a containing block, or an overlay laid
+ * across it — DataTable's selection bar — would be positioned against the scroll container
+ * instead of against the row.
  */
 export const tableHeaderRowVariants = cva("", {
   variants: {
     pinned: {
-      true: "sticky -top-px z-20",
+      true: "sticky top-0 z-20",
       false: "relative",
     },
   },
   defaultVariants: { pinned: false },
 });
 
-/**
- * The selection bar: an absolutely positioned cell laid over the labels, which stay in place
- * underneath it. Left padding clears the select-all column — 16px of checkbox between the
- * cell's own padding — so the count begins where the first label would.
- *
- * No fill of its own, so the labels can be seen crossing under it as they fade. The cells it
- * covers keep theirs, which is what stops the rows scrolling underneath a pinned header from
- * showing through — and is why the labels fade by their *content* rather than as whole cells:
- * a cell at `opacity: 0` takes its background and its borders with it.
- */
-export const tableSelectionBarVariants = cva(
-  [
-    "absolute inset-0 flex items-center justify-between gap-3",
-    "text-left text-xs font-medium text-foreground",
-  ],
-  {
-    variants: {
-      size: {
-        sm: "pr-2.5 pl-9",
-        md: "pr-3 pl-10",
-      },
-    },
-    defaultVariants: { size: "md" },
-  },
-);
-
 export const tableRowVariants = cva([
+  // Named, so a cell can react to the state of the row it sits in — which is how the
+  // actions column reveals itself on hover without every cell in the row hearing about it.
+  "group/row",
   // No transition. A row wash is feedback about where the cursor *is*, and easing it in
   // makes the pointer arrive before the answer does; the eye reads that as lag rather than
   // as polish. The colours below are quiet enough that there is nothing to soften anyway.
@@ -128,145 +121,150 @@ export const tableRowVariants = cva([
   "data-[selected]:bg-black/[0.02] dark:data-[selected]:bg-white/[0.02]",
 ]);
 
+/**
+ * Two tiers of rule, and the difference between them is what the eye reads as structure.
+ *
+ * A **boundary** — under the header, over the footer — is 1.5px at the full `border` token. It
+ * divides one kind of content from another, and it is the only line in the table that should
+ * announce itself.
+ *
+ * A **separator** — between rows, and between columns when `bordered` — is 1px at 60% of that
+ * token. It is there to be followed along, not looked at. At full strength every line in the
+ * table carried the same weight, so the header's rule read as one more row rule and the grid
+ * flattened into a wireframe.
+ *
+ * Both are on the cells, because `border-separate` ignores borders anywhere else. The `bordered`
+ * variants below deliberately don't restate a colour: the base owns it, so the vertical rules
+ * inherit the separator tier and only the bottom edge is lifted to the boundary one.
+ */
 export const tableHeadVariants = cva(
   [
     // Muted and small: a column header names the data, it isn't part of it. `whitespace-nowrap`
     // because a wrapped header changes the height of the whole header row.
     "text-left align-middle font-medium whitespace-nowrap text-muted-foreground",
-    // The row rule, on the cell because `border-separate` ignores it anywhere else.
-    "border-b border-border",
+    // The boundary. `border-border/60` first, then the bottom edge back up to full: tailwind-merge
+    // drops an earlier per-side colour when a later all-sides one lands, so the order is load-bearing.
+    "border-border/60 border-b-[1.5px] border-b-border",
   ],
   {
     variants: {
+      /**
+       * `sm`'s header matches its row height rather than sitting a step under it. The header
+       * carries the selection bar, and that bar holds `xs` Buttons at 24px — a 32px header left
+       * them 4px of clearance, which reads as cramped beside the 16px select-all checkbox they
+       * sit level with. At 36px the controls get 6px, and the label gets the same 10px of
+       * breathing room the `md` header has.
+       *
+       * `md` keeps its header a step under its row: there is no clearance problem at that size,
+       * and a header that reads as a band rather than as the first record is worth having where
+       * the space allows it.
+       */
       size: {
-        sm: "h-8 px-2.5 text-xs",
+        sm: "h-9 px-2.5 text-xs",
         md: "h-9 px-3 text-xs",
       },
       /**
-       * The vertical rule between columns, and it belongs to the cell's right edge. The last
-       * cell in a row doesn't get one: the wrapper's frame is already drawn there, and a
-       * second line on top of it reads heavier than the rest of the grid.
+       * The vertical rule between columns, and it belongs to the cell's **leading** edge — the
+       * cell that starts a new column draws the line that begins it. The first cell in a row
+       * doesn't get one: the wrapper's frame is already drawn there, and a second line on top
+       * of it reads heavier than the rest of the grid.
+       *
+       * Leading rather than trailing so a column can decline its own rule. On the trailing edge
+       * the line before the actions column belonged to the last *data* cell, which had no way to
+       * know what followed it — and `:last-child` was the selection bar's `<th>` anyway, so the
+       * old `not-last` quietly stopped excluding the right cell as soon as a selection stood.
        */
       bordered: {
-        true: "border-border not-last:border-r",
+        true: "not-first:border-l",
         false: "",
       },
       /**
-       * A fill, and only a fill: the pinning itself is on the row now, because an overlay can
-       * pin only if its containing block does — and the selection bar is that overlay. What
-       * the cells still have to do is be opaque, since the rows travel underneath them.
+       * A fill, and only a fill: the pinning itself is on the row, because an overlay can pin
+       * only if its containing block does. What the cells still have to do is be opaque,
+       * since the rows travel underneath them.
+       *
+       * The shadow is that fill continued one pixel upwards. A sticky element on a fractional
+       * scroll boundary opens a sub-pixel seam above itself for the rows behind to show
+       * through; painting over it here rather than overhanging the row keeps the header from
+       * hopping when scrolling starts.
        *
        * `bg-background` is the page's own ground; a table on a raised surface should pass its
        * fill through `className`.
        */
       pinned: {
-        true: "bg-background",
+        true: "bg-background shadow-[0_-1px_0_0_var(--color-background)]",
         false: "",
       },
     },
-    defaultVariants: { size: "md", bordered: false, pinned: false },
+    defaultVariants: { size: "sm", bordered: false, pinned: false },
   },
 );
 
-/**
- * The contents of a column header, which fade out under the selection bar and back in when it
- * leaves. On the same clock as the bar's own animation, so the two cross rather than one
- * finishing before the other starts.
- */
-export const tableHeadContentVariants = cva(
-  "block transition-[opacity] duration-(--duration-slow) ease-out",
-  {
-    variants: {
-      covered: {
-        true: "opacity-0",
-        false: "opacity-100",
-      },
-    },
-    defaultVariants: { covered: false },
-  },
-);
-
-export const tableCellVariants = cva(["border-b border-border align-middle text-foreground"], {
+export const tableCellVariants = cva(["border-b border-border/60 align-middle text-foreground"], {
   variants: {
+    /**
+     * `md` is the comfortable reading table, not a spacious one. At 48px it put 14px above and
+     * below a 20px line, which is what made the header-to-row relationship look like a
+     * different design at each density rather than one design at two scales. 44px gives 12px.
+     */
     size: {
       sm: "h-9 px-2.5 py-1.5",
-      md: "h-12 px-3 py-2",
+      md: "h-11 px-3 py-2",
     },
-    /**
-     * The vertical rule between columns, and it belongs to the cell's right edge. The last
-     * cell in a row doesn't get one: the wrapper's frame is already drawn there, and a
-     * second line on top of it reads heavier than the rest of the grid.
-     */
+    /** The vertical rule, on the cell's leading edge. See `tableHeadVariants`. */
     bordered: {
-      true: "border-border not-last:border-r",
+      true: "not-first:border-l",
       false: "",
     },
   },
-  defaultVariants: { size: "md", bordered: false },
+  defaultVariants: { size: "sm", bordered: false },
 });
 
 /**
- * The button a sortable column header wears. `inline-flex` rather than `flex`, because an
- * inline-level box is still placed by the cell's `text-align` — so a right-aligned numeric
- * column keeps its header against the right edge without the call site having to say so a
- * second time in flex terms.
+ * A gutter column: a cell that holds a control rather than data. `w-px` collapses it to its
+ * content — a checkbox or a menu button plus padding — so it takes the narrowest column the
+ * table can give it and the data columns keep the rest.
  *
- * Both this and the sort icon key off `aria-sort`, which lives on the `<th>`: that attribute
- * is defined for a column header, not for a button inside one, so the state is read from
- * the cell rather than duplicated onto the control.
+ * Deliberately not named for selection. The same cell is the checkbox column at the leading
+ * edge and the actions column at the trailing one, and a placeholder row draws it empty at
+ * both ends so a loading table keeps the shape of a loaded one.
  */
-export const tableSortButtonVariants = cva([
-  "inline-flex cursor-pointer items-center gap-1.5 rounded-[6px] align-middle select-none",
-  "transition-[color] duration-(--duration-fast) ease-out",
-  "outline-none focus-visible:ring-2 focus-visible:ring-ring",
-  "focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-  "disabled:cursor-default",
-  // The header stays muted until it is the one doing the sorting, and then it reads at full
-  // strength: a bright chevron beside a muted label looks like a stray glyph rather than
-  // like a column that is active.
-  "group-aria-[sort=ascending]/sort:text-foreground",
-  "group-aria-[sort=descending]/sort:text-foreground",
-]);
-
-/**
- * The sort icon, dimmer than the label beside it so an unsorted column reads as *offering* a
- * sort rather than announcing one. Hovering the header lifts it to the label's weight —
- * that is the affordance — and sorting lifts it past that.
- */
-export const tableSortIconVariants = cva([
-  "size-3.5 shrink-0",
-  "transition-[color] duration-(--duration-fast) ease-out",
-  "text-subtle-foreground group-hover/sort:text-muted-foreground",
-  "group-aria-[sort=ascending]/sort:text-foreground",
-  "group-aria-[sort=descending]/sort:text-foreground",
-]);
-
-/**
- * The selection column. `w-px` collapses it to its content — a checkbox plus padding — so
- * it takes the narrowest column the table can give it and the data columns keep the rest.
- */
-export const tableSelectCellVariants = cva("w-px border-b border-border align-middle", {
+export const tableGutterCellVariants = cva("w-px border-border/60 align-middle", {
   variants: {
+    /**
+     * Which rule this cell draws. A gutter cell sits in the header and in the body, so it can't
+     * take its weight from `pinned` — that axis is about `stickyHeader`, and a header row still
+     * needs the boundary rule when the table isn't pinned at all.
+     */
+    section: {
+      header: "border-b-[1.5px] border-b-border",
+      body: "border-b",
+    },
     size: {
       sm: "px-2.5",
       md: "px-3",
     },
     /**
-     * The vertical rule between columns, and it belongs to the cell's right edge. The last
-     * cell in a row doesn't get one: the wrapper's frame is already drawn there, and a
-     * second line on top of it reads heavier than the rest of the grid.
+     * A gutter column draws no vertical rule, in either direction, and that is the point of
+     * owning the leading edge: the checkbox column doesn't need one because it is already
+     * against the frame, and the actions column shouldn't have one because there is nothing
+     * behind it to divide — the ⋯ is hidden until the row is hovered, so the rule would be
+     * fencing off an empty strip.
      */
     bordered: {
-      true: "border-border not-last:border-r",
+      true: "",
       false: "",
     },
-    /** A fill, so rows travelling underneath don't show through. See `tableHeadVariants`. */
+    /**
+     * A fill, so rows travelling underneath don't show through, plus the pixel of it above that
+     * closes the sticky seam. See `tableHeadVariants`.
+     */
     pinned: {
-      true: "bg-background",
+      true: "bg-background shadow-[0_-1px_0_0_var(--color-background)]",
       false: "",
     },
   },
-  defaultVariants: { size: "md", bordered: false, pinned: false },
+  defaultVariants: { section: "body", size: "sm", bordered: false, pinned: false },
 });
 
 export type TableVariants = VariantProps<typeof tableCellVariants>;

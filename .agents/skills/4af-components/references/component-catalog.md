@@ -60,7 +60,7 @@ Toolbar action controls are fixed at 24px high with 6px corners inside an 8px to
 
 ## Installable catalog
 
-The catalog currently contains 45 installable UI items. Verify the count and names with
+The catalog currently contains 46 installable UI items. Verify the count and names with
 `pnpm 4af list` before making registry-wide claims.
 
 ### Actions
@@ -112,7 +112,8 @@ The catalog currently contains 45 installable UI items. Verify the count and nam
 | --- | --- | --- |
 | `tabs` | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | Segment, pill, or underline tabs with a traveling indicator; segment tracks use 8px corners and their tabs use 6px corners. |
 | `collapsible` | `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` | Disclosure rows (`plain`/`card`) with a rotating chevron, shared 6px plain or 8px card trigger corners, a height slide so following rows travel rather than jump, and a blur-fade on the content. |
-| `table` | `Table`, `TableCaption`, and header/body/footer/row/head/cell parts | Data tables in two densities, with an optional checkbox column and a caption pinned below the scrolling box. `selectionActions` accepts compact 24px Button actions; a `sortKey` adds a three-step sort control with `ChevronsUpDown` when unsorted. |
+| `table` | `Table`, `TableCaption`, and header/body/footer/row/head/cell parts | Presentational tables in two densities (`sm` by default), with a pinned header, optional grid lines, a caption pinned below the scrolling box, and a loading state. No controls and no state — install `data-table` for any of those. |
+| `data-table` | `DataTable`, `DataTableRow`, `DataTableHead`, `DataTableRowActions`, plus the re-exported table layout parts | The stateful table: checkbox column with an indeterminate select-all, a selection action row over the header taking compact 24px Button actions, three-step `sortKey` sorting with `ChevronsUpDown` when unsorted, and a per-row actions column. Composes `table`. |
 | `table-of-contents` | `TableOfContents` | Heading navigation with a dashed inactive rail, smooth document scrolling, long-prose fallback, and `span` or `single` active marker variants. A height-constrained rail hides its browser scrollbar and smoothly centers every active entry, including endpoints; pass `rootRef` for an independently scrolling article. |
 | `table-of-contents-lines` | `TableOfContentsLines` | Dense line-based heading navigation with one active heading, a longer header rule, equal shorter rules between headings (none below the final heading), heading-relative indentation, and an expanding hover treatment. A height-constrained rail hides its browser scrollbar and smoothly centers every active entry, including endpoints; pass `rootRef` for an independently scrolling article. |
 | `separator` | `Separator` | An accessible horizontal or vertical divider built on Base UI Separator. |
@@ -393,43 +394,48 @@ viewport and scrolling strategy.
 `sidebar-layout` is the optional shell: content surface, page header, collapse control,
 title, header actions.
 
-### Table
+### Table and Data Table
 
-Native `<table>` semantics. `selectable` on the root adds the checkbox column — do not add a
-cell to each row, `TableRow` renders its own.
+Two installable items, split on state. `table` is presentation only — markup, densities,
+`bordered`, `stickyHeader`, `TableCaption`, `loading`, the scroll container — with no controls and
+no Motion, Lucide or Checkbox. `data-table` adds every control and composes `table`.
 
-| Need | Prop |
-| --- | --- |
-| Show the checkbox column | `selectable` |
-| Loading placeholders | `loading` (+ `loadingRows`); shape is read off the header, sets `aria-busy` |
-| Frame plus rules between columns | `bordered` (row rules are always on) |
-| Pin the header | `stickyHeader` (on by default; needs a bounded `wrapperClassName` height) |
-| Sortable column | `sortKey` on `TableHead`; read `sort` / `onSortChange` and order the rows yourself |
-| What select-all covers | `rows` (the page you are rendering, not every row you have) |
-| Selection state | `value` / `onValueChange`, or `defaultValue` |
-| Name a row's checkbox | `selectLabel` on `TableRow` — give it the row's subject |
-| Header becomes an action row while selecting | `selectionBar` + `selectionActions` (needs `selectable`) |
+Install `table` if the table only presents rows; `data-table` the moment it needs a checkbox, a
+sort control or a row menu. Do not add controls to `table`.
+
+`data-table` re-exports `TableCaption`, `TableHeader`, `TableBody`, `TableFooter` and `TableCell`
+unchanged. `DataTableRow` replaces `TableRow`; `DataTableHead` replaces `TableHead` and must be
+used for **every** header cell, sortable or not, or the label will not fade under the selection bar.
+
+| Need | Item | Prop |
+| --- | --- | --- |
+| Density, grid lines, pinned header, caption | `table` | `size` (`sm` 36px rows, `md` 44px, both with a 36px header), `bordered`, `stickyHeader`, `TableCaption` first |
+| Loading placeholders | either | `loading` (+ `loadingRows`); shape is read off the header, sets `aria-busy` |
+| Checkbox column | `data-table` | `selectable` |
+| What select-all covers | `data-table` | `rows` (the page you are rendering, not every row you have) |
+| Selection state | `data-table` | `value` / `onValueChange`, or `defaultValue` |
+| Name a row's checkbox | `data-table` | `selectLabel` on `DataTableRow` |
+| Header becomes an action row while selecting | `data-table` | `selectionBar` + `selectionActions` (needs `selectable`) |
+| Sortable column | `data-table` | `sortKey` on `DataTableHead` |
+| Per-row menu | `data-table` | `actionColumn` on the root + `actions` on each `DataTableRow` |
+
+Columns are opened on the **root**, never per row: `selectable` and `actionColumn` add the gutter
+cells to every row, header and placeholders included. Do not write those cells by hand.
 
 Sorting cycles ascending → descending → unsorted; switching columns restarts at ascending. The
-component does not sort rows — it owns the control, the state and `aria-sort`, and reports
-`{ column, direction } | null`.
+component owns the control, the state and `aria-sort` and reports `{ column, direction } | null` —
+order the rows yourself.
 
-`TableCaption` is the first child for a centered caption pinned below the scrolling table while
-the native caption remains available to assistive technology. `selectionActions` sits in the
-selection row and is intended for the Button family's compact `xs` actions. An unsorted sortable
-header shows `ChevronsUpDown`; clearing a descending sort swaps it back immediately without
-rotating the double-chevron.
+`selectionBar` swaps the labels for an `N selected` count with `selectionActions` at the right end,
+keeping the select-all in place. The count covers the whole selection, not only the part `rows`
+covers; use `xs` Buttons. A row is selectable when it has a `value`; one without still gets an
+empty cell so columns stay aligned. Select-all is a union. Rows expose `data-selected`, not
+`aria-selected`, which is invalid on a plain table row.
 
-`selectionBar` swaps the column labels for an `N selected` count and puts `selectionActions` at
-the right end, keeping the select-all in place. The count covers the whole selection, not only
-the part `rows` covers.
-
-The scroll container carries the library's thin scrollbar. Pinned header cells take
-`bg-background`; override through `className` on `TableHead` for a table on a raised surface.
-
-A row is selectable when it has a `value`; one without still gets an empty cell so columns stay
-aligned. Select-all is a union, so selected rows outside `rows` survive it. Rows expose
-`data-selected`, not `aria-selected`, which is invalid on a plain table row.
+For the row menu use `DataTableRowActions` — it owns the trigger and takes `DropdownMenuItem`
+children; do not hand-roll one. Its `label` is required: give it the row's subject. The contents
+are hidden until the row is hovered, and also shown on visible focus in the row, while the menu is
+open, and where the pointer has no hover; selection does not reveal them.
 
 ### Toast
 

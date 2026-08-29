@@ -1,12 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { Badge } from "@/registry/ui/badge/badge";
-import { Button } from "@/registry/ui/button/button";
-import { CopyButton } from "@/registry/ui/copy-button/copy-button";
 import {
   Table,
-  type TableSort,
   TableBody,
   TableCaption,
   TableCell,
@@ -32,183 +28,75 @@ const RELEASES = [
 
 const NUMBER = new Intl.NumberFormat("en-GB");
 
-type Release = (typeof RELEASES)[number];
-
-/**
- * What each sortable column is worth, per row. The table owns the control and the state; the
- * rows are the demo's to order, because only the demo knows that "18,204" is a number and
- * "18 Feb" is a date rather than the string it is printed as.
- */
-const SORT_VALUES: Record<string, (release: Release) => string | number> = {
-  version: (release) => release.version,
-  channel: (release) => release.channel,
-  downloads: (release) => release.downloads,
-  published: (release) => RELEASES.findIndex((entry) => entry.id === release.id),
-};
-
-function sorted(releases: readonly Release[], sort: TableSort | null): readonly Release[] {
-  if (!sort) return releases;
-
-  const value = SORT_VALUES[sort.column];
-  if (!value) return releases;
-
-  const direction = sort.direction === "asc" ? 1 : -1;
-  return [...releases].sort((a, b) => {
-    const left = value(a);
-    const right = value(b);
-    if (typeof left === "number" && typeof right === "number") {
-      return (left - right) * direction;
-    }
-    return String(left).localeCompare(String(right)) * direction;
-  });
-}
+const TOTAL = RELEASES.reduce((sum, release) => sum + release.downloads, 0);
 
 export const tableEntry = defineEntry({
   slug: "table",
   name: "Table",
   controls: {
-    size: select(SIZES, "md"),
-    selectable: bool(true, "Checkbox column"),
-    selectionBar: bool(true, "Selection action row"),
+    size: select(SIZES, "sm"),
     bordered: bool(false, "Grid lines"),
     scroll: bool(true, "Bounded height"),
     loading: bool(false, "Loading"),
     footer: bool(false, "Footer"),
     caption: bool(true, "Caption"),
   },
-  render({ size, selectable, selectionBar, bordered, scroll, loading, footer, caption }) {
+  render({ size, bordered, scroll, loading, footer, caption }) {
     return (
-      <TableDemo
-        size={size}
-        selectable={selectable}
-        selectionBar={selectionBar}
-        bordered={bordered}
-        scroll={scroll}
-        loading={loading}
-        footer={footer}
-        caption={caption}
-      />
+      // `self-start` keeps the table at the top of the preview box rather than floating in
+      // the middle of it — a table is read from its header down, not from its centre out.
+      <div className="w-full max-w-xl self-start">
+        <Table
+          size={size}
+          bordered={bordered}
+          loading={loading}
+          // The header pins to the scroll container, so it needs one with a height to pin to.
+          wrapperClassName={scroll ? "max-h-64" : undefined}
+        >
+          {caption && <TableCaption>Release history</TableCaption>}
+          <TableHeader>
+            <TableRow>
+              <TableHead>Version</TableHead>
+              <TableHead>Channel</TableHead>
+              {/* Numbers right-align so their digits stack; `tabular-nums` stops the column
+                  twitching as the figures change width. */}
+              <TableHead className="text-right">Downloads</TableHead>
+              <TableHead className="text-right">Published</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {RELEASES.map((release) => (
+              <TableRow key={release.id}>
+                <TableCell className="font-medium">{release.version}</TableCell>
+                <TableCell>
+                  <Badge
+                    size="sm"
+                    variant="outline"
+                    status={release.channel === "stable" ? "neutral" : "warning"}
+                  >
+                    {release.channel}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {NUMBER.format(release.downloads)}
+                </TableCell>
+                <TableCell className="text-right text-muted-foreground">
+                  {release.published}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+          {footer && (
+            <TableFooter>
+              <TableRow>
+                <TableCell colSpan={2}>All releases</TableCell>
+                <TableCell className="text-right tabular-nums">{NUMBER.format(TOTAL)}</TableCell>
+                <TableCell />
+              </TableRow>
+            </TableFooter>
+          )}
+        </Table>
+      </div>
     );
   },
 });
-
-function TableDemo({
-  size,
-  selectable,
-  selectionBar,
-  bordered,
-  scroll,
-  loading,
-  footer,
-  caption,
-}: {
-  size: (typeof SIZES)[number];
-  selectable: boolean;
-  selectionBar: boolean;
-  bordered: boolean;
-  scroll: boolean;
-  loading: boolean;
-  footer: boolean;
-  caption: boolean;
-}) {
-  const [selected, setSelected] = useState<string[]>(["4.1.3"]);
-  const [sort, setSort] = useState<TableSort | null>(null);
-  const releases = sorted(RELEASES, sort);
-  const totals = RELEASES.filter((release) => selected.includes(release.id));
-  // Spread rather than the readonly tuple: a union of two differently-shaped array types
-  // loses `reduce`'s inference, and the accumulator comes back as a release.
-  const counted = totals.length > 0 ? totals : [...RELEASES];
-  const downloads = counted.reduce((sum, release) => sum + release.downloads, 0);
-
-  return (
-    // `self-start` keeps the table at the top of the preview box rather than floating in
-    // the middle of it — a table is read from its header down, not from its centre out.
-    <div className="w-full max-w-xl self-start">
-      <Table
-        size={size}
-        selectable={selectable}
-        bordered={bordered}
-        loading={loading}
-        selectionBar={selectionBar}
-        selectionActions={
-          <>
-            {/* Real actions, both of them: the count on its own tells you nothing about
-                whether the row is wired up. */}
-            <CopyButton
-              size="xs"
-              variant="ghost"
-              value={() => totals.map((release) => release.version).join("\n")}
-            >
-              Copy
-            </CopyButton>
-            <Button size="xs" variant="ghost" onClick={() => setSelected([])}>
-              Clear
-            </Button>
-          </>
-        }
-        // The header pins to the scroll container, so it needs one with a height to pin to.
-        wrapperClassName={scroll ? "max-h-64" : undefined}
-        sort={sort}
-        onSortChange={setSort}
-        rows={RELEASES.map((release) => release.id)}
-        value={selected}
-        onValueChange={setSelected}
-      >
-        {caption && <TableCaption>Release history</TableCaption>}
-        <TableHeader>
-          <TableRow>
-            <TableHead sortKey="version">Version</TableHead>
-            <TableHead sortKey="channel">Channel</TableHead>
-            {/* Numbers right-align so their digits stack; `tabular-nums` stops the column
-                twitching as the figures change width. */}
-            <TableHead sortKey="downloads" className="text-right">
-              Downloads
-            </TableHead>
-            <TableHead sortKey="published" className="text-right">
-              Published
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {releases.map((release) => (
-            <TableRow
-              key={release.id}
-              value={release.id}
-              selectLabel={`Select ${release.version}`}
-            >
-              <TableCell className="font-medium">{release.version}</TableCell>
-              <TableCell>
-                <Badge
-                  size="sm"
-                  variant="outline"
-                  status={release.channel === "stable" ? "neutral" : "warning"}
-                >
-                  {release.channel}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-right tabular-nums">
-                {NUMBER.format(release.downloads)}
-              </TableCell>
-              <TableCell className="text-right text-muted-foreground">
-                {release.published}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-        {footer && (
-          <TableFooter>
-            <TableRow>
-              <TableCell colSpan={2}>
-                {totals.length > 0 ? `${totals.length} selected` : "All releases"}
-              </TableCell>
-              <TableCell className="text-right tabular-nums">
-                {NUMBER.format(downloads)}
-              </TableCell>
-              <TableCell />
-            </TableRow>
-          </TableFooter>
-        )}
-      </Table>
-    </div>
-  );
-}

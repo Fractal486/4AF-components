@@ -1,0 +1,149 @@
+---
+title: Data Table
+description: The stateful table — a checkbox column, a selection action row, three-step column sorting, and a per-row actions menu.
+---
+
+<ComponentDemo name="data-table" />
+<ComponentReference name="data-table" />
+
+## API
+
+**Main exports:** `DataTable`, `DataTableRow`, `DataTableHead`, `DataTableRowActions`, `TableSort`,
+`TableSortDirection`
+
+`TableCaption`, `TableHeader`, `TableBody`, `TableFooter` and `TableCell` are re-exported from
+[`table`](/docs/table) unchanged, so a data table is one import. `DataTableRow` replaces
+`TableRow` and `DataTableHead` replaces `TableHead`.
+
+Use `DataTableHead` for every header cell, sortable or not — a plain `TableHead` won't fade under
+the selection bar.
+
+## Props
+
+### DataTable
+
+Takes every [`Table`](/docs/table) prop and adds:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `selectable` | `boolean` | `false` | Adds the checkbox column on the left. |
+| `rows` | `readonly string[]` | `[]` | Row values the select-all covers. |
+| `value` | `readonly string[]` | — | Selected row values, controlled. |
+| `defaultValue` | `readonly string[]` | `[]` | Selected row values, uncontrolled. |
+| `onValueChange` | `(value: string[]) => void` | — | Fired with the next selection. |
+| `selectAllLabel` | `string` | `"Select all rows"` | Names the select-all checkbox. |
+| `selectionBar` | `boolean` | `false` | Turn the header into an action row while anything is selected. |
+| `selectionActions` | `ReactNode` | — | Buttons for the right end of that row. |
+| `actionColumn` | `boolean` | `false` | Adds the per-row actions column on the right. |
+| `actionColumnLabel` | `string` | `"Actions"` | Names that column for assistive technology. |
+| `sort` | `TableSort \| null` | — | Active column and direction, controlled. |
+| `defaultSort` | `TableSort \| null` | `null` | Active column and direction, uncontrolled. |
+| `onSortChange` | `(sort: TableSort \| null) => void` | — | Fired with the next step of the cycle. |
+
+### DataTableRow
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `value` | `string` | Makes the row selectable and names it in the selection. |
+| `selectLabel` | `string` | Names this row's checkbox. Defaults to `"Select row"`. |
+| `actions` | `ReactNode` | What goes in the actions column. Needs `actionColumn`. |
+
+### DataTableHead
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `sortKey` | `string` | Makes the column sortable and names it in `TableSort.column`. |
+
+`TableSort` is `{ column: string; direction: "asc" \| "desc" }`.
+
+### DataTableRowActions
+
+Takes every `DropdownMenuContent` prop — `side`, `align`, `sideOffset` — and adds:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `label` | `string` | — | **Required.** Names this row's menu. |
+| `icon` | `ReactNode` | `<Ellipsis />` | The trigger's glyph. |
+| `children` | `ReactNode` | — | The menu's items. |
+
+## Columns
+
+`selectable` and `actionColumn` go on the root, not on individual rows: the header and the
+placeholder rows have to grow the column too. Never write a gutter cell into a row by hand.
+
+## Selection
+
+A row is selectable when it has a `value`; one without still gets an empty cell, so a "no results"
+row keeps its columns aligned.
+
+`rows` sets what select-all covers — pass the page being rendered, not every row held. Selecting
+all is a union, so selected values outside `rows` are kept. The header checkbox is indeterminate
+while the selection is partial and checks from there.
+
+Rows expose `data-selected`. `aria-selected` is not set, being invalid on a plain `table` row.
+
+`selectionBar` turns the header into an action row while anything is selected: the labels give way
+to a count and `selectionActions` sits at the right end, with the select-all still in place so the
+selection can be cleared. The count covers the whole selection, not only the part `rows` covers.
+Use `size="xs"` for the actions.
+
+```tsx
+<DataTable
+  selectable
+  selectionBar
+  selectionActions={<Button size="xs" variant="ghost">Export</Button>}
+>
+```
+
+## Row actions
+
+Each row's `actions` goes in the actions column. `DataTableRowActions` is the menu that normally
+belongs there — it owns the trigger and you own the items:
+
+```tsx
+<DataTableRow
+  value={release.id}
+  actions={
+    <DataTableRowActions label={`Actions for ${release.version}`}>
+      <DropdownMenuItem>Pin release</DropdownMenuItem>
+      <DropdownMenuItem variant="destructive">Yank</DropdownMenuItem>
+    </DataTableRowActions>
+  }
+>
+```
+
+`label` is required: name each menu for its row, not `"More actions"` repeated down a column. The
+trigger's size follows the table's density.
+
+`actions` is a `ReactNode`, so a row can pass plain buttons, a link, or its own `DropdownMenu`
+instead.
+
+The contents are hidden until the row is hovered, and also shown on visible focus within the row,
+while the menu is open, and wherever the pointer has no hover. Selection does not reveal them.
+Clicks inside the cell don't bubble to the row.
+
+With `bordered`, neither gutter column draws a vertical rule beside it.
+
+## Sorting
+
+`sortKey` cycles ascending, descending, unsorted; switching columns restarts at ascending.
+`aria-sort` is set on the `<th>`. An unsorted sortable header shows `ChevronsUpDown`.
+
+Ordering the rows is the caller's — the component owns the control and the state only:
+
+```tsx
+const [sort, setSort] = useState<TableSort | null>(null);
+const rows = useMemo(() => sortPeople(people, sort), [people, sort]);
+
+<DataTable sort={sort} onSortChange={setSort}>
+  <DataTableHead sortKey="name">Name</DataTableHead>
+```
+
+## Loading
+
+As on the base table, plus: placeholder rows grow the gutter cells and stay in column, and the
+select-all and sort controls are disabled.
+
+```tsx
+<DataTable selectable actionColumn loading loadingRows={8}>
+```

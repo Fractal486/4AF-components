@@ -1,6 +1,6 @@
 ---
 title: Table
-description: A semantic data table with optional selection, column sorting, grid lines, and a composable caption.
+description: A presentational semantic table with two densities, a pinned header, grid lines, a composable caption, and a loading state.
 ---
 
 <ComponentDemo name="table" />
@@ -9,11 +9,14 @@ description: A semantic data table with optional selection, column sorting, grid
 ## API
 
 **Main exports:** `Table`, `TableCaption`, `TableHeader`, `TableBody`, `TableFooter`, `TableRow`,
-`TableHead`, `TableCell`, `TableSort`
+`TableHead`, `TableCell`
 
-Native `<table>` semantics with the library's row rules, two densities, an optional checkbox
-column, optional composable caption, optional grid lines, three-step column sorting, and a loading state.
-The Checkbox in the selection column is Base UI's; the rest is plain HTML.
+Native `<table>` semantics with the library's row rules, two densities, a pinned header, optional
+grid lines, an optional caption, and a loading state.
+
+This table has no controls and no state. For a checkbox column, a selection action row, column
+sorting, or a per-row actions menu, install [`data-table`](/docs/data-table), which composes these
+parts.
 
 ## Props
 
@@ -21,129 +24,67 @@ The Checkbox in the selection column is Base UI's; the rest is plain HTML.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `size` | `"sm" \| "md"` | `"md"` | Row density. |
+| `size` | `"sm" \| "md"` | `"sm"` | Row density. |
 | `bordered` | `boolean` | `false` | Frame around the table and a rule between every pair of columns. Row rules are always drawn. |
 | `stickyHeader` | `boolean` | `true` | Pins the header row to the top of the scroll container. |
-| `selectable` | `boolean` | `false` | Adds the checkbox column on the left. |
-| `rows` | `readonly string[]` | `[]` | Row values the select-all covers. |
-| `value` | `readonly string[]` | — | Selected row values, controlled. |
-| `defaultValue` | `readonly string[]` | `[]` | Selected row values, uncontrolled. |
-| `onValueChange` | `(value: string[]) => void` | — | Fired with the next selection. |
-| `selectAllLabel` | `string` | `"Select all rows"` | Names the select-all checkbox. |
-| `selectionBar` | `boolean` | `false` | Turn the header into an action row while anything is selected. |
-| `selectionActions` | `ReactNode` | — | Buttons for the right end of that row. |
-| `sort` | `TableSort \| null` | — | Active column and direction, controlled. |
-| `defaultSort` | `TableSort \| null` | `null` | Active column and direction, uncontrolled. |
-| `onSortChange` | `(sort: TableSort \| null) => void` | — | Fired with the next step of the cycle. |
 | `loading` | `boolean` | `false` | Fill the body with placeholder rows and mark the table busy. |
 | `loadingRows` | `number` | `5` | How many placeholder rows to draw. |
 | `wrapperClassName` | `string` | — | Class for the scroll container. |
+| `rowComponent` | `ComponentType` | `TableRow` | The component placeholder rows are built from. `DataTable` sets this; you should not need to. |
+
+The other parts take their native element's props and add nothing of their own.
+
+`sm` is 36px rows, `md` is 44px; both use a 36px header.
 
 ## Caption
 
-Use `TableCaption` as the first child when the table needs a concise caption. The visible caption
-is centered below the scrolling table, while the table retains its native caption semantics for
-assistive technology.
+`TableCaption` must be the first child, as a native `<caption>` must be. The visible caption is
+centered below the scrolling table while the native one stays available to assistive technology.
 
 ```tsx
 <Table>
   <TableCaption>Release history</TableCaption>
-  <TableHeader>
-    {/* ... */}
-  </TableHeader>
+  <TableHeader>{/* ... */}</TableHeader>
 </Table>
-```
-
-### TableCaption
-
-Accepts the native `<caption>` props. Use `className` to add or override presentation details.
-
-### TableRow
-
-| Prop | Type | Description |
-| --- | --- | --- |
-| `value` | `string` | Makes the row selectable and names it in the selection. |
-| `selectLabel` | `string` | Names this row's checkbox. Defaults to `"Select row"`. |
-
-### TableHead
-
-| Prop | Type | Description |
-| --- | --- | --- |
-| `sortKey` | `string` | Makes the column sortable and names it in `TableSort.column`. |
-
-`TableSort` is `{ column: string; direction: "asc" \| "desc" }`.
-
-## Selection
-
-`selectable` adds the column; the rows are unchanged. A row is selectable when it has a `value`;
-one without still gets an empty cell, so a "no results" row keeps the columns aligned.
-
-`rows` sets what select-all covers — pass the page being rendered, not every row held. Selecting
-all is a union, so selected values outside `rows` are kept. The header checkbox is indeterminate
-while the selection is partial and checks from there.
-
-Rows expose `data-selected`. `aria-selected` is not set, being invalid on a plain `table` row.
-
-`selectionBar` turns the header into an action row while anything is selected: the labels give
-way to a count, `selectionActions` sits at the right end, and the select-all checkbox stays, so
-the selection can still be cleared. The count covers the whole selection, not only the part
-`rows` covers. The bar fades and slides in from above and leaves the same way; the labels are
-`inert` while it covers them.
-
-Use the button family's `size="xs"` for compact 24px actions in the row.
-
-```tsx
-<Table
-  selectable
-  selectionBar
-  selectionActions={<Button size="xs" variant="ghost">Export</Button>}
->
-```
-
-## Sorting
-
-`sortKey` turns a header into a button that cycles ascending, descending, unsorted. Switching
-columns restarts at ascending. `aria-sort` is set on the `<th>`, and a header without a
-`sortKey` stays a plain header.
-
-An unsorted sortable header shows `ChevronsUpDown` to offer both directions. Active sorting uses
-an up or down chevron; clearing a descending sort brings back `ChevronsUpDown` immediately rather
-than rotating the icon.
-
-Ordering the rows is the caller's, since only the call site knows what the values are:
-
-```tsx
-const [sort, setSort] = useState<TableSort | null>(null);
-const rows = useMemo(() => sortPeople(people, sort), [people, sort]);
-
-<Table sort={sort} onSortChange={setSort}>
-  <TableHead sortKey="name">Name</TableHead>
 ```
 
 ## Loading
 
-`loading` replaces the body's rows with placeholders and sets `aria-busy` on the table. The
-header keeps its labels — the columns are known before the data is — with its sort controls and
-select-all disabled.
+`loading` replaces the body's rows with placeholders and sets `aria-busy`. The header keeps its
+labels. Placeholder rows take their shape from the header you wrote, so give the header the
+columns you intend to render.
 
 ```tsx
 <Table loading={isLoading} loadingRows={8}>
 ```
 
-Placeholder rows take their shape from the header you wrote, so they line up with the real
-columns. Give the header the columns you intend to render.
-
 ## Layout
 
 The table sits in a scroll container carrying the library's thin scrollbar; style it with
-`wrapperClassName`. With `bordered`, the frame is drawn on that container, so it rounds with it.
+`wrapperClassName`. With `bordered`, the frame is drawn on that container.
 
-The header pins to that container, which needs a bounded height before it has anywhere to pin
-to:
+The header needs a bounded height to pin to:
 
 ```tsx
 <Table wrapperClassName="max-h-80">
 ```
 
-Pinned header cells take `bg-background`, since rows scroll underneath them. Pass another fill
-through `className` on `TableHead` when the table sits on a raised surface.
+Pinned header cells take `bg-background`. Pass another fill through `className` on `TableHead`
+when the table sits on a raised surface.
+
+## Rules
+
+Boundaries — under the header, over the footer, and the frame when `bordered` — are 1.5px at the
+full `border` token. Separators between rows and columns are 1px at 60% of it.
+
+A vertical rule belongs to the leading edge of the cell that starts the column, which is how a
+column declines its own rule: `data-table`'s checkbox and actions columns draw none.
+
+## Composing on top
+
+`useTableContext()` returns `size`, `bordered`, `stickyHeader`, `loading`, `loadingRows` and
+`columns`. `useTableSection()` returns `"header" | "body" | "footer"` — a row can't infer this,
+since a `<thead>` and a `<tbody>` hold identical `<tr>`s.
+
+With `rowComponent`, these are what `data-table` builds on. Reach for them if you are adding a
+column of your own.
