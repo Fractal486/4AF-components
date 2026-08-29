@@ -24,13 +24,21 @@ import {
 } from "@/registry/ui/dropdown-menu/dropdown-menu";
 import {
   Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
   TableHead,
+  TableHeader,
   TableRow,
   useTableContext,
   useTableSection,
   type TableProps,
 } from "@/registry/ui/table/table";
-import { tableGutterCellVariants } from "@/registry/ui/table/table.variants";
+// `ui/ui/` is not a typo: a sibling `.variants` file is imported through the alias in
+// `tsconfig.json` so the registry build rewrites it to `@/components/ui/table.variants` in the
+// target project. The plain `@/registry/ui/table/…` form resolves here and installs broken.
+import { tableGutterCellVariants } from "@/registry/ui/ui/table.variants";
 import {
   dataTableHeadContentVariants,
   dataTableRowActionsTriggerVariants,
@@ -608,11 +616,9 @@ export function DataTableRowActions({
  * The layout parts are the base table's, unchanged, and re-exported so a data table is one
  * import. `DataTableRow` replaces `TableRow` and `DataTableHead` replaces `TableHead`; the
  * rest are the same components a plain table uses.
+ *
+ * Re-exported from the import above rather than with `export … from`, which the registry build
+ * does not rewrite — it leaves the source path half-translated and the installed file fails to
+ * resolve it.
  */
-export {
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableFooter,
-  TableHeader,
-} from "@/registry/ui/table/table";
+export { TableBody, TableCaption, TableCell, TableFooter, TableHeader };

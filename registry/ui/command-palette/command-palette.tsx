@@ -1303,16 +1303,11 @@ export function CommandPalette({
  * bottom padding under the bar. Keeping both inside the `<form>` means `type="submit"`
  * and Enter still submit natively, with no `form="id"` plumbing.
  */
-export function CommandPanelBody({
-  className,
-  children,
-}: {
-  className?: string;
-  children?: ReactNode;
-}) {
+export function CommandPanelBody({ className, children, ...props }: ComponentProps<"div">) {
   return (
     <div
       className={cn("min-h-0 flex-1 overflow-y-auto overscroll-contain p-4", SCROLLBAR, className)}
+      {...props}
     >
       {children}
     </div>
