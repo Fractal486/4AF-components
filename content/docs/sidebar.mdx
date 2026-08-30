@@ -52,7 +52,8 @@ row, use `SidebarMenuCollapsible` with `SidebarMenuCollapsibleTrigger` and
 The trigger includes a trailing `ChevronDown` by default. It points right while closed and
 rotates down while open. Pass `chevron={false}` only when the trigger supplies a custom
 indicator. A sibling `SidebarMenuAction` is placed immediately before the chevron so the
-chevron remains the final icon in the row. The collapsible root accepts Base UI's `defaultOpen`,
+chevron remains the final icon in the row. Hovering a nested row keeps its highlight local to
+that row instead of highlighting the collapsible parent. The collapsible root accepts Base UI's `defaultOpen`,
 `open`, `onOpenChange`, and `disabled` props.
 
 ## Header composition

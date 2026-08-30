@@ -333,6 +333,12 @@ describe("SidebarMenuCollapsible", () => {
 
     expect(trigger.lastElementChild).toBe(chevron);
     expect(trigger).toHaveClass(
+      "group-has-[>_[data-slot=sidebar-menu-action]:hover]/menu-item:bg-muted",
+    );
+    expect(trigger).not.toHaveClass(
+      "group-has-data-[slot=sidebar-menu-action]/menu-item:group-hover/menu-item:bg-muted",
+    );
+    expect(trigger).toHaveClass(
       "group-has-data-[slot=sidebar-menu-action]/menu-collapsible:pr-2!",
     );
     expect(action).toHaveClass(
