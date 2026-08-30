@@ -26,7 +26,9 @@ export const sidebarMenuButtonVariants = cva(
     // Collapsed to the icon rail, every row becomes a square with the glyph centred.
     // `!` because the size/padding above are set per-size and would otherwise win.
     "group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2!",
-    "[&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
+    // Collapsible triggers append their trailing chevron after the label, so labels
+    // must be shrinkable without relying on being the final child.
+    "[&>span]:min-w-0 [&>span]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
   ],
   {
     variants: {

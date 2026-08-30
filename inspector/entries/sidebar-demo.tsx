@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ChevronDown,
   Files,
   Inbox,
   LayoutDashboard,
@@ -311,7 +310,6 @@ export function SidebarDemo({
                             >
                               <Inbox />
                               <span>Folders</span>
-                              <ChevronDown className="ml-auto -rotate-90 transition-[rotate] duration-(--duration-chevron) ease-out [[data-panel-open]_&]:rotate-0" />
                             </SidebarMenuCollapsibleTrigger>
                             <SidebarMenuCollapsibleContent>
                               <SidebarMenuSub>
@@ -568,9 +566,6 @@ export function SidebarDemo({
                       <SidebarMenuCollapsibleTrigger tooltip="Projects">
                         <Search />
                         <span>Browse</span>
-                        <ChevronDown
-                          className="ml-auto -rotate-90 transition-[rotate] duration-(--duration-chevron) ease-out [[data-panel-open]_&]:rotate-0"
-                        />
                       </SidebarMenuCollapsibleTrigger>
                       <SidebarMenuCollapsibleContent>
                         <SidebarMenuSub>

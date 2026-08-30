@@ -118,7 +118,7 @@ The catalog currently contains 46 installable UI items. Verify the count and nam
 | `table-of-contents-lines` | `TableOfContentsLines` | Dense line-based heading navigation with one active heading, a longer header rule, equal shorter rules between headings (none below the final heading), heading-relative indentation, and an expanding hover treatment. A height-constrained rail hides its browser scrollbar and smoothly centers every active entry, including endpoints; pass `rootRef` for an independently scrolling article. |
 | `separator` | `Separator` | An accessible horizontal or vertical divider built on Base UI Separator. |
 | `command-palette` | `CommandPalette`, panel/list/row/footer parts, and `useCommandSearch` | Fuzzy command search, groups, nested/custom panels, async/server-driven search, configurable headers, 6px compact header navigation controls, keybinds (default ⌘K/Ctrl+K), selection, actions, and Dialog-style enter/exit motion. |
-| `sidebar` | Provider, panel, group/menu/submenu/action/badge/skeleton parts | Default/floating/inset and split/split-floating/split-inset sidebars, collapse, sections, nested rows, split rail/panel selection, actions, badges, skeletons, and shared 6px/8px menu and rail radii. |
+| `sidebar` | Provider, panel, group/menu/submenu/action/badge/skeleton parts | Default/floating/inset and split/split-floating/split-inset sidebars, collapse, collapsible rows with built-in chevrons, nested rows, split rail/panel selection, actions, badges, skeletons, and shared 6px/8px menu and rail radii. |
 | `sidebar-layout` | `SidebarLayout` | Optional page shell around Sidebar with inset surface, title, collapse control, and actions. |
 
 ### Overlays and menus
@@ -381,8 +381,10 @@ outside, so the hook reads the right selection.
 ### Sidebar
 
 `sidebar` covers default, floating, inset, and split forms, collapsible sections, row
-actions, badges, nested rows, search/button headers, and row skeletons. Compose a row
-action with `dropdown-menu`.
+actions, badges, nested rows, search/button headers, and row skeletons. Use
+`SidebarMenuCollapsible` for an expandable row; `SidebarMenuCollapsibleTrigger` includes a
+trailing `ChevronDown` by default and accepts `chevron={false}` when a custom indicator is
+needed. `SidebarGroup` is visual grouping only. Compose a row action with `dropdown-menu`.
 
 Split variants are `split`, `split-floating`, and `split-inset`. Provide the fixed `rail` with
 `SidebarRailButton` controls and `SidebarPanel` sections; use `activePanel`,

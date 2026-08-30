@@ -1319,7 +1319,7 @@
     {
       "name": "sidebar",
       "type": "registry:ui",
-      "description": "A collapsible application sidebar with default, floating, inset, and split layouts, nested rows, actions, badges, and loading skeletons.",
+      "description": "A collapsible application sidebar with default, floating, inset, and split layouts, collapsible rows with built-in chevrons, nested rows, actions, badges, and loading skeletons.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",

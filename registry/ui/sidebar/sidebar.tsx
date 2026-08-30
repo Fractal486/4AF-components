@@ -2,7 +2,7 @@
 
 import { Separator as BaseSeparator } from "@base-ui/react/separator";
 import { Collapsible as BaseCollapsible } from "@base-ui/react/collapsible";
-import { PanelLeft, PanelRight } from "lucide-react";
+import { ChevronDown, PanelLeft, PanelRight } from "lucide-react";
 import {
   createContext,
   useCallback,
@@ -1031,12 +1031,21 @@ export function SidebarMenuButton({
   );
 }
 
-export type SidebarMenuCollapsibleTriggerProps = Omit<SidebarMenuButtonProps, "asChild">;
+export interface SidebarMenuCollapsibleTriggerProps
+  extends Omit<SidebarMenuButtonProps, "asChild"> {
+  /**
+   * Whether to render the standard trailing chevron. Pass `false` when supplying a
+   * custom indicator inside the trigger.
+   * @default true
+   */
+  chevron?: boolean;
+}
 
 /** A SidebarMenuButton wired to its surrounding SidebarMenuCollapsible root. */
 export function SidebarMenuCollapsibleTrigger({
   className,
   children,
+  chevron = true,
   disabled,
   ...props
 }: SidebarMenuCollapsibleTriggerProps) {
@@ -1046,6 +1055,13 @@ export function SidebarMenuCollapsibleTrigger({
       render={
         <SidebarMenuButton {...props} disabled={disabled} className={className}>
           {children}
+          {chevron && (
+            <ChevronDown
+              aria-hidden="true"
+              data-slot="sidebar-menu-chevron"
+              className="ml-auto -rotate-90 transition-[rotate] duration-(--duration-chevron) ease-out group-data-[collapsible=icon]:hidden [[data-panel-open]_&]:rotate-0"
+            />
+          )}
         </SidebarMenuButton>
       }
     />

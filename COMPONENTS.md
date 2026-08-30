@@ -29,6 +29,11 @@ Both Table of Contents variants own their constrained navigation rail: set a hei
 entry centered while hiding only the rail's browser scrollbar. Their heading tracking and
 click-to-scroll behavior comes from the shared `table-of-contents-tracking` helper.
 
+`SidebarMenuCollapsible` is the expandable-row primitive inside `sidebar`; its trigger includes
+a trailing `ChevronDown` by default and rotates it from right to down as the panel opens. Pass
+`chevron={false}` when supplying a custom indicator. `SidebarGroup` remains a visual grouping
+wrapper and is not collapsible on its own.
+
 The `select` family includes `SelectSeparator` for accessible dividers between option groups.
 It is a Base UI list part, not an option, so it stays out of highlighting and selection. The
 opt-in `clearable` footer uses a compact `xs` ghost Button and includes a `SelectSeparator` above

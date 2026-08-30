@@ -12,8 +12,9 @@ description: A responsive application sidebar with rails, panels, menus, and col
 menu, group, submenu, action, badge, and skeleton parts
 
 A responsive application sidebar with sidebar, floating, inset, split, split-floating, and
-split-inset layouts; controlled collapse; sections; nested rows; a canonical full-width primary
-header action; badges; and loading skeletons. Split layouts use `SidebarRailButton` controls with
+split-inset layouts; controlled collapse; collapsible menu rows with built-in chevrons; sections;
+nested rows; a canonical full-width primary header action; badges; and loading skeletons. Split
+layouts use `SidebarRailButton` controls with
 `value` and `SidebarPanel` sections; `activePanel`, `defaultActivePanel`, and
 `onActivePanelChange` support controlled or uncontrolled wide-panel selection.
 
@@ -23,6 +24,35 @@ header action; badges; and loading skeletons. Split layouts use `SidebarRailButt
 `sm` row uses a 6px radius; `default` and `lg` use an 8px radius. Nested
 `SidebarMenuSubButton` rows use a 6px radius, and fixed split-rail buttons are 32px squares
 with an 8px radius.
+
+## Collapsible menu sections
+
+`SidebarGroup` provides visual grouping but does not own open state. For an expandable menu
+row, use `SidebarMenuCollapsible` with `SidebarMenuCollapsibleTrigger` and
+`SidebarMenuCollapsibleContent`:
+
+```tsx
+<SidebarMenu>
+  <SidebarMenuCollapsible defaultOpen>
+    <SidebarMenuCollapsibleTrigger>
+      <Folder />
+      <span>Projects</span>
+    </SidebarMenuCollapsibleTrigger>
+    <SidebarMenuCollapsibleContent>
+      <SidebarMenuSub>
+        <SidebarMenuSubItem>
+          <SidebarMenuSubButton href="/projects/acme">Acme</SidebarMenuSubButton>
+        </SidebarMenuSubItem>
+      </SidebarMenuSub>
+    </SidebarMenuCollapsibleContent>
+  </SidebarMenuCollapsible>
+</SidebarMenu>
+```
+
+The trigger includes a trailing `ChevronDown` by default. It points right while closed and
+rotates down while open. Pass `chevron={false}` only when the trigger supplies a custom
+indicator. The collapsible root accepts Base UI's `defaultOpen`, `open`, `onOpenChange`, and
+`disabled` props.
 
 ## Header composition
 

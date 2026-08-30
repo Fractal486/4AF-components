@@ -1,10 +1,15 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import {
   SidebarHeader,
   SidebarHeaderButton,
   SidebarHeaderRow,
   SidebarMenuButton,
+  SidebarMenu,
+  SidebarMenuCollapsible,
+  SidebarMenuCollapsibleContent,
+  SidebarMenuCollapsibleTrigger,
   Sidebar,
   SidebarPanel,
   SidebarProvider,
@@ -257,5 +262,50 @@ describe("Sidebar button geometry", () => {
     expect(screen.getByRole("button", { name: "Compact" })).toHaveClass("rounded-[6px]");
     expect(screen.getByRole("button", { name: "Default" })).toHaveClass("rounded-[8px]");
     expect(screen.getByRole("button", { name: "Large" })).toHaveClass("rounded-[8px]");
+  });
+});
+
+describe("SidebarMenuCollapsible", () => {
+  it("includes a trailing chevron and rotates it from the Base UI open state", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <SidebarProvider persist={false}>
+        <SidebarMenu>
+          <SidebarMenuCollapsible>
+            <SidebarMenuCollapsibleTrigger>Projects</SidebarMenuCollapsibleTrigger>
+            <SidebarMenuCollapsibleContent>Project list</SidebarMenuCollapsibleContent>
+          </SidebarMenuCollapsible>
+        </SidebarMenu>
+      </SidebarProvider>,
+    );
+
+    const trigger = screen.getByRole("button", { name: "Projects" });
+    const chevron = trigger.querySelector('[data-slot="sidebar-menu-chevron"]');
+
+    expect(chevron).toBeInTheDocument();
+    expect(chevron).toHaveClass("-rotate-90");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByText("Project list")).not.toBeInTheDocument();
+
+    await user.click(trigger);
+
+    await waitFor(() => expect(trigger).toHaveAttribute("data-panel-open"));
+    expect(screen.getByText("Project list")).toBeInTheDocument();
+  });
+
+  it("allows a custom indicator to replace the default chevron", () => {
+    render(
+      <SidebarProvider persist={false}>
+        <SidebarMenuCollapsible>
+          <SidebarMenuCollapsibleTrigger chevron={false}>
+            Projects
+          </SidebarMenuCollapsibleTrigger>
+          <SidebarMenuCollapsibleContent>Project list</SidebarMenuCollapsibleContent>
+        </SidebarMenuCollapsible>
+      </SidebarProvider>,
+    );
+
+    expect(document.querySelector('[data-slot="sidebar-menu-chevron"]')).not.toBeInTheDocument();
   });
 });

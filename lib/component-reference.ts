@@ -294,11 +294,28 @@ import { Button } from "@/components/ui/button";
   },
   sidebar: {
     importName: "Sidebar",
-    usage: `import { Sidebar } from "@/components/ui/sidebar";
+    usage: `import {
+  Sidebar,
+  SidebarContent,
+  SidebarMenu,
+  SidebarMenuCollapsible,
+  SidebarMenuCollapsibleContent,
+  SidebarMenuCollapsibleTrigger,
+  SidebarProvider,
+} from "@/components/ui/sidebar";
 
-<Sidebar>
-  <SidebarContent>Navigation</SidebarContent>
-</Sidebar>`,
+<SidebarProvider>
+  <Sidebar>
+    <SidebarContent>
+      <SidebarMenu>
+        <SidebarMenuCollapsible defaultOpen>
+          <SidebarMenuCollapsibleTrigger>Projects</SidebarMenuCollapsibleTrigger>
+          <SidebarMenuCollapsibleContent>Navigation</SidebarMenuCollapsibleContent>
+        </SidebarMenuCollapsible>
+      </SidebarMenu>
+    </SidebarContent>
+  </Sidebar>
+</SidebarProvider>`,
   },
   "sidebar-layout": {
     importName: "SidebarLayout",
