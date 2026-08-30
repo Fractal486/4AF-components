@@ -66,7 +66,7 @@ export const selectEntry = defineEntry({
     multiple: bool(false),
     searchable: bool(false, "Search in panel"),
     icons: bool(true),
-    variant: select(["default", "plain"] as const, "default", "Variant"),
+    variant: select(["default", "ghost", "plain"] as const, "default", "Variant"),
     invalid: bool(false),
   },
   render({ size, disabled, multiple, searchable, icons, variant, invalid }) {

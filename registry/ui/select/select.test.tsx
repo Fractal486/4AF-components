@@ -5,6 +5,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSeparator,
   SelectSortTrigger,
   SelectSub,
   SelectSubContent,
@@ -63,6 +64,35 @@ describe("Base UI Select", () => {
     expect(trigger).not.toHaveClass("bg-surface", "border-border");
     expect(trigger).toHaveTextContent("Banana");
     expect(trigger.querySelector("svg")).toBeInTheDocument();
+  });
+
+  it("renders ghost triggers with default geometry and Button ghost colors", () => {
+    render(
+      <Select items={FRUITS}>
+        <SelectSortTrigger
+          variant="ghost"
+          icon={<span data-testid="ghost-sort-icon" />}
+          label="Sort"
+          aria-label="Sort fruit"
+        />
+        <FruitOptions />
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("combobox", { name: "Sort fruit" });
+    expect(trigger).toHaveAttribute("data-variant", "ghost");
+    expect(trigger).toHaveClass(
+      "gap-2",
+      "border-transparent",
+      "bg-transparent",
+      "text-muted-foreground",
+      "hover:bg-muted",
+      "hover:text-foreground",
+    );
+    expect(trigger).not.toHaveClass("gap-1.5", "border-0", "px-0");
+    expect(screen.getByTestId("ghost-sort-icon").parentElement).toBe(trigger.firstElementChild);
+    expect(trigger.lastElementChild).toHaveClass("shrink-0");
+    expect(trigger.lastElementChild).not.toHaveClass("order-3");
   });
 
   it("keeps the sort icon leading and puts the chevron after the label", () => {
@@ -125,6 +155,80 @@ describe("Base UI Select", () => {
     expect(container.ownerDocument.querySelector('[data-slot="select-content-positioner"]')).toHaveClass(
       "w-max",
     );
+  });
+
+  it("renders an accessible separator without adding a selectable option", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Select items={FRUITS}>
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectSeparator />
+          <SelectItem value="banana">Banana</SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+
+    const separator = await screen.findByRole("separator");
+    expect(separator).toHaveAttribute("data-slot", "select-separator");
+    expect(separator).toHaveAttribute("aria-orientation", "horizontal");
+    expect(screen.getAllByRole("option")).toHaveLength(2);
+
+    await user.click(screen.getByRole("option", { name: "Banana" }));
+    expect(screen.getByRole("combobox", { name: "Fruit" })).toHaveTextContent("Banana");
+  });
+
+  it("moves the row highlight exclusively to the xs ghost clear footer on hover", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+
+    render(
+      <Select multiple size="md" items={FRUITS} defaultValue={["banana"]} onValueChange={onValueChange}>
+        <SelectTrigger aria-label="Fruits">
+          <SelectValue placeholder="Pick fruits" />
+        </SelectTrigger>
+        <SelectContent clearable>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectItem value="banana">Banana</SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("combobox", { name: "Fruits" });
+    await user.click(trigger);
+
+    const clearButton = await screen.findByRole("button", { name: "Clear" });
+    const separator = screen.getByRole("separator");
+    const apple = screen.getByRole("option", { name: "Apple" });
+    expect(clearButton).toHaveAttribute("data-variant", "ghost");
+    expect(clearButton).toHaveAttribute("data-size", "xs");
+    expect(clearButton).toHaveClass("h-6");
+    expect(clearButton).not.toHaveClass("min-h-[34px]");
+    expect(clearButton).toHaveClass("text-muted-foreground", "hover:bg-muted");
+    expect(separator).toHaveClass("mx-0", "my-0", "w-full");
+    expect(separator.nextElementSibling?.contains(clearButton)).toBe(true);
+
+    await user.hover(apple);
+    await waitFor(() => expect(apple).toHaveAttribute("data-panel-active"));
+
+    await user.hover(clearButton);
+    await waitFor(() => expect(clearButton).toHaveAttribute("data-panel-active"));
+    expect(clearButton).toHaveFocus();
+    expect(
+      screen.getAllByRole("option").every((option) => !option.hasAttribute("data-panel-active")),
+    ).toBe(true);
+    expect(apple).not.toHaveClass("data-[highlighted]:bg-muted");
+
+    await user.click(clearButton);
+    await waitFor(() => expect(onValueChange).toHaveBeenLastCalledWith([]));
+    expect(clearButton).toBeDisabled();
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
   });
 
   it("keeps the original single-select close-on-choice behaviour", async () => {
@@ -232,8 +336,12 @@ describe("Base UI Select", () => {
     const trigger = screen.getByRole("combobox", { name: "Fruits" });
     await user.click(trigger);
     const subTrigger = await screen.findByRole("option", { name: "More fruit" });
+    const selectedCount = subTrigger.querySelector('[data-slot="select-sub-count"]');
+    expect(subTrigger).toHaveAttribute("data-selected-count", "0");
+    expect(selectedCount).toHaveTextContent("0");
+    expect(selectedCount).toHaveClass("text-muted-foreground/60");
+    expect(selectedCount?.nextElementSibling).toBe(subTrigger.querySelector("svg"));
     await user.click(subTrigger);
-    expect(subTrigger.lastElementChild).toBe(subTrigger.querySelector("svg"));
     const mango = await screen.findByRole("option", { name: "Mango" });
     await user.click(mango);
 
@@ -243,6 +351,8 @@ describe("Base UI Select", () => {
     expect(trigger).toHaveAttribute("aria-expanded", "true");
     expect(mango).toHaveAttribute("aria-selected", "true");
     expect(mango.querySelector('[role="checkbox"]')).toHaveAttribute("aria-checked", "true");
+    expect(subTrigger).toHaveAttribute("data-selected-count", "1");
+    expect(selectedCount).toHaveTextContent("1");
   });
 
   it("supports nested options in the multi-select filter trigger", async () => {
@@ -253,18 +363,18 @@ describe("Base UI Select", () => {
       <Select<string, true>
         multiple
         items={{ active: "Active", archived: "Archived" }}
-        defaultValue={["active"]}
+        defaultValue={["archived"]}
         onValueChange={onValueChange}
       >
         <SelectSortTrigger label="Filter" aria-label="Filter projects" />
         <SelectContent>
-          <SelectItem value="active">Active</SelectItem>
           <SelectSub>
             <SelectSubTrigger>More statuses</SelectSubTrigger>
             <SelectSubContent>
               <SelectItem value="archived">Archived</SelectItem>
             </SelectSubContent>
           </SelectSub>
+          <SelectItem value="active">Active</SelectItem>
         </SelectContent>
       </Select>,
     );
@@ -272,14 +382,17 @@ describe("Base UI Select", () => {
     const trigger = screen.getByRole("combobox", { name: "Filter projects" });
     await user.click(trigger);
     await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "true"));
-    await user.click(await screen.findByRole("option", { name: "More statuses" }));
+    const subTrigger = await screen.findByRole("option", { name: "More statuses" });
+    await waitFor(() => expect(subTrigger).toHaveAttribute("data-panel-active"));
+    expect(subTrigger).toHaveAttribute("data-selected-count", "1");
+    await user.click(subTrigger);
     await user.click(await screen.findByRole("option", { name: "Archived" }));
 
     await waitFor(() =>
-      expect(onValueChange).toHaveBeenLastCalledWith(["active", "archived"], expect.anything()),
+      expect(onValueChange).toHaveBeenLastCalledWith([], expect.anything()),
     );
     expect(trigger).toHaveAttribute("aria-expanded", "true");
-    expect(trigger).toHaveTextContent("Filter: Active, Archived");
+    expect(subTrigger).toHaveAttribute("data-selected-count", "0");
   });
 
   it("selects a nested option when a touchpad tap omits pointerdown", async () => {

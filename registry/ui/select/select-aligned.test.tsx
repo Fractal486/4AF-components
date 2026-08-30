@@ -17,7 +17,7 @@ function Fruits({
   ...props
 }: Partial<React.ComponentProps<typeof AlignedSelect>> & {
   searchable?: boolean;
-  variant?: "default" | "plain";
+  variant?: "default" | "ghost" | "plain";
 }) {
   return (
     <AlignedSelect {...props}>
@@ -52,6 +52,25 @@ describe("AlignedSelect", () => {
     expect(trigger).toHaveClass("w-auto", "justify-start", "gap-1.5", "border-0", "bg-transparent", "px-0");
     expect(trigger).not.toHaveClass("bg-surface", "border-border");
     expect(trigger).toHaveTextContent("Pick a fruit");
+    expect(trigger.lastElementChild?.querySelector("svg")).toBeInTheDocument();
+  });
+
+  it("renders the ghost trigger with default field geometry and Button ghost colors", () => {
+    render(<Fruits variant="ghost" />);
+
+    const trigger = screen.getByRole("combobox");
+    expect(trigger).toHaveAttribute("data-variant", "ghost");
+    expect(trigger).toHaveClass(
+      "w-full",
+      "justify-between",
+      "border-transparent",
+      "bg-transparent",
+      "px-3.5",
+      "text-muted-foreground",
+      "hover:bg-muted",
+      "hover:text-foreground",
+    );
+    expect(trigger).not.toHaveClass("w-auto", "gap-1.5", "border-0", "px-0");
     expect(trigger.lastElementChild?.querySelector("svg")).toBeInTheDocument();
   });
 

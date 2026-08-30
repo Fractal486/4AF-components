@@ -23,7 +23,7 @@ import {
 /**
  * A select that opens **on** its trigger rather than below it.
  *
- * The default panel takes the trigger's width and is positioned so the selected row lands
+ * The default and ghost panels take the trigger's width and are positioned so the selected row lands
  * exactly where the trigger's value was — press it and the current choice doesn't move, the
  * other options simply appear around it. A plain trigger instead lets the panel shrink-wrap to
  * its longest row plus the reserved check slot while keeping that same selected-row alignment.
@@ -266,7 +266,7 @@ export interface AlignedSelectTriggerProps
   extends Omit<ComponentProps<typeof BaseSelect.Trigger>, "children"> {
   /** Shown until something is selected. */
   placeholder?: ReactNode;
-  /** Field by default; `plain` removes the surface, border and horizontal padding. */
+  /** Field by default; `ghost` keeps its geometry with Button's ghost colors; `plain` removes the surface, border and horizontal padding. */
   variant?: AlignedSelectTriggerVariant;
   /** @deprecated Use `variant="plain"` or `variant="default"`. */
   outline?: boolean;
@@ -313,7 +313,7 @@ export interface AlignedSelectContentProps extends ComponentProps<typeof BaseSel
   /**
    * `trigger` keeps the panel the trigger's width; `content` sizes it to the longest row plus
    * the reserved check slot. When omitted, this follows the trigger variant: `plain` uses
-   * `content`, while `default` uses `trigger`.
+   * `content`, while `default` and `ghost` use `trigger`.
    */
   width?: "trigger" | "content";
   /**

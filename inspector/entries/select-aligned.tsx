@@ -43,7 +43,7 @@ export const selectAlignedEntry = defineEntry({
   name: "Aligned",
   controls: {
     size: select(SIZES, "sm"),
-    variant: select(["default", "plain"] as const, "default", "Variant"),
+    variant: select(["default", "ghost", "plain"] as const, "default", "Variant"),
     sections: bool(false, "Sections"),
     searchable: bool(false, "Search field"),
     disabled: bool(false, "Disabled"),
@@ -69,7 +69,7 @@ function AlignedSelectDemo({
   disabled,
 }: {
   size: (typeof SIZES)[number];
-  variant: "default" | "plain";
+  variant: "default" | "ghost" | "plain";
   sections: boolean;
   searchable: boolean;
   disabled: boolean;

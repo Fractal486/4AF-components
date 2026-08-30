@@ -206,6 +206,7 @@ import { Button } from "@/components/ui/button";
   Select,
   SelectContent,
   SelectItem,
+  SelectSeparator,
   SelectSub,
   SelectSubContent,
   SelectSubTrigger,
@@ -214,11 +215,12 @@ import { Button } from "@/components/ui/button";
 } from "@/components/ui/select";
 
 <Select defaultValue="apple">
-  <SelectTrigger variant="plain">
+  <SelectTrigger variant="ghost">
     <SelectValue />
   </SelectTrigger>
   <SelectContent>
     <SelectItem value="apple">Apple</SelectItem>
+    <SelectSeparator />
     <SelectSub>
       <SelectSubTrigger>More fruit</SelectSubTrigger>
       <SelectSubContent>
@@ -238,7 +240,7 @@ import { Button } from "@/components/ui/button";
 } from "@/components/ui/select-aligned";
 
 <AlignedSelect value={city} onValueChange={setCity}>
-  <AlignedSelectTrigger variant="plain" placeholder="Pick a city" />
+  <AlignedSelectTrigger variant="ghost" placeholder="Pick a city" />
   <AlignedSelectContent>
     <AlignedSelectItem value="Lisbon">Lisbon</AlignedSelectItem>
     <AlignedSelectItem value="Oslo">Oslo</AlignedSelectItem>

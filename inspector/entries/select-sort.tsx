@@ -3,6 +3,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSeparator,
   SelectSortTrigger,
   SelectSub,
   SelectSubContent,
@@ -19,10 +20,13 @@ const SORT_OPTIONS = {
 const FILTER_OPTIONS = {
   active: "Active",
   paused: "Paused",
+  blocked: "Blocked",
   archived: "Archived",
+  draft: "Draft",
+  scheduled: "Scheduled",
 } as const;
 
-const NESTED_FILTER_OPTIONS = ["archived"] as const;
+const NESTED_FILTER_OPTIONS = ["archived", "draft", "scheduled"] as const;
 
 export const selectSortEntry = defineEntry({
   slug: "select-sort",
@@ -31,13 +35,13 @@ export const selectSortEntry = defineEntry({
     size: select(["sm", "md"] as const, "sm", "Size"),
     multiple: bool(false, "Multiple selection"),
     selected: bool(true, "Selected"),
-    variant: select(["default", "plain"] as const, "default", "Variant"),
+    variant: select(["default", "ghost", "plain"] as const, "default", "Variant"),
     showValue: bool(true, "Show value"),
     showLabel: bool(true, "Show label"),
   },
   render({ size, multiple, selected, variant, showValue, showLabel }) {
     const options = multiple ? FILTER_OPTIONS : SORT_OPTIONS;
-    const selectedValue = multiple ? "active" : "updated";
+    const selectedValue = multiple ? "archived" : "updated";
     const triggerLabel = multiple ? "Filter" : "Sort";
     const triggerIcon = multiple ? <ListFilter /> : <ArrowUpDown />;
     const defaultValue = selected ? selectedValue : undefined;
@@ -54,18 +58,11 @@ export const selectSortEntry = defineEntry({
     const content = (
       <SelectContent
         clearable={multiple}
-        autoFocusFirstItem={false}
-        className={variant === "default" ? "min-w-40" : undefined}
+        autoFocusFirstItem={multiple}
+        className={variant !== "plain" ? "min-w-40" : undefined}
       >
         {multiple ? (
           <>
-            {Object.entries(options)
-              .filter(([value]) => !NESTED_FILTER_OPTIONS.includes(value as (typeof NESTED_FILTER_OPTIONS)[number]))
-              .map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
             <SelectSub>
               <SelectSubTrigger>More statuses</SelectSubTrigger>
               <SelectSubContent>
@@ -76,6 +73,14 @@ export const selectSortEntry = defineEntry({
                 ))}
               </SelectSubContent>
             </SelectSub>
+            <SelectSeparator />
+            {Object.entries(options)
+              .filter(([value]) => !NESTED_FILTER_OPTIONS.includes(value as (typeof NESTED_FILTER_OPTIONS)[number]))
+              .map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
           </>
         ) : (
           Object.entries(options).map(([value, label]) => (

@@ -128,10 +128,14 @@ describe("component documentation", () => {
       badge: ["animateLayout={false}", "FLIP-animates"],
       select: [
         "SelectSortTrigger",
+        "SelectSeparator",
         'ComponentDemo name="select-sort"',
         "clearable",
+        "ghost reset button",
+        'variant="ghost"',
         "iconForValue",
       ],
+      "select-aligned": ['variant="default" | "ghost" | "plain"', "Default and ghost panels"],
       "select-search": ["readonly any[]", "SearchSelectItem"],
       "command-palette": [
         "helpers.openPanel",
@@ -167,7 +171,7 @@ describe("component documentation", () => {
     );
 
     // Select sizing, from the deleted select-overview page.
-    for (const phrase of ["32px", "36px"]) expect(reference).toContain(phrase);
+    for (const phrase of ["30px", "34px"]) expect(reference).toContain(phrase);
     // Why sidebar and sidebar-layout stay separate, from the deleted sidebar-overview page.
     expect(reference).toContain("viewport and scrolling strategy");
   });

@@ -929,7 +929,7 @@
     {
       "name": "select",
       "type": "registry:ui",
-      "description": "A single or multi-select on Base UI — keyboard, typeahead and collision-aware positioning — with default and plain trigger variants. Plain panels size to the longest option plus the check slot by default. The panel blurs and scales in from the trigger; multi-select keeps it open while animated checkbox rows are toggled, and optional nested panels and panel search keep related choices in place.",
+      "description": "A single or multi-select on Base UI — keyboard, typeahead and collision-aware positioning — with default, ghost, and plain trigger variants. Plain panels size to the longest option plus the check slot by default. The panel blurs and scales in from the trigger; multi-select keeps it open while animated checkbox rows are toggled, and optional separators, nested panels with selected counts, panel search, and a compact xs ghost clear footer keep related choices in place.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -1003,7 +1003,7 @@
     {
       "name": "select-aligned",
       "type": "registry:ui",
-      "description": "A select with default and plain trigger variants that opens on its trigger rather than below it: the default panel takes the trigger's width, while plain panels size to the longest option plus the check slot; the selected row lands on the value it replaces, the macOS pop-up button behaviour. Optional dimmed sections and a pinned in-panel search field.",
+      "description": "A select with default, ghost, and plain trigger variants that opens on its trigger rather than below it: the default and ghost panels take the trigger's width, while plain panels size to the longest option plus the check slot; the selected row lands on the value it replaces, the macOS pop-up button behaviour. Optional dimmed sections and a pinned in-panel search field.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",

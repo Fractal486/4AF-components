@@ -28,3 +28,10 @@ Both Table of Contents variants own their constrained navigation rail: set a hei
 `className`, pass `rootRef` for an independently scrolling article, and they will keep the active
 entry centered while hiding only the rail's browser scrollbar. Their heading tracking and
 click-to-scroll behavior comes from the shared `table-of-contents-tracking` helper.
+
+The `select` family includes `SelectSeparator` for accessible dividers between option groups.
+It is a Base UI list part, not an option, so it stays out of highlighting and selection. The
+opt-in `clearable` footer uses a compact `xs` ghost Button and includes a `SelectSeparator` above
+it by default. Multi-select submenu triggers show their selected-child count before the chevron.
+The `select` and `select-aligned` triggers also accept `variant="ghost"`: Button ghost colors with
+the default trigger geometry, keeping leading and trailing icons aligned.

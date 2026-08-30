@@ -150,6 +150,8 @@ const SelectContext = createContext<SelectContextValue>({
   clear: () => {},
 });
 
+const SELECT_CLEAR_ACTION = Symbol("select-clear-action");
+
 type BaseUIEvent = { preventBaseUIHandler?: () => void };
 
 function preventBaseUIHandler(event: BaseUIEvent) {
@@ -216,11 +218,33 @@ function collectSelectSearchOptions(children: ReactNode): SelectSearchOption[] {
   return options;
 }
 
+/** Read a submenu's options synchronously so its trigger count is correct on first paint. */
+function collectSelectSubOptions(children: ReactNode): SelectSearchOption[] {
+  const options: SelectSearchOption[] = [];
+
+  Children.forEach(children, (child) => {
+    if (!isValidElement(child)) return;
+
+    const childProps = child.props as SelectSearchChildProps;
+    if (child.type === Fragment) {
+      options.push(...collectSelectSubOptions(childProps.children));
+      return;
+    }
+
+    if (child.type === SelectSubContent) {
+      options.push(...collectSelectSearchOptions(childProps.children));
+    }
+  });
+
+  return options;
+}
+
 interface SelectSubContextValue {
   open: boolean;
   disabled: boolean;
   anchor: HTMLElement | null;
   triggerValue: symbol;
+  itemValues: readonly unknown[];
   focusTrigger: () => void;
   setTriggerNode: (node: HTMLElement | null) => void;
   setCloseDelay: (delay: number) => void;
@@ -823,7 +847,7 @@ export interface SelectTriggerProps
   extends Omit<ComponentProps<typeof BaseSelect.Trigger>, "className"> {
   className?: string;
   children?: ReactNode;
-  /** Boxed field by default; `plain` removes the surface, border and horizontal padding. */
+  /** Boxed field by default; `ghost` keeps its geometry with Button's ghost colors; `plain` removes the surface, border and horizontal padding. */
   variant?: SelectTriggerVariant;
   /** @deprecated Use `variant="plain"` or `variant="default"`. */
   outline?: boolean;
@@ -880,7 +904,7 @@ export function SelectTrigger({
 export interface SelectSortTriggerProps
   extends Omit<ComponentProps<typeof BaseSelect.Trigger>, "className" | "children"> {
   className?: string;
-  /** Chip by default; `plain` removes the surface, border and horizontal padding. */
+  /** Chip by default; `ghost` keeps its geometry with Button's ghost colors; `plain` removes the surface, border and horizontal padding. */
   variant?: SelectTriggerVariant;
   /** @deprecated Use `variant="plain"` or `variant="default"`. */
   outline?: boolean;
@@ -1027,9 +1051,9 @@ export function SelectContent({
   side?: ComponentProps<typeof BaseSelect.Positioner>["side"];
   align?: ComponentProps<typeof BaseSelect.Positioner>["align"];
   /**
-   * `trigger` keeps the panel the trigger's width (a bordered field select); `content`
+   * `trigger` keeps the panel the trigger's width (a default or ghost field select); `content`
    * sizes it to its own rows — the longest label plus the reserved check slot. When omitted,
-   * this follows the trigger: `plain` uses `content`, while `default` uses `trigger`.
+   * this follows the trigger: `plain` uses `content`, while `default` and `ghost` use `trigger`.
    */
   width?: "trigger" | "content";
   /** Adds a plain filter field beside the list, separated from the options by a hairline. */
@@ -1045,7 +1069,7 @@ export function SelectContent({
   emptyMessage?: ReactNode;
   /** Focus the first option when the panel opens. Turn this off for menu-like uses. */
   autoFocusFirstItem?: boolean;
-  /** A full-width footer button that resets the selection to none. */
+  /** A full-width, compact `xs` ghost footer button that resets the selection to none. */
   clearable?: boolean;
   /** Text for the clear button. */
   clearLabel?: ReactNode;
@@ -1058,6 +1082,7 @@ export function SelectContent({
     size,
     firstVisibleItem,
     openingItem,
+    activeItem,
     setActiveItem,
     setPanelSearch,
     searchQuery,
@@ -1065,6 +1090,7 @@ export function SelectContent({
     triggerVariant,
   } = useContext(SelectContext);
   const width = widthProp ?? (triggerVariant === "plain" ? "content" : "trigger");
+  const clearActionActive = Object.is(activeItem, SELECT_CLEAR_ACTION);
   const listRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   // A state node, not a ref: Base UI mounts the popup lazily, so on the first open the
@@ -1274,27 +1300,71 @@ export function SelectContent({
           )}
           {searchable && searchPosition === "bottom" && searchField}
           {clearable && (
-            // A footer, not a listbox row — pinned below the scroll area, and disabled
-            // while there's nothing to clear. Clearing leaves the panel open so a new
-            // choice can follow immediately.
-            <div className="p-1">
-              <Button
-                variant="outline"
-                disabled={values.length === 0}
-                onClick={() => clear()}
-                // Match a row's highlight box exactly (`rounded-xs px-2.5 py-1.5 text-xs`),
-                // so the clear button lines up with the options above it.
-                className={cn("h-auto w-full rounded-xs px-2.5 py-1.5", SIZE[size].row)}
-              >
-                {clearLabel}
-              </Button>
-            </div>
+            <>
+              {/* The separator sits outside the footer's padding so the list's bottom
+                  inset and the footer's top inset do not stack with its list margins. */}
+              <SelectSeparator className="mx-0 my-0 w-full" />
+              <div className="p-1">
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  data-panel-active={clearActionActive || undefined}
+                  disabled={values.length === 0}
+                  onClick={() => clear()}
+                  onPointerMove={(event) => {
+                    if (event.pointerType !== "mouse" || event.currentTarget.disabled) return;
+                    setActiveItem(SELECT_CLEAR_ACTION);
+                    event.currentTarget.focus({ preventScroll: true });
+                  }}
+                  // Keep it full-width while the Button's xs size owns its compact geometry.
+                  className="w-full rounded-xs px-2.5 data-[panel-active]:bg-muted data-[panel-active]:text-foreground"
+                >
+                  {clearLabel}
+                </Button>
+              </div>
+            </>
           )}
         </BaseSelect.Popup>
       </BaseSelect.Positioner>
     </BaseSelect.Portal>
   );
 }
+
+export type SelectSeparatorProps = Omit<
+  ComponentProps<typeof BaseSelect.Separator>,
+  "className" | "orientation" | "ref"
+> & {
+  className?: string;
+  orientation?: ComponentProps<typeof BaseSelect.Separator>["orientation"];
+};
+
+/**
+ * An accessible, non-selectable divider between groups of options.
+ *
+ * This is Base UI's own Select separator, so it remains a list part rather than pretending
+ * to be an option. It carries `role="separator"` and is skipped by option highlighting and
+ * keyboard selection. The default line reaches the panel edges inside the list's padding;
+ * pass `className` to adjust the inset when a different grouping treatment is wanted.
+ */
+export const SelectSeparator = forwardRef<HTMLDivElement, SelectSeparatorProps>(
+  function SelectSeparator({ className, orientation = "horizontal", ...props }, forwardedRef) {
+    return (
+      <BaseSelect.Separator
+        ref={forwardedRef}
+        data-slot="select-separator"
+        orientation={orientation}
+        className={cn(
+          "shrink-0 bg-border",
+          orientation === "horizontal"
+            ? "-mx-1 my-1 h-px w-auto"
+            : "mx-1 h-full w-px",
+          className,
+        )}
+        {...props}
+      />
+    );
+  },
+);
 
 type SelectSubOpenChange = NonNullable<
   ComponentProps<typeof BaseSelect.Root>["onOpenChange"]
@@ -1318,6 +1388,10 @@ export function SelectSub({
 }: SelectSubProps) {
   const select = useContext(SelectContext);
   const parentPanelOpen = useContext(SelectSubItemContext);
+  const itemValues = useMemo(
+    () => collectSelectSubOptions(children).map((option) => option.value),
+    [children],
+  );
   const isControlled = open !== undefined;
   const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
   const [triggerValue] = useState<symbol>(() => Symbol("select-sub-trigger"));
@@ -1460,6 +1534,7 @@ export function SelectSub({
         disabled: resolvedDisabled,
         anchor,
         triggerValue,
+        itemValues,
         focusTrigger,
         setTriggerNode,
         setOpen,
@@ -1516,10 +1591,12 @@ export function SelectSubTrigger({
   closeDelay = 100,
   ...props
 }: SelectSubTriggerProps) {
+  const select = useContext(SelectContext);
   const {
     open: subOpen,
     disabled: subDisabled,
     triggerValue,
+    itemValues,
     setOpen: setSubOpen,
     setTriggerNode,
     openAndFocus,
@@ -1531,6 +1608,9 @@ export function SelectSubTrigger({
   const resolvedDisabled = disabled || subDisabled;
   const triggerLabel =
     typeof label === "string" ? label : typeof children === "string" ? children : undefined;
+  const selectedItemCount = itemValues.filter((itemValue) =>
+    select.values.some((selectedValue) => Object.is(itemValue, selectedValue)),
+  ).length;
 
   useEffect(() => {
     setCloseDelay(closeDelay);
@@ -1583,16 +1663,28 @@ export function SelectSubTrigger({
       aria-haspopup="listbox"
       aria-expanded={subOpen}
       data-popup-open={subOpen || undefined}
+      data-selected-count={select.multiple ? selectedItemCount : undefined}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
       className={cn("data-[popup-open]:bg-muted data-[popup-open]:text-foreground", className)}
       end={
-        <ChevronRight
-          aria-hidden
-          className="size-3.5 shrink-0 text-muted-foreground"
-        />
+        <span className="flex shrink-0 items-center gap-1.5">
+          {select.multiple && (
+            <span
+              aria-hidden="true"
+              data-slot="select-sub-count"
+              className="tabular-nums text-muted-foreground/60"
+            >
+              {selectedItemCount}
+            </span>
+          )}
+          <ChevronRight
+            aria-hidden
+            className="size-3.5 shrink-0 text-muted-foreground"
+          />
+        </span>
       }
     >
       {children}
@@ -1874,6 +1966,7 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
   const optionText = searchValue ?? (typeof children === "string" ? children : String(value));
   const hiddenBySearch = !matchesQuery(optionText) && !hasMatchingDescendant(value);
   const itemDisabled = disabled || hiddenBySearch || (nestedPanel && !nestedPanelOpen);
+  const clearActionActive = Object.is(activeItem, SELECT_CLEAR_ACTION);
   const pointerStartedRef = useRef(false);
   const bridgingPointerDownRef = useRef(false);
   const itemRef = useCallback(
@@ -1993,7 +2086,9 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
           "text-muted-foreground",
           nestedPanel
             ? "hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground"
-            : !panelSearch && "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
+            : !panelSearch &&
+              !clearActionActive &&
+              "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
           "data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
           "data-[selected]:text-foreground",
           "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
@@ -2057,7 +2152,9 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
         // focus-visible keep actual pointer and keyboard movement visible.
         nestedPanel
           ? "hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground"
-          : !panelSearch && "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
+          : !panelSearch &&
+            !clearActionActive &&
+            "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
         "data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
         "data-[selected]:text-foreground",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
