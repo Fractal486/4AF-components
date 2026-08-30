@@ -25,13 +25,16 @@ border, and horizontal padding, leaving the selected label and the glyph directl
 focus ring remains for keyboard users. The older `outline={false}` form is still supported as a
 compatibility alias.
 
+It also accepts an optional `label`, rendered as a dimmed prefix before the value. For example,
+`label="Fruit"` displays `Fruit: Banana`.
+
 When `AlignedSelectContent` has no explicit `width`, it follows the trigger: default and ghost
 triggers keep a trigger-width panel, while plain triggers use content width — the longest option
 label plus the reserved checkmark slot. Set `width="trigger"` or `width="content"` to override
 that default.
 
 ```tsx
-<AlignedSelectTrigger variant="plain" placeholder="Pick a city" />
+<AlignedSelectTrigger variant="plain" label="City" placeholder="Pick a city" />
 ```
 
 ## Overlapping the trigger

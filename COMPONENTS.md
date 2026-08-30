@@ -35,3 +35,4 @@ opt-in `clearable` footer uses a compact `xs` ghost Button and includes a `Selec
 it by default. Multi-select submenu triggers show their selected-child count before the chevron.
 The `select` and `select-aligned` triggers also accept `variant="ghost"`: Button ghost colors with
 the default trigger geometry, keeping leading and trailing icons aligned.
+They also accept an optional dimmed `label` before the value, such as `Fruit: Banana`.

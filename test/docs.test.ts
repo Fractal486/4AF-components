@@ -133,9 +133,14 @@ describe("component documentation", () => {
         "clearable",
         "ghost reset button",
         'variant="ghost"',
+        "Fruit: Banana",
         "iconForValue",
       ],
-      "select-aligned": ['variant="default" | "ghost" | "plain"', "Default and ghost panels"],
+      "select-aligned": [
+        'variant="default" | "ghost" | "plain"',
+        "Default and ghost panels",
+        "Fruit: Banana",
+      ],
       "select-search": ["readonly any[]", "SearchSelectItem"],
       "command-palette": [
         "helpers.openPanel",

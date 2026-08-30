@@ -14,14 +14,16 @@ const FRUITS = ["Apple", "Banana", "Cherry"];
 function Fruits({
   searchable,
   variant,
+  label,
   ...props
 }: Partial<React.ComponentProps<typeof AlignedSelect>> & {
   searchable?: boolean;
   variant?: "default" | "ghost" | "plain";
+  label?: string;
 }) {
   return (
     <AlignedSelect {...props}>
-      <AlignedSelectTrigger variant={variant} placeholder="Pick a fruit" />
+      <AlignedSelectTrigger variant={variant} label={label} placeholder="Pick a fruit" />
       <AlignedSelectContent searchable={searchable}>
         {FRUITS.map((fruit) => (
           <AlignedSelectItem key={fruit} value={fruit}>
@@ -84,6 +86,16 @@ describe("AlignedSelect", () => {
     render(<Fruits defaultValue="Banana" />);
 
     expect(screen.getByRole("combobox")).toHaveTextContent("Banana");
+  });
+
+  it("renders an optional dimmed label before the selected value", () => {
+    render(<Fruits defaultValue="Banana" label="Fruit" />);
+
+    const trigger = screen.getByRole("combobox");
+    const label = trigger.querySelector('[data-slot="select-label"]');
+    expect(trigger).toHaveTextContent("Fruit: Banana");
+    expect(label).toHaveTextContent("Fruit:");
+    expect(label).toHaveClass("text-muted-foreground");
   });
 
   it("opens over the trigger, at the trigger's width", async () => {

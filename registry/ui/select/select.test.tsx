@@ -66,6 +66,23 @@ describe("Base UI Select", () => {
     expect(trigger.querySelector("svg")).toBeInTheDocument();
   });
 
+  it("renders an optional dimmed label before the selected value", () => {
+    render(
+      <Select items={FRUITS} defaultValue="banana">
+        <SelectTrigger label="Fruit" aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <FruitOptions />
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("combobox", { name: "Fruit" });
+    const label = trigger.querySelector('[data-slot="select-label"]');
+    expect(trigger).toHaveTextContent("Fruit: Banana");
+    expect(label).toHaveTextContent("Fruit:");
+    expect(label).toHaveClass("text-muted-foreground");
+  });
+
   it("renders ghost triggers with default geometry and Button ghost colors", () => {
     render(
       <Select items={FRUITS}>

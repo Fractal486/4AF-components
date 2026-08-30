@@ -851,6 +851,8 @@ export interface SelectTriggerProps
   variant?: SelectTriggerVariant;
   /** @deprecated Use `variant="plain"` or `variant="default"`. */
   outline?: boolean;
+  /** Optional dimmed prefix shown before the selected value, e.g. "Fruit: Banana". */
+  label?: ReactNode;
   /** The trailing chevron. */
   chevron?: boolean;
 }
@@ -860,6 +862,7 @@ export function SelectTrigger({
   children,
   variant,
   outline,
+  label,
   chevron = true,
   ...props
 }: SelectTriggerProps) {
@@ -884,7 +887,16 @@ export function SelectTrigger({
       )}
       {...props}
     >
-      {children}
+      {label ? (
+        <span className="flex min-w-0 items-center truncate">
+          <span data-slot="select-label" className="shrink-0 text-muted-foreground">
+            {label}: {"\u00a0\u00a0"}
+          </span>
+          {children}
+        </span>
+      ) : (
+        children
+      )}
       {chevron && (
         <motion.span
           aria-hidden
@@ -910,7 +922,7 @@ export interface SelectSortTriggerProps
   outline?: boolean;
   /** A leading icon. Optional — omit for a text-only chip. */
   icon?: ReactNode;
-  /** A prefix, e.g. "Sort" or "Status", shown before the value(s). Optional. */
+  /** A dimmed prefix, e.g. "Sort" or "Status", shown before the value(s). Optional. */
   label?: ReactNode;
   /** Append the selected value(s) after the label — "Status: Active, Paused". */
   showValue?: boolean;
@@ -985,19 +997,19 @@ export function SelectSortTrigger({
       {(label || showValue) && (
         <span className="min-w-0 truncate">
           {label && (
-            <span className={isUnset && !showValue ? "text-muted-foreground" : undefined}>
+            <span className="text-muted-foreground">
               {label}
             </span>
           )}
           {showValue &&
             (isUnset ? (
               <span className="text-muted-foreground">
-                {label ? ": " : null}
+                {label ? ":\u00a0\u00a0" : null}
                 {placeholder}
               </span>
             ) : (
               <span className="text-foreground">
-                {label ? <span className="text-muted-foreground">: </span> : null}
+                {label ? <span className="text-muted-foreground">:{"\u00a0\u00a0"}</span> : null}
                 {selected.map((item, index) => (
                   <Fragment key={index}>
                     {index > 0 ? ", " : null}

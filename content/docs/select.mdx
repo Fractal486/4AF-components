@@ -27,6 +27,9 @@ dropdown chevron follows the label. The focus ring remains for keyboard users. T
 Use `variant="ghost"` when you want the Button ghost treatment without changing the trigger's
 geometry.
 
+`SelectTrigger` also accepts an optional `label`, rendered as a dimmed prefix before the value.
+For example, `label="Fruit"` displays `Fruit: Banana`.
+
 When `SelectContent` has no explicit `width`, it follows the trigger: default and ghost triggers
 keep a trigger-width panel, while plain triggers use content width — the longest option label plus
 the reserved checkmark slot. Set `width="trigger"` or `width="content"` to override that default.
@@ -38,7 +41,7 @@ the top match. This means Enter always has an answer without an extra arrow pres
 
 ```tsx
 <Select defaultValue="active" items={{ active: "Active", paused: "Paused" }}>
-  <SelectTrigger variant="plain">
+  <SelectTrigger variant="plain" label="Fruit">
     <SelectValue />
   </SelectTrigger>
   <SelectContent>

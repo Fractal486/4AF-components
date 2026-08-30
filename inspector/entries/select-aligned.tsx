@@ -44,15 +44,17 @@ export const selectAlignedEntry = defineEntry({
   controls: {
     size: select(SIZES, "sm"),
     variant: select(["default", "ghost", "plain"] as const, "default", "Variant"),
+    showLabel: bool(true, "Show label"),
     sections: bool(false, "Sections"),
     searchable: bool(false, "Search field"),
     disabled: bool(false, "Disabled"),
   },
-  render({ size, variant, sections, searchable, disabled }) {
+  render({ size, variant, showLabel, sections, searchable, disabled }) {
     return (
       <AlignedSelectDemo
         size={size}
         variant={variant}
+        showLabel={showLabel}
         sections={sections}
         searchable={searchable}
         disabled={disabled}
@@ -64,12 +66,14 @@ export const selectAlignedEntry = defineEntry({
 function AlignedSelectDemo({
   size,
   variant,
+  showLabel,
   sections,
   searchable,
   disabled,
 }: {
   size: (typeof SIZES)[number];
   variant: "default" | "ghost" | "plain";
+  showLabel: boolean;
   sections: boolean;
   searchable: boolean;
   disabled: boolean;
@@ -85,7 +89,11 @@ function AlignedSelectDemo({
         onValueChange={setValue}
         items={CITIES.map((city) => ({ value: city, label: city }))}
       >
-        <AlignedSelectTrigger variant={variant} placeholder="Pick a city" />
+        <AlignedSelectTrigger
+          variant={variant}
+          label={showLabel ? "City" : undefined}
+          placeholder="Pick a city"
+        />
         <AlignedSelectContent searchable={searchable}>
           {sections
             ? REGIONS.map((region) => (

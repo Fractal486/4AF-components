@@ -67,9 +67,10 @@ export const selectEntry = defineEntry({
     searchable: bool(false, "Search in panel"),
     icons: bool(true),
     variant: select(["default", "ghost", "plain"] as const, "default", "Variant"),
+    showLabel: bool(true, "Show label"),
     invalid: bool(false),
   },
-  render({ size, disabled, multiple, searchable, icons, variant, invalid }) {
+  render({ size, disabled, multiple, searchable, icons, variant, showLabel, invalid }) {
     return (
       <div className="w-full max-w-56">
         {multiple ? (
@@ -84,6 +85,7 @@ export const selectEntry = defineEntry({
             <SelectTrigger
               aria-label="Fruits"
               variant={variant}
+              label={showLabel ? "Fruit" : undefined}
               aria-invalid={invalid ? true : undefined}
               aria-describedby={invalid ? "select-error" : undefined}
             >
@@ -109,6 +111,7 @@ export const selectEntry = defineEntry({
             <SelectTrigger
               aria-label="Fruit"
               variant={variant}
+              label={showLabel ? "Fruit" : undefined}
               aria-invalid={invalid ? true : undefined}
               aria-describedby={invalid ? "select-error" : undefined}
             >

@@ -241,6 +241,8 @@ them) and an optional pinned search field (`searchable` on the content).
 muted ghost colors while keeping the default trigger geometry, so icons stay aligned. `plain`
 removes the trigger surface, border, and horizontal padding, leaving the label/value and dropdown
 glyph adjacent.
+`SelectTrigger` and `AlignedSelectTrigger` also accept an optional dimmed `label` before the value;
+for example, `label="Fruit"` displays `Fruit: Banana`.
 The older `outline={false}` prop remains a compatibility alias for `variant="plain"`.
 When panel `width` is omitted, default and ghost triggers keep a trigger-width panel and plain
 triggers use the longest row plus the reserved check slot; pass `width="trigger" | "content"` to

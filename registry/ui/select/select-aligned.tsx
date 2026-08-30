@@ -270,6 +270,8 @@ export interface AlignedSelectTriggerProps
   variant?: AlignedSelectTriggerVariant;
   /** @deprecated Use `variant="plain"` or `variant="default"`. */
   outline?: boolean;
+  /** Optional dimmed prefix shown before the selected value, e.g. "Fruit: Banana". */
+  label?: ReactNode;
 }
 
 export function AlignedSelectTrigger({
@@ -277,6 +279,7 @@ export function AlignedSelectTrigger({
   placeholder,
   variant,
   outline,
+  label,
   ...props
 }: AlignedSelectTriggerProps) {
   const { size, setTriggerVariant } = useContext(AlignedSelectContext);
@@ -298,7 +301,25 @@ export function AlignedSelectTrigger({
       )}
       {...props}
     >
-      <BaseSelect.Value className="truncate" placeholder={placeholder} />
+      <BaseSelect.Value
+        className="truncate"
+        placeholder={placeholder}
+        render={
+          label
+            ? (valueProps) => (
+                <span
+                  {...valueProps}
+                  className={cn("flex min-w-0 items-center truncate", valueProps.className)}
+                >
+                  <span data-slot="select-label" className="shrink-0 text-muted-foreground">
+                    {label}: {"\u00a0\u00a0"}
+                  </span>
+                  <span className="truncate">{valueProps.children}</span>
+                </span>
+              )
+            : undefined
+        }
+      />
       {/* Not a rotating chevron: there is no direction to point at, because the panel opens
           where the trigger already is. A static pair reads as "there is more above and
           below this", which is exactly what happens. */}
