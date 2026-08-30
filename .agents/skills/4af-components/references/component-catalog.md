@@ -384,7 +384,8 @@ outside, so the hook reads the right selection.
 actions, badges, nested rows, search/button headers, and row skeletons. Use
 `SidebarMenuCollapsible` for an expandable row; `SidebarMenuCollapsibleTrigger` includes a
 trailing `ChevronDown` by default and accepts `chevron={false}` when a custom indicator is
-needed. `SidebarGroup` is visual grouping only. Compose a row action with `dropdown-menu`.
+needed. A sibling `SidebarMenuAction` is placed before that chevron. `SidebarGroup` is visual
+grouping only. Compose a row action with `dropdown-menu`.
 
 Split variants are `split`, `split-floating`, and `split-inset`. Provide the fixed `rail` with
 `SidebarRailButton` controls and `SidebarPanel` sections; use `activePanel`,

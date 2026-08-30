@@ -1053,14 +1053,31 @@ export function SidebarMenuCollapsibleTrigger({
     <BaseCollapsible.Trigger
       disabled={disabled}
       render={
-        <SidebarMenuButton {...props} disabled={disabled} className={className}>
+        <SidebarMenuButton
+          {...props}
+          disabled={disabled}
+          className={cn(
+            // A row action is positioned in the slot immediately before the chevron.
+            // Reset the generic action padding so the chevron can stay at the true end
+            // of the trigger, then reserve the action slot in the trigger's flow.
+            "group-has-data-[slot=sidebar-menu-action]/menu-collapsible:pr-2!",
+            className,
+          )}
+        >
           {children}
           {chevron && (
-            <ChevronDown
-              aria-hidden="true"
-              data-slot="sidebar-menu-chevron"
-              className="ml-auto -rotate-90 transition-[rotate] duration-(--duration-chevron) ease-out group-data-[collapsible=icon]:hidden [[data-panel-open]_&]:rotate-0"
-            />
+            <>
+              <span
+                aria-hidden="true"
+                data-slot="sidebar-menu-action-spacer"
+                className="hidden w-7 shrink-0 group-data-[collapsible=icon]:hidden group-has-data-[slot=sidebar-menu-action]/menu-collapsible:block"
+              />
+              <ChevronDown
+                aria-hidden="true"
+                data-slot="sidebar-menu-chevron"
+                className="order-last ml-auto shrink-0 -rotate-90 transition-[rotate] duration-(--duration-chevron) ease-out group-data-[collapsible=icon]:hidden [[data-panel-open]_&]:rotate-0"
+              />
+            </>
           )}
         </SidebarMenuButton>
       }
@@ -1121,6 +1138,8 @@ export function SidebarMenuAction({
         "peer-data-[size=default]/menu-button:top-1.5",
         "peer-data-[size=lg]/menu-button:top-2.5",
         "group-data-[collapsible=icon]:hidden",
+        !nested &&
+          "group-has-data-[slot=sidebar-menu-chevron]/menu-collapsible:right-8",
         // Hidden until the row is hovered or focused — but never on touch, where there's
         // no hover to reveal it and the action would be unreachable.
         showOnHover &&

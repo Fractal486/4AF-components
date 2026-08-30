@@ -5,8 +5,9 @@ import {
   SidebarHeader,
   SidebarHeaderButton,
   SidebarHeaderRow,
-  SidebarMenuButton,
   SidebarMenu,
+  SidebarMenuAction,
+  SidebarMenuButton,
   SidebarMenuCollapsible,
   SidebarMenuCollapsibleContent,
   SidebarMenuCollapsibleTrigger,
@@ -292,6 +293,8 @@ describe("SidebarMenuCollapsible", () => {
 
     await waitFor(() => expect(trigger).toHaveAttribute("data-panel-open"));
     expect(screen.getByText("Project list")).toBeInTheDocument();
+
+    expect(trigger.lastElementChild).toBe(chevron);
   });
 
   it("allows a custom indicator to replace the default chevron", () => {
@@ -307,5 +310,33 @@ describe("SidebarMenuCollapsible", () => {
     );
 
     expect(document.querySelector('[data-slot="sidebar-menu-chevron"]')).not.toBeInTheDocument();
+  });
+
+  it("keeps a row action before the built-in chevron", () => {
+    render(
+      <SidebarProvider persist={false}>
+        <SidebarMenu>
+          <SidebarMenuCollapsible>
+            <SidebarMenuCollapsibleTrigger>
+              <span>Projects</span>
+            </SidebarMenuCollapsibleTrigger>
+            <SidebarMenuAction aria-label="More project actions" />
+            <SidebarMenuCollapsibleContent>Project list</SidebarMenuCollapsibleContent>
+          </SidebarMenuCollapsible>
+        </SidebarMenu>
+      </SidebarProvider>,
+    );
+
+    const trigger = screen.getByRole("button", { name: "Projects" });
+    const action = screen.getByRole("button", { name: "More project actions" });
+    const chevron = trigger.querySelector('[data-slot="sidebar-menu-chevron"]');
+
+    expect(trigger.lastElementChild).toBe(chevron);
+    expect(trigger).toHaveClass(
+      "group-has-data-[slot=sidebar-menu-action]/menu-collapsible:pr-2!",
+    );
+    expect(action).toHaveClass(
+      "group-has-data-[slot=sidebar-menu-chevron]/menu-collapsible:right-8",
+    );
   });
 });

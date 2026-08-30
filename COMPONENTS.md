@@ -31,8 +31,9 @@ click-to-scroll behavior comes from the shared `table-of-contents-tracking` help
 
 `SidebarMenuCollapsible` is the expandable-row primitive inside `sidebar`; its trigger includes
 a trailing `ChevronDown` by default and rotates it from right to down as the panel opens. Pass
-`chevron={false}` when supplying a custom indicator. `SidebarGroup` remains a visual grouping
-wrapper and is not collapsible on its own.
+`chevron={false}` when supplying a custom indicator. A sibling `SidebarMenuAction` is laid out
+immediately before the chevron. `SidebarGroup` remains a visual grouping wrapper and is not
+collapsible on its own.
 
 The `select` family includes `SelectSeparator` for accessible dividers between option groups.
 It is a Base UI list part, not an option, so it stays out of highlighting and selection. The
