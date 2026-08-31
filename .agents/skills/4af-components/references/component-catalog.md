@@ -384,8 +384,10 @@ outside, so the hook reads the right selection.
 actions, badges, nested rows, search/button headers, and row skeletons. Use
 `SidebarMenuCollapsible` for an expandable row; `SidebarMenuCollapsibleTrigger` includes a
 trailing `ChevronDown` by default and accepts `chevron={false}` when a custom indicator is
-needed. A sibling `SidebarMenuAction` is placed before that chevron; hovering nested rows keeps
-the highlight on the row under the pointer rather than highlighting the collapsible parent.
+needed. A sibling `SidebarMenuAction` is placed before that chevron, and a sibling
+`SidebarMenuBadge` reserves a slot before both controls so counters do not overlap them. Hovering
+nested rows keeps the highlight on the row under the pointer rather than highlighting the
+collapsible parent.
 `SidebarGroup` is visual grouping only. Compose a row action with `dropdown-menu`.
 
 Split variants are `split`, `split-floating`, and `split-inset`. Provide the fixed `rail` with

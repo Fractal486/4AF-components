@@ -7,6 +7,7 @@ import {
   SidebarHeaderRow,
   SidebarMenu,
   SidebarMenuAction,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuCollapsible,
   SidebarMenuCollapsibleContent,
@@ -343,6 +344,48 @@ describe("SidebarMenuCollapsible", () => {
     );
     expect(action).toHaveClass(
       "group-has-data-[slot=sidebar-menu-chevron]/menu-collapsible:right-8",
+    );
+  });
+
+  it("reserves badge and action slots before the built-in chevron", () => {
+    render(
+      <SidebarProvider persist={false}>
+        <SidebarMenu>
+          <SidebarMenuCollapsible>
+            <SidebarMenuCollapsibleTrigger>
+              <span>RSS</span>
+            </SidebarMenuCollapsibleTrigger>
+            <SidebarMenuBadge>7</SidebarMenuBadge>
+            <SidebarMenuAction aria-label="Add RSS source" />
+            <SidebarMenuCollapsibleContent>RSS sources</SidebarMenuCollapsibleContent>
+          </SidebarMenuCollapsible>
+        </SidebarMenu>
+      </SidebarProvider>,
+    );
+
+    const trigger = screen.getByRole("button", { name: "RSS" });
+    const badge = screen.getByText("7");
+    const badgeSpacer = trigger.querySelector('[data-slot="sidebar-menu-badge-spacer"]');
+    const actionSpacer = trigger.querySelector('[data-slot="sidebar-menu-action-spacer"]');
+    const chevron = trigger.querySelector('[data-slot="sidebar-menu-chevron"]');
+
+    expect(badgeSpacer).toBeInTheDocument();
+    expect(actionSpacer).toBeInTheDocument();
+    expect(
+      Array.from(trigger.children)
+        .slice(-3)
+        .map((element) => element.getAttribute("data-slot")),
+    ).toEqual([
+      "sidebar-menu-badge-spacer",
+      "sidebar-menu-action-spacer",
+      "sidebar-menu-chevron",
+    ]);
+    expect(trigger.lastElementChild).toBe(chevron);
+    expect(badge).toHaveClass(
+      "group-has-data-[slot=sidebar-menu-chevron]/menu-collapsible:right-8",
+    );
+    expect(badge).toHaveClass(
+      "group-has-data-[slot=sidebar-menu-action]/menu-collapsible:right-14!",
     );
   });
 });

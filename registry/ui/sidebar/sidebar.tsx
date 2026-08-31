@@ -1057,9 +1057,9 @@ export function SidebarMenuCollapsibleTrigger({
           {...props}
           disabled={disabled}
           className={cn(
-            // A row action is positioned in the slot immediately before the chevron.
-            // Reset the generic action padding so the chevron can stay at the true end
-            // of the trigger, then reserve the action slot in the trigger's flow.
+            // Sibling badges and actions are positioned in slots immediately before the
+            // chevron. Reset the generic action padding so the chevron can stay at the
+            // true end of the trigger, then reserve those slots in the trigger's flow.
             "group-has-data-[slot=sidebar-menu-action]/menu-collapsible:pr-2!",
             className,
           )}
@@ -1067,6 +1067,11 @@ export function SidebarMenuCollapsibleTrigger({
           {children}
           {chevron && (
             <>
+              <span
+                aria-hidden="true"
+                data-slot="sidebar-menu-badge-spacer"
+                className="hidden w-7 shrink-0 group-data-[collapsible=icon]:hidden group-has-data-[slot=sidebar-menu-badge]/menu-collapsible:block"
+              />
               <span
                 aria-hidden="true"
                 data-slot="sidebar-menu-action-spacer"
@@ -1165,6 +1170,8 @@ export function SidebarMenuBadge({ className, ...props }: ComponentProps<"div">)
         "peer-data-[size=default]/menu-button:top-1.5",
         "peer-data-[size=lg]/menu-button:top-2.5",
         "group-data-[collapsible=icon]:hidden",
+        "group-has-data-[slot=sidebar-menu-chevron]/menu-collapsible:right-8",
+        "group-has-data-[slot=sidebar-menu-action]/menu-collapsible:right-14!",
         className,
       )}
       {...props}
