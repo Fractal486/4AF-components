@@ -36,6 +36,19 @@ function Fruits({
 }
 
 describe("AlignedSelect", () => {
+  it("uses 24px geometry for the trigger and popup rows for xs", async () => {
+    const user = userEvent.setup();
+    render(<Fruits size="xs" />);
+
+    const trigger = screen.getByRole("combobox");
+    expect(trigger).toHaveClass("h-6", "rounded-[6px]");
+
+    await user.click(trigger);
+    const option = await screen.findByRole("option", { name: "Apple" });
+    expect(option).toHaveClass("h-6", "min-h-6", "py-1", "text-xs");
+    expect(option).not.toHaveClass("min-h-[30px]");
+  });
+
   it("uses the shared 34px medium trigger and row size", async () => {
     const user = userEvent.setup();
     render(<Fruits size="md" />);

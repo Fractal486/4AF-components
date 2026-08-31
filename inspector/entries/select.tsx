@@ -61,7 +61,7 @@ export const selectEntry = defineEntry({
   slug: "select",
   name: "BaseUI",
   controls: {
-    size: select(["sm", "md"] as const, "sm"),
+    size: select(["xs", "sm", "md"] as const, "sm"),
     disabled: bool(false),
     multiple: bool(false),
     searchable: bool(false, "Search in panel"),

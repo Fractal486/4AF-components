@@ -11,7 +11,7 @@ import {
 } from "@/registry/ui/select/select-aligned";
 import { bool, defineEntry, select } from "../schema";
 
-const SIZES = ["sm", "md"] as const;
+const SIZES = ["xs", "sm", "md"] as const;
 
 /**
  * Long enough that the selected row is somewhere in the middle of the list, which is the

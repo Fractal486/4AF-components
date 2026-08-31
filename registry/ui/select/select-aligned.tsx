@@ -52,9 +52,16 @@ import {
  * label right and break the alignment the component exists for.
  */
 
-type AlignedSelectSize = "sm" | "md";
+type AlignedSelectSize = "xs" | "sm" | "md";
 
 const SIZE: Record<AlignedSelectSize, { field: string; row: string; glyph: string; radius: string }> = {
+  // `xs` uses the compact 24px geometry for both the trigger and its popup rows.
+  xs: {
+    field: "h-6 text-xs",
+    row: "h-6 min-h-6 py-1 text-xs",
+    glyph: "size-3.5",
+    radius: "rounded-[6px]",
+  },
   sm: {
     field: "h-[30px] text-xs",
     row: "min-h-[30px] text-xs",
@@ -130,7 +137,7 @@ const SCROLLBAR =
 
 export interface AlignedSelectProps<Value>
   extends ComponentProps<typeof BaseSelect.Root<Value, false>> {
-  /** Control height: 30px (`sm`) or 34px (`md`). @default sm */
+  /** `xs` sizes the trigger and popup rows to 24px; `sm`/`md` use the matching 30px/34px sizes. @default sm */
   size?: AlignedSelectSize;
 }
 

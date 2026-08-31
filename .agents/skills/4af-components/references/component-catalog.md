@@ -49,8 +49,9 @@ These entries install transitively:
 ## Shared control geometry
 
 Button controls use four text/square tiers: `xs` is 24px, `sm` is 30px, `md` is 34px, and
-`lg` is 38px. Button corners are 6px at `xs`/`sm` and 8px at `md`/`lg`; the same two tiers
-apply to existing sizes of other rectangular controls such as Input and Select. Labeled button
+`lg` is 38px. Button corners are 6px at `xs`/`sm` and 8px at `md`/`lg`; the base Select and
+select-aligned also use the 24px `xs` tier, while other rectangular controls keep their existing
+sizes. Labeled button
 content gaps are 8px at `xs`/`sm`, 10px at `md`, and 12px at `lg`, with optical edge adjustment
 for leading and trailing icons.
 
@@ -86,8 +87,8 @@ The catalog currently contains 46 installable UI items. Verify the count and nam
 | `checkbox` | `Checkbox` | Fixed 16px/4px boolean or indeterminate selection with an animated tick and optional label; it has no size axis. |
 | `radio` | `RadioGroup`, `Radio` | Single-choice selection groups. |
 | `slider` | `Slider` | Numeric input with `bar`, `circle`, and `knob` thumbs, optional ticks/labels, `range` mode with two draggable thumbs, and an opt-in `showValueTooltip` that follows the active thumb during drag. |
-| `select` | `Select`, trigger/content/item/separator parts, `SelectSortTrigger`, `SelectSub` parts | Base UI single/multi select, optional panel search and clear footer, compact sort/filter trigger, accessible separators, and nested option panels. |
-| `select-aligned` | `AlignedSelect` and trigger/content/item/group parts | A select that opens *on* its trigger: default/ghost panel at the trigger's width, plain panel at the longest row plus check slot, selected row landing on the value it replaces, `ChevronsUpDown` glyph. The macOS pop-up button. |
+| `select` | `Select`, trigger/content/item/separator parts, `SelectSortTrigger`, `SelectSub` parts | Base UI single/multi select with 24px `xs`, 30px `sm`, and 34px `md` trigger/row sizes, optional panel search and clear footer, compact sort/filter trigger, accessible separators, and nested option panels. |
+| `select-aligned` | `AlignedSelect` and trigger/content/item/group parts | A select that opens *on* its trigger: default/ghost panel at the trigger's width, plain panel at the longest row plus check slot, selected row landing on the value it replaces, `ChevronsUpDown` glyph, and an `xs` size with a 24px trigger and popup rows. The macOS pop-up button. |
 | `select-search` | `SearchSelect` and input/content/item parts | Editable Combobox trigger with filtering and single/multi selection. |
 | `select-motion` | `Select` and trigger/content/item parts | Button-triggered select with a hand-animated unfolding panel and optional panel search. |
 | `select-motion-search` | `MotionSearchSelect` and parts | Editable Combobox whose panel unfolds from the field. |
@@ -232,6 +233,8 @@ All support single and multi selection (multi uses Checkbox) and take `size="sm"
 default `sm`. `sm` is a 30px control with compact text and 14px glyphs; `md` is 34px and lines
 up with a medium Button or Input in a form row; the size scales the trigger and the option
 rows together, with 6px corners at `sm` and 8px at `md`. Inside a Command Palette keep `sm`.
+The base `select` and `select-aligned` additionally accept `size="xs"`, which scales both the
+trigger and option rows to 24px with 6px corners.
 `select-aligned` is single selection only. It takes optional sections
 (`AlignedSelectGroup` + `AlignedSelectGroupLabel`, which hide themselves when a search empties
 them) and an optional pinned search field (`searchable` on the content).

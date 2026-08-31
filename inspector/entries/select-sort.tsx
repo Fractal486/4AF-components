@@ -32,7 +32,7 @@ export const selectSortEntry = defineEntry({
   slug: "select-sort",
   name: "Sort / filter trigger",
   controls: {
-    size: select(["sm", "md"] as const, "sm", "Size"),
+    size: select(["xs", "sm", "md"] as const, "sm", "Size"),
     multiple: bool(false, "Multiple selection"),
     selected: bool(true, "Selected"),
     variant: select(["default", "ghost", "plain"] as const, "default", "Variant"),

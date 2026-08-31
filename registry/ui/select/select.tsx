@@ -46,16 +46,25 @@ import {
  */
 
 /**
- * The two sizes, mirroring Button. `sm` (30px) is the compact/toolbar default; `md` (34px)
- * matches Button's `md` and the Input, so a select lines up with them in a form row. The
- * size flows through context so the trigger *and* the option rows scale together.
+ * The three sizes, mirroring Button. `xs` (24px) is the dense control; `sm` (30px) is the
+ * compact/toolbar default; `md` (34px) matches Button's `md` and the Input, so a select lines
+ * up with them in a form row. The size flows through context so the trigger and option rows
+ * scale together.
  */
-export type SelectSize = "sm" | "md";
+export type SelectSize = "xs" | "sm" | "md";
 
 const SIZE: Record<
   SelectSize,
   { field: string; chip: string; glyph: string; iconSlot: string; row: string; radius: string }
 > = {
+  xs: {
+    field: "h-6 text-xs",
+    chip: "h-6 px-2.5 text-xs",
+    glyph: "size-3.5",
+    iconSlot: "size-3.5 [&_svg]:size-3.5",
+    row: "h-6 min-h-6 py-1 text-xs",
+    radius: "rounded-[6px]",
+  },
   sm: {
     field: "h-[30px] text-xs",
     chip: "h-[30px] px-3 text-xs",
@@ -401,7 +410,7 @@ export interface SelectProps<Value, Multiple extends boolean | undefined = false
    * one declaration per option, and it resolves before mount either way.
    */
   iconForValue?: (value: Value) => ReactNode | undefined;
-  /** Compact 30px (`sm`, default) or the 34px form-row size (`md`). @default "sm" */
+  /** Compact 24px (`xs`), 30px (`sm`, default), or 34px (`md`) form-row size. */
   size?: SelectSize;
   children: ReactNode;
 }
@@ -879,7 +888,8 @@ export function SelectTrigger({
       data-variant={resolvedVariant}
       className={cn(
         // `md` (34px) matches Button's default and the Input — a select beside either in a
-        // form row lines up with it. `sm` (30px, the default) is the compact toolbar size.
+        // form row lines up with it. `sm` (30px, the default) is the compact toolbar size;
+        // `xs` is the dense 24px control.
         SIZE[size].field,
         selectTriggerVariants({ variant: resolvedVariant }),
         SIZE[size].radius,
@@ -985,7 +995,7 @@ export function SelectSortTrigger({
           aria-hidden
           className={cn(
             "shrink-0",
-            size === "sm" ? "[&>svg]:size-3.5" : "[&>svg]:size-4",
+            size === "md" ? "[&>svg]:size-4" : "[&>svg]:size-3.5",
             // Icon-only chip: the glyph carries the state, so it brightens to the
             // foreground once something's selected. Otherwise it stays a muted adornment.
             iconOnly && !isUnset ? "text-foreground" : "text-muted-foreground",
@@ -1300,8 +1310,8 @@ export function SelectContent({
             <div
               // One row tall, exactly: `m-1` mirrors the list's `p-1` and `py-1.5` is the
               // row's own vertical padding, so an empty panel and a panel holding a single
-              // result come to the same height at every size. The shared row minimum keeps
-              // the empty state aligned with the 30px/34px control scale.
+              // result come to the same height at every size. The shared row geometry keeps
+              // the empty state aligned with the 24px/30px/34px control scale.
               className={cn(
                 "m-1 flex items-center justify-center px-2.5 py-1.5 text-center text-muted-foreground",
                 SIZE[size].row,

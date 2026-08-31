@@ -45,3 +45,7 @@ it by default. Multi-select submenu triggers show their selected-child count bef
 The `select` and `select-aligned` triggers also accept `variant="ghost"`: Button ghost colors with
 the default trigger geometry, keeping leading and trailing icons aligned.
 They also accept an optional dimmed `label` before the value, such as `Fruit: Banana`.
+The base `select` also accepts `size="xs"` for a 24px trigger and popup rows; `sm` and `md`
+remain the 30px and 34px shared sizes.
+`select-aligned` additionally accepts `size="xs"` for a 24px trigger and popup rows; `sm` and
+`md` keep the trigger and rows at their matching sizes.

@@ -31,6 +31,39 @@ function FruitOptions() {
 }
 
 describe("Base UI Select", () => {
+  it("uses the shared 24px xs geometry for the trigger and option rows", async () => {
+    const user = userEvent.setup();
+    render(
+      <Select items={FRUITS} size="xs">
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue placeholder="Pick a fruit" />
+        </SelectTrigger>
+        <FruitOptions />
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("combobox", { name: "Fruit" });
+    expect(trigger).toHaveClass("h-6", "rounded-[6px]");
+
+    await user.click(trigger);
+    const option = await screen.findByRole("option", { name: "Apple" });
+    expect(option).toHaveClass("h-6", "min-h-6", "py-1", "text-xs");
+    expect(option).not.toHaveClass("min-h-[30px]");
+  });
+
+  it("uses the 24px xs geometry for the sort trigger", () => {
+    render(
+      <Select items={FRUITS} size="xs">
+        <SelectSortTrigger label="Sort" aria-label="Sort fruit" />
+        <FruitOptions />
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("combobox", { name: "Sort fruit" });
+    expect(trigger).toHaveClass("h-6", "px-2.5", "rounded-[6px]");
+    expect(trigger.lastElementChild?.querySelector("svg")).toHaveClass("size-3.5");
+  });
+
   it("uses the shared 30px/34px scale for the trigger and option rows", async () => {
     const user = userEvent.setup();
     render(
