@@ -35,6 +35,11 @@ export interface TableOfContentsLinesProps
   rootRef?: RefObject<HTMLElement | null>;
 }
 
+// The label is intentionally aligned with the first line in each three-line row. Its 14px
+// line box is slightly taller than that first track, so leave the whole first row a little
+// room before the scrollport edge instead of changing the label's alignment.
+const FIRST_ROW_INSET_PX = 3;
+
 export function TableOfContentsLines({
   items,
   rootRef,
@@ -65,7 +70,12 @@ export function TableOfContentsLines({
       className={cn(tableOfContentsLinesVariants(), className)}
       {...props}
     >
-      <ul style={{ paddingBlockStart: edgePadding.start, paddingBlockEnd: edgePadding.end }}>
+      <ul
+        style={{
+          paddingBlockStart: edgePadding.start + FIRST_ROW_INSET_PX,
+          paddingBlockEnd: edgePadding.end,
+        }}
+      >
         {items.map((item, itemIndex) => {
           const hasFollowingHeading = itemIndex < items.length - 1;
           const active = item.id === activeId;
@@ -97,11 +107,20 @@ export function TableOfContentsLines({
                 >
                   <span
                     className={cn(
-                      "h-px w-6 origin-left rounded-full bg-border-strong",
-                      "transition-[scale,background-color] duration-(--duration-slow) ease-out",
-                      "group-hover:scale-x-[1.25] group-hover:bg-foreground",
-                      "group-focus-visible:scale-x-[1.25] group-focus-visible:bg-foreground",
-                      active && "scale-x-[1.25] bg-foreground",
+                      // Laid out at its full length and revealed by `clip-path`, rather
+                      // than drawn short and scaled up. Scaling a 1px rule promotes it to
+                      // its own layer, and the rasterized hairline then sits at fractional
+                      // device pixels for the length of the transition — it antialiases
+                      // across two rows and reads as *thicker* while it grows, then snaps
+                      // crisp again at the end. Both endpoints looked right; only the
+                      // middle was fat. `clip-path` is on the compositor list too, and it
+                      // moves an edge instead of resampling the line.
+                      "h-px w-[1.875rem] rounded-full bg-border-strong",
+                      "[clip-path:inset(0_20%_0_0)]",
+                      "transition-[clip-path,background-color] duration-(--duration-slow) ease-out",
+                      "group-hover:[clip-path:inset(0_0_0_0)] group-hover:bg-foreground",
+                      "group-focus-visible:[clip-path:inset(0_0_0_0)] group-focus-visible:bg-foreground",
+                      active && "[clip-path:inset(0_0_0_0)] bg-foreground",
                     )}
                   />
                   {hasFollowingHeading && (

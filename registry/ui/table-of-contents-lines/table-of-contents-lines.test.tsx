@@ -60,8 +60,8 @@ describe("TableOfContentsLines", () => {
       .querySelector("[aria-hidden]");
     expect(firstRules?.children).toHaveLength(3);
     expect(firstRules?.firstElementChild).toHaveClass(
-      "group-hover:scale-x-[1.25]",
-      "scale-x-[1.25]",
+      "group-hover:[clip-path:inset(0_0_0_0)]",
+      "[clip-path:inset(0_0_0_0)]",
     );
     expect(
       screen.getByRole("link", { name: "First section" }).querySelector(":scope > span:last-child"),
