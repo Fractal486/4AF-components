@@ -87,4 +87,36 @@ describe("TableOfContentsLines", () => {
 
     root.remove();
   });
+
+  it("withholds the labels until the list is pointed at, in the hover variant", () => {
+    render(
+      <TableOfContentsLines
+        labels="hover"
+        items={[
+          { id: "first", title: "First section" },
+          { id: "last", title: "Last section" },
+        ]}
+      />,
+    );
+
+    // The group is on the nav, not the row: one label appearing under the pointer while
+    // the others stayed hidden would be a different component.
+    expect(screen.getByRole("navigation", { name: "Table of contents" })).toHaveClass(
+      "group/toc",
+    );
+
+    const label = screen
+      .getByRole("link", { name: "First section" })
+      .querySelector(":scope > span:last-child");
+    expect(label).toHaveClass("opacity-0", "group-hover/toc:opacity-100");
+    // Keyboard focus reaches it too — but a mouse press does not, or clicking an
+    // entry would hold the list open after the pointer left. A touch screen never hovers.
+    expect(label).toHaveClass(
+      "group-has-[:focus-visible]/toc:opacity-100",
+      "pointer-coarse:opacity-100",
+    );
+    // And a pointed-at row still nudges its label along with its own rule.
+    expect(label).toHaveClass("group-hover/toc:group-hover:translate-x-1");
+  });
+
 });

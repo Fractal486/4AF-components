@@ -43,9 +43,11 @@ const FIRST_ROW_INSET_PX = 3;
 export function TableOfContentsLines({
   items,
   rootRef,
+  labels = "always",
   className,
   ...props
 }: TableOfContentsLinesProps) {
+  const revealsLabels = labels === "hover";
   const navRef = useRef<HTMLElement>(null);
   const minLevel = useMemo(
     () => (items.length ? Math.min(...items.map((item) => item.level ?? 2)) : 2),
@@ -67,7 +69,7 @@ export function TableOfContentsLines({
       ref={navRef}
       aria-label="Table of contents"
       data-variant="lines"
-      className={cn(tableOfContentsLinesVariants(), className)}
+      className={cn(tableOfContentsLinesVariants({ labels }), className)}
       {...props}
     >
       <ul
@@ -138,8 +140,47 @@ export function TableOfContentsLines({
                 </span>
                 <span
                   className={cn(
-                    "col-start-2 row-start-1 min-w-0 self-center transition-[translate] duration-(--duration-slow) ease-out group-hover:translate-x-1 group-focus-visible:translate-x-1",
-                    active && "translate-x-1",
+                    "col-start-2 row-start-1 min-w-0 self-center",
+                    revealsLabels
+                      ? cn(
+                          // The label is still in flow and still in the accessibility
+                          // tree — only its paint is withheld. Hiding it any harder means
+                          // either clipping (the list scrolls, so `overflow-x` cannot be
+                          // visible) or taking it out of flow and doing the row's vertical
+                          // maths by hand, and neither buys anything a reader can see.
+                          "opacity-0 -translate-x-1",
+                          "transition-[opacity,translate] duration-(--duration-slow) ease-out",
+                          "group-hover/toc:translate-x-0 group-hover/toc:opacity-100",
+                          // `:has(:focus-visible)`, not `:focus-within`: clicking a label
+                          // focuses it, and focus-within would then hold the whole list
+                          // open after the pointer had left. `focus-visible` is not set by
+                          // a mouse press, so only the keyboard keeps them up.
+                          "group-has-[:focus-visible]/toc:translate-x-0 group-has-[:focus-visible]/toc:opacity-100",
+                          // Nothing hovers on a touch screen, so there the labels simply
+                          // stay.
+                          "pointer-coarse:translate-x-0 pointer-coarse:opacity-100",
+                          // The row's own nudge, which travels with its rule lengthening.
+                          // Stacked on the list's variant rather than written alone: a bare
+                          // `group-hover:` would tie with the reveal above on specificity
+                          // and the winner would come down to emission order. Pointing at a
+                          // row always means pointing at the list, so the pair is never
+                          // false when the single would have been true.
+                          "group-hover/toc:group-hover:translate-x-1",
+                          "group-has-[:focus-visible]/toc:group-focus-visible:translate-x-1",
+                          // The active row keeps that nudge once the labels are showing.
+                          // Keyed off the row's own `data-active` rather than the `active`
+                          // flag: an attribute selector outranks the plain reveal above it
+                          // on specificity, so which one applies is not left to emission
+                          // order. Below the reveal it changes nothing — the label is at
+                          // zero opacity, so where it sits is unobservable.
+                          "group-data-[active=true]:group-hover/toc:translate-x-1",
+                          "group-data-[active=true]:group-has-[:focus-visible]/toc:translate-x-1",
+                        )
+                      : cn(
+                          "transition-[translate] duration-(--duration-slow) ease-out",
+                          "group-hover:translate-x-1 group-focus-visible:translate-x-1",
+                          active && "translate-x-1",
+                        ),
                   )}
                 >
                   {item.title}

@@ -83,7 +83,13 @@ function TocArticle({
 const lineSections = () =>
   SECTIONS.map((section) => ({ ...section, id: `toc-lines-${section.id}` }));
 
-export function TocDemo({ variant }: { variant?: TableOfContentsProps["variant"] }) {
+export function TocDemo({
+  variant,
+  labels = "always",
+}: {
+  variant?: TableOfContentsProps["variant"];
+  labels?: "always" | "hover";
+}) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -94,13 +100,14 @@ export function TocDemo({ variant }: { variant?: TableOfContentsProps["variant"]
         items={SECTIONS.map(({ id, title, level }) => ({ id, title, level }))}
         rootRef={scrollRef}
         variant={variant}
+        labels={labels}
         className="sticky top-0 h-40 w-44 shrink-0 self-start"
       />
     </div>
   );
 }
 
-export function TocLinesDemo() {
+export function TocLinesDemo({ labels = "always" }: { labels?: "always" | "hover" }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const sections = lineSections();
 
@@ -108,6 +115,7 @@ export function TocLinesDemo() {
     <div className="flex w-full max-w-2xl gap-8">
       <TocArticle sections={sections} scrollRef={scrollRef} />
       <TableOfContentsLines
+        labels={labels}
         aria-label="Table of contents lines"
         items={sections.map(({ id, title, level }) => ({ id, title, level }))}
         rootRef={scrollRef}

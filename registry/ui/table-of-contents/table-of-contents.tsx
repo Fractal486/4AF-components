@@ -73,6 +73,7 @@ export function TableOfContents({
   items,
   rootRef,
   variant = "span",
+  labels = "always",
   className,
   ...props
 }: TableOfContentsProps) {
@@ -203,7 +204,7 @@ export function TableOfContents({
       ref={navRef}
       aria-label="Table of contents"
       data-variant={variant}
-      className={cn(tableOfContentsVariants({ variant }), className)}
+      className={cn(tableOfContentsVariants({ variant, labels }), className)}
       {...props}
     >
       <ul
@@ -255,9 +256,27 @@ export function TableOfContents({
                 aria-current={item.id === currentHighlightId ? "location" : undefined}
                 style={{ paddingInlineStart: `${0.75 + ((item.level ?? 2) - minLevel) * 0.75}rem` }}
                 className={cn(
-                  "block py-1.5 pr-2 leading-snug transition-colors duration-(--duration-slow) ease-out",
+                  "block py-1.5 pr-2 leading-snug duration-(--duration-slow) ease-out",
                   "outline-none focus-visible:text-foreground",
                   active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+                  labels === "hover"
+                    ? cn(
+                        // Only the paint is withheld: the entry keeps its box, so the rail
+                        // and its marker — both measured from these rows — are drawn
+                        // against the same geometry whether the headings are showing or
+                        // not.
+                        "opacity-0 -translate-x-1",
+                        "transition-[color,opacity,translate]",
+                        "group-hover/toc:translate-x-0 group-hover/toc:opacity-100",
+                        // `:has(:focus-visible)`, not `:focus-within`: clicking an entry
+                        // focuses it, and focus-within would then hold the whole list open
+                        // after the pointer had left. `focus-visible` is not set by a
+                        // mouse press, so only the keyboard keeps them up.
+                        "group-has-[:focus-visible]/toc:translate-x-0 group-has-[:focus-visible]/toc:opacity-100",
+                        // Nothing hovers on a touch screen, so there the headings stay.
+                        "pointer-coarse:translate-x-0 pointer-coarse:opacity-100",
+                      )
+                    : "transition-colors",
                 )}
               >
                 {item.title}

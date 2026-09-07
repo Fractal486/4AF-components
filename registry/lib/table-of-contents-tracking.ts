@@ -142,6 +142,11 @@ export function useTableOfContentsTracking({
 
     let positions: { id: string; top: number }[] = [];
     let frame = 0;
+    // The scroll height the offsets above were measured against. Anything that changes it
+    // — an image finishing, a font swapping, an embed sizing itself — moves every heading
+    // below it, and none of that resizes the root or the headings themselves, so no
+    // observer here would otherwise hear about it.
+    let measuredScrollHeight = 0;
 
     const updateCurrentId = () => {
       if (positions.length === 0) {
@@ -166,6 +171,9 @@ export function useTableOfContentsTracking({
       setCurrentId((previous) => (previous === nextId ? previous : nextId));
     };
 
+    const scrollHeight = () =>
+      root?.scrollHeight ?? document.documentElement.scrollHeight;
+
     const measurePositions = () => {
       const viewportTop = root?.getBoundingClientRect().top ?? 0;
       const scrollOffset = root?.scrollTop ?? window.scrollY;
@@ -173,6 +181,7 @@ export function useTableOfContentsTracking({
         id: element.id,
         top: element.getBoundingClientRect().top - viewportTop + scrollOffset,
       }));
+      measuredScrollHeight = scrollHeight();
       updateCurrentId();
     };
 
@@ -181,6 +190,13 @@ export function useTableOfContentsTracking({
       if (frame !== 0) return;
       frame = requestAnimationFrame(() => {
         frame = 0;
+        // One property read per frame, and it is what keeps a first read honest: measured
+        // before the images land, every heading sits too high, so the list runs ahead of
+        // the article and then snaps back as the real positions arrive.
+        if (scrollHeight() !== measuredScrollHeight) {
+          measurePositions();
+          return;
+        }
         updateCurrentId();
       });
     };
@@ -192,6 +208,11 @@ export function useTableOfContentsTracking({
       typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measurePositions);
     resizeObserver?.observe(root ?? document.documentElement);
     for (const element of elements) resizeObserver?.observe(element);
+    // Capture, because `load` does not bubble. Without this the correction waits for the
+    // next scroll, which is exactly when the reader is watching the list.
+    const handleContentLoad = () => measurePositions();
+    const loadTarget = root ?? document;
+    loadTarget.addEventListener("load", handleContentLoad, true);
     measurePositions();
 
     const observer =
@@ -216,6 +237,7 @@ export function useTableOfContentsTracking({
       observer?.disconnect();
       resizeObserver?.disconnect();
       window.removeEventListener("resize", measurePositions);
+      loadTarget.removeEventListener("load", handleContentLoad, true);
       scrollTarget.removeEventListener("scroll", scheduleUpdate);
       if (frame !== 0) cancelAnimationFrame(frame);
     };

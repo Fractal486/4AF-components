@@ -15,5 +15,12 @@ and `span` or `single` active-marker variants. When its height is constrained, t
 scrollable without exposing a browser scrollbar and smoothly keeps the active entry centered,
 including first and last entries through internal scroll space at the rail's edges.
 
+`labels` decides whether the headings are always readable (`always`, the default) or held back
+until the list is hovered or focused (`hover`), leaving the rail and its marker alone on screen.
+The entries keep their boxes either way, so the rail geometry — measured from those rows — is
+identical in both. The reveal is scoped to the whole list rather than a row, fires on
+`:has(:focus-visible)` as well as hover — a mouse click focuses an entry but never sets
+`focus-visible`, so it cannot pin the list open — and is disabled under `pointer: coarse`, where nothing hovers.
+
 `rootRef` is the document's scroll root. Pass it whenever the article scrolls inside a container;
 the TOC uses it to track the active heading, while its own navigation rail scrolls independently.

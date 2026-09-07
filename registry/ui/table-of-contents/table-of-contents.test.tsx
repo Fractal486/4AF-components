@@ -340,4 +340,87 @@ describe("TableOfContents", () => {
 
     root.remove();
   });
+
+  it("withholds the headings until the list is pointed at, in the hover variant", () => {
+    render(
+      <TableOfContents
+        labels="hover"
+        items={[
+          { id: "first", title: "First section" },
+          { id: "last", title: "Last section" },
+        ]}
+      />,
+    );
+
+    // The group is on the nav, not the row: one heading appearing under the pointer while
+    // the rest stayed hidden would be a different component.
+    expect(screen.getByRole("navigation")).toHaveClass("group/toc");
+
+    const entry = screen.getByRole("link", { name: "First section" });
+    expect(entry).toHaveClass("opacity-0", "group-hover/toc:opacity-100");
+    // Keyboard focus reaches it too — but a mouse press does not, or clicking an
+    // entry would hold the list open after the pointer left. A touch screen never hovers.
+    expect(entry).toHaveClass(
+      "group-has-[:focus-visible]/toc:opacity-100",
+      "pointer-coarse:opacity-100",
+    );
+  });
+
+
+  it("re-measures when the article grows under it", async () => {
+    // The bug this covers: on a first open the images have not landed, so every heading is
+    // measured too high. The list then runs ahead of the article — highlighting sections
+    // the reader has not reached — and snaps backwards once the real positions arrive.
+    vi.stubGlobal("IntersectionObserver", IntersectionObserverStub);
+
+    const root = document.createElement("div");
+    const firstHeading = document.createElement("h2");
+    const secondHeading = document.createElement("h2");
+    firstHeading.id = "grow-first";
+    secondHeading.id = "grow-second";
+    root.append(firstHeading, secondHeading);
+    document.body.append(root);
+
+    let scrollHeight = 1000;
+    Object.defineProperty(root, "scrollHeight", { get: () => scrollHeight });
+    vi.spyOn(root, "getBoundingClientRect").mockReturnValue({ top: 0 } as DOMRect);
+    // Before the image lands the second heading sits at 200; after, it is pushed to 900.
+    let secondTop = 200;
+    vi.spyOn(firstHeading, "getBoundingClientRect").mockImplementation(
+      () => ({ top: 0 }) as DOMRect,
+    );
+    vi.spyOn(secondHeading, "getBoundingClientRect").mockImplementation(
+      () => ({ top: secondTop - root.scrollTop }) as DOMRect,
+    );
+
+    // Both held stable across renders, as a real caller's would be. Passing fresh objects
+    // re-runs the tracking effect on every render, which re-measures as a side effect and
+    // hides the very thing this covers.
+    const rootRef = { current: root } as RefObject<HTMLElement | null>;
+    const items = [
+      { id: firstHeading.id, title: "First section" },
+      { id: secondHeading.id, title: "Second section" },
+    ];
+    render(<TableOfContents rootRef={rootRef} items={items} />);
+
+    // The article grows before the reader has scrolled anywhere near the second heading.
+    secondTop = 900;
+    scrollHeight = 2000;
+    root.scrollTop = 400;
+    fireEvent.scroll(root);
+
+    // Against the stale offsets this would already be the second section.
+    await waitFor(() =>
+      expect(screen.getByRole("link", { name: "First section" })).toHaveAttribute(
+        "aria-current",
+        "location",
+      ),
+    );
+    expect(screen.getByRole("link", { name: "Second section" })).not.toHaveAttribute(
+      "aria-current",
+    );
+
+    root.remove();
+  });
+
 });

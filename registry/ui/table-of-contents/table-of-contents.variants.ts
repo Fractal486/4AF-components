@@ -10,8 +10,18 @@ export const tableOfContentsVariants = cva(
         /** Highlight one heading and keep the marker beside that entry only. */
         single: "",
       },
+      /**
+       * `hover` leaves only the rail and its marker showing until the list is pointed at
+       * or focused. The group is named because the reveal belongs to the *list*: a
+       * row-scoped hover would flicker one heading in and out as the pointer travelled
+       * down, and you would never see the set.
+       */
+      labels: {
+        always: "",
+        hover: "group/toc",
+      },
     },
-    defaultVariants: { variant: "span" },
+    defaultVariants: { variant: "span", labels: "always" },
   },
 );
 
