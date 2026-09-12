@@ -75,3 +75,15 @@ A header contains one full-width `SidebarHeaderButton`, or two wrapped in `Sideb
 The row owns spacing, divides width evenly, and stacks its buttons when the sidebar collapses to
 icons. Add `className="flex-none"` when a button should retain its own width. Compose menus with
 Dropdown Menu rather than embedding a separate menu implementation in Sidebar.
+
+### Pinning the panel open
+
+`hideCollapseHandle` drops the edge strip that toggles the panel. It is for a panel whose
+owner has pinned it — a controlled `open` it never changes — where the strip would sit
+there doing nothing. An inert control reads as breakage; an absent one reads as "not
+available here", which is the truth.
+
+```tsx
+<Sidebar variant="split-inset" collapsible="icon" hideCollapseHandle={pinned} rail={rail}>
+```
+

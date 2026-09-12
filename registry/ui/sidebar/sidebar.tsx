@@ -237,6 +237,12 @@ export interface SidebarProps extends ComponentProps<"div"> {
   defaultActivePanel?: string;
   /** Called when a split rail button selects a different wide panel. */
   onActivePanelChange?: (panel: string) => void;
+  /**
+   * Drops the edge strip that toggles the panel. For a panel an owner has pinned — a
+   * controlled `open` it never changes — the strip is a control that does nothing, which
+   * reads as breakage rather than as absence.
+   */
+  hideCollapseHandle?: boolean;
 }
 
 export function Sidebar({
@@ -247,6 +253,7 @@ export function Sidebar({
   activePanel,
   defaultActivePanel = "default",
   onActivePanelChange,
+  hideCollapseHandle = false,
   className,
   children,
   ...props
@@ -450,7 +457,7 @@ export function Sidebar({
               </div>
             </div>
           </div>
-          <SidebarRail />
+          {!hideCollapseHandle && <SidebarRail />}
         </div>
       </div>
     );

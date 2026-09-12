@@ -27,6 +27,16 @@ dropdown chevron follows the label. The focus ring remains for keyboard users. T
 Use `variant="ghost"` when you want the Button ghost treatment without changing the trigger's
 geometry.
 
+With neither `label` nor `showValue`, `SelectSortTrigger` is a bare glyph, and its box
+becomes a square matching Button's icon sizes — 24/30/34px for `xs`/`sm`/`md`. The padded
+chip is sized for text, so a lone glyph in it comes out 38×30 and reads as a mistake in the
+row of icon buttons a toolbar chip usually stands in. A toolbar can drive this off the
+selection, so a chip names a filter only once there is one:
+
+```tsx
+<SelectSortTrigger icon={<ListFilter />} showValue={value !== null} aria-label="Sort" />
+```
+
 `SelectTrigger` also accepts an optional `label`, rendered as a dimmed prefix before the value.
 For example, `label="Fruit"` displays `Fruit: Banana`.
 

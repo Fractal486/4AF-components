@@ -579,7 +579,7 @@ export interface DropdownMenuCheckboxItemProps
   extends Omit<ComponentProps<typeof BaseMenu.CheckboxItem>, "render" | "children"> {
   /**
    * `children` may be a function of the checked state — return a different icon and label
-   * for each, so a `menuitemcheckbox` can read as a toggle button (Bookmark ⇄ Bookmarked)
+   * for each, so a `menuitemcheckbox` can read as a toggle button (Mute ⇄ Unmute)
    * rather than a ticked row.
    *
    * It's also handed the action status, which only moves off `"idle"` when there's an

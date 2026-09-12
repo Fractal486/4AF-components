@@ -24,3 +24,28 @@ left-side collapse control, page title, and optional right-side header actions.
 It remains an installable companion rather than part of Sidebar itself because many consumers
 need the navigation family without this page-frame strategy. Boxed previews can override the
 provider height with a normal `className`, as this page's demo does with `h-full`.
+
+## The rail slot
+
+The layout opens a second region beside the scrolling content, for a full-height detail
+panel. It is a **sibling** of the scroll container, not a child, which is the whole point:
+a panel inside the scrolling column can only ever be as tall as the viewport minus however
+far the page has scrolled, and a footer pinned inside it scrolls away with the content.
+
+Nothing renders there until something portals in, and the slot is `display: contents`, so
+whatever arrives becomes a direct flex child of the row rather than sitting inside a
+wrapper with sizing of its own. The panel therefore owns its own width.
+
+`useSidebarLayoutRailSlot()` returns the slot element, or `null` outside a layout. Use it
+rather than looking the id up during render: a page renders in the same pass that first
+commits the shell, so at that moment the element is not in the document yet. The slot's ref
+callback fires at commit and publishes it one render later, which is always correct.
+`SIDEBAR_LAYOUT_RAIL_SLOT_ID` is exported for the cases that cannot reach the context.
+
+```tsx
+function DetailRail({ children }: { children: ReactNode }) {
+  const slot = useSidebarLayoutRailSlot();
+  return slot ? createPortal(children, slot) : null;
+}
+```
+

@@ -112,6 +112,15 @@ export interface SheetContentProps
     SheetContentVariants {
   className?: string;
   showClose?: boolean;
+  /**
+   * Fired once the exit animation has finished and the panel has left the DOM.
+   *
+   * For a caller that only knows whether the sheet should exist — a host driven by a
+   * store rather than by a parent's state — this is when it is safe to forget it.
+   * Without it such a host has to unmount the sheet on the press, which cuts the exit
+   * off before it starts, or guess at a duration.
+   */
+  onExitComplete?: () => void;
   children?: ReactNode;
 }
 
@@ -120,6 +129,7 @@ export function SheetContent({
   className,
   children,
   showClose = true,
+  onExitComplete,
   ...props
 }: SheetContentProps) {
   const open = useContext(SheetOpenContext);
@@ -127,7 +137,7 @@ export function SheetContent({
   const resolvedSide: Side = side ?? "right";
 
   return (
-    <AnimatePresence>
+    <AnimatePresence onExitComplete={onExitComplete}>
       {open && (
         // keepMounted on the Portal keeps the whole subtree in the DOM so
         // AnimatePresence, not Base UI, owns when it's torn down.

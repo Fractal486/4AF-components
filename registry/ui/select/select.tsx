@@ -55,11 +55,12 @@ export type SelectSize = "xs" | "sm" | "md";
 
 const SIZE: Record<
   SelectSize,
-  { field: string; chip: string; glyph: string; iconSlot: string; row: string; radius: string }
+  { field: string; chip: string; chipIconOnly: string; glyph: string; iconSlot: string; row: string; radius: string }
 > = {
   xs: {
     field: "h-6 text-xs",
     chip: "h-6 px-2.5 text-xs",
+    chipIconOnly: "size-6 justify-center px-0 text-xs",
     glyph: "size-3.5",
     iconSlot: "size-3.5 [&_svg]:size-3.5",
     row: "h-6 min-h-6 py-1 text-xs",
@@ -68,6 +69,7 @@ const SIZE: Record<
   sm: {
     field: "h-[30px] text-xs",
     chip: "h-[30px] px-3 text-xs",
+    chipIconOnly: "size-[30px] justify-center px-0 text-xs",
     glyph: "size-3.5",
     iconSlot: "size-3.5 [&_svg]:size-3.5",
     row: "min-h-[30px] text-xs",
@@ -76,6 +78,7 @@ const SIZE: Record<
   md: {
     field: "h-[34px] text-sm",
     chip: "h-[34px] px-3.5 text-sm",
+    chipIconOnly: "size-[34px] justify-center px-0 text-sm",
     glyph: "size-4",
     iconSlot: "size-4 [&_svg]:size-4",
     row: "min-h-[34px] text-sm",
@@ -979,7 +982,10 @@ export function SelectSortTrigger({
       data-variant={resolvedVariant}
       data-unset={isUnset || undefined}
       className={cn(
-        SIZE[size].chip,
+        // Square once the label and chevron are gone: the padded chip is sized for text,
+        // so a glyph on its own comes out 38x30 and reads as a mistake in the row of
+        // 30x30 icon buttons it stands in. Each tier matches Button's icon box.
+        iconOnly ? SIZE[size].chipIconOnly : SIZE[size].chip,
         selectSortTriggerVariants({ variant: resolvedVariant }),
         SIZE[size].radius,
         resolvedVariant === "default" &&

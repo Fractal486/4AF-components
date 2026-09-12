@@ -50,3 +50,17 @@ buttons beside each other would otherwise look identical. The success check rema
 ```tsx
 <CopyButton icon={<Link />} value={() => rows.map((row) => row.url).join("\n")} />
 ```
+
+### Copying from somewhere else
+
+`writeToClipboard(text)` is exported alongside the button. A clipboard write does not
+always live on a `CopyButton` — a menu row runs the same write through its own loading
+state — and it carries the part worth not reimplementing: `navigator.clipboard` exists only
+in a secure context, so on plain HTTP (a lot of local and intranet apps) it falls back to
+the deprecated `execCommand` path. It rejects on failure rather than returning false, so a
+caller cannot report a copy that did not happen.
+
+```tsx
+await writeToClipboard(item.url);
+```
+

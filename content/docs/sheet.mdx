@@ -12,3 +12,19 @@ description: A modal edge panel with Base UI focus management and animated entry
 description parts
 
 A focus-trapped Base UI dialog that enters from an edge.
+
+### Knowing when it has gone
+
+`SheetContent` takes `onExitComplete`, fired once the exit animation has finished and the
+panel has left the DOM.
+
+A sheet driven by a parent's own state does not need it — the parent already holds the
+`open` flag and can keep it until it likes. It matters for a host that only knows *whether*
+a sheet should exist: one driven by a store, or opened from a notification. Such a host has
+to unmount the sheet to close it, which tears the panel out before the exit begins. With
+this, it closes first and forgets the sheet when the callback lands.
+
+```tsx
+<SheetContent onExitComplete={() => store.clear()}>
+```
+

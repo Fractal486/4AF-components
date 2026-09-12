@@ -64,6 +64,34 @@ describe("Base UI Select", () => {
     expect(trigger.lastElementChild?.querySelector("svg")).toHaveClass("size-3.5");
   });
 
+  it("squares the sort trigger once it is only a glyph", () => {
+    // The padded chip is sized for text: a lone glyph in it comes out 38x30, which reads
+    // as a mistake in the row of 30x30 icon buttons a toolbar chip stands in.
+    render(
+      <Select items={FRUITS}>
+        <SelectSortTrigger icon={<span>@</span>} showValue={false} aria-label="Sort fruit" />
+        <FruitOptions />
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("combobox", { name: "Sort fruit" });
+    expect(trigger).toHaveClass("size-[30px]", "justify-center", "px-0");
+    expect(trigger).not.toHaveClass("px-3");
+  });
+
+  it("keeps the padded chip as soon as there is anything to read", () => {
+    render(
+      <Select items={FRUITS}>
+        <SelectSortTrigger icon={<span>@</span>} label="Sort" aria-label="Sort fruit" />
+        <FruitOptions />
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("combobox", { name: "Sort fruit" });
+    expect(trigger).toHaveClass("h-[30px]", "px-3");
+    expect(trigger).not.toHaveClass("size-[30px]");
+  });
+
   it("uses the shared 30px/34px scale for the trigger and option rows", async () => {
     const user = userEvent.setup();
     render(

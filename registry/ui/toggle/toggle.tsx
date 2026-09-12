@@ -42,7 +42,7 @@ const pressedVariants = cva("", {
  * A button that holds a state.
  *
  * That sentence is the whole reason this isn't a prop on Button. A button *does*
- * something; a toggle *is* something — bookmarked, muted, bold — and the difference is
+ * something; a toggle *is* something — muted, pinned, bold — and the difference is
  * `aria-pressed`, which is what tells a screen reader the control has an on/off state
  * at all. Base UI owns that, along with the uncontrolled `defaultPressed` case.
  *

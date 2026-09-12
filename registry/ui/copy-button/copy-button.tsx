@@ -143,8 +143,12 @@ export function CopyButton({
  *
  * It throws on failure rather than returning false, because ActionButton's contract is
  * that a rejected action means the work did not happen.
+ *
+ * Exported because a clipboard write does not always live on a CopyButton — a menu row
+ * runs the same write through its own loading state, and reimplementing the insecure-
+ * context fallback beside it is how the two drift.
  */
-async function writeToClipboard(text: string) {
+export async function writeToClipboard(text: string) {
   if (navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(text);
     return;

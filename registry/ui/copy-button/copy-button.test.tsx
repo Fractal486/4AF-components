@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
-import { CopyButton } from "./copy-button";
+import { CopyButton, writeToClipboard } from "./copy-button";
 
 /** Records every `data-status` the button passes through, in order. */
 function trackStatus(button: HTMLElement) {
@@ -207,5 +207,30 @@ describe("CopyButton", () => {
     });
     expect(writeText).not.toHaveBeenCalled();
     expect(onCopy).not.toHaveBeenCalled();
+  });
+});
+
+describe("writeToClipboard", () => {
+  it("is exported, so a caller with its own loading state runs the same write", async () => {
+    // A menu row copying a value is not a CopyButton, and reimplementing the
+    // insecure-context fallback beside it is how the two drift apart.
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+
+    await writeToClipboard("copied by someone else");
+
+    expect(writeText).toHaveBeenCalledWith("copied by someone else");
+  });
+
+  it("rejects when the write fails, rather than reporting a copy that did not happen", async () => {
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: vi.fn().mockRejectedValue(new Error("denied")) },
+    });
+
+    await expect(writeToClipboard("nope")).rejects.toThrow();
   });
 });

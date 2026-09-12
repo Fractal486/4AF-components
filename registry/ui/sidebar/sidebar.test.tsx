@@ -43,6 +43,30 @@ describe("SidebarRail", () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
+  it("drops the handle for a panel whose owner has pinned it", () => {
+    // A controlled `open` its owner never changes makes the strip a control that does
+    // nothing. An inert toggle reads as breakage; an absent one reads as "not available".
+    const { rerender } = render(
+      <SidebarProvider persist={false}>
+        <Sidebar variant="split" rail={<div>Rail</div>}>
+          Panel
+        </Sidebar>
+      </SidebarProvider>,
+    );
+
+    expect(screen.getByRole("button", { name: "Toggle sidebar" })).toBeInTheDocument();
+
+    rerender(
+      <SidebarProvider persist={false}>
+        <Sidebar variant="split" rail={<div>Rail</div>} hideCollapseHandle>
+          Panel
+        </Sidebar>
+      </SidebarProvider>,
+    );
+
+    expect(screen.queryByRole("button", { name: "Toggle sidebar" })).not.toBeInTheDocument();
+  });
+
   it("does not persist a controlled toggle that its owner rejects", async () => {
     document.cookie = "sidebar_state=; path=/; max-age=0";
     const onOpenChange = vi.fn();
