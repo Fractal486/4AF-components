@@ -49,6 +49,14 @@ export const componentReferences = {
 
 <AsciiLoader label="Loading" />`,
   },
+  "matrix-loader": {
+    importName: "MatrixLoader",
+    usage: [
+      'import { MatrixLoader } from "@/components/ui/matrix-loader";',
+      "",
+      '<MatrixLoader variant="twinkle" label="Loading" />',
+    ].join("\n"),
+  },
   badge: {
     importName: "Badge",
     usage: `import { Badge } from "@/components/ui/badge";

@@ -84,7 +84,8 @@
           "shadow-overlay": "var(--elevation-overlay)",
           "shadow-overlay-drop": "var(--elevation-overlay-drop)",
           "animate-icon-pop": "icon-pop var(--duration-slow) var(--ease-out)",
-          "animate-text-shimmer": "text-shimmer var(--text-shimmer-duration, 2.5s) linear infinite"
+          "animate-text-shimmer": "text-shimmer var(--text-shimmer-duration, 2.5s) linear infinite",
+          "animate-matrix-pulse": "matrix-pulse var(--matrix-cycle, 1.2s) var(--ease-in-out) infinite"
         },
         "light": {
           "background": "oklch(0.985 0.002 70)",
@@ -157,6 +158,20 @@
           },
           "to": {
             "background-position": "-200% 0"
+          }
+        },
+        "@keyframes matrix-pulse": {
+          "0%": {
+            "opacity": "0.45"
+          },
+          "15%": {
+            "opacity": "1"
+          },
+          "45%": {
+            "opacity": "0.45"
+          },
+          "100%": {
+            "opacity": "0.45"
           }
         },
         "@media (prefers-reduced-motion: reduce)": {
@@ -997,6 +1012,30 @@
           "path": "registry/ui/ascii-loader/ascii-loader.tsx",
           "type": "registry:ui",
           "target": "@ui/ascii-loader.tsx"
+        }
+      ]
+    },
+    {
+      "name": "matrix-loader",
+      "type": "registry:ui",
+      "description": "A 4×4 matrix dot loader with scan, twinkle, and size variants.",
+      "dependencies": [
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/matrix-loader/matrix-loader.tsx",
+          "type": "registry:ui",
+          "target": "@ui/matrix-loader.tsx"
+        },
+        {
+          "path": "registry/ui/matrix-loader/matrix-loader.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/matrix-loader.variants.ts"
         }
       ]
     },

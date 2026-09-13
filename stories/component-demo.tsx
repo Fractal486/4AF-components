@@ -20,6 +20,7 @@ export type ComponentDemoName =
   | "alert"
   | "alert-dialog"
   | "ascii-loader"
+  | "matrix-loader"
   | "badge"
   | "button"
   | "button-group"
@@ -164,6 +165,7 @@ const demos: Record<Exclude<ComponentDemoName, "ascii-loader">, ComponentType> =
   empty: lazyEntry(async () => (await import("@/inspector/entries/empty")).emptyEntry),
   "hover-card": lazyEntry(async () => (await import("@/inspector/entries/hover-card")).hoverCardEntry),
   input: lazyEntry(async () => (await import("@/inspector/entries/input")).inputEntry),
+  "matrix-loader": lazyEntry(async () => (await import("@/inspector/entries/matrix-loader")).matrixLoaderEntry),
   morph: lazyEntry(async () => (await import("@/inspector/entries/morph")).morphEntry),
   popover: lazyEntry(async () => (await import("@/inspector/entries/popover")).popoverEntry),
   progress: lazyEntry(async () => (await import("@/inspector/entries/progress")).progressEntry),

@@ -25,6 +25,7 @@ export const COMPONENT_FAMILIES = [
   { name: "Empty", slugs: ["empty"] },
   { name: "Hover Card", slugs: ["hover-card"] },
   { name: "Input", slugs: ["input", "textarea"] },
+  { name: "Loader", slugs: ["ascii-loader", "matrix-loader"] },
   { name: "Popover", slugs: ["popover"] },
   { name: "Progress", slugs: ["progress"] },
   { name: "Radio", slugs: ["radio"] },
@@ -94,6 +95,7 @@ export const COMPONENT_CATEGORIES = [
       "scramble-text",
       "toast",
       "ascii-loader",
+      "matrix-loader",
     ],
   },
   {
@@ -132,6 +134,7 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   alert: "Alert",
   "alert-dialog": "AlertDialog and composition parts",
   "ascii-loader": "AsciiLoader",
+  "matrix-loader": "MatrixLoader",
   badge: "Badge",
   button: "Button",
   "button-group": "ButtonGroup",

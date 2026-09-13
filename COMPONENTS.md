@@ -49,3 +49,7 @@ The base `select` also accepts `size="xs"` for a 24px trigger and popup rows; `s
 remain the 30px and 34px shared sizes.
 `select-aligned` additionally accepts `size="xs"` for a 24px trigger and popup rows; `sm` and
 `md` keep the trigger and rows at their matching sizes.
+
+`MatrixLoader` is the compact 4×4 status loader. Use `variant` for the scan or twinkle
+delay pattern, and `label` only when the loader itself should announce the
+busy state.

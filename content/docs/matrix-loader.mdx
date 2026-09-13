@@ -1,0 +1,19 @@
+---
+title: Matrix Loader
+description: A compact 4×4 dot loader with several delay patterns.
+---
+
+<ComponentDemo name="matrix-loader" />
+<ComponentReference name="matrix-loader" />
+
+## API
+
+**Main export:** MatrixLoader
+
+MatrixLoader renders sixteen decorative dots with a shared color-pulse cycle. Use variant for
+scan or twinkle timing; size for the dot scale; and duration for the cycle length in seconds.
+
+Pass label when the loader itself should announce a busy status. Leave it out when nearby text
+already communicates the loading state.
+
+The loop keeps its own duration under reduced motion so it does not collapse into a strobe.

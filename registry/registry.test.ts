@@ -196,6 +196,7 @@ describe("private registry", () => {
         "text-2xs": "0.6875rem",
         "shadow-overlay-drop": "var(--elevation-overlay-drop)",
         "animate-text-shimmer": "text-shimmer var(--text-shimmer-duration, 2.5s) linear infinite",
+        "animate-matrix-pulse": "matrix-pulse var(--matrix-cycle, 1.2s) var(--ease-in-out) infinite",
       }),
     );
     expect(theme.cssVars?.light).toEqual(
@@ -212,5 +213,6 @@ describe("private registry", () => {
       }),
     );
     expect(theme.css).toHaveProperty("@keyframes text-shimmer");
+    expect(theme.css).toHaveProperty("@keyframes matrix-pulse");
   });
 });

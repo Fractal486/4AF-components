@@ -165,6 +165,21 @@
       background-position: -200% 0;
     }
   }
+
+  /* A matrix loader is a looping indicator, so its duration stays independent from the
+     reduced-motion transition tokens; collapsing a loop to 1ms would turn it into a strobe. */
+  --animate-matrix-pulse: matrix-pulse var(--matrix-cycle, 1.2s) var(--ease-in-out) infinite;
+
+  @keyframes matrix-pulse {
+    0%,
+    45%,
+    100% {
+      opacity: 0.45;
+    }
+    15% {
+      opacity: 1;
+    }
+  }
 }
 
 /* ---------------------------------------------------------------------------

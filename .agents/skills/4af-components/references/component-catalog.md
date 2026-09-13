@@ -61,7 +61,7 @@ Toolbar action controls are fixed at 24px high with 6px corners inside an 8px to
 
 ## Installable catalog
 
-The catalog currently contains 46 installable UI items. Verify the count and names with
+The catalog currently contains 47 installable UI items. Verify the count and names with
 `pnpm 4af list` before making registry-wide claims.
 
 ### Actions
@@ -106,6 +106,7 @@ The catalog currently contains 46 installable UI items. Verify the count and nam
 | `scramble-text` | `ScrambleText` | Reveals text through a short per-grapheme scramble animation, preserving whitespace and honoring reduced motion. |
 | `toast` | `ToastProvider`, `useToast`, `createToastManager` | Managed notifications with default or title-only content, swipe dismissal, placement/stack modes, and up to three actions. |
 | `ascii-loader` | `AsciiLoader` | A looping braille spinner for compact async status affordances. |
+| `matrix-loader` | `MatrixLoader` | A compact 4×4 dot loader with scan, twinkle, and size variants. |
 
 ### Navigation and application structure
 
