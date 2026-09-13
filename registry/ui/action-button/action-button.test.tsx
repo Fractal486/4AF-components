@@ -35,6 +35,22 @@ describe("ActionButton", () => {
     expect(button).toHaveAttribute("data-status", "idle");
   });
 
+  it("uses the drawn check glyph for the success state", async () => {
+    render(<ActionButton action={() => undefined} icon={<span>@</span>} />);
+
+    const button = screen.getByRole("button");
+    fireEvent.click(button);
+
+    await waitFor(() => expect(button).toHaveAttribute("data-status", "success"));
+
+    const checks = button.querySelectorAll('[data-slot="action-button-check"]');
+    expect(checks).toHaveLength(2);
+    expect(checks[1]?.querySelector("path")).toHaveAttribute(
+      "d",
+      "M4 12.5l5 5L20 6.5",
+    );
+  });
+
   it("shows an error outcome when its action rejects", async () => {
     render(
       <ActionButton

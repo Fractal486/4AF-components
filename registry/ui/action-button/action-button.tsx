@@ -1,6 +1,7 @@
 "use client";
 
-import { Check, TriangleAlert } from "lucide-react";
+import { TriangleAlert } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
 import { useAction, type ActionStatus } from "@/registry/lib/use-action";
@@ -9,6 +10,34 @@ import { Button, type ButtonProps } from "@/registry/ui/button/button";
 import { Morph } from "@/registry/ui/morph/morph";
 
 export type { ActionStatus };
+
+function AnimatedCheck() {
+  const reduceMotion = useReducedMotion();
+
+  return (
+    <motion.svg
+      data-slot="action-button-check"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <motion.path
+        d="M4 12.5l5 5L20 6.5"
+        initial={reduceMotion ? false : { pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={
+          reduceMotion
+            ? { duration: 0 }
+            : { duration: 0.2, ease: "easeOut", delay: 0.05 }
+        }
+      />
+    </motion.svg>
+  );
+}
 
 export interface ActionButtonProps
   extends Omit<ButtonProps, "loading" | "children" | "asChild"> {
@@ -154,7 +183,7 @@ export function ActionButton({
               items={{
                 idle: icon,
                 pending: <AsciiLoader />,
-                success: <Check />,
+                success: <AnimatedCheck />,
                 error: <TriangleAlert />,
               }}
             />
