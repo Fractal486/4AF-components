@@ -18,7 +18,8 @@ export const sliderEntry = defineEntry({
     inlineLabel: bool(false, "Inline label", (values) => values.thumb !== "bar"),
     max: num(100, { min: 10, max: 500, step: 10, label: "Max" }),
     step: num(10, { min: 1, max: 25, step: 1, label: "Step" }),
-    showTicks: bool(true, "Show ticks"),
+    // The knob rail is a 2px hairline and carries the fill alone.
+    showTicks: bool(true, "Show ticks", (values) => values.thumb === "knob"),
     showValueTooltip: bool(false, "Value tooltip"),
     disabled: bool(false),
   },

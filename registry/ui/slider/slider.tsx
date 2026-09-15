@@ -117,7 +117,10 @@ export interface SliderProps
   className?: string;
   /** Render two independently draggable thumbs with the fill between them. */
   range?: boolean;
-  /** A dot at each step. Hidden automatically past 50 steps, where they'd be noise. */
+  /**
+   * A dot at each step. Hidden automatically past 50 steps, where they'd be noise, and not
+   * available on the `knob` thumb — its rail is a 2px hairline and carries the fill alone.
+   */
   showTicks?: boolean;
   /** The current value, shown above the track on the right. */
   showValue?: boolean;
@@ -129,14 +132,17 @@ export interface SliderProps
    * Move the label and the value *inside* the bar, one at each end, instead of above it.
    * The thumb dims as it passes under either, so the text stays readable.
    *
-   * `bar` only, and ignored by the other thumbs: `circle` and `knob` ride a rail too thin to
-   * hold a line of text, and the knob overhangs its rail rather than being contained by it.
+   * `bar` only, and ignored by the other thumbs: the `knob` rail is a hairline with no room for
+   * a line of text, and the `circle` track is a rounded pill its thumb rides inside rather than
+   * a band text can sit along.
    */
   inlineLabel?: boolean;
   /**
-   * The thumb shape. `bar` is the thin vertical handle; `circle` is a round knob centered
-   * in a thick, fully-rounded track; `knob` is that same round knob on a thin rail (about
-   * half the knob's diameter), so it overhangs — the classic slider look.
+   * The thumb shape. `bar` is the thin vertical handle; `circle` is a round knob centered in a
+   * thick, fully-rounded track whose fill encapsulates it; `knob` is a small round dot on a 2px
+   * hairline — twice a Separator — which it overhangs entirely, and which carries the fill and
+   * nothing else. The knob's control keeps its full height as the rail thins, so the pointer
+   * target does not shrink with it.
    */
   thumb?: "bar" | "circle" | "knob";
   /** Overall scale. `sm` is a more compact rail — useful in dense panels. */
@@ -146,16 +152,17 @@ export interface SliderProps
 // Every size-dependent value in one place, keyed by shape then size, so the rail height
 // and rounding, the thumb, the pixel width the fill/tick maths needs, and the tick inset
 // (half that width) never drift out of step. `rail` positions the track within the
-// control — `inset-0` fills a thick circle rail; a fixed height centres a thin rail so
-// the knob thumb overhangs.
+// control — `inset-0` fills a thick circle rail; a fixed height centres a thin rail so the
+// round thumb overhangs. `knob` rides a 2px hairline, twice a Separator, so its rail reads as
+// a line the dot travels along rather than a track it sits in.
 const DIMS = {
   circle: {
     md: { control: "h-7", rail: "inset-0", thumb: "size-5 rounded-full", thumbPx: 20, fillCapRadiusPx: 14, tooltipSideOffset: 8, tickInset: "inset-x-3.5", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
     sm: { control: "h-6", rail: "inset-0", thumb: "size-4 rounded-full", thumbPx: 16, fillCapRadiusPx: 12, tooltipSideOffset: 8, tickInset: "inset-x-3", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
   },
   knob: {
-    md: { control: "h-5", rail: "inset-x-0 top-1/2 h-2.5 -translate-y-1/2", thumb: "size-4 rounded-full", thumbPx: 16, fillCapRadiusPx: 0, tooltipSideOffset: 8, tickInset: "inset-x-2", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
-    sm: { control: "h-4", rail: "inset-x-0 top-1/2 h-2 -translate-y-1/2", thumb: "size-3 rounded-full", thumbPx: 12, fillCapRadiusPx: 0, tooltipSideOffset: 8, tickInset: "inset-x-1.5", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    md: { control: "h-5", rail: "inset-x-0 top-1/2 h-0.5 -translate-y-1/2", thumb: "size-2.5 rounded-full", thumbPx: 10, fillCapRadiusPx: 0, tooltipSideOffset: 8, tickInset: "inset-x-[5px]", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    sm: { control: "h-4", rail: "inset-x-0 top-1/2 h-0.5 -translate-y-1/2", thumb: "size-2 rounded-full", thumbPx: 8, fillCapRadiusPx: 0, tooltipSideOffset: 8, tickInset: "inset-x-1", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
   },
   bar: {
     md: { control: "h-10", rail: "inset-0", thumb: "h-5 w-1.5 rounded-sm", thumbPx: 6, fillCapRadiusPx: 0, tooltipSideOffset: -2, tickInset: "inset-x-[3px]", tick: "h-2 rounded-none", tickCenterX: "", tickHairline: true },
@@ -163,7 +170,9 @@ const DIMS = {
   },
 } as const;
 
-// Knobs rest one size step smaller, then grow to the former resting size while grabbed.
+// The knob is a small dot on a hairline, so it grabs by a quarter rather than the 12% the
+// larger round thumb uses: the same proportion on a 10px dot is barely over a pixel, and a
+// press that cannot be seen is a press that did not happen.
 const KNOB_GRAB_SCALE = {
   md: 1.25,
   sm: 4 / 3,
@@ -209,9 +218,10 @@ export function Slider({
 }: SliderProps) {
   const isBar = thumb === "bar";
   const isCircle = thumb === "circle";
+  const isKnob = thumb === "knob";
   const inline = inlineLabel && isBar;
   const dims = DIMS[thumb][size];
-  const roundThumbGrabScale = thumb === "knob" ? KNOB_GRAB_SCALE[size] : 1.12;
+  const roundThumbGrabScale = isKnob ? KNOB_GRAB_SCALE[size] : 1.12;
   const thumbTravelInsetPx = isCircle ? dims.fillCapRadiusPx : dims.thumbPx / 2;
   const reduceMotion = useReducedMotion();
   const direction = useDirection();
@@ -464,8 +474,11 @@ export function Slider({
         ? rtlFillClip
         : ltrFillClip;
 
+  // No ticks on the `knob` rail. They are marks *on* a track, and this one is a 2px line —
+  // a 4px dot on it is bigger than the thing it is marking. The fill is the only thing the
+  // hairline carries, which is the point of the variant.
   const ticks =
-    showTicks && stepCount > 0 && stepCount <= 50
+    showTicks && !isKnob && stepCount > 0 && stepCount <= 50
       ? Array.from(
           { length: stepCount + 1 },
           (_, i) => ((i * normalizedStep) / (normalizedMax - normalizedMin)) * 100,

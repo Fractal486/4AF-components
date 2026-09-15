@@ -43,15 +43,17 @@ describe("Slider", () => {
     },
   );
 
-  it("keeps the knob one size step smaller at rest", () => {
+  it("rests the knob as a small dot, sized by the control", () => {
     const { container, rerender } = render(
       <Slider aria-label="Volume" thumb="knob" size="md" />,
     );
 
-    expect(container.querySelector('[data-slot="slider-thumb"]')).toHaveClass("size-4");
+    // 10px on a 2px rail, so the dot reads as a position on a line rather than a handle in a
+    // track. It grows by a quarter while held — see KNOB_GRAB_SCALE.
+    expect(container.querySelector('[data-slot="slider-thumb"]')).toHaveClass("size-2.5");
 
     rerender(<Slider aria-label="Volume" thumb="knob" size="sm" />);
-    expect(container.querySelector('[data-slot="slider-thumb"]')).toHaveClass("size-3");
+    expect(container.querySelector('[data-slot="slider-thumb"]')).toHaveClass("size-2");
   });
 
   it("uses the pressed thumb for the grabbed scale instead of hover", () => {
@@ -64,7 +66,7 @@ describe("Slider", () => {
     const visualThumb = container.querySelector('[data-slot="slider-thumb"]');
 
     expect(control).not.toHaveAttribute("data-dragging-index");
-    expect(visualThumb).toHaveClass("size-4");
+    expect(visualThumb).toHaveClass("size-2.5");
 
     fireEvent.pointerEnter(thumb!);
     expect(control).not.toHaveAttribute("data-dragging-index");
@@ -226,6 +228,29 @@ describe("Slider", () => {
     expect(getSliderFillOffset(100, false, 6, 0, 3, false, 10, 10)).toBe(0);
   });
 
+  it("rides the knob thumb on a hairline rail that carries only the fill", () => {
+    const { container } = render(
+      <Slider aria-label="Volume" thumb="knob" defaultValue={40} step={10} showTicks />,
+    );
+
+    const rail = container.querySelector('[data-slot="slider-fill"]')!.parentElement!;
+    // 2px — twice a Separator's hairline, and centred rather than filling the control.
+    expect(rail.className).toContain("h-0.5");
+    expect(rail.className).toContain("-translate-y-1/2");
+    // A 4px tick dot on a 2px rail is bigger than the thing it marks, so the variant has none
+    // even when they're asked for.
+    expect(rail.querySelectorAll("span")).toHaveLength(0);
+  });
+
+  it.each(["bar", "circle"] as const)("keeps ticks on the %s thumb", (thumb) => {
+    const { container } = render(
+      <Slider aria-label="Volume" thumb={thumb} defaultValue={40} step={10} showTicks />,
+    );
+
+    const rail = container.querySelector('[data-slot="slider-fill"]')!.parentElement!;
+    expect(rail.querySelectorAll("span").length).toBeGreaterThan(0);
+  });
+
   it("puts the label and value inside the bar in inline mode", () => {
     const { container } = render(
       <Slider aria-label="Volume" inlineLabel label="Volume" defaultValue={40} />,
@@ -349,6 +374,8 @@ describe("Slider", () => {
     expect(getSliderRangeFillInset(100, false, 286, 3, 0, 10, 10)).toBe(286);
     expect(getSliderRangeFillInset(0, true, 286, 14, 14, 10, 10)).toBe(0);
     expect(getSliderRangeFillInset(100, false, 286, 14, 14, 10, 10)).toBe(286);
+    expect(getSliderRangeFillInset(0, true, 286, 14, 0, 10, 10)).toBe(0);
+    expect(getSliderRangeFillInset(100, false, 286, 14, 0, 10, 10)).toBe(286);
   });
 
   it("measures layout width instead of transformed visual bounds", () => {
