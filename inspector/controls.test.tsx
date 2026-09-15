@@ -1,11 +1,17 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
-import { Controls } from "./controls";
+import { Controls, fitsPillTabs } from "./controls";
 import { select, type ControlValues } from "./schema";
 
+// Long enough to stay a dropdown — a short enum renders as pill tabs instead, which the
+// "short enums" suite below covers.
 const schema = {
-  variant: select(["primary", "outline", "ghost"] as const, "primary", "Variant"),
+  variant: select(
+    ["primary", "outline", "ghost", "plain", "destructive"] as const,
+    "primary",
+    "Variant",
+  ),
 };
 
 function ControlsHarness() {
@@ -54,5 +60,64 @@ describe("Controls select", () => {
     await user.click(await screen.findByRole("option", { name: "Outline" }));
 
     await waitFor(() => expect(trigger).toHaveTextContent("Outline"));
+  });
+});
+
+describe("Controls short enums", () => {
+  const thumbs = {
+    thumb: select(["bar", "circle", "knob"] as const, "bar", "Thumb"),
+  };
+
+  it("offers a short enum as pill tabs instead of a dropdown", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+
+    render(<Controls schema={thumbs} values={{ thumb: "bar" }} onChange={onChange} />);
+
+    // Every choice visible, one click to pick — and no dropdown to open.
+    expect(screen.queryByRole("combobox")).toBeNull();
+    const list = screen.getByRole("tablist");
+    expect(list).toHaveAccessibleName("Thumb");
+    expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
+      "Bar",
+      "Circle",
+      "Knob",
+    ]);
+    expect(screen.getByRole("tab", { name: "Bar" })).toHaveAttribute("aria-selected", "true");
+
+    await user.click(screen.getByRole("tab", { name: "Knob" }));
+
+    // The raw option the schema declared, not its display label.
+    expect(onChange).toHaveBeenCalledWith("thumb", "knob");
+  });
+
+  it("keeps a dropdown once the run would outgrow a settings field", () => {
+    const variants = {
+      variant: select(
+        ["primary", "outline", "ghost", "plain", "destructive"] as const,
+        "primary",
+        "Variant",
+      ),
+    };
+
+    render(<Controls schema={variants} values={{ variant: "primary" }} onChange={() => {}} />);
+
+    expect(screen.queryByRole("tablist")).toBeNull();
+    expect(screen.getByRole("combobox", { name: "Variant" })).toBeInTheDocument();
+  });
+
+  it("decides on the width of the run, not the number of options", () => {
+    // Same count, opposite answers: four two-letter sizes fit where four side names do not.
+    expect(fitsPillTabs(["Xs", "Sm", "Md", "Lg"])).toBe(true);
+    expect(fitsPillTabs(["Top", "Right", "Bottom", "Left"])).toBe(false);
+
+    // And two options can still be too wide to lay out.
+    expect(fitsPillTabs(["Bottom Right", "Bottom Center"])).toBe(false);
+
+    // The case the rule is cut to: three one-word labels, inside a settings field.
+    expect(fitsPillTabs(["Bar", "Circle", "Knob"])).toBe(true);
+
+    // A lone option is not a choice.
+    expect(fitsPillTabs(["Only"])).toBe(false);
   });
 });

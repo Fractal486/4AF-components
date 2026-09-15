@@ -9,8 +9,40 @@ import {
   AlignedSelectTrigger,
 } from "@/registry/ui/select/select-aligned";
 import { Slider } from "@/registry/ui/slider/slider";
+import { Tabs, TabsList, TabsTab } from "@/registry/ui/tabs/tabs";
 import { cn } from "@/registry/lib/cn";
 import type { ControlDef, ControlSchema, ControlValues } from "./schema";
+
+/*
+ * A short enum reads better as pill tabs than as a dropdown: every choice is visible, and
+ * picking one is a single click instead of open-then-choose. That only holds while the whole
+ * run still fits where a settings field goes — past that it crowds the label or wraps, and the
+ * dropdown is the better trade.
+ *
+ * So the decision is made on the width the run would take, not on how many options there are:
+ * four two-letter sizes fit comfortably where three seven-letter variants do not. The numbers
+ * are the `sm` pill's own metrics from `tabs.variants.ts`, measured against the width of the
+ * text input in the row above.
+ */
+const PILL_TRACK_PX = 4; // `p-0.5` on the list
+const PILL_GAP_PX = 2; // `gap-0.5` between tabs
+const PILL_TAB_PX = 20; // `px-2.5` on a tab
+const PILL_CHAR_PX = 6; // one `text-xs` character, averaged over mixed-case Latin
+const SETTINGS_FIELD_PX = 192; // `max-w-48`, the text control this lines up with
+
+export function fitsPillTabs(labels: readonly string[]): boolean {
+  // One option is not a choice, and a lone pill reads as a button that does nothing.
+  if (labels.length < 2) return false;
+
+  const characters = labels.reduce((total, label) => total + label.length, 0);
+  const width =
+    PILL_TRACK_PX +
+    labels.length * PILL_TAB_PX +
+    (labels.length - 1) * PILL_GAP_PX +
+    characters * PILL_CHAR_PX;
+
+  return width <= SETTINGS_FIELD_PX;
+}
 
 interface ControlsProps<S extends ControlSchema> {
   /** Prefixes DOM ids when several settings panels are rendered on one page. */
@@ -91,6 +123,33 @@ function Control({
   if (def.kind === "select") {
     const labelId = `${id}-label`;
     const selectedLabel = humanizeLabel(value as string);
+
+    if (fitsPillTabs(def.options.map(humanizeLabel))) {
+      // The tab's value is the raw option, so picking one hands back exactly what the schema
+      // declared — no round-trip through the display label and back.
+      return (
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,auto)] items-center gap-4">
+          <span id={labelId} className="min-w-0 text-sm text-muted-foreground">
+            {label}
+          </span>
+          <Tabs
+            variant="pill"
+            size="sm"
+            className="justify-self-end"
+            value={value as string}
+            onValueChange={(next) => onChange(next)}
+          >
+            <TabsList aria-labelledby={labelId}>
+              {def.options.map((option) => (
+                <TabsTab key={option} value={option}>
+                  {humanizeLabel(option)}
+                </TabsTab>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+      );
+    }
 
     return (
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,auto)] items-center gap-4">

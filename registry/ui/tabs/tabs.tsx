@@ -40,8 +40,11 @@ import {
  */
 
 type Variant = NonNullable<TabsVariants["variant"]>;
+type Size = NonNullable<TabsVariants["size"]>;
 
-const TabsContext = createContext<{ variant: Variant; solid: boolean } | null>(null);
+const TabsContext = createContext<{ variant: Variant; solid: boolean; size: Size } | null>(
+  null,
+);
 
 function useTabsContext() {
   const context = useContext(TabsContext);
@@ -57,16 +60,29 @@ export interface TabsProps
    * `segment`/`pill` only — the `underline` variant ignores it.
    */
   solid?: boolean;
+  /**
+   * `sm` drops a type step and tightens the padding, putting the pill track at 32px — the
+   * height of an Input or a small Button, so a row of tabs lines up with the controls beside
+   * it rather than standing a row taller. @default md
+   */
+  size?: Size;
   className?: string;
   children: ReactNode;
 }
 
-export function Tabs({ variant = "segment", solid = false, className, children, ...props }: TabsProps) {
+export function Tabs({
+  variant = "segment",
+  solid = false,
+  size = "md",
+  className,
+  children,
+  ...props
+}: TabsProps) {
   // Selection state stays entirely inside Base UI — controlled *and* uncontrolled are
   // its job. Mirroring the value here was a bug: Base UI registers its tabs in an
   // effect, so on the first render nothing matches the value yet and it emits an
   // `initial` fallback. A mirror accepts that fallback and lands on the wrong tab.
-  const context = useMemo(() => ({ variant, solid }), [variant, solid]);
+  const context = useMemo(() => ({ variant, solid, size }), [variant, solid, size]);
 
   return (
     <TabsContext.Provider value={context}>
@@ -86,7 +102,7 @@ export function TabsList({
   className?: string;
   children?: ReactNode;
 }) {
-  const { variant, solid } = useTabsContext();
+  const { variant, solid, size } = useTabsContext();
   const listRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState<{ left: number; width: number } | null>(null);
   const reduceMotion = useReducedMotion();
@@ -120,11 +136,11 @@ export function TabsList({
       mo.disconnect();
       ro.disconnect();
     };
-  }, [variant]);
+  }, [variant, size]);
 
   return (
     <BaseTabs.List
-      className={cn(tabsListVariants({ variant, solid }), className)}
+      className={cn(tabsListVariants({ variant, solid, size }), className)}
       {...props}
       ref={mergedRef}
     >
@@ -139,7 +155,7 @@ export function TabsList({
           // first appearance: the element mounts at its target with no prior box to
           // animate from.
           layout
-          className={tabIndicatorVariants({ variant, solid })}
+          className={tabIndicatorVariants({ variant, solid, size })}
           style={{ left: box.left, width: box.width }}
           transition={reduceMotion ? { duration: 0 } : spring.snappy}
         />
@@ -157,9 +173,9 @@ export function TabsTab({
   className?: string;
   children?: ReactNode;
 }) {
-  const { variant } = useTabsContext();
+  const { variant, size } = useTabsContext();
   return (
-    <BaseTabs.Tab className={cn(tabVariants({ variant }), className)} {...props}>
+    <BaseTabs.Tab className={cn(tabVariants({ variant, size }), className)} {...props}>
       {children}
     </BaseTabs.Tab>
   );

@@ -459,6 +459,12 @@ import { Button } from "@/components/ui/button";
   <TabsList>
     <TabsTab value="account">Account</TabsTab>
   </TabsList>
+</Tabs>
+
+<Tabs variant="pill" size="sm" defaultValue="account">
+  <TabsList>
+    <TabsTab value="account">Account</TabsTab>
+  </TabsList>
 </Tabs>`,
   },
   "text-shimmer": {

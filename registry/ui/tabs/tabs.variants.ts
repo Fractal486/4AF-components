@@ -4,27 +4,37 @@ export const tabsListVariants = cva("relative flex items-center", {
   variants: {
     variant: {
       /* A track wraps its tabs, so it must not stretch: the list is a flex child of a
-         column, and would otherwise become a page-wide bar.
-         6px tabs inside an 8px track with 2px of padding — the shared button radius tiers,
-         so the inner corners sit parallel to the outer ones. The fill is set per `solid`
-         below. */
-      segment: "w-fit self-start gap-0.5 rounded-[8px] p-0.5",
-      pill: "w-fit self-start gap-1 rounded-full p-1",
+         column, and would otherwise become a page-wide bar. The radius pairs with the
+         tab's inside it — see the size compounds. The fill is set per `solid` below. */
+      segment: "w-fit self-start p-0.5",
+      pill: "w-fit self-start rounded-full",
       /* The opposite: a rule *should* run the full width, so the tabs read as sitting
          on a line rather than in a box. A real border, not a shadow — its job here is
          separation, not elevation. */
-      underline: "w-full gap-1 border-b border-border",
+      underline: "w-full border-b border-border",
     },
     // The pill treatment (segment/pill only). `false` is the raised surface chip with a
     // hairline; `true` drops the hairline for a dark fill on a brighter track.
     solid: { false: "", true: "" },
+    size: { sm: "", md: "" },
   },
   compoundVariants: [
     { variant: ["segment", "pill"], solid: false, class: "bg-muted" },
     // Brighter track so the dark, borderless pill reads against it.
     { variant: ["segment", "pill"], solid: true, class: "bg-border" },
+    /* Radii are concentric — outer = inner + padding — so a 2px track around a 6px tab
+       rounds to 8px, and the sm tab's 5px corner rounds to 7px. Reuse one radius for both
+       and the corners visibly disagree. */
+    { variant: "segment", size: "md", class: "gap-0.5 rounded-[8px]" },
+    { variant: "segment", size: "sm", class: "gap-0.5 rounded-[7px]" },
+    /* The pill track's padding *is* its gap between the chip and the edge, so it shrinks
+       with the tab rather than staying put. */
+    { variant: "pill", size: "md", class: "gap-1 p-1" },
+    { variant: "pill", size: "sm", class: "gap-0.5 p-0.5" },
+    { variant: "underline", size: "md", class: "gap-1" },
+    { variant: "underline", size: "sm", class: "gap-0.5" },
   ],
-  defaultVariants: { variant: "segment", solid: false },
+  defaultVariants: { variant: "segment", solid: false, size: "md" },
 });
 
 export const tabVariants = cva(
@@ -34,7 +44,7 @@ export const tabVariants = cva(
     // let the indicator (a positioned element) paint over the label. z-10 keeps the
     // text on top of the chip, which is the whole point of a chip.
     "relative z-10 inline-flex items-center justify-center",
-    "text-sm font-medium whitespace-nowrap select-none",
+    "font-medium whitespace-nowrap select-none",
     // Only the colour changes on hover — the indicator is a separate element and
     // moves under Motion, so naming `color` keeps the browser from watching the rest.
     "transition-[color] duration-(--duration-fast) ease-out",
@@ -51,14 +61,26 @@ export const tabVariants = cva(
   {
     variants: {
       variant: {
-        segment: "rounded-[6px] px-2.5 py-1",
-        pill: "rounded-full px-3.5 py-1.5",
+        segment: "",
+        pill: "rounded-full",
         // -1px pulls the tab over the list's border so the indicator sits on top of
         // it rather than below, and the two hairlines don't stack into 2px.
-        underline: "-mb-px rounded-t-[8px] px-3 pt-1.5 pb-2.5",
+        underline: "-mb-px",
       },
+      /* `sm` drops a type step and tightens the padding, landing the pill track on 32px —
+         the height of an Input or a small Button, so a row of tabs lines up with the
+         controls beside it instead of standing a row taller. */
+      size: { sm: "text-xs", md: "text-sm" },
     },
-    defaultVariants: { variant: "segment" },
+    compoundVariants: [
+      { variant: "segment", size: "md", class: "rounded-[6px] px-2.5 py-1" },
+      { variant: "segment", size: "sm", class: "rounded-[5px] px-2 py-1" },
+      { variant: "pill", size: "md", class: "px-3.5 py-1.5" },
+      { variant: "pill", size: "sm", class: "px-2.5 py-1.5" },
+      { variant: "underline", size: "md", class: "rounded-t-[8px] px-3 pt-1.5 pb-2.5" },
+      { variant: "underline", size: "sm", class: "rounded-t-[6px] px-2.5 pt-1 pb-2" },
+    ],
+    defaultVariants: { variant: "segment", size: "md" },
   },
 );
 
@@ -72,18 +94,24 @@ export const tabVariants = cva(
 export const tabIndicatorVariants = cva("pointer-events-none absolute z-0", {
   variants: {
     variant: {
-      segment: "inset-y-0.5 rounded-[6px]",
-      pill: "inset-y-1 rounded-full",
+      segment: "inset-y-0.5",
+      pill: "rounded-full",
       underline: "bottom-0 h-px bg-foreground",
     },
     solid: { false: "", true: "" },
+    size: { sm: "", md: "" },
   },
   compoundVariants: [
     // Raised surface chip with a hairline, vs. a dark borderless fill.
     { variant: ["segment", "pill"], solid: false, class: "bg-surface shadow-border" },
     { variant: ["segment", "pill"], solid: true, class: "bg-background" },
+    // The chip repeats the tab's radius, and sits inside the track's own padding.
+    { variant: "segment", size: "md", class: "rounded-[6px]" },
+    { variant: "segment", size: "sm", class: "rounded-[5px]" },
+    { variant: "pill", size: "md", class: "inset-y-1" },
+    { variant: "pill", size: "sm", class: "inset-y-0.5" },
   ],
-  defaultVariants: { variant: "segment", solid: false },
+  defaultVariants: { variant: "segment", solid: false, size: "md" },
 });
 
 export type TabsVariants = VariantProps<typeof tabsListVariants>;

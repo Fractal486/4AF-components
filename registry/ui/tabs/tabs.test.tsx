@@ -31,6 +31,35 @@ describe("Tabs", () => {
     expect(screen.getByRole("tab", { name: "One" })).toHaveClass("rounded-[6px]");
   });
 
+  it("keeps the radii concentric at the small size too", () => {
+    const { container } = render(
+      <Tabs size="sm" defaultValue="one">
+        <TabsList aria-label="Examples">
+          <TabsTab value="one">One</TabsTab>
+        </TabsList>
+      </Tabs>,
+    );
+
+    // 5px tab inside 2px of padding wants a 7px track — reusing the md pair would leave the
+    // corners visibly disagreeing.
+    expect(container.querySelector('[role="tablist"]')).toHaveClass("rounded-[7px]", "p-0.5");
+    expect(screen.getByRole("tab", { name: "One" })).toHaveClass("rounded-[5px]", "text-xs");
+  });
+
+  it("tightens the pill track at the small size so it lands on a control height", () => {
+    const { container } = render(
+      <Tabs variant="pill" size="sm" defaultValue="one">
+        <TabsList aria-label="Examples">
+          <TabsTab value="one">One</TabsTab>
+        </TabsList>
+      </Tabs>,
+    );
+
+    // 16px of line box + 12px of padding inside a 4px track: 32px, the height of an Input.
+    expect(container.querySelector('[role="tablist"]')).toHaveClass("p-0.5", "gap-0.5");
+    expect(screen.getByRole("tab", { name: "One" })).toHaveClass("px-2.5", "py-1.5", "text-xs");
+  });
+
   it("does not force a pointer cursor on tabs", () => {
     render(
       <Tabs defaultValue="one">
