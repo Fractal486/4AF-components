@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import {
   getSliderControlWidth,
   getSliderFillOffset,
+  getSliderInlineDim,
   getSliderRangeFillInset,
 } from "./slider-geometry";
 import { Slider } from "./slider";
@@ -223,6 +224,114 @@ describe("Slider", () => {
     expect(getSliderFillOffset(20, false, 6, 0, 3, false, 10, 10)).toBeCloseTo(1.8);
     expect(getSliderFillOffset(90, false, 6, 0, 3, false, 10, 10)).toBeCloseTo(-2.4);
     expect(getSliderFillOffset(100, false, 6, 0, 3, false, 10, 10)).toBe(0);
+  });
+
+  it("puts the label and value inside the bar in inline mode", () => {
+    const { container } = render(
+      <Slider aria-label="Volume" inlineLabel label="Volume" defaultValue={40} />,
+    );
+
+    const control = container.querySelector('[data-slot="slider-thumb"]')!.closest(
+      "[class*='touch-none']",
+    )!;
+    // Inside the control, not in a row above it — that row is what inline mode replaces.
+    expect(control).toHaveTextContent("Volume");
+    expect(control).toHaveTextContent("40");
+    expect(container.querySelector(".mb-2")).toBeNull();
+  });
+
+  it.each(["circle", "knob"] as const)(
+    "ignores inline mode on the %s thumb, which has no bar to sit in",
+    (thumb) => {
+      const { container } = render(
+        <Slider aria-label="Volume" thumb={thumb} inlineLabel label="Volume" defaultValue={40} />,
+      );
+
+      // Back to the row above the track, and the thumb carries no inline fade.
+      expect(container.querySelector(".mb-2")).toHaveTextContent("Volume");
+      expect(container.querySelector('[data-slot="slider-thumb-ink"]')).toBeNull();
+      expect(
+        container.querySelector<HTMLElement>('[data-slot="slider-thumb"]')!.className,
+      ).toContain("bg-foreground");
+    },
+  );
+
+  it("fades the thumb where it sits under inline text", async () => {
+    const { container, rerender } = render(
+      <Slider
+        aria-label="Volume"
+        inlineLabel
+        label="Volume"
+        defaultValue={0}
+        showValue={false}
+        showTicks={false}
+      />,
+    );
+
+    const thumb = container.querySelector<HTMLElement>('[data-slot="slider-thumb"]')!;
+    const ink = container.querySelector<HTMLElement>('[data-slot="slider-thumb-ink"]')!;
+    expect(Number(ink.style.opacity)).toBe(1);
+
+    // jsdom has no layout, so the label is given one. A thumb at the minimum parks against
+    // the rail's left edge, which is where the label starts.
+    Object.defineProperty(screen.getByText("Volume"), "getBoundingClientRect", {
+      configurable: true,
+      value: () => ({ left: 0, right: 40, width: 40 }),
+    });
+
+    // `showValue` is one of the measuring effect's dependencies, so flipping it re-measures
+    // against the rect above.
+    rerender(
+      <Slider
+        aria-label="Volume"
+        inlineLabel
+        label="Volume"
+        defaultValue={0}
+        showValue
+        showTicks={false}
+      />,
+    );
+
+    // The fade rides Motion's frame loop rather than React's commit, so it lands next frame.
+    await waitFor(() => expect(Number(ink.style.opacity)).toBeLessThan(1));
+
+    // What fades is the ink *over* an opaque floor — the thumb itself never goes translucent,
+    // or the rail's ticks and the fill's edge would show straight through the handle.
+    expect(thumb.style.opacity).toBe("");
+    // And the floor is dimmed ink rather than a step towards the rail, so the handle stays a
+    // handle instead of arriving at the fill's own tone.
+    expect(thumb.className).toContain("bg-subtle-foreground");
+  });
+
+  it("ramps the inline fade by overlap instead of switching at contact", () => {
+    const span = [100, 140] as const;
+
+    // Clear of the text, and clear of the approach margin that precedes it.
+    expect(getSliderInlineDim(0, 6, [span])).toBe(0);
+    expect(getSliderInlineDim(80, 6, [span])).toBe(0);
+
+    // Entering: partial, and monotonic on the way in.
+    const approaching = getSliderInlineDim(90, 6, [span]);
+    const closer = getSliderInlineDim(92, 6, [span]);
+    expect(approaching).toBeGreaterThan(0);
+    expect(approaching).toBeLessThan(1);
+    expect(closer).toBeGreaterThan(approaching);
+
+    // Fully under it, and symmetric on the way out.
+    expect(getSliderInlineDim(120, 6, [span])).toBe(1);
+    expect(getSliderInlineDim(150, 6, [span])).toBe(0);
+    expect(getSliderInlineDim(90, 6, [span])).toBeCloseTo(
+      getSliderInlineDim(144, 6, [span]),
+      5,
+    );
+
+    // A thumb wider than the text it passes still reaches full fade, because the ramp is
+    // capped by the zone rather than by the thumb.
+    expect(getSliderInlineDim(100, 80, [[110, 118]])).toBe(1);
+
+    // Two spans, and the deeper one wins; a degenerate span is ignored.
+    expect(getSliderInlineDim(120, 6, [[0, 0], span])).toBe(1);
+    expect(getSliderInlineDim(0, 6, [])).toBe(0);
   });
 
   it("distributes range endpoint space across the first and last tick fields", () => {

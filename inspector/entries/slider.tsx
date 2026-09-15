@@ -14,6 +14,8 @@ export const sliderEntry = defineEntry({
     size: select(SIZES, "md", "Size"),
     range: bool(false, "Range"),
     label: text("Volume", "Label"),
+    // Bar only: the other two rails are too thin to hold a line of text.
+    inlineLabel: bool(false, "Inline label", (values) => values.thumb !== "bar"),
     max: num(100, { min: 10, max: 500, step: 10, label: "Max" }),
     step: num(10, { min: 1, max: 25, step: 1, label: "Step" }),
     showTicks: bool(true, "Show ticks"),
@@ -25,6 +27,7 @@ export const sliderEntry = defineEntry({
     size,
     range,
     label,
+    inlineLabel,
     max,
     step,
     showTicks,
@@ -34,11 +37,12 @@ export const sliderEntry = defineEntry({
     return (
       <div className="w-full max-w-sm">
         <Slider
-          key={`${thumb}-${size}-${range}-${max}-${step}-${showTicks}-${showValueTooltip}-${disabled}`}
+          key={`${thumb}-${size}-${range}-${max}-${step}-${showTicks}-${showValueTooltip}-${disabled}-${inlineLabel}`}
           thumb={thumb}
           size={size}
           range={range}
           label={label.trim() || undefined}
+          inlineLabel={inlineLabel}
           defaultValue={range ? DEFAULT_RANGE : DEFAULT_VALUE}
           max={max}
           step={step}

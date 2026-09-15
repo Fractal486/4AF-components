@@ -18,6 +18,12 @@ Optional display props include `label`, `showValue`, and `showTicks`. Set `range
 independently draggable thumbs and a fill between them; pass `[start, end]` to `value` or
 `defaultValue`, and the range callback receives the updated tuple. Without `range`, the component
 keeps its single numeric value API.
+`inlineLabel` moves the label and the value inside the bar, one at each end, in place of the row
+above it. The thumb dims as it passes under either, in proportion to how far it has crossed, so the text
+stays readable and the fade reverses as the thumb leaves. It dims to an opaque colour rather
+than going translucent, so the rail's ticks never show through the handle. It applies to the `bar` thumb
+only and is ignored by `circle` and `knob`, whose rails are too thin to hold a line of text.
+
 `showValueTooltip` is off by default; enable it to show the live value above the thumb while the
 thumb is hovered or keyboard-focused. It stays visible during pointer drag, follows the thumb
 continuously during motion, and closes after release when the pointer is no longer over the thumb.

@@ -90,3 +90,40 @@ export function getSliderRangeFillInset(
   }
   return boundaryAt(progress);
 }
+
+/** A horizontal span inside the control, in pixels from its left edge. */
+export type SliderSpan = readonly [start: number, end: number];
+
+/**
+ * How far the thumb should recede while it passes under inline text: 0 at rest, 1 fully dimmed.
+ *
+ * Proportional to the overlap rather than flipped at the moment of contact. The thumb is
+ * spring-driven, so a boolean switch would blink partway through a glide; a ramp inherits the
+ * thumb's own easing and reverses exactly as it arrived. `approachPx` widens each span so the
+ * thumb is already receding as it meets the text rather than appearing to react late, and the
+ * ramp runs over the thumb's own width — anything longer can never complete, since a thumb
+ * narrower than the ramp cannot overlap by more than it is wide.
+ */
+export function getSliderInlineDim(
+  thumbLeftPx: number,
+  thumbWidthPx: number,
+  spans: readonly SliderSpan[],
+  approachPx = 6,
+): number {
+  const thumbRightPx = thumbLeftPx + thumbWidthPx;
+  let deepest = 0;
+
+  for (const [start, end] of spans) {
+    if (!(end > start)) continue;
+    const zoneStart = start - approachPx;
+    const zoneEnd = end + approachPx;
+    const overlap =
+      Math.min(thumbRightPx, zoneEnd) - Math.max(thumbLeftPx, zoneStart);
+    if (overlap <= 0) continue;
+    const ramp = Math.max(Math.min(thumbWidthPx, zoneEnd - zoneStart), 1);
+    deepest = Math.max(deepest, Math.min(overlap / ramp, 1));
+    if (deepest >= 1) break;
+  }
+
+  return deepest;
+}

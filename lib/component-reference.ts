@@ -343,7 +343,9 @@ import { Button } from "@/components/ui/button";
 
 <Slider aria-label="Volume" defaultValue={60} showValueTooltip />
 
-<Slider aria-label="Price range" range defaultValue={[20, 80]} />`,
+<Slider aria-label="Price range" range defaultValue={[20, 80]} />
+
+<Slider aria-label="Volume" label="Volume" defaultValue={60} inlineLabel />`,
   },
   switch: {
     importName: "Switch",

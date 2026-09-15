@@ -24,7 +24,9 @@ import { Tooltip } from "@/registry/ui/tooltip/tooltip";
 import {
   getSliderControlWidth,
   getSliderFillOffset,
+  getSliderInlineDim,
   getSliderRangeFillInset,
+  type SliderSpan,
 } from "./slider-geometry";
 
 /**
@@ -124,6 +126,14 @@ export interface SliderProps
   /** Text shown above the track on the left, opposite the value. */
   label?: ReactNode;
   /**
+   * Move the label and the value *inside* the bar, one at each end, instead of above it.
+   * The thumb dims as it passes under either, so the text stays readable.
+   *
+   * `bar` only, and ignored by the other thumbs: `circle` and `knob` ride a rail too thin to
+   * hold a line of text, and the knob overhangs its rail rather than being contained by it.
+   */
+  inlineLabel?: boolean;
+  /**
    * The thumb shape. `bar` is the thin vertical handle; `circle` is a round knob centered
    * in a thick, fully-rounded track; `knob` is that same round knob on a thin rail (about
    * half the knob's diameter), so it overhangs — the classic slider look.
@@ -159,6 +169,25 @@ const KNOB_GRAB_SCALE = {
   sm: 4 / 3,
 } as const;
 
+// What the thumb dims *to* while it sits under inline text: the dimmest ink the theme has.
+// The handle stays a handle — a dimmed white in the dark theme, a dimmed black in the light
+// one — rather than receding into the bar.
+//
+// Not a step towards the rail, which is the obvious way to dim and the wrong one. The rail is
+// `muted` and the fill is the foreground at 15% over it, so the tones on that path are the
+// fill's own neighbourhood and the handle arrives at the colour of the thing it is sitting on.
+// `subtle-foreground` is neutral-500 in both themes, which lands clear of the fill in each —
+// lighter than it in the dark theme, darker in the light one — and clear of the label text it
+// passes under, which `muted-foreground` would have matched exactly in the dark theme.
+//
+// Opaque, and that is the point of the layer: dimming by opacity alone lets the rail's tick
+// marks and the fill's edge show straight through the handle. The thumb is this floor with
+// full-strength ink over it, so what animates is still only the ink's opacity while the floor
+// stays solid at every point in the fade.
+const INLINE_DIM_FLOOR = "bg-subtle-foreground";
+const INLINE_GUTTER = { md: "px-3", sm: "px-2.5" } as const;
+const NO_SPANS: readonly SliderSpan[] = [];
+
 export function Slider({
   value,
   defaultValue,
@@ -170,6 +199,7 @@ export function Slider({
   showValue = true,
   showValueTooltip = false,
   label,
+  inlineLabel = false,
   thumb = "bar",
   size = "md",
   range = false,
@@ -179,6 +209,7 @@ export function Slider({
 }: SliderProps) {
   const isBar = thumb === "bar";
   const isCircle = thumb === "circle";
+  const inline = inlineLabel && isBar;
   const dims = DIMS[thumb][size];
   const roundThumbGrabScale = thumb === "knob" ? KNOB_GRAB_SCALE[size] : 1.12;
   const thumbTravelInsetPx = isCircle ? dims.fillCapRadiusPx : dims.thumbPx / 2;
@@ -194,6 +225,9 @@ export function Slider({
   const [thumbHovered, setThumbHovered] = useState<ThumbFlags>([false, false]);
   const [thumbFocused, setThumbFocused] = useState<ThumbFlags>([false, false]);
   const controlRef = useRef<HTMLDivElement>(null);
+  const inlineLabelRef = useRef<HTMLSpanElement>(null);
+  const inlineValueRef = useRef<HTMLOutputElement>(null);
+  const inlineSpansRef = useRef<readonly SliderSpan[]>(NO_SPANS);
   const thumb0Ref = useRef<HTMLDivElement>(null);
   const thumb1Ref = useRef<HTMLDivElement>(null);
   const thumbRefs = [thumb0Ref, thumb1Ref] as const;
@@ -285,6 +319,61 @@ export function Slider({
       thumbTravelInsetPx -
       dims.thumbPx / 2,
   );
+
+  // How far each thumb has receded under the inline text, kept as a motion value so the fade
+  // rides the same compositor frame as the thumb it belongs to. Reading the spans from a ref
+  // rather than a dependency keeps this off React's render path entirely: at 0 it costs an
+  // empty loop per frame, and nothing re-renders while a thumb slides under a label.
+  const inlineDim0 = useMotionValue(0);
+  const inlineDim1 = useMotionValue(0);
+  const thumbInk0 = useTransform(inlineDim0, (dim) => 1 - dim);
+  const thumbInk1 = useTransform(inlineDim1, (dim) => 1 - dim);
+  useMotionValueEvent(thumbX0, "change", (latest) => {
+    if (inline) {
+      inlineDim0.set(getSliderInlineDim(latest, dims.thumbPx, inlineSpansRef.current));
+    }
+  });
+  useMotionValueEvent(thumbX1, "change", (latest) => {
+    if (inline) {
+      inlineDim1.set(getSliderInlineDim(latest, dims.thumbPx, inlineSpansRef.current));
+    }
+  });
+
+  // The text's own width is what the thumb is dimming against, and it changes under two
+  // things the control's width doesn't cover: the value gains a digit, and the label is
+  // swapped. Both elements are observed, so the spans follow either without polling.
+  useLayoutEffect(() => {
+    const control = controlRef.current;
+    if (!control || !inline) {
+      inlineSpansRef.current = NO_SPANS;
+      inlineDim0.set(0);
+      inlineDim1.set(0);
+      return;
+    }
+
+    const measure = () => {
+      const controlRect = control.getBoundingClientRect();
+      const spans: SliderSpan[] = [];
+      for (const element of [inlineLabelRef.current, inlineValueRef.current]) {
+        if (!element) continue;
+        const rect = element.getBoundingClientRect();
+        if (rect.width === 0) continue;
+        spans.push([rect.left - controlRect.left, rect.right - controlRect.left]);
+      }
+      inlineSpansRef.current = spans;
+      // Re-settle both thumbs against the new text rather than waiting for the next move:
+      // a value widening from 99 to 100 can reach a thumb that is standing still.
+      inlineDim0.set(getSliderInlineDim(thumbX0.get(), dims.thumbPx, spans));
+      inlineDim1.set(getSliderInlineDim(thumbX1.get(), dims.thumbPx, spans));
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(control);
+    if (inlineLabelRef.current) observer.observe(inlineLabelRef.current);
+    if (inlineValueRef.current) observer.observe(inlineValueRef.current);
+    return () => observer.disconnect();
+  }, [dims.thumbPx, inline, inlineDim0, inlineDim1, label, showValue, thumbX0, thumbX1]);
 
   // Base UI's tooltip positioner listens for layout changes, but the slider thumb moves
   // through a transform-driven spring. Feed the positioner the thumb's current cross-axis
@@ -501,7 +590,7 @@ export function Slider({
       className={cn("relative w-full", className)}
       {...props}
     >
-      {(showValue || label != null) && (
+      {(showValue || label != null) && !inline && (
         <div
           className={cn(
             "mb-2 flex items-baseline gap-2 text-xs",
@@ -687,7 +776,10 @@ export function Slider({
             <motion.div
               data-slot="slider-thumb"
               className={cn(
-                "absolute inset-0 origin-center bg-foreground shadow-sm",
+                "absolute inset-0 origin-center shadow-sm",
+                // Inline mode paints the dimmed floor here and the ink above it; everywhere
+                // else the thumb is simply ink.
+                inline ? INLINE_DIM_FLOOR : "bg-foreground",
                 // A thin vertical handle, or a round knob the height of the rail.
                 dims.thumb,
                 "group-has-[:focus-visible]:ring-4 group-has-[:focus-visible]:ring-ring/40",
@@ -706,9 +798,52 @@ export function Slider({
                       }
               }
               transition={SPRING_GRAB}
-            />
+            >
+              {/* Full-strength ink over the dimmed floor. Fading this out is what dims the
+                  thumb, so the animated property stays `opacity` — but what shows through is
+                  the floor beneath, never the rail. */}
+              {inline && (
+                <motion.span
+                  aria-hidden
+                  data-slot="slider-thumb-ink"
+                  className="absolute inset-0 rounded-[inherit] bg-foreground"
+                  style={{ opacity: index === 0 ? thumbInk0 : thumbInk1 }}
+                />
+              )}
+            </motion.div>
           </motion.div>
         ))}
+
+        {/* Inline label and value — last, so they paint over the thumb rather than under it.
+            The thumb is what yields here: it fades as it arrives (see `inlineDim`), so the
+            text never has to compete with a solid handle sliding beneath it. `inset-0`
+            centres them against the same rail the thumb travels, and the gutter keeps both
+            clear of its rounded ends. */}
+        {inline && (showValue || label != null) && (
+          <div
+            className={cn(
+              "pointer-events-none absolute inset-0 flex items-center gap-2 text-xs",
+              label != null ? "justify-between" : "justify-end",
+              INLINE_GUTTER[size],
+            )}
+          >
+            {label != null && (
+              // Full ink, matching the value at the other end. The row above the track dims
+              // its label to separate it from the number; inside the bar both sit on the rail,
+              // the fill and the thumb, and a dimmed label is one thing too many to read
+              // through.
+              <span ref={inlineLabelRef} className="truncate text-foreground">
+                {label}
+              </span>
+            )}
+            {showValue && (
+              <BaseSlider.Value
+                ref={inlineValueRef}
+                className="shrink-0 tabular text-foreground"
+              />
+            )}
+          </div>
+        )}
       </BaseSlider.Control>
     </BaseSlider.Root>
   );
