@@ -83,7 +83,7 @@ The catalog currently contains 47 installable UI items. Verify the count and nam
 | --- | --- | --- |
 | `input` | `Input` | Default, plain, and underline fields; a 34px/8px default field; an optional decorative `startIcon` on the leading edge; compact 6px number steppers; invalid/disabled states. |
 | `textarea` | `Textarea` | Matching 34px/8px form treatment with an optional 16px custom resize grip using 6px corners. |
-| `switch` | `Switch` | Binary on/off state with a sliding, press-squishing thumb. |
+| `switch` | `Switch` | Binary on/off state with a sliding thumb whose center grows toward the track center into a rounded pill on press; adaptive or fixed tone. |
 | `checkbox` | `Checkbox` | Fixed 16px/4px boolean or indeterminate selection with an animated tick and optional label; it has no size axis. |
 | `radio` | `RadioGroup`, `Radio` | Single-choice selection groups. |
 | `slider` | `Slider` | Numeric input with `bar`, `circle`, and `knob` thumbs, optional ticks/labels, `range` mode with two draggable thumbs, and an opt-in `showValueTooltip` that follows the active thumb during drag. |
