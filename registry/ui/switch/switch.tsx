@@ -19,9 +19,11 @@ import {
  *
  * Two motions, both worth the Motion runtime:
  *  - the thumb *slides* rather than cutting, via a `layout` animation on the transform;
- *  - it *squishes wider* while held, the way a physical toggle gives under a thumb.
- *    That press-stretch is the detail that makes it feel like an object rather than a
- *    checkbox. It is a transform stretch, so the press stays off the layout path.
+ *  - its middle section grows while held, between fixed rounded end caps. That
+ *    press-stretch is the detail that makes it feel like an object rather than a
+ *    checkbox, while keeping the thumb's ends round instead of turning the circle
+ *    into an oval. It grows toward the track's center, so the outer edge stays put.
+ *    It is all transform-driven, so the press stays off the layout path.
  *
  * `tone` is the two versions: `adaptive` flips the thumb light/dark to stay in contrast
  * with the track; `fixed` holds it dark in both states.
@@ -32,7 +34,7 @@ export interface SwitchProps
   className?: string;
 }
 
-const PRESSED_SCALE_X = 19 / 16;
+const PRESSED_EXTENSION = 3;
 
 export function Switch({
   className,
@@ -42,12 +44,17 @@ export function Switch({
   onPointerUp,
   onPointerLeave,
   onPointerCancel,
+  checked,
+  defaultChecked,
+  onCheckedChange,
   ...props
 }: SwitchProps) {
   // Pointer-only affordance: the squish answers a press, so it's driven by pointer
   // state, not by `checked`. A keyboard toggle skips it, which is correct — there's no
   // thumb being held down.
   const [pressed, setPressed] = useState(false);
+  const [uncontrolledChecked, setUncontrolledChecked] = useState(defaultChecked ?? false);
+  const isChecked = checked ?? uncontrolledChecked;
   const reduceMotion = useReducedMotion();
 
   const transition = reduceMotion ? { duration: 0 } : spring.snappy;
@@ -56,9 +63,15 @@ export function Switch({
 
   return (
     <BaseSwitch.Root
+      checked={checked}
+      defaultChecked={defaultChecked}
       disabled={disabled}
       className={cn(switchTrackVariants(), className)}
       {...props}
+      onCheckedChange={(nextChecked, eventDetails) => {
+        if (checked === undefined) setUncontrolledChecked(nextChecked);
+        onCheckedChange?.(nextChecked, eventDetails);
+      }}
       onPointerDown={(event) => {
         onPointerDown?.(event);
         if (!event.defaultPrevented && !disabled) setPressed(true);
@@ -81,12 +94,48 @@ export function Switch({
         render={
           <motion.span
             data-slot="switch-thumb"
-            // `layout` turns the flex justify flip into a transform slide, while
-            // `scaleX` handles the press-stretch without animating width.
+            data-pressed={pressed || undefined}
+            // `layout` turns the flex justify flip into a transform slide.
             layout
             transition={transition}
-            animate={reduceMotion ? undefined : { scaleX: pressed ? PRESSED_SCALE_X : 1 }}
-          />
+          >
+            <motion.span
+              aria-hidden="true"
+              data-slot="switch-thumb-cap-start"
+              className="absolute inset-y-0 left-0 w-1/2 rounded-l-full bg-inherit"
+              transition={transition}
+              animate={
+                reduceMotion
+                  ? undefined
+                  : { x: pressed && isChecked ? -PRESSED_EXTENSION : 0 }
+              }
+            />
+            <motion.span
+              aria-hidden="true"
+              data-slot="switch-thumb-middle"
+              className="absolute top-0 left-1/2 h-full w-[3px] bg-inherit"
+              transition={transition}
+              animate={
+                reduceMotion
+                  ? undefined
+                  : {
+                      x: pressed && isChecked ? -PRESSED_EXTENSION : 0,
+                      scaleX: pressed ? 1 : 0,
+                    }
+              }
+            />
+            <motion.span
+              aria-hidden="true"
+              data-slot="switch-thumb-cap-end"
+              className="absolute inset-y-0 right-0 w-1/2 rounded-r-full bg-inherit"
+              transition={transition}
+              animate={
+                reduceMotion
+                  ? undefined
+                  : { x: pressed && !isChecked ? PRESSED_EXTENSION : 0 }
+              }
+            />
+          </motion.span>
         }
       />
     </BaseSwitch.Root>

@@ -581,7 +581,7 @@
     {
       "name": "switch",
       "type": "registry:ui",
-      "description": "A switch that slides and squishes when pressed. Adaptive or fixed thumb tone.",
+      "description": "A switch that slides and grows a rounded center pill toward the track center when pressed. Adaptive or fixed thumb tone.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
