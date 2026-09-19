@@ -1,7 +1,7 @@
 "use client";
 
 import { Select as BaseSelect } from "@base-ui/react/select";
-import { Check, ChevronDown, ChevronRight } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, X } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import {
   Children,
@@ -12,6 +12,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -162,7 +163,42 @@ const SelectContext = createContext<SelectContextValue>({
   clear: () => {},
 });
 
+/**
+ * Whether two labels or icons say the same thing.
+ *
+ * The registries below hold React nodes, and a node is rebuilt on every render — an
+ * `<Icon />` written inline, or children like `Create {query}`, is a fresh object each
+ * time even when nothing about it changed. Comparing those by identity meant the effect
+ * that registers one saw a change every render, wrote a new Map, re-rendered the provider,
+ * and got another fresh node: a render loop that hung the panel outright for anything but
+ * a plain string child.
+ *
+ * So compare what a node *is* rather than which object it is: primitives by value, so a
+ * label whose text actually changed still updates; elements by type and key, so the same
+ * component written inline twice is the same icon; arrays element-wise, which is what JSX
+ * hands over for `Create {query}`. Deliberately shallow — two elements of one type with
+ * different props read as equal here, and the registries only need the node for display.
+ */
+function isEquivalentNode(a: ReactNode, b: ReactNode): boolean {
+  if (Object.is(a, b)) return true;
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return a.length === b.length && a.every((entry, index) => isEquivalentNode(entry, b[index]));
+  }
+  if (isValidElement(a) && isValidElement(b)) {
+    return a.type === b.type && a.key === b.key;
+  }
+  return false;
+}
+
 const SELECT_CLEAR_ACTION = Symbol("select-clear-action");
+
+/**
+ * The active-item key for one caller-supplied footer button.
+ *
+ * Keyed by index rather than by a symbol per action so the mark survives a re-render that
+ * rebuilds the array — a footer action is usually declared inline.
+ */
+const selectFooterAction = (index: number) => `select-footer-action:${String(index)}`;
 
 type BaseUIEvent = { preventBaseUIHandler?: () => void };
 
@@ -495,7 +531,7 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
         return next;
       }
 
-      if (Object.is(current.get(v), label)) return current;
+      if (current.has(v) && isEquivalentNode(current.get(v), label)) return current;
       return new Map(current).set(v, label);
     });
   }, []);
@@ -691,7 +727,7 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
         return next;
       }
 
-      if (Object.is(current.get(value), icon)) return current;
+      if (current.has(value) && isEquivalentNode(current.get(value), icon)) return current;
       return new Map(current).set(value, icon);
     });
   }, []);
@@ -731,7 +767,13 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   );
   const setOpen = useCallback(
     (nextOpen: boolean, details?: unknown) => {
-      handleOpenChange(nextOpen, details as never);
+      // A programmatic close — a footer action, say — has no Base UI event behind it, and
+      // `handleOpenChange` reads `reason` and `isCanceled` off the details either way.
+      // Standing one in here keeps the context setter callable without one.
+      handleOpenChange(
+        nextOpen,
+        (details ?? { reason: undefined, isCanceled: false, cancel: () => undefined }) as never,
+      );
     },
     [handleOpenChange],
   );
@@ -1056,6 +1098,27 @@ export function SelectSortTrigger({
   );
 }
 
+/**
+ * One button in a panel's footer row.
+ *
+ * A footer button is an action on the *selection*, not one more option to pick: Archive,
+ * Clear, "Select all". It sits below the hairline in the same compact `xs` ghost style the
+ * built-in clear uses, and it takes the panel's active mark on hover so the keyboard and
+ * the pointer agree about what Enter would run.
+ */
+export interface SelectFooterAction {
+  /** Stable across renders; also the React key. */
+  key: string;
+  label: ReactNode;
+  icon?: ReactNode;
+  disabled?: boolean;
+  /** A trailing check, for an action that is also a state the selection is already in. */
+  checked?: boolean;
+  onSelect: () => void;
+  /** Leave the panel open. By default running an action closes it, as picking a row does. */
+  keepOpen?: boolean;
+}
+
 export function SelectContent({
   className,
   children,
@@ -1070,6 +1133,8 @@ export function SelectContent({
   autoFocusFirstItem = true,
   clearable = false,
   clearLabel = "Clear",
+  clearIcon = <X />,
+  footerActions,
   ...props
 }: Omit<ComponentProps<typeof BaseSelect.Popup>, "className"> & {
   className?: string;
@@ -1099,12 +1164,22 @@ export function SelectContent({
   autoFocusFirstItem?: boolean;
   /** A full-width, compact `xs` ghost footer button that resets the selection to none. */
   clearable?: boolean;
+  /**
+   * Buttons for the panel's footer row, laid out side by side and sharing its width.
+   *
+   * `clearable` is the shorthand for the commonest one and appends to these, so a panel
+   * can offer its own actions and the built-in clear together.
+   */
+  footerActions?: readonly SelectFooterAction[];
   /** Text for the clear button. */
   clearLabel?: ReactNode;
+  /** Glyph for the clear button. Pass `null` for a word on its own. */
+  clearIcon?: ReactNode;
 }) {
   const reduceMotion = useReducedMotion();
   const {
     open,
+    setOpen,
     values,
     clear,
     size,
@@ -1118,9 +1193,14 @@ export function SelectContent({
     triggerVariant,
   } = useContext(SelectContext);
   const width = widthProp ?? (triggerVariant === "plain" ? "content" : "trigger");
-  const clearActionActive = Object.is(activeItem, SELECT_CLEAR_ACTION);
   const listRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  // Whether real focus on a row is something the reader asked for. In a searchable panel
+  // the caret belongs in the field and the highlight is `data-panel-active`, so focus
+  // arriving on a row is almost always the list moving under it — an option mounting or
+  // unmounting as the query changes — and that silently swallows the rest of the word.
+  // The arrow keys are the way it is meant, and they say so here.
+  const rowFocusIntentRef = useRef(false);
   // A state node, not a ref: Base UI mounts the popup lazily, so on the first open the
   // positioner DOM doesn't exist yet when a ref-reading effect fires. A callback ref makes
   // the node's arrival a state change the measuring effect can depend on.
@@ -1134,8 +1214,43 @@ export function SelectContent({
   // empty (but not-yet-hidden) list. That extra frame is a second height change, and on the
   // upward-opening variant a late reposition paints the whole popup — search field and all —
   // one frame too high before it snaps down: the flash above the field.
+  //
+  // It is still one commit behind on *which* options exist. An item registers its
+  // searchable text from the layout pass, so a row whose text tracks the query — "Create …"
+  // over a filtered list — is briefly registered under the previous keystroke. Its own
+  // `hidden` comes from current props and stays right; only this derived answer goes wrong,
+  // and it flashed the empty state once per character typed. So wait for the registry to
+  // catch up before believing it found nothing.
+  //
+  // The extra render that costs is the point, not an oversight: it is one per query change,
+  // bounded by the query changing, and it is what keeps a settling list from being reported
+  // as an empty one. A query that genuinely matches nothing registers nothing, so the latch
+  // settles on the next commit either way and the empty state still arrives — just never
+  // between keystrokes.
+  //
+  // `null` until the first registration lands, which is also what keeps the panel from
+  // opening on the empty state for a frame before its own options have announced
+  // themselves. No real query can equal it.
+  //
+  // The answer is latched alongside the query, not just the query itself. Waiting only on
+  // the query is right for *entering* the empty state and wrong for staying in it: every
+  // further keystroke over an already-empty list made the latch stale again, so the panel
+  // dropped the message, unhid an empty list and took it back on the next commit — a
+  // height change per character, which on the upward-opening variant reads as the panel
+  // flipping about under the caret. Holding the previous answer costs nothing, because a
+  // row that registers late can only *add* a match, and that makes the question moot.
+  const [settled, setSettled] = useState<{ query: string; empty: boolean } | null>(null);
+  const nothingMatches = searchable && firstVisibleItem === undefined;
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- see above
+    setSettled({ query: searchQuery, empty: firstVisibleItem === undefined });
+  }, [firstVisibleItem, searchQuery]);
+
+  // Nothing to show covers both ways of having nothing: a query that ruled everything out,
+  // and a panel with no options to begin with. They read the same to someone looking at it,
+  // and a list area that is simply blank says less than a sentence does.
   const noResults =
-    searchable && searchQuery.trim() !== "" && firstVisibleItem === undefined;
+    nothingMatches && (settled?.query === searchQuery || settled?.empty === true);
 
   useEffect(() => {
     setPanelSearch(searchable);
@@ -1188,6 +1303,27 @@ export function SelectContent({
     return () => cancelAnimationFrame(frame);
   }, [autoFocusFirstItem, openingItem, open, searchable, setActiveItem]);
 
+  // The caller's actions first, then the built-in clear: a shorthand belongs at the end
+  // of what it was mixed into, and the clear is the one a reader expects last.
+  const footerRow: Array<SelectFooterAction & { activeKey?: unknown }> = [
+    ...(footerActions ?? []),
+    ...(clearable
+      ? [
+          {
+            key: "select-clear",
+            label: clearLabel,
+            icon: clearIcon,
+            disabled: values.length === 0,
+            onSelect: () => clear(),
+            // `clear` already closes a single select through its own value change, and a
+            // multiple one stays open the way picking a row does.
+            keepOpen: true,
+            activeKey: SELECT_CLEAR_ACTION,
+          } satisfies SelectFooterAction & { activeKey: unknown },
+        ]
+      : []),
+  ];
+
   // Built once and placed at whichever end `searchPosition` names, so the two layouts
   // can't drift apart. The hairline goes on the side facing the options.
   const searchField = searchable ? (
@@ -1206,6 +1342,7 @@ export function SelectContent({
         onKeyDown={(event) => {
           if (event.key === "ArrowDown" || event.key === "ArrowUp") {
             event.preventDefault();
+            rowFocusIntentRef.current = true;
             focusPanelOption(listRef.current, event.key === "ArrowDown" ? "next" : "previous");
             return;
           }
@@ -1300,6 +1437,28 @@ export function SelectContent({
               searchInputRef.current?.focus();
             }
           }}
+          // The same rescue one level down. Base UI hands focus to a row when the list it
+          // manages changes shape, which is what a filter does on every keystroke — and a
+          // panel whose options come and go as the query narrows would otherwise take the
+          // caret away mid-word. Focus a reader asked for is left alone.
+          onFocusCapture={(event) => {
+            if (!searchable) return;
+            const input = searchInputRef.current;
+            if (!input || event.target === input) return;
+            if (rowFocusIntentRef.current) {
+              rowFocusIntentRef.current = false;
+              return;
+            }
+            // Only when the caret was in the field: focus moving from one row to the next
+            // is Base UI's own list navigation, which is exactly what it should be doing.
+            if (
+              event.relatedTarget === input &&
+              event.target instanceof HTMLElement &&
+              event.target.closest('[role="option"]')
+            ) {
+              input.focus();
+            }
+          }}
           {...props}
         >
           {searchable && searchPosition === "top" && searchField}
@@ -1327,28 +1486,45 @@ export function SelectContent({
             </div>
           )}
           {searchable && searchPosition === "bottom" && searchField}
-          {clearable && (
+          {footerRow.length > 0 && (
             <>
               {/* The separator sits outside the footer's padding so the list's bottom
                   inset and the footer's top inset do not stack with its list margins. */}
               <SelectSeparator className="mx-0 my-0 w-full" />
-              <div className="p-1">
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  data-panel-active={clearActionActive || undefined}
-                  disabled={values.length === 0}
-                  onClick={() => clear()}
-                  onPointerMove={(event) => {
-                    if (event.pointerType !== "mouse" || event.currentTarget.disabled) return;
-                    setActiveItem(SELECT_CLEAR_ACTION);
-                    event.currentTarget.focus({ preventScroll: true });
-                  }}
-                  // Keep it full-width while the Button's xs size owns its compact geometry.
-                  className="w-full rounded-xs px-2.5 data-[panel-active]:bg-muted data-[panel-active]:text-foreground"
-                >
-                  {clearLabel}
-                </Button>
+              {/* One button fills the row, as the clear always has; several share it
+                  evenly, so a two-action footer reads as a pair rather than as a list. */}
+              <div className="flex gap-1 p-1">
+                {footerRow.map((action, index) => {
+                  const key = action.activeKey ?? selectFooterAction(index);
+                  return (
+                    <Button
+                      key={action.key}
+                      variant="ghost"
+                      size="xs"
+                      data-panel-active={Object.is(activeItem, key) || undefined}
+                      disabled={action.disabled}
+                      onClick={() => {
+                        action.onSelect();
+                        if (!action.keepOpen) setOpen(false);
+                      }}
+                      onPointerMove={(event) => {
+                        if (event.pointerType !== "mouse" || event.currentTarget.disabled) return;
+                        setActiveItem(key);
+                        // The mark is enough in a searchable panel: the caret belongs in
+                        // the field, and taking focus here paints a focus ring on the
+                        // button as well — the browser treats a programmatic focus as
+                        // keyboard-driven when the last thing the reader did was type.
+                        if (!searchable) event.currentTarget.focus({ preventScroll: true });
+                      }}
+                      // Flexible while the Button's xs size owns its compact geometry.
+                      className="min-w-0 flex-1 rounded-xs px-2.5 data-[panel-active]:bg-muted data-[panel-active]:text-foreground"
+                    >
+                      {action.icon}
+                      {action.label}
+                      {action.checked ? <Check className="size-3.5 shrink-0" /> : null}
+                    </Button>
+                  );
+                })}
               </div>
             </>
           )}
@@ -1382,10 +1558,15 @@ export const SelectSeparator = forwardRef<HTMLDivElement, SelectSeparatorProps>(
         data-slot="select-separator"
         orientation={orientation}
         className={cn(
-          "shrink-0 bg-border",
+          // A border rather than a one-pixel filled box, which is how every other rule in
+          // the panel is drawn — the search field's included. The two are the same pixel
+          // on paper, but a background box lands wherever the box lands: at a fractional
+          // offset it paints across two device rows and reads heavier than the border it
+          // sits opposite. A border snaps.
+          "shrink-0 border-border",
           orientation === "horizontal"
-            ? "-mx-1 my-1 h-px w-auto"
-            : "mx-1 h-full w-px",
+            ? "-mx-1 my-1 h-0 w-auto border-t"
+            : "mx-1 h-full w-0 border-l",
           className,
         )}
         {...props}
@@ -1924,6 +2105,13 @@ export type SelectItemProps = Omit<
   disabled?: boolean;
   /** Optional trailing content in place of the selection indicator. */
   end?: ReactNode;
+  /**
+   * The selection indicator: a checkbox in a multiple panel, a trailing tick in a single
+   * one. Turn it off for a row that *does* something rather than being a state the
+   * selection is in — "Create …", say — where a box that never stays ticked is a promise
+   * the row cannot keep.
+   */
+  indicator?: boolean;
   /** Optional element id. */
   id?: string;
   /** Text used by an ancestor searchable `SelectContent` to match this option. */
@@ -1958,6 +2146,7 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
     children,
     value,
     disabled = false,
+    indicator = true,
     end,
     searchValue,
     onClick: onClickProp,
@@ -2005,16 +2194,30 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
     [forwardedRef, nestedPanelContext, value],
   );
 
-  useEffect(() => {
+  // Before paint, not after. `noResults` above is derived from this registry, so a row
+  // whose searchable text tracks the query — "Create …" over a filtered list — would
+  // otherwise spend one painted frame registered under the previous keystroke, and the
+  // panel would read that as "nothing matches" and swap the list for the empty message.
+  // Once per character typed. The option set is what the panel lays itself out from, so
+  // settling it belongs in the pass before the browser draws.
+  useLayoutEffect(() => {
     registerOptionText(value, optionText, parentValue);
     return () => unregisterOptionText(value);
   }, [optionText, parentValue, registerOptionText, unregisterOptionText, value]);
   const panelActive = open && Object.is(activeItem, value);
 
+  // The same shape as the label registration above, and for the same reason: an `<Icon />`
+  // written inline is a new object on every render.
+  const registeredIcon = useRef<{ value: unknown; icon: ReactNode } | null>(null);
   useEffect(() => {
+    const previous = registeredIcon.current;
+    if (previous && Object.is(previous.value, value) && isEquivalentNode(previous.icon, icon)) {
+      return;
+    }
+    registeredIcon.current = { value, icon };
     registerIcon(value, icon);
-    return () => unregisterIcon(value);
-  }, [icon, registerIcon, unregisterIcon, value]);
+  }, [icon, registerIcon, value]);
+  useEffect(() => () => { unregisterIcon(value); }, [unregisterIcon, value]);
 
   const bridgeMissingPointerDown = useCallback((target: HTMLElement) => {
     if (bridgingPointerDownRef.current || !target.isConnected) return;
@@ -2085,10 +2288,23 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
   };
 
   // Register the label so a chip trigger can render the selected value(s) by name.
+  //
+  // The node cannot be a dependency that *writes*: JSX rebuilds it every render, so an
+  // effect keyed on its identity re-ran forever — its cleanup deleted the entry, the
+  // registration put it back, and the provider re-rendered into another fresh node. The
+  // effect still runs each render, but it only writes when the label says something
+  // different, and the removal is its own effect so it fires on unmount or a new value
+  // rather than on every pass.
+  const registeredLabel = useRef<{ value: unknown; label: ReactNode } | null>(null);
   useEffect(() => {
+    const previous = registeredLabel.current;
+    if (previous && Object.is(previous.value, value) && isEquivalentNode(previous.label, children)) {
+      return;
+    }
+    registeredLabel.current = { value, label: children };
     registerLabel(value, children);
-    return () => unregisterLabel(value);
-  }, [children, registerLabel, unregisterLabel, value]);
+  }, [children, registerLabel, value]);
+  useEffect(() => () => { unregisterLabel(value); }, [unregisterLabel, value]);
 
   if (multiple) {
     return (
@@ -2124,7 +2340,7 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
         )}
         {...props}
       >
-        {end ? (
+        {end || !indicator ? (
           <>
             <SelectItemIcon icon={icon} size={size} />
             <BaseSelect.ItemText className="flex-1 truncate">{children}</BaseSelect.ItemText>
@@ -2194,13 +2410,14 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
       <BaseSelect.ItemText className="flex-1 truncate">{children}</BaseSelect.ItemText>
       {/* A fixed check slot keeps ordinary selects stable; `end` replaces it for custom
           trailing content such as an action's keybind hint. */}
-      {end ?? (
-        <span className="flex size-3.5 shrink-0 items-center justify-center">
-          <BaseSelect.ItemIndicator className="text-foreground">
-            <Check className="size-3.5" />
-          </BaseSelect.ItemIndicator>
-        </span>
-      )}
+      {end ??
+        (indicator ? (
+          <span className="flex size-3.5 shrink-0 items-center justify-center">
+            <BaseSelect.ItemIndicator className="text-foreground">
+              <Check className="size-3.5" />
+            </BaseSelect.ItemIndicator>
+          </span>
+        ) : null)}
     </BaseSelect.Item>
   );
 });

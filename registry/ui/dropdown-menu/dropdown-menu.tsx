@@ -809,7 +809,15 @@ export function DropdownMenuLabel({
 }
 
 export function DropdownMenuSeparator({ className, ...props }: ComponentProps<typeof BaseMenu.Separator>) {
-  return <BaseMenu.Separator className={cn("-mx-1 my-1 h-px bg-border", className)} {...props} />;
+  // A border rather than a one-pixel filled box: the box lands wherever layout puts it and
+  // paints across two device rows at a fractional offset, which reads heavier than a border
+  // beside it. `SelectSeparator` is drawn the same way, so the two panels agree.
+  return (
+    <BaseMenu.Separator
+      className={cn("-mx-1 my-1 h-0 border-t border-border", className)}
+      {...props}
+    />
+  );
 }
 
 export function DropdownMenuShortcut({ className, ...props }: ComponentProps<"kbd">) {

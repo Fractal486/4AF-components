@@ -1,4 +1,4 @@
-import { ArrowUpDown, ListFilter } from "lucide-react";
+import { Archive, ArrowUpDown, ListFilter } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -38,8 +38,9 @@ export const selectSortEntry = defineEntry({
     variant: select(["default", "ghost", "plain"] as const, "default", "Variant"),
     showValue: bool(true, "Show value"),
     showLabel: bool(true, "Show label"),
+    footerAction: bool(false, "Footer action"),
   },
-  render({ size, multiple, selected, variant, showValue, showLabel }) {
+  render({ size, multiple, selected, variant, showValue, showLabel, footerAction }) {
     const options = multiple ? FILTER_OPTIONS : SORT_OPTIONS;
     const selectedValue = multiple ? "archived" : "updated";
     const triggerLabel = multiple ? "Filter" : "Sort";
@@ -58,6 +59,20 @@ export const selectSortEntry = defineEntry({
     const content = (
       <SelectContent
         clearable={multiple}
+        // A button of the panel's own, sharing the footer row with the clear: an action on
+        // the selection rather than one more thing to pick.
+        footerActions={
+          footerAction
+            ? [
+                {
+                  key: "archive",
+                  label: "Archive",
+                  icon: <Archive />,
+                  onSelect: () => undefined,
+                },
+              ]
+            : undefined
+        }
         autoFocusFirstItem={multiple}
         className={variant !== "plain" ? "min-w-40" : undefined}
       >

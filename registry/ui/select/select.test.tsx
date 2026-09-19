@@ -1,5 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useEffect } from "react";
+import { Check } from "lucide-react";
 import { vi } from "vitest";
 import {
   Select,
@@ -12,6 +14,7 @@ import {
   SelectSubTrigger,
   SelectTrigger,
   SelectValue,
+  useSelectSearch,
 } from "./select";
 
 const FRUITS = {
@@ -289,7 +292,10 @@ describe("Base UI Select", () => {
     expect(clearButton).toHaveClass("h-6");
     expect(clearButton).not.toHaveClass("min-h-[34px]");
     expect(clearButton).toHaveClass("text-muted-foreground", "hover:bg-muted");
-    expect(separator).toHaveClass("mx-0", "my-0", "w-full");
+    // Drawn as a border, like the panel's other rules: a one-pixel filled box lands
+    // wherever the box lands and reads heavier than the border it sits opposite.
+    expect(separator).toHaveClass("mx-0", "my-0", "w-full", "border-t", "h-0");
+    expect(separator).not.toHaveClass("bg-border");
     expect(separator.nextElementSibling?.contains(clearButton)).toBe(true);
 
     await user.hover(apple);
@@ -307,6 +313,274 @@ describe("Base UI Select", () => {
     await waitFor(() => expect(onValueChange).toHaveBeenLastCalledWith([]));
     expect(clearButton).toBeDisabled();
     expect(trigger).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("lays caller footer actions beside the clear, and closes on one unless it says not to", async () => {
+    const user = userEvent.setup();
+    const onArchive = vi.fn();
+
+    render(
+      <Select multiple items={FRUITS} defaultValue={["banana"]}>
+        <SelectTrigger aria-label="Fruits">
+          <SelectValue placeholder="Pick fruits" />
+        </SelectTrigger>
+        <SelectContent
+          clearable
+          footerActions={[
+            { key: "archive", label: "Archive", checked: true, onSelect: onArchive },
+          ]}
+        >
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectItem value="banana">Banana</SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    const trigger = screen.getByRole("combobox", { name: "Fruits" });
+    await user.click(trigger);
+
+    const archive = await screen.findByRole("button", { name: /Archive/ });
+    const clearButton = screen.getByRole("button", { name: "Clear" });
+    // The caller's action first, then the shorthand it was mixed into, sharing one row.
+    expect(archive.parentElement).toBe(clearButton.parentElement);
+    expect(archive.parentElement).toHaveClass("flex");
+    expect(archive).toHaveAttribute("data-variant", "ghost");
+    expect(archive).toHaveAttribute("data-size", "xs");
+
+    // The same active mark the clear takes, so the panel never paints two highlights.
+    const apple = screen.getByRole("option", { name: "Apple" });
+    await user.hover(apple);
+    await waitFor(() => { expect(apple).toHaveAttribute("data-panel-active"); });
+    await user.hover(archive);
+    await waitFor(() => { expect(archive).toHaveAttribute("data-panel-active"); });
+    expect(apple).not.toHaveAttribute("data-panel-active");
+    expect(clearButton).not.toHaveAttribute("data-panel-active");
+
+    // An action is a decision, so it closes the panel the way picking a row does; the
+    // clear keeps it open, because clearing is something you might follow with a choice.
+    await user.click(archive);
+    expect(onArchive).toHaveBeenCalledTimes(1);
+    await waitFor(() => { expect(trigger).toHaveAttribute("aria-expanded", "false"); });
+  });
+
+  it("survives an option whose label and icon are rebuilt on every render", async () => {
+    // A row written as `Create {query}`, or with an `<Icon />` inline, hands the item a
+    // fresh node every render. Registering those by identity used to re-run forever: the
+    // cleanup deleted the entry, the registration put it back, and the provider re-rendered
+    // into another fresh node — the panel hung on the first keystroke.
+    const user = userEvent.setup();
+    let commits = 0;
+
+    function LiveRow() {
+      const { query } = useSelectSearch();
+      // Counted in an effect rather than during render: a loop is unbounded *commits*,
+      // and throwing from here is what stops the run instead of hanging it.
+      useEffect(() => {
+        commits += 1;
+        if (commits > 200) throw new Error("select re-rendered without settling");
+      });
+      if (!query) return null;
+      return (
+        <SelectItem value="live" searchValue={query} icon={<Check />}>
+          Create {query}
+        </SelectItem>
+      );
+    }
+
+    render(
+      <Select multiple items={FRUITS}>
+        <SelectTrigger aria-label="Fruits">
+          <SelectValue placeholder="Pick fruits" />
+        </SelectTrigger>
+        <SelectContent searchable>
+          <LiveRow />
+          <SelectItem value="apple">Apple</SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruits" }));
+    await screen.findByRole("listbox");
+    commits = 0;
+    await user.type(screen.getByRole("textbox", { name: "Search options" }), "kiwi");
+
+    expect(await screen.findByRole("option", { name: /Create kiwi/ })).toBeVisible();
+    expect(commits).toBeLessThan(50);
+  });
+
+  it("drops the indicator on a row that acts rather than selects", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Select multiple items={FRUITS} defaultValue={["banana"]}>
+        <SelectTrigger aria-label="Fruits">
+          <SelectValue placeholder="Pick fruits" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="new" indicator={false}>
+            Create a fruit
+          </SelectItem>
+          <SelectItem value="apple">Apple</SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruits" }));
+
+    // A checkbox on a row that never stays ticked is a promise the row cannot keep.
+    const action = await screen.findByRole("option", { name: "Create a fruit" });
+    expect(action.querySelector("button")).toBeNull();
+    expect(screen.getByRole("option", { name: "Apple" }).querySelector("button")).not.toBeNull();
+  });
+
+  it("never flashes the empty state while a row tracks what is being typed", async () => {
+    // A "Create …" row registers its searchable text from an effect, so for one commit it
+    // is registered under the previous keystroke. The panel used to read that as "nothing
+    // matches" and swap the list for the empty message — once per character typed.
+    const user = userEvent.setup();
+
+    function LiveRow() {
+      const { query } = useSelectSearch();
+      if (!query) return null;
+      return (
+        <SelectItem value={query} searchValue={query} indicator={false}>
+          Create {query}
+        </SelectItem>
+      );
+    }
+
+    render(
+      <Select multiple items={FRUITS}>
+        <SelectTrigger aria-label="Fruits">
+          <SelectValue placeholder="Pick fruits" />
+        </SelectTrigger>
+        <SelectContent searchable emptyMessage="Nothing matches">
+          <LiveRow />
+          <SelectItem value="apple">Apple</SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruits" }));
+    await screen.findByRole("listbox");
+
+    // Read from the records, not from the live DOM: the callback is a microtask, and by
+    // the time it runs the next commit has already put the list back — which is precisely
+    // what makes this a flash rather than a state anyone can assert on afterwards.
+    let flashes = 0;
+    const observer = new MutationObserver((records) => {
+      for (const record of records) {
+        for (const node of record.addedNodes) {
+          if (node.textContent?.includes("Nothing matches")) flashes += 1;
+        }
+      }
+    });
+    observer.observe(document.body, { attributes: true, childList: true, subtree: true });
+
+    await user.type(screen.getByRole("textbox", { name: "Search options" }), "kiwi");
+    observer.disconnect();
+
+    expect(flashes).toBe(0);
+    expect(await screen.findByRole("option", { name: /Create kiwi/ })).toBeVisible();
+  });
+
+  it("keeps the empty state up while a query that matches nothing grows", async () => {
+    // The mirror of the test above. Waiting for the option registry is right for *entering*
+    // the empty state and wrong for staying in it: every further keystroke over an already
+    // empty list made the latch stale again, so the panel dropped the message, unhid an
+    // empty list and took it back on the next commit. One height change per character, and
+    // on a panel that opens upward that reads as the whole thing flipping under the caret.
+    const user = userEvent.setup();
+
+    render(
+      <Select multiple items={FRUITS}>
+        <SelectTrigger aria-label="Fruits">
+          <SelectValue placeholder="Pick fruits" />
+        </SelectTrigger>
+        <SelectContent searchable emptyMessage="Nothing matches">
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectItem value="banana">Banana</SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruits" }));
+    const field = await screen.findByRole("textbox", { name: "Search options" });
+
+    await user.type(field, "k");
+    await waitFor(() => { expect(screen.getByText("Nothing matches")).toBeVisible(); });
+
+    // Same records-not-DOM reading as above: the removal and its undo land in the same
+    // microtask, so afterwards the panel looks settled either way.
+    let removals = 0;
+    const observer = new MutationObserver((records) => {
+      for (const record of records) {
+        for (const node of record.removedNodes) {
+          if (node.textContent?.includes("Nothing matches")) removals += 1;
+        }
+      }
+    });
+    observer.observe(document.body, { attributes: true, childList: true, subtree: true });
+
+    await user.type(field, "iwi");
+    observer.disconnect();
+
+    expect(removals).toBe(0);
+    expect(screen.getByText("Nothing matches")).toBeVisible();
+  });
+
+  it("says so when a searchable panel has no options at all", async () => {
+    // Two ways of having nothing — a query that ruled everything out, and a list that was
+    // empty to begin with — read the same to someone looking at the panel.
+    const user = userEvent.setup();
+
+    render(
+      <Select multiple items={{}}>
+        <SelectTrigger aria-label="Fruits">
+          <SelectValue placeholder="Pick fruits" />
+        </SelectTrigger>
+        <SelectContent searchable emptyMessage="Nothing here yet" />
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruits" }));
+
+    // Retried, not asserted once on the first appearance: the popup fades in, so the node
+    // is in the document a frame or two before it is visible.
+    await waitFor(() => { expect(screen.getByText("Nothing here yet")).toBeVisible(); });
+  });
+
+  it("marks a hovered footer button without taking the caret out of the search field", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Select multiple items={FRUITS} defaultValue={["banana"]}>
+        <SelectTrigger aria-label="Fruits">
+          <SelectValue placeholder="Pick fruits" />
+        </SelectTrigger>
+        <SelectContent
+          searchable
+          clearable
+          footerActions={[{ key: "archive", label: "Archive", onSelect: () => undefined }]}
+        >
+          <SelectItem value="apple">Apple</SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruits" }));
+    const input = await screen.findByRole("textbox", { name: "Search options" });
+    await user.type(input, "ap");
+
+    const archive = screen.getByRole("button", { name: "Archive" });
+    await user.hover(archive);
+
+    // The mark moves; focus does not. Taking it would paint a focus ring on the button as
+    // well, because the browser reads a programmatic focus as keyboard-driven when the last
+    // thing the reader did was type — and it would strand the caret mid-word.
+    await waitFor(() => { expect(archive).toHaveAttribute("data-panel-active"); });
+    expect(archive).not.toHaveFocus();
+    expect(input).toHaveFocus();
   });
 
   it("keeps the original single-select close-on-choice behaviour", async () => {

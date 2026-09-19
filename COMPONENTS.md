@@ -40,8 +40,12 @@ wrapper and is not collapsible on its own.
 
 The `select` family includes `SelectSeparator` for accessible dividers between option groups.
 It is a Base UI list part, not an option, so it stays out of highlighting and selection. The
-opt-in `clearable` footer uses a compact `xs` ghost Button and includes a `SelectSeparator` above
-it by default. Multi-select submenu triggers show their selected-child count before the chevron.
+opt-in `clearable` footer uses a compact `xs` ghost Button, carries an `X` glyph that
+`clearIcon` overrides (`null` for a word on its own), and includes a `SelectSeparator` above
+it by default; `footerActions` puts the panel's own buttons in that same row, sharing its width
+and taking the same active mark, with `clearable` appended to them. Multi-select submenu triggers show their selected-child count before the chevron.
+`SelectItem` takes `indicator={false}` for a row that acts rather than selects — it drops the
+multi-select checkbox and the single-select tick.
 The `select` and `select-aligned` triggers also accept `variant="ghost"`: Button ghost colors with
 the default trigger geometry, keeping leading and trailing icons aligned.
 They also accept an optional dimmed `label` before the value, such as `Fruit: Banana`.

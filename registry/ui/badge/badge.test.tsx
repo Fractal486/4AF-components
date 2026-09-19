@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { Hash } from "lucide-react";
 import { Badge } from "./badge";
 
 describe("Badge", () => {
@@ -17,6 +18,30 @@ describe("Badge", () => {
       "text-2xs",
     );
     expect(screen.getByTestId("badge").querySelectorAll('[data-slot="morph"]')).toHaveLength(2);
+  });
+
+  it("sizes a caller's own glyph the way it sizes its status ones", () => {
+    // A lucide icon written inline says nothing about its size and draws at 24px, several
+    // times the badge's own — it used to arrive towering over the text.
+    render(
+      <>
+        <Badge data-testid="default" icon={<Hash />}>
+          reading
+        </Badge>
+        <Badge data-testid="md" size="md" icon={<Hash />}>
+          reading
+        </Badge>
+        <Badge data-testid="asked" icon={<Hash className="size-4" />}>
+          reading
+        </Badge>
+      </>,
+    );
+
+    expect(screen.getByTestId("default").querySelector("svg")).toHaveClass("size-2.5");
+    expect(screen.getByTestId("md").querySelector("svg")).toHaveClass("size-3");
+    // Said outright, so it wins: the badge sets the default, not the rule.
+    expect(screen.getByTestId("asked").querySelector("svg")).toHaveClass("size-4");
+    expect(screen.getByTestId("asked").querySelector("svg")).not.toHaveClass("size-2.5");
   });
 
   it.each([

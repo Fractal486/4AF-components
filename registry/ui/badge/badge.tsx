@@ -2,7 +2,7 @@
 
 import { AlertTriangle, Check, Circle, Info, LoaderCircle, X } from "lucide-react";
 import { motion, useReducedMotion, type HTMLMotionProps } from "motion/react";
-import type { ReactNode } from "react";
+import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
 import { spring } from "@/registry/lib/motion";
 import { Morph } from "@/registry/ui/morph/morph";
@@ -68,13 +68,25 @@ export function Badge({
     contentKey ??
       (typeof children === "string" || typeof children === "number" ? children : resolvedStatus),
   );
+  // The badge owns its glyph's geometry, which has to include the caller's. An icon passed
+  // in is an `<Icon />` written inline, and a lucide icon with nothing said about its size
+  // draws at 24px — several times the badge's own — so it arrived towering over the text.
+  // The size goes on first and `cn` lets a caller who really means a different one say so.
+  const sized = (glyph: ReactNode): ReactNode =>
+    isValidElement<{ className?: string }>(glyph)
+      ? cloneElement(glyph as ReactElement<{ className?: string }>, {
+          className: cn(ICON_SIZE[resolvedSize], glyph.props.className),
+        })
+      : glyph;
+
+  const custom = icon == null ? null : sized(icon);
   const iconItems: Record<NonNullable<BadgeVariants["status"]>, ReactNode> = {
-    neutral: icon ?? <Circle className={ICON_SIZE[resolvedSize]} />,
-    info: icon ?? <Info className={ICON_SIZE[resolvedSize]} />,
-    success: icon ?? <Check className={ICON_SIZE[resolvedSize]} />,
-    warning: icon ?? <AlertTriangle className={ICON_SIZE[resolvedSize]} />,
-    danger: icon ?? <X className={ICON_SIZE[resolvedSize]} />,
-    loading: icon ?? <LoaderCircle className={cn(ICON_SIZE[resolvedSize], "animate-spin")} />,
+    neutral: custom ?? <Circle className={ICON_SIZE[resolvedSize]} />,
+    info: custom ?? <Info className={ICON_SIZE[resolvedSize]} />,
+    success: custom ?? <Check className={ICON_SIZE[resolvedSize]} />,
+    warning: custom ?? <AlertTriangle className={ICON_SIZE[resolvedSize]} />,
+    danger: custom ?? <X className={ICON_SIZE[resolvedSize]} />,
+    loading: custom ?? <LoaderCircle className={cn(ICON_SIZE[resolvedSize], "animate-spin")} />,
   };
 
   return (
