@@ -14,6 +14,9 @@ Component-specific APIs and composition guidance live on the matching page under
 `pnpm 4af docs <component>`. `registry.json`, component source, and `pnpm 4af list` remain
 authoritative for installable items.
 
+`TabsList` accepts `maxWidth` to enable horizontal scrolling with directional edge fades in
+all three tab variants. Clicking a tab toward a faded side brings it toward the center.
+
 `ActionButton` defaults to a label beside its pending loader. Use `pendingMode="icon"` for a
 centered loader-only pending state; it keeps the label-sized content box so the button does not
 resize while the action runs.

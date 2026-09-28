@@ -112,7 +112,7 @@ The catalog currently contains 47 installable UI items. Verify the count and nam
 
 | Install name | Main API | Use it for |
 | --- | --- | --- |
-| `tabs` | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | Segment, pill, or underline tabs with a traveling indicator; segment tracks use 8px corners and their tabs use 6px corners. |
+| `tabs` | `Tabs`, `TabsList`, `TabsTab`, `TabsPanel` | Segment, pill, or underline tabs with a traveling indicator; `TabsList maxWidth` enables scrolling with edge fades and click-to-center. Segment tracks use 8px corners and their tabs use 6px corners. |
 | `collapsible` | `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` | Disclosure rows (`plain`/`card`) with a rotating chevron, shared 6px plain or 8px card trigger corners, a height slide so following rows travel rather than jump, and a blur-fade on the content. |
 | `table` | `Table`, `TableCaption`, and header/body/footer/row/head/cell parts | Presentational tables in two densities (`sm` by default), with a pinned header, optional grid lines, a caption pinned below the scrolling box, and a loading state. No controls and no state — install `data-table` for any of those. |
 | `data-table` | `DataTable`, `DataTableRow`, `DataTableHead`, `DataTableRowActions`, plus the re-exported table layout parts | The stateful table: checkbox column with an indeterminate select-all, a selection action row over the header taking compact 24px Button actions, three-step `sortKey` sorting with `ChevronsUpDown` when unsorted, and a per-row actions column. Composes `table`. |

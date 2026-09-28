@@ -1,7 +1,25 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
+// The tiny backdrop layer softens only the fading strip. Its mask tapers the blur
+// inward, while the list's existing mask still fades the entire edge to transparent.
+export const tabsEdgeVariants = cva(
+  "pointer-events-none absolute inset-y-0 z-20 translate-x-(--tabs-scroll-offset) backdrop-blur-[1.5px]",
+  {
+    variants: {
+      edge: {
+        left: "left-0 w-(--tabs-fade-left) [mask-image:linear-gradient(to_right,black,transparent)]",
+        right: "right-0 w-(--tabs-fade-right) [mask-image:linear-gradient(to_left,black,transparent)]",
+      },
+    },
+  },
+);
+
 export const tabsListVariants = cva("relative flex items-center", {
   variants: {
+    scrollable: {
+      false: "",
+      true: "min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [--tabs-fade-left:0px] [--tabs-fade-right:0px] data-[overflow-left]:[--tabs-fade-left:32px] data-[overflow-right]:[--tabs-fade-right:32px] [mask-image:linear-gradient(to_right,transparent,black_var(--tabs-fade-left),black_calc(100%_-_var(--tabs-fade-right)),transparent)] [&>[role=tab]]:shrink-0 [&>[role=tab]]:focus-visible:ring-inset [&>[role=tab]]:focus-visible:ring-offset-0",
+    },
     variant: {
       /* A track wraps its tabs, so it must not stretch: the list is a flex child of a
          column, and would otherwise become a page-wide bar. The radius pairs with the

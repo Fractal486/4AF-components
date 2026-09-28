@@ -462,8 +462,12 @@ import { Button } from "@/components/ui/button";
 </Tabs>
 
 <Tabs variant="pill" size="sm" defaultValue="account">
-  <TabsList>
+  <TabsList maxWidth={280}>
     <TabsTab value="account">Account</TabsTab>
+    <TabsTab value="notifications">Notifications</TabsTab>
+    <TabsTab value="billing">Billing</TabsTab>
+    <TabsTab value="team">Team members</TabsTab>
+    <TabsTab value="security">Security</TabsTab>
   </TabsList>
 </Tabs>`,
   },

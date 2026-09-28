@@ -1,5 +1,5 @@
 import { Tabs, TabsList, TabsTab } from "@/registry/ui/tabs/tabs";
-import { bool, defineEntry, select } from "../schema";
+import { bool, defineEntry, num, select } from "../schema";
 
 const VARIANTS = ["segment", "pill", "underline"] as const;
 const SIZES = ["sm", "md"] as const;
@@ -16,11 +16,13 @@ export const tabsEntry = defineEntry({
   controls: {
     variant: select(VARIANTS, "segment"),
     size: select(SIZES, "md", "Size"),
+    overflow: bool(false, "Scrollable"),
+    maxWidth: num(280, { min: 160, max: 440, step: 20, label: "Max width" }),
     // A dark, borderless pill on a brighter track — segment/pill only, so it's disabled
     // for underline (which has no pill to fill).
     solid: bool(false, "Solid", (v) => v.variant === "underline"),
   },
-  render({ variant, size, solid }) {
+  render({ variant, size, solid, overflow, maxWidth }) {
     return (
       <div className="w-full max-w-md">
         <Tabs
@@ -36,8 +38,12 @@ export const tabsEntry = defineEntry({
               page and wrong in a centred preview — it would sit against the left edge of the
               28rem box the demo gives it. Only `align-self` changes; the underline variant is
               `w-full` and spans the box either way. */}
-          <TabsList className="self-center">
-            {TABS.map((tab) => (
+          <TabsList className="self-center" maxWidth={overflow ? maxWidth : undefined}>
+            {[...TABS, ...(overflow ? [
+              { value: "team", label: "Team members" },
+              { value: "security", label: "Security" },
+              { value: "integrations", label: "Integrations" },
+            ] : [])].map((tab) => (
               <TabsTab key={tab.value} value={tab.value}>
                 {tab.label}
               </TabsTab>

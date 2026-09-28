@@ -553,7 +553,7 @@
     {
       "name": "tabs",
       "type": "registry:ui",
-      "description": "Tabs with a travelling indicator. Base UI behaviour, Motion layout animation.",
+      "description": "Tabs with a travelling indicator and optional max-width scrolling with edge fades. Base UI behaviour, Motion layout animation.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",

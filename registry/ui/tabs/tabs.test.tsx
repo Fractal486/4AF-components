@@ -1,9 +1,56 @@
 import { createRef } from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "./tabs";
 
 describe("Tabs", () => {
+  it.each(["segment", "pill", "underline"] as const)("fades only hidden edges and scrolls clicked tabs in %s", async (variant) => {
+    render(
+      <Tabs variant={variant} defaultValue="one">
+        <TabsList maxWidth={200} aria-label="Scrollable">
+          <TabsTab value="one">One</TabsTab>
+          <TabsTab value="two">Two</TabsTab>
+          <TabsTab value="three">Three</TabsTab>
+        </TabsList>
+      </Tabs>,
+    );
+    const list = screen.getByRole("tablist");
+    Object.defineProperties(list, {
+      clientWidth: { configurable: true, value: 200 },
+      scrollWidth: { configurable: true, value: 400 },
+    });
+    vi.spyOn(list, "getBoundingClientRect").mockReturnValue({ left: 0, right: 200, width: 200 } as DOMRect);
+    const one = screen.getByRole("tab", { name: "One" });
+    const two = screen.getByRole("tab", { name: "Two" });
+    vi.spyOn(one, "getBoundingClientRect").mockImplementation(() => ({ left: 0 - list.scrollLeft, right: 80 - list.scrollLeft, width: 80 }) as DOMRect);
+    vi.spyOn(two, "getBoundingClientRect").mockImplementation(() => ({ left: 140 - list.scrollLeft, right: 220 - list.scrollLeft, width: 80 }) as DOMRect);
+    const scrollTo = vi.fn();
+    list.scrollTo = scrollTo;
+
+    fireEvent.scroll(list);
+    expect(list).not.toHaveAttribute("data-overflow-left");
+    expect(list).toHaveAttribute("data-overflow-right");
+    fireEvent.click(two);
+    expect(scrollTo).toHaveBeenCalledWith({ left: 80, behavior: "smooth" });
+
+    act(() => { list.scrollLeft = 80; fireEvent.scroll(list); });
+    expect(list).toHaveAttribute("data-overflow-left");
+    expect(list).toHaveAttribute("data-overflow-right");
+    // Measuring after a scroll must keep the indicator in content coordinates.
+    await waitFor(() => expect(list.querySelector('[aria-hidden="true"]')).toHaveStyle({ left: "140px" }));
+    scrollTo.mockClear();
+    fireEvent.click(one);
+    expect(scrollTo).toHaveBeenCalledWith({ left: 0, behavior: "smooth" });
+
+    act(() => { list.scrollLeft = 200; fireEvent.scroll(list); });
+    expect(list).toHaveAttribute("data-overflow-left");
+    expect(list).not.toHaveAttribute("data-overflow-right");
+    Object.defineProperty(list, "scrollWidth", { value: 200 });
+    act(() => { list.scrollLeft = 0; fireEvent.scroll(list); });
+    expect(list).not.toHaveAttribute("data-overflow-left");
+    expect(list).not.toHaveAttribute("data-overflow-right");
+  });
+
   it("keeps its internal measurement ref when a consumer supplies one", () => {
     const ref = createRef<HTMLDivElement>();
 

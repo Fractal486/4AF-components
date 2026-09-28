@@ -22,3 +22,17 @@ track at 32px — the height of an Input or a small Button — so a row of tabs 
 controls beside it instead of standing a row taller. The segment radii step down with it, from
 an 8px track around 6px tabs to a 7px track around 5px tabs, so the corners stay concentric at
 both sizes.
+
+## Scrolling and edge fades
+
+Set `maxWidth` on `TabsList` to enable a horizontally scrolling bar in any variant.
+Use a number for pixels (`maxWidth={280}`) or a CSS length (`maxWidth="20rem"`).
+The bar also stays within its parent's width. Without `maxWidth`, the existing layout is unchanged.
+
+An edge fades with a subtle, tapered blur only while there are more tabs hidden on that side. The fade includes the
+track and the underline variant's dimmed rule. Touch and horizontal trackpad scrolling work
+natively, with the scrollbar hidden. Clicking a tab in the half of the bar that has more
+hidden content scrolls it toward the center, stopping at the beginning or end of the list.
+Keyboard focus, initial selection, and externally controlled selection also reveal hidden tabs.
+Reduced motion makes automatic scrolling immediate. Focus rings sit inside scrollable tabs
+so they are not clipped. This option is intended for horizontal tab lists.
