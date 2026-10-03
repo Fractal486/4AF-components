@@ -1,0 +1,130 @@
+import { createContext, useContext, type ReactNode } from "react";
+import type { SelectSize } from "./select.shared";
+import type { SelectTriggerVariant } from "./select.variants";
+
+interface SelectContextValue {
+  open: boolean;
+  multiple: boolean;
+  disabled: boolean;
+  readOnly: boolean;
+  setOpen: (open: boolean, details?: unknown) => void;
+  setValue: (value: unknown, details?: unknown) => void;
+  registerNestedPanel: (node: HTMLElement | null) => void;
+  isNestedPanelTarget: (target: EventTarget | null) => boolean;
+  size: SelectSize;
+  triggerVariant: SelectTriggerVariant;
+  setTriggerVariant: (variant: SelectTriggerVariant) => void;
+  /** The current selection, always as an array (one entry for single-select). */
+  values: unknown[];
+  registerIcon: (value: unknown, icon: ReactNode | undefined) => void;
+  unregisterIcon: (value: unknown) => void;
+  iconFor: (value: unknown) => ReactNode | undefined;
+  registerLabel: (value: unknown, label: ReactNode) => void;
+  unregisterLabel: (value: unknown) => void;
+  labelFor: (value: unknown) => ReactNode | undefined;
+  firstItem: unknown;
+  registerOptionText: (value: unknown, text: string, parentValue?: unknown) => void;
+  unregisterOptionText: (value: unknown) => void;
+  /** True when the text passes the current panel-search query (or there is none). */
+  matchesQuery: (text: string) => boolean;
+  /** The first top-level item still visible under the current query. */
+  firstVisibleItem: unknown;
+  /** Whether an item has a matching row anywhere in its nested panels. */
+  hasMatchingDescendant: (value: unknown) => boolean;
+  /** The row a panel opens on: the selection while the list is whole, else the first row. */
+  openingItem: unknown;
+  activeItem: unknown;
+  setActiveItem: (value: unknown) => void;
+  panelSearch: boolean;
+  setPanelSearch: (enabled: boolean) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  /** Reset the selection to none (single → null, multiple → empty). */
+  clear: () => void;
+}
+
+export const SelectContext = createContext<SelectContextValue>({
+  open: false,
+  multiple: false,
+  disabled: false,
+  readOnly: false,
+  setOpen: () => {},
+  setValue: () => {},
+  registerNestedPanel: () => {},
+  isNestedPanelTarget: () => false,
+  size: "sm",
+  triggerVariant: "default",
+  setTriggerVariant: () => {},
+  values: [],
+  registerIcon: () => {},
+  unregisterIcon: () => {},
+  iconFor: () => undefined,
+  registerLabel: () => {},
+  unregisterLabel: () => {},
+  labelFor: () => undefined,
+  firstItem: undefined,
+  registerOptionText: () => {},
+  unregisterOptionText: () => {},
+  matchesQuery: () => true,
+  firstVisibleItem: undefined,
+  hasMatchingDescendant: () => false,
+  openingItem: undefined,
+  activeItem: undefined,
+  setActiveItem: () => {},
+  panelSearch: false,
+  setPanelSearch: () => {},
+  searchQuery: "",
+  setSearchQuery: () => {},
+  clear: () => {},
+});
+
+export const SELECT_CLEAR_ACTION = Symbol("select-clear-action");
+
+export interface SelectSubItemContextValue {
+  open: boolean;
+  parentValue: unknown;
+  registerItem: (value: unknown, node: HTMLElement | null) => void;
+}
+
+interface SelectSubContextValue {
+  open: boolean;
+  disabled: boolean;
+  anchor: HTMLElement | null;
+  triggerValue: symbol;
+  itemValues: readonly unknown[];
+  focusTrigger: () => void;
+  setTriggerNode: (node: HTMLElement | null) => void;
+  setCloseDelay: (delay: number) => void;
+  setOpen: (open: boolean, details?: unknown) => void;
+  openAndFocus: () => void;
+  scheduleOpen: (delay: number) => void;
+  scheduleClose: (delay?: number) => void;
+  cancelClose: () => void;
+}
+
+export const SelectSubContext = createContext<SelectSubContextValue | null>(null);
+
+export const SelectSubItemContext = createContext<SelectSubItemContextValue | null>(null);
+
+export function useSelectSubContext() {
+  const context = useContext(SelectSubContext);
+
+  if (!context) {
+    throw new Error(
+      "SelectSubTrigger and SelectSubContent must be used inside SelectSub.",
+    );
+  }
+
+  return context;
+}
+
+/**
+ * Read an ancestor `Select`'s in-panel search state — for building search-aware content
+ * inside `SelectContent`, such as a group heading that hides when none of its items match.
+ * `matches` is the same predicate the items themselves hide on, so a heading and its rows
+ * stay in agreement.
+ */
+export function useSelectSearch(): { query: string; matches: (text: string) => boolean } {
+  const { searchQuery, matchesQuery } = useContext(SelectContext);
+  return { query: searchQuery, matches: matchesQuery };
+}

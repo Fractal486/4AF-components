@@ -966,6 +966,41 @@
           "target": "@ui/select.tsx"
         },
         {
+          "path": "registry/ui/select/select.context.ts",
+          "type": "registry:ui",
+          "target": "@ui/select.context.ts"
+        },
+        {
+          "path": "registry/ui/select/select.shared.tsx",
+          "type": "registry:ui",
+          "target": "@ui/select.shared.tsx"
+        },
+        {
+          "path": "registry/ui/select/select.utils.ts",
+          "type": "registry:ui",
+          "target": "@ui/select.utils.ts"
+        },
+        {
+          "path": "registry/ui/select/select.trigger.tsx",
+          "type": "registry:ui",
+          "target": "@ui/select.trigger.tsx"
+        },
+        {
+          "path": "registry/ui/select/select.content.tsx",
+          "type": "registry:ui",
+          "target": "@ui/select.content.tsx"
+        },
+        {
+          "path": "registry/ui/select/select.sub.tsx",
+          "type": "registry:ui",
+          "target": "@ui/select.sub.tsx"
+        },
+        {
+          "path": "registry/ui/select/select.item.tsx",
+          "type": "registry:ui",
+          "target": "@ui/select.item.tsx"
+        },
+        {
           "path": "registry/ui/select/select.variants.ts",
           "type": "registry:ui",
           "target": "@ui/select.variants.ts"
