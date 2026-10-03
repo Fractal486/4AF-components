@@ -994,6 +994,41 @@
           "path": "registry/ui/command-palette/command-palette.tsx",
           "type": "registry:ui",
           "target": "@ui/command-palette.tsx"
+        },
+        {
+          "path": "registry/ui/command-palette/command-palette.context.ts",
+          "type": "registry:ui",
+          "target": "@ui/command-palette.context.ts"
+        },
+        {
+          "path": "registry/ui/command-palette/command-palette.search.ts",
+          "type": "registry:ui",
+          "target": "@ui/command-palette.search.ts"
+        },
+        {
+          "path": "registry/ui/command-palette/command-palette.keybinds.ts",
+          "type": "registry:ui",
+          "target": "@ui/command-palette.keybinds.ts"
+        },
+        {
+          "path": "registry/ui/command-palette/command-palette.panels.tsx",
+          "type": "registry:ui",
+          "target": "@ui/command-palette.panels.tsx"
+        },
+        {
+          "path": "registry/ui/command-palette/command-palette.actions.tsx",
+          "type": "registry:ui",
+          "target": "@ui/command-palette.actions.tsx"
+        },
+        {
+          "path": "registry/ui/command-palette/command-palette.chrome.tsx",
+          "type": "registry:ui",
+          "target": "@ui/command-palette.chrome.tsx"
+        },
+        {
+          "path": "registry/ui/command-palette/command-palette.types.ts",
+          "type": "registry:ui",
+          "target": "@ui/command-palette.types.ts"
         }
       ]
     },
