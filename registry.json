@@ -1033,10 +1033,12 @@
     {
       "name": "command-palette",
       "type": "registry:ui",
-      "description": "A keyboard-first command and search palette with nested panels, custom panel content, fuzzy filtering, async/server-driven and paginated search, keybind hints, and Base UI dialog/autocomplete behavior.",
+      "description": "A keyboard-first command and search palette with nested panels, custom panel content, fuzzy filtering, async/server-driven and paginated search, keybind hints, panel tab bars, and Base UI dialog/autocomplete behavior.",
       "dependencies": [
         "@base-ui/react",
-        "lucide-react"
+        "lucide-react",
+        "class-variance-authority",
+        "motion"
       ],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
@@ -1045,7 +1047,9 @@
         "http://localhost:3000/r/checkbox.json",
         "http://localhost:3000/r/morph.json",
         "http://localhost:3000/r/use-action.json",
-        "http://localhost:3000/r/select.json"
+        "http://localhost:3000/r/select.json",
+        "http://localhost:3000/r/motion.json",
+        "http://localhost:3000/r/refs.json"
       ],
       "files": [
         {
@@ -1087,6 +1091,16 @@
           "path": "registry/ui/command-palette/command-palette.types.ts",
           "type": "registry:ui",
           "target": "@ui/command-palette.types.ts"
+        },
+        {
+          "path": "registry/ui/command-palette/command-palette.tabs.tsx",
+          "type": "registry:ui",
+          "target": "@ui/command-palette.tabs.tsx"
+        },
+        {
+          "path": "registry/ui/command-palette/command-palette.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/command-palette.variants.ts"
         }
       ]
     },

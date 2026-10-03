@@ -8,7 +8,7 @@ description: A searchable keyboard-first command surface composed from 4AF primi
 
 ## API
 
-**Main exports:** `CommandPalette`, custom panel, list, row, and action parts,
+**Main exports:** `CommandPalette`, custom panel, list, row, tab and action parts, `Kbd`,
 `useCommandSearch`, `useCommandPanelHighlight`
 
 A keyboard-first command and search dialog with fuzzy ranking, groups, nested and custom panels,
@@ -49,8 +49,57 @@ The registry item includes more than the root popup:
   `additionalRefreshing` to `useCommandSearch` so the panel header keeps showing its inline
   loader.
 
-The demo's Projects, Rename Project, and New Project flows are examples built from these public
-APIs, not hard-coded private behaviour.
+- a tab row directly under a custom panel's header, with `CommandPanelTabs`;
+- opening the palette straight onto one page with `initialItemId`.
+
+The demo's Projects, Rename Project, New Project, and Keyboard Shortcuts flows are examples built
+from these public APIs, not hard-coded private behaviour.
+
+## Panel tabs
+
+A custom panel can put a row of tabs directly under its header. `CommandPanelTabs` is a Base UI
+Tabs root that wraps everything below the header — the row, the body, and the footer — so arrow
+keys, Home/End, and the tab/panel wiring come from the primitive. `CommandPanelTabList` draws the
+row and its one travelling indicator; `variant` picks how the selected tab is marked:
+
+| `variant` | Selected tab |
+| --- | --- |
+| `fill` (default) | A muted fill slides behind it |
+| `underline` | A hairline slides along the rule under the row |
+
+```tsx
+<CommandPanelTabs value={tab} onValueChange={setTab}>
+  <CommandPanelTabList aria-label="Sections" variant="underline">
+    <CommandPanelTab value="all">All</CommandPanelTab>
+    <CommandPanelTab value="recent">Recent</CommandPanelTab>
+  </CommandPanelTabList>
+  <CommandPanelTabPanel value={tab}>
+    <CommandPanelBody>…</CommandPanelBody>
+  </CommandPanelTabPanel>
+  <CommandPanelFooter />
+</CommandPanelTabs>
+```
+
+Both variants close on the same rule the header draws under itself. The tabs select as the arrow
+keys reach them (`activateOnFocus`, on by default here), because a panel's tabs usually re-filter
+one list, which is instant. When they do, one `CommandPanelTabPanel` whose `value` follows the
+selection is enough wiring. A header search field keeps working alongside the tabs: filter within
+the selected tab.
+
+The indicator is measured from the selected tab and moved with a layout animation, as on Tabs,
+with one correction: the palette scales in as it opens, so measurements are divided by that scale
+and a panel the palette opens on lands its indicator exactly under its tab.
+
+## Opening on a page
+
+`initialItemId` opens the palette straight into one item's custom panel or sub-list instead of the
+root list — for a shortcut that summons one page, such as `?` for a help panel. It is read each
+time the palette opens. From that page, Escape and Back close the palette rather than revealing a
+root list nobody asked for; pages drilled into from the root still step back as usual.
+
+```tsx
+<CommandPalette groups={groups} open={open} onOpenChange={setOpen} initialItemId={entry} />
+```
 
 ## Selection and hover
 

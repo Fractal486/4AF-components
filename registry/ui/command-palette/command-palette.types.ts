@@ -1,4 +1,5 @@
 import type { Autocomplete } from "@base-ui/react/autocomplete";
+import type { Tabs as BaseTabs } from "@base-ui/react/tabs";
 import type { ComponentProps, MouseEvent as ReactMouseEvent, ReactNode } from "react";
 
 export interface CommandPanelInputProps
@@ -171,6 +172,13 @@ export interface CommandPaletteProps {
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /**
+   * Open straight into this item's panel or sub-list instead of the root list — for a
+   * shortcut that summons one page of the palette (`?` for a help page, say). Read each time
+   * the palette opens. Escape and Back then close the palette rather than revealing a root
+   * list nobody asked for.
+   */
+  initialItemId?: string | null;
   className?: string;
 }
 
@@ -236,4 +244,32 @@ export interface CommandPanelActionsProps {
   label?: string;
   searchPlaceholder?: string;
   emptyMessage?: ReactNode;
+}
+
+/** Tabs inside a custom panel. The root wraps everything below the header. */
+export interface CommandPanelTabsProps
+  extends Omit<ComponentProps<typeof BaseTabs.Root>, "className" | "orientation"> {
+  className?: string;
+}
+
+export interface CommandPanelTabListProps
+  extends Omit<ComponentProps<typeof BaseTabs.List>, "className"> {
+  /**
+   * How the selected tab is marked. `fill` slides a muted fill behind it; `underline` slides
+   * a hairline along the rule under the row. @default "fill"
+   */
+  variant?: "fill" | "underline";
+  /** Select a tab as the arrow keys reach it, rather than on Enter. @default true */
+  activateOnFocus?: boolean;
+  className?: string;
+}
+
+export interface CommandPanelTabProps
+  extends Omit<ComponentProps<typeof BaseTabs.Tab>, "className"> {
+  className?: string;
+}
+
+export interface CommandPanelTabPanelProps
+  extends Omit<ComponentProps<typeof BaseTabs.Panel>, "className"> {
+  className?: string;
 }

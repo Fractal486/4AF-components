@@ -1,4 +1,4 @@
-import { bool, defineEntry } from "../schema";
+import { bool, defineEntry, select } from "../schema";
 import { CommandPaletteDemo } from "./command-palette-demo";
 
 export const commandPaletteEntry = defineEntry({
@@ -11,8 +11,10 @@ export const commandPaletteEntry = defineEntry({
     grouped: bool(true, "Grouped"),
     // Drive results from a mock async source while typing, with a loading indicator.
     search: bool(false, "Async search"),
+    // How the Keyboard Shortcuts panel marks its selected tab.
+    tabs: select(["fill", "underline"], "fill", "Panel tabs"),
   },
-  render({ shortcut, grouped, search }) {
-    return <CommandPaletteDemo shortcut={shortcut} grouped={grouped} search={search} />;
+  render({ shortcut, grouped, search, tabs }) {
+    return <CommandPaletteDemo shortcut={shortcut} grouped={grouped} search={search} tabs={tabs} />;
   },
 });

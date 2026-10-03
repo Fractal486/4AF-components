@@ -31,7 +31,7 @@ import type {
 } from "./command-palette.types";
 
 // Keep the installable component's public API at this entry point.
-export { CommandIcon } from "./command-palette.chrome";
+export { CommandIcon, Kbd } from "./command-palette.chrome";
 export { useCommandPanelHighlight } from "./command-palette.context";
 export {
   CommandPanelBody,
@@ -41,6 +41,12 @@ export {
   CommandPanelRow,
 } from "./command-palette.panels";
 export { useCommandSearch } from "./command-palette.search";
+export {
+  CommandPanelTab,
+  CommandPanelTabList,
+  CommandPanelTabPanel,
+  CommandPanelTabs,
+} from "./command-palette.tabs";
 export type {
   CommandGroup,
   CommandItem,
@@ -52,6 +58,10 @@ export type {
   CommandPanelInputProps,
   CommandPanelOptions,
   CommandPanelRowProps,
+  CommandPanelTabListProps,
+  CommandPanelTabPanelProps,
+  CommandPanelTabProps,
+  CommandPanelTabsProps,
   UseCommandSearchOptions,
 } from "./command-palette.types";
 
@@ -134,6 +144,45 @@ interface Page {
   panelInput?: CommandPanelInputProps;
   /** Controls rendered at the right side of this page's header. */
   headerActions?: ReactNode;
+  /**
+   * The page the palette was opened straight into (`initialItemId`). Stepping back out of
+   * it closes the palette rather than revealing a root list nobody asked for.
+   */
+  entry?: boolean;
+}
+
+/** The page an item drills into: its custom panel, or its sub-list. */
+function pageForItem(item: CommandItem): Page | null {
+  if (item.panel) {
+    return {
+      title: item.label,
+      itemId: item.id,
+      panel: item.panel,
+      panelInput: item.panelInput,
+      headerActions: item.headerActions,
+    };
+  }
+  if (item.items && item.items.length > 0) {
+    return {
+      title: item.label,
+      itemId: item.id,
+      groups: [{ items: item.items }],
+      headerActions: item.headerActions,
+    };
+  }
+  return null;
+}
+
+/** The pages to open with when the palette is summoned straight into one item. */
+function entryPages(groups: CommandGroup[], itemId: string | null | undefined): Page[] {
+  if (!itemId) return [];
+  const item = findCommandItemInGroups(groups, itemId);
+  const page = item && !item.disabled ? pageForItem(item) : null;
+  return page ? [{ ...page, entry: true }] : [];
+}
+
+function initialQuery(pages: Page[]): string {
+  return pages[0]?.panelInput?.value ?? pages[0]?.panelInput?.defaultValue ?? "";
 }
 
 export function CommandPalette({
@@ -150,14 +199,15 @@ export function CommandPalette({
   open,
   defaultOpen = false,
   onOpenChange,
+  initialItemId,
   className,
 }: CommandPaletteProps) {
   const [uncontrolled, setUncontrolled] = useState(defaultOpen);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : uncontrolled;
   const reduceMotion = useReducedMotion();
-  const [query, setQuery] = useState("");
-  const [pages, setPages] = useState<Page[]>([]);
+  const [pages, setPages] = useState<Page[]>(() => (isOpen ? entryPages(groups, initialItemId) : []));
+  const [query, setQuery] = useState(() => initialQuery(pages));
   const generatedPanelInputId = useId();
 
   const isRoot = pages.length === 0;
@@ -200,6 +250,10 @@ export function CommandPalette({
       // A frozen row is released by the next real highlight; if the palette closes before
       // one arrives, this is what stops it outliving the thing it was frozen on.
       setFrozenRow(undefined);
+    } else {
+      const entry = entryPages(groups, initialItemId);
+      setPages(entry);
+      setQuery(initialQuery(entry));
     }
   }
 
@@ -217,10 +271,17 @@ export function CommandPalette({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [shortcut, isOpen, setOpen]);
 
+  // Stepping out of the page the palette was opened into closes it: the root list behind
+  // it is not where anyone was, and showing it would be a second thing to dismiss.
+  const leavesEntry = pages[0]?.entry === true;
   const goToDepth = useCallback((depth: number) => {
+    if (depth === 0 && leavesEntry) {
+      setOpen(false);
+      return;
+    }
     setPages((prev) => prev.slice(0, depth));
     setQuery("");
-  }, []);
+  }, [leavesEntry, setOpen]);
 
   const openPanel = useCallback((options: CommandPanelOptions) => {
     setPages((prev) => [
@@ -239,32 +300,10 @@ export function CommandPalette({
     (item: CommandItem) => {
       if (item.disabled) return;
       // A panel or a sub-list drills in rather than running; a leaf runs and closes.
-      if (item.panel) {
-        const panelInput = item.panelInput;
-        setPages((prev) => [
-          ...prev,
-          {
-            title: item.label,
-            itemId: item.id,
-            panel: item.panel,
-            panelInput,
-            headerActions: item.headerActions,
-          },
-        ]);
-        setQuery(panelInput?.value ?? panelInput?.defaultValue ?? "");
-        return;
-      }
-      if (item.items && item.items.length > 0) {
-        setPages((prev) => [
-          ...prev,
-          {
-            title: item.label,
-            itemId: item.id,
-            groups: [{ items: item.items! }],
-            headerActions: item.headerActions,
-          },
-        ]);
-        setQuery("");
+      const page = pageForItem(item);
+      if (page) {
+        setPages((prev) => [...prev, page]);
+        setQuery(page.panelInput?.value ?? page.panelInput?.defaultValue ?? "");
         return;
       }
       setOpen(false);
@@ -277,9 +316,9 @@ export function CommandPalette({
     () => ({
       close: () => setOpen(false),
       back: () => goToDepth(pages.length - 1),
-      canGoBack: pages.length > 0,
+      canGoBack: pages.length > 0 && !(pages.length === 1 && leavesEntry),
     }),
-    [setOpen, goToDepth, pages.length],
+    [setOpen, goToDepth, pages.length, leavesEntry],
   );
 
   // Only ever the last *real* highlight. Opening the menu blurs the list, which reports

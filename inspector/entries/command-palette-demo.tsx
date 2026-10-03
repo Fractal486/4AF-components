@@ -10,6 +10,7 @@ import {
   FileText,
   FolderOpen,
   Home,
+  Keyboard,
   Lock,
   ListFilter,
   Monitor,
@@ -38,6 +39,11 @@ import {
   CommandPanelFooter,
   CommandPanelList,
   CommandPanelLoading,
+  CommandPanelTab,
+  CommandPanelTabList,
+  CommandPanelTabPanel,
+  CommandPanelTabs,
+  Kbd,
   useCommandPanelHighlight,
   useCommandSearch,
   type CommandGroup,
@@ -261,10 +267,12 @@ export function CommandPaletteDemo({
   shortcut,
   grouped,
   search,
+  tabs,
 }: {
   shortcut: boolean;
   grouped: boolean;
   search: boolean;
+  tabs: "fill" | "underline";
 }) {
   const [open, setOpen] = useState(false);
   const [lastRun, setLastRun] = useState<string | null>(null);
@@ -401,6 +409,19 @@ export function CommandPaletteDemo({
       ),
     },
     {
+      id: "shortcuts",
+      label: "Keyboard Shortcuts…",
+      description: "A panel with a tab row under its header",
+      icon: <Keyboard />,
+      keywords: ["keys", "hotkeys", "help", "tabs"],
+      panelInput: {
+        type: "search",
+        label: "Search shortcuts",
+        placeholder: "Search shortcuts…",
+      },
+      panel: (helpers) => <ShortcutsPanel query={helpers.query} variant={tabs} />,
+    },
+    {
       id: "theme",
       label: "Change Theme…",
       description: "Light, dark, or match the system",
@@ -460,7 +481,7 @@ export function CommandPaletteDemo({
 
       <CommandPalette
         // Remounted per toggle so the demo rebuilds cleanly.
-        key={`${shortcut}-${grouped}-${search}`}
+        key={`${shortcut}-${grouped}-${search}-${tabs}`}
         groups={groups}
         // With async on, the static groups become the resting state (shown while the query
         // is empty) and the mock server takes over the moment you type.
@@ -472,6 +493,89 @@ export function CommandPaletteDemo({
         onOpenChange={setOpen}
       />
     </div>
+  );
+}
+
+const SHORTCUT_SECTIONS = [
+  {
+    id: "general",
+    label: "General",
+    shortcuts: [
+      { keys: ["⌘", "K"], action: "Open the palette" },
+      { keys: ["⌘", "J"], action: "Actions for the selected row" },
+      { keys: ["?"], action: "Keyboard shortcuts" },
+    ],
+  },
+  {
+    id: "navigation",
+    label: "Navigation",
+    shortcuts: [
+      { keys: ["G", "H"], action: "Go to Home" },
+      { keys: ["J"], action: "Next item" },
+      { keys: ["K"], action: "Previous item" },
+    ],
+  },
+  {
+    id: "editing",
+    label: "Editing",
+    shortcuts: [
+      { keys: ["⌘", "N"], action: "New file" },
+      { keys: ["⌘", "C"], action: "Copy link" },
+      { keys: ["⌘", ","], action: "Open settings" },
+    ],
+  },
+] as const;
+
+// A tabbed panel: the tab row narrows to one section, and the header field filters within
+// whichever is selected. The tabs only re-filter one list, so a single tab panel whose
+// value follows the selection is all the wiring it needs.
+function ShortcutsPanel({ query, variant }: { query: string; variant: "fill" | "underline" }) {
+  const [tab, setTab] = useState("all");
+  const needle = query.trim().toLowerCase();
+  const sections = SHORTCUT_SECTIONS
+    .filter((section) => tab === "all" || section.id === tab)
+    .map((section) => ({
+      ...section,
+      shortcuts: section.shortcuts.filter((shortcut) => shortcut.action.toLowerCase().includes(needle)),
+    }))
+    .filter((section) => section.shortcuts.length > 0);
+
+  return (
+    <CommandPanelTabs value={tab} onValueChange={(next) => setTab(next as string)}>
+      <CommandPanelTabList aria-label="Shortcut sections" variant={variant}>
+        <CommandPanelTab value="all">All</CommandPanelTab>
+        {SHORTCUT_SECTIONS.map((section) => (
+          <CommandPanelTab key={section.id} value={section.id}>{section.label}</CommandPanelTab>
+        ))}
+      </CommandPanelTabList>
+      <CommandPanelTabPanel value={tab}>
+        <CommandPanelBody className="px-1.5 py-1.5">
+          {sections.length === 0 ? (
+            <p className="px-4 py-8 text-center text-sm text-muted-foreground">No shortcuts match</p>
+          ) : sections.map((section) => (
+            <section key={section.id} className="mb-1 last:mb-0">
+              {tab === "all" && (
+                <h3 className="px-2.5 pt-2 pb-1 text-xs font-medium text-subtle-foreground">{section.label}</h3>
+              )}
+              <ul>
+                {section.shortcuts.map((shortcut) => (
+                  <li
+                    key={shortcut.action}
+                    className="flex min-h-9 items-center justify-between gap-4 px-2.5 py-1.5 text-sm text-foreground"
+                  >
+                    {shortcut.action}
+                    <span className="flex items-center gap-0.5">
+                      {shortcut.keys.map((key) => <Kbd key={key}>{key}</Kbd>)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </CommandPanelBody>
+      </CommandPanelTabPanel>
+      <CommandPanelFooter />
+    </CommandPanelTabs>
   );
 }
 

@@ -22,6 +22,11 @@ unsupported text masks. Its component and shared registry theme must stay in syn
 `TabsList` accepts `maxWidth` to enable horizontal scrolling with directional edge fades in
 all three tab variants. Clicking a tab toward a faded side brings it toward the center.
 
+`CommandPalette` panels have their own tab row: `CommandPanelTabs` puts tabs directly under a
+custom panel's header, marked by a sliding `fill` or `underline` indicator. Use it rather than
+nesting `Tabs` in a panel — its indicator corrects for the palette's entrance scale.
+`initialItemId` opens the palette straight onto one page; Escape there closes the palette.
+
 `ActionButton` defaults to a label beside its pending loader. Use `pendingMode="icon"` for a
 centered loader-only pending state; it keeps the label-sized content box so the button does not
 resize while the action runs.

@@ -11,6 +11,10 @@ import {
   CommandPanelFooter,
   CommandPanelList,
   CommandPanelRow,
+  CommandPanelTab,
+  CommandPanelTabList,
+  CommandPanelTabPanel,
+  CommandPanelTabs,
   useCommandPanelHighlight,
   useCommandSearch,
 } from "./command-palette";
@@ -545,3 +549,100 @@ describe("CommandPalette", () => {
     );
   });
 });
+
+describe("CommandPalette initialItemId", () => {
+  const groups = [
+    { items: [{ id: "settings", label: "Settings" }] },
+    {
+      items: [
+        {
+          id: "help",
+          label: "Help",
+          panel: () => <CommandPanelBody>Help content</CommandPanelBody>,
+        },
+      ],
+    },
+  ];
+
+  it("opens straight into the item's page and closes from it", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(<CommandPalette open initialItemId="help" groups={groups} onOpenChange={onOpenChange} />);
+
+    expect(screen.getByText("Help content")).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "Settings" })).not.toBeInTheDocument();
+
+    await user.keyboard("{Escape}");
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("still steps back from a page drilled into from the root", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(<CommandPalette open groups={groups} onOpenChange={onOpenChange} />);
+
+    await user.click(screen.getByRole("option", { name: "Help" }));
+    expect(screen.getByText("Help content")).toBeInTheDocument();
+
+    await user.keyboard("{Escape}");
+    expect(onOpenChange).not.toHaveBeenCalled();
+    expect(screen.getByRole("option", { name: "Settings" })).toBeInTheDocument();
+  });
+});
+
+describe("CommandPanelTabs", () => {
+  function TabbedPanel({ variant }: { variant?: "fill" | "underline" }) {
+    const [tab, setTab] = useState("one");
+    return (
+      <CommandPanelTabs value={tab} onValueChange={(next) => setTab(next as string)}>
+        <CommandPanelTabList aria-label="Sections" variant={variant}>
+          <CommandPanelTab value="one">One</CommandPanelTab>
+          <CommandPanelTab value="two">Two</CommandPanelTab>
+        </CommandPanelTabList>
+        <CommandPanelTabPanel value={tab}>
+          <CommandPanelBody>{tab === "one" ? "First content" : "Second content"}</CommandPanelBody>
+        </CommandPanelTabPanel>
+        <CommandPanelFooter />
+      </CommandPanelTabs>
+    );
+  }
+
+  function renderTabbed(variant?: "fill" | "underline") {
+    return render(
+      <CommandPalette
+        open
+        initialItemId="tabbed"
+        groups={[{ items: [{ id: "tabbed", label: "Tabbed", panel: () => <TabbedPanel variant={variant} /> }] }]}
+      />,
+    );
+  }
+
+  it("switches what the panel shows, by pointer and by keyboard", async () => {
+    const user = userEvent.setup();
+    renderTabbed();
+
+    const list = screen.getByRole("tablist", { name: "Sections" });
+    expect(list).toHaveAttribute("data-variant", "fill");
+    expect(screen.getByRole("tab", { name: "One" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tabpanel")).toHaveTextContent("First content");
+
+    await user.click(screen.getByRole("tab", { name: "Two" }));
+    expect(screen.getByRole("tab", { name: "Two" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tabpanel")).toHaveTextContent("Second content");
+
+    await user.keyboard("{ArrowLeft}");
+    expect(screen.getByRole("tab", { name: "One" })).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("draws one indicator in the chosen style", async () => {
+    renderTabbed("underline");
+
+    const list = screen.getByRole("tablist", { name: "Sections" });
+    expect(list).toHaveAttribute("data-variant", "underline");
+    await waitFor(() => {
+      expect(list.querySelectorAll('[data-slot="command-panel-tab-indicator"]')).toHaveLength(1);
+    });
+    expect(list.querySelector('[data-slot="command-panel-tab-indicator"]')).toHaveClass("h-px");
+  });
+});
+

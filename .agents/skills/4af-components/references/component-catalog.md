@@ -45,7 +45,7 @@ the component name: for example, `.context.ts` means `select.context.ts` inside 
 
 | Component | Public entry point | Internal siblings |
 | --- | --- | --- |
-| `command-palette` | `command-palette.tsx`: root state and navigation | `.types.ts`, `.context.ts`, `.search.ts`, `.keybinds.ts`, `.panels.tsx`, `.actions.tsx`, `.chrome.tsx` |
+| `command-palette` | `command-palette.tsx`: root state and navigation | `.types.ts`, `.context.ts`, `.search.ts`, `.keybinds.ts`, `.panels.tsx`, `.actions.tsx`, `.chrome.tsx`, `.tabs.tsx`, `.variants.ts` |
 | `select` | `select.tsx`: root state and option registration | `.context.ts`, `.shared.tsx`, `.utils.ts`, `.trigger.tsx`, `.content.tsx`, `.sub.tsx`, `.item.tsx`, `.variants.ts` |
 | `dropdown-menu` | `dropdown-menu.tsx`: public re-exports | `.menu.tsx`, `.select.tsx`, `.actions.tsx`, `.shared.tsx` |
 | `sidebar` | `sidebar.tsx`: responsive shell | `.context.ts`, `.provider.tsx`, `.controls.tsx`, `.structure.tsx`, `.menu.tsx`, `.variants.ts` |
@@ -146,7 +146,7 @@ The catalog currently contains 47 installable UI items. Verify the count and nam
 | `table-of-contents` | `TableOfContents` | Heading navigation with a dashed inactive rail, smooth document scrolling, long-prose fallback, and `span` or `single` active marker variants. `labels="hover"` withholds the headings until the list is hovered or focused, leaving only the rail. A height-constrained rail hides its browser scrollbar and smoothly centers every active entry, including endpoints; pass `rootRef` for an independently scrolling article. |
 | `table-of-contents-lines` | `TableOfContentsLines` | Dense line-based heading navigation with one active heading, a longer header rule, equal shorter rules between headings (none below the final heading), heading-relative indentation, and an expanding hover treatment. `labels="hover"` withholds the headings until the list is hovered or focused, leaving only the rules. A height-constrained rail hides its browser scrollbar and smoothly centers every active entry, including endpoints; pass `rootRef` for an independently scrolling article. |
 | `separator` | `Separator` | An accessible horizontal or vertical divider built on Base UI Separator. |
-| `command-palette` | `CommandPalette`, panel/list/row/footer parts, and `useCommandSearch` | Fuzzy command search, groups, nested/custom panels, async/server-driven search, configurable headers, 6px compact header navigation controls, keybinds (default ⌘K/Ctrl+K), selection, actions, and Dialog-style enter/exit motion. |
+| `command-palette` | `CommandPalette`, panel/list/row/tab/footer parts, `Kbd`, and `useCommandSearch` | Fuzzy command search, groups, nested/custom panels, panel tab rows (`fill` or `underline`), opening on a page (`initialItemId`), async/server-driven search, configurable headers, 6px compact header navigation controls, keybinds (default ⌘K/Ctrl+K), selection, actions, and Dialog-style enter/exit motion. |
 | `sidebar` | Provider, panel, group/menu/submenu/action/badge/skeleton parts | Default/floating/inset and split/split-floating/split-inset sidebars, collapse, collapsible rows with built-in chevrons, nested rows, split rail/panel selection, actions, badges, skeletons, and shared 6px/8px menu and rail radii. |
 | `sidebar-layout` | `SidebarLayout` | Optional page shell around Sidebar with inset surface, title, collapse control, and actions. |
 
@@ -367,6 +367,19 @@ A custom panel's footer has two optional slots on the right and nothing else: `e
 primary action, always the return key) and `actions` (the contextual menu, always Cmd/Ctrl+J).
 Neither chord is configurable, and there is no children slot — do not try to put a third
 affordance in that corner.
+
+Panel tabs: wrap everything below a custom panel's header in `CommandPanelTabs` (a Base UI
+Tabs root), with `CommandPanelTabList` + `CommandPanelTab` for the row and
+`CommandPanelTabPanel` around the body. `variant` is `fill` (a muted fill slides behind the
+selected tab, the default) or `underline` (a hairline slides along the rule under the row).
+Tabs select on arrow focus by default (`activateOnFocus`), since they usually re-filter one
+list; a single `CommandPanelTabPanel` whose `value` follows the selection is enough then. The
+indicator divides its measurement by the palette's entrance scale — keep that, or a panel the
+palette opens on gets an indicator a few pixels off its tab. Do not nest `Tabs` in a panel.
+
+`initialItemId` opens the palette straight onto one item's panel or sub-list (a `?` help
+shortcut, say); Escape and Back then close the palette instead of revealing the root list.
+`Kbd` is the palette's key chip, exported for panels that list keys.
 
 ### Dropdown Menu
 
