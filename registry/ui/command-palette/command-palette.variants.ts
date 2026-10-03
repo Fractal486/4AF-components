@@ -26,7 +26,7 @@ export const commandPanelTabListVariants = cva(
  */
 export const commandPanelTabVariants = cva(
   [
-    "relative z-10 cursor-pointer text-xs text-muted-foreground outline-none select-none",
+    "relative z-10 text-xs text-muted-foreground outline-none select-none",
     "transition-colors duration-(--duration-fast)",
     "hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
     "data-[active]:text-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
