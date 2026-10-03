@@ -1,9 +1,10 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { resolve, relative, dirname, isAbsolute } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawn } from "node:child_process";
 import ts from "typescript";
+import { normalizeShimmerCss } from "./shimmer-css.ts";
 
 type CliOptions = Record<string, string | boolean>;
 
@@ -20,6 +21,7 @@ interface RegistryItem {
   dependencies?: string[];
   registryDependencies?: string[];
   files?: RegistryFile[];
+  css?: Record<string, unknown>;
 }
 
 interface Registry {
@@ -198,6 +200,13 @@ export async function installComponent(
   try {
     console.log(`Installing ${component.name} into ${project}`);
     await runtime.runInstaller(registryUrl, project, overwrite);
+    const frames = registry.items.find((item) => item.name === "4af-theme")
+      ?.css?.["@keyframes text-shimmer"] as Record<string, Record<string, string>>;
+    for (const cssPath of plan.cssMerges) {
+      if (existsSync(cssPath)) {
+        writeFileSync(cssPath, normalizeShimmerCss(readFileSync(cssPath, "utf8"), frames));
+      }
+    }
     console.log(`status\tinstalled ${component.name}`);
   } finally {
     await server.close();

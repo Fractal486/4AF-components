@@ -84,7 +84,6 @@
           "shadow-overlay": "var(--elevation-overlay)",
           "shadow-overlay-drop": "var(--elevation-overlay-drop)",
           "animate-icon-pop": "icon-pop var(--duration-slow) var(--ease-out)",
-          "animate-text-shimmer": "text-shimmer var(--text-shimmer-duration, 2.5s) linear infinite",
           "animate-matrix-pulse": "matrix-pulse var(--matrix-cycle, 1.2s) var(--ease-in-out) infinite"
         },
         "light": {
@@ -154,10 +153,10 @@
         },
         "@keyframes text-shimmer": {
           "from": {
-            "background-position": "200% 0"
+            "translate": "-100% 0"
           },
           "to": {
-            "background-position": "-200% 0"
+            "translate": "100% 0"
           }
         },
         "@keyframes matrix-pulse": {
@@ -180,6 +179,30 @@
             "--duration-base": "1ms",
             "--duration-slow": "1ms",
             "--duration-slower": "1ms"
+          }
+        },
+        ".shimmer-text": {
+          "position": "relative",
+          "color": "var(--text-shimmer-base)"
+        },
+        "@supports (-webkit-mask-clip: text)": {
+          ".shimmer-text": {
+            "-webkit-mask-image": "linear-gradient(white, white)",
+            "-webkit-mask-clip": "text"
+          },
+          ".shimmer-text.animate-text-shimmer::after": {
+            "content": "\"\"",
+            "position": "absolute",
+            "inset": "0",
+            "background": "linear-gradient(90deg, transparent calc(50% - var(--text-shimmer-spread, 4ch)), var(--text-shimmer-highlight) 50%, transparent calc(50% + var(--text-shimmer-spread, 4ch)))",
+            "pointer-events": "none",
+            "will-change": "translate",
+            "animation": "text-shimmer var(--text-shimmer-duration, 2.5s) linear infinite"
+          },
+          "@media (prefers-reduced-motion: reduce)": {
+            ".shimmer-text.animate-text-shimmer::after": {
+              "display": "none"
+            }
           }
         }
       }

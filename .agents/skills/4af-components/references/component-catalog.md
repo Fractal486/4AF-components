@@ -129,7 +129,7 @@ The catalog currently contains 47 installable UI items. Verify the count and nam
 | `badge` | `Badge` | Outline/status labels with optional icon or dot, animated content changes, and `shape="rounded" | "pill"` for boxed variants. |
 | `skeleton` | `Skeleton` | Generic loading placeholders, square and shaped entirely by utility classes — there is no shape axis, and corners are opt-in; animation respects reduced motion. |
 | `empty` | `Empty` and composition parts | Empty states with optional dashed placeholder treatment. |
-| `text-shimmer` | `TextShimmer` | Theme-aware looping highlight for working labels. |
+| `text-shimmer` | `TextShimmer` | Translating masked highlight for working labels; ellipsis truncation and static text under reduced motion or without text-mask support. Component and shared theme CSS ship together; no `animate-text-shimmer` theme token. |
 | `scramble-text` | `ScrambleText` | Reveals text through a short per-grapheme scramble animation, preserving whitespace and honoring reduced motion. |
 | `toast` | `ToastProvider`, `useToast`, `createToastManager` | Managed notifications with default or title-only content, swipe dismissal, placement/stack modes, and up to three actions. |
 | `ascii-loader` | `AsciiLoader` | A looping braille spinner for compact async status affordances. |
@@ -154,7 +154,7 @@ The catalog currently contains 47 installable UI items. Verify the count and nam
 
 | Install name | Main API | Use it for |
 | --- | --- | --- |
-| `tooltip` | `TooltipProvider`, `Tooltip` | Delayed hover/focus descriptions with collision-aware placement, optional controlled `open`, press behavior, and hoverable-popup control. |
+| `tooltip` | `TooltipProvider`, `Tooltip` | Delayed hover/focus descriptions with collision-aware placement, optional controlled `open`, press behavior, and hoverable-popup control. Provider-linked instant transitions skip popup motion. |
 | `sheet` | `Sheet` and composition parts | Focus-trapped edge dialogs. |
 | `dialog` | `Dialog` parts, `DialogSteps`, `DialogStep` | Centered modals and optional validated multi-step flows. |
 | `alert-dialog` | `AlertDialog` parts | Decision-forcing modal that cannot dismiss by clicking away. |

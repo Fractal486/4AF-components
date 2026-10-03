@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -92,6 +92,11 @@ describe("4AF CLI", () => {
     const runInstaller = vi.fn(async (_url: string, targetProject: string) => {
       mkdirSync(resolve(targetProject, "src/components/ui"), { recursive: true });
       writeFileSync(buttonPath, "export const installed = true;\n");
+      writeFileSync(resolve(targetProject, "src/globals.css"), `
+@theme inline {
+  --animate-text-shimmer: text-shimmer 2.5s linear infinite;
+  @keyframes text-shimmer { to { background-position: -200% 0; } }
+}`);
     });
 
     await installComponent("button", { project }, {
@@ -107,6 +112,10 @@ describe("4AF CLI", () => {
       false,
     );
     expect(existsSync(buttonPath)).toBe(true);
+    const css = readFileSync(resolve(project, "src/globals.css"), "utf8");
+    expect(css).not.toContain("--animate-text-shimmer:");
+    expect(css).not.toContain("background-position");
+    expect(css).toContain("translate: -100% 0");
     expect(close).toHaveBeenCalledOnce();
   });
 

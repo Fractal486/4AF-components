@@ -14,6 +14,11 @@ Component-specific APIs and composition guidance live on the matching page under
 `pnpm 4af docs <component>`. `registry.json`, component source, and `pnpm 4af list` remain
 authoritative for installable items.
 
+`TextShimmer` uses a translating masked overlay, with static text for reduced motion or
+unsupported text masks. Its component and shared registry theme must stay in sync; the
+`animate-text-shimmer` class activates the overlay without a Tailwind animation token.
+`Tooltip` honors Base UI's instant state when moving between provider-linked triggers.
+
 `TabsList` accepts `maxWidth` to enable horizontal scrolling with directional edge fades in
 all three tab variants. Clicking a tab toward a faded side brings it toward the center.
 

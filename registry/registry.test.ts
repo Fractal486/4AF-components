@@ -195,7 +195,6 @@ describe("private registry", () => {
         "radius-sm": "5px",
         "text-2xs": "0.6875rem",
         "shadow-overlay-drop": "var(--elevation-overlay-drop)",
-        "animate-text-shimmer": "text-shimmer var(--text-shimmer-duration, 2.5s) linear infinite",
         "animate-matrix-pulse": "matrix-pulse var(--matrix-cycle, 1.2s) var(--ease-in-out) infinite",
       }),
     );

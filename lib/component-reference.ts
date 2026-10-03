@@ -475,7 +475,7 @@ import { Button } from "@/components/ui/button";
     importName: "TextShimmer",
     usage: `import { TextShimmer } from "@/components/ui/text-shimmer";
 
-<TextShimmer>Syncing changes…</TextShimmer>`,
+<TextShimmer duration={2.5}>Syncing changes…</TextShimmer>`,
   },
   "scramble-text": {
     importName: "ScrambleText",
@@ -514,11 +514,13 @@ function SaveButton() {
   },
   tooltip: {
     importName: "Tooltip",
-    usage: `import { Tooltip, TooltipTrigger } from "@/components/ui/tooltip";
+    usage: `import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
 
-<Tooltip>
-  <TooltipTrigger>Hover me</TooltipTrigger>
-</Tooltip>`,
+<TooltipProvider>
+  <Tooltip content="Save changes">
+    <button>Save</button>
+  </Tooltip>
+</TooltipProvider>`,
   },
 } as const satisfies Record<string, ComponentReference>;
 

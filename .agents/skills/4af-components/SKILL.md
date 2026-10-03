@@ -48,6 +48,10 @@ merge, package changes, conflicts. Existing target files are refused unless `--o
 is passed. Install serves the registry temporarily and stops it afterwards; the dev server
 need not be running.
 
+The CLI also migrates legacy shimmer CSS after the theme merge: it removes the old
+animation token and keeps one translating keyframe at stylesheet root, outside `@theme`.
+Use the CLI for reinstalls so this cleanup runs even when shimmer arrives through the theme.
+
 Afterwards inspect the diff and run the target's own typecheck or build. Never run this
 repository's `pnpm build` while its `pnpm dev` is active — both use `.next/`.
 

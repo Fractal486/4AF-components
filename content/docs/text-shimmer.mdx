@@ -12,3 +12,12 @@ description: A restrained animated text treatment for transient loading states.
 
 A theme-aware looping highlight across text for working labels. It supports rendering another
 element through `as` and accepts a custom duration.
+
+The highlight translates across a masked overlay, keeping a single copy of the label in the
+DOM. Labels truncate with an ellipsis at their container's width. Reduced motion and browsers
+without text-mask support show static, readable text. The shared theme ships the overlay CSS;
+`animate-text-shimmer` is its activation class, not a Tailwind animation token.
+
+Use `pnpm 4af install` to update existing installations. After shadcn merges the theme, the
+CLI removes obsolete shimmer tokens and duplicate keyframes, keeping the translating
+animation outside `@theme` so Tailwind retains it without an animation utility.

@@ -150,22 +150,6 @@
     }
   }
 
-  /* A highlight sweeping across text — a looping "working…" affordance. The duration is
-     a literal, not a --duration-* token: those collapse to 1ms under reduced motion, and
-     a 1ms loop is a strobe. Reduced-motion users get it switched off instead
-     (motion-reduce:animate-none), leaving a legible static gradient. The per-instance
-     `duration` prop feeds --text-shimmer-duration. */
-  --animate-text-shimmer: text-shimmer var(--text-shimmer-duration, 2.5s) linear infinite;
-
-  @keyframes text-shimmer {
-    from {
-      background-position: 200% 0;
-    }
-    to {
-      background-position: -200% 0;
-    }
-  }
-
   /* A matrix loader is a looping indicator, so its duration stays independent from the
      reduced-motion transition tokens; collapsing a loop to 1ms would turn it into a strobe. */
   --animate-matrix-pulse: matrix-pulse var(--matrix-cycle, 1.2s) var(--ease-in-out) infinite;
@@ -426,5 +410,73 @@
   [data-theme="dark"] ::selection {
     background-color: var(--color-accent-900);
     color: var(--color-neutral-50);
+  }
+}
+
+/* Text shimmer: a highlight sweeping across a label whose work is in progress.
+ *
+ * The sweep is a gradient in an `::after`, clipped to the glyphs with `mask-clip: text`
+ * and moved with `translate`. The obvious implementation — a `bg-clip-text` gradient
+ * moved with `background-position` — is not GPU accelerated: the browser repaints the
+ * glyphs every frame, at roughly 20% CPU for a single line. Item titles shimmer one per
+ * pending item, so a tab mid-ingest ran that cost several times over. Compositing a
+ * transform on a masked overlay instead costs under 2%. Credit: Devon Govett.
+ *
+ * `mask-clip: text` is Chrome/Safari only. Firefox's `-moz-element()` alternative is
+ * itself unaccelerated, so there the sweep is simply absent and the label renders in its
+ * base colour — the same place reduced motion lands.
+ *
+ * The element keeps its own text rather than the inert clone the technique's author
+ * recommends. A clone avoids masking sub-pixel antialiasing (the text thins very
+ * slightly), but it puts a second copy of every title in the DOM: read twice by a screen
+ * reader, copied twice by a selection. For labels this short, the thinning is cheaper.
+ *
+ * Split in two on purpose: `.shimmer-text` paints, `.animate-text-shimmer` moves. Not
+ * named `text-shimmer` — tailwind-merge reads a `text-*` class as a colour utility and
+ * would drop it the moment a caller passed one of its own. */
+@keyframes text-shimmer {
+  from { translate: -100% 0; }
+  to { translate: 100% 0; }
+}
+
+.shimmer-text {
+  position: relative;
+  color: var(--text-shimmer-base);
+}
+
+/* Text clipping uses the WebKit implementation this effect was designed for. Keeping the
+   image and clip properties on the same implementation avoids a one-pixel mask edge above
+   inline text in browsers that partially support the unprefixed path. */
+@supports (-webkit-mask-clip: text) {
+  /* Masking the element to its own glyphs is a no-op for the text and is what confines
+     the ::after highlight to them. */
+  .shimmer-text {
+    -webkit-mask-image: linear-gradient(white, white);
+    -webkit-mask-clip: text;
+  }
+
+  .shimmer-text.animate-text-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent calc(50% - var(--text-shimmer-spread, 4ch)),
+      var(--text-shimmer-highlight) 50%,
+      transparent calc(50% + var(--text-shimmer-spread, 4ch))
+    );
+    pointer-events: none;
+    /* `translate`, not `transform`: that is the property the keyframes move, and naming
+       the wrong one buys no compositing. */
+    will-change: translate;
+    animation: text-shimmer var(--text-shimmer-duration, 2.5s) linear infinite;
+  }
+
+  /* No frozen frame to fall back to: a highlight stopped mid-label reads as a rendering
+     fault rather than a state. Drop the sweep and leave legible base-coloured text. */
+  @media (prefers-reduced-motion: reduce) {
+    .shimmer-text.animate-text-shimmer::after {
+      display: none;
+    }
   }
 }

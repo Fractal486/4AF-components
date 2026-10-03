@@ -87,6 +87,9 @@ importers:
       jsdom:
         specifier: ^29.1.1
         version: 29.1.1
+      postcss:
+        specifier: ^8.5.10
+        version: 8.5.18
       shadcn:
         specifier: 4.13.1
         version: 4.13.1(supports-color@7.2.0)(typescript@5.9.3)

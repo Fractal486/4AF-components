@@ -33,9 +33,10 @@ const popupClassName = cn(
   // Scale grows from the anchor side; `blur-0` is the resting filter so it interpolates
   // from blur(5px) rather than from `none`, which some browsers won't tween. Only these
   // properties change, so only these are named. Base UI holds the popup mounted through
-  // the transition and unmounts on transitionend — which fires because `transition` is set.
+  // the transition and unmounts on transitionend; its `data-instant` state short-circuits
+  // that transition when the provider moves directly between neighbouring triggers.
   "origin-[var(--transform-origin)] blur-0",
-  "transition-[opacity,scale,translate,filter] duration-(--duration-fast) ease-out",
+  "transition-[opacity,scale,translate,filter] duration-(--duration-fast) ease-out data-instant:transition-none",
   // Hidden pose: fade, shrink, blur — and slide in from *toward* the trigger, so a top
   // tooltip rises up from below into place rather than only scaling. Larger offset
   // entering than leaving.
