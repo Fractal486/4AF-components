@@ -11,6 +11,7 @@ Markdown.
 ## Contents
 
 - [Source-of-truth model](#source-of-truth-model)
+- [Component modules](#component-modules)
 - [Shared foundation](#shared-foundation)
 - [Shared control geometry](#shared-control-geometry)
 - [Installable catalog](#installable-catalog)
@@ -31,6 +32,32 @@ Use sources in this order:
 2. `registry.json` and `pnpm 4af list` for installation names and dependencies.
 3. `inspector/entries/` for demonstrations and usage examples.
 4. Root `COMPONENTS.md` and this reference for orientation.
+
+## Component modules
+
+An installable component can span several files. Consumers still import its public API from
+`@/components/ui/<name>`; follow that entry point's re-exports when locating implementation
+or prop types. Internal modules import their dependencies directly, without importing back
+through the public entry point.
+
+The following files live together under `registry/ui/<name>/`. Sibling suffixes below include
+the component name: for example, `.context.ts` means `select.context.ts` inside `select/`.
+
+| Component | Public entry point | Internal siblings |
+| --- | --- | --- |
+| `command-palette` | `command-palette.tsx`: root state and navigation | `.types.ts`, `.context.ts`, `.search.ts`, `.keybinds.ts`, `.panels.tsx`, `.actions.tsx`, `.chrome.tsx` |
+| `select` | `select.tsx`: root state and option registration | `.context.ts`, `.shared.tsx`, `.utils.ts`, `.trigger.tsx`, `.content.tsx`, `.sub.tsx`, `.item.tsx`, `.variants.ts` |
+| `dropdown-menu` | `dropdown-menu.tsx`: public re-exports | `.menu.tsx`, `.select.tsx`, `.actions.tsx`, `.shared.tsx` |
+| `sidebar` | `sidebar.tsx`: responsive shell | `.context.ts`, `.provider.tsx`, `.controls.tsx`, `.structure.tsx`, `.menu.tsx`, `.variants.ts` |
+| `selection-toolbar` | `selection-toolbar.tsx`: selection tracking and positioning | `.context.ts`, `.controls.tsx`, `.variants.ts` |
+
+These siblings are part of the same registry item, not separate install names. `registry.json`
+declares every shipped file and its target; the CLI installs the complete bundle. The current
+targets place the files alongside the public entry point in the consumer's UI directory.
+When adding or moving a module, update those file entries and preserve resolving imports.
+
+The other select implementations (`select-aligned`, `select-search`, `select-motion`, and
+`select-motion-search`) also live in `registry/ui/select/`, but are separate installable items.
 
 ## Shared foundation
 
@@ -222,21 +249,27 @@ above it by default. `SelectSub`, `SelectSubTrigger`, and `SelectSubContent` add
 `SelectItem`s use the parent select's value and check state; multi-select submenu triggers show a
 dimmed selected-child count before their chevron.
 
-| Install name | Trigger | Panel entrance | Search location |
-| --- | --- | --- | --- |
-| `select` | Button/field | Scale, blur, fade | Optional inside panel |
-| `select-search` | Editable Combobox | Standard positioned panel | Trigger field |
-| `select-aligned` | Button/field | Fade, opening *over* the trigger | Optional pinned field |
-| `select-motion` | Button/field | Unfolding panel | Optional inside panel |
-| `select-motion-search` | Editable Combobox | Unfolds from field | Trigger field |
+`SelectContent footerActions` adds buttons for actions on the selection, sharing the footer
+row evenly; `clearable` appends the built-in clear button. Each action requires `key`, `label`,
+and `onSelect`, and accepts `icon`, `disabled`, `checked`, and `keepOpen`. Actions close the
+panel by default; set `keepOpen` to retain it. `SelectItem indicator={false}` hides the
+single-select tick or multi-select checkbox for a row that acts rather than stays selected.
 
-All support single and multi selection (multi uses Checkbox) and take `size="sm" | "md"`,
+| Install name | Selection modes | Trigger | Panel entrance | Search location |
+| --- | --- | --- | --- | --- |
+| `select` | Single or multiple | Button/field | Scale, blur, fade | Optional inside panel |
+| `select-search` | Single or multiple | Editable Combobox | Standard positioned panel | Trigger field |
+| `select-aligned` | Single only | Button/field | Fade, opening *over* the trigger | Optional pinned field |
+| `select-motion` | Single or multiple | Button/field | Unfolding panel | Optional inside panel |
+| `select-motion-search` | Single or multiple | Editable Combobox | Unfolds from field | Trigger field |
+
+Multi selection uses Checkbox. All five take `size="sm" | "md"`,
 default `sm`. `sm` is a 30px control with compact text and 14px glyphs; `md` is 34px and lines
 up with a medium Button or Input in a form row; the size scales the trigger and the option
 rows together, with 6px corners at `sm` and 8px at `md`. Inside a Command Palette keep `sm`.
 The base `select` and `select-aligned` additionally accept `size="xs"`, which scales both the
 trigger and option rows to 24px with 6px corners.
-`select-aligned` is single selection only. It takes optional sections
+`select-aligned` takes optional sections
 (`AlignedSelectGroup` + `AlignedSelectGroupLabel`, which hide themselves when a search empties
 them) and an optional pinned search field (`searchable` on the content).
 
@@ -276,6 +309,12 @@ For an icon on a closed trigger before the panel has ever opened:
 
 Order: mounted item, then `iconForValue`, then `items`/the value. An icon passed only to
 the item element cannot resolve before mount.
+
+### Slider
+
+`inlineLabel` moves the label and value into opposite ends of the rail for the `bar` thumb,
+replacing the row above it. The thumb dims while passing under the text. `circle` and `knob`
+ignore this prop because their rails cannot hold the text; use the ordinary label row there.
 
 ### Command Palette
 
@@ -398,6 +437,10 @@ Split variants are `split`, `split-floating`, and `split-inset`. Provide the fix
 `SidebarRailButton` controls and `SidebarPanel` sections; use `activePanel`,
 `defaultActivePanel`, and `onActivePanelChange` when the wide panel selection needs to be
 controlled or observed.
+
+`Sidebar hideCollapseHandle` removes the edge strip that toggles the panel. Use it when the
+owner pins the panel with a controlled `open` value; it hides the handle without controlling
+the open state itself.
 
 A header takes one full-width `SidebarHeaderButton`, or two wrapped in `SidebarHeaderRow`,
 which splits the width and stacks them when the sidebar collapses; `className="flex-none"`

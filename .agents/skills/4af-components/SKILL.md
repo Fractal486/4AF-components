@@ -57,6 +57,10 @@ Preserve `app -> inspector -> registry`. Never import `app/` or `inspector/` fro
 `registry/`. Keep portable implementation in `registry/ui/<name>/`, demonstrations and
 settings in `inspector/entries/`, and install metadata in `registry.json`.
 
+Larger components use internal sibling modules behind the existing public entry point.
+For their file map, see [Component modules](references/component-catalog.md#component-modules).
+Inspect the registry item's complete `files` list when changing or installing one.
+
 Follow the component contract in the root `AGENTS.md`: Base UI for behaviour, forwarded
 refs and props, controlled and uncontrolled state, CVA variants in the sibling
 `.variants.ts`, state exposed as `data-*` attributes, semantic tokens, named transition
