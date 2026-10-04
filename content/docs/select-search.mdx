@@ -20,7 +20,9 @@ only while the search field is focused. Typing starts a fresh query over it. Cli
 discards the query and restores the selection in normal foreground text. Escape discards the
 query while keeping focus; deleting the query also preserves the choice. Choosing a row commits a new selection. Opening highlights the current selection,
 while typing highlights the top match. When the selection has an icon, focusing replaces it
-with a dimmed search icon; leaving the field restores the selected option’s icon.
+with a dimmed search icon; leaving the field restores the selected option’s icon. Clicking
+a row also unfocuses the field, restoring its normal label and icon. Keyboard selection
+retains focus, and multi-select continues to stay open for additional choices.
 
 `inputValue` / `defaultInputValue` and `onInputValueChange` represent the search query,
 separately from `value` / `defaultValue` and `onValueChange`. `itemToStringLabel` also supplies

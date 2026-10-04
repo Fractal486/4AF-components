@@ -242,7 +242,7 @@ import { Button } from "@/components/ui/button";
   "select-search": {
     usage: `import { SearchSelect, SearchSelectInput, SearchSelectContent, SearchSelectItem } from "@/components/ui/select-search";
 
-// Focusing dims the selection behind a fresh query; leaving restores its normal text.
+// Focusing dims the selection; clicking a row commits it and unfocuses the field.
 <SearchSelect items={items} defaultValue={items[0]}>
   <SearchSelectInput aria-label="Choose an option" placeholder="Search…" />
   <SearchSelectContent>
