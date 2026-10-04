@@ -159,7 +159,9 @@ describe("Search Select", () => {
     const input = screen.getByRole("combobox", { name: "Fruit" });
     expect(input).toHaveValue("");
     expect(input).toHaveAttribute("placeholder", "Mango");
+    expect(input).toHaveAttribute("data-selected-label");
     await user.click(input);
+    expect(input).not.toHaveAttribute("data-selected-label");
     expect(input).toHaveAttribute("placeholder", "Mango");
     await user.type(input, "app");
     expect(input).toHaveValue("app");
@@ -167,6 +169,7 @@ describe("Search Select", () => {
     await user.click(screen.getByText("Outside", { selector: "button" }));
     await waitFor(() => expect(input).toHaveValue(""));
     expect(input).toHaveAttribute("placeholder", "Mango");
+    expect(input).toHaveAttribute("data-selected-label");
     expect(onValueChange).not.toHaveBeenCalled();
     await user.click(input);
     expect(await screen.findByRole("option", { name: "Mango" })).toHaveAttribute("data-highlighted");

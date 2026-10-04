@@ -242,7 +242,7 @@ import { Button } from "@/components/ui/button";
   "select-search": {
     usage: `import { SearchSelect, SearchSelectInput, SearchSelectContent, SearchSelectItem } from "@/components/ui/select-search";
 
-// The selection stays dimmed behind a fresh query; cancelling preserves it.
+// Focusing dims the selection behind a fresh query; leaving restores its normal text.
 <SearchSelect items={items} defaultValue={items[0]}>
   <SearchSelectInput aria-label="Choose an option" placeholder="Search…" />
   <SearchSelectContent>

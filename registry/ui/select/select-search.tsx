@@ -29,7 +29,7 @@ import { Checkbox } from "@/registry/ui/checkbox/checkbox";
  * the trigger is an editable input rather than a button, because searching is the point.
  * Pass `multiple` for an open checkbox list; whenever its input is not focused, the field
  * summarizes the current choice as “N selected”.
- * Single selection is a dimmed placeholder; typed queries never overwrite the choice.
+ * Single selection dims only while focused; typed queries never overwrite the choice.
  * Closing discards the query. The panel opens on the selection, or the first row when
  * nothing is chosen, and highlights the top match while searching.
  */
@@ -319,11 +319,12 @@ export function SearchSelectInput({
                 className="absolute top-1/2 left-3.5 -translate-y-1/2"
               />
               <Combobox.Input
+                data-selected-label={!focused && !multiple && selectedLabel ? "" : undefined}
                 className={cn(
                   "w-full border border-border bg-surface pr-9 pl-3.5 text-foreground",
                   SIZE[size].field,
                   SIZE[size].radius,
-                  "outline-none placeholder:text-muted-foreground",
+                  "outline-none placeholder:text-muted-foreground data-[selected-label]:placeholder:text-foreground",
                   "transition-[border-color,box-shadow,color] duration-(--duration-fast) ease-out",
                   "hover:border-border-strong disabled:cursor-not-allowed disabled:opacity-50",
                   // Invalid mirrors the Input's treatment; `shadow-none` clears the neutral
