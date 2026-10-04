@@ -47,9 +47,7 @@ export const source = loader({
               if (child) componentFolders.push(child);
               continue;
             }
-            // No `index`, so Fumadocs renders the parent as a folder trigger. The family
-            // overview pages this used to skip are gone: unreachable from the sidebar by
-            // design, their content now lives in the agent skill reference.
+            // No `index`, so Fumadocs renders the parent as a folder trigger.
             componentFolders.push({
               type: "folder",
               name,

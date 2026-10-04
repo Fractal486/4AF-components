@@ -53,6 +53,7 @@ describe("Controls select", () => {
     const user = userEvent.setup();
     render(<ControlsHarness />);
 
+    expect(screen.queryByRole("tablist")).toBeNull();
     const trigger = screen.getByRole("combobox", { name: "Variant" });
     expect(trigger).toHaveTextContent("Primary");
 
@@ -89,21 +90,6 @@ describe("Controls short enums", () => {
 
     // The raw option the schema declared, not its display label.
     expect(onChange).toHaveBeenCalledWith("thumb", "knob");
-  });
-
-  it("keeps a dropdown once the run would outgrow a settings field", () => {
-    const variants = {
-      variant: select(
-        ["primary", "outline", "ghost", "plain", "destructive"] as const,
-        "primary",
-        "Variant",
-      ),
-    };
-
-    render(<Controls schema={variants} values={{ variant: "primary" }} onChange={() => {}} />);
-
-    expect(screen.queryByRole("tablist")).toBeNull();
-    expect(screen.getByRole("combobox", { name: "Variant" })).toBeInTheDocument();
   });
 
   it("decides on the width of the run, not the number of options", () => {

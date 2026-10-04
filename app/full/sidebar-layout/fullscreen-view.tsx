@@ -9,12 +9,9 @@ import {
 } from "@/inspector/entries/sidebar";
 import { SidebarDemo } from "@/inspector/entries/sidebar-demo";
 import { initialValues } from "@/inspector/schema";
-import { cn } from "@/registry/lib/cn";
-
-type SidebarValues = SidebarSettings;
 
 export function SidebarLayoutFullscreen() {
-  const [values, setValues] = useState<SidebarValues>(() =>
+  const [values, setValues] = useState<SidebarSettings>(() =>
     initialValues(sidebarEntry.controls),
   );
   return (
@@ -29,17 +26,14 @@ export function SidebarLayoutFullscreen() {
 
       <aside
         aria-label="Sidebar settings"
-        className={cn(
-          "fixed bottom-4 z-40 max-h-[calc(100dvh-2rem)] w-[min(20rem,calc(100vw-2rem))] overflow-y-auto rounded-xl bg-surface p-4 shadow-overlay",
-          "right-4",
-        )}
+        className="fixed bottom-4 right-4 z-40 max-h-[calc(100dvh-2rem)] w-[min(20rem,calc(100vw-2rem))] overflow-y-auto rounded-xl bg-surface p-4 shadow-overlay"
       >
         <Controls
           idPrefix="fullscreen-sidebar-layout"
           schema={sidebarEntry.controls}
           values={values}
           onChange={(key, value) =>
-            setValues((current) => ({ ...current, [key]: value }) as SidebarValues)
+            setValues((current) => ({ ...current, [key]: value }))
           }
         />
       </aside>
