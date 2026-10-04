@@ -66,6 +66,7 @@ export const selectSearchEntry = defineEntry({
         ) : (
           <SearchSelect<Fruit>
             key="single"
+            defaultValue={FRUITS[4]}
             size={size}
             items={FRUITS}
             disabled={disabled}

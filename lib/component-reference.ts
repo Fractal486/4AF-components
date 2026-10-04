@@ -240,9 +240,15 @@ import { Button } from "@/components/ui/button";
 <MotionSearchSelect items={items} />`,
   },
   "select-search": {
-    usage: `import { SearchSelect } from "@/components/ui/select-search";
+    usage: `import { SearchSelect, SearchSelectInput, SearchSelectContent, SearchSelectItem } from "@/components/ui/select-search";
 
-<SearchSelect items={items} />`,
+// The selection stays dimmed behind a fresh query; cancelling preserves it.
+<SearchSelect items={items} defaultValue={items[0]}>
+  <SearchSelectInput aria-label="Choose an option" placeholder="Search…" />
+  <SearchSelectContent>
+    {(item) => <SearchSelectItem key={item.value} value={item}>{item.label}</SearchSelectItem>}
+  </SearchSelectContent>
+</SearchSelect>`,
   },
   "selection-toolbar": {
     usage: `import { SelectionToolbar } from "@/components/ui/selection-toolbar";

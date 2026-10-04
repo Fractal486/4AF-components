@@ -1,7 +1,7 @@
 "use client";
 
 import { Combobox } from "@base-ui/react/combobox";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Search } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import {
   createContext,
@@ -29,8 +29,9 @@ import { Checkbox } from "@/registry/ui/checkbox/checkbox";
  * the trigger is an editable input rather than a button, because searching is the point.
  * Pass `multiple` for an open checkbox list; whenever its input is not focused, the field
  * summarizes the current choice as “N selected”.
- * With an `items` collection, every search select opens, reopens, and filters from the
- * first visible row so Enter immediately chooses it.
+ * Single selection is a dimmed placeholder; typed queries never overwrite the choice.
+ * Closing discards the query. The panel opens on the selection, or the first row when
+ * nothing is chosen, and highlights the top match while searching.
  */
 
 const EASE_OUT = [0.16, 1, 0.3, 1] as const;
@@ -80,6 +81,7 @@ interface SearchContextValue {
   open: boolean;
   multiple: boolean;
   size: SelectSize;
+  selectedLabel: string;
   registerIcon: (value: unknown, icon: ReactNode | undefined) => void;
   unregisterIcon: (value: unknown) => void;
   iconFor: (value: unknown) => ReactNode | undefined;
@@ -89,6 +91,7 @@ const SearchContext = createContext<SearchContextValue>({
   open: false,
   multiple: false,
   size: "sm",
+  selectedLabel: "",
   registerIcon: () => {},
   unregisterIcon: () => {},
   iconFor: () => undefined,
@@ -143,6 +146,10 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
   value,
   defaultValue,
   onValueChange,
+  inputValue,
+  defaultInputValue,
+  onInputValueChange,
+  itemToStringLabel,
   ...props
 }: SearchSelectProps<Value, Multiple>) {
   const [uncontrolled, setUncontrolled] = useState(defaultOpen ?? false);
@@ -185,15 +192,36 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
   // what picks the highlight mode below.
   const [uncontrolledValue, setUncontrolledValue] = useState<unknown>(() => defaultValue ?? null);
   const selected = value !== undefined ? value : uncontrolledValue;
+  const [query, setQuery] = useState(defaultInputValue ?? "");
+  const selectedLabel = multiple || selected == null
+    ? ""
+    : itemToStringLabel
+      ? itemToStringLabel(selected as Value)
+      : typeof selected === "object" && "label" in selected && selected.label != null
+        ? String(selected.label)
+        : typeof selected === "object" && "value" in selected
+          ? String(selected.value)
+          : String(selected);
+  const handleInputValueChange: NonNullable<SearchSelectProps<Value, Multiple>["onInputValueChange"]> = (next, details) => {
+    // A single-select keeps its committed label in the placeholder; only typing is a query.
+    const nextQuery = multiple || details.reason === "input-change" ? next : "";
+    onInputValueChange?.(nextQuery, details);
+    if (!details.isCanceled) setQuery(nextQuery);
+  };
   const hasSelection = Array.isArray(selected) ? selected.length > 0 : selected != null;
   const handleValueChange = useCallback<
     NonNullable<SearchSelectProps<Value, Multiple>["onValueChange"]>
   >(
     (next, details) => {
-      setUncontrolledValue(next);
+      // Deleting a search is not deleting the committed selection.
+      if (!multiple && details.reason === "input-clear") {
+        details.cancel();
+        return;
+      }
       onValueChange?.(next, details);
+      if (!details.isCanceled) setUncontrolledValue(next);
     },
-    [onValueChange],
+    [multiple, onValueChange],
   );
 
   const handleOpenChange = useCallback<
@@ -215,7 +243,7 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
 
   return (
     <SearchContext.Provider
-      value={{ open: isOpen, multiple: Boolean(multiple), size, registerIcon, unregisterIcon, iconFor }}
+      value={{ open: isOpen, multiple: Boolean(multiple), size, selectedLabel, registerIcon, unregisterIcon, iconFor }}
     >
       <Combobox.Root<Value, Multiple>
         open={isOpen}
@@ -227,6 +255,10 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
         value={value}
         defaultValue={defaultValue}
         onValueChange={handleValueChange}
+        itemToStringLabel={itemToStringLabel}
+        inputValue={multiple ? inputValue : (inputValue ?? query)}
+        defaultInputValue={multiple ? defaultInputValue : undefined}
+        onInputValueChange={handleInputValueChange}
         {...props}
         // Hovering moves the highlight; leaving the list must not throw it away. Base UI
         // otherwise resets the active row on pointer-leave, and `autoHighlight` then puts it
@@ -265,7 +297,7 @@ export function SearchSelectInput({
    */
   tone?: "neutral" | "accent";
 }) {
-  const { open, multiple, iconFor, size } = useContext(SearchContext);
+  const { open, multiple, iconFor, size, selectedLabel } = useContext(SearchContext);
   const [focused, setFocused] = useState(false);
   const reduceMotion = useReducedMotion();
 
@@ -273,14 +305,16 @@ export function SearchSelectInput({
     <div className="relative">
       <Combobox.Value>
         {(selectedValue) => {
-          const selectedIcon = !focused && !multiple
+          const selectedIcon = !multiple
             ? iconFor(selectedValue)
             : undefined;
 
           return (
             <>
               <SearchSelectItemIcon
-                icon={selectedIcon}
+                icon={focused && selectedIcon != null
+                  ? <Search className="text-muted-foreground" />
+                  : selectedIcon}
                 size={size}
                 className="absolute top-1/2 left-3.5 -translate-y-1/2"
               />
@@ -304,7 +338,7 @@ export function SearchSelectInput({
                 placeholder={
                   !focused && multiple && Array.isArray(selectedValue) && selectedValue.length > 0
                     ? `${selectedValue.length} selected`
-                    : placeholder
+                    : selectedLabel || placeholder
                 }
                 onFocus={(event) => {
                   setFocused(true);

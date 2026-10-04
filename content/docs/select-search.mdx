@@ -13,6 +13,20 @@ description: A searchable Base UI select for larger option sets.
 An editable Combobox-style trigger with live filtering, single or checkbox-based multi-selection,
 icons, and full keyboard and ARIA behaviour.
 
+## Searching and cancelling
+
+In single-select mode, the committed selection appears as dimmed placeholder text, including
+while focused. Typing starts a fresh query over it. Clicking outside or pressing Escape
+discards the query and restores the same dimmed selection; deleting the query also preserves
+the choice. Choosing a row commits a new selection. Opening highlights the current selection,
+while typing highlights the top match. When the selection has an icon, focusing replaces it
+with a dimmed search icon; leaving the field restores the selected option’s icon.
+
+`inputValue` / `defaultInputValue` and `onInputValueChange` represent the search query,
+separately from `value` / `defaultValue` and `onValueChange`. `itemToStringLabel` also supplies
+the selected placeholder for custom item shapes. Multi-selection retains its existing count
+summary and checkbox behavior.
+
 ## Sizing
 
 `size="sm"` is the 30px compact control and `size="md"` is the 34px form-row control.

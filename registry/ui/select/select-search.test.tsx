@@ -148,7 +148,72 @@ describe("Search Select", () => {
     await user.keyboard("{Enter}");
 
     await waitFor(() => expect(onValueChange).toHaveBeenCalledWith(FRUITS[1], expect.anything()));
-    expect(input).toHaveValue("Mango");
+    expect(input).toHaveValue("");
+    expect(input).toHaveAttribute("placeholder", "Mango");
+  });
+
+  it("types over the dimmed selection and restores it after clicking outside", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(<><FruitSearch defaultValue={FRUITS[1]} onValueChange={onValueChange} /><button>Outside</button></>);
+    const input = screen.getByRole("combobox", { name: "Fruit" });
+    expect(input).toHaveValue("");
+    expect(input).toHaveAttribute("placeholder", "Mango");
+    await user.click(input);
+    expect(input).toHaveAttribute("placeholder", "Mango");
+    await user.type(input, "app");
+    expect(input).toHaveValue("app");
+    expect(await screen.findByRole("option", { name: "Apple" })).toHaveAttribute("data-highlighted");
+    await user.click(screen.getByText("Outside", { selector: "button" }));
+    await waitFor(() => expect(input).toHaveValue(""));
+    expect(input).toHaveAttribute("placeholder", "Mango");
+    expect(onValueChange).not.toHaveBeenCalled();
+    await user.click(input);
+    expect(await screen.findByRole("option", { name: "Mango" })).toHaveAttribute("data-highlighted");
+  });
+
+  it("preserves the selection when the query is deleted or escaped", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(<FruitSearch defaultValue={FRUITS[1]} onValueChange={onValueChange} />);
+    const input = screen.getByRole("combobox", { name: "Fruit" });
+    await user.type(input, "app");
+    await user.clear(input);
+    expect(input).toHaveAttribute("placeholder", "Mango");
+    await user.type(input, "pear");
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(input).toHaveValue(""));
+    expect(input).toHaveAttribute("placeholder", "Mango");
+    expect(onValueChange).not.toHaveBeenCalled();
+  });
+
+  it("supports controlled selection and query with custom labels", async () => {
+    function ControlledSearch() {
+      const [value, setValue] = useState<Fruit | null>(FRUITS[1]);
+      const [query, setQuery] = useState("");
+      return (
+        <SearchSelect<Fruit> items={FRUITS} value={value} onValueChange={setValue}
+          inputValue={query} onInputValueChange={setQuery}
+          itemToStringLabel={(item) => `Fruit: ${item.label}`}>
+          <SearchSelectInput aria-label="Controlled fruit" />
+          <SearchSelectContent>{(item: Fruit) => (
+            <SearchSelectItem key={item.value} value={item}>{item.label}</SearchSelectItem>
+          )}</SearchSelectContent>
+        </SearchSelect>
+      );
+    }
+    const user = userEvent.setup();
+    render(<ControlledSearch />);
+    const input = screen.getByRole("combobox", { name: "Controlled fruit" });
+    expect(input).toHaveAttribute("placeholder", "Fruit: Mango");
+    await user.type(input, "app");
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(input).toHaveValue(""));
+    expect(input).toHaveAttribute("placeholder", "Fruit: Mango");
+    await user.type(input, "app");
+    await user.keyboard("{Enter}");
+    expect(input).toHaveValue("");
+    expect(input).toHaveAttribute("placeholder", "Fruit: Apple");
   });
 
   it("opens and reopens a single select on its selection", async () => {
@@ -293,7 +358,7 @@ describe("Search Select", () => {
     await waitFor(() => expect(input).toHaveAttribute("placeholder", "2 selected"));
   });
 
-  it("renders an optional icon as an inert leading part", async () => {
+  it("replaces the selected icon with a dimmed search icon while focused", async () => {
     const user = userEvent.setup();
     render(<FruitSearch defaultValue={FRUITS[0]} />);
 
@@ -301,6 +366,25 @@ describe("Search Select", () => {
     expect(input.parentElement?.querySelector('[data-testid="fruit-icon"]')).toBeInTheDocument();
     await user.click(input);
     expect(input.parentElement?.querySelector('[data-testid="fruit-icon"]')).not.toBeInTheDocument();
+    const searchIcon = input.parentElement?.querySelector(".lucide-search");
+    expect(searchIcon).toHaveClass("text-muted-foreground");
+    expect(searchIcon?.parentElement).toHaveAttribute("aria-hidden", "true");
+    expect(input).toHaveClass("pl-10");
+    await user.type(input, "man");
+    expect(input.parentElement?.querySelector(".lucide-search")).toBeInTheDocument();
+    await user.click(document.body);
+    await waitFor(() => expect(input).toHaveValue(""));
+    expect(input.parentElement?.querySelector(".lucide-search")).not.toBeInTheDocument();
+    expect(input.parentElement?.querySelector('[data-testid="fruit-icon"]')).toBeInTheDocument();
+  });
+
+  it("does not add a search icon when the selection has no icon", async () => {
+    const user = userEvent.setup();
+    render(<FruitSearch defaultValue={FRUITS[1]} />);
+    const input = screen.getByRole("combobox", { name: "Fruit" });
+    await user.click(input);
+    expect(input.parentElement?.querySelector(".lucide-search")).not.toBeInTheDocument();
+    expect(input).not.toHaveClass("pl-10");
   });
 
   it("unregisters icons when dynamic multi-select items unmount", async () => {
