@@ -22,6 +22,8 @@ export interface CommandPanelInputProps
 }
 
 export interface CommandItem {
+  /** Overrides the palette/provider loader for this item's pending state. */
+  loader?: ReactNode;
   /** Stable identity for the item — used as the React key. */
   id: string;
   /** The visible label, what the query ranks against, and where matches are bolded. */
@@ -134,6 +136,8 @@ export interface CommandPanelHelpers {
 }
 
 export interface CommandPaletteProps {
+  /** Default loader for search indicators, custom panels, and pending actions. */
+  loader?: ReactNode;
   groups: CommandGroup[];
   /**
    * Drive the root results from a source instead of filtering `groups` locally — for a

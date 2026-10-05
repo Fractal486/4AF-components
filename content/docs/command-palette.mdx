@@ -8,6 +8,11 @@ description: A searchable keyboard-first command surface composed from 4AF primi
 
 ## API
 
+`loader={<MySpinner />}` supplies the palette's search, panel, and action indicators.
+Omit it to inherit [LoaderProvider](/docs/reference/engineering#shared-loading-indicators), with ASCII as the fallback. Individual
+`CommandItem` data and `CommandPanelLoading` accept `loader` overrides; a custom
+`icons.pending` takes precedence for action rows.
+
 **Main exports:** `CommandPalette`, custom panel, list, row, tab and action parts, `Kbd`,
 `useCommandSearch`, `useCommandPanelHighlight`
 
@@ -170,7 +175,7 @@ because a palette action is data:
 ```
 
 `labels` and `icons` carry the other states—checked, pending, success, and error—each falling back
-to the row's own label or icon. Pending and error default to the ASCII loader and warning
+to the row's own label or icon. Pending and error default to the shared loader and warning
 triangle. `revertAfter` and `pendingDelay` behave as on Action Button. Neither toggle shows a
 success tick: the row having become the other thing is the confirmation. An item with none of
 these fields is unchanged; it closes the menu and calls `onSelect`.

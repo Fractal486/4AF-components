@@ -9,6 +9,7 @@ export const componentReferences = {
 <ActionButton
   action={() => saveChanges()}
   pendingMode="icon"
+  loader={<MySpinner />}
   labels={{ success: "Saved" }}
 >
   Save changes
@@ -17,14 +18,15 @@ export const componentReferences = {
   "action-toggle": {
     usage: `import { ActionToggle } from "@/components/ui/action-toggle";
 
-<ActionToggle action={(following) => setFollowing(following)}>
+<ActionToggle loader={<MySpinner />} action={(following) => setFollowing(following)}>
   Follow
 </ActionToggle>`,
   },
   alert: {
     usage: `import { Alert } from "@/components/ui/alert";
 
-<Alert variant="success">Changes saved.</Alert>`,
+<Alert variant="success">Changes saved.</Alert>
+<Alert variant="loading" loader={<MySpinner />}>Checking availability…</Alert>`,
   },
   "alert-dialog": {
     usage: `import {
@@ -58,12 +60,14 @@ export const componentReferences = {
   badge: {
     usage: `import { Badge } from "@/components/ui/badge";
 
-<Badge variant="solid" shape="pill">Approved</Badge>`,
+<Badge variant="solid" shape="pill">Approved</Badge>
+<Badge status="loading" loader={<MySpinner />}>Syncing</Badge>`,
   },
   button: {
     usage: `import { Button } from "@/components/ui/button";
 
-<Button variant="primary">Deploy</Button>`,
+<Button variant="primary">Deploy</Button>
+<Button loading loader={<MySpinner />}>Deploy</Button>`,
   },
   "button-group": {
     usage: `import { ButtonGroup } from "@/components/ui/button-group";
@@ -94,7 +98,7 @@ import { Button } from "@/components/ui/button";
   "command-palette": {
     usage: `import { CommandPalette } from "@/components/ui/command-palette";
 
-<CommandPalette groups={groups} />
+<CommandPalette groups={groups} loader={<MySpinner />} />
 
 // Custom panels using CommandPanelTabs: Tab / Shift+Tab cycle enabled tabs,
 // wrapping at either end while keeping focus in the header search field.`,
@@ -128,7 +132,7 @@ import { Button } from "@/components/ui/button";
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-<DropdownMenu>
+<DropdownMenu loader={<MySpinner />}>
   <DropdownMenuTrigger>Actions</DropdownMenuTrigger>
   <DropdownMenuItem>Edit</DropdownMenuItem>
   <DropdownMenuItem disabled disabledReason="Billing is available on the Pro plan.">
@@ -304,7 +308,10 @@ import { Button } from "@/components/ui/button";
       </SidebarMenu>
     </SidebarContent>
   </Sidebar>
-</SidebarProvider>`,
+</SidebarProvider>
+
+// Split rails: SidebarRailButton tooltip="Projects" keeps its tooltip animated,
+// including when moving between icons in a warm tooltip group.`,
   },
   "sidebar-layout": {
     usage: `import { SidebarLayout } from "@/components/ui/sidebar-layout";
@@ -470,7 +477,7 @@ function SaveButton() {
   );
 }
 
-<ToastProvider>
+<ToastProvider loader={<MySpinner />}>
   <SaveButton />
 </ToastProvider>`,
   },

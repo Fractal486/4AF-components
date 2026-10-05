@@ -10,6 +10,10 @@ description: An asynchronous toggle that commits its pressed state only after th
 
 **Main export:** `ActionToggle`
 
+`loader={<MySpinner />}` supplies the pending indicator. Otherwise it inherits
+[LoaderProvider](/docs/reference/engineering#shared-loading-indicators), defaulting to ASCII.
+A supplied `icons.pending` takes precedence.
+
 A toggle whose state has to be earned: it waits on the action, lands when it succeeds, and stays
 put when it fails. Use it for states such as Follow/Following or Subscribe/Subscribed.
 

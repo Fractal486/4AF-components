@@ -2,7 +2,7 @@
 
 import { cn } from "@/registry/lib/cn";
 import { ease, spring } from "@/registry/lib/motion";
-import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
+import { LoadingIndicator, LoaderProvider } from "@/registry/lib/loader";
 import { Autocomplete } from "@base-ui/react/autocomplete";
 import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import { ChevronLeft, CornerDownLeft, Plus, Search } from "lucide-react";
@@ -186,6 +186,7 @@ function initialQuery(pages: Page[]): string {
 }
 
 export function CommandPalette({
+  loader,
   groups,
   onSearch,
   searchDebounce = 200,
@@ -404,7 +405,7 @@ export function CommandPalette({
           activeHeaderActions && "-mr-1.5",
         )}
       >
-        {panelSearching && <AsciiLoader className="text-sm text-subtle-foreground" />}
+        {panelSearching && <LoadingIndicator className="text-sm text-subtle-foreground" />}
         {activeHeaderActions}
       </div>
     ) : null;
@@ -460,6 +461,7 @@ export function CommandPalette({
   const items = visibleGroups.map((group) => ({ heading: group.heading, items: group.items }));
 
   return (
+    <LoaderProvider loader={loader}>
     <BaseDialog.Root
       open={isOpen}
       onOpenChange={(next, details) => {
@@ -740,7 +742,7 @@ export function CommandPalette({
               />
 
               {searching && hasVisibleItems && (
-                <AsciiLoader className="shrink-0 text-sm text-subtle-foreground" />
+                <LoadingIndicator className="shrink-0 text-sm text-subtle-foreground" />
               )}
 
               <kbd className={cn(KBD, "hidden sm:block")}>
@@ -778,7 +780,7 @@ export function CommandPalette({
             <Autocomplete.Empty className="text-center text-sm text-muted-foreground">
               {searching ? (
                 <div className="flex items-center justify-center gap-2 px-4 py-8">
-                  <AsciiLoader className="text-sm text-subtle-foreground" />
+                  <LoadingIndicator className="text-sm text-subtle-foreground" />
                   <span>{loadingMessage}</span>
                 </div>
               ) : searchError ? (
@@ -814,5 +816,6 @@ export function CommandPalette({
         )}
       </AnimatePresence>
     </BaseDialog.Root>
+    </LoaderProvider>
   );
 }

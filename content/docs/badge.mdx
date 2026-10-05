@@ -10,6 +10,10 @@ description: A compact label for statuses, categories, and counts.
 
 **Main export:** `Badge`
 
+`status="loading"` accepts `loader={<MySpinner />}` or inherits
+[LoaderProvider](/docs/reference/engineering#shared-loading-indicators), with ASCII as the fallback.
+An explicit `icon` takes precedence, and `icon={null}` hides it.
+
 A status badge with outline and status treatments, an optional icon or dot, and animated label
 and glyph changes powered by the shared `Morph` component.
 

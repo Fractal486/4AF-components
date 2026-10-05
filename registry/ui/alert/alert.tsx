@@ -1,7 +1,7 @@
 import { Check, Info, TriangleAlert } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
-import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
+import { LoadingIndicator } from "@/registry/lib/loader";
 import { alertVariants, type AlertVariants } from "./alert.variants";
 
 /**
@@ -44,11 +44,10 @@ function HexagonAlertIcon({ className }: { className?: string }) {
 /**
  * The other four glyphs ship with something else and are used exactly as they come:
  * Lucide's triangle, check and info are the ones Badge already shows for those statuses,
- * and the loader is our AsciiLoader. The hexagon above is hand-drawn only because Lucide
- * has no equivalent.
+ * and the loading indicator follows LoaderProvider. The hexagon above is hand-drawn only
+ * because Lucide has no equivalent.
  *
- * The loader gets a width rather than a `size`, because it isn't a box — it's one
- * character on the text baseline. Pinning it to the same 14px the icons occupy is what
+ * The loader uses the same 14px box as the other icons, which is what
  * keeps the sentence from stepping sideways when the state resolves.
  *
  * No `label` on it, deliberately. The line beside it is already the announcement, and its
@@ -57,25 +56,25 @@ function HexagonAlertIcon({ className }: { className?: string }) {
  */
 const ICON_SLOT = "size-3.5 shrink-0";
 
-const GLYPH: Record<NonNullable<AlertVariants["variant"]>, () => ReactNode> = {
+const GLYPH: Record<NonNullable<AlertVariants["variant"]>, (loader?: ReactNode) => ReactNode> = {
   error: () => <HexagonAlertIcon className={ICON_SLOT} />,
   warning: () => <TriangleAlert aria-hidden="true" className={ICON_SLOT} />,
   success: () => <Check aria-hidden="true" className={ICON_SLOT} />,
   info: () => <Info aria-hidden="true" className={ICON_SLOT} />,
-  loading: () => <AsciiLoader className="w-3.5 shrink-0 text-center" />,
+  loading: (loader) => <LoadingIndicator loader={loader} className={ICON_SLOT} />,
 };
 
 export interface AlertProps extends Omit<ComponentProps<"p">, "children">, AlertVariants {
   children?: ReactNode;
+  loader?: ReactNode;
 }
 
-export function Alert({ className, variant, children, ...props }: AlertProps) {
+export function Alert({ className, variant, children, loader, ...props }: AlertProps) {
   if (children == null || children === "") return null;
 
   // CVA types a variant as nullable, so the default is resolved here rather than in the
   // destructure — `variant={null}` has to land on the same line as no variant at all.
   const resolved = variant ?? "error";
-  const Glyph = GLYPH[resolved];
 
   return (
     <p
@@ -84,7 +83,7 @@ export function Alert({ className, variant, children, ...props }: AlertProps) {
       className={cn(alertVariants({ variant: resolved }), className)}
       {...props}
     >
-      <Glyph />
+      {GLYPH[resolved](loader)}
       <span className="min-w-0">{children}</span>
     </p>
   );

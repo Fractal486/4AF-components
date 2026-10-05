@@ -306,6 +306,22 @@
       ]
     },
     {
+      "name": "loader",
+      "type": "registry:lib",
+      "description": "Small context and loading slot for caller-supplied indicators, with an ASCII fallback.",
+      "registryDependencies": [
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/ascii-loader.json"
+      ],
+      "files": [
+        {
+          "path": "registry/lib/loader.tsx",
+          "type": "registry:lib",
+          "target": "@lib/loader.tsx"
+        }
+      ]
+    },
+    {
       "name": "button",
       "type": "registry:ui",
       "description": "Six variants, eight sizes, optical icon alignment, and a loading state that doesn't resize.",
@@ -318,7 +334,7 @@
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/motion.json",
-        "http://localhost:3000/r/ascii-loader.json"
+        "http://localhost:3000/r/loader.json"
       ],
       "files": [
         {
@@ -439,7 +455,7 @@
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/ascii-loader.json"
+        "http://localhost:3000/r/loader.json"
       ],
       "files": [
         {
@@ -547,7 +563,7 @@
         "http://localhost:3000/r/button.json",
         "http://localhost:3000/r/morph.json",
         "http://localhost:3000/r/use-action.json",
-        "http://localhost:3000/r/ascii-loader.json"
+        "http://localhost:3000/r/loader.json"
       ],
       "files": [
         {
@@ -567,7 +583,7 @@
       "registryDependencies": [
         "http://localhost:3000/r/toggle.json",
         "http://localhost:3000/r/morph.json",
-        "http://localhost:3000/r/ascii-loader.json",
+        "http://localhost:3000/r/loader.json",
         "http://localhost:3000/r/use-action.json"
       ],
       "files": [
@@ -746,7 +762,8 @@
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/motion.json",
-        "http://localhost:3000/r/morph.json"
+        "http://localhost:3000/r/morph.json",
+        "http://localhost:3000/r/loader.json"
       ],
       "files": [
         {
@@ -1048,7 +1065,7 @@
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/ascii-loader.json",
+        "http://localhost:3000/r/loader.json",
         "http://localhost:3000/r/checkbox.json",
         "http://localhost:3000/r/morph.json",
         "http://localhost:3000/r/use-action.json",
@@ -1462,7 +1479,7 @@
         "http://localhost:3000/r/input.json",
         "http://localhost:3000/r/tooltip.json",
         "http://localhost:3000/r/use-action.json",
-        "http://localhost:3000/r/ascii-loader.json"
+        "http://localhost:3000/r/loader.json"
       ],
       "files": [
         {
@@ -1507,7 +1524,8 @@
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/motion.json",
         "http://localhost:3000/r/button.json",
-        "http://localhost:3000/r/morph.json"
+        "http://localhost:3000/r/morph.json",
+        "http://localhost:3000/r/loader.json"
       ],
       "files": [
         {
@@ -1525,7 +1543,7 @@
     {
       "name": "sidebar",
       "type": "registry:ui",
-      "description": "A collapsible application sidebar with default, floating, inset, and split layouts, collapsible rows with built-in chevrons, nested rows, actions, badges, and loading skeletons.",
+      "description": "A collapsible application sidebar with default, floating, inset, and split layouts, animated split-rail icon tooltips, collapsible rows with built-in chevrons, nested rows, actions, badges, and loading skeletons.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",

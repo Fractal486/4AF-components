@@ -1,11 +1,12 @@
 "use client";
 
-import { AlertTriangle, Check, Circle, Info, LoaderCircle, X } from "lucide-react";
+import { AlertTriangle, Check, Circle, Info, X } from "lucide-react";
 import { motion, useReducedMotion, type HTMLMotionProps } from "motion/react";
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
 import { spring } from "@/registry/lib/motion";
 import { Morph } from "@/registry/ui/morph/morph";
+import { LoadingIndicator } from "@/registry/lib/loader";
 import { badgeVariants, type BadgeVariants } from "./badge.variants";
 
 /**
@@ -16,9 +17,8 @@ import { badgeVariants, type BadgeVariants } from "./badge.variants";
  * decoration: the outgoing content has to keep animating after React would unmount it,
  * and the width change is a layout animation (FLIP). Everything animated is compositor-only.
  *
- * Under reduced motion the movement is dropped for a plain swap. The loading glyph spins
- * with CSS `animate-spin`, deliberately exempt — a status that has to keep reading as
- * "working", like every other spinner.
+ * Under reduced motion the movement is dropped for a plain swap. The shared loading
+ * indicator retains its own loop timing, like every other spinner.
  */
 
 const ICON_SIZE = { sm: "size-2.5", md: "size-3", lg: "size-3.5" } as const;
@@ -30,6 +30,7 @@ export interface BadgeProps
   /** Overrides the status glyph. Pass `null` with `showIcon` to render text only. */
   icon?: ReactNode;
   showIcon?: boolean;
+  loader?: ReactNode;
   /**
    * Show a small status-coloured circle on the left instead of the icon — the quiet,
    * dashboard-style indicator (available on every variant). Wins over `icon`/`showIcon`.
@@ -55,6 +56,7 @@ export function Badge({
   children,
   icon,
   showIcon = true,
+  loader,
   dot = false,
   contentKey,
   animateLayout = true,
@@ -86,7 +88,7 @@ export function Badge({
     success: custom ?? <Check className={ICON_SIZE[resolvedSize]} />,
     warning: custom ?? <AlertTriangle className={ICON_SIZE[resolvedSize]} />,
     danger: custom ?? <X className={ICON_SIZE[resolvedSize]} />,
-    loading: custom ?? <LoaderCircle className={cn(ICON_SIZE[resolvedSize], "animate-spin")} />,
+    loading: custom ?? <LoadingIndicator loader={loader} className={ICON_SIZE[resolvedSize]} />,
   };
 
   return (

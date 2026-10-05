@@ -15,7 +15,7 @@ import {
 } from "react";
 import { cn } from "@/registry/lib/cn";
 import { PRESS_SCALE, spring } from "@/registry/lib/motion";
-import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
+import { LoadingIndicator } from "@/registry/lib/loader";
 import { buttonVariants, type ButtonVariants } from "./button.variants";
 
 /**
@@ -34,6 +34,8 @@ export interface ButtonProps
   asChild?: boolean;
   /** Swaps in a spinner and blocks interaction, without changing the button's size. */
   loading?: boolean;
+  /** Overrides the nearest LoaderProvider for this button's loading indicator. */
+  loader?: ReactNode;
   /** Disable the tactile press scale. Defaults to `true`; useful for anchored triggers. */
   pressScale?: boolean;
   /**
@@ -96,6 +98,7 @@ export function Button({
   size,
   asChild = false,
   loading = false,
+  loader,
   loadingLabel = "Loading",
   pressScale = true,
   pressed = false,
@@ -114,7 +117,7 @@ export function Button({
       ? children.props.children
       : children;
   const labelled = loading ? (
-    <ButtonLoading label={loadingLabel}>{innerContent}</ButtonLoading>
+    <ButtonLoading label={loadingLabel} loader={loader}>{innerContent}</ButtonLoading>
   ) : (
     innerContent
   );
@@ -281,7 +284,7 @@ function flatten(children: ReactNode): ReactNode[] {
  * `aria-hidden` on the faded label plus a live-region-free status text means a
  * screen reader hears "Loading", not the stale label it can no longer act on.
  */
-function ButtonLoading({ label, children }: { label: string; children: ReactNode }) {
+function ButtonLoading({ label, loader, children }: { label: string; loader?: ReactNode; children: ReactNode }) {
   return (
     <>
       <span
@@ -291,14 +294,8 @@ function ButtonLoading({ label, children }: { label: string; children: ReactNode
         {children}
       </span>
       <span className="absolute inset-0 inline-flex items-center justify-center">
-        {/* The ASCII loader, not an SVG spinner. It's the glyph every other waiting
-            state in the library uses — ActionButton's pending, the command palette,
-            Alert's loading line — and ActionButton already renders it inside a Button,
-            so a `loading` Button that span differently was the odd one out.
-
-            Being text, it takes the button's font size rather than needing its own
-            dimensions, so it scales across `xs`/`sm`/`md`/`lg` for free. */}
-        <AsciiLoader />
+        {/* The shared box scales with the button's font size in either loader style. */}
+        <LoadingIndicator loader={loader} />
         <span className="sr-only">{label}</span>
       </span>
     </>
@@ -306,28 +303,8 @@ function ButtonLoading({ label, children }: { label: string; children: ReactNode
 }
 
 /**
- * @deprecated `Button` now waits with `AsciiLoader`, like everything else here. This is
- * the SVG spinner it used to draw, kept only for call sites that render it directly.
+ * @deprecated Supply a loader prop or use LoaderProvider. This compatibility export follows LoaderProvider as well.
  */
 export function Spinner() {
-  return (
-    <svg
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden="true"
-      // Deliberately exempt from the reduced-motion rule. Collapsing a 1s spin to
-      // ~0 produces a strobe, which is worse than the motion it was avoiding. A
-      // spinner isn't a transition; it's a status, and it has to keep reading as one.
-      className="animate-spin"
-      style={{ animationDuration: "0.7s" }}
-    >
-      <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="2" opacity="0.2" />
-      <path
-        d="M8 1.5a6.5 6.5 0 0 1 6.5 6.5"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
+  return <LoadingIndicator className="size-4" />;
 }

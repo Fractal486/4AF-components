@@ -12,12 +12,16 @@ description: A composable Base UI button with variants, loading state, asChild s
 
 Primary, outline, ghost, plain, destructive, and link variants; text and matching square icon
 sizes of 24px (`xs`/`icon-xs`), 30px (`sm`/`icon-sm`), 34px (`md`/`icon`), and 38px
-(`lg`/`icon-lg`); optical icon spacing; loading without resizing through the shared ASCII loader; `asChild`; optional
+(`lg`/`icon-lg`); optical icon spacing; loading without resizing through a shared loader slot; `asChild`; optional
 `pressScale={false}` for anchored controls and `pressTarget="content"` for joined ones.
 
 Labeled buttons use an 8px icon-label gap at `xs`/`sm`, 10px at `md`, and 12px at `lg`.
 Leading and trailing icons also receive a small optical edge adjustment; icon-only buttons have
 no content gap.
+
+`loader={<MySpinner />}` supplies this button's indicator. Otherwise it inherits
+[LoaderProvider](/docs/reference/engineering#shared-loading-indicators), with ASCII as the fallback.
+The slot reserves a square and preserves the busy announcement.
 
 ## Press behavior
 

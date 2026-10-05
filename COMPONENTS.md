@@ -14,10 +14,17 @@ Component-specific APIs and composition guidance live on the matching page under
 `pnpm 4af docs <component>`. `registry.json`, component source, and `pnpm 4af list` remain
 authoritative for installable items.
 
+Loading states accept a caller-supplied `loader` node. `LoaderProvider loader={<MySpinner />}`
+sets a subtree default, including menus and toasts; local slots override it and custom pending
+icons take precedence. ASCII is the fallback. The small helper installs with consuming components;
+Classic, Matrix, or a custom loader remain optional. Copy/Delete Button and selection-toolbar
+actions inherit this through their buttons. See the engineering page for composition examples.
+
 `TextShimmer` uses a translating masked overlay, with static text for reduced motion or
 unsupported text masks. Its component and shared registry theme must stay in sync; the
 `animate-text-shimmer` class activates the overlay without a Tailwind animation token.
 `Tooltip` honors Base UI's instant state when moving between provider-linked triggers.
+Split-sidebar rail tooltips keep their transition during these instant openings.
 
 `TabsList` accepts `maxWidth` to enable horizontal scrolling with directional edge fades in
 all three tab variants. Clicking a tab toward a faded side brings it toward the center.

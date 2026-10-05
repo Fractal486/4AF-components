@@ -1,5 +1,5 @@
 import { cn } from "@/registry/lib/cn";
-import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
+import { LoadingIndicator } from "@/registry/lib/loader";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Autocomplete } from "@base-ui/react/autocomplete";
 import { ChevronRight, CornerDownLeft } from "lucide-react";
@@ -128,9 +128,11 @@ export function CommandPanelList({
 export function CommandPanelLoading({
   children = "Searching…",
   className,
+  loader,
 }: {
   children?: ReactNode;
   className?: string;
+  loader?: ReactNode;
 }) {
   return (
     <div
@@ -139,7 +141,7 @@ export function CommandPanelLoading({
         className,
       )}
     >
-      <AsciiLoader className="text-sm text-subtle-foreground" />
+      <LoadingIndicator loader={loader} className="text-sm text-subtle-foreground" />
       <span>{children}</span>
     </div>
   );

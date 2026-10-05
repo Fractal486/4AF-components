@@ -125,7 +125,7 @@ The catalog currently contains 47 installable UI items. Verify the count and nam
 | Install name | Main API | Use it for |
 | --- | --- | --- |
 | `progress` | `Progress`, `ProgressLabel`, `ProgressValue` | Determinate progress with transform-driven fill. |
-| `alert` | `Alert` | Inline status line (glyph + sentence, no surface): `error` (hexagon, `role="alert"`), `warning` (amber triangle), `success` (green check), `info` (neutral), `loading` (muted ASCII spinner); not tied to field context. |
+| `alert` | `Alert` | Inline status line (glyph + sentence, no surface): `error` (hexagon, `role="alert"`), `warning` (amber triangle), `success` (green check), `info` (neutral), `loading` (shared loader); not tied to field context. |
 | `badge` | `Badge` | Outline/status labels with optional icon or dot, animated content changes, and `shape="rounded" | "pill"` for boxed variants. |
 | `skeleton` | `Skeleton` | Generic loading placeholders, square and shaped entirely by utility classes — there is no shape axis, and corners are opt-in; animation respects reduced motion. |
 | `empty` | `Empty` and composition parts | Empty states with optional dashed placeholder treatment. |
@@ -179,16 +179,19 @@ with `aria-describedby` and mark the field invalid.
 | `warning` | Amber accent | Triangle | `status` |
 | `success` | Success green | Check | `status` |
 | `info` | Foreground ink | Info | `status` |
-| `loading` | Muted grey | ASCII spinner | `status` |
+| `loading` | Muted grey | Shared loader (ASCII by default) | `status` |
 
 Set `variant`; do not restyle one variant to imitate another — the role and glyph do not
-follow the colour. Pulls in `ascii-loader`. Renamed from `FieldError`/`field-error`: a
+follow the colour. Pulls in `loader`. Renamed from `FieldError`/`field-error`: a
 deprecated `FieldError` alias still compiles, but the install name is `alert`.
 
 ### Async work
 
-Every waiting state is the ASCII loader. `Button` exports a deprecated SVG `Spinner`; do
-not use it.
+Waiting states accept a React node: `loader={<MySpinner />}`. `LoaderProvider` from `@/lib/loader`
+sets a subtree default, including portals; custom pending icons take precedence over the local
+slot and provider. ASCII is the fallback. Alternative indicators are optional, installed by the
+caller. Copy/Delete Button, menu/palette rows, and toast state options support the same slot.
+`Button`'s deprecated SVG `Spinner` now follows the provider as well.
 
 | After the work | Use |
 | --- | --- |
@@ -201,7 +204,7 @@ not use it.
 almost immediately. `ActionToggle` is not optimistic: the label holds until the action
 settles and `onPressedChange` fires only on success.
 
-Glyph and label morph in separate boxes (the loader is a text glyph, far narrower than an
+Glyph and label morph in separate boxes (the ASCII loader is a text glyph, far narrower than an
 icon; morphing them together slides the label). So a label with no per-state override does
 not animate — pass `labels={{ pending: … }}` only when the word should change. `ActionToggle`
 with `fillIcon` and no `icons.pressed` does not swap the glyph either; the fill is the
@@ -453,6 +456,10 @@ Split variants are `split`, `split-floating`, and `split-inset`. Provide the fix
 `SidebarRailButton` controls and `SidebarPanel` sections; use `activePanel`,
 `defaultActivePanel`, and `onActivePanelChange` when the wide panel selection needs to be
 controlled or observed.
+
+`SidebarRailButton tooltip` shows a right-side description that keeps animating in a warm
+tooltip group. Moving between rail icons still opens immediately; reduced motion uses the
+shared duration tokens.
 
 `Sidebar hideCollapseHandle` removes the edge strip that toggles the panel. Use it when the
 owner pins the panel with a controlled `open` value; it hides the handle without controlling

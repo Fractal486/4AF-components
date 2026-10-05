@@ -2,9 +2,20 @@ import { cn } from "@/registry/lib/cn";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 import { ChevronRight } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
+import { LoaderProvider } from "@/registry/lib/loader";
 import { DisabledReasonTooltip, INDICATOR_SLOT, itemBase } from "./dropdown-menu.shared";
 
-export const DropdownMenu = BaseMenu.Root;
+export interface DropdownMenuProps<Payload = unknown> extends BaseMenu.Root.Props<Payload> {
+  loader?: ReactNode;
+}
+
+export function DropdownMenu<Payload>({ loader, ...props }: DropdownMenuProps<Payload>) {
+  return (
+    <LoaderProvider loader={loader}>
+      <BaseMenu.Root {...props} />
+    </LoaderProvider>
+  );
+}
 
 export const DropdownMenuTrigger = BaseMenu.Trigger;
 

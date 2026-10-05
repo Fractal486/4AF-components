@@ -45,7 +45,7 @@ export interface SidebarRailButtonProps extends ComponentProps<"button"> {
   isActive?: boolean;
   /** The wide panel selected by this button when it is inside a split sidebar. */
   value?: string;
-  /** Optional label shown in a tooltip beside the fixed rail. */
+  /** Optional label beside the fixed rail. Its tooltip animates even when the group is warm. */
   tooltip?: ReactNode;
 }
 
@@ -94,6 +94,8 @@ export function SidebarRailButton({
       content={tooltip}
       side="right"
       disableHoverablePopup
+      // Keep the rail's descriptions animated while the shared provider is warm.
+      className="data-instant:transition-[opacity,scale,translate,filter]"
       // The popup is portalled, but the positioner itself still needs a stacking
       // level so an expanded contextual column cannot paint over the rail tooltip.
       positionerProps={{ className: "z-50" }}
