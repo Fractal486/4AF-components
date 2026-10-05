@@ -492,6 +492,35 @@ export function CommandPalette({
               }
             />
             <BaseDialog.Popup
+              onKeyDown={(event) => {
+                if (
+                  !panelNode || event.defaultPrevented || event.key !== "Tab" ||
+                  event.altKey || event.ctrlKey || event.metaKey ||
+                  !event.currentTarget.contains(event.target as Node)
+                ) return;
+
+                // The header lives outside the tabs root. Cycle from anywhere in the
+                // panel without moving focus away from its search field. Portalled
+                // menus keep their own keyboard handling (the containment check above).
+                const list = event.currentTarget.querySelector<HTMLElement>(
+                  '[data-slot="command-panel-tab-list"]',
+                );
+                if (!list) return;
+                const tabs = Array.from(list.querySelectorAll<HTMLElement>('[role="tab"]'))
+                  .filter((tab) => tab.closest('[role="tablist"]') === list &&
+                    !tab.matches('[disabled], [aria-disabled="true"], [data-disabled]'));
+                if (tabs.length === 0) return;
+
+                const selected = tabs.findIndex((tab) => tab.getAttribute("aria-selected") === "true");
+                const next = selected < 0
+                  ? (event.shiftKey ? tabs.length - 1 : 0)
+                  : (selected + (event.shiftKey ? -1 : 1) + tabs.length) % tabs.length;
+                const nextTab = tabs[next];
+                if (!nextTab) return;
+                event.preventDefault();
+                // Activate through Base UI so controlled values and cancellation work.
+                nextTab.click();
+              }}
               // Top-anchored and x-centred. The vertical offset is a plain `top`, and the
               // horizontal centring a `-translate-x-1/2` now composes with Motion's scale.
               className={cn(

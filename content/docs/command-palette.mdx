@@ -86,6 +86,11 @@ one list, which is instant. When they do, one `CommandPanelTabPanel` whose `valu
 selection is enough wiring. A header search field keeps working alongside the tabs: filter within
 the selected tab.
 
+Within a custom panel using these tabs, Tab selects the next enabled tab and Shift+Tab the
+previous one, wrapping at either end and skipping disabled tabs. Focus stays where it is,
+so the header search field keeps its query and you can continue typing after switching.
+Panels without a tab bar keep ordinary Tab focus navigation; open menus keep their own keys.
+
 The indicator is measured from the selected tab and moved with a layout animation, as on Tabs,
 with one correction: the palette scales in as it opens, so measurements are divided by that scale
 and a panel the palette opens on lands its indicator exactly under its tab.

@@ -166,6 +166,21 @@
   }
 }
 
+/* Opacity-only spinner. Its bars resolve their duration locally from --classic-cycle,
+   keeping the loop independent from the reduced-motion transition tokens. */
+@theme inline {
+  --animate-classic-fade: classic-fade 1.2s linear infinite;
+}
+
+@keyframes classic-fade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.15;
+  }
+}
+
 /* ---------------------------------------------------------------------------
  * 2. Semantic tokens
  * ------------------------------------------------------------------------ */

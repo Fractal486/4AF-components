@@ -591,28 +591,41 @@ describe("CommandPalette initialItemId", () => {
 });
 
 describe("CommandPanelTabs", () => {
-  function TabbedPanel({ variant }: { variant?: "fill" | "underline" }) {
+  function TabbedPanel({ variant, uncontrolled = false, disabledTab = false }: {
+    variant?: "fill" | "underline";
+    uncontrolled?: boolean;
+    disabledTab?: boolean;
+  }) {
     const [tab, setTab] = useState("one");
     return (
-      <CommandPanelTabs value={tab} onValueChange={(next) => setTab(next as string)}>
+      <CommandPanelTabs
+        {...(uncontrolled ? { defaultValue: "one" } : { value: tab })}
+        onValueChange={(next) => setTab(next as string)}
+      >
         <CommandPanelTabList aria-label="Sections" variant={variant}>
           <CommandPanelTab value="one">One</CommandPanelTab>
+          {disabledTab && <CommandPanelTab value="unavailable" disabled>Unavailable</CommandPanelTab>}
           <CommandPanelTab value="two">Two</CommandPanelTab>
         </CommandPanelTabList>
         <CommandPanelTabPanel value={tab}>
           <CommandPanelBody>{tab === "one" ? "First content" : "Second content"}</CommandPanelBody>
         </CommandPanelTabPanel>
-        <CommandPanelFooter />
+        <CommandPanelFooter actions={{ items: [{ id: "copy", label: "Copy" }] }} />
       </CommandPanelTabs>
     );
   }
 
-  function renderTabbed(variant?: "fill" | "underline") {
+  function renderTabbed(variant?: "fill" | "underline", uncontrolled = false, disabledTab = false) {
     return render(
       <CommandPalette
         open
         initialItemId="tabbed"
-        groups={[{ items: [{ id: "tabbed", label: "Tabbed", panel: () => <TabbedPanel variant={variant} /> }] }]}
+        groups={[{ items: [{
+          id: "tabbed",
+          label: "Tabbed",
+          panelInput: { type: "search", label: "Search sections" },
+          panel: () => <TabbedPanel variant={variant} uncontrolled={uncontrolled} disabledTab={disabledTab} />,
+        }] }]}
       />,
     );
   }
@@ -643,6 +656,64 @@ describe("CommandPanelTabs", () => {
       expect(list.querySelectorAll('[data-slot="command-panel-tab-indicator"]')).toHaveLength(1);
     });
     expect(list.querySelector('[data-slot="command-panel-tab-indicator"]')).toHaveClass("h-px");
+  });
+
+  it.each([false, true])("cycles tabs from search, keeping focus and query (uncontrolled: %s)", async (uncontrolled) => {
+    const user = userEvent.setup();
+    renderTabbed(undefined, uncontrolled, true);
+    const input = screen.getByRole("combobox", { name: "Search sections" });
+    await user.type(input, "query");
+
+    await user.tab();
+    expect(screen.getByRole("tab", { name: "Two" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tabpanel")).toHaveTextContent("Second content");
+    expect(input).toHaveFocus();
+    expect(input).toHaveValue("query");
+
+    await user.tab();
+    expect(screen.getByRole("tab", { name: "One" })).toHaveAttribute("aria-selected", "true");
+    await user.tab({ shift: true });
+    expect(screen.getByRole("tab", { name: "Two" })).toHaveAttribute("aria-selected", "true");
+    await user.tab({ shift: true });
+    expect(screen.getByRole("tab", { name: "One" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Unavailable" })).toHaveAttribute("aria-selected", "false");
+    expect(input).toHaveFocus();
+    await user.type(input, " more");
+    expect(input).toHaveValue("query more");
+  });
+
+  it("cycles from the panel header controls without moving their focus", async () => {
+    const user = userEvent.setup();
+    renderTabbed();
+    const back = screen.getByRole("button", { name: "Back" });
+    act(() => back.focus());
+    await user.tab();
+    expect(screen.getByRole("tab", { name: "Two" })).toHaveAttribute("aria-selected", "true");
+    expect(back).toHaveFocus();
+  });
+
+  it("keeps Tab inside a portalled actions menu from switching panel tabs", async () => {
+    const user = userEvent.setup();
+    renderTabbed();
+    await user.click(screen.getByText("Actions"));
+    await user.tab();
+    expect(screen.getByRole("tab", { name: "One" })).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("retains ordinary focus navigation in a panel without tabs", async () => {
+    const user = userEvent.setup();
+    render(<CommandPalette open initialItemId="form" groups={[{ items: [{
+      id: "form", label: "Form", panel: () => <CommandPanelBody>
+        <input aria-label="First field" /><input aria-label="Second field" />
+      </CommandPanelBody>,
+    }] }]} />);
+    const first = screen.getByRole("textbox", { name: "First field" });
+    const second = screen.getByRole("textbox", { name: "Second field" });
+    await user.click(first);
+    await user.tab();
+    expect(second).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(first).toHaveFocus();
   });
 });
 

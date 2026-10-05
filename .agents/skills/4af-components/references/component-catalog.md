@@ -134,6 +134,7 @@ The catalog currently contains 47 installable UI items. Verify the count and nam
 | `toast` | `ToastProvider`, `useToast`, `createToastManager` | Managed notifications with default or title-only content, swipe dismissal, placement/stack modes, and up to three actions. |
 | `ascii-loader` | `AsciiLoader` | A looping braille spinner for compact async status affordances. |
 | `matrix-loader` | `MatrixLoader` | A compact 4×4 dot loader with scan, twinkle, and size variants. |
+| `classic-loader` | `ClassicLoader` | Twelve fading radial bars from loading.dev, locally adapted with CSS-only motion, size variants, speed as a playback multiplier, and an optional status label. Inherits currentColor; no loading-dev or animation runtime dependency. |
 
 ### Navigation and application structure
 
@@ -373,8 +374,10 @@ Tabs root), with `CommandPanelTabList` + `CommandPanelTab` for the row and
 `CommandPanelTabPanel` around the body. `variant` is `fill` (a muted fill slides behind the
 selected tab, the default) or `underline` (a hairline slides along the rule under the row).
 Tabs select on arrow focus by default (`activateOnFocus`), since they usually re-filter one
-list; a single `CommandPanelTabPanel` whose `value` follows the selection is enough then. The
-indicator divides its measurement by the palette's entrance scale — keep that, or a panel the
+list; a single `CommandPanelTabPanel` whose `value` follows the selection is enough then.
+The palette also cycles enabled tabs on Tab / Shift+Tab, wrapping while keeping current focus.
+Panels without tabs retain ordinary focus navigation. The indicator divides its measurement
+by the palette's entrance scale — keep that, or a panel the
 palette opens on gets an indicator a few pixels off its tab. Do not nest `Tabs` in a panel.
 
 `initialItemId` opens the palette straight onto one item's panel or sub-list (a `?` help

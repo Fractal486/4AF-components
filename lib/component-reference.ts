@@ -50,6 +50,11 @@ export const componentReferences = {
       '<MatrixLoader variant="twinkle" label="Loading" />',
     ].join("\n"),
   },
+  "classic-loader": {
+    usage: `import { ClassicLoader } from "@/components/ui/classic-loader";
+
+<ClassicLoader size="md" speed={1} label="Loading results" />`,
+  },
   badge: {
     usage: `import { Badge } from "@/components/ui/badge";
 
@@ -89,7 +94,10 @@ import { Button } from "@/components/ui/button";
   "command-palette": {
     usage: `import { CommandPalette } from "@/components/ui/command-palette";
 
-<CommandPalette groups={groups} />`,
+<CommandPalette groups={groups} />
+
+// Custom panels using CommandPanelTabs: Tab / Shift+Tab cycle enabled tabs,
+// wrapping at either end while keeping focus in the header search field.`,
   },
   "copy-button": {
     usage: `import { CopyButton } from "@/components/ui/copy-button";

@@ -21,6 +21,7 @@ export type ComponentDemoName =
   | "alert-dialog"
   | "ascii-loader"
   | "matrix-loader"
+  | "classic-loader"
   | "badge"
   | "button"
   | "button-group"
@@ -166,6 +167,7 @@ const demos: Record<Exclude<ComponentDemoName, "ascii-loader">, ComponentType> =
   "hover-card": lazyEntry(async () => (await import("@/inspector/entries/hover-card")).hoverCardEntry),
   input: lazyEntry(async () => (await import("@/inspector/entries/input")).inputEntry),
   "matrix-loader": lazyEntry(async () => (await import("@/inspector/entries/matrix-loader")).matrixLoaderEntry),
+  "classic-loader": lazyEntry(async () => (await import("@/inspector/entries/classic-loader")).classicLoaderEntry),
   morph: lazyEntry(async () => (await import("@/inspector/entries/morph")).morphEntry),
   popover: lazyEntry(async () => (await import("@/inspector/entries/popover")).popoverEntry),
   progress: lazyEntry(async () => (await import("@/inspector/entries/progress")).progressEntry),
@@ -201,10 +203,7 @@ export function ComponentDemo({ name }: { name: ComponentDemoName }) {
   if (name === "ascii-loader") {
     return (
       <div className="not-prose first:mt-0 my-6 grid min-h-72 place-items-center rounded-xl bg-background shadow-border">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <AsciiLoader label="Loading" />
-          <span>Loading</span>
-        </div>
+        <AsciiLoader label="Loading" className="text-sm text-muted-foreground" />
       </div>
     );
   }

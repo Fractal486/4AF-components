@@ -246,7 +246,10 @@ export interface CommandPanelActionsProps {
   emptyMessage?: ReactNode;
 }
 
-/** Tabs inside a custom panel. The root wraps everything below the header. */
+/**
+ * Tabs inside a custom panel. The root wraps everything below the header.
+ * Tab / Shift+Tab cycle enabled tabs in the palette without moving focus.
+ */
 export interface CommandPanelTabsProps
   extends Omit<ComponentProps<typeof BaseTabs.Root>, "className" | "orientation"> {
   className?: string;

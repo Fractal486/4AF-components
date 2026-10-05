@@ -11,15 +11,12 @@ export const matrixLoaderEntry = defineEntry({
   },
   render({ variant, size, duration }) {
     return (
-      <div className="flex items-center gap-3 text-sm text-muted-foreground">
-        <MatrixLoader
-          variant={variant}
-          size={size}
-          duration={duration}
-          label="Loading"
-        />
-        <span>Loading</span>
-      </div>
+      <MatrixLoader
+        variant={variant}
+        size={size}
+        duration={duration}
+        label="Loading"
+      />
     );
   },
 });

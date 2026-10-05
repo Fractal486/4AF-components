@@ -25,6 +25,7 @@ all three tab variants. Clicking a tab toward a faded side brings it toward the 
 `CommandPalette` panels have their own tab row: `CommandPanelTabs` puts tabs directly under a
 custom panel's header, marked by a sliding `fill` or `underline` indicator. Use it rather than
 nesting `Tabs` in a panel — its indicator corrects for the palette's entrance scale.
+Tab / Shift+Tab cycle enabled panel tabs with wraparound while keeping search focus.
 `initialItemId` opens the palette straight onto one page; Escape there closes the palette.
 
 `ActionButton` defaults to a label beside its pending loader. Use `pendingMode="icon"` for a
@@ -70,3 +71,8 @@ remain the 30px and 34px shared sizes.
 `MatrixLoader` is the compact 4×4 status loader. Use `variant` for the scan or twinkle
 delay pattern, and `label` only when the loader itself should announce the
 busy state.
+
+`ClassicLoader` is the twelve-bar radial spinner adapted from loading.dev. Install
+`classic-loader` for a local CSS-only copy with size and speed (a playback multiplier) controls;
+it inherits `currentColor`. Its upstream MIT notice travels with the installed source.
+Use `label` only when the spinner itself should announce the busy state.
