@@ -100,6 +100,9 @@ interface SelectSubContextValue {
   scheduleOpen: (delay: number) => void;
   scheduleClose: (delay?: number) => void;
   cancelClose: () => void;
+  /** The trigger was left at this point: hold the panel open while the pointer heads for it. */
+  leaveTowardPanel: (x: number, y: number, fallbackDelay: number) => void;
+  setPanelNode: (node: HTMLElement | null) => void;
 }
 
 export const SelectSubContext = createContext<SelectSubContextValue | null>(null);

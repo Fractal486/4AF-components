@@ -28,8 +28,8 @@ nesting `Tabs` in a panel — its indicator corrects for the palette's entrance 
 `initialItemId` opens the palette straight onto one page; Escape there closes the palette.
 
 `ActionButton` defaults to a label beside its pending loader. Use `pendingMode="icon"` for a
-centered loader-only pending state; it keeps the label-sized content box so the button does not
-resize while the action runs.
+centered loader-only pending state; the label morphs out as the loader morphs in, and it keeps
+the label-sized content box so the button does not resize while the action runs.
 
 The table family is split on state. `table` presents rows — densities, borders, a pinned header,
 a caption, a loading state — and has no controls at all. `data-table` composes it and adds every

@@ -85,6 +85,12 @@ Nested panels open immediately when their parent row is hovered. Pass a positive
 `SelectSubTrigger` only when a deliberate hover pause is wanted. The initially focused nested row
 stays unhighlighted until it is hovered or reached through keyboard navigation.
 
+A hover-opened panel has a safe triangle. Leaving its row with the mouse keeps the panel open
+while the pointer travels inside the triangle between the leave point and the panel's near edge,
+so a diagonal path across the rows in between doesn't drop it. It closes as soon as the pointer
+strays out of the triangle, or once it rests inside for 300ms. `closeDelay` still applies when
+the pointer leaves the panel itself, and for non-mouse pointers.
+
 ```tsx
 import {
   Select,

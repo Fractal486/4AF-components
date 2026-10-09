@@ -78,6 +78,8 @@ describe("ActionButton", () => {
       .querySelector('[data-slot="action-button-content"]');
 
     expect(content?.firstElementChild).toHaveClass("-translate-x-3");
+    // The offset goes when a status glyph arrives; the label slides there, never jumps.
+    expect(content?.firstElementChild).toHaveClass("transition-[translate]");
   });
 
   it("centres the pending status icon and label as a group", async () => {
@@ -135,21 +137,24 @@ describe("ActionButton", () => {
     expect(button).toHaveAttribute("data-pending-mode", "icon");
     expect(content).toHaveClass("inline-grid");
     expect(group).not.toBeNull();
-    expect(pendingIcon).toHaveClass("absolute", "inset-0", "place-items-center", "opacity-0");
+    expect(pendingIcon).toHaveClass("absolute", "inset-0", "place-items-center");
+    expect(group).toHaveAttribute("data-state", "visible");
+    expect(pendingIcon).toHaveAttribute("data-state", "hidden");
 
     fireEvent.click(button);
 
     expect(button).toHaveAttribute("data-status", "pending");
-    expect(group).toHaveClass("opacity-0");
-    expect(pendingIcon).toHaveClass("opacity-100");
+    // The label morphs out as the loader morphs in; neither is cut.
+    expect(group).toHaveAttribute("data-state", "hidden");
+    expect(pendingIcon).toHaveAttribute("data-state", "visible");
     // The resting label remains the accessible name while the visible group is hidden.
     expect(screen.getByRole("button", { name: "Deploy" })).toBe(button);
 
     await act(async () => resolveAction!());
 
     expect(button).toHaveAttribute("data-status", "success");
-    expect(group).not.toHaveClass("opacity-0");
-    expect(pendingIcon).toHaveClass("opacity-0");
+    expect(group).toHaveAttribute("data-state", "visible");
+    expect(pendingIcon).toHaveAttribute("data-state", "hidden");
   });
 
   it("passes the button gap through the pending centering wrapper", () => {

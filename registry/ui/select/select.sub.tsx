@@ -25,6 +25,26 @@ import { SelectItem, type SelectItemProps } from "./select.item";
 import { SCROLLBAR } from "./select.shared";
 import { preventBaseUIHandler } from "./select.utils";
 
+/**
+ * How long the pointer may rest on its way to a nested panel before the panel closes. A
+ * pointer that stops over a sibling row has stopped heading for the panel.
+ */
+const SAFE_TRAVEL_REST_MS = 300;
+/** Slack around the safe triangle, so a pointer grazing its edges doesn't drop the panel. */
+const SAFE_TRAVEL_SLACK_PX = 4;
+
+type Point = readonly [x: number, y: number];
+
+/** Whether `p` lies inside the triangle `a`, `b`, `c` (either winding, edges included). */
+function inTriangle(p: Point, a: Point, b: Point, c: Point): boolean {
+  const side = (from: Point, to: Point) =>
+    (p[0] - to[0]) * (from[1] - to[1]) - (from[0] - to[0]) * (p[1] - to[1]);
+  const ab = side(a, b);
+  const bc = side(b, c);
+  const ca = side(c, a);
+  return !((ab < 0 || bc < 0 || ca < 0) && (ab > 0 || bc > 0 || ca > 0));
+}
+
 interface SelectSearchChildProps {
   value?: unknown;
   children?: ReactNode;
@@ -146,6 +166,11 @@ export function SelectSub({
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const closeDelayRef = useRef(100);
   const openedByHoverRef = useRef(false);
+  const panelRef = useRef<HTMLElement | null>(null);
+  const stopSafeTravelRef = useRef<(() => void) | null>(null);
+  const setPanelNode = useCallback((node: HTMLElement | null) => {
+    panelRef.current = node;
+  }, []);
   const setTriggerNode = useCallback((node: HTMLElement | null) => {
     triggerRef.current = node;
     setAnchor((current) => (current === node ? current : node));
@@ -167,6 +192,7 @@ export function SelectSub({
       clearTimeout(closeTimerRef.current);
       closeTimerRef.current = null;
     }
+    stopSafeTravelRef.current?.();
   }, []);
   const setCloseDelay = useCallback((delay: number) => {
     closeDelayRef.current = delay;
@@ -244,6 +270,61 @@ export function SelectSub({
     [cancelClose, cancelOpen, handleOpenChange],
   );
 
+  /**
+   * The safe triangle. Leaving the trigger for the panel beside it means crossing the rows
+   * between them, and a straight-line timer can't tell that apart from moving to one of
+   * those rows: too short and a diagonal path drops the panel, too long and the panel
+   * lingers over the row you actually meant. So the leave point and the panel's near edge
+   * make a triangle, and the panel stays while the pointer moves inside it. It closes the
+   * moment the pointer strays out, or once it rests inside for `SAFE_TRAVEL_REST_MS`.
+   *
+   * Reaching the panel ends the tracking through `cancelClose`, as does coming back to the
+   * trigger. With no panel to measure — not mounted, or not laid out — it falls back to the
+   * plain close delay.
+   */
+  const leaveTowardPanel = useCallback(
+    (x: number, y: number, fallbackDelay: number) => {
+      const rect = panelRef.current?.getBoundingClientRect();
+      if (!openedByHoverRef.current || !rect || rect.width === 0 || rect.height === 0) {
+        scheduleClose(fallbackDelay);
+        return;
+      }
+      cancelClose();
+      const towardRight = rect.left >= x;
+      const nearX = towardRight ? rect.left : rect.right;
+      // The apex sits a little behind the leave point, so the first move after leaving
+      // can't fall outside on rounding alone.
+      const apex: Point = [x + (towardRight ? -SAFE_TRAVEL_SLACK_PX : SAFE_TRAVEL_SLACK_PX), y];
+      const top: Point = [nearX, rect.top - SAFE_TRAVEL_SLACK_PX];
+      const bottom: Point = [nearX, rect.bottom + SAFE_TRAVEL_SLACK_PX];
+
+      let rest: ReturnType<typeof setTimeout> | undefined;
+      const stop = () => {
+        clearTimeout(rest);
+        document.removeEventListener("pointermove", move, true);
+        if (stopSafeTravelRef.current === stop) stopSafeTravelRef.current = null;
+      };
+      const closeNow = () => {
+        stop();
+        scheduleClose(0);
+      };
+      const restart = () => {
+        clearTimeout(rest);
+        rest = setTimeout(closeNow, SAFE_TRAVEL_REST_MS);
+      };
+      function move(event: PointerEvent) {
+        if (event.pointerType !== "mouse") return;
+        const point: Point = [event.clientX, event.clientY];
+        if (inTriangle(point, apex, top, bottom)) restart();
+        else closeNow();
+      }
+      document.addEventListener("pointermove", move, true);
+      stopSafeTravelRef.current = stop;
+      restart();
+    },
+    [cancelClose, scheduleClose],
+  );
+
   const focusTrigger = useCallback(() => {
     triggerRef.current?.focus();
   }, []);
@@ -288,6 +369,8 @@ export function SelectSub({
         scheduleClose,
         cancelClose,
         setCloseDelay,
+        leaveTowardPanel,
+        setPanelNode,
       }}
     >
       {children}
@@ -350,6 +433,7 @@ export function SelectSubTrigger({
     scheduleClose,
     cancelClose,
     setCloseDelay,
+    leaveTowardPanel,
   } = useSelectSubContext();
   const resolvedDisabled = disabled || subDisabled;
   const triggerLabel =
@@ -395,7 +479,9 @@ export function SelectSubTrigger({
   const handlePointerLeave: NonNullable<SelectSubTriggerProps["onPointerLeave"]> = (event) => {
     onPointerLeaveProp?.(event);
     if (event.defaultPrevented || resolvedDisabled || !openOnHover) return;
-    scheduleClose(closeDelay);
+    // A mouse may be on its way to the panel; see `leaveTowardPanel`.
+    if (event.pointerType === "mouse") leaveTowardPanel(event.clientX, event.clientY, closeDelay);
+    else scheduleClose(closeDelay);
   };
 
   return (
@@ -477,6 +563,7 @@ export function SelectSubContent({
     focusTrigger,
     scheduleClose,
     cancelClose,
+    setPanelNode,
   } = useSelectSubContext();
   const nestedSearchOptions = useMemo(
     () => collectSelectSearchOptions(children),
@@ -609,6 +696,7 @@ export function SelectSubContent({
         >
           <BaseSelect.Popup
             {...props}
+            ref={setPanelNode}
             data-slot="select-sub-content"
             role={roleProp ?? "presentation"}
             onKeyDown={handleKeyDown}

@@ -18,8 +18,12 @@ import { spring } from "@/registry/lib/motion";
  *
  *   <Morph activeKey={copied ? "done" : "idle"}
  *          items={{ idle: <CopyIcon />, done: <CheckIcon /> }} />
+ *
+ * The poses are exported for content that cannot change key because it must stay mounted —
+ * a hidden label that still names its button — so it can leave and return in the same
+ * motion as a swap, by animating between `animate` and `exit`.
  */
-const morph: Variants = {
+export const morphVariants: Variants = {
   initial: { opacity: 0, scale: 0.25, filter: "blur(4px)" },
   animate: { opacity: 1, scale: 1, filter: "blur(0px)" },
   exit: { opacity: 0, scale: 0.25, filter: "blur(4px)" },
@@ -64,7 +68,7 @@ export function Morph<K extends string>({
           <motion.span
             key={activeKey}
             className="inline-grid place-items-center whitespace-nowrap"
-            variants={morph}
+            variants={morphVariants}
             initial="initial"
             animate="animate"
             exit="exit"
@@ -104,7 +108,7 @@ export function Morph<K extends string>({
         <motion.span
           key={activeKey}
           className="inline-grid place-items-center [grid-area:1/1] whitespace-nowrap"
-          variants={morph}
+          variants={morphVariants}
           initial="initial"
           animate="animate"
           exit="exit"

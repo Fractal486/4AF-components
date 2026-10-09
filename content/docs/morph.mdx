@@ -13,6 +13,10 @@ description: A size-stable animated content swap for icons, labels, and status c
 Animated icon or text replacement that reserves the wider state's space and handles reduced
 motion.
 
+`morphVariants` exports the `initial`/`animate`/`exit` poses for content that must stay mounted
+while it hides — Action Button's icon-only pending label, which still names the button — so it
+can leave and return in the same motion as a keyed swap.
+
 ## Notes
 
 All possible items reserve the same grid cell, so the surrounding control never changes

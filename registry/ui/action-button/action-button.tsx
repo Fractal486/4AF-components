@@ -4,10 +4,11 @@ import { TriangleAlert } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
+import { spring } from "@/registry/lib/motion";
 import { useAction, type ActionStatus } from "@/registry/lib/use-action";
 import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
 import { Button, type ButtonProps } from "@/registry/ui/button/button";
-import { Morph } from "@/registry/ui/morph/morph";
+import { Morph, morphVariants } from "@/registry/ui/morph/morph";
 
 export type { ActionStatus };
 
@@ -104,6 +105,9 @@ export function ActionButton({
     onError,
   });
 
+  const reduceMotion = useReducedMotion();
+  // The Morph's own transition, so the icon-only swap moves exactly like every other one.
+  const swap = reduceMotion ? { duration: 0 } : spring.clean;
   const pendingIconOnly = pendingMode === "icon" && status === "pending";
   // Which label is actually showing, and — the part that matters — whether it differs from
   // the resting one at all. A status with no override of its own keeps the idle key, so the
@@ -160,12 +164,21 @@ export function ActionButton({
           {/* One box, so `iconEdges` still sees a single child and the padding doesn't move
               — and `gap-[inherit]` so the space between glyph and label is the button's own,
               per size, rather than a second copy of that number. */}
-          <span
+          {/* Icon-only pending morphs this whole group out as the loader morphs in, in the
+              Morph's own poses, rather than cutting it: the group cannot change key and
+              unmount, because its label is still the button's accessible name. The label-only
+              offset slides rather than jumps, so the label never moves without animating. */}
+          <motion.span
+            data-slot="action-button-group"
+            data-state={pendingIconOnly ? "hidden" : "visible"}
             className={cn(
-              "inline-flex items-center gap-[inherit]",
+              "inline-flex items-center gap-[inherit] transition-[translate] duration-(--duration-fast) ease-out",
               labelOnlyOffset,
-              pendingIconOnly && "opacity-0",
             )}
+            variants={morphVariants}
+            initial={false}
+            animate={pendingIconOnly ? "exit" : "animate"}
+            transition={swap}
           >
             {/* The glyph morphs in its own box, separately from the label, and that split is
                 the whole point. The loader is a text glyph — roughly half the advance width
@@ -198,19 +211,21 @@ export function ActionButton({
                 }}
               />
             )}
-          </span>
+          </motion.span>
 
           {pendingMode === "icon" && (
-            <span
+            <motion.span
               data-slot="action-button-pending-icon"
+              data-state={pendingIconOnly ? "visible" : "hidden"}
               aria-hidden="true"
-              className={cn(
-                "pointer-events-none absolute inset-0 inline-grid place-items-center transition-[opacity] duration-(--duration-fast) ease-out",
-                pendingIconOnly ? "opacity-100" : "opacity-0",
-              )}
+              className="pointer-events-none absolute inset-0 inline-grid place-items-center"
+              variants={morphVariants}
+              initial={false}
+              animate={pendingIconOnly ? "animate" : "exit"}
+              transition={swap}
             >
               <AsciiLoader />
-            </span>
+            </motion.span>
           )}
         </span>
       </Button>

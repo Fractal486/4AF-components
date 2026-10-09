@@ -20,8 +20,9 @@ When no resting icon is provided, the visible label remains centred even though 
 outcome glyphs reserve their space. Actions with an icon keep the icon-and-label group centred.
 
 `pendingMode` controls the pending presentation. It defaults to `"label"`, which keeps the
-pending label beside the ASCII loader. Set it to `"icon"` to hide the pending label and centre
-the loader over the same label-sized content box. The invisible sizer keeps the button width
+pending label beside the ASCII loader. Set it to `"icon"` to morph the label out as the loader
+morphs in, centred over the same label-sized content box, and back again when the action
+settles — the same poses and spring as every other swap. The hidden label keeps the button width
 stable, and the resting label remains its accessible name while `aria-busy` and `announce`
 describe the work:
 
@@ -46,6 +47,10 @@ renders it.
 The glyph and label morph in **separate boxes** in Action Button, Action Toggle, and the menu's
 action row. The loader is a text glyph and about half the advance width of an icon, so morphing
 them together centres the narrower state and drags the label sideways on every status change.
+
+Every visible change animates. Glyphs and per-state labels morph; the icon-only pending swap
+morphs the whole label group; and a label-only action's centring offset slides away when a status
+glyph arrives instead of jumping.
 
 That split matters at the call site: a label with no per-state override does not animate. Pass
 `labels={{ pending: "Saving" }}` when the word should change, and leave it out when only the

@@ -7,6 +7,7 @@ import { motion, useReducedMotion } from "motion/react";
 import {
   useContext,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type ComponentProps,
@@ -155,6 +156,12 @@ export function SelectContent({
   // settles on the next commit either way and the empty state still arrives — just never
   // between keystrokes.
   //
+  // A layout effect, so that next commit lands before the browser paints. The rows register
+  // their text in layout effects too, so both updates go into one synchronous re-render and
+  // the latch still sees the caught-up registry. As a passive effect the waiting commit was
+  // painted: every row hidden, the message not yet shown, so the panel collapsed to its
+  // search field for a frame and uncovered whatever lay beneath it.
+  //
   // `null` until the first registration lands, which is also what keeps the panel from
   // opening on the empty state for a frame before its own options have announced
   // themselves. No real query can equal it.
@@ -168,7 +175,7 @@ export function SelectContent({
   // row that registers late can only *add* a match, and that makes the question moot.
   const [settled, setSettled] = useState<{ query: string; empty: boolean } | null>(null);
   const nothingMatches = searchable && firstVisibleItem === undefined;
-  useEffect(() => {
+  useLayoutEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- see above
     setSettled({ query: searchQuery, empty: firstVisibleItem === undefined });
   }, [firstVisibleItem, searchQuery]);

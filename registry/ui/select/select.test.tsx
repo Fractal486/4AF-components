@@ -879,6 +879,63 @@ describe("Base UI Select", () => {
     await waitFor(() => expect(subTrigger).toHaveAttribute("aria-expanded", "false"));
   });
 
+  describe("safe triangle", () => {
+    const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    // The trigger is left at (95, 50); the panel occupies x 100–200, y 0–100 beside it.
+    async function openTowardPanel() {
+      const user = userEvent.setup();
+      render(
+        <Select items={FRUITS}>
+          <SelectTrigger aria-label="Fruit">
+            <SelectValue placeholder="Pick a fruit" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectSub>
+              <SelectSubTrigger>More fruit</SelectSubTrigger>
+              <SelectSubContent>
+                <SelectItem value="banana">Banana</SelectItem>
+              </SelectSubContent>
+            </SelectSub>
+          </SelectContent>
+        </Select>,
+      );
+      await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+      const trigger = await screen.findByRole("option", { name: "More fruit" });
+      await user.pointer({ target: trigger, coords: { clientX: 90, clientY: 50 } });
+      expect(trigger).toHaveAttribute("aria-expanded", "true");
+      const panel = document.querySelector<HTMLElement>('[data-slot="select-sub-content"]')!;
+      vi.spyOn(panel, "getBoundingClientRect").mockReturnValue(new DOMRect(100, 0, 100, 100));
+      await user.pointer({ target: document.body, coords: { clientX: 95, clientY: 50 } });
+      return { user, trigger };
+    }
+
+    it("keeps the panel open while the pointer crosses rows on its way there", async () => {
+      const { user, trigger } = await openTowardPanel();
+      // Diagonally up toward the panel, over whatever lies between — longer than the plain
+      // close delay, which is what used to drop it.
+      await user.pointer({ target: document.body, coords: { clientX: 97, clientY: 35 } });
+      await pause(150);
+      await user.pointer({ target: document.body, coords: { clientX: 99, clientY: 20 } });
+      await pause(150);
+      expect(trigger).toHaveAttribute("aria-expanded", "true");
+    });
+
+    it("closes as soon as the pointer strays out of the triangle", async () => {
+      const { user, trigger } = await openTowardPanel();
+      await user.pointer({ target: document.body, coords: { clientX: 60, clientY: 80 } });
+      await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "false"));
+    });
+
+    it("closes once the pointer rests on the way instead of arriving", async () => {
+      const { user, trigger } = await openTowardPanel();
+      await user.pointer({ target: document.body, coords: { clientX: 97, clientY: 45 } });
+      await pause(150);
+      expect(trigger).toHaveAttribute("aria-expanded", "true");
+      await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "false"), { timeout: 1000 });
+    });
+  });
+
   it("commits a nested option from the keyboard like a regular select item", async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
