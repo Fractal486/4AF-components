@@ -31,6 +31,7 @@ export type ComponentDemoName =
   | "collapsible"
   | "command-palette"
   | "copy-button"
+  | "date-picker"
   | "delete-button"
   | "dialog"
   | "dropdown-menu"
@@ -180,6 +181,7 @@ const demos: Record<Exclude<ComponentDemoName, "ascii-loader">, ComponentType> =
   collapsible: lazyEntry(async () => (await import("@/inspector/entries/collapsible")).collapsibleEntry),
   "command-palette": lazyEntry(async () => (await import("@/inspector/entries/command-palette")).commandPaletteEntry),
   "copy-button": lazyEntry(async () => (await import("@/inspector/entries/copy-button")).copyButtonEntry),
+  "date-picker": lazyEntry(async () => (await import("@/inspector/entries/date-picker")).datePickerEntry),
   "delete-button": lazyEntry(async () => (await import("@/inspector/entries/delete-button")).deleteButtonEntry),
   dialog: lazyEntry(async () => (await import("@/inspector/entries/dialog")).dialogEntry),
   "dropdown-menu": lazyEntry(async () => (await import("@/inspector/entries/dropdown-menu")).dropdownMenuEntry),

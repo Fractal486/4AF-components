@@ -1423,6 +1423,41 @@
       ]
     },
     {
+      "name": "date-picker",
+      "type": "registry:ui",
+      "description": "A date or date-range field that opens a calendar in a Base UI popover, or a bottom sheet on phones. react-day-picker owns the grid and keyboard navigation; focus opens on the selected day (or today), months slide in from the direction travelled with a CSS-only transition, and a half-picked range previews under the pointer. Default, ghost, and plain triggers in xs, sm, and md; optional clear action and hidden ISO form value. Also exports the standalone Calendar.",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "lucide-react",
+        "react-day-picker"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/button.json",
+        "http://localhost:3000/r/popover.json",
+        "http://localhost:3000/r/sheet.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/date-picker/date-picker.tsx",
+          "type": "registry:ui",
+          "target": "@ui/date-picker.tsx"
+        },
+        {
+          "path": "registry/ui/date-picker/calendar.tsx",
+          "type": "registry:ui",
+          "target": "@ui/calendar.tsx"
+        },
+        {
+          "path": "registry/ui/date-picker/date-picker.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/date-picker.variants.ts"
+        }
+      ]
+    },
+    {
       "name": "popover",
       "type": "registry:ui",
       "description": "An interactive panel anchored to a trigger. Base UI Popover behaviour with a CSS scale-and-blur enter from the trigger edge.",

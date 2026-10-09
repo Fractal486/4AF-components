@@ -1,0 +1,76 @@
+---
+title: Date Picker
+description: A date or date-range field that opens a calendar in a popover, or a bottom sheet on phones.
+---
+
+<ComponentDemo name="date-picker" />
+<ComponentReference name="date-picker" />
+
+## API
+
+**Main exports:** `DatePicker`, `DateRangePicker`, `Calendar`, `CalendarDayButton`, type `DateRange`
+
+### DatePicker and DateRangePicker
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `value` | — | Controlled value: `Date \| null`, or `DateRange \| null` for the range picker. |
+| `defaultValue` | `null` | Uncontrolled initial value. |
+| `onValueChange` | — | Called with the new value, or `null` when cleared. |
+| `open` / `defaultOpen` / `onOpenChange` | — / `false` / — | Controlled or uncontrolled panel state. |
+| `variant` | `"default"` | `"default"` boxed field, `"ghost"`, or `"plain"` (no surface, border, or horizontal padding). Same geometry as the Select trigger. |
+| `size` | `"md"` | `"xs"` (24px), `"sm"` (30px), or `"md"` (34px). |
+| `placeholder` | `"Pick a date"` / `"Pick a date range"` | Trigger text while empty. |
+| `title` | `"Select a date"` / `"Select dates"` | Panel accessible name; visible sheet title on phones. |
+| `locale` | `"en-US"` | BCP 47 locale for the trigger label (`Intl.DateTimeFormat`, `dateStyle: "medium"`). |
+| `clearable` | `false` | Adds a Clear action to the panel once a value is set. |
+| `clearLabel` | `"Clear"` | Clear action text. |
+| `name` | — | Renders a hidden input: `YYYY-MM-DD`, or `YYYY-MM-DD/YYYY-MM-DD` for a range. |
+| `calendarProps` | — | Forwarded to `Calendar`: `disabled`, `startMonth`, `endMonth`, `captionLayout`, `weekStartsOn`, `locale` (a react-day-picker locale), etc. |
+
+Other button props (`id`, `disabled`, `aria-*`, `className`, `ref`) go to the trigger. The trigger
+exposes `data-slot="date-picker-trigger"`, `data-variant`, `data-size`, `data-empty` while no value is
+set, and Base UI's `data-popup-open`.
+
+### Calendar
+
+`Calendar` takes every react-day-picker `DayPicker` prop. Defaults that differ from react-day-picker:
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `showOutsideDays` | `true` | Shows adjacent-month days. |
+| `fixedWeeks` | `true` | Always six rows, so the grid height never changes between months. |
+| `navLayout` | `"around"` | Previous/next buttons flank the caption. They are ghost `Button`s with the press spring; an unavailable month renders them `disabled`. |
+| `animate` | `true` | Month-change transition. `false` disables it. |
+
+Day buttons expose `data-today`, `data-selected-single`, `data-range-start`, `data-range-middle`, and
+`data-range-end`. Weeks and caption expose `data-enter="next" | "prev" | "fade"` after a month change.
+
+## Behavior
+
+- Viewports up to 639px wide use a bottom `Sheet`; wider viewports use a `Popover`.
+- On open, focus goes to the selected day, else today, else the first enabled day.
+- A single date commits and closes on click.
+- A range commits and closes on the second click, in either order. The first click of a new pick
+  starts a fresh range. Dismissing mid-pick keeps the previous value.
+- While one end of a range is chosen, hovering or focusing a day previews the band.
+- Both pickers show one month. A range keeps its first pick while navigating to another month.
+- The today marker is drawn after hydration and rolls over at midnight. Passing `today` or
+  `timeZone` turns this off.
+
+## Motion
+
+- Pointer navigation: weeks slide 24px and the caption 10px from the direction travelled, with a
+  fade. Keyboard navigation: fade only.
+- CSS only (`@starting-style` on `translate` and `opacity`), using the duration tokens; collapses
+  under reduced motion.
+- The panel enters and exits with the Popover or Sheet motion.
+
+## Dependencies
+
+Installs `react-day-picker` and the `popover`, `sheet`, and `button` components.
+
+## Source
+
+Adapted from [HextaUI's date picker](https://hextaui.com/r/date-picker.json) (MIT, Preet Suthar).
+The license notice is retained in the portable source files.

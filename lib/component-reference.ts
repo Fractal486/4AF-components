@@ -172,6 +172,16 @@ import { Button } from "@/components/ui/button";
   items={{ idle: <Copy />, done: <Check /> }}
 />`,
   },
+  "date-picker": {
+    usage: `import { DatePicker, DateRangePicker } from "@/components/ui/date-picker";
+
+<DatePicker value={date} onValueChange={setDate} name="due" clearable />
+<DateRangePicker
+  value={range}
+  onValueChange={setRange}
+  calendarProps={{ disabled: { before: new Date() } }}
+/>`,
+  },
   popover: {
     usage: `import {
   Popover,

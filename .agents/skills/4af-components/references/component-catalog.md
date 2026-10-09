@@ -50,6 +50,7 @@ the component name: for example, `.context.ts` means `select.context.ts` inside 
 | `dropdown-menu` | `dropdown-menu.tsx`: public re-exports | `.menu.tsx`, `.select.tsx`, `.actions.tsx`, `.shared.tsx` |
 | `sidebar` | `sidebar.tsx`: responsive shell | `.context.ts`, `.provider.tsx`, `.controls.tsx`, `.structure.tsx`, `.menu.tsx`, `.variants.ts` |
 | `selection-toolbar` | `selection-toolbar.tsx`: selection tracking and positioning | `.context.ts`, `.controls.tsx`, `.variants.ts` |
+| `date-picker` | `date-picker.tsx`: `DatePicker`, `DateRangePicker`, re-exported `Calendar` | `calendar.tsx`, `.variants.ts` |
 
 These siblings are part of the same registry item, not separate install names. `registry.json`
 declares every shipped file and its target; the CLI installs the complete bundle. The current
@@ -119,6 +120,7 @@ The catalog currently contains 47 installable UI items. Verify the count and nam
 | `select-search` | `SearchSelect` and input/content/item parts | Editable Combobox trigger with filtering and single/multi selection. |
 | `select-motion` | `Select` and trigger/content/item parts | Button-triggered select with a hand-animated unfolding panel and optional panel search. |
 | `select-motion-search` | `MotionSearchSelect` and parts | Editable Combobox whose panel unfolds from the field. |
+| `date-picker` | `DatePicker`, `DateRangePicker`, `Calendar` | Date or range field with Select-trigger geometry (default/ghost/plain, xs/sm/md); calendar in a Base UI popover, bottom sheet on phones; react-day-picker grid; optional clear and hidden ISO form value. |
 
 ### Feedback and status
 

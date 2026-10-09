@@ -20,6 +20,7 @@ export const COMPONENT_FAMILIES = [
   { name: "Checkbox", slugs: ["checkbox"] },
   { name: "Collapsible", slugs: ["collapsible"] },
   { name: "Command Palette", slugs: ["command-palette"] },
+  { name: "Date Picker", slugs: ["date-picker"] },
   { name: "Dialog", slugs: ["dialog", "alert-dialog"] },
   { name: "Dropdown Menu", slugs: ["dropdown-menu"] },
   { name: "Empty", slugs: ["empty"] },
@@ -81,6 +82,7 @@ export const COMPONENT_CATEGORIES = [
       "select-aligned",
       "select-motion",
       "select-motion-search",
+      "date-picker",
     ],
   },
   {
@@ -144,6 +146,7 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   collapsible: "Collapsible, CollapsibleTrigger, CollapsibleContent",
   "command-palette": "CommandPalette, panel/list/row/tab/footer parts, Kbd, useCommandSearch, useCommandPanelHighlight",
   "copy-button": "CopyButton",
+  "date-picker": "DatePicker, DateRangePicker (default/ghost/plain, xs/sm/md), Calendar",
   "delete-button": "DeleteButton",
   dialog: "Dialog and composition parts, DialogSteps, DialogStep",
   "dropdown-menu": "Root, trigger, content, item, checkbox/radio/submenu, shortcut, nested-select parts",
