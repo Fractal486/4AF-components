@@ -3,7 +3,7 @@
 import { TriangleAlert } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useAction } from "@/registry/lib/use-action";
-import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
+import { LoadingIndicator } from "@/registry/lib/loader";
 import { Morph } from "@/registry/ui/morph/morph";
 import { Toggle, type ToggleProps } from "@/registry/ui/toggle/toggle";
 
@@ -29,6 +29,7 @@ export interface ActionToggleProps
   /** Glyphs for the other states. Pending and error default to the loader and the
       warning triangle. */
   icons?: { pressed?: ReactNode; pending?: ReactNode; error?: ReactNode };
+  loader?: ReactNode;
   /** How long a failure is shown before the control goes quiet again, in ms.
       @default 2000 */
   revertAfter?: number;
@@ -77,6 +78,7 @@ export function ActionToggle({
   children,
   icon,
   labels,
+  loader,
   icons,
   revertAfter,
   pendingDelay,
@@ -157,7 +159,7 @@ export function ActionToggle({
           items={{
             off: icon,
             on: icons?.pressed ?? icon,
-            pending: icons?.pending ?? <AsciiLoader />,
+            pending: icons?.pending ?? <LoadingIndicator loader={loader} />,
             error: icons?.error ?? <TriangleAlert />,
           }}
         />

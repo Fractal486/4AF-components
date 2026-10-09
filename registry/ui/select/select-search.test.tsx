@@ -150,6 +150,7 @@ describe("Search Select", () => {
     await waitFor(() => expect(onValueChange).toHaveBeenCalledWith(FRUITS[1], expect.anything()));
     expect(input).toHaveValue("");
     expect(input).toHaveAttribute("placeholder", "Mango");
+    expect(input).toHaveFocus();
   });
 
   it("types over the dimmed selection and restores it after clicking outside", async () => {
@@ -217,6 +218,20 @@ describe("Search Select", () => {
     await user.keyboard("{Enter}");
     expect(input).toHaveValue("");
     expect(input).toHaveAttribute("placeholder", "Fruit: Apple");
+  });
+
+  it("unfocuses after clicking a single option and restores its normal label and icon", async () => {
+    const user = userEvent.setup();
+    render(<FruitSearch defaultValue={FRUITS[1]} />);
+    const input = screen.getByRole("combobox", { name: "Fruit" });
+    await user.type(input, "app");
+    await user.click(await screen.findByRole("option", { name: "Apple" }));
+    await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+    expect(input).not.toHaveFocus();
+    expect(input).toHaveAttribute("placeholder", "Apple");
+    expect(input).toHaveAttribute("data-selected-label");
+    expect(input.parentElement?.querySelector('[data-testid="fruit-icon"]')).toBeInTheDocument();
+    expect(input.parentElement?.querySelector(".lucide-search")).not.toBeInTheDocument();
   });
 
   it("opens and reopens a single select on its selection", async () => {

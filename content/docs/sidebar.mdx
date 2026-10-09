@@ -18,6 +18,10 @@ layouts use `SidebarRailButton` controls with
 `value` and `SidebarPanel` sections; `activePanel`, `defaultActivePanel`, and
 `onActivePanelChange` support controlled or uncontrolled wide-panel selection.
 
+`SidebarRailButton tooltip="Projects"` shows a description beside the fixed icon rail.
+Its transition plays even when the tooltip group is warm; moving between icons still opens
+their descriptions immediately. Motion durations continue to respect reduced motion.
+
 ## Menu control geometry
 
 `SidebarMenuButton` supports `size="sm"`, `size="default"`, and `size="lg"`. The compact

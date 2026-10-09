@@ -74,6 +74,12 @@ A panel of rows opens with a row already active (`data-panel-active`, or Base UI
 top match once a query narrows the list (the most recent choice when several are selected).
 Preserve unrelated work in a dirty worktree.
 
+Use `LoadingIndicator` from `registry/lib/loader` for library waiting states. The public
+`loader` slot accepts a React node; `LoaderProvider loader={<MySpinner />}` sets a subtree
+default, including portals. Local slots override it; custom pending icons take precedence.
+ASCII is the fallback. Alternative indicators and speed/size settings belong to the caller;
+do not add native loader variants or make consuming components depend on Classic/Matrix.
+
 For a component change:
 
 1. Inspect its registry source, sibling variants and tests, inspector entry, and

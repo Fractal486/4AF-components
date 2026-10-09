@@ -8,6 +8,11 @@ description: A Base UI menu with submenus, checkable items, groups, and keyboard
 
 ## API
 
+`DropdownMenu loader={<MySpinner />}` supplies the menu's loading indicator, including
+portalled rows. Omit it to inherit [LoaderProvider](/docs/reference/engineering#shared-loading-indicators), with ASCII as the fallback.
+`DropdownMenuActionItem` and `DropdownMenuCheckboxItem` accept `loader` for one row;
+custom `icons.pending` takes precedence.
+
 **Main exports:** root, trigger, content, item, checkbox, radio, submenu, shortcut, and
 nested-select parts
 

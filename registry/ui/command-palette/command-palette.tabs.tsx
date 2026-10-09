@@ -29,6 +29,8 @@ const TabVariantContext = createContext<Variant>("fill");
  * fills the panel's column the way the body would on its own. Behaviour is Base UI's:
  * roving focus, arrow keys, Home/End and the tab/panel wiring. Selection is controlled or
  * uncontrolled, as on any Base UI Tabs root.
+ * Inside CommandPalette, Tab / Shift+Tab cycle enabled tabs with wraparound while keeping
+ * focus where it is, including in the header's search field.
  *
  *   <CommandPanelTabs value={tab} onValueChange={setTab}>
  *     <CommandPanelTabList aria-label="Sections" variant="underline">
@@ -104,6 +106,7 @@ export function CommandPanelTabList({
     <TabVariantContext.Provider value={variant}>
       <BaseTabs.List
         ref={mergedRef}
+        data-slot="command-panel-tab-list"
         data-variant={variant}
         activateOnFocus={activateOnFocus}
         className={cn(commandPanelTabListVariants({ variant }), className)}

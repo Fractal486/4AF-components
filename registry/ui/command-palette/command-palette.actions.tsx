@@ -1,6 +1,6 @@
 import { cn } from "@/registry/lib/cn";
 import { useAction } from "@/registry/lib/use-action";
-import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
+import { LoadingIndicator } from "@/registry/lib/loader";
 import { Morph } from "@/registry/ui/morph/morph";
 import {
   Select,
@@ -346,7 +346,7 @@ function CommandActionRow({ item, end }: { item: CommandItem; end?: ReactNode })
         items={{
           off: item.icon,
           on: item.icons?.checked ?? item.icon,
-          pending: item.icons?.pending ?? <AsciiLoader />,
+          pending: item.icons?.pending ?? <LoadingIndicator loader={item.loader} />,
           success: item.icons?.success ?? <Check />,
           error: item.icons?.error ?? <TriangleAlert />,
           armed: item.confirm?.icon ?? item.icon,

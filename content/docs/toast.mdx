@@ -10,6 +10,11 @@ description: A transient notification stack with accessible announcements and sw
 
 **Main exports:** `ToastProvider`, `useToast`, `createToastManager`; type `ToastVariant`
 
+`ToastProvider loader={<MySpinner />}` supplies loading indicators throughout its subtree
+and portal. Otherwise it inherits [LoaderProvider](/docs/reference/engineering#shared-loading-indicators), with ASCII as the fallback.
+Add and update options accept `loader` for one notification. Promise calls accept it inside
+their `loading`, `success`, or `error` option objects.
+
 A Base UI toast manager with list or collapsed-stack presentation, bottom-centre or bottom-right
 placement, timers, focus handling, swipe dismissal, and up to three custom action buttons per
 toast. Each toast can use the default title-and-description layout or the `title-only` variant.

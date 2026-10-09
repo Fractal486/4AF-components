@@ -504,6 +504,8 @@ const SHORTCUT_SECTIONS = [
       { keys: ["⌘", "K"], action: "Open the palette" },
       { keys: ["⌘", "J"], action: "Actions for the selected row" },
       { keys: ["?"], action: "Keyboard shortcuts" },
+      { keys: ["Tab"], action: "Next panel tab" },
+      { keys: ["Shift", "Tab"], action: "Previous panel tab" },
     ],
   },
   {

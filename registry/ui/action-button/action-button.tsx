@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
 import { spring } from "@/registry/lib/motion";
 import { useAction, type ActionStatus } from "@/registry/lib/use-action";
-import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
+import { LoadingIndicator } from "@/registry/lib/loader";
 import { Button, type ButtonProps } from "@/registry/ui/button/button";
 import { Morph, morphVariants } from "@/registry/ui/morph/morph";
 
@@ -85,6 +85,7 @@ export function ActionButton({
   children,
   icon,
   labels,
+  loader,
   pendingMode = "label",
   revertAfter = 2000,
   pendingDelay = 0,
@@ -140,6 +141,7 @@ export function ActionButton({
       <Button
         variant={variant}
         size={size}
+        loader={loader}
         // Composed rather than owned outright, and taken off the spread below so nothing
         // can quietly replace it. A Base UI part that renders this button — a toolbar item,
         // a menu trigger — hands down its own click handling through the same prop, and
@@ -195,7 +197,7 @@ export function ActionButton({
               activeKey={glyphKey}
               items={{
                 idle: icon,
-                pending: <AsciiLoader />,
+                pending: <LoadingIndicator loader={loader} />,
                 success: <AnimatedCheck />,
                 error: <TriangleAlert />,
               }}
@@ -224,7 +226,7 @@ export function ActionButton({
               animate={pendingIconOnly ? "animate" : "exit"}
               transition={swap}
             >
-              <AsciiLoader />
+              <LoadingIndicator loader={loader} />
             </motion.span>
           )}
         </span>

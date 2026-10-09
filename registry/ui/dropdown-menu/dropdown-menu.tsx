@@ -38,6 +38,7 @@ export {
   DropdownMenuTrigger,
   type DropdownMenuContentProps,
   type DropdownMenuItemProps,
+  type DropdownMenuProps,
   type DropdownMenuRadioItemProps,
   type DropdownMenuSubTriggerProps,
 } from "./dropdown-menu.menu";

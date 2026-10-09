@@ -84,7 +84,8 @@
           "shadow-overlay": "var(--elevation-overlay)",
           "shadow-overlay-drop": "var(--elevation-overlay-drop)",
           "animate-icon-pop": "icon-pop var(--duration-slow) var(--ease-out)",
-          "animate-matrix-pulse": "matrix-pulse var(--matrix-cycle, 1.2s) var(--ease-in-out) infinite"
+          "animate-matrix-pulse": "matrix-pulse var(--matrix-cycle, 1.2s) var(--ease-in-out) infinite",
+          "animate-classic-fade": "classic-fade 1.2s linear infinite"
         },
         "light": {
           "background": "oklch(0.985 0.002 70)",
@@ -158,6 +159,10 @@
           "to": {
             "translate": "100% 0"
           }
+        },
+        "@keyframes classic-fade": {
+          "from": { "opacity": "1" },
+          "to": { "opacity": "0.15" }
         },
         "@keyframes matrix-pulse": {
           "0%": {
@@ -301,6 +306,22 @@
       ]
     },
     {
+      "name": "loader",
+      "type": "registry:lib",
+      "description": "Small context and loading slot for caller-supplied indicators, with an ASCII fallback.",
+      "registryDependencies": [
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/ascii-loader.json"
+      ],
+      "files": [
+        {
+          "path": "registry/lib/loader.tsx",
+          "type": "registry:lib",
+          "target": "@lib/loader.tsx"
+        }
+      ]
+    },
+    {
       "name": "button",
       "type": "registry:ui",
       "description": "Six variants, eight sizes, optical icon alignment, and a loading state that doesn't resize.",
@@ -313,7 +334,7 @@
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/motion.json",
-        "http://localhost:3000/r/ascii-loader.json"
+        "http://localhost:3000/r/loader.json"
       ],
       "files": [
         {
@@ -434,7 +455,7 @@
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/ascii-loader.json"
+        "http://localhost:3000/r/loader.json"
       ],
       "files": [
         {
@@ -542,7 +563,7 @@
         "http://localhost:3000/r/button.json",
         "http://localhost:3000/r/morph.json",
         "http://localhost:3000/r/use-action.json",
-        "http://localhost:3000/r/ascii-loader.json"
+        "http://localhost:3000/r/loader.json"
       ],
       "files": [
         {
@@ -562,7 +583,7 @@
       "registryDependencies": [
         "http://localhost:3000/r/toggle.json",
         "http://localhost:3000/r/morph.json",
-        "http://localhost:3000/r/ascii-loader.json",
+        "http://localhost:3000/r/loader.json",
         "http://localhost:3000/r/use-action.json"
       ],
       "files": [
@@ -741,7 +762,8 @@
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/motion.json",
-        "http://localhost:3000/r/morph.json"
+        "http://localhost:3000/r/morph.json",
+        "http://localhost:3000/r/loader.json"
       ],
       "files": [
         {
@@ -1033,7 +1055,7 @@
     {
       "name": "command-palette",
       "type": "registry:ui",
-      "description": "A keyboard-first command and search palette with nested panels, custom panel content, fuzzy filtering, async/server-driven and paginated search, keybind hints, panel tab bars, and Base UI dialog/autocomplete behavior.",
+      "description": "A keyboard-first command and search palette with nested panels, custom panel content, fuzzy filtering, async/server-driven and paginated search, keybind hints, panel tab bars with Tab/Shift+Tab switching, and Base UI dialog/autocomplete behavior.",
       "dependencies": [
         "@base-ui/react",
         "lucide-react",
@@ -1043,7 +1065,7 @@
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/ascii-loader.json",
+        "http://localhost:3000/r/loader.json",
         "http://localhost:3000/r/checkbox.json",
         "http://localhost:3000/r/morph.json",
         "http://localhost:3000/r/use-action.json",
@@ -1148,6 +1170,29 @@
       ]
     },
     {
+      "name": "classic-loader",
+      "type": "registry:ui",
+      "description": "Twelve fading radial bars adapted from loading.dev, with CSS-only motion, size variants, and speed control.",
+      "dependencies": ["class-variance-authority"],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/slot.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/classic-loader/classic-loader.tsx",
+          "type": "registry:ui",
+          "target": "@ui/classic-loader.tsx"
+        },
+        {
+          "path": "registry/ui/classic-loader/classic-loader.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/classic-loader.variants.ts"
+        }
+      ]
+    },
+    {
       "name": "select-aligned",
       "type": "registry:ui",
       "description": "A select with default, ghost, and plain trigger variants plus an optional dimmed label before the value that opens on its trigger rather than below it: the default and ghost panels take the trigger's width, while plain panels size to the longest option plus the check slot; the selected row lands on the value it replaces, the macOS pop-up button behaviour. Optional 24px xs trigger and popup rows, dimmed sections, and a pinned in-panel search field.",
@@ -1232,6 +1277,7 @@
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/refs.json",
         "http://localhost:3000/r/checkbox.json"
       ],
       "files": [
@@ -1433,7 +1479,7 @@
         "http://localhost:3000/r/input.json",
         "http://localhost:3000/r/tooltip.json",
         "http://localhost:3000/r/use-action.json",
-        "http://localhost:3000/r/ascii-loader.json"
+        "http://localhost:3000/r/loader.json"
       ],
       "files": [
         {
@@ -1478,7 +1524,8 @@
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/motion.json",
         "http://localhost:3000/r/button.json",
-        "http://localhost:3000/r/morph.json"
+        "http://localhost:3000/r/morph.json",
+        "http://localhost:3000/r/loader.json"
       ],
       "files": [
         {
@@ -1496,7 +1543,7 @@
     {
       "name": "sidebar",
       "type": "registry:ui",
-      "description": "A collapsible application sidebar with default, floating, inset, and split layouts, collapsible rows with built-in chevrons, nested rows, actions, badges, and loading skeletons.",
+      "description": "A collapsible application sidebar with default, floating, inset, and split layouts, animated split-rail icon tooltips, collapsible rows with built-in chevrons, nested rows, actions, badges, and loading skeletons.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",

@@ -8,10 +8,13 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ComponentProps,
   type ReactNode,
+  type RefObject,
 } from "react";
+import { useMergedRefs } from "@/registry/lib/refs";
 import { cn } from "@/registry/lib/cn";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 
@@ -82,6 +85,7 @@ interface SearchContextValue {
   multiple: boolean;
   size: SelectSize;
   selectedLabel: string;
+  inputRef: RefObject<HTMLInputElement | null>;
   registerIcon: (value: unknown, icon: ReactNode | undefined) => void;
   unregisterIcon: (value: unknown) => void;
   iconFor: (value: unknown) => ReactNode | undefined;
@@ -92,6 +96,7 @@ const SearchContext = createContext<SearchContextValue>({
   multiple: false,
   size: "sm",
   selectedLabel: "",
+  inputRef: { current: null },
   registerIcon: () => {},
   unregisterIcon: () => {},
   iconFor: () => undefined,
@@ -152,6 +157,7 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
   itemToStringLabel,
   ...props
 }: SearchSelectProps<Value, Multiple>) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const [uncontrolled, setUncontrolled] = useState(defaultOpen ?? false);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : uncontrolled;
@@ -237,13 +243,16 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
 
       onOpenChange?.(next, details);
       if (!isControlled && !details.isCanceled) setUncontrolled(next);
+      if (!details.isCanceled && !next && details.reason === "item-press" && details.event.type !== "keydown") {
+        inputRef.current?.blur();
+      }
     },
     [isControlled, multiple, onOpenChange],
   );
 
   return (
     <SearchContext.Provider
-      value={{ open: isOpen, multiple: Boolean(multiple), size, selectedLabel, registerIcon, unregisterIcon, iconFor }}
+      value={{ open: isOpen, multiple: Boolean(multiple), size, selectedLabel, inputRef, registerIcon, unregisterIcon, iconFor }}
     >
       <Combobox.Root<Value, Multiple>
         open={isOpen}
@@ -282,6 +291,7 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
 }
 
 export function SearchSelectInput({
+  ref,
   className,
   tone = "neutral",
   placeholder,
@@ -297,7 +307,8 @@ export function SearchSelectInput({
    */
   tone?: "neutral" | "accent";
 }) {
-  const { open, multiple, iconFor, size, selectedLabel } = useContext(SearchContext);
+  const { open, multiple, iconFor, size, selectedLabel, inputRef } = useContext(SearchContext);
+  const mergedRef = useMergedRefs(inputRef, ref);
   const [focused, setFocused] = useState(false);
   const reduceMotion = useReducedMotion();
 
@@ -319,6 +330,7 @@ export function SearchSelectInput({
                 className="absolute top-1/2 left-3.5 -translate-y-1/2"
               />
               <Combobox.Input
+                ref={mergedRef}
                 data-selected-label={!focused && !multiple && selectedLabel ? "" : undefined}
                 className={cn(
                   "w-full border border-border bg-surface pr-9 pl-3.5 text-foreground",

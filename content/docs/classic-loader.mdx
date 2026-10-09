@@ -1,0 +1,48 @@
+---
+title: Classic Loader
+description: Twelve fading radial bars, adapted from loading.dev with CSS-only motion and no additional animation dependency.
+---
+
+<ComponentDemo name="classic-loader" />
+<ComponentReference name="classic-loader" />
+
+## API
+
+**Main export:** ClassicLoader
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `size` | `"md"` | `"sm"` (16px), `"md"` (20px), or `"lg"` (32px). Override dimensions with `className`, such as `size-12`. |
+| `speed` | `1` | Playback multiplier: `1` is normal, `2` is twice as fast, and `0.5` is half speed. Non-positive or non-finite values fall back to normal speed. |
+| `label` | — | Optional accessible status name. Without a label the spinner is decorative and hidden from assistive technology. |
+| `asChild` | `false` | Render onto a single empty child element, such as `<div />`, instead of the default `<span>`. The loader supplies its contents. |
+
+Ordinary span props, `className`, `style`, and a forwarded element `ref` are supported.
+The root exposes `data-slot="classic-loader"`, `data-variant="classic"`, `data-size`,
+`data-loading="true"`, and `data-state="loading"`.
+
+## Color and accessibility
+
+The bars inherit `currentColor`. Use semantic utilities such as `text-muted-foreground`
+or `text-ring`; there is no separate color prop. Provide `label` when the spinner itself
+should announce a busy status. Omit it when surrounding text or a live region already
+communicates that status, and set `aria-busy` on the content being loaded where appropriate.
+
+## Motion and installation
+
+Only opacity animates. Negative staggered delays make the complete fading trail visible
+immediately, with a 1.2-second default cycle. The loop keeps its own duration under reduced
+motion, following the 4AF spinner contract; it never collapses into a 1ms strobe. This differs
+from upstream's static reduced-motion state.
+
+Installing through the 4AF CLI brings in the shared theme keyframe and local utilities.
+No `loading-dev`, Motion, or Base UI package is required by this component; it uses React
+and the existing 4AF styling utilities.
+
+## Source
+
+Adapted from Jakub Krehel's [loading.dev Classic spinner](https://loading.dev/spinners/classic).
+The geometry and linear fading trail come from
+[upstream source](https://github.com/jakubkrehel/loading/blob/d536a7459b2fdc99d09a03d79f7895ee0e6ff38a/src/classic.tsx).
+The upstream MIT copyright and permission notice are retained in the portable source file
+so they accompany every installed copy.

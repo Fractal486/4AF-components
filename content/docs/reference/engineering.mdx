@@ -34,6 +34,29 @@ Transitions name their properties and avoid animating layout properties frame by
 durations use the shared motion tokens. Reduced motion is handled in both CSS and JavaScript
 because the cascade cannot alter a Motion transition object.
 
+## Shared loading indicators
+
+Loading indicators are caller-supplied React nodes. `LoaderProvider` installs automatically
+with a consuming component and reaches React portals. Component `loader` props override it;
+existing custom pending icons override both. Omitted values inherit; `null` hides the indicator.
+ASCII is the fallback. Alternative loaders and their settings belong to the caller.
+
+```tsx
+import { LoaderProvider } from "@/lib/loader";
+import { Button } from "@/components/ui/button";
+import { ClassicLoader } from "@/components/ui/classic-loader";
+
+<LoaderProvider loader={<ClassicLoader speed={1} />}>
+  <Button loading>Save</Button>
+  <Button loading loader={<MySpinner />}>Custom</Button>
+</LoaderProvider>
+```
+
+Install Classic separately through the CLI if you choose it. Library implementations use
+`LoadingIndicator` from `registry/lib/loader`; the shared helper does not import Classic or
+maintain a variant/speed API. Its decorative square constrains the supplied node; the consuming
+component owns announcements.
+
 ## Repository boundaries
 
 Three related surfaces serve different jobs:
@@ -75,6 +98,7 @@ pages:
 | `cn` | Class-name composition with `clsx` and `tailwind-merge` |
 | `slot` | Small local helper for `asChild` composition |
 | `motion` | Shared spring and easing presets |
+| `loader` | Caller-supplied loading slots and provider defaults, with an ASCII fallback |
 | `use-action` | Run, pending, outcome, and revert state shared by Action Button and asynchronous menu rows |
 
 ## Documentation parity

@@ -20,7 +20,7 @@ When no resting icon is provided, the visible label remains centred even though 
 outcome glyphs reserve their space. Actions with an icon keep the icon-and-label group centred.
 
 `pendingMode` controls the pending presentation. It defaults to `"label"`, which keeps the
-pending label beside the ASCII loader. Set it to `"icon"` to morph the label out as the loader
+pending label beside the shared loader. Set it to `"icon"` to morph the label out as the loader
 morphs in, centred over the same label-sized content box, and back again when the action
 settles — the same poses and spring as every other swap. The hidden label keeps the button width
 stable, and the resting label remains its accessible name while `aria-busy` and `announce`
@@ -39,14 +39,14 @@ describe the work:
 
 ## Waiting states
 
-Every waiting state in the library is the ASCII loader: Button's `loading`, Action Button and
-Action Toggle while pending, the menu's action row, Command Palette, and Alert's `loading`
-variant. Button still exports the SVG `Spinner` it used to draw, but it is deprecated and nothing
-renders it.
+Supply `loader={<MySpinner />}` for this button, or use
+[LoaderProvider](/docs/reference/engineering#shared-loading-indicators) for a subtree default.
+ASCII is the fallback; Copy Button and Delete Button inherit the slot. The former SVG `Spinner`
+export is deprecated and now follows the provider too.
 
 The glyph and label morph in **separate boxes** in Action Button, Action Toggle, and the menu's
-action row. The loader is a text glyph and about half the advance width of an icon, so morphing
-them together centres the narrower state and drags the label sideways on every status change.
+action row. A reserved glyph box keeps the label in place across either loader style and
+the success/error icons.
 
 Every visible change animates. Glyphs and per-state labels morph; the icon-only pending swap
 morphs the whole label group; and a label-only action's centring offset slides away when a status

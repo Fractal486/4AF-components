@@ -10,5 +10,6 @@ description: A compact text-based loading indicator with reduced-motion handling
 
 **Main export:** `AsciiLoader`
 
-A looping braille spinner for compact asynchronous status affordances. It is the shared waiting
-indicator used throughout the component library.
+A looping braille spinner for compact asynchronous status affordances. It is the default
+library indicator. [LoaderProvider](/docs/reference/engineering#shared-loading-indicators)
+and component `loader` slots accept any caller-supplied indicator. `speed` is seconds per cycle.

@@ -10,6 +10,8 @@ import {
   type Entry,
 } from "@/inspector/schema";
 import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
+import { LoaderProvider } from "@/registry/lib/loader";
+import { ClassicLoader } from "@/registry/ui/classic-loader/classic-loader";
 import { Button } from "@/registry/ui/button/button";
 import { cn } from "@/registry/lib/cn";
 import { Tooltip } from "@/registry/ui/tooltip/tooltip";
@@ -21,6 +23,7 @@ export type ComponentDemoName =
   | "alert-dialog"
   | "ascii-loader"
   | "matrix-loader"
+  | "classic-loader"
   | "badge"
   | "button"
   | "button-group"
@@ -64,9 +67,19 @@ export type ComponentDemoName =
   | "toggle"
   | "tooltip";
 
+const LOADER_DEMOS = new Set([
+  "button", "action-button", "action-toggle", "copy-button", "delete-button",
+  "alert", "badge", "dropdown-menu", "command-palette", "toast", "selection-toolbar",
+]);
+const LOADER_CONTROLS = {
+  loader: { kind: "select", options: ["ascii", "classic"], defaultValue: "ascii", label: "Loader" },
+} as const;
+
 function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
   const [values, setValues] = useState(() => initialValues(entry.controls));
   const [replayKey, setReplayKey] = useState(0);
+  const [loader, setLoader] = useState<"ascii" | "classic">("ascii");
+  const hasLoaderSetting = LOADER_DEMOS.has(entry.slug);
   const hasControls = Object.keys(entry.controls).length > 0;
   const isAppShell = entry.slug === "sidebar";
   const isScrambleText = entry.slug === "scramble-text";
@@ -102,10 +115,10 @@ function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
               <Fragment key={replayKey}>{entry.render(values)}</Fragment>
             </>
           ) : (
-            entry.render(values)
+            <LoaderProvider loader={loader === "classic" ? <ClassicLoader /> : undefined}>{entry.render(values)}</LoaderProvider>
           )}
         </div>
-        {hasControls ? (
+        {hasControls || hasLoaderSetting ? (
           <section
             aria-label={`${entry.name} settings`}
             className="mx-auto w-[400px] px-3 py-2"
@@ -118,6 +131,14 @@ function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
                 setValues((current) => ({ ...current, [key]: value }))
               }
             />
+            {hasLoaderSetting && (
+              <Controls
+                idPrefix={`docs-${entry.slug}-loader`}
+                schema={LOADER_CONTROLS}
+                values={{ loader }}
+                onChange={(_key, value) => setLoader(value as "ascii" | "classic")}
+              />
+            )}
           </section>
         ) : null}
       </div>
@@ -166,6 +187,7 @@ const demos: Record<Exclude<ComponentDemoName, "ascii-loader">, ComponentType> =
   "hover-card": lazyEntry(async () => (await import("@/inspector/entries/hover-card")).hoverCardEntry),
   input: lazyEntry(async () => (await import("@/inspector/entries/input")).inputEntry),
   "matrix-loader": lazyEntry(async () => (await import("@/inspector/entries/matrix-loader")).matrixLoaderEntry),
+  "classic-loader": lazyEntry(async () => (await import("@/inspector/entries/classic-loader")).classicLoaderEntry),
   morph: lazyEntry(async () => (await import("@/inspector/entries/morph")).morphEntry),
   popover: lazyEntry(async () => (await import("@/inspector/entries/popover")).popoverEntry),
   progress: lazyEntry(async () => (await import("@/inspector/entries/progress")).progressEntry),
@@ -201,10 +223,7 @@ export function ComponentDemo({ name }: { name: ComponentDemoName }) {
   if (name === "ascii-loader") {
     return (
       <div className="not-prose first:mt-0 my-6 grid min-h-72 place-items-center rounded-xl bg-background shadow-border">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <AsciiLoader label="Loading" />
-          <span>Loading</span>
-        </div>
+        <AsciiLoader label="Loading" className="text-sm text-muted-foreground" />
       </div>
     );
   }

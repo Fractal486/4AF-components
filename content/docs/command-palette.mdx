@@ -8,6 +8,11 @@ description: A searchable keyboard-first command surface composed from 4AF primi
 
 ## API
 
+`loader={<MySpinner />}` supplies the palette's search, panel, and action indicators.
+Omit it to inherit [LoaderProvider](/docs/reference/engineering#shared-loading-indicators), with ASCII as the fallback. Individual
+`CommandItem` data and `CommandPanelLoading` accept `loader` overrides; a custom
+`icons.pending` takes precedence for action rows.
+
 **Main exports:** `CommandPalette`, custom panel, list, row, tab and action parts, `Kbd`,
 `useCommandSearch`, `useCommandPanelHighlight`
 
@@ -85,6 +90,11 @@ keys reach them (`activateOnFocus`, on by default here), because a panel's tabs 
 one list, which is instant. When they do, one `CommandPanelTabPanel` whose `value` follows the
 selection is enough wiring. A header search field keeps working alongside the tabs: filter within
 the selected tab.
+
+Within a custom panel using these tabs, Tab selects the next enabled tab and Shift+Tab the
+previous one, wrapping at either end and skipping disabled tabs. Focus stays where it is,
+so the header search field keeps its query and you can continue typing after switching.
+Panels without a tab bar keep ordinary Tab focus navigation; open menus keep their own keys.
 
 The indicator is measured from the selected tab and moved with a layout animation, as on Tabs,
 with one correction: the palette scales in as it opens, so measurements are divided by that scale
@@ -165,7 +175,7 @@ because a palette action is data:
 ```
 
 `labels` and `icons` carry the other states—checked, pending, success, and error—each falling back
-to the row's own label or icon. Pending and error default to the ASCII loader and warning
+to the row's own label or icon. Pending and error default to the shared loader and warning
 triangle. `revertAfter` and `pendingDelay` behave as on Action Button. Neither toggle shows a
 success tick: the row having become the other thing is the confirmation. An item with none of
 these fields is unchanged; it closes the menu and calls `onSelect`.

@@ -1,7 +1,7 @@
 "use client";
 
 import { Toast as BaseToast } from "@base-ui/react/toast";
-import { Bell, Check, Info, LoaderCircle, X } from "lucide-react";
+import { Bell, Check, Info, X } from "lucide-react";
 import type {
   ToastManager as BaseToastManager,
   ToastManagerAddOptions as BaseToastManagerAddOptions,
@@ -19,6 +19,7 @@ import {
 import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
 import { Morph } from "@/registry/ui/morph/morph";
+import { LoadingIndicator, LoaderProvider } from "@/registry/lib/loader";
 import {
   toastIconVariants,
   toastVariants,
@@ -78,7 +79,7 @@ type IconComponent = ComponentType<{ className?: string }>;
 const STATUS_ICON: Record<ToastType, IconComponent> = {
   neutral: Bell,
   info: Info,
-  loading: LoaderCircle,
+  loading: LoadingIndicator,
   success: Check,
   error: HexagonAlertIcon,
 };
@@ -100,6 +101,7 @@ export type ToastActionProps = Omit<
 };
 
 export type ToastObject<Data extends object = ToastData> = BaseToastObject<Data> & {
+  loader?: ReactNode;
   /** Content layout. `title-only` omits the description slot. */
   variant?: ToastVariant;
   /** Custom actions rendered below the toast description. */
@@ -108,6 +110,7 @@ export type ToastObject<Data extends object = ToastData> = BaseToastObject<Data>
 
 export type ToastManagerAddOptions<Data extends object = ToastData> =
   BaseToastManagerAddOptions<Data> & {
+    loader?: ReactNode;
     /** Content layout. `title-only` omits the description slot. */
     variant?: ToastVariant;
     /** Renders at most the first three custom actions. */
@@ -116,6 +119,7 @@ export type ToastManagerAddOptions<Data extends object = ToastData> =
 
 export type ToastManagerUpdateOptions<Data extends object = ToastData> =
   BaseToastManagerUpdateOptions<Data> & {
+    loader?: ReactNode;
     /** Content layout. `title-only` omits the description slot. */
     variant?: ToastVariant;
     /** Renders at most the first three custom actions. */
@@ -232,6 +236,7 @@ export function createToastManager<Data extends object = ToastData>(): ToastMana
 }
 
 export interface ToastProviderProps extends ComponentProps<typeof BaseToast.Provider> {
+  loader?: ReactNode;
   /** Which corner the stack anchors to. Both grow upward from the bottom. */
   position?: ToastPosition;
   /** `list` keeps every toast fanned out (beUI); `collapse` overlaps them and fans on hover. */
@@ -239,28 +244,31 @@ export interface ToastProviderProps extends ComponentProps<typeof BaseToast.Prov
 }
 
 export function ToastProvider({
+  loader,
   position = "bottom-right",
   stack = "list",
   children,
   ...props
 }: ToastProviderProps) {
   return (
-    <BaseToast.Provider {...props}>
-      {children}
-      <BaseToast.Portal>
-        <BaseToast.Viewport
-          // Height tracks the front toast so the collapsed stack has a hover target;
-          // fanned toasts overflow upward (no clipping) and sustain the hover themselves.
-          style={{ height: "var(--toast-frontmost-height)" }}
-          className={cn(
-            "fixed bottom-4 z-[100] flex w-[calc(100vw-2rem)] max-w-sm outline-none",
-            position === "bottom-center" ? "left-1/2 -translate-x-1/2" : "right-4",
-          )}
-        >
-          <ToastList stack={stack} />
-        </BaseToast.Viewport>
-      </BaseToast.Portal>
-    </BaseToast.Provider>
+    <LoaderProvider loader={loader}>
+      <BaseToast.Provider {...props}>
+        {children}
+        <BaseToast.Portal>
+          <BaseToast.Viewport
+            // Height tracks the front toast so the collapsed stack has a hover target;
+            // fanned toasts overflow upward (no clipping) and sustain the hover themselves.
+            style={{ height: "var(--toast-frontmost-height)" }}
+            className={cn(
+              "fixed bottom-4 z-[100] flex w-[calc(100vw-2rem)] max-w-sm outline-none",
+              position === "bottom-center" ? "left-1/2 -translate-x-1/2" : "right-4",
+            )}
+          >
+            <ToastList stack={stack} />
+          </BaseToast.Viewport>
+        </BaseToast.Portal>
+      </BaseToast.Provider>
+    </LoaderProvider>
   );
 }
 
@@ -298,7 +306,7 @@ function ToastItem({ toast, stack }: { toast: ToastObject<ToastData>; stack: Toa
   // icon a few levels down.
   const iconNode =
     type === "loading" ? (
-      <LoaderCircle className="size-3.5 animate-spin" />
+      <LoadingIndicator loader={toast.loader} className="size-3.5" />
     ) : (
       <Icon className="size-3.5" />
     );

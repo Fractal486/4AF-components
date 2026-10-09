@@ -1,6 +1,6 @@
 import { cn } from "@/registry/lib/cn";
 import { useAction, type ActionStatus } from "@/registry/lib/use-action";
-import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
+import { LoadingIndicator } from "@/registry/lib/loader";
 import { Morph } from "@/registry/ui/morph/morph";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 import { Check, TriangleAlert } from "lucide-react";
@@ -20,6 +20,7 @@ export interface DropdownMenuActionItemProps
   labels?: { pending?: ReactNode; success?: ReactNode; error?: ReactNode };
   /** Glyphs per state. Default to the spinner, a check, and the warning triangle. */
   icons?: { pending?: ReactNode; success?: ReactNode; error?: ReactNode };
+  loader?: ReactNode;
   /** How long the outcome holds before the row returns to idle, in ms. @default 2000 */
   revertAfter?: number;
   /** Hold back `pending` for this long, so a near-instant action doesn't flash a
@@ -51,6 +52,7 @@ export function DropdownMenuActionItem({
   icon,
   labels,
   icons,
+  loader,
   revertAfter,
   pendingDelay,
   announce,
@@ -96,7 +98,7 @@ export function DropdownMenuActionItem({
             activeKey={status}
             items={{
               idle: icon,
-              pending: glyph(icons?.pending, <AsciiLoader />),
+              pending: glyph(icons?.pending, <LoadingIndicator loader={loader} />),
               success: glyph(icons?.success, <Check />),
               error: glyph(icons?.error, <TriangleAlert />),
             }}
@@ -127,6 +129,7 @@ export function DropdownMenuActionItem({
 
 export interface DropdownMenuCheckboxItemProps
   extends Omit<ComponentProps<typeof BaseMenu.CheckboxItem>, "render" | "children"> {
+  loader?: ReactNode;
   /**
    * `children` may be a function of the checked state — return a different icon and label
    * for each, so a `menuitemcheckbox` can read as a toggle button (Mute ⇄ Unmute)
@@ -187,6 +190,7 @@ export function DropdownMenuCheckboxItem({
   onCheckedChange,
   revertAfter,
   pendingDelay,
+  loader,
   announce,
   disabled,
   disabledReason,
@@ -265,7 +269,7 @@ export function DropdownMenuCheckboxItem({
                     items={{
                       on: <Check />,
                       off: null,
-                      pending: <AsciiLoader />,
+                      pending: <LoadingIndicator loader={loader} />,
                       error: <TriangleAlert />,
                     }}
                   />
