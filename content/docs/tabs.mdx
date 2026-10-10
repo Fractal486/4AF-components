@@ -8,10 +8,22 @@ description: A Base UI tab set with keyboard navigation and an animated active i
 
 ## API
 
-**Main exports:** `Tabs`, `TabsList`, `TabsTab`, `TabsPanel`
+**Main exports:** `Tabs`, `TabsList`, `TabsTab`, `TabsCount`, `TabsPanel`
 
-Base UI tabs with a travelling Motion indicator; segment, pill, and underline appearances; an
-optional solid treatment; and two sizes.
+Base UI tabs with a travelling Motion indicator; segment, pill, underline, and outline
+appearances; an optional solid treatment (segment and pill only); and two sizes.
+
+`outline` is a bordered, unfilled track. The selected tab gets a `bg-muted` fill inset 3px from
+the border. Tracks are 34px (`md`) and 30px (`sm`), the Input and Select heights; corners are
+8px around 4px fills (`md`) and 7px around 3px fills (`sm`).
+
+`TabsCount` renders a dim, tabular count after a tab's label, in any variant:
+
+```tsx
+<TabsTab value="included">
+  Included <TabsCount>3</TabsCount>
+</TabsTab>
+```
 
 The rectangular segment treatment uses the shared control tiers: an 8px track contains tabs
 with 6px corners. The pill treatment remains fully rounded, and the underline treatment only

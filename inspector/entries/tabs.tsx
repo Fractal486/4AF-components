@@ -1,14 +1,14 @@
-import { Tabs, TabsList, TabsTab } from "@/registry/ui/tabs/tabs";
+import { Tabs, TabsCount, TabsList, TabsTab } from "@/registry/ui/tabs/tabs";
 import { bool, defineEntry, num, select } from "../schema";
 
-const VARIANTS = ["segment", "pill", "underline"] as const;
+const VARIANTS = ["segment", "pill", "underline", "outline"] as const;
 const SIZES = ["sm", "md"] as const;
 
-const TABS = [
+const TABS: readonly { value: string; label: string; count?: number }[] = [
   { value: "account", label: "Account" },
-  { value: "notifications", label: "Notifications" },
-  { value: "billing", label: "Billing" },
-] as const;
+  { value: "notifications", label: "Notifications", count: 12 },
+  { value: "billing", label: "Billing", count: 3 },
+];
 
 export const tabsEntry = defineEntry({
   slug: "tabs",
@@ -20,9 +20,10 @@ export const tabsEntry = defineEntry({
     maxWidth: num(280, { min: 160, max: 440, step: 20, label: "Max width" }),
     // A dark, borderless pill on a brighter track — segment/pill only, so it's disabled
     // for underline (which has no pill to fill).
-    solid: bool(false, "Solid", (v) => v.variant === "underline"),
+    solid: bool(false, "Solid", (v) => v.variant === "underline" || v.variant === "outline"),
+    counts: bool(false, "Counts"),
   },
-  render({ variant, size, solid, overflow, maxWidth }) {
+  render({ variant, size, solid, overflow, maxWidth, counts }) {
     return (
       <div className="w-full max-w-md">
         <Tabs
@@ -46,6 +47,7 @@ export const tabsEntry = defineEntry({
             ] : [])].map((tab) => (
               <TabsTab key={tab.value} value={tab.value}>
                 {tab.label}
+                {counts && tab.count !== undefined && <TabsCount>{tab.count}</TabsCount>}
               </TabsTab>
             ))}
           </TabsList>

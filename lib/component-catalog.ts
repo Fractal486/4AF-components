@@ -174,7 +174,7 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   "data-table": "DataTable, DataTableRow, DataTableHead, DataTableRowActions, and the re-exported table layout parts",
   "table-of-contents": "TableOfContents",
   "table-of-contents-lines": "TableOfContentsLines",
-  tabs: "Tabs, TabsList, TabsTab, TabsPanel",
+  tabs: "Tabs (segment/pill/underline/outline), TabsList, TabsTab, TabsCount, TabsPanel",
   "text-shimmer": "TextShimmer",
   "scramble-text": "ScrambleText",
   textarea: "Textarea",

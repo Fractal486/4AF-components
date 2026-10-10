@@ -30,6 +30,9 @@ export const tabsListVariants = cva("relative flex items-center", {
          on a line rather than in a box. A real border, not a shadow — its job here is
          separation, not elevation. */
       underline: "w-full border-b border-border",
+      /* A bordered, unfilled track: the segment's geometry with an edge instead of a
+         fill. The selected tab's fill sits 3px inside the border. */
+      outline: "w-fit self-start gap-[3px] border border-border p-[3px]",
     },
     // The pill treatment (segment/pill only). `false` is the raised surface chip with a
     // hairline; `true` drops the hairline for a dark fill on a brighter track.
@@ -51,6 +54,10 @@ export const tabsListVariants = cva("relative flex items-center", {
     { variant: "pill", size: "sm", class: "gap-0.5 p-0.5" },
     { variant: "underline", size: "md", class: "gap-1" },
     { variant: "underline", size: "sm", class: "gap-0.5" },
+    /* Concentric through the border: outer = fill + padding + border, so an 8px track
+       holds 4px fills and a 7px track holds 3px ones. */
+    { variant: "outline", size: "md", class: "rounded-[8px]" },
+    { variant: "outline", size: "sm", class: "rounded-[7px]" },
   ],
   defaultVariants: { variant: "segment", solid: false, size: "md" },
 });
@@ -84,6 +91,7 @@ export const tabVariants = cva(
         // -1px pulls the tab over the list's border so the indicator sits on top of
         // it rather than below, and the two hairlines don't stack into 2px.
         underline: "-mb-px",
+        outline: "",
       },
       /* `sm` drops a type step and tightens the padding, landing the pill track on 32px —
          the height of an Input or a small Button, so a row of tabs lines up with the
@@ -97,6 +105,10 @@ export const tabVariants = cva(
       { variant: "pill", size: "sm", class: "px-2.5 py-1.5" },
       { variant: "underline", size: "md", class: "rounded-t-[8px] px-3 pt-1.5 pb-2.5" },
       { variant: "underline", size: "sm", class: "rounded-t-[6px] px-2.5 pt-1 pb-2" },
+      // With the 3px padding and 1px border, 34px and 30px — the md and sm Input and
+      // Select heights.
+      { variant: "outline", size: "md", class: "rounded-[4px] px-3 py-[3px]" },
+      { variant: "outline", size: "sm", class: "rounded-[3px] px-2.5 py-[3px]" },
     ],
     defaultVariants: { variant: "segment", size: "md" },
   },
@@ -115,6 +127,7 @@ export const tabIndicatorVariants = cva("pointer-events-none absolute z-0", {
       segment: "inset-y-0.5",
       pill: "rounded-full",
       underline: "bottom-0 h-px bg-foreground",
+      outline: "inset-y-[3px] bg-muted",
     },
     solid: { false: "", true: "" },
     size: { sm: "", md: "" },
@@ -126,6 +139,8 @@ export const tabIndicatorVariants = cva("pointer-events-none absolute z-0", {
     // The chip repeats the tab's radius, and sits inside the track's own padding.
     { variant: "segment", size: "md", class: "rounded-[6px]" },
     { variant: "segment", size: "sm", class: "rounded-[5px]" },
+    { variant: "outline", size: "md", class: "rounded-[4px]" },
+    { variant: "outline", size: "sm", class: "rounded-[3px]" },
     { variant: "pill", size: "md", class: "inset-y-1" },
     { variant: "pill", size: "sm", class: "inset-y-0.5" },
   ],

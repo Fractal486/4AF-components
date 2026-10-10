@@ -60,7 +60,7 @@ export interface TabsProps
   variant?: Variant;
   /**
    * A dark, borderless pill on a brighter track instead of the raised surface chip.
-   * `segment`/`pill` only — the `underline` variant ignores it.
+   * `segment`/`pill` only — `underline` and `outline` ignore it.
    */
   solid?: boolean;
   /**
@@ -154,7 +154,10 @@ export function TabsList({
       // the indicator would jitter by 1px between tabs of fractional width.
       const listRect = list.getBoundingClientRect();
       const tabRect = active.getBoundingClientRect();
-      const left = tabRect.left - listRect.left + list.scrollLeft;
+      // `clientLeft` is the list's left border: the rects are border-box, but the
+      // indicator is positioned from inside the border. Without it, a bordered track
+      // (`outline`) shifts the fill 1px toward the end.
+      const left = tabRect.left - listRect.left - list.clientLeft + list.scrollLeft;
       setBox((previous) => previous?.left === left && previous.width === tabRect.width
         ? previous : { left, width: tabRect.width });
     };
@@ -268,6 +271,21 @@ export function TabsTab({
     <BaseTabs.Tab className={cn(tabVariants({ variant, size }), className)} {...props}>
       {children}
     </BaseTabs.Tab>
+  );
+}
+
+/**
+ * A count after a tab's label, e.g. "Included 3". Stays dim whether or not its tab is
+ * selected, so the label is what changes; tabular figures keep the tab from changing width
+ * as the number does.
+ */
+export function TabsCount({ className, ...props }: ComponentProps<"span">) {
+  return (
+    <span
+      data-slot="tabs-count"
+      className={cn("ms-2 font-normal text-subtle-foreground tabular-nums", className)}
+      {...props}
+    />
   );
 }
 
