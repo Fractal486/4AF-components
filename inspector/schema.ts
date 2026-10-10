@@ -11,7 +11,13 @@ import type { ReactNode } from "react";
 export type DisabledWhen = (values: Record<string, unknown>) => boolean;
 
 export type ControlDef =
-  | { kind: "select"; options: readonly string[]; defaultValue: string; label?: string }
+  | {
+      kind: "select";
+      options: readonly string[];
+      defaultValue: string;
+      label?: string;
+      disabledWhen?: DisabledWhen;
+    }
   | { kind: "boolean"; defaultValue: boolean; label?: string; disabledWhen?: DisabledWhen }
   | { kind: "text"; defaultValue: string; label?: string; placeholder?: string }
   | {
@@ -50,8 +56,15 @@ export function select<const O extends readonly string[]>(
   options: O,
   defaultValue: O[number],
   label?: string,
-): { kind: "select"; options: O; defaultValue: O[number]; label?: string } {
-  return { kind: "select", options, defaultValue, label };
+  disabledWhen?: DisabledWhen,
+): {
+  kind: "select";
+  options: O;
+  defaultValue: O[number];
+  label?: string;
+  disabledWhen?: DisabledWhen;
+} {
+  return { kind: "select", options, defaultValue, label, disabledWhen };
 }
 
 export function bool(

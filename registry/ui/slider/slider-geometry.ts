@@ -127,3 +127,21 @@ export function getSliderInlineDim(
 
   return deepest;
 }
+
+/**
+ * Whether the thumb should dodge the inline text: within `approachPx` of a span, and not
+ * parked at either end of the rail. At the very ends the thumb is the reading of "min" or
+ * "max" and the text beside it is already clear of the rail's edge, so it shows in full.
+ */
+export function getSliderThumbDodged(
+  thumbLeftPx: number,
+  thumbWidthPx: number,
+  controlWidthPx: number,
+  spans: readonly SliderSpan[],
+  approachPx = 8,
+): boolean {
+  const atStart = thumbLeftPx <= 0.5;
+  const atEnd = controlWidthPx > 0 && thumbLeftPx + thumbWidthPx >= controlWidthPx - 0.5;
+  if (atStart || atEnd) return false;
+  return getSliderInlineDim(thumbLeftPx, thumbWidthPx, spans, approachPx) > 0;
+}

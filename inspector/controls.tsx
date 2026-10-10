@@ -123,6 +123,7 @@ function Control({
   if (def.kind === "select") {
     const labelId = `${id}-label`;
     const selectedLabel = humanizeLabel(value as string);
+    const disabled = def.disabledWhen?.(values) ?? false;
 
     if (fitsPillTabs(def.options.map(humanizeLabel))) {
       // The tab's value is the raw option, so picking one hands back exactly what the schema
@@ -134,6 +135,7 @@ function Control({
           </span>
           <Tabs
             variant="pill"
+            appearance="outline"
             size="sm"
             className="justify-self-end"
             value={value as string}
@@ -141,7 +143,7 @@ function Control({
           >
             <TabsList aria-labelledby={labelId}>
               {def.options.map((option) => (
-                <TabsTab key={option} value={option}>
+                <TabsTab key={option} value={option} disabled={disabled}>
                   {humanizeLabel(option)}
                 </TabsTab>
               ))}
@@ -158,6 +160,7 @@ function Control({
         </span>
         <AlignedSelect<string>
           value={selectedLabel}
+          disabled={disabled}
           onValueChange={(next) => {
             const option = def.options.find((candidate) => humanizeLabel(candidate) === next);
             if (option !== undefined) onChange(option);

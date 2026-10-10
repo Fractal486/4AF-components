@@ -6,6 +6,7 @@ import {
   getSliderFillOffset,
   getSliderInlineDim,
   getSliderRangeFillInset,
+  getSliderThumbDodged,
 } from "./slider-geometry";
 import { Slider } from "./slider";
 
@@ -272,60 +273,102 @@ describe("Slider", () => {
         <Slider aria-label="Volume" thumb={thumb} inlineLabel label="Volume" defaultValue={40} />,
       );
 
-      // Back to the row above the track, and the thumb carries no inline fade.
+      // Back to the row above the track, and the thumb never dodges.
       expect(container.querySelector(".mb-2")).toHaveTextContent("Volume");
-      expect(container.querySelector('[data-slot="slider-thumb-ink"]')).toBeNull();
+      expect(container.querySelector("[data-dodged]")).toBeNull();
       expect(
         container.querySelector<HTMLElement>('[data-slot="slider-thumb"]')!.className,
       ).toContain("bg-foreground");
     },
   );
 
-  it("fades the thumb where it sits under inline text", async () => {
-    const { container, rerender } = render(
-      <Slider
-        aria-label="Volume"
-        inlineLabel
-        label="Volume"
-        defaultValue={0}
-        showValue={false}
-        showTicks={false}
-      />,
+  it.each([
+    [5, true],
+    [0, false],
+  ] as const)("at value %s, dodges the thumb under inline text: %s", async (value, expected) => {
+    // jsdom has no layout: give every element a 200px width so the thumb has a rail to travel.
+    const width = vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockReturnValue(200);
+    try {
+      const { container, rerender } = render(
+        <Slider
+          aria-label="Volume"
+          inlineLabel
+          label="Volume"
+          defaultValue={value}
+          showValue={false}
+          showTicks={false}
+        />,
+      );
+
+      const thumb = container.querySelector<HTMLElement>('[data-slot="slider-thumb"]')!;
+      expect(thumb).not.toHaveAttribute("data-dodged");
+
+      // The label sits over the rail's first 40px, where a thumb near the minimum is.
+      Object.defineProperty(screen.getByText("Volume"), "getBoundingClientRect", {
+        configurable: true,
+        value: () => ({ left: 0, right: 40, width: 40 }),
+      });
+
+      // `showValue` is one of the measuring effect's dependencies, so flipping it re-measures
+      // against the rect above.
+      rerender(
+        <Slider
+          aria-label="Volume"
+          inlineLabel
+          label="Volume"
+          defaultValue={value}
+          showValue
+          showTicks={false}
+        />,
+      );
+
+      if (expected) {
+        await waitFor(() => expect(thumb).toHaveAttribute("data-dodged", ""));
+      } else {
+        // Parked at the minimum, under the label or not, the thumb stays as it is.
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        expect(thumb).not.toHaveAttribute("data-dodged");
+      }
+    } finally {
+      width.mockRestore();
+    }
+  });
+
+  it("dodges near text but never at either end of the rail", () => {
+    const label: [number, number] = [0, 40];
+    const value: [number, number] = [170, 200];
+    // Within 8px of the label, away from the end.
+    expect(getSliderThumbDodged(20, 6, 200, [label])).toBe(true);
+    expect(getSliderThumbDodged(45, 6, 200, [label])).toBe(true);
+    // Clear of both spans.
+    expect(getSliderThumbDodged(100, 6, 200, [label, value])).toBe(false);
+    // Parked at either end: back to normal even though the text is right there.
+    expect(getSliderThumbDodged(0, 6, 200, [label, value])).toBe(false);
+    expect(getSliderThumbDodged(194, 6, 200, [label, value])).toBe(false);
+    // One step in from the end, it dodges again.
+    expect(getSliderThumbDodged(190, 6, 200, [label, value])).toBe(true);
+  });
+
+  it("shows the bar's ticks and steps up its fill only while in use", () => {
+    const { container } = render(<Slider aria-label="Volume" defaultValue={40} />);
+
+    const ticks = container.querySelector('[data-slot="slider-ticks"]')!;
+    expect(ticks.className).toContain("opacity-0");
+    expect(ticks.className).toContain("group-hover:opacity-100");
+    expect(container.querySelector('[data-slot="slider-fill"]')!.className).toContain(
+      "group-hover:bg-foreground/20",
     );
+  });
 
-    const thumb = container.querySelector<HTMLElement>('[data-slot="slider-thumb"]')!;
-    const ink = container.querySelector<HTMLElement>('[data-slot="slider-thumb-ink"]')!;
-    expect(Number(ink.style.opacity)).toBe(1);
+  it.each(["circle", "knob"] as const)("keeps the %s thumb's ticks and fill as they were", (thumb) => {
+    const { container } = render(<Slider aria-label="Volume" thumb={thumb} defaultValue={40} />);
 
-    // jsdom has no layout, so the label is given one. A thumb at the minimum parks against
-    // the rail's left edge, which is where the label starts.
-    Object.defineProperty(screen.getByText("Volume"), "getBoundingClientRect", {
-      configurable: true,
-      value: () => ({ left: 0, right: 40, width: 40 }),
-    });
-
-    // `showValue` is one of the measuring effect's dependencies, so flipping it re-measures
-    // against the rect above.
-    rerender(
-      <Slider
-        aria-label="Volume"
-        inlineLabel
-        label="Volume"
-        defaultValue={0}
-        showValue
-        showTicks={false}
-      />,
+    expect(container.querySelector('[data-slot="slider-ticks"]')!.className).not.toContain(
+      "opacity-0",
     );
-
-    // The fade rides Motion's frame loop rather than React's commit, so it lands next frame.
-    await waitFor(() => expect(Number(ink.style.opacity)).toBeLessThan(1));
-
-    // What fades is the ink *over* an opaque floor — the thumb itself never goes translucent,
-    // or the rail's ticks and the fill's edge would show straight through the handle.
-    expect(thumb.style.opacity).toBe("");
-    // And the floor is dimmed ink rather than a step towards the rail, so the handle stays a
-    // handle instead of arriving at the fill's own tone.
-    expect(thumb.className).toContain("bg-subtle-foreground");
+    expect(container.querySelector('[data-slot="slider-fill"]')!.className).not.toContain(
+      "group-hover",
+    );
   });
 
   it("ramps the inline fade by overlap instead of switching at contact", () => {

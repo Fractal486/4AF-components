@@ -20,12 +20,13 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
+import { duration } from "@/registry/lib/motion";
 import { Tooltip } from "@/registry/ui/tooltip/tooltip";
 import {
   getSliderControlWidth,
   getSliderFillOffset,
-  getSliderInlineDim,
   getSliderRangeFillInset,
+  getSliderThumbDodged,
   type SliderSpan,
 } from "./slider-geometry";
 
@@ -178,22 +179,25 @@ const KNOB_GRAB_SCALE = {
   sm: 4 / 3,
 } as const;
 
-// What the thumb dims *to* while it sits under inline text: the dimmest ink the theme has.
-// The handle stays a handle — a dimmed white in the dark theme, a dimmed black in the light
-// one — rather than receding into the bar.
-//
-// Not a step towards the rail, which is the obvious way to dim and the wrong one. The rail is
-// `muted` and the fill is the foreground at 15% over it, so the tones on that path are the
-// fill's own neighbourhood and the handle arrives at the colour of the thing it is sitting on.
-// `subtle-foreground` is neutral-500 in both themes, which lands clear of the fill in each —
-// lighter than it in the dark theme, darker in the light one — and clear of the label text it
-// passes under, which `muted-foreground` would have matched exactly in the dark theme.
-//
-// Opaque, and that is the point of the layer: dimming by opacity alone lets the rail's tick
-// marks and the fill's edge show straight through the handle. The thumb is this floor with
-// full-strength ink over it, so what animates is still only the ink's opacity while the floor
-// stays solid at every point in the fade.
-const INLINE_DIM_FLOOR = "bg-subtle-foreground";
+// Inline mode: once the thumb comes within this many px of the label or value it *dodges* —
+// fades to a ghost and drops any grab stretch, back to its resting height — so the text it
+// passes under stays readable. A switch with its own springs rather than a ramp tied to the
+// overlap: the text gets its contrast back the moment the thumb arrives instead of partway
+// across. Parked at either end it doesn't dodge (see `getSliderThumbDodged`).
+const DODGE_APPROACH_PX = 8;
+const DODGE_OPACITY = 0.15;
+
+// "In use" for the bar: hovered, dragged, or keyboard-focused. The ticks fade in, the fill
+// steps up and the inline value comes to full ink; at rest the bar is just a rail and a fill.
+// The slow token, not the base one: these are ambient changes the hand didn't ask for, so they
+// ease in rather than snap with the cursor.
+const BAR_TICKS_IN_USE =
+  "opacity-0 transition-[opacity] duration-(--duration-slow) ease-out group-hover:opacity-100 group-data-[dragging-index]:opacity-100 group-has-[:focus-visible]:opacity-100";
+const BAR_FILL_IN_USE =
+  "transition-[background-color] duration-(--duration-slow) ease-out group-hover:bg-foreground/20 group-data-[dragging-index]:bg-foreground/20 group-has-[:focus-visible]:bg-foreground/20";
+const INLINE_VALUE_IN_USE =
+  "text-muted-foreground transition-[color] duration-(--duration-slow) ease-out group-hover:text-foreground group-data-[dragging-index]:text-foreground group-has-[:focus-visible]:text-foreground";
+
 const INLINE_GUTTER = { md: "px-3", sm: "px-2.5" } as const;
 const NO_SPANS: readonly SliderSpan[] = [];
 
@@ -234,6 +238,7 @@ export function Slider({
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
   const [thumbHovered, setThumbHovered] = useState<ThumbFlags>([false, false]);
   const [thumbFocused, setThumbFocused] = useState<ThumbFlags>([false, false]);
+  const [dodged, setDodged] = useState<ThumbFlags>([false, false]);
   const controlRef = useRef<HTMLDivElement>(null);
   const inlineLabelRef = useRef<HTMLSpanElement>(null);
   const inlineValueRef = useRef<HTMLOutputElement>(null);
@@ -330,22 +335,30 @@ export function Slider({
       dims.thumbPx / 2,
   );
 
-  // How far each thumb has receded under the inline text, kept as a motion value so the fade
-  // rides the same compositor frame as the thumb it belongs to. Reading the spans from a ref
-  // rather than a dependency keeps this off React's render path entirely: at 0 it costs an
-  // empty loop per frame, and nothing re-renders while a thumb slides under a label.
-  const inlineDim0 = useMotionValue(0);
-  const inlineDim1 = useMotionValue(0);
-  const thumbInk0 = useTransform(inlineDim0, (dim) => 1 - dim);
-  const thumbInk1 = useTransform(inlineDim1, (dim) => 1 - dim);
+  // Whether each thumb is under the inline text. Checked on every frame of the thumb's own
+  // spring, with the spans read from a ref, but React only hears about it when a thumb
+  // crosses in or out — sliding along under a label re-renders nothing.
+  const setThumbDodged = (index: 0 | 1, next: boolean) =>
+    setDodged((previous) => {
+      if (previous[index] === next) return previous;
+      const updated = [...previous] as ThumbFlags;
+      updated[index] = next;
+      return updated;
+    });
   useMotionValueEvent(thumbX0, "change", (latest) => {
     if (inline) {
-      inlineDim0.set(getSliderInlineDim(latest, dims.thumbPx, inlineSpansRef.current));
+      setThumbDodged(
+        0,
+        getSliderThumbDodged(latest, dims.thumbPx, controlWidth, inlineSpansRef.current, DODGE_APPROACH_PX),
+      );
     }
   });
   useMotionValueEvent(thumbX1, "change", (latest) => {
     if (inline) {
-      inlineDim1.set(getSliderInlineDim(latest, dims.thumbPx, inlineSpansRef.current));
+      setThumbDodged(
+        1,
+        getSliderThumbDodged(latest, dims.thumbPx, controlWidth, inlineSpansRef.current, DODGE_APPROACH_PX),
+      );
     }
   });
 
@@ -356,8 +369,7 @@ export function Slider({
     const control = controlRef.current;
     if (!control || !inline) {
       inlineSpansRef.current = NO_SPANS;
-      inlineDim0.set(0);
-      inlineDim1.set(0);
+      setDodged((previous) => (previous[0] || previous[1] ? [false, false] : previous));
       return;
     }
 
@@ -373,8 +385,14 @@ export function Slider({
       inlineSpansRef.current = spans;
       // Re-settle both thumbs against the new text rather than waiting for the next move:
       // a value widening from 99 to 100 can reach a thumb that is standing still.
-      inlineDim0.set(getSliderInlineDim(thumbX0.get(), dims.thumbPx, spans));
-      inlineDim1.set(getSliderInlineDim(thumbX1.get(), dims.thumbPx, spans));
+      const width = getSliderControlWidth(control);
+      const next: ThumbFlags = [
+        getSliderThumbDodged(thumbX0.get(), dims.thumbPx, width, spans, DODGE_APPROACH_PX),
+        getSliderThumbDodged(thumbX1.get(), dims.thumbPx, width, spans, DODGE_APPROACH_PX),
+      ];
+      setDodged((previous) =>
+        previous[0] === next[0] && previous[1] === next[1] ? previous : next,
+      );
     };
 
     measure();
@@ -383,7 +401,7 @@ export function Slider({
     if (inlineLabelRef.current) observer.observe(inlineLabelRef.current);
     if (inlineValueRef.current) observer.observe(inlineValueRef.current);
     return () => observer.disconnect();
-  }, [dims.thumbPx, inline, inlineDim0, inlineDim1, label, showValue, thumbX0, thumbX1]);
+  }, [dims.thumbPx, inline, label, showValue, thumbX0, thumbX1]);
 
   // Base UI's tooltip positioner listens for layout changes, but the slider thumb moves
   // through a transform-driven spring. Feed the positioner the thumb's current cross-axis
@@ -669,7 +687,7 @@ export function Slider({
           <motion.div
             aria-hidden
             data-slot="slider-fill"
-            className="absolute inset-0 bg-foreground/15"
+            className={cn("absolute inset-0 bg-foreground/15", isBar && BAR_FILL_IN_USE)}
             style={{ clipPath: fillClip }}
           />
 
@@ -682,9 +700,12 @@ export function Slider({
               the same family of object as the thing sliding over them. */}
           <div
             aria-hidden
+            data-slot="slider-ticks"
             className={cn(
               "pointer-events-none absolute inset-y-0",
               dims.tickInset,
+              // The bar shows its marks only while it's in use; at rest it's a rail and a fill.
+              isBar && BAR_TICKS_IN_USE,
             )}
           >
             {ticks.map((tp, i) => {
@@ -788,42 +809,37 @@ export function Slider({
           >
             <motion.div
               data-slot="slider-thumb"
+              data-dodged={inline && dodged[index] ? "" : undefined}
               className={cn(
-                "absolute inset-0 origin-center shadow-sm",
-                // Inline mode paints the dimmed floor here and the ink above it; everywhere
-                // else the thumb is simply ink.
-                inline ? INLINE_DIM_FLOOR : "bg-foreground",
+                "absolute inset-0 origin-center bg-foreground shadow-sm",
                 // A thin vertical handle, or a round knob the height of the rail.
                 dims.thumb,
                 "group-has-[:focus-visible]:ring-4 group-has-[:focus-visible]:ring-ring/40",
               )}
               // The bar grabs by stretching taller; a round knob can't stretch one axis
               // without going oval, so it grabs by growing evenly. Keep this on the inner
-              // shape so the Motion position wrapper never moves during the resize.
+              // shape so the Motion position wrapper never moves during the resize. Under
+              // inline text the dodge overrides the grab: ghosted, at resting height, held or not.
+              // Reduced motion keeps the fade, which is for legibility, and drops the scale.
               animate={
                 reduceMotion
-                  ? undefined
+                  ? { opacity: inline && dodged[index] ? DODGE_OPACITY : 1 }
                   : isBar
-                    ? { scaleY: draggingIndex === index ? 1.35 : 1 }
+                    ? {
+                        opacity: inline && dodged[index] ? DODGE_OPACITY : 1,
+                        scaleY: draggingIndex === index && !(inline && dodged[index]) ? 1.35 : 1,
+                      }
                     : {
                         scale:
                           draggingIndex === index ? roundThumbGrabScale : 1,
                       }
               }
-              transition={SPRING_GRAB}
-            >
-              {/* Full-strength ink over the dimmed floor. Fading this out is what dims the
-                  thumb, so the animated property stays `opacity` — but what shows through is
-                  the floor beneath, never the rail. */}
-              {inline && (
-                <motion.span
-                  aria-hidden
-                  data-slot="slider-thumb-ink"
-                  className="absolute inset-0 rounded-[inherit] bg-foreground"
-                  style={{ opacity: index === 0 ? thumbInk0 : thumbInk1 }}
-                />
-              )}
-            </motion.div>
+              transition={
+                reduceMotion
+                  ? { duration: 0 }
+                  : { ...SPRING_GRAB, opacity: { duration: duration.fast, ease: "easeOut" } }
+              }
+            />
           </motion.div>
         ))}
 
@@ -850,9 +866,11 @@ export function Slider({
               </span>
             )}
             {showValue && (
+              // Dim at rest, full ink while the slider is in use — the number matters most
+              // while it is changing.
               <BaseSlider.Value
                 ref={inlineValueRef}
-                className="shrink-0 tabular text-foreground"
+                className={cn("shrink-0 tabular", INLINE_VALUE_IN_USE)}
               />
             )}
           </div>

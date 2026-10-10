@@ -597,7 +597,7 @@
     {
       "name": "tabs",
       "type": "registry:ui",
-      "description": "Segment, pill, underline, or outline tabs with a travelling indicator, an optional TabsCount after a label, and optional max-width scrolling with edge fades. Base UI behaviour, Motion layout animation.",
+      "description": "Segment, pill, or underline tabs with a travelling indicator, a default, solid, or outline appearance for segment and pill, an optional TabsCount after a label, and optional max-width scrolling with edge fades. Base UI behaviour, Motion layout animation.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -715,6 +715,7 @@
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/motion.json",
         "http://localhost:3000/r/tooltip.json"
       ],
       "files": [

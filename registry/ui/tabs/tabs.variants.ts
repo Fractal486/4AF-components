@@ -23,43 +23,43 @@ export const tabsListVariants = cva("relative flex items-center", {
     variant: {
       /* A track wraps its tabs, so it must not stretch: the list is a flex child of a
          column, and would otherwise become a page-wide bar. The radius pairs with the
-         tab's inside it — see the size compounds. The fill is set per `solid` below. */
+         tab's inside it — see the size compounds. The fill is set per `appearance` below. */
       segment: "w-fit self-start p-0.5",
       pill: "w-fit self-start rounded-full",
       /* The opposite: a rule *should* run the full width, so the tabs read as sitting
          on a line rather than in a box. A real border, not a shadow — its job here is
          separation, not elevation. */
       underline: "w-full border-b border-border",
-      /* A bordered, unfilled track: the segment's geometry with an edge instead of a
-         fill. The selected tab's fill sits 3px inside the border. */
-      outline: "w-fit self-start gap-[3px] border border-border p-[3px]",
     },
-    // The pill treatment (segment/pill only). `false` is the raised surface chip with a
-    // hairline; `true` drops the hairline for a dark fill on a brighter track.
-    solid: { false: "", true: "" },
+    /* The track and chip treatment (segment/pill only; underline ignores it):
+       `default` — a raised surface chip with a hairline on a muted track;
+       `solid` — a dark, borderless chip on a brighter track;
+       `outline` — a bordered, unfilled track with a muted fill under the selected tab. */
+    appearance: { default: "", solid: "", outline: "" },
     size: { sm: "", md: "" },
   },
   compoundVariants: [
-    { variant: ["segment", "pill"], solid: false, class: "bg-muted" },
+    { variant: ["segment", "pill"], appearance: "default", class: "bg-muted" },
     // Brighter track so the dark, borderless pill reads against it.
-    { variant: ["segment", "pill"], solid: true, class: "bg-border" },
+    { variant: ["segment", "pill"], appearance: "solid", class: "bg-border" },
+    { variant: ["segment", "pill"], appearance: "outline", class: "border border-border" },
     /* Radii are concentric — outer = inner + padding — so a 2px track around a 6px tab
        rounds to 8px, and the sm tab's 5px corner rounds to 7px. Reuse one radius for both
        and the corners visibly disagree. */
     { variant: "segment", size: "md", class: "gap-0.5 rounded-[8px]" },
     { variant: "segment", size: "sm", class: "gap-0.5 rounded-[7px]" },
+    /* Outlined, the segment's fill sits 3px inside the border. Concentric through the
+       border (outer = fill + padding + border), so the 8px and 7px tracks hold 4px and
+       3px fills. */
+    { variant: "segment", appearance: "outline", class: "gap-[3px] p-[3px]" },
     /* The pill track's padding *is* its gap between the chip and the edge, so it shrinks
        with the tab rather than staying put. */
     { variant: "pill", size: "md", class: "gap-1 p-1" },
     { variant: "pill", size: "sm", class: "gap-0.5 p-0.5" },
     { variant: "underline", size: "md", class: "gap-1" },
     { variant: "underline", size: "sm", class: "gap-0.5" },
-    /* Concentric through the border: outer = fill + padding + border, so an 8px track
-       holds 4px fills and a 7px track holds 3px ones. */
-    { variant: "outline", size: "md", class: "rounded-[8px]" },
-    { variant: "outline", size: "sm", class: "rounded-[7px]" },
   ],
-  defaultVariants: { variant: "segment", solid: false, size: "md" },
+  defaultVariants: { variant: "segment", appearance: "default", size: "md" },
 });
 
 export const tabVariants = cva(
@@ -91,8 +91,8 @@ export const tabVariants = cva(
         // -1px pulls the tab over the list's border so the indicator sits on top of
         // it rather than below, and the two hairlines don't stack into 2px.
         underline: "-mb-px",
-        outline: "",
       },
+      appearance: { default: "", solid: "", outline: "" },
       /* `sm` drops a type step and tightens the padding, landing the pill track on 32px —
          the height of an Input or a small Button, so a row of tabs lines up with the
          controls beside it instead of standing a row taller. */
@@ -105,12 +105,15 @@ export const tabVariants = cva(
       { variant: "pill", size: "sm", class: "px-2.5 py-1.5" },
       { variant: "underline", size: "md", class: "rounded-t-[8px] px-3 pt-1.5 pb-2.5" },
       { variant: "underline", size: "sm", class: "rounded-t-[6px] px-2.5 pt-1 pb-2" },
-      // With the 3px padding and 1px border, 34px and 30px — the md and sm Input and
-      // Select heights.
-      { variant: "outline", size: "md", class: "rounded-[4px] px-3 py-[3px]" },
-      { variant: "outline", size: "sm", class: "rounded-[3px] px-2.5 py-[3px]" },
+      // Outlined segment: with the 3px padding and 1px border, 34px and 30px, the md and
+      // sm Input and Select heights.
+      { variant: "segment", appearance: "outline", size: "md", class: "rounded-[4px] px-3 py-[3px]" },
+      { variant: "segment", appearance: "outline", size: "sm", class: "rounded-[3px] px-2.5 py-[3px]" },
+      // Outlined pill: a pixel off the tab's vertical padding pays for the border, so the
+      // track keeps its height.
+      { variant: "pill", appearance: "outline", class: "py-[5px]" },
     ],
-    defaultVariants: { variant: "segment", size: "md" },
+    defaultVariants: { variant: "segment", appearance: "default", size: "md" },
   },
 );
 
@@ -127,24 +130,24 @@ export const tabIndicatorVariants = cva("pointer-events-none absolute z-0", {
       segment: "inset-y-0.5",
       pill: "rounded-full",
       underline: "bottom-0 h-px bg-foreground",
-      outline: "inset-y-[3px] bg-muted",
     },
-    solid: { false: "", true: "" },
+    appearance: { default: "", solid: "", outline: "" },
     size: { sm: "", md: "" },
   },
   compoundVariants: [
     // Raised surface chip with a hairline, vs. a dark borderless fill.
-    { variant: ["segment", "pill"], solid: false, class: "bg-surface shadow-border" },
-    { variant: ["segment", "pill"], solid: true, class: "bg-background" },
+    { variant: ["segment", "pill"], appearance: "default", class: "bg-surface shadow-border" },
+    { variant: ["segment", "pill"], appearance: "solid", class: "bg-background" },
+    { variant: ["segment", "pill"], appearance: "outline", class: "bg-muted" },
     // The chip repeats the tab's radius, and sits inside the track's own padding.
-    { variant: "segment", size: "md", class: "rounded-[6px]" },
-    { variant: "segment", size: "sm", class: "rounded-[5px]" },
-    { variant: "outline", size: "md", class: "rounded-[4px]" },
-    { variant: "outline", size: "sm", class: "rounded-[3px]" },
+    { variant: "segment", appearance: ["default", "solid"], size: "md", class: "rounded-[6px]" },
+    { variant: "segment", appearance: ["default", "solid"], size: "sm", class: "rounded-[5px]" },
+    { variant: "segment", appearance: "outline", size: "md", class: "inset-y-[3px] rounded-[4px]" },
+    { variant: "segment", appearance: "outline", size: "sm", class: "inset-y-[3px] rounded-[3px]" },
     { variant: "pill", size: "md", class: "inset-y-1" },
     { variant: "pill", size: "sm", class: "inset-y-0.5" },
   ],
-  defaultVariants: { variant: "segment", solid: false, size: "md" },
+  defaultVariants: { variant: "segment", appearance: "default", size: "md" },
 });
 
 export type TabsVariants = VariantProps<typeof tabsListVariants>;

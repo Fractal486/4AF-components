@@ -1,8 +1,9 @@
 import { Tabs, TabsCount, TabsList, TabsTab } from "@/registry/ui/tabs/tabs";
 import { bool, defineEntry, num, select } from "../schema";
 
-const VARIANTS = ["segment", "pill", "underline", "outline"] as const;
+const VARIANTS = ["segment", "pill", "underline"] as const;
 const SIZES = ["sm", "md"] as const;
+const APPEARANCES = ["default", "solid", "outline"] as const;
 
 const TABS: readonly { value: string; label: string; count?: number }[] = [
   { value: "account", label: "Account" },
@@ -18,12 +19,11 @@ export const tabsEntry = defineEntry({
     size: select(SIZES, "md", "Size"),
     overflow: bool(false, "Scrollable"),
     maxWidth: num(280, { min: 160, max: 440, step: 20, label: "Max width" }),
-    // A dark, borderless pill on a brighter track — segment/pill only, so it's disabled
-    // for underline (which has no pill to fill).
-    solid: bool(false, "Solid", (v) => v.variant === "underline" || v.variant === "outline"),
+    // The track treatment — segment/pill only, so it's disabled for underline.
+    appearance: select(APPEARANCES, "default", "Appearance", (v) => v.variant === "underline"),
     counts: bool(false, "Counts"),
   },
-  render({ variant, size, solid, overflow, maxWidth, counts }) {
+  render({ variant, size, appearance, overflow, maxWidth, counts }) {
     return (
       <div className="w-full max-w-md">
         <Tabs
@@ -32,7 +32,7 @@ export const tabsEntry = defineEntry({
           key={`${variant}-${size}`}
           variant={variant}
           size={size}
-          solid={solid}
+          appearance={appearance}
           defaultValue="account"
         >
           {/* The track hugs its tabs and sits at the start of the column, which is right in a

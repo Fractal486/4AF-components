@@ -44,10 +44,13 @@ import {
 
 type Variant = NonNullable<TabsVariants["variant"]>;
 type Size = NonNullable<TabsVariants["size"]>;
+export type TabsAppearance = NonNullable<TabsVariants["appearance"]>;
 
-const TabsContext = createContext<{ variant: Variant; solid: boolean; size: Size } | null>(
-  null,
-);
+const TabsContext = createContext<{
+  variant: Variant;
+  appearance: TabsAppearance;
+  size: Size;
+} | null>(null);
 
 function useTabsContext() {
   const context = useContext(TabsContext);
@@ -59,9 +62,13 @@ export interface TabsProps
   extends Omit<ComponentProps<typeof BaseTabs.Root>, "className" | "children"> {
   variant?: Variant;
   /**
-   * A dark, borderless pill on a brighter track instead of the raised surface chip.
-   * `segment`/`pill` only — `underline` and `outline` ignore it.
+   * The track and chip treatment, `segment`/`pill` only (`underline` ignores it).
+   * `default` is a raised surface chip on a muted track; `solid` a dark, borderless chip on a
+   * brighter track; `outline` a bordered, unfilled track with a muted fill under the selected
+   * tab, at the same heights. @default "default"
    */
+  appearance?: TabsAppearance;
+  /** @deprecated Use `appearance="solid"`. Ignored when `appearance` is set. */
   solid?: boolean;
   /**
    * `sm` drops a type step and tightens the padding, putting the pill track at 32px — the
@@ -75,6 +82,7 @@ export interface TabsProps
 
 export function Tabs({
   variant = "segment",
+  appearance: appearanceProp,
   solid = false,
   size = "md",
   className,
@@ -85,7 +93,11 @@ export function Tabs({
   // its job. Mirroring the value here was a bug: Base UI registers its tabs in an
   // effect, so on the first render nothing matches the value yet and it emits an
   // `initial` fallback. A mirror accepts that fallback and lands on the wrong tab.
-  const context = useMemo(() => ({ variant, solid, size }), [variant, solid, size]);
+  const appearance = appearanceProp ?? (solid ? "solid" : "default");
+  const context = useMemo(
+    () => ({ variant, appearance, size }),
+    [variant, appearance, size],
+  );
 
   return (
     <TabsContext.Provider value={context}>
@@ -111,7 +123,7 @@ export function TabsList({
   /** Enable horizontal scrolling with edge fades. Numbers are pixels. */
   maxWidth?: CSSProperties["maxWidth"];
 }) {
-  const { variant, solid, size } = useTabsContext();
+  const { variant, appearance, size } = useTabsContext();
   const listRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState<{ left: number; width: number } | null>(null);
   const reduceMotion = useReducedMotion();
@@ -156,7 +168,7 @@ export function TabsList({
       const tabRect = active.getBoundingClientRect();
       // `clientLeft` is the list's left border: the rects are border-box, but the
       // indicator is positioned from inside the border. Without it, a bordered track
-      // (`outline`) shifts the fill 1px toward the end.
+      // (`appearance="outline"`) shifts the fill 1px toward the end.
       const left = tabRect.left - listRect.left - list.clientLeft + list.scrollLeft;
       setBox((previous) => previous?.left === left && previous.width === tabRect.width
         ? previous : { left, width: tabRect.width });
@@ -218,7 +230,7 @@ export function TabsList({
 
   return (
     <BaseTabs.List
-      className={cn(tabsListVariants({ variant, solid, size, scrollable: maxWidth !== undefined }), className)}
+      className={cn(tabsListVariants({ variant, appearance, size, scrollable: maxWidth !== undefined }), className)}
       style={{ ...style, ...(maxWidth !== undefined ? { maxWidth: `min(100%, ${typeof maxWidth === "number" ? `${maxWidth}px` : maxWidth})` } : {}) }}
       {...props}
       ref={mergedRef}
@@ -244,7 +256,8 @@ export function TabsList({
           // first appearance: the element mounts at its target with no prior box to
           // animate from.
           layout
-          className={tabIndicatorVariants({ variant, solid, size })}
+          // `cn`, so a compound's inset or radius replaces the variant's base one.
+          className={cn(tabIndicatorVariants({ variant, appearance, size }))}
           style={{ left: box.left, width: box.width }}
           transition={reduceMotion ? { duration: 0 } : spring.snappy}
         />
@@ -266,9 +279,9 @@ export function TabsTab({
   className?: string;
   children?: ReactNode;
 }) {
-  const { variant, size } = useTabsContext();
+  const { variant, appearance, size } = useTabsContext();
   return (
-    <BaseTabs.Tab className={cn(tabVariants({ variant, size }), className)} {...props}>
+    <BaseTabs.Tab className={cn(tabVariants({ variant, appearance, size }), className)} {...props}>
       {children}
     </BaseTabs.Tab>
   );

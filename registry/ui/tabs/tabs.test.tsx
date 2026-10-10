@@ -147,3 +147,57 @@ describe("Tabs", () => {
     await waitFor(() => expect(screen.getByText("Second panel")).toBeVisible());
   });
 });
+
+describe("Tabs appearance", () => {
+  function setup(variant: "segment" | "pill" | "underline", props: { solid?: boolean; appearance?: "default" | "solid" | "outline" } = {}) {
+    render(
+      <Tabs variant={variant} defaultValue="one" {...props}>
+        <TabsList aria-label="Outline">
+          <TabsTab value="one">One</TabsTab>
+          <TabsTab value="two">Two</TabsTab>
+        </TabsList>
+      </Tabs>,
+    );
+    return screen.getByRole("tablist");
+  }
+
+  it.each(["segment", "pill"] as const)("borders the %s track instead of filling it", async (variant) => {
+    const list = setup(variant, { appearance: "outline" });
+    expect(list).toHaveClass("border", "border-border");
+    expect(list).not.toHaveClass("bg-muted", "bg-border");
+    await waitFor(() => expect(list.querySelector('[aria-hidden="true"]')).toHaveClass("bg-muted"));
+    expect(list.querySelector('[aria-hidden="true"]')).not.toHaveClass("bg-surface");
+  });
+
+  it("keeps the tuned 3px inset and corners on an outlined segment", async () => {
+    const list = setup("segment", { appearance: "outline" });
+    expect(list).toHaveClass("p-[3px]", "gap-[3px]", "rounded-[8px]");
+    expect(screen.getByRole("tab", { name: "One" })).toHaveClass("py-[3px]", "rounded-[4px]");
+    await waitFor(() =>
+      expect(list.querySelector('[aria-hidden="true"]')).toHaveClass("inset-y-[3px]", "rounded-[4px]"),
+    );
+    expect(list.querySelector('[aria-hidden="true"]')).not.toHaveClass("inset-y-0.5");
+  });
+
+  it("gives the outlined pill's border a pixel of the tab's padding", () => {
+    setup("pill", { appearance: "outline" });
+    expect(screen.getByRole("tab", { name: "One" })).toHaveClass("py-[5px]");
+  });
+
+  it("still accepts the deprecated solid boolean", () => {
+    expect(setup("segment", { solid: true })).toHaveClass("bg-border");
+  });
+
+  it("lets appearance win over the deprecated solid boolean", () => {
+    const list = setup("segment", { solid: true, appearance: "outline" });
+    expect(list).not.toHaveClass("bg-border");
+    expect(list).toHaveClass("border");
+  });
+
+  it("is ignored by underline", () => {
+    const list = setup("underline", { appearance: "outline" });
+    expect(list).toHaveClass("border-b");
+    expect(list).not.toHaveClass("p-[3px]");
+    expect(list.className).not.toMatch(/(^| )border( |$)/);
+  });
+});

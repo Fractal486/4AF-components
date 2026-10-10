@@ -10,12 +10,22 @@ description: A Base UI tab set with keyboard navigation and an animated active i
 
 **Main exports:** `Tabs`, `TabsList`, `TabsTab`, `TabsCount`, `TabsPanel`
 
-Base UI tabs with a travelling Motion indicator; segment, pill, underline, and outline
-appearances; an optional solid treatment (segment and pill only); and two sizes.
+Base UI tabs with a travelling Motion indicator; `segment`, `pill`, and `underline` variants; an
+`appearance` for segment and pill; and two sizes.
 
-`outline` is a bordered, unfilled track. The selected tab gets a `bg-muted` fill inset 3px from
-the border. Tracks are 34px (`md`) and 30px (`sm`), the Input and Select heights; corners are
-8px around 4px fills (`md`) and 7px around 3px fills (`sm`).
+| `appearance` | Track and selected chip |
+| --- | --- |
+| `default` | Muted track; raised `surface` chip with a hairline. |
+| `solid` | Brighter (`border`) track; dark, borderless `background` chip. |
+| `outline` | Bordered, unfilled track; `bg-muted` fill under the selected tab. Same heights as `default`. |
+
+`underline` ignores `appearance`. The `solid` boolean is deprecated: `solid` maps to
+`appearance="solid"`, and an explicit `appearance` wins over it.
+
+| Variant | Outlined geometry |
+| --- | --- |
+| `segment` | Fill inset 3px from the border. 34px (`md`) / 30px (`sm`) tracks, the Input and Select heights; 8px corners around 4px fills (`md`), 7px around 3px (`sm`). |
+| `pill` | Same padding as the filled pill; the tabs give up 1px of vertical padding to the border. Fully rounded. |
 
 `TabsCount` renders a dim, tabular count after a tab's label, in any variant:
 
