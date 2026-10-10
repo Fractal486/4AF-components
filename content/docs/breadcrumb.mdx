@@ -1,0 +1,65 @@
+---
+title: Breadcrumb
+description: A trail of links to the current page, with an optional ellipsis that reveals collapsed crumbs in place.
+---
+
+<ComponentDemo name="breadcrumb" />
+<ComponentReference name="breadcrumb" />
+
+## API
+
+**Main exports:** `Breadcrumb`, `BreadcrumbList`, `BreadcrumbItem`, `BreadcrumbLink`, `BreadcrumbPage`,
+`BreadcrumbSeparator`, `BreadcrumbEllipsis`, `BreadcrumbCollapse`
+
+| Part | Element | Notes |
+| --- | --- | --- |
+| `Breadcrumb` | `nav` | `aria-label="Breadcrumb"` by default. |
+| `BreadcrumbList` | `ol` | `size="sm" \| "md"` (default `md`): text, gap, and the separator, icon, and ellipsis sizes. Wraps onto further lines. |
+| `BreadcrumbItem` | `li` | One crumb. |
+| `BreadcrumbLink` | `a` | `asChild` renders onto a framework link. Hover and focus bring it to `foreground`. |
+| `BreadcrumbPage` | `span` | The current page; `aria-current="page"`. |
+| `BreadcrumbSeparator` | `li` | Presentational, hidden from assistive technology. Defaults to a chevron mirrored in RTL; pass children to replace it. |
+| `BreadcrumbEllipsis` | `span` | Decorative alone. With `asChild` it renders onto a `button`, link, or menu trigger, gains a hover fill, focus ring, open state (`aria-expanded` / `data-popup-open`), and a 40px hit area; a child without content gets the dots. |
+| `BreadcrumbCollapse` | `li` + children | Hides its children behind an ellipsis button until pressed. |
+
+### BreadcrumbCollapse
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `open` / `defaultOpen` / `onOpenChange` | — / `false` / — | Controlled or uncontrolled. The ellipsis only opens; close it by setting `open={false}`. |
+| `label` | `"Show full path"` | The ellipsis button's accessible name. |
+
+Place it inside `BreadcrumbList` after the separator that precedes the hidden crumbs, and end the group
+with a separator:
+
+```tsx
+<BreadcrumbItem><BreadcrumbLink href="/">Home</BreadcrumbLink></BreadcrumbItem>
+<BreadcrumbSeparator />
+<BreadcrumbCollapse>
+  <BreadcrumbItem><BreadcrumbLink href="/docs">Docs</BreadcrumbLink></BreadcrumbItem>
+  <BreadcrumbSeparator />
+  <BreadcrumbItem><BreadcrumbLink href="/docs/components">Components</BreadcrumbLink></BreadcrumbItem>
+  <BreadcrumbSeparator />
+</BreadcrumbCollapse>
+<BreadcrumbItem><BreadcrumbPage>Breadcrumb</BreadcrumbPage></BreadcrumbItem>
+```
+
+Closed, the trail reads `Home / … / Breadcrumb`. Collapsed items and separators carry `data-collapsed`
+and `data-breadcrumb-group`; the collapse's own item carries `data-state="open" | "closed"`. When the
+ellipsis had focus, opening moves focus to the first revealed link; closing while focus is in the group
+moves it to the ellipsis.
+
+For a menu of the hidden crumbs instead of an in-place reveal, render `BreadcrumbEllipsis asChild` onto a
+`DropdownMenu` trigger.
+
+## Motion
+
+- Opening or closing is a FLIP on `transform`: crumbs that stay visible slide from their old position to
+  their new one, on both axes when the trail wraps. Revealed crumbs fade in from a 4px blur.
+- Timing comes from `--duration-slow` and `--ease-out`, so reduced motion collapses it to an instant change.
+- No width or margin animates.
+
+## Source
+
+Adapted from [HextaUI's breadcrumb](https://hextaui.com/r/breadcrumb.json) (MIT, Preet Suthar). The
+license notice is retained in the portable source file.

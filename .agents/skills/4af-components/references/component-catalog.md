@@ -139,6 +139,7 @@ The catalog currently contains 46 installable UI items. Verify the count and nam
 
 | Install name | Main API | Use it for |
 | --- | --- | --- |
+| `breadcrumb` | `Breadcrumb`, `BreadcrumbList`, item/link/page/separator parts, `BreadcrumbEllipsis`, `BreadcrumbCollapse` | A nav-landmark trail with `asChild` links, `aria-current` page, RTL-mirrored separators, and `sm`/`md` sizes. `BreadcrumbCollapse` hides middle crumbs behind an ellipsis button and reveals them in place (transform-only FLIP); `BreadcrumbEllipsis asChild` can instead be a menu trigger. |
 | `tabs` | `Tabs`, `TabsList`, `TabsTab`, `TabsCount`, `TabsPanel` | Segment, pill, or underline tabs with a traveling indicator; `appearance="default" | "solid" | "outline"` (outline: bordered track, inset fill) for segment and pill; `TabsCount` adds a dim count after a label; `TabsList maxWidth` enables scrolling with edge fades and click-to-center. Segment tracks use 8px corners and their tabs use 6px corners. |
 | `collapsible` | `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` | Disclosure rows (`plain`/`card`) with a rotating chevron, shared 6px plain or 8px card trigger corners, a height slide so following rows travel rather than jump, and a blur-fade on the content. |
 | `table` | `Table`, `TableCaption`, and header/body/footer/row/head/cell parts | Presentational tables in two densities (`sm` by default), with a pinned header, optional grid lines, a caption pinned below the scrolling box, and a loading state. No controls and no state — install `data-table` for any of those. |

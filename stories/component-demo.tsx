@@ -25,6 +25,7 @@ export type ComponentDemoName =
   | "matrix-loader"
   | "classic-loader"
   | "badge"
+  | "breadcrumb"
   | "button"
   | "button-group"
   | "checkbox"
@@ -174,6 +175,7 @@ const demos: Record<Exclude<ComponentDemoName, "ascii-loader">, ComponentType> =
   alert: lazyEntry(async () => (await import("@/inspector/entries/alert")).alertEntry),
   "alert-dialog": lazyEntry(async () => (await import("@/inspector/entries/alert-dialog")).alertDialogEntry),
   badge: lazyEntry(async () => (await import("@/inspector/entries/badge")).badgeEntry),
+  breadcrumb: lazyEntry(async () => (await import("@/inspector/entries/breadcrumb")).breadcrumbEntry),
   button: lazyEntry(async () => (await import("@/inspector/entries/button")).buttonEntry),
   "button-group": lazyEntry(async () => (await import("@/inspector/entries/button-group")).buttonGroupEntry),
   checkbox: lazyEntry(async () => (await import("@/inspector/entries/checkbox")).checkboxEntry),

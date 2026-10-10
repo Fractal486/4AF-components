@@ -3,6 +3,7 @@ import registry from "../registry.json";
 export const COMPONENT_FAMILIES = [
   { name: "Alert", slugs: ["alert"] },
   { name: "Badge", slugs: ["badge"] },
+  { name: "Breadcrumb", slugs: ["breadcrumb"] },
   {
     name: "Button",
 
@@ -100,6 +101,7 @@ export const COMPONENT_CATEGORIES = [
   {
     name: "Navigation and application structure",
     slugs: [
+      "breadcrumb",
       "tabs",
       "collapsible",
       "table",
@@ -136,6 +138,7 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   "matrix-loader": "MatrixLoader",
   "classic-loader": "ClassicLoader",
   badge: "Badge, BadgeIconsProvider",
+  breadcrumb: "Breadcrumb, BreadcrumbList (sm/md), item/link/page/separator parts, BreadcrumbEllipsis, BreadcrumbCollapse",
   button: "Button",
   "button-group": "ButtonGroup",
   checkbox: "Checkbox",

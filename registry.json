@@ -1419,6 +1419,32 @@
       ]
     },
     {
+      "name": "breadcrumb",
+      "type": "registry:ui",
+      "description": "A breadcrumb trail: nav landmark, ordered list, links with asChild, aria-current page, presentational separators mirrored in RTL, sm and md sizes. BreadcrumbCollapse hides a run of middle crumbs behind an ellipsis button and reveals them in place with a transform-only FLIP; the ellipsis can also render onto a menu trigger.",
+      "dependencies": [
+        "class-variance-authority",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/r/4af-theme.json",
+        "http://localhost:3000/r/cn.json",
+        "http://localhost:3000/r/slot.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/breadcrumb/breadcrumb.tsx",
+          "type": "registry:ui",
+          "target": "@ui/breadcrumb.tsx"
+        },
+        {
+          "path": "registry/ui/breadcrumb/breadcrumb.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/breadcrumb.variants.ts"
+        }
+      ]
+    },
+    {
       "name": "popover",
       "type": "registry:ui",
       "description": "An interactive panel anchored to a trigger. Base UI Popover behaviour with a CSS scale-and-blur enter from the trigger edge.",

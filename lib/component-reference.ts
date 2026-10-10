@@ -69,6 +69,35 @@ export const componentReferences = {
 
 <ClassicLoader size="md" speed={1} label="Loading results" />`,
   },
+  breadcrumb: {
+    usage: `import {
+  Breadcrumb,
+  BreadcrumbCollapse,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+
+<Breadcrumb>
+  <BreadcrumbList>
+    <BreadcrumbItem>
+      <BreadcrumbLink asChild><Link href="/">Home</Link></BreadcrumbLink>
+    </BreadcrumbItem>
+    <BreadcrumbSeparator />
+    <BreadcrumbCollapse>
+      <BreadcrumbItem>
+        <BreadcrumbLink href="/docs">Docs</BreadcrumbLink>
+      </BreadcrumbItem>
+      <BreadcrumbSeparator />
+    </BreadcrumbCollapse>
+    <BreadcrumbItem>
+      <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+    </BreadcrumbItem>
+  </BreadcrumbList>
+</Breadcrumb>`,
+  },
   badge: {
     usage: `import { Badge } from "@/components/ui/badge";
 
