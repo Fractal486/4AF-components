@@ -1,7 +1,7 @@
 "use client";
 
 import { Switch as BaseSwitch } from "@base-ui/react/switch";
-import { motion, useReducedMotion } from "motion/react";
+import { motion, useMotionValue, useReducedMotion, useTransform } from "motion/react";
 import { useState, type ComponentProps } from "react";
 import { cn } from "@/registry/lib/cn";
 import { spring } from "@/registry/lib/motion";
@@ -35,6 +35,9 @@ export interface SwitchProps
 }
 
 const PRESSED_EXTENSION = 3;
+/** How far the bridge tucks under each cap, so their antialiased edges never meet. */
+const BRIDGE_OVERLAP = 0.5;
+const BRIDGE_WIDTH = PRESSED_EXTENSION + BRIDGE_OVERLAP * 2;
 
 export function Switch({
   className,
@@ -58,6 +61,18 @@ export function Switch({
   const reduceMotion = useReducedMotion();
 
   const transition = reduceMotion ? { duration: 0 } : spring.snappy;
+
+  // The bridge is derived from the caps rather than animated alongside them. The gap it
+  // fills runs from the start cap's inner edge to the end cap's, and both edges move on
+  // their own springs, often in opposite directions when a press releases into a toggle.
+  // An independently animated strip only lines up with that gap at rest, which left
+  // fractional slivers uncovered mid-spring. Reading the caps' live offsets keeps it
+  // exactly over the gap on every frame, overshoot included.
+  const startX = useMotionValue(0);
+  const endX = useMotionValue(0);
+  const bridgeScale = useTransform(
+    () => (endX.get() - startX.get() + BRIDGE_OVERLAP * 2) / BRIDGE_WIDTH,
+  );
 
   const release = () => setPressed(false);
 
@@ -103,6 +118,7 @@ export function Switch({
               aria-hidden="true"
               data-slot="switch-thumb-cap-start"
               className="absolute inset-y-0 left-0 w-1/2 rounded-l-full bg-inherit"
+              style={{ x: startX }}
               transition={transition}
               animate={
                 reduceMotion
@@ -110,24 +126,20 @@ export function Switch({
                   : { x: pressed && isChecked ? -PRESSED_EXTENSION : 0 }
               }
             />
+            {/* Starts half a pixel inside the start cap and ends half a pixel inside the
+                end cap, at any extension. At rest it's a 1px sliver over the seam, inside
+                the circle. Flat cap edges make the tuck invisible. */}
             <motion.span
               aria-hidden="true"
               data-slot="switch-thumb-middle"
-              className="absolute top-0 left-1/2 h-full w-[3px] bg-inherit"
-              transition={transition}
-              animate={
-                reduceMotion
-                  ? undefined
-                  : {
-                      x: pressed && isChecked ? -PRESSED_EXTENSION : 0,
-                      scaleX: pressed ? 1 : 0,
-                    }
-              }
+              className="absolute top-0 left-[calc(50%-0.5px)] h-full w-1 origin-left bg-inherit"
+              style={{ x: startX, scaleX: bridgeScale }}
             />
             <motion.span
               aria-hidden="true"
               data-slot="switch-thumb-cap-end"
               className="absolute inset-y-0 right-0 w-1/2 rounded-r-full bg-inherit"
+              style={{ x: endX }}
               transition={transition}
               animate={
                 reduceMotion
