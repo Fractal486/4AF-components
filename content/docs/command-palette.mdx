@@ -127,6 +127,11 @@ selection where it was.
 While a row's actions menu is open, that row carries `data-frozen`, styled identically to the
 selection — Base UI drops its own highlight while focus is inside the menu.
 
+When the selection reaches the first row, the list scrolls to its top, so the section label above
+that row is visible. This applies to the root list and to `CommandPanelList`.
+
+The no-results state is the height of one section label plus one row with a description.
+
 ## Panel footer
 
 The root list's bar has the escape hint and the navigation hint on the left, and the Enter

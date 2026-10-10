@@ -8,7 +8,14 @@ import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import { ChevronLeft, CornerDownLeft, Plus, Search } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { CommandIcon, EscapeHint, Hint, KBD, SCROLLBAR } from "./command-palette.chrome";
+import {
+  CommandIcon,
+  EscapeHint,
+  Hint,
+  KBD,
+  SCROLLBAR,
+  snapFirstRowToTop,
+} from "./command-palette.chrome";
 import {
   ActionsOpenContext,
   FrozenRowContext,
@@ -91,6 +98,31 @@ export type {
  * blur, and the exit fades and blurs without reversing the entrance. Base UI's `keepMounted`
  * hands the unmount timing to AnimatePresence so the exit can finish before teardown.
  */
+
+const GROUP_LABEL_CLASS = "px-2.5 pt-2 pb-1 text-xs font-medium text-subtle-foreground";
+
+/**
+ * "No results" takes exactly the height of the smallest real result: one group label over
+ * one row with a description. Typing a query that empties the list then doesn't resize the
+ * panel. The height comes from an invisible copy of those two parts, built from the same
+ * label class and the described row's padding and type sizes, so it follows the type scale
+ * rather than hard-coding a pixel height. The list keeps its own padding while empty, so
+ * that part already matches.
+ */
+function NoResults({ children }: { children: ReactNode }) {
+  return (
+    <div className="relative">
+      <div aria-hidden className="invisible">
+        <div className={GROUP_LABEL_CLASS}>&nbsp;</div>
+        <div className="flex min-h-9 flex-col py-2 text-sm">
+          <span>&nbsp;</span>
+          <span className="text-xs">&nbsp;</span>
+        </div>
+      </div>
+      <div className="absolute inset-0 flex items-center justify-center px-4">{children}</div>
+    </div>
+  );
+}
 
 function omitCommandPanelInputProps(input: CommandPanelInputProps) {
   const attributes = { ...input };
@@ -751,6 +783,7 @@ export function CommandPalette({
             </div>
 
             <Autocomplete.List
+              ref={snapFirstRowToTop}
               className={cn("min-h-0 flex-1 overflow-y-auto overscroll-contain p-1.5", SCROLLBAR)}
             >
               {(group: { heading?: string; items: CommandItem[] }) => (
@@ -760,7 +793,7 @@ export function CommandPalette({
                   className="mb-1 last:mb-0"
                 >
                   {group.heading && (
-                    <Autocomplete.GroupLabel className="px-2.5 pt-2 pb-1 text-xs font-medium text-subtle-foreground">
+                    <Autocomplete.GroupLabel className={GROUP_LABEL_CLASS}>
                       {group.heading}
                     </Autocomplete.GroupLabel>
                   )}
@@ -788,7 +821,7 @@ export function CommandPalette({
                   {renderedSearchError}
                 </div>
               ) : (
-                <div className="px-4 py-8">{emptyMessage}</div>
+                <NoResults>{emptyMessage}</NoResults>
               )}
             </Autocomplete.Empty>
 

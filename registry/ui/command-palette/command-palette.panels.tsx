@@ -1,5 +1,6 @@
 import { cn } from "@/registry/lib/cn";
 import { LoadingIndicator } from "@/registry/lib/loader";
+import { useMergedRefs } from "@/registry/lib/refs";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Autocomplete } from "@base-ui/react/autocomplete";
 import { ChevronRight, CornerDownLeft } from "lucide-react";
@@ -14,7 +15,14 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { CommandPanelActions } from "./command-palette.actions";
-import { CommandIcon, EscapeHint, FooterAction, Kbd, SCROLLBAR } from "./command-palette.chrome";
+import {
+  CommandIcon,
+  EscapeHint,
+  FooterAction,
+  Kbd,
+  SCROLLBAR,
+  snapFirstRowToTop,
+} from "./command-palette.chrome";
 import { useFrozen } from "./command-palette.context";
 import { CREATE_ID, fuzzyMatch } from "./command-palette.search";
 import type {
@@ -80,6 +88,7 @@ export function CommandPanelList({
   children?: ReactNode;
 }) {
   const listRef = useRef<HTMLDivElement>(null);
+  const ref = useMergedRefs<HTMLDivElement>(listRef, snapFirstRowToTop);
 
   // The panel root runs `mode="none"` with no `items` collection, so Base UI's
   // `autoHighlight` has nothing to pick a first row from — a panel opened with the header
@@ -105,7 +114,7 @@ export function CommandPanelList({
         />
       )}
       <Autocomplete.List
-        ref={listRef}
+        ref={ref}
         className={cn(
           "min-h-0 flex-1 overflow-y-auto overscroll-contain p-1.5",
           SCROLLBAR,

@@ -15,6 +15,29 @@ import { formatKeybind } from "./command-palette.keybinds";
 export const KBD =
   "shrink-0 rounded-xs bg-foreground/8 px-1.5 py-0.5 font-mono text-2xs text-subtle-foreground select-none";
 
+/**
+ * Reaching the top row scrolls the list all the way up.
+ *
+ * Base UI scrolls a highlighted row into view with `block: "nearest"`, which stops at the
+ * row's own top edge — the group label above row one (and the list's top padding) stay
+ * scrolled off. When the highlight lands on the first row, this resets the list to the top
+ * instead. It watches `data-highlighted` rather than a highlight callback, so arrow keys,
+ * typing and opening all go through the same path. The mutation runs before Base UI's
+ * scroll frame, which then finds the row already visible and leaves it.
+ *
+ * A callback ref, not an effect: the root list only mounts while the palette is open.
+ */
+export function snapFirstRowToTop(list: HTMLElement | null) {
+  if (!list) return;
+
+  const observer = new MutationObserver(() => {
+    const first = list.querySelector('[role="option"]');
+    if (first?.hasAttribute("data-highlighted") && list.scrollTop !== 0) list.scrollTop = 0;
+  });
+  observer.observe(list, { subtree: true, attributeFilter: ["data-highlighted"] });
+  return () => observer.disconnect();
+}
+
 // A thin custom scrollbar, shared by the list and any drilled-in panel — Firefox via the
 // standard properties, WebKit via the pseudo-elements.
 export const SCROLLBAR =
