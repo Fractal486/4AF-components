@@ -45,8 +45,6 @@ export type ComponentDemoName =
   | "select"
   | "select-sort"
   | "select-aligned"
-  | "select-motion"
-  | "select-motion-search"
   | "select-search"
   | "selection-toolbar"
   | "separator"
@@ -64,13 +62,12 @@ export type ComponentDemoName =
   | "scramble-text"
   | "text-shimmer"
   | "textarea"
-  | "toast"
   | "toggle"
   | "tooltip";
 
 const LOADER_DEMOS = new Set([
   "button", "action-button", "action-toggle", "copy-button", "delete-button",
-  "alert", "badge", "dropdown-menu", "command-palette", "toast", "selection-toolbar",
+  "alert", "badge", "dropdown-menu", "command-palette", "selection-toolbar",
 ]);
 const LOADER_CONTROLS = {
   loader: { kind: "select", options: ["ascii", "classic"], defaultValue: "ascii", label: "Loader" },
@@ -199,8 +196,6 @@ const demos: Record<Exclude<ComponentDemoName, "ascii-loader">, ComponentType> =
   select: lazyEntry(async () => (await import("@/inspector/entries/select")).selectEntry),
   "select-sort": lazyEntry(async () => (await import("@/inspector/entries/select-sort")).selectSortEntry),
   "select-aligned": lazyEntry(async () => (await import("@/inspector/entries/select-aligned")).selectAlignedEntry),
-  "select-motion": lazyEntry(async () => (await import("@/inspector/entries/select-motion")).selectMotionEntry),
-  "select-motion-search": lazyEntry(async () => (await import("@/inspector/entries/select-motion-search")).selectMotionSearchEntry),
   "select-search": lazyEntry(async () => (await import("@/inspector/entries/select-search")).selectSearchEntry),
   "selection-toolbar": lazyEntry(async () => (await import("@/inspector/entries/selection-toolbar")).selectionToolbarEntry),
   separator: lazyEntry(async () => (await import("@/inspector/entries/separator")).separatorEntry),
@@ -218,7 +213,6 @@ const demos: Record<Exclude<ComponentDemoName, "ascii-loader">, ComponentType> =
   "scramble-text": lazyEntry(async () => (await import("@/inspector/entries/scramble-text")).scrambleTextEntry),
   "text-shimmer": lazyEntry(async () => (await import("@/inspector/entries/text-shimmer")).textShimmerEntry),
   textarea: lazyEntry(async () => (await import("@/inspector/entries/textarea")).textareaEntry),
-  toast: lazyEntry(async () => (await import("@/inspector/entries/toast")).toastEntry),
   toggle: lazyEntry(async () => (await import("@/inspector/entries/toggle")).toggleEntry),
   tooltip: lazyEntry(async () => (await import("@/inspector/entries/tooltip")).tooltipEntry),
 };

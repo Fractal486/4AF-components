@@ -31,8 +31,6 @@
     "radio",
     "select",
     "select-aligned",
-    "select-motion",
-    "select-motion-search",
     "select-search",
     "selection-toolbar",
     "separator",
@@ -49,7 +47,6 @@
     "scramble-text",
     "text-shimmer",
     "textarea",
-    "toast",
     "toggle",
     "tooltip"
   ]

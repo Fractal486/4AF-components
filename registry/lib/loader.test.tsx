@@ -7,7 +7,6 @@ import { Alert } from "@/registry/ui/alert/alert";
 import { Badge } from "@/registry/ui/badge/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuActionItem } from "@/registry/ui/dropdown-menu/dropdown-menu";
 import { CommandPalette, CommandPanelLoading } from "@/registry/ui/command-palette/command-palette";
-import { ToastProvider, useToast } from "@/registry/ui/toast/toast";
 import { LoaderProvider, LoadingIndicator } from "./loader";
 
 const pending = () => new Promise<void>(() => {});
@@ -68,19 +67,4 @@ it("passes palette defaults into a custom panel", () => {
     items: [{ id: "panel", label: "Panel", panel: () => <CommandPanelLoading /> }],
   }]} />);
   expect(screen.getByText("Palette")).toBeInTheDocument();
-});
-
-it("preserves supplied toast nodes in promise options and updates", async () => {
-  function Harness() {
-    const toast = useToast();
-    return <button onClick={() => {
-      const id = toast.add({ type: "loading", title: "Global toast" });
-      toast.update(id, { loader: <span>Updated</span> });
-      void toast.promise(pending(), { loading: { title: "Promise toast", loader: <span>Promise</span> }, success: "Done", error: "Failed" });
-    }}>Show</button>;
-  }
-  render(<ToastProvider loader={<span>Provider</span>}><Harness /></ToastProvider>);
-  fireEvent.click(screen.getByRole("button", { name: "Show" }));
-  expect(await screen.findByText("Updated")).toBeInTheDocument();
-  expect(await screen.findByText("Promise")).toBeInTheDocument();
 });

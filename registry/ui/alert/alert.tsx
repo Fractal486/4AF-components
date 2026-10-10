@@ -11,8 +11,7 @@ import { alertVariants, type AlertVariants } from "./alert.variants";
  * It carries no surface of its own: no panel, no border, no padding beyond the space
  * above it. That's what lets the same component sit under a field, beside a save button,
  * at the foot of a form, or in a settings row without any of them having to make room for
- * a box. Reach for Badge when the status is a label on a row rather than a sentence, and
- * for Toast when it should arrive over the page rather than live in it.
+ * a box. Reach for Badge when the status is a label on a row rather than a sentence.
  *
  * Under a field, point the control's `aria-describedby` at this (give it an `id`) so the
  * line is announced with the field. It renders nothing when there's no message, so

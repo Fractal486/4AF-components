@@ -1266,7 +1266,7 @@ describe("Base UI Select", () => {
     expect(screen.getByRole("option", { name: "Apple" })).not.toHaveAttribute("data-panel-active");
 
     // Several selections: the most recent one, which is how Base UI's Combobox resolves it in
-    // the two search variants. All five open on the same row or none of this is a rule.
+    // the search variant. All selects open on the same row or none of this is a rule.
     await user.click(screen.getByRole("combobox", { name: "Multiple fruits" }));
     await waitFor(() =>
       expect(screen.getByRole("option", { name: "Mango" })).toHaveAttribute("data-panel-active"),

@@ -99,7 +99,7 @@ worth reusing; a component that skips a line here is a component we'll rewrite l
   moving it to the top of the list; otherwise it's the **first row**. With several rows chosen
   it's the **most recent** of them — that is how Base UI's Combobox resolves it internally
   (`selectedIndex` comes off the last entry of the value array), and the hand-rolled selects
-  follow it so all five open on the same row. A query overrides both:
+  follow it so all selects open on the same row. A query overrides both:
   once the list is narrowed, the top match is the better guess at what Enter should take, and
   the selection may not even be in the list any more. The mark is `data-panel-active`, or Base
   UI's `data-highlighted` where the primitive owns the highlight — and there

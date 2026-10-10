@@ -115,7 +115,7 @@ describe("component documentation", () => {
     expect(markdown).toContain("## Overlays and menus");
     expect(markdown).toContain("| Install name | Main API | What it provides |");
     expect(markdown).toContain("[`button`](/docs/button)");
-    expect(markdown).toContain("[`select-motion-search`](/docs/select-motion-search)");
+    expect(markdown).toContain("[`select-search`](/docs/select-search)");
   });
 
   it("retains the component-specific guidance from the former monolithic guide", () => {

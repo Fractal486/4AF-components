@@ -41,12 +41,8 @@ export {
  * what a hand-rolled dropdown gets wrong. The panel simply blurs and scales in from the
  * trigger's edge (a gap opens off it), the chevron flips, and it fades back out on close.
  *
- * The trade against the hand-rolled sibling: Base UI portals the popup, so there's no
- * height unfold — but every keyboard and focus behaviour is
- * real rather than approximated. Pass `multiple` to keep the panel open while several
- * checkbox rows are toggled; the same value and item parts automatically switch to their
- * count and checkbox forms. That's the right default; the Motion one is what you reach
- * for when the entrance is the point.
+ * Pass `multiple` to keep the panel open while several checkbox rows are toggled; the
+ * same value and item parts automatically switch to their count and checkbox forms.
  */
 
 interface SelectOptionInfo {
@@ -331,7 +327,7 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   // Read from the end, so a multi-select opens on the *most recent* choice. That's the one
   // point where several rows could claim it, and it's settled this way because Base UI's own
   // Combobox settles it this way — its `selectedIndex` is the last entry of the value array,
-  // and the two search variants inherit that. Matching it here is what keeps all five selects
+  // and the search variant inherits that. Matching it here is what keeps all selects
   // opening on the same row; the alternative would be reordering the array handed to the
   // primitive, which would change what `onValueChange` reports.
   //

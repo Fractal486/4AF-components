@@ -252,16 +252,6 @@ import { Button } from "@/components/ui/button";
   </AlignedSelectContent>
 </AlignedSelect>`,
   },
-  "select-motion": {
-    usage: `import { Select } from "@/components/ui/select-motion";
-
-<Select defaultValue="apple">…</Select>`,
-  },
-  "select-motion-search": {
-    usage: `import { MotionSearchSelect } from "@/components/ui/select-motion-search";
-
-<MotionSearchSelect items={items} />`,
-  },
   "select-search": {
     usage: `import { SearchSelect, SearchSelectInput, SearchSelectContent, SearchSelectItem } from "@/components/ui/select-search";
 
@@ -475,22 +465,6 @@ import { Button } from "@/components/ui/button";
     usage: `import { Textarea } from "@/components/ui/textarea";
 
 <Textarea placeholder="Write a note…" />`,
-  },
-  toast: {
-    usage: `import { ToastProvider, useToast } from "@/components/ui/toast";
-
-function SaveButton() {
-  const toast = useToast();
-  return (
-    <button onClick={() => toast.add({ title: "Changes saved", variant: "title-only" })}>
-      Save
-    </button>
-  );
-}
-
-<ToastProvider loader={<MySpinner />}>
-  <SaveButton />
-</ToastProvider>`,
   },
   toggle: {
     usage: `import { Toggle } from "@/components/ui/toggle";

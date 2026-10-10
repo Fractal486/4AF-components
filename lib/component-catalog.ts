@@ -33,7 +33,7 @@ export const COMPONENT_FAMILIES = [
   {
     name: "Select",
 
-    slugs: ["select", "select-search", "select-aligned", "select-motion", "select-motion-search"],
+    slugs: ["select", "select-search", "select-aligned"],
   },
   { name: "Selection Toolbar", slugs: ["selection-toolbar"] },
   { name: "Separator", slugs: ["separator"] },
@@ -50,7 +50,6 @@ export const COMPONENT_FAMILIES = [
   },
   { name: "Tabs", slugs: ["tabs"] },
   { name: "Text Effects", slugs: ["text-shimmer", "scramble-text"] },
-  { name: "Toast", slugs: ["toast"] },
   { name: "Tooltip", slugs: ["tooltip"] },
 ] as const;
 
@@ -80,8 +79,6 @@ export const COMPONENT_CATEGORIES = [
       "select",
       "select-search",
       "select-aligned",
-      "select-motion",
-      "select-motion-search",
       "date-picker",
     ],
   },
@@ -95,7 +92,6 @@ export const COMPONENT_CATEGORIES = [
       "empty",
       "text-shimmer",
       "scramble-text",
-      "toast",
       "ascii-loader",
       "matrix-loader",
       "classic-loader",
@@ -159,8 +155,6 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   radio: "RadioGroup, Radio",
   select: "Select (24px xs, 30px sm, 34px md trigger and row sizes), SelectTrigger (default/ghost/plain, optional label), SelectSortTrigger, SelectValue, SelectContent, SelectItem, SelectSeparator, SelectSub, SelectSubTrigger, SelectSubContent",
   "select-aligned": "AlignedSelect (optional 24px xs trigger and popup rows), AlignedSelectTrigger (default/ghost/plain, optional label), AlignedSelectContent, AlignedSelectItem",
-  "select-motion": "Select, SelectTrigger, SelectValue, SelectContent, SelectItem",
-  "select-motion-search": "MotionSearchSelect and input/content/item parts",
   "select-search": "SearchSelect and input/content/item parts",
   "selection-toolbar": "SelectionToolbar, item parts, useSelectionToolbar",
   separator: "Separator",
@@ -178,7 +172,6 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   "text-shimmer": "TextShimmer",
   "scramble-text": "ScrambleText",
   textarea: "Textarea",
-  toast: "ToastProvider, useToast, createToastManager, ToastVariant",
   toggle: "Toggle",
   tooltip: "TooltipProvider, Tooltip",
 };

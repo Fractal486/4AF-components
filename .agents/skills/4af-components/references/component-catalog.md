@@ -57,8 +57,8 @@ declares every shipped file and its target; the CLI installs the complete bundle
 targets place the files alongside the public entry point in the consumer's UI directory.
 When adding or moving a module, update those file entries and preserve resolving imports.
 
-The other select implementations (`select-aligned`, `select-search`, `select-motion`, and
-`select-motion-search`) also live in `registry/ui/select/`, but are separate installable items.
+The other select implementations (`select-aligned` and `select-search`) also live in
+`registry/ui/select/`, but are separate installable items.
 
 ## Shared foundation
 
@@ -89,7 +89,7 @@ Toolbar action controls are fixed at 24px high with 6px corners inside an 8px to
 
 ## Installable catalog
 
-The catalog currently contains 47 installable UI items. Verify the count and names with
+The catalog currently contains 46 installable UI items. Verify the count and names with
 `pnpm 4af list` before making registry-wide claims.
 
 ### Actions
@@ -118,8 +118,6 @@ The catalog currently contains 47 installable UI items. Verify the count and nam
 | `select` | `Select`, trigger/content/item/separator parts, `SelectSortTrigger`, `SelectSub` parts | Base UI single/multi select with 24px `xs`, 30px `sm`, and 34px `md` trigger/row sizes, optional panel search and clear footer, compact sort/filter trigger, accessible separators, and nested option panels. |
 | `select-aligned` | `AlignedSelect` and trigger/content/item/group parts | A select that opens *on* its trigger: default/ghost panel at the trigger's width, plain panel at the longest row plus check slot, selected row landing on the value it replaces, `ChevronsUpDown` glyph, and an `xs` size with a 24px trigger and popup rows. The macOS pop-up button. |
 | `select-search` | `SearchSelect` and input/content/item parts | Editable Combobox trigger with filtering and single/multi selection. |
-| `select-motion` | `Select` and trigger/content/item parts | Button-triggered select with a hand-animated unfolding panel and optional panel search. |
-| `select-motion-search` | `MotionSearchSelect` and parts | Editable Combobox whose panel unfolds from the field. |
 | `date-picker` | `DatePicker`, `DateRangePicker`, `Calendar` | Date or range field with Select-trigger geometry (default/ghost/plain, xs/sm/md); calendar in a Base UI popover, bottom sheet on phones; react-day-picker grid; optional clear and hidden ISO form value. |
 
 ### Feedback and status
@@ -133,7 +131,6 @@ The catalog currently contains 47 installable UI items. Verify the count and nam
 | `empty` | `Empty` and composition parts | Empty states with optional dashed placeholder treatment. |
 | `text-shimmer` | `TextShimmer` | Translating masked highlight for working labels; ellipsis truncation and static text under reduced motion or without text-mask support. Component and shared theme CSS ship together; no `animate-text-shimmer` theme token. |
 | `scramble-text` | `ScrambleText` | Reveals text through a short per-grapheme scramble animation, preserving whitespace and honoring reduced motion. |
-| `toast` | `ToastProvider`, `useToast`, `createToastManager` | Managed notifications with default or title-only content, swipe dismissal, placement/stack modes, and up to three actions. |
 | `ascii-loader` | `AsciiLoader` | A looping braille spinner for compact async status affordances. |
 | `matrix-loader` | `MatrixLoader` | A compact 4×4 dot loader with scan, twinkle, and size variants. |
 | `classic-loader` | `ClassicLoader` | Twelve fading radial bars from loading.dev, locally adapted with CSS-only motion, size variants, speed as a playback multiplier, and an optional status label. Inherits currentColor; no loading-dev or animation runtime dependency. |
@@ -192,7 +189,7 @@ deprecated `FieldError` alias still compiles, but the install name is `alert`.
 Waiting states accept a React node: `loader={<MySpinner />}`. `LoaderProvider` from `@/lib/loader`
 sets a subtree default, including portals; custom pending icons take precedence over the local
 slot and provider. ASCII is the fallback. Alternative indicators are optional, installed by the
-caller. Copy/Delete Button, menu/palette rows, and toast state options support the same slot.
+caller. Copy/Delete Button and menu/palette rows support the same slot.
 `Button`'s deprecated SVG `Spinner` now follows the provider as well.
 
 | After the work | Use |
@@ -270,10 +267,8 @@ single-select tick or multi-select checkbox for a row that acts rather than stay
 | `select` | Single or multiple | Button/field | Scale, blur, fade | Optional inside panel |
 | `select-search` | Single or multiple | Editable Combobox | Standard positioned panel | Trigger field |
 | `select-aligned` | Single only | Button/field | Fade, opening *over* the trigger | Optional pinned field |
-| `select-motion` | Single or multiple | Button/field | Unfolding panel | Optional inside panel |
-| `select-motion-search` | Single or multiple | Editable Combobox | Unfolds from field | Trigger field |
 
-Multi selection uses Checkbox. All five take `size="sm" | "md"`,
+Multi selection uses Checkbox. All three take `size="sm" | "md"`,
 default `sm`. `sm` is a 30px control with compact text and 14px glyphs; `md` is 34px and lines
 up with a medium Button or Input in a form row; the size scales the trigger and the option
 rows together, with 6px corners at `sm` and 8px at `md`. Inside a Command Palette keep `sm`.
@@ -298,7 +293,7 @@ override it.
 Every panel in the family opens with a row already active, before anything is typed: the
 current selection where there is one (the most recent, when several are chosen), otherwise the
 first row, and the top match once a query narrows the list. Hovering moves the mark; leaving the
-panel keeps it. The mark is `data-panel-active`; the search variants use Base UI's
+panel keeps it. The mark is `data-panel-active`; the search variant uses Base UI's
 `data-highlighted` via `autoHighlight` plus `keepHighlight`, where `"always"` is only for a
 select with nothing chosen because it pins row one over the selection. `autoFocusFirstItem={false}` opts out, for
 menu-like uses such as a sort control.
@@ -313,9 +308,8 @@ For an icon on a closed trigger before the panel has ever opened:
 
 - `select` — put `icon` in the `items` array (array form only; the record form is
   `{ value: label }`).
-- `select-search`, `select-motion-search` — put `icon` on the item data; the item *is* the
-  value. Do not widen their `items` type or key a lookup on `item.value`.
-- `select-motion` — nothing needed; its items are always mounted.
+- `select-search` — put `icon` on the item data; the item *is* the
+  value. Do not widen its `items` type or key a lookup on `item.value`.
 
 Order: mounted item, then `iconForValue`, then `items`/the value. An icon passed only to
 the item element cannot resolve before mount.
@@ -524,10 +518,6 @@ For the row menu use `DataTableRowActions` — it owns the trigger and takes `Dr
 children; do not hand-roll one. Its `label` is required: give it the row's subject. The contents
 are hidden until the row is hovered, and also shown on visible focus in the row, while the menu is
 open, and where the pointer has no hover; selection does not reveal them.
-
-### Toast
-
-`actions` for up to three buttons; `actionProps` remains for one.
 
 ## Inspector and registry parity
 

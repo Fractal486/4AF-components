@@ -15,7 +15,7 @@ Component-specific APIs and composition guidance live on the matching page under
 authoritative for installable items.
 
 Loading states accept a caller-supplied `loader` node. `LoaderProvider loader={<MySpinner />}`
-sets a subtree default, including menus and toasts; local slots override it and custom pending
+sets a subtree default, including menus; local slots override it and custom pending
 icons take precedence. ASCII is the fallback. The small helper installs with consuming components;
 Classic, Matrix, or a custom loader remain optional. Copy/Delete Button and selection-toolbar
 actions inherit this through their buttons. See the engineering page for composition examples.
@@ -58,6 +58,8 @@ and chevron, so counters do not overlap either control. Hovering nested rows kee
 on the row under the pointer rather than highlighting the collapsible parent. `SidebarGroup`
 remains a visual grouping
 wrapper and is not collapsible on its own.
+
+The installable select variants are `select`, `select-search`, and `select-aligned`.
 
 The `select` family includes `SelectSeparator` for accessible dividers between option groups.
 It is a Base UI list part, not an option, so it stays out of highlighting and selection. The
