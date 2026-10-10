@@ -24,6 +24,10 @@ The `shortcut` prop is enabled by default and binds `⌘K` / `Ctrl+K` to toggle 
 inspector demo disables that component binding and uses `⌘⇧P` / `Ctrl+Shift+P` instead, so it does
 not compete with Fumadocs' own command shortcut.
 
+`useCommandSearch` discards results from canceled requests even when the search callback ignores
+its abort signal. Clearing the query or disabling search resets the result state; a late
+response cannot repopulate it or appear during the next query's debounce.
+
 Compact header navigation controls use the shared 6px radius; the palette's panel and list-row
 geometry remain independent of those small controls.
 

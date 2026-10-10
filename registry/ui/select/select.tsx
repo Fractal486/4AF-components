@@ -48,6 +48,7 @@ export {
 interface SelectOptionInfo {
   text: string;
   parentValue: unknown;
+  disabled: boolean;
 }
 
 interface SelectOptionRegistration extends SelectOptionInfo {
@@ -185,7 +186,7 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   >(
     (next, details) => {
       onValueChange?.(next, details);
-      if (!isValueControlled) setUncontrolledValue(next as Value | Value[]);
+      if (!isValueControlled && !details.isCanceled) setUncontrolledValue(next as Value | Value[]);
     },
     [isValueControlled, onValueChange],
   );
@@ -229,13 +230,14 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
     Map<unknown, SelectOptionRegistration>
   >(() => new Map());
   const registerOptionText = useCallback(
-    (v: unknown, text: string, parentValue?: unknown) => {
+    (v: unknown, text: string, parentValue?: unknown, disabled = false) => {
       if (parentValue !== undefined) {
         setNestedOptionTexts((current) => {
           const previous = current.get(v);
           return new Map(current).set(v, {
             text,
             parentValue,
+            disabled,
             count: (previous?.count ?? 0) + 1,
           });
         });
@@ -247,6 +249,7 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
         return new Map(current).set(v, {
           text,
           parentValue,
+          disabled,
           count: (previous?.count ?? 0) + 1,
         });
       });
@@ -319,6 +322,16 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
     return undefined;
   }, [hasMatchingDescendant, matchesQuery, optionTexts]);
 
+  // Disabled matches still keep the list visible, but cannot be offered to Enter.
+  const firstEnabledItem = useMemo(() => {
+    for (const [value, option] of optionTexts) {
+      if (!option.disabled && (matchesQuery(option.text) || hasMatchingDescendant(value))) {
+        return value;
+      }
+    }
+    return undefined;
+  }, [hasMatchingDescendant, matchesQuery, optionTexts]);
+
   // The row a panel opens on. A select opens on its own answer: the current selection, which
   // is also the row the eye is already looking for. Only once a query narrows the list does
   // the top match take over — by then the selection may not even be in the list, and what
@@ -344,11 +357,12 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   const openingItem = useMemo(() => {
     if (searchQuery.trim() === "") {
       for (let index = openingValues.length - 1; index >= 0; index -= 1) {
-        if (optionTexts.has(openingValues[index])) return openingValues[index];
+        const option = optionTexts.get(openingValues[index]);
+        if (option && !option.disabled) return openingValues[index];
       }
     }
-    return firstVisibleItem;
-  }, [firstVisibleItem, openingValues, optionTexts, searchQuery]);
+    return firstEnabledItem;
+  }, [firstEnabledItem, openingValues, optionTexts, searchQuery]);
   const [activeItem, setActiveItem] = useState<unknown>(undefined);
   const [panelSearch, setPanelSearch] = useState(false);
 

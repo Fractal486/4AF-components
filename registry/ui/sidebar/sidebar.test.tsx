@@ -26,6 +26,45 @@ function MobileProbe() {
   return <output>{isMobile ? "mobile" : "desktop"}</output>;
 }
 
+describe("offcanvas sidebar keyboard access", () => {
+  function Navigation({ open, collapsible = "offcanvas" }: { open: boolean; collapsible?: "offcanvas" | "icon" | "none" }) {
+    return (
+      <SidebarProvider open={open} persist={false}>
+        <SidebarTrigger />
+        <Sidebar collapsible={collapsible}>
+          <a href="/projects">Projects</a>
+          <SidebarRail />
+        </Sidebar>
+        <button>After navigation</button>
+      </SidebarProvider>
+    );
+  }
+
+  it("skips closed navigation and makes it reachable again when expanded", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<Navigation open={false} />);
+    expect(screen.queryByRole("link", { name: "Projects" })).not.toBeInTheDocument();
+    await user.tab();
+    expect(document.activeElement).toHaveAttribute("data-slot", "sidebar-trigger");
+    await user.tab();
+    expect(screen.getByRole("button", { name: "After navigation" })).toHaveFocus();
+    // The edge handle explicitly remains visible even under the hidden content.
+    expect(document.querySelector('[data-slot="sidebar-rail"]')).toHaveClass("visible");
+
+    rerender(<Navigation open />);
+    const link = screen.getByRole("link", { name: "Projects" });
+    link.focus();
+    expect(link).toHaveFocus();
+    rerender(<Navigation open={false} />);
+    expect(document.activeElement).toHaveAttribute("data-slot", "sidebar-trigger");
+  });
+
+  it.each(["icon", "none"] as const)("keeps %s navigation available when the provider is collapsed", (collapsible) => {
+    render(<Navigation open={false} collapsible={collapsible} />);
+    expect(screen.getByRole("link", { name: "Projects" })).toBeVisible();
+  });
+});
+
 describe("SidebarRail", () => {
   it("runs a consumer click handler and still toggles the sidebar", () => {
     const onClick = vi.fn();

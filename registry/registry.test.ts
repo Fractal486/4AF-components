@@ -73,7 +73,10 @@ describe("private registry", () => {
         [...closure].flatMap((name) => items.get(name)?.files?.map((file) => file.path) ?? []),
       );
       const availablePackages = new Set(
-        [...closure].flatMap((name) => items.get(name)?.dependencies ?? []),
+        [...closure].flatMap((name) => items.get(name)?.dependencies ?? []).map((dependency) => {
+          const version = dependency.lastIndexOf("@");
+          return version > 0 ? dependency.slice(0, version) : dependency;
+        }),
       );
 
       for (const file of item.files ?? []) {

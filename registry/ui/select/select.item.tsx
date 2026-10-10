@@ -143,9 +143,9 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
   // Once per character typed. The option set is what the panel lays itself out from, so
   // settling it belongs in the pass before the browser draws.
   useLayoutEffect(() => {
-    registerOptionText(value, optionText, parentValue);
+    registerOptionText(value, optionText, parentValue, disabled);
     return () => unregisterOptionText(value);
-  }, [optionText, parentValue, registerOptionText, unregisterOptionText, value]);
+  }, [disabled, optionText, parentValue, registerOptionText, unregisterOptionText, value]);
   const panelActive = open && Object.is(activeItem, value);
 
   // The same shape as the label registration below, and for the same reason: an `<Icon />`

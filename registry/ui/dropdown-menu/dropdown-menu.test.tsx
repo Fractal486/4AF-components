@@ -44,7 +44,7 @@ describe("DropdownMenu", () => {
     expect(trigger).not.toHaveAttribute("data-pressed");
 
     await user.click(trigger);
-    expect(trigger).toHaveAttribute("data-pressed", "true");
+    await waitFor(() => expect(trigger).toHaveAttribute("data-pressed", "true"));
     expect(trigger.className).toContain("data-[popup-open]:scale-[0.95]");
 
     await user.click(document.body);

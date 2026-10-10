@@ -45,9 +45,13 @@ keep a trigger-width panel, while plain triggers use content width — the longe
 the reserved checkmark slot. Set `width="trigger"` or `width="content"` to override that default.
 
 `SelectContent` opens with a row already active by default: the current selection (the most recent
-one in a multi-select), or the first row when nothing is selected. Typing moves the active row to
-the top match. This means Enter always has an answer without an extra arrow press. Set
+enabled one in a multi-select), or the first enabled row when nothing is selected. Typing moves the active row to
+the top enabled match. Disabled rows stay visible but cannot become the initial active row or
+the search field's Enter target. When every match is disabled, no row is active. Set
 `autoFocusFirstItem={false}` to opt out for menu-like controls such as a sort trigger.
+
+`onValueChange(value, details)` can reject a selection with `details.cancel()`. The trigger,
+checked rows, and the selection offered on reopening all retain the accepted value.
 
 ```tsx
 <Select defaultValue="active" items={{ active: "Active", paused: "Paused" }}>

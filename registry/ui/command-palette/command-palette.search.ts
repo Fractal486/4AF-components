@@ -119,7 +119,9 @@ export function useCommandSearch<T>(
       Promise.resolve()
         .then(() => onSearchRef.current!(term, controller.signal))
         .then((result) => {
-          if (seq !== seqRef.current) return;
+          // A source may ignore the signal and resolve after search was cleared or
+          // disabled, when no newer request exists to advance the sequence.
+          if (seq !== seqRef.current || controller.signal.aborted) return;
           setResults(result);
           setResolvedTerm(term);
           setError(null);

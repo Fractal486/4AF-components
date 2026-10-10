@@ -36,6 +36,21 @@ function Fruits({
 }
 
 describe("AlignedSelect", () => {
+  it("keeps the opening highlight on the accepted value after a canceled choice", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn((_value, details) => details.cancel());
+    render(<Fruits defaultValue="Banana" onValueChange={onValueChange} searchable />);
+    const trigger = screen.getByRole("combobox");
+    await user.click(trigger);
+    await user.click(await screen.findByRole("option", { name: "Cherry" }));
+    expect(onValueChange).toHaveBeenCalledWith("Cherry", expect.anything());
+    expect(trigger).toHaveTextContent("Banana");
+    await user.keyboard("{Escape}");
+    await user.click(trigger);
+    await waitFor(() => expect(screen.getByRole("option", { name: "Banana" })).toHaveAttribute("data-panel-active"));
+    expect(screen.getByRole("option", { name: "Cherry" })).toHaveAttribute("aria-selected", "false");
+  });
+
   it("uses 24px geometry for the trigger and popup rows for xs", async () => {
     const user = userEvent.setup();
     render(<Fruits size="xs" />);

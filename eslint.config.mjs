@@ -9,7 +9,10 @@ import nextTs from "eslint-config-next/typescript";
 const config = defineConfig([
   ...nextVitals,
   ...nextTs,
-  globalIgnores([".next/**", "node_modules/**", "_incoming/**", "next-env.d.ts"]),
+  globalIgnores([
+    ".next/**", "node_modules/**", "_incoming/**", "next-env.d.ts",
+    ".agents/skills/**/assets/**", ".claude/skills/**/assets/**",
+  ]),
   {
     // The firewall: the library must never reach into the site that displays it.
     // If registry/ can import from app/ or inspector/, it stops being portable and

@@ -22,6 +22,12 @@ layouts use `SidebarRailButton` controls with
 Its transition plays even when the tooltip group is warm; moving between icons still opens
 their descriptions immediately. Motion durations continue to respect reduced motion.
 
+With `collapsible="offcanvas"`, collapsed navigation leaves the tab order and accessibility
+tree once its exit finishes. If collapse happens while focus is inside, focus returns to the
+external `SidebarTrigger` in the same provider, or the edge `SidebarRail` when present. Keep a
+trigger outside the panel so keyboard users can reopen it. Icon and noncollapsing sidebars keep
+their navigation available.
+
 ## Menu control geometry
 
 `SidebarMenuButton` supports `size="sm"`, `size="default"`, and `size="lg"`. The compact

@@ -121,7 +121,7 @@ function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
             aria-label={`${entry.name} settings`}
             // Same 12px as the rows inside each Controls block, so the shared Loader row
             // reads as one more row rather than butting against the last one.
-            className="mx-auto flex w-[400px] flex-col gap-3 px-3 py-2"
+            className="@container mx-auto flex w-full min-w-0 max-w-[400px] flex-col gap-3 px-3 py-2"
           >
             <Controls
               idPrefix={`docs-${entry.slug}`}

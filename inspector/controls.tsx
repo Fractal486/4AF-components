@@ -29,6 +29,7 @@ const PILL_GAP_PX = 2; // `gap-0.5` between tabs
 const PILL_TAB_PX = 20; // `px-2.5` on a tab
 const PILL_CHAR_PX = 6; // one `text-xs` character, averaged over mixed-case Latin
 const SETTINGS_FIELD_PX = 192; // `max-w-48`, the text control this lines up with
+const CONTROL_ROW = "grid min-w-0 grid-cols-1 gap-2 @min-[20rem]:grid-cols-[minmax(0,1fr)_minmax(0,auto)] @min-[20rem]:items-center @min-[20rem]:gap-4";
 
 export function fitsPillTabs(labels: readonly string[]): boolean {
   // One option is not a choice, and a lone pill reads as a button that does nothing.
@@ -129,7 +130,7 @@ function Control({
       // The tab's value is the raw option, so picking one hands back exactly what the schema
       // declared — no round-trip through the display label and back.
       return (
-        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,auto)] items-center gap-4">
+        <div className={CONTROL_ROW}>
           <span id={labelId} className="min-w-0 text-sm text-muted-foreground">
             {label}
           </span>
@@ -154,7 +155,7 @@ function Control({
     }
 
     return (
-      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,auto)] items-center gap-4">
+      <div className={CONTROL_ROW}>
         <span id={labelId} className="min-w-0 text-sm text-muted-foreground">
           {label}
         </span>
@@ -187,7 +188,7 @@ function Control({
     // Keep the label, rail, and value in one compact row so numeric props follow their
     // names instead of taking a full-width line in the settings strip.
     return (
-      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
+      <div className={CONTROL_ROW}>
         <span className="min-w-0 text-sm text-muted-foreground">{label}</span>
         <div className="flex min-w-0 items-center gap-2 justify-self-end">
           <Slider
@@ -214,7 +215,7 @@ function Control({
   const labelId = `${id}-label`;
 
   return (
-    <label className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,12rem)] items-center gap-4">
+    <label className="grid min-w-0 grid-cols-1 gap-2 @min-[20rem]:grid-cols-[minmax(0,1fr)_minmax(0,12rem)] @min-[20rem]:items-center @min-[20rem]:gap-4">
       <span id={labelId} className="min-w-0 text-sm text-muted-foreground">
         {label}
       </span>

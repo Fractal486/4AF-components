@@ -101,6 +101,11 @@ pages:
 | `loader` | Caller-supplied loading slots and provider defaults, with an ASCII fallback |
 | `use-action` | Run, pending, outcome, and revert state shared by Action Button and asynchronous menu rows |
 
+`cn` uses Tailwind Merge 3 for Tailwind 4 utilities, including custom-property forms such as
+`duration-(--duration-fast)` and `w-(--sidebar-width)`. The theme's `shadow-border`,
+`shadow-raised`, `shadow-overlay`, and `shadow-overlay-drop` are registered as shadow sizes,
+so a consumer's later `shadow-none` replaces them while independent shadow colors survive.
+
 ## Documentation parity
 
 Every installable UI item has one component page containing its demo, settings, installation,

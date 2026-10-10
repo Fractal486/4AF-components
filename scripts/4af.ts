@@ -29,6 +29,7 @@ interface Registry {
 }
 
 interface ComponentsConfig {
+  tsx?: boolean;
   aliases?: Record<string, string>;
   tailwind?: { css?: string };
 }
@@ -89,8 +90,17 @@ export function parseArgs(args: string[]) {
       continue;
     }
 
-    const [rawKey, inlineValue] = arg.slice(2).split("=", 2);
+    const separator = arg.indexOf("=");
+    const rawKey = arg.slice(2, separator < 0 ? undefined : separator);
+    const inlineValue = separator < 0 ? undefined : arg.slice(separator + 1);
     if (!rawKey) continue;
+    if (rawKey === "overwrite" || rawKey === "dry-run") {
+      const next = args[index + 1];
+      const separateValue = inlineValue === undefined && (next === "true" || next === "false");
+      options[rawKey] = booleanOption(inlineValue ?? (separateValue ? next : true), rawKey);
+      if (separateValue) index += 1;
+      continue;
+    }
     if (inlineValue !== undefined) {
       options[rawKey] = inlineValue;
       continue;
@@ -106,6 +116,12 @@ export function parseArgs(args: string[]) {
   }
 
   return { command, positional, options };
+}
+
+function booleanOption(value: string | boolean | undefined, name: string) {
+  if (value === undefined || value === false || value === "false") return false;
+  if (value === true || value === "true") return true;
+  throw new Error(`--${name} accepts only true or false.`);
 }
 
 export function listComponents() {
@@ -172,8 +188,8 @@ export async function installComponent(
   const plan = installPlan(component, config, project);
   const conflicts = plan.files.filter(({ target }) => existsSync(target));
 
-  const overwrite = Boolean(options.overwrite);
-  const dryRun = Boolean(options["dry-run"]);
+  const overwrite = booleanOption(options.overwrite, "overwrite");
+  const dryRun = booleanOption(options["dry-run"], "dry-run");
   if (dryRun) {
     console.log(`component\t${component.name}`);
     console.log(`project\t${project}`);
@@ -222,7 +238,11 @@ export function installPlan(
   const files = items.flatMap((item) =>
     (item.files ?? []).map((file) => ({
       source: file.path,
-      target: resolveTarget(file.target, config, project),
+      target: config.tsx === false
+        ? resolveTarget(file.target, config, project).replace(/\.tsx?$/, (extension) =>
+            extension === ".tsx" ? ".jsx" : ".js",
+          )
+        : resolveTarget(file.target, config, project),
     })),
   );
   const requestedDependencies = [...new Set(items.flatMap((item) => item.dependencies ?? []))].sort();
@@ -234,6 +254,12 @@ export function installPlan(
     ...(packageJson.dependencies ?? {}),
     ...(packageJson.devDependencies ?? {}),
   };
+  const alreadyDeclared = (dependency: string) => {
+    const version = dependency.lastIndexOf("@");
+    if (version <= 0) return Boolean(installedDependencies[dependency]);
+    const name = dependency.slice(0, version);
+    return installedDependencies[name] === dependency.slice(version + 1);
+  };
   const themeIncluded = items.some((item) => item.type === "registry:theme");
   const cssPath = config.tailwind?.css;
 
@@ -241,8 +267,8 @@ export function installPlan(
     files,
     cssMerges: themeIncluded && typeof cssPath === "string" ? [resolve(project, cssPath)] : [],
     dependencies: {
-      add: requestedDependencies.filter((name) => !installedDependencies[name]),
-      existing: requestedDependencies.filter((name) => installedDependencies[name]),
+      add: requestedDependencies.filter((dependency) => !alreadyDeclared(dependency)),
+      existing: requestedDependencies.filter(alreadyDeclared),
     },
   };
 }
@@ -357,6 +383,7 @@ function projectTsconfigs(project: string) {
 
   visit(resolve(project, "tsconfig.json"));
   visit(resolve(project, "tsconfig.app.json"));
+  visit(resolve(project, "jsconfig.json"));
   return configs;
 }
 
@@ -492,9 +519,8 @@ shadcn ${SHADCN_VERSION} non-interactively in the target project. The 4AF theme 
 }
 
 export async function main(args = process.argv.slice(2)) {
-  const { command, positional, options } = parseArgs([...args]);
-
   try {
+    const { command, positional, options } = parseArgs([...args]);
     if (command === "list") {
       listComponents();
     } else if (command === "docs") {

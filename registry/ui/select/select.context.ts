@@ -23,7 +23,7 @@ interface SelectContextValue {
   unregisterLabel: (value: unknown) => void;
   labelFor: (value: unknown) => ReactNode | undefined;
   firstItem: unknown;
-  registerOptionText: (value: unknown, text: string, parentValue?: unknown) => void;
+  registerOptionText: (value: unknown, text: string, parentValue?: unknown, disabled?: boolean) => void;
   unregisterOptionText: (value: unknown) => void;
   /** True when the text passes the current panel-search query (or there is none). */
   matchesQuery: (text: string) => boolean;

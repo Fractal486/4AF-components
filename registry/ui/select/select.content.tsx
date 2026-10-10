@@ -225,10 +225,10 @@ export function SelectContent({
   // a query narrows the list rather than stranding the mark on a row the filter just hid.
   // Searchable panels keep DOM focus in their field but carry the same active-row state.
   useEffect(() => {
-    if (!open || !autoFocusFirstItem || openingItem === undefined) return;
+    if (!open || !autoFocusFirstItem) return;
 
     setActiveItem(openingItem);
-    if (searchable) return;
+    if (searchable || openingItem === undefined) return;
 
     // Focus follows the mark, because in a panel without a field focus *is* the highlight.
     const frame = requestAnimationFrame(() => {
@@ -287,7 +287,7 @@ export function SelectContent({
           // `data-panel-active` the row paints keeps the two from ever disagreeing.
           if (event.key === "Enter") {
             const active = listRef.current?.querySelector<HTMLElement>(
-              '[role="option"][data-panel-active]:not([hidden])',
+              '[role="option"][data-panel-active]:not([hidden]):not([aria-disabled="true"]):not([disabled])',
             );
             if (active) {
               event.preventDefault();

@@ -452,6 +452,10 @@ nested rows keeps the highlight on the row under the pointer rather than highlig
 collapsible parent.
 `SidebarGroup` is visual grouping only. Compose a row action with `dropdown-menu`.
 
+Offcanvas collapse removes hidden navigation from keyboard focus and assistive technology.
+Keep a `SidebarTrigger` outside the panel in the same provider so keyboard users can reopen it;
+collapse returns focus there when focus was inside the navigation.
+
 Split variants are `split`, `split-floating`, and `split-inset`. Provide the fixed `rail` with
 `SidebarRailButton` controls and `SidebarPanel` sections; use `activePanel`,
 `defaultActivePanel`, and `onActivePanelChange` when the wide panel selection needs to be

@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { vi } from "vitest";
-import { installComponent, runCommand } from "./4af";
+import { collectRegistryItems, installComponent, installPlan, parseArgs, runCommand } from "./4af";
 
 const temporaryProjects: string[] = [];
 
@@ -14,6 +14,58 @@ afterEach(() => {
 });
 
 describe("4AF CLI", () => {
+  it.each(["overwrite", "dry-run"])("parses --%s as a boolean without consuming the component name", (flag) => {
+    expect(parseArgs(["install", `--${flag}`, "button"]).positional).toEqual(["button"]);
+    expect(parseArgs(["install", "button"]).options[flag]).toBeUndefined();
+    expect(parseArgs(["install", `--${flag}`, "button"]).options[flag]).toBe(true);
+    for (const value of ["true", "false"]) {
+      expect(parseArgs(["install", "button", `--${flag}=${value}`]).options[flag]).toBe(value === "true");
+      expect(parseArgs(["install", "button", `--${flag}`, value]).options[flag]).toBe(value === "true");
+    }
+    for (const value of ["0", "yes", "", "false=extra"]) {
+      expect(() => parseArgs(["install", "button", `--${flag}=${value}`])).toThrow("accepts only true or false");
+    }
+  });
+
+  it.each([true, false])("plans actual target extensions and refuses existing files with tsx=%s", async (tsx) => {
+    const project = mkdtempSync(join(tmpdir(), "4af-cli-extensions-"));
+    temporaryProjects.push(project);
+    mkdirSync(resolve(project, "src/components/ui"), { recursive: true });
+    writeFileSync(resolve(project, "package.json"), JSON.stringify({
+      name: "fixture", dependencies: { "tailwind-merge": "^2.6.0" },
+    }));
+    const config = { tsx, aliases: { ui: "@/components/ui", lib: "@/lib" }, tailwind: { css: "src/globals.css" } };
+    writeFileSync(resolve(project, "components.json"), JSON.stringify(config));
+    writeFileSync(resolve(project, tsx ? "tsconfig.json" : "jsconfig.json"),
+      '{"compilerOptions":{"baseUrl":".","paths":{"@/*":["src/*"]}}}');
+    const component = collectRegistryItems("button")[0]!;
+    const plan = installPlan(component, config, project);
+    const buttonPath = resolve(project, `src/components/ui/button.${tsx ? "tsx" : "jsx"}`);
+    expect(plan.files.map((file) => file.target)).toContain(buttonPath);
+    expect(plan.files.map((file) => file.target)).toContain(resolve(project, `src/lib/cn.${tsx ? "ts" : "js"}`));
+    expect(plan.dependencies.add).toContain("tailwind-merge@^3.7.0");
+    writeFileSync(buttonPath, "// consumer customization\n");
+
+    const preview = spawnSync(process.execPath,
+      [resolve("scripts/4af.ts"), "install", "button", "--project", project, "--dry-run", "--overwrite=false"],
+      { encoding: "utf8" });
+    expect(preview.status).toBe(0);
+    expect(preview.stdout).toContain(`write\t${buttonPath}`);
+    expect(preview.stdout).toContain(`conflict\t${buttonPath}`);
+    expect(preview.stdout).toContain("overwrite\tfalse");
+
+    const buildRegistry = vi.fn(async () => {});
+    const startServer = vi.fn(async () => ({ origin: "http://127.0.0.1", close: async () => {} }));
+    const runInstaller = vi.fn(async () => {});
+    await expect(installComponent("button", { project, overwrite: "false" }, {
+      buildRegistry, startServer, runInstaller,
+    })).rejects.toThrow("already exist");
+    expect(buildRegistry).not.toHaveBeenCalled();
+    expect(startServer).not.toHaveBeenCalled();
+    expect(runInstaller).not.toHaveBeenCalled();
+    expect(readFileSync(buttonPath, "utf8")).toBe("// consumer customization\n");
+  });
+
   it("launches executables whose Windows paths contain spaces without shell splitting", async () => {
     if (process.platform !== "win32" || !process.execPath.includes(" ")) return;
 

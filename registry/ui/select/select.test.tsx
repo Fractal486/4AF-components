@@ -34,6 +34,58 @@ function FruitOptions() {
 }
 
 describe("Base UI Select", () => {
+  it("preserves a canceled choice and reopens on the accepted selection", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn((_value, details) => details.cancel());
+    render(
+      <Select items={FRUITS} defaultValue="apple" onValueChange={onValueChange}>
+        <SelectTrigger aria-label="Fruit"><SelectValue /></SelectTrigger>
+        <FruitOptions />
+      </Select>,
+    );
+    const trigger = screen.getByRole("combobox", { name: "Fruit" });
+    await user.click(trigger);
+    await user.click(await screen.findByRole("option", { name: "Banana" }));
+    expect(onValueChange).toHaveBeenCalledWith("banana", expect.anything());
+    expect(trigger).toHaveTextContent("Apple");
+    await user.keyboard("{Escape}");
+    await user.click(trigger);
+    const apple = await screen.findByRole("option", { name: "Apple" });
+    await waitFor(() => expect(apple).toHaveAttribute("data-panel-active"));
+    expect(apple).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("option", { name: "Banana" })).toHaveAttribute("aria-selected", "false");
+  });
+
+  it.each(["empty", "selected", "filter", "all-disabled"])("skips disabled activation candidates with %s selection", async (mode) => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(
+      <Select items={FRUITS} defaultValue={mode === "selected" ? "apple" : mode === "filter" ? "mango" : undefined} onValueChange={onValueChange}>
+        <SelectTrigger aria-label="Fruit"><SelectValue placeholder="Pick a fruit" /></SelectTrigger>
+        <SelectContent searchable>
+          <SelectItem value="apple" disabled>Apple</SelectItem>
+          <SelectItem value="banana" disabled={mode === "all-disabled"}>Banana</SelectItem>
+          <SelectItem value="mango" disabled={mode === "all-disabled"}>Mango</SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    const search = await screen.findByRole("textbox", { name: "Search options" });
+    if (mode === "filter" || mode === "all-disabled") await user.type(search, "a");
+    const apple = screen.getByRole("option", { name: "Apple" });
+    await waitFor(() => expect(apple).toBeVisible());
+    expect(apple).not.toHaveAttribute("data-panel-active");
+    if (mode === "all-disabled") {
+      expect(screen.getAllByRole("option")).toHaveLength(3);
+      expect(document.querySelector('[role="option"][data-panel-active]')).toBeNull();
+    } else {
+      await waitFor(() => expect(screen.getByRole("option", { name: "Banana" })).toHaveAttribute("data-panel-active"));
+    }
+    await user.keyboard("{Enter}");
+    if (mode === "all-disabled") expect(onValueChange).not.toHaveBeenCalled();
+    else expect(onValueChange).toHaveBeenCalledWith("banana", expect.anything());
+  });
+
   it("uses the shared 24px xs geometry for the trigger and option rows", async () => {
     const user = userEvent.setup();
     render(
@@ -806,6 +858,7 @@ describe("Base UI Select", () => {
 
     const trigger = screen.getByRole("combobox", { name: "Fruit" });
     await user.click(trigger);
+    await waitFor(() => expect(screen.getByRole("option", { name: "Apple" })).toHaveFocus());
     await user.keyboard("{ArrowDown}{ArrowRight}");
 
     const subContent = await waitFor(() => {
@@ -960,6 +1013,7 @@ describe("Base UI Select", () => {
 
     const trigger = screen.getByRole("combobox", { name: "Fruit" });
     await user.click(trigger);
+    await waitFor(() => expect(screen.getByRole("option", { name: "Apple" })).toHaveFocus());
     await user.keyboard("{ArrowDown}{ArrowRight}");
     await waitFor(() => expect(screen.getByRole("option", { name: "Banana" })).toHaveFocus());
     await user.keyboard("{ArrowDown}");
@@ -1045,7 +1099,7 @@ describe("Base UI Select", () => {
     expect(trigger).toHaveTextContent("1 selected");
     await user.click(trigger);
 
-    expect(screen.getByRole("listbox")).toHaveAttribute("aria-multiselectable", "true");
+    expect(await screen.findByRole("listbox")).toHaveAttribute("aria-multiselectable", "true");
 
     const apple = screen.getByRole("option", { name: "Apple" });
     await user.click(apple);
@@ -1334,7 +1388,8 @@ describe("Base UI Select", () => {
 
     await user.click(screen.getByRole("combobox", { name: "Fruit" }));
     const search = await screen.findByPlaceholderText("Search fruit");
-    await user.type(search, "man");
+    await waitFor(() => expect(search).toHaveFocus());
+    await user.keyboard("man");
 
     // The caret never leaves the field: no arrow press, so nothing in the list has DOM
     // focus. Enter still has to run whatever the panel is showing as active.

@@ -10,7 +10,9 @@ import {
 } from "@/registry/ui/sheet/sheet";
 import {
   useCallback,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type ComponentProps,
   type CSSProperties,
@@ -167,6 +169,24 @@ export function Sidebar({
     ? "group-data-[state=collapsed]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]"
     : "group-data-[state=collapsed]:w-(--sidebar-width-icon)";
   const splitCollapsed = isSplit && collapsible !== "none" && state === "collapsed";
+  const offcanvasCollapsed = !isMobile && !isSplit && collapsible === "offcanvas" && state === "collapsed";
+  const offcanvasContentRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const panel = offcanvasContentRef.current;
+    const active = panel?.ownerDocument.activeElement;
+    if (!offcanvasCollapsed || !panel || !(active instanceof HTMLElement) || !panel.contains(active)) return;
+    if (active.dataset.slot === "sidebar-rail") return;
+
+    // A keyboard shortcut can collapse navigation while focus is still inside it.
+    // Return to this provider's external toggle, or its visible edge handle.
+    const wrapper = panel.closest('[data-slot="sidebar-wrapper"]');
+    const trigger = Array.from(wrapper?.querySelectorAll<HTMLElement>('[data-slot="sidebar-trigger"]:not([disabled])') ?? [])
+      .find((node) => !panel.contains(node));
+    const target = trigger ?? panel.querySelector<HTMLElement>('[data-slot="sidebar-rail"]');
+    if (target) target.focus();
+    else active.blur();
+  }, [offcanvasCollapsed]);
 
   if (collapsible === "none" && !isSplit) {
     return (
@@ -395,9 +415,11 @@ export function Sidebar({
         {...props}
       >
         <div
+          ref={offcanvasContentRef}
           data-slot="sidebar-inner"
+          style={{ visibility: offcanvasCollapsed ? "hidden" : undefined }}
           className={cn(
-            "flex h-full w-full flex-col bg-surface",
+            "flex h-full w-full flex-col bg-surface transition-[visibility] duration-(--duration-slow)",
             // Floating and inset surfaces both need a bounded, rounded edge.
             "group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-border",
             "group-data-[variant=inset]:rounded-lg group-data-[variant=inset]:shadow-border",

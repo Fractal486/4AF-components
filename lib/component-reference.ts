@@ -32,12 +32,24 @@ export const componentReferences = {
     usage: `import {
   AlertDialog,
   AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 <AlertDialog>
   <AlertDialogTrigger>Delete project</AlertDialogTrigger>
-  <AlertDialogAction>Delete</AlertDialogAction>
+  <AlertDialogContent>
+    <AlertDialogTitle>Delete project?</AlertDialogTitle>
+    <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+    <AlertDialogFooter>
+      <AlertDialogCancel>Cancel</AlertDialogCancel>
+      <AlertDialogAction variant="destructive">Delete</AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
 </AlertDialog>`,
   },
   "ascii-loader": {
@@ -129,16 +141,19 @@ import { Button } from "@/components/ui/button";
   "dropdown-menu": {
     usage: `import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-<DropdownMenu loader={<MySpinner />}>
+<DropdownMenu>
   <DropdownMenuTrigger>Actions</DropdownMenuTrigger>
-  <DropdownMenuItem>Edit</DropdownMenuItem>
-  <DropdownMenuItem disabled disabledReason="Billing is available on the Pro plan.">
-    Billing
-  </DropdownMenuItem>
+  <DropdownMenuContent>
+    <DropdownMenuItem>Edit</DropdownMenuItem>
+    <DropdownMenuItem disabled disabledReason="Billing is available on the Pro plan.">
+      Billing
+    </DropdownMenuItem>
+  </DropdownMenuContent>
 </DropdownMenu>`,
   },
   empty: {
@@ -296,6 +311,7 @@ import { Button } from "@/components/ui/button";
   SidebarMenuCollapsibleContent,
   SidebarMenuCollapsibleTrigger,
   SidebarProvider,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 
 <SidebarProvider>
@@ -309,6 +325,7 @@ import { Button } from "@/components/ui/button";
       </SidebarMenu>
     </SidebarContent>
   </Sidebar>
+  <main><SidebarTrigger />Page content</main>
 </SidebarProvider>
 
 // Split rails: SidebarRailButton tooltip="Projects" keeps its tooltip animated,

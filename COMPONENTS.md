@@ -59,6 +59,10 @@ on the row under the pointer rather than highlighting the collapsible parent. `S
 remains a visual grouping
 wrapper and is not collapsible on its own.
 
+Offcanvas sidebars hide collapsed navigation from keyboard focus and assistive technology.
+Keep a `SidebarTrigger` outside the panel in the same provider so keyboard users can reopen it;
+collapse returns focus there when focus was inside the navigation.
+
 The installable select variants are `select`, `select-search`, and `select-aligned`.
 
 The `select` family includes `SelectSeparator` for accessible dividers between option groups.

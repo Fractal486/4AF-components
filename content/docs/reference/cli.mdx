@@ -12,9 +12,9 @@ The target project must already contain a `package.json` and a shadcn `component
 `ui` and `lib` aliases. The aliases may point anywhere; examples use the usual
 `@/components/ui` and `@/lib` paths.
 
-The repository pins Node 24.18.1 LTS, pnpm 11.18.0, and shadcn 4.13.1 through `.node-version`,
-`package.json`, and the lockfile so validation, build, and installation remain repeatable across
-machines.
+Use a Node version satisfying `engines.node` in `package.json` (currently `>=24.19.0`) and
+the pnpm version declared by `packageManager`. There is no `.node-version` pin. The repository
+pins shadcn through `package.json` and the lockfile.
 
 ## List components
 
@@ -52,6 +52,9 @@ pnpm 4af install select --project C:\Projects\my-app --dry-run
 Prints the complete mutation plan: target files, theme merge, package additions, existing
 dependencies, and conflicts. Nothing is written.
 
+For targets with `tsx: false` in `components.json`, the plan and conflict checks use the
+`.jsx` and `.js` filenames that shadcn installs. Aliases may be defined in `jsconfig.json`.
+
 ## Install a component
 
 ```powershell
@@ -71,6 +74,9 @@ intentional:
 ```powershell
 pnpm 4af install select --project C:\Projects\my-app --overwrite
 ```
+
+`--overwrite=false` retains conflict protection. Boolean flags accept `true` or `false`,
+either after `=` or as the next argument; a bare flag means `true`.
 
 From another working directory, point pnpm at this repository:
 

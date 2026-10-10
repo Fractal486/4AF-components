@@ -16,6 +16,10 @@ value it replaces and scaling out of that row. Default and ghost panels use the 
 plain panels use the longest option label plus the reserved checkmark slot. The trigger carries a
 `ChevronsUpDown` glyph rather than a chevron, since the list extends in both directions.
 
+Both `value` / `defaultValue` and `open` / `defaultOpen` support controlled and uncontrolled use.
+Calling `details.cancel()` in `onValueChange` retains the accepted selection, including the
+row offered when reopening. Calling it in `onOpenChange` retains the previous open state.
+
 ## Trigger variants
 
 `AlignedSelectTrigger` accepts `variant="default" | "ghost" | "plain"`. The default is the

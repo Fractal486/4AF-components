@@ -147,7 +147,7 @@ export function SidebarRail({ className, onClick, ...props }: ComponentProps<"bu
       tabIndex={-1}
       title="Toggle sidebar"
       className={cn(
-        "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 sm:flex",
+        "visible absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 sm:flex",
         "group-data-[side=left]:-right-4 group-data-[side=right]:left-0",
         "in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize",
         "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize",

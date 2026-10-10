@@ -148,6 +148,8 @@ interface RegisteredOption {
 
 export function AlignedSelect<Value>({
   size = "sm",
+  open: openProp,
+  defaultOpen = false,
   onOpenChange,
   onOpenChangeComplete,
   value,
@@ -155,7 +157,8 @@ export function AlignedSelect<Value>({
   onValueChange,
   ...props
 }: AlignedSelectProps<Value>) {
-  const [open, setOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
+  const open = openProp ?? uncontrolledOpen;
   const [query, setQuery] = useState("");
   const [triggerVariant, setTriggerVariant] =
     useState<AlignedSelectTriggerVariant>("default");
@@ -246,15 +249,16 @@ export function AlignedSelect<Value>({
   return (
     <AlignedSelectContext.Provider value={context}>
       <BaseSelect.Root
+        open={open}
         onOpenChange={(next, details) => {
-          setOpen(next);
           onOpenChange?.(next, details);
+          if (openProp === undefined && !details.isCanceled) setUncontrolledOpen(next);
         }}
         value={value}
         defaultValue={defaultValue}
         onValueChange={(next, details) => {
-          setUncontrolledValue(next);
           onValueChange?.(next, details);
+          if (!details.isCanceled) setUncontrolledValue(next);
         }}
         // A query belongs to one visit to the panel — but it is cleared *after* the exit, not
         // on the way into it. Clearing on close puts every filtered row back first, so the
@@ -410,8 +414,10 @@ export function AlignedSelectContent({
   // effect — opening the panel and narrowing the list both re-offer a row, and an effect
   // would paint one frame with the previous visit's row still marked.
   const [lastOffered, setLastOffered] = useState(openingItem);
-  if (lastOffered !== openingItem) {
+  const [lastOpen, setLastOpen] = useState(open);
+  if (lastOffered !== openingItem || lastOpen !== open) {
     setLastOffered(openingItem);
+    setLastOpen(open);
     setPointedItem(null);
   }
   const activeItem = autoFocusFirstItem ? (pointedItem ?? openingItem) : pointedItem;
