@@ -57,12 +57,27 @@ export interface ClassicLoaderProps extends Omit<ComponentProps<"span">, "childr
   label?: string;
 }
 
+/**
+ * The bars, as SVG in a 100-unit box, each rotated about the exact centre: 24 long,
+ * 8 thick, running from 23 to 47 units out — upstream's proportions.
+ *
+ * Upstream lays them out with CSS (`left: -10%` on a 24%-wide bar, then rotate and
+ * translate), which centres the ring 2% right of the box, so the right bar sits at the
+ * edge and gets clipped in a tight container. And the right bar is the only one at
+ * `rotate(0deg)`: the browser treats it as a plain translation and snaps it to whole
+ * pixels, so at sizes where 8% is fractional (1.6px at md) it renders thicker than the
+ * rest. SVG rasterizes every angle the same way and the ring is centred by construction.
+ */
 const BARS = Array.from({ length: 12 }, (_, index) => (
-  <i
+  <rect
     key={index}
-    aria-hidden="true"
+    x={73}
+    y={46}
+    width={24}
+    height={8}
+    rx={4}
+    transform={`rotate(${index * 30} 50 50)`}
     style={{
-      transform: `rotate(${index * 30}deg) translate(146%)`,
       // Negative delays give the first rendered frame the complete fading trail.
       animationDelay: `calc(var(--classic-cycle, 1.2s) * (${index} - 12) / 12)`,
     }}
@@ -88,9 +103,9 @@ export const ClassicLoader = forwardRef<HTMLElement, ClassicLoaderProps>(
     const playbackSpeed = Number.isFinite(speed) && speed > 0 ? speed : 1;
     const cycle = 1.2 / playbackSpeed;
     const content = (
-      <span data-slot="classic-loader-inner" aria-hidden="true">
+      <svg data-slot="classic-loader-inner" viewBox="0 0 100 100" aria-hidden="true">
         {BARS}
-      </span>
+      </svg>
     );
 
     if (asChild && !isValidElement(children)) {

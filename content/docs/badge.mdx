@@ -8,11 +8,38 @@ description: A compact label for statuses, categories, and counts.
 
 ## API
 
-**Main export:** `Badge`
+**Main exports:** `Badge`, `BadgeIconsProvider`, types `BadgeStatus` and `BadgeIcons`
 
 `status="loading"` accepts `loader={<MySpinner />}` or inherits
 [LoaderProvider](/docs/reference/engineering#shared-loading-indicators), with ASCII as the fallback.
 An explicit `icon` takes precedence, and `icon={null}` hides it.
+
+## Status icons
+
+| Status | Default icon |
+| --- | --- |
+| `neutral` | `Circle` |
+| `info` | `Info` |
+| `success` | `Check` |
+| `warning` | `AlertTriangle` |
+| `danger` | `OctagonAlert` |
+| `loading` | Shared loader (`loader`, then `LoaderProvider`, then ASCII) |
+
+| Prop / part | Description |
+| --- | --- |
+| `icon` | One glyph for this badge, whatever its status. |
+| `icons` | Per-status glyphs for this badge, e.g. `{ danger: <CircleX /> }`. Unnamed statuses fall through. |
+| `BadgeIconsProvider icons={…}` | Per-status glyphs for every badge in a subtree, portals included. Nested providers merge over outer ones. |
+
+Precedence, most specific first: `icon`, `icons`, `loader` (loading only), `BadgeIconsProvider`,
+the default. A `null` entry in `icons` or the provider hides the icon for that status. Glyphs are
+sized to the badge (`size-2.5` / `size-3` / `size-3.5`) unless they set their own size.
+
+```tsx
+<BadgeIconsProvider icons={{ danger: <CircleX />, success: <CircleCheck /> }}>
+  <App />
+</BadgeIconsProvider>
+```
 
 A status badge with outline and status treatments, an optional icon or dot, and animated label
 and glyph changes powered by the shared `Morph` component.

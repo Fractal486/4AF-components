@@ -139,7 +139,7 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   "ascii-loader": "AsciiLoader",
   "matrix-loader": "MatrixLoader",
   "classic-loader": "ClassicLoader",
-  badge: "Badge",
+  badge: "Badge, BadgeIconsProvider",
   button: "Button",
   "button-group": "ButtonGroup",
   checkbox: "Checkbox",

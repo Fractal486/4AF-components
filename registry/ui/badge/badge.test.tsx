@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { Hash } from "lucide-react";
-import { Badge } from "./badge";
+import { CircleX, Hash, Star } from "lucide-react";
+import { Badge, BadgeIconsProvider } from "./badge";
 
 describe("Badge", () => {
   it("defaults to the small size", () => {
@@ -101,5 +101,65 @@ describe("Badge", () => {
 
     expect(screen.getByTestId("outline")).toHaveClass("text-destructive", "border-border-strong");
     expect(screen.getByTestId("outline")).not.toHaveClass("bg-destructive/10");
+  });
+});
+
+describe("Badge status icons", () => {
+  // Morph keeps every status's glyph mounted as an invisible sizer; the shown one isn't.
+  const glyph = (id: string) =>
+    screen.getByTestId(id).querySelector('[data-slot="morph"] > span:not(.invisible) svg');
+
+  it("uses OctagonAlert for danger by default", () => {
+    render(<Badge data-testid="danger" status="danger">Failed</Badge>);
+    expect(glyph("danger")).toHaveClass("lucide-octagon-alert", "size-2.5");
+  });
+
+  it("replaces only the statuses named in `icons`, sized like the defaults", () => {
+    render(
+      <>
+        <Badge data-testid="danger" status="danger" icons={{ danger: <CircleX /> }}>Failed</Badge>
+        <Badge data-testid="info" status="info" icons={{ danger: <CircleX /> }}>Note</Badge>
+      </>,
+    );
+    expect(glyph("danger")).toHaveClass("lucide-circle-x", "size-2.5");
+    expect(glyph("info")).toHaveClass("lucide-info");
+  });
+
+  it("layers per-badge icons over the provider, and `icon` over both", () => {
+    render(
+      <BadgeIconsProvider icons={{ danger: <CircleX />, success: <Star /> }}>
+        <Badge data-testid="provided" status="danger">Failed</Badge>
+        <Badge data-testid="own" status="success" icons={{ success: <Hash /> }}>Done</Badge>
+        <Badge data-testid="single" status="danger" icons={{ danger: <Star /> }} icon={<Hash />}>
+          Failed
+        </Badge>
+      </BadgeIconsProvider>,
+    );
+    expect(glyph("provided")).toHaveClass("lucide-circle-x");
+    expect(glyph("own")).toHaveClass("lucide-hash");
+    expect(glyph("single")).toHaveClass("lucide-hash");
+  });
+
+  it("nests providers, and a null entry hides that status's icon", () => {
+    render(
+      <BadgeIconsProvider icons={{ danger: <CircleX />, info: <Star /> }}>
+        <BadgeIconsProvider icons={{ info: null }}>
+          <Badge data-testid="outer" status="danger">Failed</Badge>
+          <Badge data-testid="hidden" status="info">Note</Badge>
+        </BadgeIconsProvider>
+      </BadgeIconsProvider>,
+    );
+    expect(glyph("outer")).toHaveClass("lucide-circle-x");
+    expect(glyph("hidden")).toBeNull();
+  });
+
+  it("lets a loading entry in `icons` win over `loader`", () => {
+    render(
+      <Badge data-testid="loading" status="loading" loader={<span>spin</span>} icons={{ loading: <Star /> }}>
+        Syncing
+      </Badge>,
+    );
+    expect(glyph("loading")).toHaveClass("lucide-star");
+    expect(screen.queryByText("spin")).toBeNull();
   });
 });

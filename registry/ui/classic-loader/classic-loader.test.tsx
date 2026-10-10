@@ -14,16 +14,16 @@ describe("ClassicLoader", () => {
   it("starts with a staggered trail and updates speed without replacing bars", () => {
     const { container, rerender } = render(<ClassicLoader />);
     const root = container.firstElementChild!;
-    const firstBar = root.querySelector("i")!;
-    expect(root.querySelectorAll("i")).toHaveLength(12);
+    const firstBar = root.querySelector("rect")!;
+    expect(root.querySelectorAll("rect")).toHaveLength(12);
     expect(firstBar.style.animationDelay).toContain("(0 - 12) / 12");
     rerender(<ClassicLoader speed={0.5} />);
     expect(root).toHaveAttribute("data-state", "loading");
     expect((root as HTMLElement).style.getPropertyValue("--classic-cycle")).toBe("2.4s");
-    expect(root.querySelector("i")).toBe(firstBar);
+    expect(root.querySelector("rect")).toBe(firstBar);
     rerender(<ClassicLoader speed={2} />);
     expect((root as HTMLElement).style.getPropertyValue("--classic-cycle")).toBe("0.6s");
-    expect(root.querySelector("i")).toBe(firstBar);
+    expect(root.querySelector("rect")).toBe(firstBar);
   });
 
   it.each([0, -1, Infinity, NaN])("uses normal playback for invalid speed %s", (speed) => {
@@ -54,7 +54,7 @@ describe("ClassicLoader", () => {
     );
     const root = getByRole("status", { name: "Working" });
     expect(root.tagName).toBe("DIV");
-    expect(root.querySelectorAll("i")).toHaveLength(12);
+    expect(root.querySelectorAll("rect")).toHaveLength(12);
     expect(root).toHaveClass("text-muted-foreground");
     expect(ref.current).toBe(root);
     expect(childRef.current).toBe(root);

@@ -61,7 +61,8 @@ export const componentReferences = {
     usage: `import { Badge } from "@/components/ui/badge";
 
 <Badge variant="solid" shape="pill">Approved</Badge>
-<Badge status="loading" loader={<MySpinner />}>Syncing</Badge>`,
+<Badge status="loading" loader={<MySpinner />}>Syncing</Badge>
+<Badge status="danger" icons={{ danger: <CircleX /> }}>Failed</Badge>`,
   },
   button: {
     usage: `import { Button } from "@/components/ui/button";

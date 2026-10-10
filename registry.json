@@ -752,7 +752,7 @@
     {
       "name": "badge",
       "type": "registry:ui",
-      "description": "A plain, solid, or gray-outline status badge with rounded or pill-shaped boxed geometry that morphs its glyph and label on change, and springs to the new width. Uses the shared Morph animation for content swaps and layout motion; tokens for the status tints (amber warning, green success).",
+      "description": "A plain, solid, or gray-outline status badge with rounded or pill-shaped boxed geometry that morphs its glyph and label on change, and springs to the new width. Status glyphs can be replaced per badge (icons) or per subtree (BadgeIconsProvider). Uses the shared Morph animation for content swaps and layout motion; tokens for the status tints (amber warning, green success).",
       "dependencies": [
         "class-variance-authority",
         "lucide-react",
