@@ -55,6 +55,14 @@ boxed badges.
 with the text and icon in the same, more visible status colour. `outline` has no fill and
 always uses a gray outline; only its text and icon colour changes with `status`.
 
+| Prop | Description |
+| --- | --- |
+| `color` | Any CSS colour, replacing the `solid` fill. Used as given, so pass a translucent colour for the default wash look. Text and icon keep the `status` colour. Ignored by `plain` and `outline`. The badge carries `data-color` while it applies. |
+
+```tsx
+<Badge color="oklch(0.7 0.15 250 / 0.15)">Beta</Badge>
+```
+
 ## Shape
 
 `rounded` preserves the compact corner radius used by default. `pill` gives `solid` and

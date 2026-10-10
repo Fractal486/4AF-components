@@ -54,7 +54,8 @@ function iconFor(icons: BadgeIcons | undefined, status: BadgeStatus): ReactNode 
 }
 
 export interface BadgeProps
-  extends Omit<HTMLMotionProps<"span">, "children">,
+  // `color` is the legacy HTML attribute on the span; the badge takes the name for its fill.
+  extends Omit<HTMLMotionProps<"span">, "children" | "color">,
     BadgeVariants {
   children?: ReactNode;
   /** Overrides the status glyph. Pass `null` with `showIcon` to render text only. */
@@ -65,6 +66,12 @@ export interface BadgeProps
    * over this. For `loading`, an entry here also wins over `loader`.
    */
   icons?: BadgeIcons;
+  /**
+   * Any CSS colour, replacing the `solid` badge's status fill — e.g. `"oklch(0.7 0.15 250 /
+   * 0.15)"` or `"var(--color-accent-500)"`. Used as given, so pass a translucent colour for
+   * the default wash look. The text and glyph keep their `status` colour. `solid` only.
+   */
+  color?: string;
   showIcon?: boolean;
   loader?: ReactNode;
   /**
@@ -97,10 +104,15 @@ export function Badge({
   dot = false,
   contentKey,
   animateLayout = true,
+  color,
   className,
+  style,
   ...rest
 }: BadgeProps) {
   const reduce = useReducedMotion();
+  // Through a custom property rather than an inline `background-color`, so the class
+  // keeps the badge's own colour transition and a caller's className can still win.
+  const customFill = variant === "solid" && color != null && color !== "";
   const resolvedStatus = status ?? "neutral";
   const resolvedSize = size ?? "sm";
   const labelKey = String(
@@ -158,9 +170,13 @@ export function Badge({
       transition={reduce ? { duration: 0 } : spring.snappy}
       className={cn(
         badgeVariants({ variant, status, size, shape }),
+        // After the variants, so it replaces the status fill rather than competing with it.
+        customFill && "bg-(--badge-fill)",
         "transition-colors duration-(--duration-base)",
         className,
       )}
+      style={customFill ? ({ ...style, "--badge-fill": color } as BadgeProps["style"]) : style}
+      data-color={customFill ? "" : undefined}
       {...rest}
     >
       {dot ? (

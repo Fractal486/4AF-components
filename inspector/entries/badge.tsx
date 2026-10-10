@@ -22,8 +22,10 @@ export const badgeEntry = defineEntry({
     showIcon: bool(true, "Show icon"),
     // A status dot in place of the icon — works on every variant.
     dot: bool(false, "Dot"),
+    // Any CSS colour for the solid fill; empty keeps the status wash.
+    color: text("", "Solid color", "oklch(0.7 0.15 250 / 0.2)"),
   },
-  render({ variant, status, size, shape, label, showIcon, dot }) {
+  render({ variant, status, size, shape, label, showIcon, dot, color }) {
     return (
       <div className="flex flex-col items-center gap-8">
         <Badge
@@ -33,6 +35,7 @@ export const badgeEntry = defineEntry({
           shape={shape as BadgeProps["shape"]}
           showIcon={showIcon}
           dot={dot}
+          color={color || undefined}
         >
           {label}
         </Badge>

@@ -74,7 +74,8 @@ export const componentReferences = {
 
 <Badge variant="solid" shape="pill">Approved</Badge>
 <Badge status="loading" loader={<MySpinner />}>Syncing</Badge>
-<Badge status="danger" icons={{ danger: <CircleX /> }}>Failed</Badge>`,
+<Badge status="danger" icons={{ danger: <CircleX /> }}>Failed</Badge>
+<Badge color="oklch(0.7 0.15 250 / 0.15)">Beta</Badge>`,
   },
   button: {
     usage: `import { Button } from "@/components/ui/button";

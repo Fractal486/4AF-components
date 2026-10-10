@@ -163,3 +163,41 @@ describe("Badge status icons", () => {
     expect(screen.queryByText("spin")).toBeNull();
   });
 });
+
+describe("Badge color", () => {
+  it("replaces the solid fill with the given colour and keeps the status ink", () => {
+    render(
+      <Badge data-testid="badge" status="success" color="oklch(0.7 0.15 250 / 0.2)">
+        Beta
+      </Badge>,
+    );
+    const badge = screen.getByTestId("badge");
+    expect(badge).toHaveClass("bg-(--badge-fill)", "text-success");
+    expect(badge).not.toHaveClass("bg-success/10");
+    expect(badge.style.getPropertyValue("--badge-fill")).toBe("oklch(0.7 0.15 250 / 0.2)");
+    expect(badge).toHaveAttribute("data-color", "");
+  });
+
+  it.each(["plain", "outline"] as const)("is ignored by the %s variant", (variant) => {
+    render(
+      <Badge data-testid="badge" variant={variant} color="red">
+        Beta
+      </Badge>,
+    );
+    const badge = screen.getByTestId("badge");
+    expect(badge).not.toHaveClass("bg-(--badge-fill)");
+    expect(badge).not.toHaveAttribute("data-color");
+    expect(badge.style.getPropertyValue("--badge-fill")).toBe("");
+  });
+
+  it("keeps a caller's own style alongside the fill", () => {
+    render(
+      <Badge data-testid="badge" color="red" style={{ marginLeft: 4 }}>
+        Beta
+      </Badge>,
+    );
+    const badge = screen.getByTestId("badge");
+    expect(badge.style.marginLeft).toBe("4px");
+    expect(badge.style.getPropertyValue("--badge-fill")).toBe("red");
+  });
+});

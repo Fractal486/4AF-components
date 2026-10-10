@@ -126,7 +126,7 @@ The catalog currently contains 46 installable UI items. Verify the count and nam
 | --- | --- | --- |
 | `progress` | `Progress`, `ProgressLabel`, `ProgressValue` | Determinate progress with transform-driven fill. |
 | `alert` | `Alert` | Inline status line (glyph + sentence, no surface): `error` (hexagon, `role="alert"`), `warning` (amber triangle), `success` (green check), `info` (neutral), `loading` (shared loader); not tied to field context. |
-| `badge` | `Badge`, `BadgeIconsProvider` | Outline/status labels with optional icon or dot, animated content changes, and `shape="rounded" | "pill"` for boxed variants. Status glyphs are replaceable per badge (`icons`) or per subtree (`BadgeIconsProvider`). |
+| `badge` | `Badge`, `BadgeIconsProvider` | Outline/status labels with optional icon or dot, animated content changes, and `shape="rounded" | "pill"` for boxed variants. Status glyphs are replaceable per badge (`icons`) or per subtree (`BadgeIconsProvider`); `color` overrides the solid fill with any CSS colour. |
 | `skeleton` | `Skeleton` | Generic loading placeholders, square and shaped entirely by utility classes — there is no shape axis, and corners are opt-in; animation respects reduced motion. |
 | `empty` | `Empty` and composition parts | Empty states with optional dashed placeholder treatment. |
 | `text-shimmer` | `TextShimmer` | Translating masked highlight for working labels; ellipsis truncation and static text under reduced motion or without text-mask support. Component and shared theme CSS ship together; no `animate-text-shimmer` theme token. |
