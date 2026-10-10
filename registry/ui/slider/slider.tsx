@@ -120,7 +120,7 @@ export interface SliderProps
   range?: boolean;
   /**
    * A dot at each step. Hidden automatically past 50 steps, where they'd be noise, and not
-   * available on the `knob` thumb — its rail is a 2px hairline and carries the fill alone.
+   * available on the `knob` thumb — its thin rail carries the fill alone.
    */
   showTicks?: boolean;
   /** The current value, shown above the track on the right. */
@@ -140,8 +140,8 @@ export interface SliderProps
   inlineLabel?: boolean;
   /**
    * The thumb shape. `bar` is the thin vertical handle; `circle` is a round knob centered in a
-   * thick, fully-rounded track whose fill encapsulates it; `knob` is a small round dot on a 2px
-   * hairline — twice a Separator — which it overhangs entirely, and which carries the fill and
+   * thick, fully-rounded track whose fill encapsulates it; `knob` is a small round dot on a thin
+   * rail (4px for md, 2px for sm) which it overhangs entirely, and which carries the fill and
    * nothing else. The knob's control keeps its full height as the rail thins, so the pointer
    * target does not shrink with it.
    */
@@ -154,7 +154,7 @@ export interface SliderProps
 // and rounding, the thumb, the pixel width the fill/tick maths needs, and the tick inset
 // (half that width) never drift out of step. `rail` positions the track within the
 // control — `inset-0` fills a thick circle rail; a fixed height centres a thin rail so the
-// round thumb overhangs. `knob` rides a 2px hairline, twice a Separator, so its rail reads as
+// round thumb overhangs. `knob` rides a thin rail (4px for md, 2px for sm), so its rail reads as
 // a line the dot travels along rather than a track it sits in.
 const DIMS = {
   circle: {
@@ -162,7 +162,7 @@ const DIMS = {
     sm: { control: "h-6", rail: "inset-0", thumb: "size-4 rounded-full", thumbPx: 16, fillCapRadiusPx: 12, tooltipSideOffset: 8, tickInset: "inset-x-3", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
   },
   knob: {
-    md: { control: "h-5", rail: "inset-x-0 top-1/2 h-0.5 -translate-y-1/2", thumb: "size-2.5 rounded-full", thumbPx: 10, fillCapRadiusPx: 0, tooltipSideOffset: 8, tickInset: "inset-x-[5px]", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    md: { control: "h-5", rail: "inset-x-0 top-1/2 h-1 -translate-y-1/2", thumb: "size-2.5 rounded-full", thumbPx: 10, fillCapRadiusPx: 0, tooltipSideOffset: 8, tickInset: "inset-x-[5px]", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
     sm: { control: "h-4", rail: "inset-x-0 top-1/2 h-0.5 -translate-y-1/2", thumb: "size-2 rounded-full", thumbPx: 8, fillCapRadiusPx: 0, tooltipSideOffset: 8, tickInset: "inset-x-1", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
   },
   bar: {
@@ -492,9 +492,7 @@ export function Slider({
         ? rtlFillClip
         : ltrFillClip;
 
-  // No ticks on the `knob` rail. They are marks *on* a track, and this one is a 2px line —
-  // a 4px dot on it is bigger than the thing it is marking. The fill is the only thing the
-  // hairline carries, which is the point of the variant.
+  // The thin knob rail carries only the fill; tick dots would crowd it.
   const ticks =
     showTicks && !isKnob && stepCount > 0 && stepCount <= 50
       ? Array.from(

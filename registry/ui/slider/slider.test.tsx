@@ -235,10 +235,10 @@ describe("Slider", () => {
     );
 
     const rail = container.querySelector('[data-slot="slider-fill"]')!.parentElement!;
-    // 2px — twice a Separator's hairline, and centred rather than filling the control.
-    expect(rail.className).toContain("h-0.5");
+    // 4px for md, centred rather than filling the control.
+    expect(rail.className).toContain("h-1");
     expect(rail.className).toContain("-translate-y-1/2");
-    // A 4px tick dot on a 2px rail is bigger than the thing it marks, so the variant has none
+    // Tick dots would crowd the thin rail, so the variant has none
     // even when they're asked for.
     expect(rail.querySelectorAll("span")).toHaveLength(0);
   });

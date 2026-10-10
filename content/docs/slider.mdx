@@ -12,10 +12,10 @@ description: A Base UI range control with multiple thumb styles, labels, ticks, 
 
 A controlled or uncontrolled numeric slider with a spring-gliding fill and three thumb variants:
 `bar` for a thin handle, `circle` for a round thumb centered in a thick rounded rail whose fill
-encapsulates it and remains behind it at the minimum, and `knob` for a small round dot on a 2px
-hairline rail it overhangs entirely. The knob grows by a quarter while dragged. Optional display
+encapsulates it and remains behind it at the minimum, and `knob` for a small round dot on a thin
+rail (4px for `md`, 2px for `sm`) it overhangs entirely. The knob grows by a quarter while dragged. Optional display
 props include `label`, `showValue`, and `showTicks`; the `knob` rail carries the fill alone and
-renders no ticks, since a tick dot is wider than the rail itself. Set `range` to render two
+renders no ticks to keep the thin rail clear. Set `range` to render two
 independently draggable thumbs and a fill between them; pass `[start, end]` to `value` or
 `defaultValue`, and the range callback receives the updated tuple. Without `range`, the component
 keeps its single numeric value API.
