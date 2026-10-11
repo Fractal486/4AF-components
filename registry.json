@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "4af",
-  "homepage": "https://github.com/Fractal486/4AF-components",
+  "homepage": "https://4af.selfsimilar.dev",
   "items": [
     {
       "name": "4af-theme",
@@ -247,8 +247,8 @@
       "name": "slot",
       "type": "registry:lib",
       "registryDependencies": [
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/refs.json"
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/refs.json"
       ],
       "files": [
         {
@@ -314,8 +314,8 @@
       "type": "registry:lib",
       "description": "Small context and loading slot for caller-supplied indicators, with AsciiLoader as the fallback.",
       "registryDependencies": [
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/ascii-loader.json"
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/ascii-loader.json"
       ],
       "files": [
         {
@@ -335,11 +335,11 @@
         "motion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json",
-        "http://localhost:3000/r/loader.json",
-        "http://localhost:3000/r/slot.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/motion.json",
+        "https://4af.selfsimilar.dev/r/loader.json",
+        "https://4af.selfsimilar.dev/r/slot.json"
       ],
       "files": [
         {
@@ -362,9 +362,9 @@
         "class-variance-authority"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/button.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/button.json"
       ],
       "files": [
         {
@@ -388,9 +388,9 @@
         "class-variance-authority"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/refs.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/refs.json"
       ],
       "files": [
         {
@@ -413,8 +413,8 @@
         "@base-ui/react"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json"
       ],
       "files": [
         {
@@ -432,9 +432,9 @@
         "class-variance-authority"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/refs.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/refs.json"
       ],
       "files": [
         {
@@ -458,9 +458,9 @@
         "lucide-react"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/loader.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/loader.json"
       ],
       "files": [
         {
@@ -485,10 +485,10 @@
         "motion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json",
-        "http://localhost:3000/r/button.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/motion.json",
+        "https://4af.selfsimilar.dev/r/button.json"
       ],
       "files": [
         {
@@ -506,8 +506,8 @@
         "motion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json"
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/motion.json"
       ],
       "files": [
         {
@@ -525,10 +525,10 @@
         "lucide-react"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/button.json",
-        "http://localhost:3000/r/morph.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/button.json",
+        "https://4af.selfsimilar.dev/r/morph.json"
       ],
       "files": [
         {
@@ -546,7 +546,7 @@
         "lucide-react"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/action-button.json"
+        "https://4af.selfsimilar.dev/r/action-button.json"
       ],
       "files": [
         {
@@ -565,10 +565,10 @@
         "motion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/button.json",
-        "http://localhost:3000/r/morph.json",
-        "http://localhost:3000/r/use-action.json",
-        "http://localhost:3000/r/loader.json"
+        "https://4af.selfsimilar.dev/r/button.json",
+        "https://4af.selfsimilar.dev/r/morph.json",
+        "https://4af.selfsimilar.dev/r/use-action.json",
+        "https://4af.selfsimilar.dev/r/loader.json"
       ],
       "files": [
         {
@@ -586,10 +586,10 @@
         "lucide-react"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toggle.json",
-        "http://localhost:3000/r/morph.json",
-        "http://localhost:3000/r/loader.json",
-        "http://localhost:3000/r/use-action.json"
+        "https://4af.selfsimilar.dev/r/toggle.json",
+        "https://4af.selfsimilar.dev/r/morph.json",
+        "https://4af.selfsimilar.dev/r/loader.json",
+        "https://4af.selfsimilar.dev/r/use-action.json"
       ],
       "files": [
         {
@@ -609,10 +609,10 @@
         "motion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json",
-        "http://localhost:3000/r/refs.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/motion.json",
+        "https://4af.selfsimilar.dev/r/refs.json"
       ],
       "files": [
         {
@@ -637,9 +637,9 @@
         "motion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/motion.json"
       ],
       "files": [
         {
@@ -664,9 +664,9 @@
         "motion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/motion.json"
       ],
       "files": [
         {
@@ -691,9 +691,9 @@
         "motion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/motion.json"
       ],
       "files": [
         {
@@ -718,10 +718,10 @@
         "motion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json",
-        "http://localhost:3000/r/tooltip.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/motion.json",
+        "https://4af.selfsimilar.dev/r/tooltip.json"
       ],
       "files": [
         {
@@ -744,8 +744,8 @@
         "@base-ui/react"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json"
       ],
       "files": [
         {
@@ -765,11 +765,11 @@
         "motion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json",
-        "http://localhost:3000/r/morph.json",
-        "http://localhost:3000/r/loader.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/motion.json",
+        "https://4af.selfsimilar.dev/r/morph.json",
+        "https://4af.selfsimilar.dev/r/loader.json"
       ],
       "files": [
         {
@@ -790,8 +790,8 @@
       "description": "A muted placeholder with square corners by default, shaped by utility classes. Pulses while content loads; reduced motion disables the pulse.",
       "dependencies": [],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json"
       ],
       "files": [
         {
@@ -811,8 +811,8 @@
         "lucide-react"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json"
       ],
       "files": [
         {
@@ -835,9 +835,9 @@
         "class-variance-authority"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/skeleton.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/skeleton.json"
       ],
       "files": [
         {
@@ -862,13 +862,13 @@
         "motion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json",
-        "http://localhost:3000/r/button.json",
-        "http://localhost:3000/r/checkbox.json",
-        "http://localhost:3000/r/dropdown-menu.json",
-        "http://localhost:3000/r/table.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/motion.json",
+        "https://4af.selfsimilar.dev/r/button.json",
+        "https://4af.selfsimilar.dev/r/checkbox.json",
+        "https://4af.selfsimilar.dev/r/dropdown-menu.json",
+        "https://4af.selfsimilar.dev/r/table.json"
       ],
       "files": [
         {
@@ -891,10 +891,10 @@
         "class-variance-authority"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/table-of-contents-scroll.json",
-        "http://localhost:3000/r/table-of-contents-tracking.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/table-of-contents-scroll.json",
+        "https://4af.selfsimilar.dev/r/table-of-contents-tracking.json"
       ],
       "files": [
         {
@@ -917,10 +917,10 @@
         "class-variance-authority"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/table-of-contents-scroll.json",
-        "http://localhost:3000/r/table-of-contents-tracking.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/table-of-contents-scroll.json",
+        "https://4af.selfsimilar.dev/r/table-of-contents-tracking.json"
       ],
       "files": [
         {
@@ -943,8 +943,8 @@
         "class-variance-authority"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json"
       ],
       "files": [
         {
@@ -965,8 +965,8 @@
       "description": "Text with a highlight sweeping across it — a looping working-in-progress affordance. Gradient clipped to the glyphs, switched off (not sped up) under reduced motion.",
       "dependencies": [],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json"
       ],
       "files": [
         {
@@ -982,8 +982,8 @@
       "description": "A short random-character reveal for text that is appearing or changing, with whitespace preservation and reduced-motion support.",
       "dependencies": [],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json"
       ],
       "files": [
         {
@@ -1004,11 +1004,11 @@
         "motion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/checkbox.json",
-        "http://localhost:3000/r/button.json",
-        "http://localhost:3000/r/input.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/checkbox.json",
+        "https://4af.selfsimilar.dev/r/button.json",
+        "https://4af.selfsimilar.dev/r/input.json"
       ],
       "files": [
         {
@@ -1069,15 +1069,15 @@
         "motion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/loader.json",
-        "http://localhost:3000/r/checkbox.json",
-        "http://localhost:3000/r/morph.json",
-        "http://localhost:3000/r/use-action.json",
-        "http://localhost:3000/r/select.json",
-        "http://localhost:3000/r/motion.json",
-        "http://localhost:3000/r/refs.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/loader.json",
+        "https://4af.selfsimilar.dev/r/checkbox.json",
+        "https://4af.selfsimilar.dev/r/morph.json",
+        "https://4af.selfsimilar.dev/r/use-action.json",
+        "https://4af.selfsimilar.dev/r/select.json",
+        "https://4af.selfsimilar.dev/r/motion.json",
+        "https://4af.selfsimilar.dev/r/refs.json"
       ],
       "files": [
         {
@@ -1140,8 +1140,8 @@
         "motion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json"
       ],
       "files": [
         {
@@ -1159,8 +1159,8 @@
         "class-variance-authority"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json"
       ],
       "files": [
         {
@@ -1183,9 +1183,9 @@
         "class-variance-authority"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/slot.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/slot.json"
       ],
       "files": [
         {
@@ -1210,9 +1210,9 @@
         "lucide-react"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/input.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/input.json"
       ],
       "files": [
         {
@@ -1237,10 +1237,10 @@
         "motion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/refs.json",
-        "http://localhost:3000/r/checkbox.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/refs.json",
+        "https://4af.selfsimilar.dev/r/checkbox.json"
       ],
       "files": [
         {
@@ -1258,8 +1258,8 @@
         "@base-ui/react"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json"
       ],
       "files": [
         {
@@ -1278,14 +1278,14 @@
         "class-variance-authority"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/refs.json",
-        "http://localhost:3000/r/slot.json",
-        "http://localhost:3000/r/button.json",
-        "http://localhost:3000/r/toggle.json",
-        "http://localhost:3000/r/action-button.json",
-        "http://localhost:3000/r/action-toggle.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/refs.json",
+        "https://4af.selfsimilar.dev/r/slot.json",
+        "https://4af.selfsimilar.dev/r/button.json",
+        "https://4af.selfsimilar.dev/r/toggle.json",
+        "https://4af.selfsimilar.dev/r/action-button.json",
+        "https://4af.selfsimilar.dev/r/action-toggle.json"
       ],
       "files": [
         {
@@ -1321,10 +1321,10 @@
         "motion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json",
-        "http://localhost:3000/r/button.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/motion.json",
+        "https://4af.selfsimilar.dev/r/button.json"
       ],
       "files": [
         {
@@ -1349,10 +1349,10 @@
         "motion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json",
-        "http://localhost:3000/r/button.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/motion.json",
+        "https://4af.selfsimilar.dev/r/button.json"
       ],
       "files": [
         {
@@ -1371,10 +1371,10 @@
         "motion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json",
-        "http://localhost:3000/r/button.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/motion.json",
+        "https://4af.selfsimilar.dev/r/button.json"
       ],
       "files": [
         {
@@ -1395,11 +1395,11 @@
         "react-day-picker"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/button.json",
-        "http://localhost:3000/r/popover.json",
-        "http://localhost:3000/r/sheet.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/button.json",
+        "https://4af.selfsimilar.dev/r/popover.json",
+        "https://4af.selfsimilar.dev/r/sheet.json"
       ],
       "files": [
         {
@@ -1428,9 +1428,9 @@
         "lucide-react"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/slot.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/slot.json"
       ],
       "files": [
         {
@@ -1453,8 +1453,8 @@
         "@base-ui/react"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json"
       ],
       "files": [
         {
@@ -1472,9 +1472,9 @@
         "@base-ui/react"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/skeleton.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/skeleton.json"
       ],
       "files": [
         {
@@ -1494,15 +1494,15 @@
         "motion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json",
-        "http://localhost:3000/r/morph.json",
-        "http://localhost:3000/r/checkbox.json",
-        "http://localhost:3000/r/input.json",
-        "http://localhost:3000/r/tooltip.json",
-        "http://localhost:3000/r/use-action.json",
-        "http://localhost:3000/r/loader.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/motion.json",
+        "https://4af.selfsimilar.dev/r/morph.json",
+        "https://4af.selfsimilar.dev/r/checkbox.json",
+        "https://4af.selfsimilar.dev/r/input.json",
+        "https://4af.selfsimilar.dev/r/tooltip.json",
+        "https://4af.selfsimilar.dev/r/use-action.json",
+        "https://4af.selfsimilar.dev/r/loader.json"
       ],
       "files": [
         {
@@ -1542,14 +1542,14 @@
         "lucide-react"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/slot.json",
-        "http://localhost:3000/r/button.json",
-        "http://localhost:3000/r/input.json",
-        "http://localhost:3000/r/sheet.json",
-        "http://localhost:3000/r/skeleton.json",
-        "http://localhost:3000/r/tooltip.json"
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/slot.json",
+        "https://4af.selfsimilar.dev/r/button.json",
+        "https://4af.selfsimilar.dev/r/input.json",
+        "https://4af.selfsimilar.dev/r/sheet.json",
+        "https://4af.selfsimilar.dev/r/skeleton.json",
+        "https://4af.selfsimilar.dev/r/tooltip.json"
       ],
       "files": [
         {
@@ -1595,8 +1595,8 @@
       "description": "An optional viewport shell that composes Sidebar with a contained, independently scrolling inset surface, page title header, header actions, and a left-aligned collapse trigger before the title.",
       "dependencies": [],
       "registryDependencies": [
-        "http://localhost:3000/r/sidebar.json",
-        "http://localhost:3000/r/cn.json"
+        "https://4af.selfsimilar.dev/r/sidebar.json",
+        "https://4af.selfsimilar.dev/r/cn.json"
       ],
       "files": [
         {

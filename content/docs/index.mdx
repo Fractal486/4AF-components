@@ -5,7 +5,7 @@ description: A small, portable React component library built on Base UI.
 
 4AF Components is a personal library of polished, reusable React components. It is built on
 [Base UI](https://base-ui.com/) for behavior, designed around composable APIs, and distributed
-through a private shadcn-compatible registry.
+through a shadcn-compatible registry at `https://4af.selfsimilar.dev`.
 
 The library is intentionally small. Each component is refined to share the same tokens,
 motion rules, accessibility expectations, and installation workflow instead of becoming a
@@ -29,18 +29,23 @@ coding agents.
 
 ## Install a component
 
-From this repository, inspect the available components, check a target project, and install
-only what you need:
+In a project with a shadcn `components.json`:
+
+```bash
+npx shadcn@latest add https://4af.selfsimilar.dev/r/button.json
+```
+
+Replace `button` with any component from the catalog. The theme, shared utilities, and the
+components it builds on install with it.
+
+From a clone of this repository, the 4AF CLI also checks the target project, previews every file,
+and refuses to overwrite files unless told to:
 
 ```bash
 pnpm 4af list
 pnpm 4af doctor --project <absolute-target-project>
 pnpm 4af install button --project <absolute-target-project>
 ```
-
-Replace `button` with any component from the catalog. The install command serves the private
-registry automatically and writes the component, shared utilities, and theme into the target
-project.
 
 ## Use a component
 

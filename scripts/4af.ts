@@ -1,10 +1,10 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { resolve, relative, dirname, isAbsolute } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawn } from "node:child_process";
 import ts from "typescript";
-import { normalizeShimmerCss } from "./shimmer-css.ts";
+import { SITE_URL } from "../lib/site.ts";
 
 type CliOptions = Record<string, string | boolean>;
 
@@ -216,13 +216,6 @@ export async function installComponent(
   try {
     console.log(`Installing ${component.name} into ${project}`);
     await runtime.runInstaller(registryUrl, project, overwrite);
-    const frames = registry.items.find((item) => item.name === "4af-theme")
-      ?.css?.["@keyframes text-shimmer"] as Record<string, Record<string, string>>;
-    for (const cssPath of plan.cssMerges) {
-      if (existsSync(cssPath)) {
-        writeFileSync(cssPath, normalizeShimmerCss(readFileSync(cssPath, "utf8"), frames));
-      }
-    }
     console.log(`status\tinstalled ${component.name}`);
   } finally {
     await server.close();
@@ -491,8 +484,13 @@ async function serveRegistryFile(request: IncomingMessage, response: ServerRespo
   response.end(JSON.stringify(rewriteRegistryUrls(json, origin)));
 }
 
+/**
+ * `registry.json` names its dependencies by their public address. Served locally, each one is
+ * pointed back at this temporary server, so an install from a clone never reaches the network
+ * for 4AF items and always uses the source in the clone.
+ */
 export function rewriteRegistryUrls(value: unknown, origin: string): unknown {
-  if (typeof value === "string") return value.replaceAll("http://localhost:3000", origin);
+  if (typeof value === "string") return value.replaceAll(SITE_URL, origin);
   if (Array.isArray(value)) return value.map((entry) => rewriteRegistryUrls(entry, origin));
   if (value && typeof value === "object") {
     return Object.fromEntries(
@@ -514,8 +512,9 @@ Commands:
 
 The docs command prints one component's complete Markdown reference, including separate
 install and usage blocks plus the API and notes from its Fumadocs page.
-The install command builds and serves the private registry automatically, then invokes
+The install command builds and serves the registry from this clone, then invokes
 shadcn ${SHADCN_VERSION} non-interactively in the target project. The 4AF theme is included by dependencies.
+Without a clone, install from the public registry: npx shadcn@latest add ${SITE_URL}/r/<component>.json
 `);
 }
 

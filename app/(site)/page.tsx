@@ -8,6 +8,7 @@ import { SpecimenBoard } from "@/components/landing/specimen-board";
 import { PageFrame } from "@/components/site/page-frame";
 import { componentCount } from "@/lib/component-catalog";
 import { REPOSITORY } from "@/lib/site-nav";
+import { publicInstallCommand } from "@/lib/site";
 import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
 import { CopyButton } from "@/registry/ui/copy-button/copy-button";
@@ -46,12 +47,7 @@ const CONTRACT = [
   },
 ] as const;
 
-const INSTALL = [
-  `git clone ${REPOSITORY}.git`,
-  "cd 4AF-components && pnpm install",
-  "pnpm 4af doctor --project /path/to/your-app",
-  "pnpm 4af install button --project /path/to/your-app",
-].join("\n");
+const INSTALL = publicInstallCommand("button");
 
 const PROSE = "max-w-180 text-[16px] leading-[1.65] text-pretty text-muted-foreground";
 const INLINE_LINK =
@@ -117,8 +113,7 @@ export default async function IndexPage() {
         <article>
           <header className="max-w-180">
             <h1 className="mb-[1.1rem] text-[length:clamp(1.9rem,3.4vw,2.75rem)] leading-[1.12] font-semibold tracking-[-0.03em] text-balance">
-              React components, built to one contract.{" "}
-              <span className="text-subtle-foreground">Installed by you or your agent.</span>
+              React components, built to one contract.
             </h1>
             <p className="mb-6 max-w-[52ch] text-[17px] leading-[1.65] tracking-[-0.01em] text-pretty text-muted-foreground">
               4AF is a personal library of {componentCount} React components built on Base UI.
@@ -168,9 +163,8 @@ export default async function IndexPage() {
 
           <Section id="install" title="Install">
             <p className={PROSE}>
-              The 4AF CLI serves components straight from this repository. It checks that your
-              project is set up, can preview every file before writing, and installs the component
-              together with the utilities and theme it needs.
+              Install any component with the shadcn CLI. The theme, the shared utilities, and the
+              components it builds on come with it.
             </p>
             <div className="relative mt-3 max-w-180 rounded-lg border bg-surface">
               <pre className="overflow-x-auto p-4 pr-14 font-mono text-xs leading-6">
@@ -180,7 +174,7 @@ export default async function IndexPage() {
                 value={INSTALL}
                 variant="ghost"
                 size="xs"
-                aria-label="Copy install commands"
+                aria-label="Copy install command"
                 className="absolute top-2.5 right-2.5"
               />
             </div>
@@ -189,14 +183,15 @@ export default async function IndexPage() {
               <FileBrowser files={files} />
             </Wide>
             <p className={cn(PROSE, "mt-4")}>
-              Coding agents run the same CLI through the{" "}
-              <Link href="/docs/reference/agent-skill" className={INLINE_LINK}>
-                agent skill
-              </Link>
-              , which also covers choosing components and checking a project first. Every flag is
-              listed in the{" "}
+              From a clone of the repository, the 4AF CLI also checks that your project is ready,
+              previews every file before writing, and never overwrites a file unless told to. See
+              the{" "}
               <Link href="/docs/reference/cli" className={INLINE_LINK}>
                 CLI reference
+              </Link>
+              . Coding agents can use either path through the{" "}
+              <Link href="/docs/reference/agent-skill" className={INLINE_LINK}>
+                agent skill
               </Link>
               .
             </p>

@@ -3,7 +3,15 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { vi } from "vitest";
-import { collectRegistryItems, installComponent, installPlan, parseArgs, runCommand } from "./4af";
+import {
+  collectRegistryItems,
+  installComponent,
+  installPlan,
+  parseArgs,
+  rewriteRegistryUrls,
+  runCommand,
+} from "./4af";
+import { SITE_URL } from "../lib/site";
 
 const temporaryProjects: string[] = [];
 
@@ -157,11 +165,6 @@ describe("4AF CLI", () => {
     const runInstaller = vi.fn(async (_url: string, targetProject: string) => {
       mkdirSync(resolve(targetProject, "src/components/ui"), { recursive: true });
       writeFileSync(buttonPath, "export const installed = true;\n");
-      writeFileSync(resolve(targetProject, "src/globals.css"), `
-@theme inline {
-  --animate-text-shimmer: text-shimmer 2.5s linear infinite;
-  @keyframes text-shimmer { to { background-position: -200% 0; } }
-}`);
     });
 
     await installComponent("button", { project }, {
@@ -177,10 +180,6 @@ describe("4AF CLI", () => {
       false,
     );
     expect(existsSync(buttonPath)).toBe(true);
-    const css = readFileSync(resolve(project, "src/globals.css"), "utf8");
-    expect(css).not.toContain("--animate-text-shimmer:");
-    expect(css).not.toContain("background-position");
-    expect(css).toContain("translate: -100% 0");
     expect(close).toHaveBeenCalledOnce();
   });
 
@@ -208,5 +207,29 @@ describe("4AF CLI", () => {
       }),
     ).rejects.toThrow("fixture installer failed");
     expect(close).toHaveBeenCalledOnce();
+  });
+
+  it("points every public registry address at the local server, leaving other URLs alone", () => {
+    const item = {
+      registryDependencies: [`${SITE_URL}/r/cn.json`, `${SITE_URL}/r/4af-theme.json`],
+      docs: "https://example.com/r/cn.json",
+      files: [{ path: "registry/ui/button/button.tsx" }],
+    };
+
+    expect(rewriteRegistryUrls(item, "http://127.0.0.1:4321")).toEqual({
+      registryDependencies: ["http://127.0.0.1:4321/r/cn.json", "http://127.0.0.1:4321/r/4af-theme.json"],
+      docs: "https://example.com/r/cn.json",
+      files: [{ path: "registry/ui/button/button.tsx" }],
+    });
+  });
+
+  it("names every registry dependency by its public address", () => {
+    const registry = JSON.parse(readFileSync(resolve("registry.json"), "utf8")) as {
+      items: { registryDependencies?: string[] }[];
+    };
+    const dependencies = registry.items.flatMap((item) => item.registryDependencies ?? []);
+
+    expect(dependencies.length).toBeGreaterThan(0);
+    expect(dependencies.filter((url) => !url.startsWith(`${SITE_URL}/r/`))).toEqual([]);
   });
 });

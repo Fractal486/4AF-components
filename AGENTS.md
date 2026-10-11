@@ -28,12 +28,17 @@ pnpm 4af doctor --project <absolute-target-project>
 pnpm 4af install <component> --project <absolute-target-project>
 ```
 
-`install` builds and serves the private registry automatically, invokes shadcn
+`install` builds and serves the registry from this clone automatically, invokes shadcn
 non-interactively, and brings in the 4AF theme plus shared utilities. Add `--overwrite`
 only when replacing files is intentional. Use `--dry-run` to inspect the complete mutation
 plan without writing to the target project.
 
 Run `pnpm 4af list` for the complete, current list of installable component names.
+
+The same registry is public at `https://4af.selfsimilar.dev` (`lib/site.ts` holds the address).
+`registry.json` names dependencies by that address; the CLI rewrites it to its temporary local
+server, so installs from a clone never fetch 4AF items over the network. `pnpm build` runs
+`shadcn build` first, so a deploy always serves current `/r/*.json` files.
 The target project must already have a `package.json` and
 shadcn `components.json` with `ui` and `lib` aliases. Run `pnpm 4af doctor` first when
 an agent is unsure whether the target is ready.

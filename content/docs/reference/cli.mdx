@@ -3,8 +3,20 @@ title: CLI Reference
 description: List, inspect, preview, and install components with the repository CLI.
 ---
 
-Run the CLI from the 4AF Components repository. Use an absolute target-project path so the
-destination is always explicit.
+Run the CLI from a clone of the 4AF Components repository. Use an absolute target-project path
+so the destination is always explicit.
+
+## Without a clone
+
+Every component is also served from `https://4af.selfsimilar.dev`. In a project with a shadcn
+`components.json`:
+
+```bash
+npx shadcn@latest add https://4af.selfsimilar.dev/r/select.json
+```
+
+The 4AF CLI adds a readiness check, a dry run, and overwrite protection, and installs from the
+source in your clone.
 
 ## Requirements
 

@@ -1,14 +1,14 @@
 ---
 name: 4af-components
-description: Choose, install, integrate, inspect, and maintain components in the private 4AF React component library and its shadcn-compatible registry. Use when an agent needs to discover available 4AF components, compare component families or bundled APIs, install a component into another project, verify target readiness, change registry source or inspector demos, update registry metadata or documentation, or troubleshoot the 4AF CLI and installation workflow.
+description: Choose, install, integrate, inspect, and maintain components in the 4AF React component library and its shadcn-compatible registry. Use when an agent needs to discover available 4AF components, compare component families or bundled APIs, install a component into another project, verify target readiness, change registry source or inspector demos, update registry metadata or documentation, or troubleshoot the 4AF CLI and installation workflow.
 ---
 
 # 4AF Components
 
-Use the repository CLI and source as the authority. Do not manually copy component files,
-guess registry URLs, or reproduce the CLI's temporary registry-server workflow.
-
-Locate the repository directory containing `registry.json` and `scripts/4af.ts`.
+There are two ways in. When a clone of the repository is available (a directory containing
+`registry.json` and `scripts/4af.ts`), use its CLI and source as the authority. Without a clone,
+use the public site at `https://4af.selfsimilar.dev`. Do not copy component files by hand, guess
+registry URLs, or reproduce the CLI's temporary registry-server workflow.
 
 ## Route the task
 
@@ -16,13 +16,29 @@ Locate the repository directory containing `registry.json` and `scripts/4af.ts`.
   registry parity, read [references/component-catalog.md](references/component-catalog.md).
 - To read one component's complete, agent-friendly reference, run `pnpm 4af docs <component>`;
   it prints the page's API and notes together with separate install and usage code blocks.
-- To install into another project, use the CLI workflow below.
+  Without a clone, fetch `https://4af.selfsimilar.dev/docs/<component>.md`, which is generated
+  from the same page. `https://4af.selfsimilar.dev/llms.txt` lists every page's Markdown URL.
+- To install into another project, use the clone workflow below, or the public registry
+  when there is no clone.
 - To change the library, read the repository's root `AGENTS.md` first, then inspect the
   component source, registry metadata, and inspector entry that are actually in scope.
 - For an exact current component list, run `pnpm 4af list`. Treat the reference catalog
   as a fast guide, not a replacement for `registry.json` or source code.
 
-## Install into another project
+## Install without a clone
+
+Run in the target project:
+
+```bash
+npx shadcn@latest add https://4af.selfsimilar.dev/r/<component>.json
+```
+
+The target needs a shadcn `components.json`; run `npx shadcn@latest init` first if it has none.
+The theme, shared utilities, and component dependencies resolve from the same registry. This
+path has no `doctor` check and no 4AF dry run, so prefer the clone workflow when a clone is
+available.
+
+## Install from a clone
 
 Run from the library repository, using an absolute target path:
 
@@ -48,10 +64,6 @@ and `ui` and `lib` aliases. `--dry-run` prints the full mutation plan — files,
 merge, package changes, conflicts. Existing target files are refused unless `--overwrite`
 is passed. Install serves the registry temporarily and stops it afterwards; the dev server
 need not be running.
-
-The CLI also migrates legacy shimmer CSS after the theme merge: it removes the old
-animation token and keeps one translating keyframe at stylesheet root, outside `@theme`.
-Use the CLI for reinstalls so this cleanup runs even when shimmer arrives through the theme.
 
 Afterwards inspect the diff and run the target's own typecheck or build. Never run this
 repository's `pnpm build` while its `pnpm dev` is active — both use `.next/`.

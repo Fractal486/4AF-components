@@ -16,6 +16,12 @@ const theme = registry.items.find((item: { name: string }) => item.name === "4af
  *
  * A comment above the spot did not stop it happening again, which is why this is a test.
  */
+/*
+ * shadcn writes every registry `@keyframes` into the target's `@theme inline`, and Tailwind
+ * drops a theme keyframe that no `animation` declaration names. The overlay's `animation`
+ * below is what keeps `text-shimmer` alive in a plain `shadcn add` install, so the name in it
+ * must stay the keyframes' name.
+ */
 describe("text shimmer keyframes", () => {
   it("ships the overlay and translating keyframes without recreating the old animation utility", () => {
     expect(theme.cssVars.theme).not.toHaveProperty("animate-text-shimmer");

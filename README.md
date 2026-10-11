@@ -1,6 +1,6 @@
 # 4AF Components
 
-A private React component library with a self-hosted Fumadocs site for documentation and
+A personal React component library with a self-hosted Fumadocs site for documentation and
 interactive component demos. Components are copied into other projects through a local
 shadcn registry, so you keep ownership of the source instead of installing a public npm
 package.
@@ -46,7 +46,7 @@ pnpm 4af docs button     # Print a component's complete Markdown reference
 pnpm 4af doctor --project <path>
 pnpm 4af install button --project <path>
 pnpm registry:validate   # Validate registry.json and its files
-pnpm registry:build      # Generate private install files in public/r
+pnpm registry:build      # Generate install files in public/r (served at /r/*.json)
 ```
 
 > [!WARNING]
@@ -54,6 +54,16 @@ pnpm registry:build      # Generate private install files in public/r
 > make the development page appear without styles.
 
 ## Install a component in another project
+
+Without a clone, install from the public registry in a project with a shadcn
+`components.json`:
+
+```bash
+npx shadcn@latest add https://4af.selfsimilar.dev/r/button.json
+```
+
+From a clone, use the 4AF CLI, which adds a readiness check, a dry run, and overwrite
+protection:
 
 1. From this repository, run:
 
@@ -72,8 +82,8 @@ pnpm registry:build      # Generate private install files in public/r
    pnpm 4af doctor --project /absolute/path/to/my-app
    ```
 
-Dependencies and the 4AF theme are included automatically. Agents should use this CLI
-instead of manually copying files or running the lower-level shadcn command. `pnpm 4af docs
+Dependencies and the 4AF theme are included automatically. With a clone, agents should use
+this CLI instead of copying files by hand. `pnpm 4af docs
 <component>` prints the matching page's API, notes, install command, and usage example as
 plain Markdown.
 

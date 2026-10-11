@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import ts from "typescript";
+import { SITE_URL } from "../lib/site";
 
 interface RegistryItem {
   name: string;
@@ -14,17 +15,18 @@ const registry = JSON.parse(readFileSync(resolve("registry.json"), "utf8")) as {
 };
 const items = new Map(registry.items.map((item) => [item.name, item]));
 
-describe("private registry", () => {
+describe("registry", () => {
   it("references existing source files", () => {
     for (const item of registry.items) {
       for (const file of item.files ?? []) expect(existsSync(resolve(file.path))).toBe(true);
     }
   });
 
-  it("uses explicit private-registry URLs instead of built-in shadcn names", () => {
+  it("names dependencies by their public registry URL instead of built-in shadcn names", () => {
     for (const item of registry.items) {
       for (const dependency of item.registryDependencies ?? []) {
-        expect(dependency).toMatch(/^http:\/\/localhost:3000\/r\/[a-z0-9-]+\.json$/);
+        expect(dependency.startsWith(`${SITE_URL}/r/`)).toBe(true);
+        expect(dependency).toMatch(/\/r\/[a-z0-9-]+\.json$/);
         const name = dependency.split("/").at(-1)?.replace(/\.json$/, "");
         expect(name && items.has(name)).toBe(true);
       }
@@ -118,16 +120,16 @@ describe("private registry", () => {
   it("does not install Motion for the CSS-only table of contents", () => {
     expect(items.get("table-of-contents")?.dependencies ?? []).not.toContain("motion");
     expect(items.get("table-of-contents")?.registryDependencies ?? []).not.toContain(
-      "http://localhost:3000/r/motion.json",
+      `${SITE_URL}/r/motion.json`,
     );
   });
 
   it("ships the design foundation and direct Button dependencies", () => {
     expect(items.get("button")?.registryDependencies).toEqual(
       expect.arrayContaining([
-        "http://localhost:3000/r/4af-theme.json",
-        "http://localhost:3000/r/cn.json",
-        "http://localhost:3000/r/motion.json",
+        `${SITE_URL}/r/4af-theme.json`,
+        `${SITE_URL}/r/cn.json`,
+        `${SITE_URL}/r/motion.json`,
       ]),
     );
   });
@@ -135,8 +137,8 @@ describe("private registry", () => {
   it("ships every direct Dropdown Menu component dependency", () => {
     expect(items.get("dropdown-menu")?.registryDependencies).toEqual(
       expect.arrayContaining([
-        "http://localhost:3000/r/checkbox.json",
-        "http://localhost:3000/r/input.json",
+        `${SITE_URL}/r/checkbox.json`,
+        `${SITE_URL}/r/input.json`,
       ]),
     );
   });
@@ -144,8 +146,8 @@ describe("private registry", () => {
   it("ships every direct Command Palette component dependency", () => {
     expect(items.get("command-palette")?.registryDependencies).toEqual(
       expect.arrayContaining([
-        "http://localhost:3000/r/morph.json",
-        "http://localhost:3000/r/use-action.json",
+        `${SITE_URL}/r/morph.json`,
+        `${SITE_URL}/r/use-action.json`,
       ]),
     );
   });
