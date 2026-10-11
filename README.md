@@ -77,10 +77,14 @@ instead of manually copying files or running the lower-level shadcn command. `pn
 <component>` prints the matching page's API, notes, install command, and usage example as
 plain Markdown.
 
-Upstream credits and full license texts are collected in
-[third-party notices](THIRD_PARTY_NOTICES.md).
-
 ## Component catalog
 
 The website catalog is generated from `registry.json`. Run `pnpm 4af list` for the exact set
 of names accepted by the installer.
+
+## License
+
+Original contributions are licensed under [MIT No Attribution (MIT-0)](LICENSE).
+Third-party portions remain subject to their respective licenses, including Animate UI's
+additional restriction. See [third-party notices](THIRD_PARTY_NOTICES.md) for upstream
+credits and full license texts.
