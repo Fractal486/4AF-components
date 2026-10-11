@@ -11,7 +11,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "shadcn build && next build && node scripts/finalize-export.mjs",
-    "start": "wrangler pages dev out",
+    "start": "wrangler dev",
+    "deploy": "wrangler deploy",
     "test:export": "node scripts/check-export.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",

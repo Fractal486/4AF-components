@@ -79,7 +79,7 @@ for (const file of skillFiles) {
   assert.deepEqual(archived.get(name), await readFile(file), `Archive differs: ${name}`);
 }
 
-// Optionally check the actual Pages preview, including host routing and MIME headers.
+// Optionally check the actual Workers preview, including host routing and MIME headers.
 if (preview) {
   for (const [url, type] of [
     ["/", "text/html"], ["/docs/button", "text/html"],
@@ -104,4 +104,4 @@ if (preview) {
   assert.ok((await liveSearch.search("Button")).some((result) => result.url === "/docs/button"));
 }
 
-console.log(`Export checks passed: ${documents.length} docs, ${registry.items.length} registry items, search, and skill ZIP${preview ? " (including Pages HTTP preview)" : ""}.`);
+console.log(`Export checks passed: ${documents.length} docs, ${registry.items.length} registry items, search, and skill ZIP${preview ? " (including Workers HTTP preview)" : ""}.`);

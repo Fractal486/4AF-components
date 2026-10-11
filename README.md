@@ -44,7 +44,7 @@ pnpm test                # Run component and registry tests
 pnpm registry:validate   # Validate registry.json and its files
 pnpm registry:build      # Generate install files in public/r (served at /r/*.json)
 pnpm build               # Export the complete site to out/ (stop pnpm dev first)
-pnpm start               # Preview out/ with Cloudflare Pages at localhost:8788
+pnpm start               # Preview out/ with Cloudflare Workers at localhost:8787
 pnpm test:export         # Verify exported docs, registry, search, and skill ZIP
 ```
 
@@ -52,20 +52,21 @@ pnpm test:export         # Verify exported docs, registry, search, and skill ZIP
 > Never run `pnpm build` while `pnpm dev` is running. Both use `.next`, and doing so can
 > make the development page appear without styles.
 
-## Cloudflare Pages
+## Cloudflare Workers
 
 The production build is a static export. Search runs in the browser using Fumadocs' generated
 index; the skill ZIP, Markdown documents, and registry files are produced during the build.
-No server or Pages Functions are needed. `public/_headers` preserves the search and download
+Workers serves the exported files directly; no Worker script is needed. `public/_headers` preserves the search and download
 content types, and `public/_redirects` sends `/docs` to the homepage.
 
 For local production checks, stop `pnpm dev`, run `pnpm build`, then `pnpm start`.
-With that preview running, `pnpm test:export http://127.0.0.1:8788` also checks HTTP routing,
-content types, the download, and search against the Pages server.
+With that preview running, `pnpm test:export http://127.0.0.1:8787` also checks HTTP routing,
+content types, the download, and search against the Workers server.
 
-When connecting this repository to Pages, use `pnpm build` as the build command and `out`
-as the output directory. The build environment needs Node 24.19.0 or newer and pnpm 12.11.2
-(matching `package.json`). `wrangler.jsonc` records the output directory and the Pages project
+When connecting this repository to Workers, use `pnpm build` as the build command,
+`pnpm run deploy` as the deploy command, and `pnpm exec wrangler preview` as the preview command.
+The build environment needs Node 24.19.0 or newer and pnpm 12.11.2 (matching `package.json`).
+`wrangler.jsonc` records the static assets directory (`out`), custom 404 behavior, and Worker
 name, `4af-components`. Add `4af.selfsimilar.dev` as a custom domain after the first successful
 deployment. Preparing or previewing the export does not publish it.
 
