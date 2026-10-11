@@ -1,4 +1,4 @@
 {
   "title": "Reference",
-  "pages": ["components", "cli", "design", "engineering", "agent-skill"]
+  "pages": ["installation", "components", "design", "engineering", "agent-skill"]
 }

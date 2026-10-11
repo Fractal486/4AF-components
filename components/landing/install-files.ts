@@ -36,7 +36,7 @@ function projectImports(code: string) {
 }
 
 /**
- * Every source file `pnpm 4af install <name>` writes, in install order: the item's own
+ * Every source file `shadcn add` writes for `<name>`, in install order: the item's own
  * files, then its registry dependencies breadth-first. The theme item carries CSS
  * variables rather than files, so it contributes nothing here.
  */

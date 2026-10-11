@@ -329,6 +329,7 @@
       "name": "button",
       "type": "registry:ui",
       "description": "Six variants, eight sizes, optical icon alignment, and a loading state that doesn't resize.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/button (Markdown: https://4af.selfsimilar.dev/docs/button.md)",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -358,6 +359,7 @@
       "name": "button-group",
       "type": "registry:ui",
       "description": "Two or more Buttons joined into one control: flattened inner corners, one hairline per seam, horizontal or vertical.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/button-group (Markdown: https://4af.selfsimilar.dev/docs/button-group.md)",
       "dependencies": [
         "class-variance-authority"
       ],
@@ -383,6 +385,7 @@
       "name": "input",
       "type": "registry:ui",
       "description": "A Base UI input with token-based surfaces, focus states, an optional leading icon, custom number steppers, and default, plain, and underline variants.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/input (Markdown: https://4af.selfsimilar.dev/docs/input.md)",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority"
@@ -409,6 +412,7 @@
       "name": "separator",
       "type": "registry:ui",
       "description": "An accessible horizontal or vertical divider built on Base UI Separator.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/separator (Markdown: https://4af.selfsimilar.dev/docs/separator.md)",
       "dependencies": [
         "@base-ui/react"
       ],
@@ -428,6 +432,7 @@
       "name": "textarea",
       "type": "registry:ui",
       "description": "A multiline text field with neutral or accent focus styling and an optional resize handle.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/textarea (Markdown: https://4af.selfsimilar.dev/docs/textarea.md)",
       "dependencies": [
         "class-variance-authority"
       ],
@@ -453,6 +458,7 @@
       "name": "alert",
       "type": "registry:ui",
       "description": "An inline status line — a glyph plus a sentence, no surface. Destructive error (role=alert), amber warning, green success, neutral info, and a muted loading line with AsciiLoader by default.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/alert (Markdown: https://4af.selfsimilar.dev/docs/alert.md)",
       "dependencies": [
         "class-variance-authority",
         "lucide-react"
@@ -479,6 +485,7 @@
       "name": "toggle",
       "type": "registry:ui",
       "description": "A button with a persistent pressed state and optional icon fill.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/toggle (Markdown: https://4af.selfsimilar.dev/docs/toggle.md)",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -502,6 +509,7 @@
       "name": "morph",
       "type": "registry:ui",
       "description": "Animated content swap — icons or text. Copy to check, Follow to Following.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/morph (Markdown: https://4af.selfsimilar.dev/docs/morph.md)",
       "dependencies": [
         "motion"
       ],
@@ -521,6 +529,7 @@
       "name": "delete-button",
       "type": "registry:ui",
       "description": "A destructive button that arms on the first press and confirms on the second, with Escape, blur, and timeout exits.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/delete-button (Markdown: https://4af.selfsimilar.dev/docs/delete-button.md)",
       "dependencies": [
         "lucide-react"
       ],
@@ -542,6 +551,7 @@
       "name": "copy-button",
       "type": "registry:ui",
       "description": "Copies to the clipboard and confirms it — visually, and to screen readers.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/copy-button (Markdown: https://4af.selfsimilar.dev/docs/copy-button.md)",
       "dependencies": [
         "lucide-react"
       ],
@@ -560,6 +570,7 @@
       "name": "action-button",
       "type": "registry:ui",
       "description": "Runs an async action, shows pending/success/error, and reverts without resizing; pending can keep its label or show a centered loader only.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/action-button (Markdown: https://4af.selfsimilar.dev/docs/action-button.md)",
       "dependencies": [
         "lucide-react",
         "motion"
@@ -582,6 +593,7 @@
       "name": "action-toggle",
       "type": "registry:ui",
       "description": "A toggle that changes state after its action succeeds and preserves its previous state on failure.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/action-toggle (Markdown: https://4af.selfsimilar.dev/docs/action-toggle.md)",
       "dependencies": [
         "lucide-react"
       ],
@@ -603,6 +615,7 @@
       "name": "tabs",
       "type": "registry:ui",
       "description": "Segment, pill, or underline tabs with an animated indicator, optional counts, and horizontal scrolling.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/tabs (Markdown: https://4af.selfsimilar.dev/docs/tabs.md)",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -631,6 +644,7 @@
       "name": "switch",
       "type": "registry:ui",
       "description": "A switch that slides and grows a rounded center pill toward the track center when pressed. Adaptive or fixed thumb tone.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/switch (Markdown: https://4af.selfsimilar.dev/docs/switch.md)",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -658,6 +672,7 @@
       "name": "checkbox",
       "type": "registry:ui",
       "description": "A checkbox whose tick draws itself in. Presses on click, not on hover.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/checkbox (Markdown: https://4af.selfsimilar.dev/docs/checkbox.md)",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -685,6 +700,7 @@
       "name": "radio",
       "type": "registry:ui",
       "description": "A radio group — the Checkbox's sibling, a single choice with a dot that scales in.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/radio (Markdown: https://4af.selfsimilar.dev/docs/radio.md)",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -712,6 +728,7 @@
       "name": "slider",
       "type": "registry:ui",
       "description": "A slider whose thumb springs between steps and grabs while held, with optional range mode, ticks, labels, and a live value tooltip. Base UI behaviour.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/slider (Markdown: https://4af.selfsimilar.dev/docs/slider.md)",
       "dependencies": [
         "@base-ui/react",
         "lucide-react",
@@ -740,6 +757,7 @@
       "name": "progress",
       "type": "registry:ui",
       "description": "A determinate progress bar. Base UI Progress behaviour; the fill slides on transform (translateX), never width, so it stays off the layout path.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/progress (Markdown: https://4af.selfsimilar.dev/docs/progress.md)",
       "dependencies": [
         "@base-ui/react"
       ],
@@ -759,6 +777,7 @@
       "name": "badge",
       "type": "registry:ui",
       "description": "A status badge with animated content changes, optional icons or dots, and plain, solid, or outline styles.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/badge (Markdown: https://4af.selfsimilar.dev/docs/badge.md)",
       "dependencies": [
         "class-variance-authority",
         "lucide-react",
@@ -788,6 +807,7 @@
       "name": "skeleton",
       "type": "registry:ui",
       "description": "A muted placeholder with square corners by default, shaped by utility classes. Pulses while content loads; reduced motion disables the pulse.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/skeleton (Markdown: https://4af.selfsimilar.dev/docs/skeleton.md)",
       "dependencies": [],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
@@ -805,6 +825,7 @@
       "name": "collapsible",
       "type": "registry:ui",
       "description": "A disclosure row built on Base UI Collapsible: the chevron rotates, the space slides open so the rows below travel rather than jump, and the content fades in out of a blur where it lands.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/collapsible (Markdown: https://4af.selfsimilar.dev/docs/collapsible.md)",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -831,6 +852,7 @@
       "name": "table",
       "type": "registry:ui",
       "description": "A presentational semantic table with a composable caption, two densities, optional grid lines, a pinned header, and a loading skeleton state. It has no controls and no state; install data-table for selection, sorting and row actions.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/table (Markdown: https://4af.selfsimilar.dev/docs/table.md)",
       "dependencies": [
         "class-variance-authority"
       ],
@@ -856,6 +878,7 @@
       "name": "data-table",
       "type": "registry:ui",
       "description": "A table with row selection, sort controls, bulk actions, and row menus. The caller orders the data.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/data-table (Markdown: https://4af.selfsimilar.dev/docs/data-table.md)",
       "dependencies": [
         "class-variance-authority",
         "lucide-react",
@@ -887,6 +910,7 @@
       "name": "table-of-contents",
       "type": "registry:ui",
       "description": "A table of contents that tracks visible headings, keeps the last passed section active through long prose, and offers spanning or single-heading markers.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/table-of-contents (Markdown: https://4af.selfsimilar.dev/docs/table-of-contents.md)",
       "dependencies": [
         "class-variance-authority"
       ],
@@ -913,6 +937,7 @@
       "name": "table-of-contents-lines",
       "type": "registry:ui",
       "description": "A line-based table of contents where each heading has a longer rule and two shorter content rules, with a highlighted, expanding hover treatment.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/table-of-contents-lines (Markdown: https://4af.selfsimilar.dev/docs/table-of-contents-lines.md)",
       "dependencies": [
         "class-variance-authority"
       ],
@@ -939,6 +964,7 @@
       "name": "empty",
       "type": "registry:ui",
       "description": "An empty state — a centred column of media, title, description and an action. Composable parts; borderless by default with an optional dashed placeholder outline.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/empty (Markdown: https://4af.selfsimilar.dev/docs/empty.md)",
       "dependencies": [
         "class-variance-authority"
       ],
@@ -963,6 +989,7 @@
       "name": "text-shimmer",
       "type": "registry:ui",
       "description": "Text with a highlight sweeping across it — a looping working-in-progress affordance. Gradient clipped to the glyphs, switched off (not sped up) under reduced motion.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/text-shimmer (Markdown: https://4af.selfsimilar.dev/docs/text-shimmer.md)",
       "dependencies": [],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
@@ -980,6 +1007,7 @@
       "name": "scramble-text",
       "type": "registry:ui",
       "description": "A short random-character reveal for text that is appearing or changing, with whitespace preservation and reduced-motion support.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/scramble-text (Markdown: https://4af.selfsimilar.dev/docs/scramble-text.md)",
       "dependencies": [],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
@@ -997,6 +1025,7 @@
       "name": "select",
       "type": "registry:ui",
       "description": "Single or multiple selection with optional search, nested options, and footer actions.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/select (Markdown: https://4af.selfsimilar.dev/docs/select.md)",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -1062,6 +1091,7 @@
       "name": "command-palette",
       "type": "registry:ui",
       "description": "A keyboard-first command and search palette with nested panels, custom panel content, fuzzy filtering, async/server-driven and paginated search, keybind hints, panel tab bars with Tab/Shift+Tab switching, and Base UI dialog/autocomplete behavior.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/command-palette (Markdown: https://4af.selfsimilar.dev/docs/command-palette.md)",
       "dependencies": [
         "@base-ui/react",
         "lucide-react",
@@ -1136,6 +1166,7 @@
       "name": "ascii-loader",
       "type": "registry:ui",
       "description": "A looping braille spinner for compact async status affordances.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/ascii-loader (Markdown: https://4af.selfsimilar.dev/docs/ascii-loader.md)",
       "dependencies": [
         "motion"
       ],
@@ -1155,6 +1186,7 @@
       "name": "matrix-loader",
       "type": "registry:ui",
       "description": "A 4×4 matrix dot loader with scan, twinkle, and size variants.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/matrix-loader (Markdown: https://4af.selfsimilar.dev/docs/matrix-loader.md)",
       "dependencies": [
         "class-variance-authority"
       ],
@@ -1179,6 +1211,7 @@
       "name": "classic-loader",
       "type": "registry:ui",
       "description": "Twelve fading radial bars adapted from loading.dev, with CSS-only motion, size variants, and speed control.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/classic-loader (Markdown: https://4af.selfsimilar.dev/docs/classic-loader.md)",
       "dependencies": [
         "class-variance-authority"
       ],
@@ -1204,6 +1237,7 @@
       "name": "select-aligned",
       "type": "registry:ui",
       "description": "A single-select menu that aligns the selected option with its trigger when space and input method allow.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/select-aligned (Markdown: https://4af.selfsimilar.dev/docs/select-aligned.md)",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -1231,6 +1265,7 @@
       "name": "select-search",
       "type": "registry:ui",
       "description": "A searchable single or multi-select on Base UI's Combobox — type to filter the list, with full keyboard and ARIA support. Multi-select keeps its animated checkbox list open while choices are toggled.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/select-search (Markdown: https://4af.selfsimilar.dev/docs/select-search.md)",
       "dependencies": [
         "@base-ui/react",
         "lucide-react",
@@ -1254,6 +1289,7 @@
       "name": "tooltip",
       "type": "registry:ui",
       "description": "Base UI positioning and timing with a CSS scale-and-blur enter. Opens on hover and focus, flips at the viewport edge.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/tooltip (Markdown: https://4af.selfsimilar.dev/docs/tooltip.md)",
       "dependencies": [
         "@base-ui/react"
       ],
@@ -1273,6 +1309,7 @@
       "name": "selection-toolbar",
       "type": "registry:ui",
       "description": "A floating toolbar for selected text, with action buttons, async actions, and toggles.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/selection-toolbar (Markdown: https://4af.selfsimilar.dev/docs/selection-toolbar.md)",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority"
@@ -1314,6 +1351,7 @@
       "name": "sheet",
       "type": "registry:ui",
       "description": "A dialog that slides in from an edge. Base UI Dialog behaviour, Motion enter/exit.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/sheet (Markdown: https://4af.selfsimilar.dev/docs/sheet.md)",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -1343,6 +1381,7 @@
       "name": "dialog",
       "type": "registry:ui",
       "description": "A modal centred over the page. Base UI Dialog behaviour; scales in from a blur and fades out with Motion.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/dialog (Markdown: https://4af.selfsimilar.dev/docs/dialog.md)",
       "dependencies": [
         "@base-ui/react",
         "lucide-react",
@@ -1366,6 +1405,7 @@
       "name": "alert-dialog",
       "type": "registry:ui",
       "description": "A confirmation dialog that blocks backdrop dismissal. Escape and close controls dismiss it.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/alert-dialog (Markdown: https://4af.selfsimilar.dev/docs/alert-dialog.md)",
       "dependencies": [
         "@base-ui/react",
         "motion"
@@ -1388,6 +1428,7 @@
       "name": "date-picker",
       "type": "registry:ui",
       "description": "Date and date-range fields with a desktop popover, mobile sheet, and standalone Calendar.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/date-picker (Markdown: https://4af.selfsimilar.dev/docs/date-picker.md)",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -1423,6 +1464,7 @@
       "name": "breadcrumb",
       "type": "registry:ui",
       "description": "A breadcrumb trail with links, separators, and expandable middle items.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/breadcrumb (Markdown: https://4af.selfsimilar.dev/docs/breadcrumb.md)",
       "dependencies": [
         "class-variance-authority",
         "lucide-react"
@@ -1449,6 +1491,7 @@
       "name": "popover",
       "type": "registry:ui",
       "description": "An interactive panel anchored to a trigger. Base UI Popover behaviour with a CSS scale-and-blur enter from the trigger edge.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/popover (Markdown: https://4af.selfsimilar.dev/docs/popover.md)",
       "dependencies": [
         "@base-ui/react"
       ],
@@ -1468,6 +1511,7 @@
       "name": "hover-card",
       "type": "registry:ui",
       "description": "A rich preview of what is behind a link, on hover and focus. Base UI PreviewCard behaviour with a CSS scale-and-blur enter from the trigger edge, plus a built-in loading skeleton.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/hover-card (Markdown: https://4af.selfsimilar.dev/docs/hover-card.md)",
       "dependencies": [
         "@base-ui/react"
       ],
@@ -1488,6 +1532,7 @@
       "name": "dropdown-menu",
       "type": "registry:ui",
       "description": "A dropdown menu on Base UI Menu (keyboard nav, submenus, checkbox/radio items, searchable selection panels, and immediate disabled-reason tooltips). Instant row highlight; CSS scale-and-blur panel enter.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/dropdown-menu (Markdown: https://4af.selfsimilar.dev/docs/dropdown-menu.md)",
       "dependencies": [
         "@base-ui/react",
         "lucide-react",
@@ -1536,6 +1581,7 @@
       "name": "sidebar",
       "type": "registry:ui",
       "description": "A collapsible application sidebar with default, floating, inset, and split layouts, animated split-rail icon tooltips, collapsible rows with built-in chevrons, nested rows, actions, badges, and loading skeletons.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/sidebar (Markdown: https://4af.selfsimilar.dev/docs/sidebar.md)",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -1593,6 +1639,7 @@
       "name": "sidebar-layout",
       "type": "registry:ui",
       "description": "An optional viewport shell that composes Sidebar with a contained, independently scrolling inset surface, page title header, header actions, and a left-aligned collapse trigger before the title.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/sidebar-layout (Markdown: https://4af.selfsimilar.dev/docs/sidebar-layout.md)",
       "dependencies": [],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/sidebar.json",

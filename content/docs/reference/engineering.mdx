@@ -70,7 +70,7 @@ Three related surfaces serve different jobs:
 
 | Surface | Meaning |
 | --- | --- |
-| Registry item | A source bundle accepted by `pnpm 4af install` |
+| Registry item | A source bundle installed with `shadcn add` |
 | Export or subcomponent | An API bundled inside a registry item, such as `SelectSortTrigger` inside `select` |
 | Demo entry | Interactive documentation for a complete item or one particular composition |
 
@@ -88,8 +88,7 @@ app/          Next.js routes; (site)/ holds the overview and docs pages
 components/   Site shell (rail, page frame) and landing figures
 _incoming/    Temporary staging; never imported
 registry.json Install metadata and dependency graph
-scripts/4af.ts
-              Deterministic list, doctor, and install workflow
+public/r/     Built registry (pnpm registry:build), served at /r/<name>.json
 ```
 
 The dependency direction is `app/content/stories` → `inspector` → `registry`. Portable code
@@ -155,5 +154,5 @@ When a component is added or renamed, update `registry.json`, its demo entry whe
 its `content/docs/` page. When public API or behavior changes, update the component page's
 API/notes and `lib/component-reference.ts`. Update `COMPONENTS.md` and the agent catalog when
 the installable catalog or composition guidance changes. Navigation, the component count, and
-the public catalog are derived from those sources. Use `pnpm 4af list` to confirm the installable
-catalog rather than maintaining a second hard-coded CLI list.
+the public catalog are derived from those sources; `registry.json` is the installable catalog,
+so don't keep a second hard-coded list.

@@ -1,13 +1,13 @@
 # 4AF Components
 
 A personal React component library with a self-hosted Fumadocs site for documentation and
-interactive component demos. Components are copied into other projects through a local
-shadcn registry, so you keep ownership of the source instead of installing a public npm
-package.
+interactive component demos, published at https://4af.selfsimilar.dev. Components install
+through a public shadcn registry, which copies their source into your project instead of adding
+an npm dependency.
 
 Documentation is split by purpose: start with the [overview](./content/docs/index.mdx), then
 use the generated [component catalog](./content/docs/reference/components.mdx),
-[CLI reference](./content/docs/reference/cli.mdx),
+[installation guide](./content/docs/reference/installation.mdx),
 [design system](./content/docs/reference/design.mdx), or
 [engineering contract](./content/docs/reference/engineering.mdx). Component-specific APIs
 and composition guidance live on each component's own page.
@@ -41,10 +41,6 @@ pnpm dev                 # Open the Fumadocs component site
 pnpm typecheck           # Check TypeScript
 pnpm lint                # Check code conventions and portability
 pnpm test                # Run component and registry tests
-pnpm 4af list            # List installable components
-pnpm 4af docs button     # Print a component's complete Markdown reference
-pnpm 4af doctor --project <path>
-pnpm 4af install button --project <path>
 pnpm registry:validate   # Validate registry.json and its files
 pnpm registry:build      # Generate install files in public/r (served at /r/*.json)
 ```
@@ -55,42 +51,24 @@ pnpm registry:build      # Generate install files in public/r (served at /r/*.js
 
 ## Install a component in another project
 
-Without a clone, install from the public registry in a project with a shadcn
-`components.json`:
+In a project with a shadcn `components.json`:
 
 ```bash
 npx shadcn@latest add https://4af.selfsimilar.dev/r/button.json
 ```
 
-From a clone, use the 4AF CLI, which adds a readiness check, a dry run, and overwrite
-protection:
+Replace `button` with any name from the catalog. Dependencies and the 4AF theme install with
+it. Add `--dry-run` to preview every change first; existing files are skipped unless
+`--overwrite` is passed. See the [installation guide](./content/docs/reference/installation.mdx)
+for short names, browsing, and updating.
 
-1. From this repository, run:
-
-   ```bash
-   pnpm 4af install button --project /absolute/path/to/my-app
-   ```
-
-   Replace `button` with any name shown by `pnpm 4af list`.
-   The command builds the registry, starts a temporary local registry server, and
-   installs the component non-interactively. Add `--overwrite` only when replacing
-   existing files is intentional.
-
-2. To check a target project before installing:
-
-   ```bash
-   pnpm 4af doctor --project /absolute/path/to/my-app
-   ```
-
-Dependencies and the 4AF theme are included automatically. With a clone, agents should use
-this CLI instead of copying files by hand. `pnpm 4af docs
-<component>` prints the matching page's API, notes, install command, and usage example as
-plain Markdown.
+Every documentation page is also served as Markdown at `/docs/<component>.md`, and `/llms.txt`
+lists them all.
 
 ## Component catalog
 
-The website catalog is generated from `registry.json`. Run `pnpm 4af list` for the exact set
-of names accepted by the installer.
+The website catalog is generated from `registry.json`, which is the authoritative list of
+installable names.
 
 ## License
 

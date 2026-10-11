@@ -1,5 +1,4 @@
 import { existsSync, readFileSync } from "node:fs";
-import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import {
   componentCategories,
@@ -7,6 +6,7 @@ import {
   componentCount,
 } from "../lib/component-catalog";
 import { renderComponentPageMarkdown } from "../lib/component-docs";
+import { publicInstallCommand, SITE_URL } from "../lib/site";
 
 interface RegistryItem {
   name: string;
@@ -53,27 +53,13 @@ describe("component documentation", () => {
           markdown.includes("<ComponentDemo") ||
           markdown.includes("<ComponentReference") ||
           !markdown.includes("## Install") ||
-          !markdown.includes("```bash\npnpm 4af install") ||
+          !markdown.includes(`\`\`\`bash\n${publicInstallCommand(name)}\n\`\`\``) ||
           !markdown.includes("## Usage") ||
           !markdown.includes("```tsx")
         );
       });
 
     expect(incomplete).toEqual([]);
-  });
-
-  it("exposes the same renderer through the repository CLI", () => {
-    const result = spawnSync(
-      process.execPath,
-      [resolve("scripts/4af.ts"), "docs", "button"],
-      { encoding: "utf8" },
-    );
-
-    expect(result.status).toBe(0);
-    expect(result.stdout).toContain("# Button");
-    expect(result.stdout).toContain("## Install");
-    expect(result.stdout).toContain("## Usage");
-    expect(result.stdout).not.toContain("<ComponentReference");
   });
 
   it("keeps the complete API summary on every component page", () => {
@@ -179,7 +165,7 @@ describe("component documentation", () => {
     const statedCount = reference.match(/contains (\d+) installable UI items/);
     expect(Number(statedCount?.[1])).toBe(installable.length);
     for (const { name } of installable) {
-      expect(reference).toContain(`content/docs/${name}.mdx`);
+      expect(reference).toContain(`(${SITE_URL}/docs/${name}.md)`);
     }
   });
 });

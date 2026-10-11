@@ -9,6 +9,8 @@ const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  // The agent entry point: every page as Markdown, plus the install commands.
+  alternates: { types: { "text/plain": "/llms.txt" } },
   title: "4AF — components",
   description: "A portable React component library built on Base UI.",
 };

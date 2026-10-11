@@ -4,7 +4,7 @@
 
 - [Overview](content/docs/index.mdx)
 - [Generated component catalog](content/docs/reference/components.mdx)
-- [CLI reference](content/docs/reference/cli.mdx)
+- [Installation](content/docs/reference/installation.mdx)
 - [Design system](content/docs/reference/design.mdx)
 - [Engineering contract](content/docs/reference/engineering.mdx)
 - [Agent skill](.agents/skills/4af-components/SKILL.md)
@@ -13,11 +13,11 @@
 ## Sources of truth
 
 Component APIs, examples, and composition guidance belong on the matching page under
-[`content/docs/`](content/docs/). Run `pnpm 4af docs <component>` to read that page as plain
-Markdown, including its canonical install and usage examples from
+[`content/docs/`](content/docs/). The site serves each page as plain Markdown at
+`/docs/<component>.md`, including its canonical install and usage examples from
 [`lib/component-reference.ts`](lib/component-reference.ts).
 
-[`registry.json`](registry.json) and `pnpm 4af list` define the installable catalog;
+[`registry.json`](registry.json) defines the installable catalog;
 [`registry/ui/`](registry/ui/) defines the implementation and props. The website catalog and
 count are generated from the registry. Demo entries illustrate usage and do not define install
 boundaries.

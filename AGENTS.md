@@ -14,38 +14,39 @@ inspector/    Data-driven demo entries, controls, and schemas. Never routed dire
 _incoming/    Raw downloads, gitignored. Staging only — never imported.
 ```
 
-`pnpm dev` · `pnpm typecheck` · `pnpm lint` · `pnpm build`
+`pnpm dev` · `pnpm typecheck` · `pnpm lint` · `pnpm test` · `pnpm build`
+
+Run `pnpm registry:validate` and `pnpm registry:build` after changing install metadata or
+portable component source.
 
 ## Using the library from another project
 
-Agents should use the CLI instead of manually copying files or guessing registry URLs.
-From this repository:
+The library is a public shadcn registry at `https://4af.selfsimilar.dev` (`lib/site.ts` holds the
+address). Install with the shadcn CLI, run in the target project:
 
 ```text
-pnpm 4af list
-pnpm 4af docs <component>
-pnpm 4af doctor --project <absolute-target-project>
-pnpm 4af install <component> --project <absolute-target-project>
+npx shadcn@latest add https://4af.selfsimilar.dev/r/<component>.json
+npx shadcn@latest add https://4af.selfsimilar.dev/r/<component>.json --dry-run
+npx shadcn@latest info
+npx shadcn@latest search https://4af.selfsimilar.dev/r/registry.json -t ui
 ```
 
-`install` builds and serves the registry from this clone automatically, invokes shadcn
-non-interactively, and brings in the 4AF theme plus shared utilities. Add `--overwrite`
-only when replacing files is intentional. Use `--dry-run` to inspect the complete mutation
-plan without writing to the target project.
+The target needs a shadcn `components.json` (`npx shadcn@latest init`). Dependencies, the 4AF
+theme, and shared utilities install with the component. Existing files are skipped unless
+`--overwrite` is passed. To use `@4af/<component>` and `npx shadcn@latest search @4af`, register
+the namespace once: `npx shadcn@latest registry add @4af=https://4af.selfsimilar.dev/r/{name}.json`.
 
-Run `pnpm 4af list` for the complete, current list of installable component names.
+Each page is available as Markdown at `https://4af.selfsimilar.dev/docs/<component>.md`, and
+`/llms.txt` lists them all. `registry.json` is the authoritative list of installable names.
 
-The same registry is public at `https://4af.selfsimilar.dev` (`lib/site.ts` holds the address).
-`registry.json` names dependencies by that address; the CLI rewrites it to its temporary local
-server, so installs from a clone never fetch 4AF items over the network. `pnpm build` runs
-`shadcn build` first, so a deploy always serves current `/r/*.json` files.
-The target project must already have a `package.json` and
-shadcn `components.json` with `ui` and `lib` aliases. Run `pnpm 4af doctor` first when
-an agent is unsure whether the target is ready.
+`registry.json` names dependencies by their public address, so an install always resolves them
+from the deployed site. `pnpm build` runs `shadcn build` first, so a deploy serves current
+`/r/*.json` files. To try an unreleased change in another project, run `pnpm registry:build` and
+`pnpm dev`, then add from `http://localhost:3000/r/<component>.json`; its dependencies still come
+from the deployed site.
 
-`AGENTS.md` is the always-on contract: it explains architecture and non-negotiable
-rules. The CLI is the deterministic tool that performs the workflow. When the
-`$4af-components` skill is available, invoke it for richer guidance; it must call the CLI
+`AGENTS.md` is the always-on contract: it explains architecture and non-negotiable rules. When
+the `$4af-components` skill is available, invoke it for richer guidance; it uses the shadcn CLI
 rather than reimplementing installation logic.
 
 > **Never run `pnpm build` while `pnpm dev` is running.** They share `.next/`, and the
@@ -58,8 +59,8 @@ rather than reimplementing installation logic.
 `content/docs/` is the public Fumadocs surface. Every installable `registry:ui` item has a
 `content/docs/<name>.mdx` page with frontmatter, an interactive `<ComponentDemo>`, an
 install/usage `<ComponentReference>`, an `## API` summary, and component-specific notes.
-`pnpm 4af docs <component>` renders that page as plain Markdown for agents; the website
-Markdown export uses the same renderer.
+The site serves that page as plain Markdown at `/docs/<component>.md` for agents, with the
+install and usage blocks expanded.
 
 When adding a component, update all of the relevant sources together:
 
@@ -69,7 +70,17 @@ When adding a component, update all of the relevant sources together:
 4. `content/docs/<name>.mdx` — title/description, demo, install/usage reference, API, and notes.
 5. `lib/component-catalog.ts` — the sidebar family, catalog category, and main API mapping when
    the new item changes those derived views.
-6. `lib/component-reference.ts` — the canonical usage snippet used by both the page and CLI.
+6. `lib/component-reference.ts` — the canonical usage snippet used by the page and its Markdown.
+
+Larger components are split into sibling modules behind their public entry point; the file map
+is under "Component modules" in `.agents/skills/4af-components/references/component-catalog.md`.
+Check a registry item's complete `files` list when changing one.
+
+Loading states use `LoadingIndicator` from `registry/lib/loader`. The public `loader` slot takes
+a React node; `LoaderProvider loader={<MySpinner />}` sets a default for a subtree, portals
+included. A local slot overrides it, and a custom pending icon overrides both. `AsciiLoader` is
+the fallback. Don't add built-in loader variants or make a component depend on Classic or
+Matrix; alternative indicators and their settings belong to the caller.
 
 When editing a public API or behavior, update its component page's API/notes and the shared
 usage reference as well as the source, tests, registry metadata, and demo that changed. The

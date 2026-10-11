@@ -1,8 +1,4 @@
-import { publicInstallCommand, repositoryInstallCommand } from "./site.ts";
-
-/** Shown between the public and the clone install commands, on the page and in Markdown. */
-export const REPOSITORY_INSTALL_NOTE =
-  "From a clone of the repository, the 4AF CLI adds a readiness check, a dry run, and overwrite protection:";
+import { publicInstallCommand } from "./site.ts";
 
 export interface ComponentReference {
   usage: string;
@@ -546,12 +542,6 @@ export function componentReferenceMarkdown(name: string) {
     "",
     "```bash",
     publicInstallCommand(name),
-    "```",
-    "",
-    REPOSITORY_INSTALL_NOTE,
-    "",
-    "```bash",
-    repositoryInstallCommand(name),
     "```",
     "",
     "## Usage",

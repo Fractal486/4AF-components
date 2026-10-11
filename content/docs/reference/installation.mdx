@@ -1,0 +1,70 @@
+---
+title: Installation
+description: Install, preview, and update components with the shadcn CLI.
+---
+
+4AF is a shadcn registry. Components install with the shadcn CLI, which copies their source into
+your project, so you own and can edit everything it writes.
+
+## Requirements
+
+A React project with Tailwind CSS v4 and a shadcn `components.json`. If the project has none,
+create one:
+
+```bash
+npx shadcn@latest init
+```
+
+## Install a component
+
+```bash
+npx shadcn@latest add https://4af.selfsimilar.dev/r/button.json
+```
+
+Replace `button` with any name from the [component catalog](/docs/reference/components). The
+4AF theme, shared utilities, packages, and any components it builds on install with it. Files
+land where the `ui` and `lib` aliases in `components.json` point.
+
+## List the components
+
+```bash
+npx shadcn@latest search https://4af.selfsimilar.dev/r/registry.json -t ui
+```
+
+Prints every component with its description and install URL. Add `-q <text>` to filter.
+
+## Use the short name
+
+Register the library once per project to use `@4af/<name>` and to browse the catalog:
+
+```bash
+npx shadcn@latest registry add @4af=https://4af.selfsimilar.dev/r/{name}.json
+```
+
+| Command | What it does |
+| --- | --- |
+| `npx shadcn@latest add @4af/button` | Installs a component. |
+| `npx shadcn@latest search @4af -t ui` | Lists every component. Add `-q <text>` to filter. |
+| `npx shadcn@latest view @4af/button` | Prints a component's registry item, including its source. |
+
+## Preview before writing
+
+| Flag | What it does |
+| --- | --- |
+| `--dry-run` | Lists every file, package, and theme variable the install would add or change, without writing anything. |
+| `--diff [path]` | Shows the changes to existing files. |
+| `--view [path]` | Shows the contents of the files it would write. |
+
+`npx shadcn@latest info` prints the project's setup and resolved paths, for checking a project
+before installing into it.
+
+## Existing files and updates
+
+Files that already exist are skipped. To replace them, for example to update a component, add
+`--overwrite`. That discards local edits to those files, so run `--diff` first.
+
+## Documentation for agents
+
+Every page on this site is available as Markdown by appending `.md` to its URL, for example
+`/docs/button.md`. [`/llms.txt`](/llms.txt) lists all of them. After an install, shadcn prints a
+link to the component's page.

@@ -25,7 +25,7 @@ coding agents.
 - **Semantic styling.** Components consume the 4AF theme's semantic color, radius, elevation,
   and motion tokens instead of hard-coded colors or durations.
 - **Portable installation.** Components can be installed into another shadcn-compatible project
-  with the 4AF CLI, including the shared theme and utilities they need.
+  with the shadcn CLI, including the shared theme and utilities they need.
 
 ## Install a component
 
@@ -36,16 +36,8 @@ npx shadcn@latest add https://4af.selfsimilar.dev/r/button.json
 ```
 
 Replace `button` with any component from the catalog. The theme, shared utilities, and the
-components it builds on install with it.
-
-From a clone of this repository, the 4AF CLI also checks the target project, previews every file,
-and refuses to overwrite files unless told to:
-
-```bash
-pnpm 4af list
-pnpm 4af doctor --project <absolute-target-project>
-pnpm 4af install button --project <absolute-target-project>
-```
+components it builds on install with it. [Installation](/docs/reference/installation) covers
+short names, previewing changes, and updating.
 
 ## Use a component
 
@@ -76,7 +68,7 @@ the most representative components:
 ## Learn the system
 
 <Cards>
-  <Card title="CLI Reference" description="Check projects, preview mutations, and install components safely." href="/docs/reference/cli" />
+  <Card title="Installation" description="Install, preview, and update components with the shadcn CLI." href="/docs/reference/installation" />
   <Card title="Design System" description="The visual atmosphere, semantic color roles, type, geometry, depth, and motion language." href="/docs/reference/design" />
   <Card title="Engineering" description="The component contract, repository boundaries, shared foundation, and documentation parity." href="/docs/reference/engineering" />
   <Card title="Agent Skill" description="A packaged workflow for agents choosing, installing, and maintaining 4AF components." href="/docs/reference/agent-skill" />

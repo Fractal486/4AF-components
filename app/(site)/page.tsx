@@ -183,17 +183,19 @@ export default async function IndexPage() {
               <FileBrowser files={files} />
             </Wide>
             <p className={cn(PROSE, "mt-4")}>
-              From a clone of the repository, the 4AF CLI also checks that your project is ready,
-              previews every file before writing, and never overwrites a file unless told to. See
-              the{" "}
-              <Link href="/docs/reference/cli" className={INLINE_LINK}>
-                CLI reference
-              </Link>
-              . Coding agents can use either path through the{" "}
-              <Link href="/docs/reference/agent-skill" className={INLINE_LINK}>
-                agent skill
+              Add <code className="font-mono text-sm">--dry-run</code> to see every change before
+              anything is written. Short names, browsing the catalog, and updating are covered in{" "}
+              <Link href="/docs/reference/installation" className={INLINE_LINK}>
+                Installation
               </Link>
               .
+            </p>
+            <p className={cn(PROSE, "mt-4")}>
+              Coding agents can start at{" "}
+              <a href="/llms.txt" className={INLINE_LINK}>
+                /llms.txt
+              </a>
+              , which has these commands and links every page as Markdown.
             </p>
           </Section>
 

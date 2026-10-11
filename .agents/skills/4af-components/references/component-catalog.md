@@ -1,20 +1,19 @@
 # 4AF Component Catalog for Agents
 
-Use this chooser to select an installable component. Run `pnpm 4af list` for current install
-names and `pnpm 4af docs <component>` for its complete API, notes, and install/usage examples.
-The links below open the same owning documentation pages.
+Use this chooser to select an installable component. `registry.json` holds the current install
+names, and `https://4af.selfsimilar.dev/docs/<component>.md` has each component's complete API,
+notes, and install/usage examples. The links below open the same owning documentation pages.
 
 ## Sources of truth
 
-- `registry.json` defines install names, files, and dependencies; `registry/ui/` defines props
-  and behavior. Follow the public entry point's re-exports to locate an implementation.
-- `content/docs/<name>.mdx` owns component guidance; `lib/component-reference.ts` owns the
-  shared usage snippet rendered by the website and CLI.
-- `inspector/entries/` contains demonstrations, not installation boundaries. A bundled export
-  such as `SelectSortTrigger` installs with `select`, not as a separate item.
-- [Design](../../../../content/docs/reference/design.mdx) owns shared geometry and tokens;
-  [Engineering](../../../../content/docs/reference/engineering.mdx) owns the contract,
-  shared utilities, and loading-indicator composition.
+- `https://4af.selfsimilar.dev/r/registry.json` lists every install name, its files, and its
+  dependencies; `npx shadcn@latest search` reads it.
+- `https://4af.selfsimilar.dev/docs/<name>.md` is each component's full reference: API, notes,
+  install command, and usage example.
+- A bundled export such as `SelectSortTrigger` installs with `select`, not as a separate item.
+- `https://4af.selfsimilar.dev/docs/reference/design.md` covers shared geometry and tokens;
+  `https://4af.selfsimilar.dev/docs/reference/engineering.md` covers the component contract,
+  shared utilities, and loading indicators.
 
 ## Installable catalog
 
@@ -24,73 +23,73 @@ The catalog contains 47 installable UI items.
 
 | Install name and docs | Choose it for |
 | --- | --- |
-| [`button`](../../../../content/docs/button.mdx) | Immediate actions, links styled as buttons, and icon controls. |
-| [`button-group`](../../../../content/docs/button-group.mdx) | Related buttons joined into one visual group; each keeps its own tab stop. |
-| [`toggle`](../../../../content/docs/toggle.mdx) | A pressed state that changes immediately. |
-| [`action-button`](../../../../content/docs/action-button.mdx) | An async action with temporary success or error feedback. |
-| [`action-toggle`](../../../../content/docs/action-toggle.mdx) | A pressed state that changes only after an async action succeeds. |
-| [`copy-button`](../../../../content/docs/copy-button.mdx) | Clipboard actions with confirmation. |
-| [`delete-button`](../../../../content/docs/delete-button.mdx) | A destructive action confirmed by a second press. |
-| [`morph`](../../../../content/docs/morph.mdx) | Animated replacement of text or icons with reserved space. |
+| [`button`](https://4af.selfsimilar.dev/docs/button.md) | Immediate actions, links styled as buttons, and icon controls. |
+| [`button-group`](https://4af.selfsimilar.dev/docs/button-group.md) | Related buttons joined into one visual group; each keeps its own tab stop. |
+| [`toggle`](https://4af.selfsimilar.dev/docs/toggle.md) | A pressed state that changes immediately. |
+| [`action-button`](https://4af.selfsimilar.dev/docs/action-button.md) | An async action with temporary success or error feedback. |
+| [`action-toggle`](https://4af.selfsimilar.dev/docs/action-toggle.md) | A pressed state that changes only after an async action succeeds. |
+| [`copy-button`](https://4af.selfsimilar.dev/docs/copy-button.md) | Clipboard actions with confirmation. |
+| [`delete-button`](https://4af.selfsimilar.dev/docs/delete-button.md) | A destructive action confirmed by a second press. |
+| [`morph`](https://4af.selfsimilar.dev/docs/morph.md) | Animated replacement of text or icons with reserved space. |
 
 ### Fields and selection
 
 | Install name and docs | Choose it for |
 | --- | --- |
-| [`input`](../../../../content/docs/input.mdx) | Text or number entry, with optional leading icons. |
-| [`textarea`](../../../../content/docs/textarea.mdx) | Multiline text entry. |
-| [`switch`](../../../../content/docs/switch.mdx) | An on/off setting. |
-| [`checkbox`](../../../../content/docs/checkbox.mdx) | Boolean or indeterminate selection. |
-| [`radio`](../../../../content/docs/radio.mdx) | One choice from a visible group. |
-| [`slider`](../../../../content/docs/slider.mdx) | A numeric value or range selected along a rail. |
-| [`select`](../../../../content/docs/select.mdx) | Single or multiple selection from a button trigger; optional panel search and nested options. |
-| [`select-search`](../../../../content/docs/select-search.mdx) | Single or multiple selection with an editable search field as the trigger. |
-| [`select-aligned`](../../../../content/docs/select-aligned.mdx) | Single selection aligned over its button trigger when space and input method allow. |
-| [`date-picker`](../../../../content/docs/date-picker.mdx) | Date or date-range entry; also bundles the standalone Calendar. |
+| [`input`](https://4af.selfsimilar.dev/docs/input.md) | Text or number entry, with optional leading icons. |
+| [`textarea`](https://4af.selfsimilar.dev/docs/textarea.md) | Multiline text entry. |
+| [`switch`](https://4af.selfsimilar.dev/docs/switch.md) | An on/off setting. |
+| [`checkbox`](https://4af.selfsimilar.dev/docs/checkbox.md) | Boolean or indeterminate selection. |
+| [`radio`](https://4af.selfsimilar.dev/docs/radio.md) | One choice from a visible group. |
+| [`slider`](https://4af.selfsimilar.dev/docs/slider.md) | A numeric value or range selected along a rail. |
+| [`select`](https://4af.selfsimilar.dev/docs/select.md) | Single or multiple selection from a button trigger; optional panel search and nested options. |
+| [`select-search`](https://4af.selfsimilar.dev/docs/select-search.md) | Single or multiple selection with an editable search field as the trigger. |
+| [`select-aligned`](https://4af.selfsimilar.dev/docs/select-aligned.md) | Single selection aligned over its button trigger when space and input method allow. |
+| [`date-picker`](https://4af.selfsimilar.dev/docs/date-picker.md) | Date or date-range entry; also bundles the standalone Calendar. |
 
 ### Feedback and status
 
 | Install name and docs | Choose it for |
 | --- | --- |
-| [`progress`](../../../../content/docs/progress.mdx) | Determinate progress. |
-| [`alert`](../../../../content/docs/alert.mdx) | An inline status message or an associated field error. |
-| [`badge`](../../../../content/docs/badge.mdx) | A compact status, category, or count. |
-| [`skeleton`](../../../../content/docs/skeleton.mdx) | A placeholder shaped like loading content. |
-| [`empty`](../../../../content/docs/empty.mdx) | An empty state with optional action. |
-| [`text-shimmer`](../../../../content/docs/text-shimmer.mdx) | A looping highlight for a work-in-progress label. |
-| [`scramble-text`](../../../../content/docs/scramble-text.mdx) | A brief random-character text reveal. |
-| [`ascii-loader`](../../../../content/docs/ascii-loader.mdx) | A compact text spinner. |
-| [`matrix-loader`](../../../../content/docs/matrix-loader.mdx) | A grid of animated dots. |
-| [`classic-loader`](../../../../content/docs/classic-loader.mdx) | A radial spinner made of fading bars. |
+| [`progress`](https://4af.selfsimilar.dev/docs/progress.md) | Determinate progress. |
+| [`alert`](https://4af.selfsimilar.dev/docs/alert.md) | An inline status message or an associated field error. |
+| [`badge`](https://4af.selfsimilar.dev/docs/badge.md) | A compact status, category, or count. |
+| [`skeleton`](https://4af.selfsimilar.dev/docs/skeleton.md) | A placeholder shaped like loading content. |
+| [`empty`](https://4af.selfsimilar.dev/docs/empty.md) | An empty state with optional action. |
+| [`text-shimmer`](https://4af.selfsimilar.dev/docs/text-shimmer.md) | A looping highlight for a work-in-progress label. |
+| [`scramble-text`](https://4af.selfsimilar.dev/docs/scramble-text.md) | A brief random-character text reveal. |
+| [`ascii-loader`](https://4af.selfsimilar.dev/docs/ascii-loader.md) | A compact text spinner. |
+| [`matrix-loader`](https://4af.selfsimilar.dev/docs/matrix-loader.md) | A grid of animated dots. |
+| [`classic-loader`](https://4af.selfsimilar.dev/docs/classic-loader.md) | A radial spinner made of fading bars. |
 
 ### Navigation and layout
 
 | Install name and docs | Choose it for |
 | --- | --- |
-| [`breadcrumb`](../../../../content/docs/breadcrumb.mdx) | A navigation trail with optional expandable middle items. |
-| [`tabs`](../../../../content/docs/tabs.mdx) | Switching between content panels. |
-| [`collapsible`](../../../../content/docs/collapsible.mdx) | Showing or hiding a section. |
-| [`table`](../../../../content/docs/table.mdx) | Presenting rows without selection, sort controls, or row menus. |
-| [`data-table`](../../../../content/docs/data-table.mdx) | Tables with selection, sort controls, or row menus; the caller orders the data. |
-| [`table-of-contents`](../../../../content/docs/table-of-contents.mdx) | Heading navigation with a rail and spanning or single-heading marker. |
-| [`table-of-contents-lines`](../../../../content/docs/table-of-contents-lines.mdx) | Compact heading navigation drawn as depth-aware lines. |
-| [`separator`](../../../../content/docs/separator.mdx) | A horizontal or vertical divider. |
-| [`command-palette`](../../../../content/docs/command-palette.mdx) | Command search, nested lists, or custom panels, including async search. |
-| [`sidebar`](../../../../content/docs/sidebar.mdx) | Responsive navigation, including split rail/panel layouts. |
-| [`sidebar-layout`](../../../../content/docs/sidebar-layout.mdx) | An optional viewport and scrolling shell around Sidebar. |
+| [`breadcrumb`](https://4af.selfsimilar.dev/docs/breadcrumb.md) | A navigation trail with optional expandable middle items. |
+| [`tabs`](https://4af.selfsimilar.dev/docs/tabs.md) | Switching between content panels. |
+| [`collapsible`](https://4af.selfsimilar.dev/docs/collapsible.md) | Showing or hiding a section. |
+| [`table`](https://4af.selfsimilar.dev/docs/table.md) | Presenting rows without selection, sort controls, or row menus. |
+| [`data-table`](https://4af.selfsimilar.dev/docs/data-table.md) | Tables with selection, sort controls, or row menus; the caller orders the data. |
+| [`table-of-contents`](https://4af.selfsimilar.dev/docs/table-of-contents.md) | Heading navigation with a rail and spanning or single-heading marker. |
+| [`table-of-contents-lines`](https://4af.selfsimilar.dev/docs/table-of-contents-lines.md) | Compact heading navigation drawn as depth-aware lines. |
+| [`separator`](https://4af.selfsimilar.dev/docs/separator.md) | A horizontal or vertical divider. |
+| [`command-palette`](https://4af.selfsimilar.dev/docs/command-palette.md) | Command search, nested lists, or custom panels, including async search. |
+| [`sidebar`](https://4af.selfsimilar.dev/docs/sidebar.md) | Responsive navigation, including split rail/panel layouts. |
+| [`sidebar-layout`](https://4af.selfsimilar.dev/docs/sidebar-layout.md) | An optional viewport and scrolling shell around Sidebar. |
 
 ### Overlays and menus
 
 | Install name and docs | Choose it for |
 | --- | --- |
-| [`tooltip`](../../../../content/docs/tooltip.mdx) | A short hover or focus description. |
-| [`sheet`](../../../../content/docs/sheet.mdx) | A dialog entering from an edge. |
-| [`dialog`](../../../../content/docs/dialog.mdx) | A centered dialog, including bundled multi-step flows. |
-| [`alert-dialog`](../../../../content/docs/alert-dialog.mdx) | A confirmation dialog that blocks backdrop dismissal. |
-| [`popover`](../../../../content/docs/popover.mdx) | An interactive panel anchored to a trigger. |
-| [`selection-toolbar`](../../../../content/docs/selection-toolbar.mdx) | Actions on selected text, with the captured text and range passed to handlers. |
-| [`hover-card`](../../../../content/docs/hover-card.mdx) | A rich preview opened by hover or focus. |
-| [`dropdown-menu`](../../../../content/docs/dropdown-menu.mdx) | Action menus, checkable rows, submenus, or nested searchable selection panels. |
+| [`tooltip`](https://4af.selfsimilar.dev/docs/tooltip.md) | A short hover or focus description. |
+| [`sheet`](https://4af.selfsimilar.dev/docs/sheet.md) | A dialog entering from an edge. |
+| [`dialog`](https://4af.selfsimilar.dev/docs/dialog.md) | A centered dialog, including bundled multi-step flows. |
+| [`alert-dialog`](https://4af.selfsimilar.dev/docs/alert-dialog.md) | A confirmation dialog that blocks backdrop dismissal. |
+| [`popover`](https://4af.selfsimilar.dev/docs/popover.md) | An interactive panel anchored to a trigger. |
+| [`selection-toolbar`](https://4af.selfsimilar.dev/docs/selection-toolbar.md) | Actions on selected text, with the captured text and range passed to handlers. |
+| [`hover-card`](https://4af.selfsimilar.dev/docs/hover-card.md) | A rich preview opened by hover or focus. |
+| [`dropdown-menu`](https://4af.selfsimilar.dev/docs/dropdown-menu.md) | Action menus, checkable rows, submenus, or nested searchable selection panels. |
 
 ## Bundled composition choices
 
@@ -98,13 +97,13 @@ Use the host component's parts instead of rebuilding their state handling:
 
 | Need | Bundled API and owning docs |
 | --- | --- |
-| A compact sort/filter select trigger | `SelectSortTrigger` in [Select](../../../../content/docs/select.mdx) |
-| Temporary async feedback in a menu | `DropdownMenuActionItem` in [Dropdown Menu](../../../../content/docs/dropdown-menu.mdx) |
-| Persistent checked state after an async menu action | `DropdownMenuCheckboxItem` with `action` in [Dropdown Menu](../../../../content/docs/dropdown-menu.mdx) |
-| Tabs within a command panel | `CommandPanelTabs` in [Command Palette](../../../../content/docs/command-palette.mdx#panel-tabs) |
-| Actions and toggles over selected text | The matching item parts in [Selection Toolbar](../../../../content/docs/selection-toolbar.mdx#item-kinds) |
-| An expandable sidebar row | `SidebarMenuCollapsible` in [Sidebar](../../../../content/docs/sidebar.mdx#collapsible-menu-sections) |
-| A validated multi-step dialog | `DialogSteps` and `DialogStep` in [Dialog](../../../../content/docs/dialog.mdx) |
+| A compact sort/filter select trigger | `SelectSortTrigger` in [Select](https://4af.selfsimilar.dev/docs/select.md) |
+| Temporary async feedback in a menu | `DropdownMenuActionItem` in [Dropdown Menu](https://4af.selfsimilar.dev/docs/dropdown-menu.md) |
+| Persistent checked state after an async menu action | `DropdownMenuCheckboxItem` with `action` in [Dropdown Menu](https://4af.selfsimilar.dev/docs/dropdown-menu.md) |
+| Tabs within a command panel | `CommandPanelTabs` in [Command Palette](https://4af.selfsimilar.dev/docs/command-palette.md) |
+| Actions and toggles over selected text | The matching item parts in [Selection Toolbar](https://4af.selfsimilar.dev/docs/selection-toolbar.md) |
+| An expandable sidebar row | `SidebarMenuCollapsible` in [Sidebar](https://4af.selfsimilar.dev/docs/sidebar.md) |
+| A validated multi-step dialog | `DialogSteps` and `DialogStep` in [Dialog](https://4af.selfsimilar.dev/docs/dialog.md) |
 
 ## Component modules
 
@@ -113,8 +112,8 @@ An installable component can span several files. Consumers still import its publ
 or prop types. Internal modules import their dependencies directly, without importing back
 through the public entry point.
 
-The following files live together under `registry/ui/<name>/`. Sibling suffixes below include
-the component name: for example, `.context.ts` means `select.context.ts` inside `select/`.
+The following files install together into the project's UI directory. Sibling suffixes below
+include the component name: for example, `.context.ts` means `select.context.ts`.
 
 | Component | Public entry point | Internal siblings |
 | --- | --- | --- |
@@ -125,17 +124,6 @@ the component name: for example, `.context.ts` means `select.context.ts` inside 
 | `selection-toolbar` | `selection-toolbar.tsx`: selection tracking and positioning | `.context.ts`, `.controls.tsx`, `.variants.ts` |
 | `date-picker` | `date-picker.tsx`: `DatePicker`, `DateRangePicker`, re-exported `Calendar` | `calendar.tsx`, `.variants.ts` |
 
-These siblings are part of the same registry item, not separate install names. `registry.json`
-declares every shipped file and its target; the CLI installs the complete bundle. The current
-targets place the files alongside the public entry point in the consumer's UI directory.
-When adding or moving a module, update those file entries and preserve resolving imports.
-
-The other select implementations (`select-aligned` and `select-search`) also live in
-`registry/ui/select/`, but are separate installable items.
-
-## Inspector and registry parity
-
-Each installable UI item has its own documentation page. Some pages compose another item's
-demo: Sidebar Layout uses the Sidebar demo, while each Table of Contents variant has its own
-page and demo. “Select · Sort” demonstrates `SelectSortTrigger`, which installs with `select`.
-Demo helpers, sample data, settings controls, and page wrappers are not registry components.
+These siblings are part of the same registry item, not separate install names; installing the
+component writes all of them. `select-aligned` and `select-search` are separate installable
+items.

@@ -5,6 +5,8 @@ import { SITE_URL } from "../lib/site";
 
 interface RegistryItem {
   name: string;
+  type: string;
+  docs?: string;
   dependencies?: string[];
   registryDependencies?: string[];
   files?: { path: string; target?: string }[];
@@ -16,6 +18,14 @@ const registry = JSON.parse(readFileSync(resolve("registry.json"), "utf8")) as {
 const items = new Map(registry.items.map((item) => [item.name, item]));
 
 describe("registry", () => {
+  it("links every component to its docs page, which shadcn prints after installing it", () => {
+    for (const item of registry.items.filter((entry) => entry.type === "registry:ui")) {
+      expect(item.docs, item.name).toBe(
+        `Docs: ${SITE_URL}/docs/${item.name} (Markdown: ${SITE_URL}/docs/${item.name}.md)`,
+      );
+    }
+  });
+
   it("references existing source files", () => {
     for (const item of registry.items) {
       for (const file of item.files ?? []) expect(existsSync(resolve(file.path))).toBe(true);

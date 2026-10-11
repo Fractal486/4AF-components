@@ -16,7 +16,6 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "4af": "node scripts/4af.ts",
     "registry:validate": "shadcn registry validate",
     "registry:build": "shadcn build"
   },
