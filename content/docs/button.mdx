@@ -10,43 +10,40 @@ description: A composable Base UI button with variants, loading state, asChild s
 
 **Main export:** `Button`
 
-Primary, outline, ghost, plain, destructive, and link variants; text and matching square icon
-sizes of 24px (`xs`/`icon-xs`), 30px (`sm`/`icon-sm`), 34px (`md`/`icon`), and 38px
-(`lg`/`icon-lg`); optical icon spacing; loading without resizing through a shared loader slot; `asChild`; optional
-`pressScale={false}` for anchored controls and `pressTarget="content"` for joined ones.
+| | Values |
+| --- | --- |
+| `variant` | `primary` (default), `outline`, `ghost`, `plain`, `destructive`, `link` |
+| `size` | `xs` (24px), `sm` (30px), `md` (34px), `lg` (38px) |
+| Square icon sizes | `icon-xs`, `icon-sm`, `icon`, `icon-lg`, matching the heights above |
 
-Labeled buttons use an 8px icon-label gap at `xs`/`sm`, 10px at `md`, and 12px at `lg`.
-Leading and trailing icons also receive a small optical edge adjustment; icon-only buttons have
-no content gap.
+The gap between icon and label is 8px at `xs`/`sm`, 10px at `md`, and 12px at `lg`. Leading and
+trailing icons get a small optical edge adjustment; icon-only buttons have no gap.
 
-`loader={<MySpinner />}` supplies this button's indicator. Otherwise it inherits
-[LoaderProvider](/docs/reference/engineering#shared-loading-indicators), with ASCII as the fallback.
-The slot reserves a square and preserves the busy announcement.
+`loading` blocks interaction without changing the button's size. `loader={<MySpinner />}` sets
+its indicator; otherwise it inherits
+[LoaderProvider](/docs/reference/engineering#shared-loading-indicators), with ASCII as the
+fallback. The slot reserves a square and keeps the busy announcement.
+
+`asChild` renders the button's styles onto its child, such as a link, which keeps its own
+semantics.
 
 ## Press behavior
 
-Buttons scale to `0.95` while pressed by default. Set `pressScale={false}` when the control is an
-anchored trigger and its visual resize would make the attached panel feel like it moves. The
-default remains enabled for ordinary buttons.
+Buttons scale to `0.95` while pressed by default. Set `pressScale={false}` on anchored triggers,
+where the resize would make the attached panel appear to move.
 
 ```tsx
 <Button pressScale={false}>Open menu</Button>
 <Toggle pressScale={false} aria-label="Filter" />
 ```
 
-Use `pressTarget="content"` when the button's edges are joined to another control. Only its
-label and icons scale, so the box holds still. Shrinking a joined box opens a gap along every
-seam. Button Group sets this on its children already; set it by hand only when joining buttons
-some other way.
+`pressTarget="content"` scales only the label and icons, so a button joined to another control
+keeps its edges still. Button Group already sets this on its children.
 
 ```tsx
 <Button pressTarget="content">Save</Button>
 ```
 
-Action Button, Copy Button, and Delete Button inherit the same Button prop.
+Action Button, Copy Button, and Delete Button accept both props.
 
-## Notes
-
-The native-button path uses Motion for a spring press. `asChild` preserves the child's
-semantics and uses CSS press feedback because wrapping an arbitrary element would create
-invalid DOM. Loading blocks interaction without changing the control's dimensions.
+The native button presses with a Motion spring. With `asChild`, the press is CSS.

@@ -3,8 +3,7 @@ title: Engineering
 description: The component contract, repository boundaries, motion rules, and documentation parity.
 ---
 
-The library is valuable because every component follows one contract. The implementation may
-vary, but behavior, composition, state, styling, and installation remain predictable.
+Every component follows the contract below.
 
 ## Component contract
 
@@ -14,25 +13,24 @@ vary, but behavior, composition, state, styling, and installation remain predict
   and allow element replacement when the underlying element may reasonably change.
 - Variants live beside the component in a `.variants.ts` file and use CVA.
 - State is exposed on the element through attributes such as `data-state`, `data-variant`, and
-  `data-loading` so styling and tests do not depend on hidden implementation branches.
+  `data-loading`, so styling and tests read the DOM.
 - Components use semantic theme tokens rather than fixed colors or raw palette utilities.
-- A panel of rows — select, searchable menu, command palette — opens with a row already
-  active, before anything is typed: the current selection where there is one — the most recent
-  of them when several are chosen — otherwise the first row. A query overrides both and marks
-  the top match instead. In the selects the pointer moves the mark by hovering; the command
-  palette keeps the two apart, where hover only paints and a press moves the selection. Either
-  way the pointer leaving the panel keeps the mark rather than resetting it. The row carries
-  `data-panel-active`, or Base UI's `data-highlighted` where the primitive owns the highlight.
-  `autoFocusFirstItem={false}` opts out for menu-like uses.
+- A panel of rows (select, searchable menu, command palette) opens with a row already active:
+  the current selection, or the most recent one when several are chosen, otherwise the first
+  row. Typing moves it to the top match. In the selects, hovering moves the active row; in the
+  command palette hover only highlights, and a press moves the selection. The pointer leaving
+  the panel keeps the active row. It carries `data-panel-active`, or Base UI's
+  `data-highlighted` where the primitive owns the highlight. `autoFocusFirstItem={false}` opts
+  out for menu-like uses.
 
 ## Motion contract
 
 Hover, press, focus, and simple fades are CSS-first. Motion is used only when an element must
 remain mounted for exit, follow a gesture, settle with spring physics, or animate layout.
 
-Transitions name their properties and avoid animating layout properties frame by frame. CSS
-durations use the shared motion tokens. Reduced motion is handled in both CSS and JavaScript
-because the cascade cannot alter a Motion transition object.
+Transitions name their properties and don't animate layout properties. CSS durations use the
+shared motion tokens. Reduced motion is handled in both CSS and JavaScript, because CSS can't
+change a Motion transition.
 
 ## Shared loading indicators
 
@@ -113,20 +111,17 @@ Every installable UI item has one component page containing its demo, settings, 
 usage, and component-specific guidance. The generated [component catalog](/docs/reference/components)
 and overview count read `registry.json` directly.
 
-Pages load their established demo entries through the shared adapter. Sidebar Layout
-intentionally reuses the Sidebar demonstration because it is a page-frame
-companion rather than a standalone primitive. Every page uses the shared Install and Usage
+Pages load their demo entries through the shared adapter and use the shared Install and Usage
 reference. Foundation items such as the theme, `cn`, `slot`, and motion presets install as
-dependencies and intentionally have no standalone demos. Append `.md` to any documentation URL
-to read its Markdown representation.
+dependencies and have no demos of their own. Append `.md` to any documentation URL to read it as
+Markdown.
 
 The demo layer also contains example helpers for Action Button, Badge cycling, Command Palette,
 Morph, Select fruit icons, Sidebar, and Table of Contents. They hold demo state, sample data, or
-page composition and are intentionally not installable components. `inspector/` is demo
-infrastructure only; it has no routed site shell.
+page composition and are not installable. `inspector/` holds demo infrastructure only and has
+no routes of its own.
 
-The Fumadocs site is a review and documentation surface, not the registry itself. Registry and
-source remain authoritative.
+The site documents the library; `registry.json` and the source are authoritative.
 
 ## Working on the repository
 

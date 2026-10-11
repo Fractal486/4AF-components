@@ -10,16 +10,10 @@ description: A semantic status message with tone variants and composable content
 
 **Main export:** `Alert`
 
-An inline status line—a glyph plus a sentence with no surface—in five variants: destructive
-`error` with `role="alert"`, amber `warning`, green `success`, neutral `info`, and muted
-`loading` with the shared loader. The last four use `role="status"`. It renders nothing for an
-empty message and carries no field context of its own.
+An inline status line: a glyph and a sentence, with no surface, border, or padding. It renders
+nothing for an empty message.
 
-## General inline status
-
-Alert carries no surface of its own—no panel, no border, no padding beyond the space above it—and
-has no field context. That lets the same line report a failed save, a passing check, or work in
-progress anywhere a short status belongs.
+## Variants
 
 ```tsx
 import { Alert } from "@/components/ui/alert";
@@ -39,23 +33,16 @@ import { Alert } from "@/components/ui/alert";
 | `info` | Foreground ink | Lucide info | `role="status"` |
 | `loading` | Muted grey | Shared loader (ASCII by default) | `role="status"` |
 
-The inks match Badge's status colours value for value, so a line under a field and a badge beside
-it read as one severity. The two neutrals differ by weight, not hue: `info` is full-strength ink
-because it is a note meant to be read; `loading` is muted because work in progress is not yet an
-outcome.
+The inks match Badge's status colours. The loading glyph is hidden from assistive technology, so
+only the sentence is announced.
 
-Only the error interrupts. `role="alert"` is right for something that has just stopped the user;
-a caution, confirmation, note, or progress line uses `role="status"` and waits for a pause. The
-loading spinner stays out of the accessibility tree—the line beside it is the announcement, so a
-live region of its own would say “Loading” over the sentence explaining what is loading.
+The glyph sits in the same 14px slot in every variant, so changing variant does not shift the
+text. `loader={<MySpinner />}` overrides
+[LoaderProvider](/docs/reference/engineering#shared-loading-indicators).
 
-The glyph always occupies the same 14px slot, so a line moving from checking to saved or failed
-swaps its glyph without shifting the text sideways. `loader={<MySpinner />}` overrides
-[LoaderProvider](/docs/reference/engineering#shared-loading-indicators). Alternative indicators
-are supplied and installed by the caller.
+## Field errors
 
-Reach for [Badge](/docs/badge) when status is a label on a row. When an alert describes a specific field,
-connect it to that field for assistive technology:
+Use [Badge](/docs/badge) for a status on a row. When an alert describes a field, connect them:
 
 ```tsx
 <Input
@@ -65,6 +52,5 @@ connect it to that field for assistive technology:
 <Alert id="email-error">{error}</Alert>
 ```
 
-This component was called `FieldError` and installed as `field-error`. `Alert` is exported
-alongside a deprecated `FieldError` alias, so existing call sites keep working; the install name
-has changed outright.
+This component was previously `FieldError`, installed as `field-error`. `FieldError` is still
+exported as a deprecated alias; the install name has changed.

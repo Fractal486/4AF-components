@@ -17,5 +17,5 @@ controlled visibility, and `disableHoverablePopup` when the tooltip should close
 pointer leaves the trigger instead of remaining open while the popup is hovered. Positioning
 options can be forwarded through `positionerProps`.
 
-Within a `TooltipProvider`, Base UI's instant state bypasses the popup transition when moving
-between neighbouring triggers, so the visual entrance does not add another delay.
+Within one `TooltipProvider`, moving between neighbouring triggers opens the next tooltip
+instantly, without the entrance transition.

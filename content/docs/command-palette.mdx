@@ -8,36 +8,34 @@ description: A searchable keyboard-first command surface composed from 4AF primi
 
 ## API
 
-`loader={<MySpinner />}` supplies the palette's search, panel, and action indicators.
-Omit it to inherit [LoaderProvider](/docs/reference/engineering#shared-loading-indicators), with ASCII as the fallback. Individual
-`CommandItem` data and `CommandPanelLoading` accept `loader` overrides; a custom
-`icons.pending` takes precedence for action rows.
-
 **Main exports:** `CommandPalette`, custom panel, list, row, tab and action parts, `Kbd`,
 `useCommandSearch`, `useCommandPanelHighlight`
 
 A keyboard-first command and search dialog with fuzzy ranking, groups, nested and custom panels,
 async, server-driven, and paginated search, header text fields, per-panel header actions, badges,
-checkboxes, keybinds, destructive actions, and keyboard navigation.
+checkboxes, keybinds, and destructive actions.
 
-The `shortcut` prop is enabled by default and binds `⌘K` / `Ctrl+K` to toggle the palette. The
-inspector demo disables that component binding and uses `⌘⇧P` / `Ctrl+Shift+P` instead, so it does
-not compete with Fumadocs' own command shortcut.
+`loader={<MySpinner />}` supplies the palette's search, panel, and action indicators. Omit it to
+inherit [LoaderProvider](/docs/reference/engineering#shared-loading-indicators), with ASCII as
+the fallback. `CommandItem` data and `CommandPanelLoading` accept their own `loader`; a custom
+`icons.pending` takes precedence for action rows.
 
-`useCommandSearch` discards results from canceled requests even when the search callback ignores
-its abort signal. Clearing the query or disabling search resets the result state; a late
-response cannot repopulate it or appear during the next query's debounce.
+`shortcut` is on by default and binds `⌘K` / `Ctrl+K` to toggle the palette. The demo on this
+page uses `⌘⇧P` / `Ctrl+Shift+P` instead, so it doesn't clash with the site search.
 
-Compact header navigation controls use the shared 6px radius; the palette's panel and list-row
-geometry remain independent of those small controls.
+`useCommandSearch` discards results from cancelled requests, even when the search callback
+ignores its abort signal. Clearing the query or disabling search resets the results, and a late
+response cannot bring them back or appear during the next query's debounce.
+
+Header navigation buttons use the compact 6px radius.
 
 ## Composition
 
-It uses the same slight enter and exit treatment as Dialog: the backdrop fades, the panel scales
-in from a small blur, and the exit fades and blurs without reversing the entrance. Reduced motion
-snaps the transition, and `keepMounted` lets the exit finish before Base UI tears the portal down.
+The palette enters and exits like Dialog: the backdrop fades, the panel scales in from a small
+blur, and the exit fades and blurs without reversing the entrance. Reduced motion skips the
+transition.
 
-The registry item includes more than the root popup:
+The registry item includes:
 
 - root groups and rows with icons, descriptions, badges, keybinds, and destructive state;
 - nested item lists;
@@ -56,13 +54,12 @@ The registry item includes more than the root popup:
 - paginated custom panels: observe the shared keyboard and pointer highlight with
   `useCommandPanelHighlight`, fetch when the last row is reached, and pass that request as
   `additionalRefreshing` to `useCommandSearch` so the panel header keeps showing its inline
-  loader.
-
+  loader;
 - a tab row directly under a custom panel's header, with `CommandPanelTabs`;
 - opening the palette straight onto one page with `initialItemId`.
 
-The demo's Projects, Rename Project, New Project, and Keyboard Shortcuts flows are examples built
-from these public APIs, not hard-coded private behaviour.
+The demo's Projects, Rename Project, New Project, and Keyboard Shortcuts flows are built only
+from these public APIs.
 
 ## Panel tabs
 
@@ -89,27 +86,26 @@ row and its one travelling indicator; `variant` picks how the selected tab is ma
 </CommandPanelTabs>
 ```
 
-Both variants close on the same rule the header draws under itself. The tabs select as the arrow
-keys reach them (`activateOnFocus`, on by default here), because a panel's tabs usually re-filter
-one list, which is instant. When they do, one `CommandPanelTabPanel` whose `value` follows the
-selection is enough wiring. A header search field keeps working alongside the tabs: filter within
-the selected tab.
+Both variants sit on the header's bottom rule. Tabs activate as the arrow keys reach them
+(`activateOnFocus` is on by default here). When the tabs filter one list, a single
+`CommandPanelTabPanel` whose `value` follows the selection is enough. A header search field
+filters within the selected tab.
 
 Within a custom panel using these tabs, Tab selects the next enabled tab and Shift+Tab the
 previous one, wrapping at either end and skipping disabled tabs. Focus stays where it is,
 so the header search field keeps its query and you can continue typing after switching.
 Panels without a tab bar keep ordinary Tab focus navigation; open menus keep their own keys.
 
-The indicator is measured from the selected tab and moved with a layout animation, as on Tabs,
-with one correction: the palette scales in as it opens, so measurements are divided by that scale
-and a panel the palette opens on lands its indicator exactly under its tab.
+The indicator is measured from the selected tab and moved with a layout animation, as on Tabs.
+Measurements account for the palette's opening scale, so the indicator lines up even on a panel
+the palette opens straight onto.
 
 ## Opening on a page
 
 `initialItemId` opens the palette straight into one item's custom panel or sub-list instead of the
-root list — for a shortcut that summons one page, such as `?` for a help panel. It is read each
-time the palette opens. From that page, Escape and Back close the palette rather than revealing a
-root list nobody asked for; pages drilled into from the root still step back as usual.
+root list, for a shortcut that opens one page, such as `?` for a help panel. It is read each time
+the palette opens. From that page, Escape and Back close the palette instead of showing the root
+list; pages opened from the root still step back as usual.
 
 ```tsx
 <CommandPalette groups={groups} open={open} onOpenChange={setOpen} initialItemId={entry} />
@@ -121,15 +117,14 @@ Every list — the root list and each custom panel's — opens with its first ro
 anything is typed, and moves the selection to the new first row as a query narrows the list.
 Enter runs the selected row without an arrow press first.
 
-Selection and hover are separate states. The selected row carries `data-highlighted` and is
-moved by the arrow keys and by pressing a row; hovering gives a row a weaker fill and nothing
-else, so sweeping the cursor across the list never changes what Enter runs. A single press both
-selects a row and runs it, which is what keeps a panel that stays open — a checkbox list —
-from stranding its selection on the first row. Moving the pointer out of the list leaves the
-selection where it was.
+Selection and hover are separate states. The selected row carries `data-highlighted` and moves
+with the arrow keys and with presses. Hovering gives a row a weaker fill only, so moving the
+pointer across the list never changes what Enter runs. A press selects a row and runs it, so in a
+panel that stays open, such as a checkbox list, the selection follows the row you pressed.
+Moving the pointer out of the list leaves the selection where it was.
 
-While a row's actions menu is open, that row carries `data-frozen`, styled identically to the
-selection — Base UI drops its own highlight while focus is inside the menu.
+While a row's actions menu is open, the row carries `data-frozen`, styled like the selection,
+because Base UI drops its own highlight while focus is inside the menu.
 
 When the selection reaches the first row, the list scrolls to its top, so the section label above
 that row is visible. This applies to the root list and to `CommandPanelList`.
@@ -154,15 +149,13 @@ the right — and fills the right corner with two optional slots, in this order:
 />
 ```
 
-Neither chord is configurable and nothing else can go in that corner. Both slots print their
-key, so a palette whose panels chose their own would teach a different keyboard on every page.
-`enter` takes `label`, `onClick`, `disabled`, and `type` — `"submit"` submits the panel's form
+Neither key is configurable, and nothing else can go in that corner, so every panel uses the
+same keys. `enter` takes `label`, `onClick`, `disabled`, and `type` — `"submit"` submits the panel's form
 instead of calling `onClick`. `actions` takes the menu's own props: `items` or `groups`, plus
 `label`, `searchPlaceholder`, and `emptyMessage`.
 
-An actions row normally chooses and closes the menu. Three optional fields make it report in
-place instead, keeping the menu open—the same shapes Dropdown Menu offers, expressed as data
-because a palette action is data:
+An actions row normally runs `onSelect` and closes the menu. The fields below make it show its
+result in place instead, keeping the menu open. They match Dropdown Menu's row types:
 
 | Shape | Fields | Dropdown equivalent |
 | --- | --- | --- |
@@ -185,13 +178,12 @@ because a palette action is data:
 
 `labels` and `icons` carry the other states—checked, pending, success, and error—each falling back
 to the row's own label or icon. Pending and error default to the shared loader and warning
-triangle. `revertAfter` and `pendingDelay` behave as on Action Button. Neither toggle shows a
-success tick: the row having become the other thing is the confirmation. An item with none of
-these fields is unchanged; it closes the menu and calls `onSelect`.
+triangle. `revertAfter` and `pendingDelay` behave as on Action Button. The two toggle shapes show
+no success tick; the changed label is the confirmation. An item with none of these fields closes
+the menu and calls `onSelect`.
 
-`confirm` is the exception that closes. The first press arms and morphs the row to
+`confirm` closes the menu. The first press arms and morphs the row to
 `confirm.label`, “Confirm?” by default; the second runs `onSelect` and dismisses the menu by the
 ordinary path. It disarms on Escape, when the menu closes, and after `confirm.resetAfter`—three
 seconds by default, while `0` means never. A press within 350ms of arming is ignored, so one
-double-click cannot confirm what it just armed. These are the same rules as Delete Button, the
-standalone version of this row.
+double-click cannot confirm what it just armed. Delete Button follows the same rules.

@@ -11,10 +11,9 @@ description: A select whose panel opens on the trigger, with the selected row la
 **Main exports:** `AlignedSelect`, `AlignedSelectTrigger`, `AlignedSelectContent`,
 `AlignedSelectItem`, `AlignedSelectGroup`, `AlignedSelectGroupLabel`
 
-A single-select whose panel opens over the trigger, positioned so the selected row lands on the
-value it replaces and scaling out of that row. Default and ghost panels use the trigger's width;
-plain panels use the longest option label plus the reserved checkmark slot. The trigger carries a
-`ChevronsUpDown` glyph rather than a chevron, since the list extends in both directions.
+A single-select whose panel opens over the trigger, with the selected row on top of the value it
+replaces, and scales out from that row. The trigger shows a `ChevronsUpDown` glyph, since the
+list can extend in both directions.
 
 Both `value` / `defaultValue` and `open` / `defaultOpen` support controlled and uncontrolled use.
 Calling `details.cancel()` in `onValueChange` retains the accepted selection, including the
@@ -22,20 +21,18 @@ row offered when reopening. Calling it in `onOpenChange` retains the previous op
 
 ## Trigger variants
 
-`AlignedSelectTrigger` accepts `variant="default" | "ghost" | "plain"`. The default is the
-full-width field. `ghost` uses Button's muted ghost colors while keeping the default field
-spacing, so the value and `ChevronsUpDown` glyph stay aligned. `plain` removes the background,
-border, and horizontal padding, leaving the selected label and the glyph directly beside it. The
-focus ring remains for keyboard users. The older `outline={false}` form is still supported as a
-compatibility alias.
+`AlignedSelectTrigger` accepts `variant="default" | "ghost" | "plain"`. `default` is the
+full-width field. `ghost` uses Button's muted ghost colours with the default spacing, so the
+value and glyph stay aligned. `plain` removes the background, border, and horizontal padding,
+leaving the glyph directly beside the label. The focus ring remains for keyboard users.
+`outline={false}` is still accepted as an alias for `variant="plain"`.
 
 It also accepts an optional `label`, rendered as a dimmed prefix before the value. For example,
 `label="Fruit"` displays `Fruit: Banana`.
 
-When `AlignedSelectContent` has no explicit `width`, it follows the trigger: default and ghost
-triggers keep a trigger-width panel, while plain triggers use content width — the longest option
-label plus the reserved checkmark slot. Set `width="trigger"` or `width="content"` to override
-that default.
+When `AlignedSelectContent` has no explicit `width`, it follows the trigger.
+Default and ghost panels use the trigger's width; plain panels use the longest option label plus
+the reserved checkmark slot. Set `width="trigger"` or `width="content"` to override.
 
 ```tsx
 <AlignedSelectTrigger variant="plain" label="City" placeholder="Pick a city" />
@@ -43,22 +40,19 @@ that default.
 
 ## Overlapping the trigger
 
-The overlap applies to pointer input only, and switches off when there is no room for it — a
-trigger near a viewport edge, or a list too long to centre on the selected row. The default and
-ghost panels match the trigger's width; a plain panel shrink-wraps to its longest row plus the
-reserved checkmark slot. In all cases the panel opens as an ordinary dropdown below the trigger
-when overlap is unavailable, and it does the same when opened from the keyboard.
+The overlap applies to pointer input only. Opened from the keyboard, or when there is no room,
+such as near a viewport edge or with a list too long to centre on the selected row, the panel
+opens as an ordinary dropdown below the trigger.
 
 Row labels line up with the trigger's value because the panel's padding plus a row's padding
-equals the trigger's padding. Restyle one and restyle the others, or the selected label lands
-beside the value it should cover. The selected check occupies a reserved slot at the end of a
-row for the same reason; a leading check would indent every label.
+equals the trigger's padding. If you restyle one, restyle the others to match. The selected
+check sits in a reserved slot at the end of the row, so it doesn't indent the labels.
 
 ## Sections
 
-Wrap rows in `AlignedSelectGroup` with an `AlignedSelectGroupLabel` for a dimmed heading. Base
-UI ties the heading to its own options, and a section hides itself once a search has filtered
-every row out of it.
+Wrap rows in `AlignedSelectGroup` with an `AlignedSelectGroupLabel` for a dimmed heading. The
+heading is tied to its options, and a group hides itself when a search filters out all of its
+rows.
 
 ```tsx
 <AlignedSelectGroup>
@@ -70,9 +64,9 @@ every row out of it.
 ## Search
 
 Add `searchable` to `AlignedSelectContent` for a search field pinned above the list. It takes
-focus when the panel opens, with a row already active — the selected row, or the first row
-when nothing is chosen — so Enter takes that row without an arrow press. Typing moves the mark
-to the top match. The active row carries `data-panel-active`. The arrow keys move focus into
+focus when the panel opens, with a row already active: the selected row, or the first row when
+nothing is chosen, so Enter takes it without an arrow press. Typing moves the active row to the
+top match. The active row carries `data-panel-active`. The arrow keys move focus into
 the list, and Base UI's own highlight takes over from there. The query clears when the panel
 closes. `autoFocusFirstItem={false}` opens the panel with no active row.
 
@@ -81,9 +75,9 @@ match on their text, which only works when the children are a plain string — g
 from elements an explicit `searchValue`. `emptyMessage` replaces the list when a query
 matches nothing, and `searchPlaceholder` and `searchLabel` name the field.
 
-The panel is positioned by the selected row, so a pinned header sits that far above the
-trigger. With a selection deep in a long list there may be no room for the overlap, in which
-case the panel opens as an ordinary dropdown.
+Because the panel is positioned by the selected row, the search field sits that far above the
+trigger. With a selection deep in a long list there may be no room for the overlap, and the panel
+opens as an ordinary dropdown.
 
 ## Sizing
 

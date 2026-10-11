@@ -135,7 +135,7 @@ The catalog currently contains 46 installable UI items. Verify the count and nam
 | `matrix-loader` | `MatrixLoader` | A compact 4×4 dot loader with scan, twinkle, and size variants. |
 | `classic-loader` | `ClassicLoader` | Twelve fading radial bars from loading.dev, locally adapted with CSS-only motion, size variants, speed as a playback multiplier, and an optional status label. Inherits currentColor; no loading-dev or animation runtime dependency. |
 
-### Navigation and application structure
+### Navigation and layout
 
 | Install name | Main API | Use it for |
 | --- | --- | --- |

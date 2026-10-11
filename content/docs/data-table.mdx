@@ -129,7 +129,7 @@ With `bordered`, neither gutter column draws a vertical rule beside it.
 `sortKey` cycles ascending, descending, unsorted; switching columns restarts at ascending.
 `aria-sort` is set on the `<th>`. An unsorted sortable header shows `ChevronsUpDown`.
 
-Ordering the rows is the caller's — the component owns the control and the state only:
+The component owns the sort control and its state; ordering the rows is up to the caller:
 
 ```tsx
 const [sort, setSort] = useState<TableSort | null>(null);

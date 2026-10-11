@@ -10,16 +10,13 @@ description: An accessible disclosure region with animated content and composabl
 
 **Main exports:** `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent`
 
-A Base UI disclosure row in `plain` or `card` appearance, with a rotating chevron at either end
-or no chevron. The panel slides its height so rows underneath travel rather than jump—the
-library's deliberate exception to compositor-only motion—while the content dissolves in and out
-of a blur.
+A Base UI disclosure in `plain` or `card` appearance. `CollapsibleTrigger` places its chevron
+with `chevron="end"` (default) or `"start"`, or hides it with `chevron={false}`.
 
-Plain triggers use the compact 6px button radius; card triggers use the 8px medium/large radius.
+Plain triggers use the compact 6px radius; card triggers use 8px.
 
-## Motion and document flow
+## Motion
 
-The panel deliberately animates its height so content below travels with the disclosure instead
-of jumping to its final position. This is the library's narrow exception to compositor-only
-motion: a transform can move the panel visually, but cannot move the following document flow.
-The content itself still fades and blurs with compositor-friendly properties.
+The panel animates its height, so content below it moves with the disclosure rather than
+jumping. This is the library's one exception to compositor-only motion. The content inside fades
+and blurs in and out.

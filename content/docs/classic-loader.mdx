@@ -1,6 +1,6 @@
 ---
 title: Classic Loader
-description: Twelve fading radial bars, adapted from loading.dev with CSS-only motion and no additional animation dependency.
+description: A twelve-bar radial spinner animated with CSS only.
 ---
 
 <ComponentDemo name="classic-loader" />
@@ -8,7 +8,7 @@ description: Twelve fading radial bars, adapted from loading.dev with CSS-only m
 
 ## API
 
-**Main export:** ClassicLoader
+**Main export:** `ClassicLoader`
 
 | Prop | Default | Description |
 | --- | --- | --- |
@@ -30,14 +30,12 @@ communicates that status, and set `aria-busy` on the content being loaded where 
 
 ## Motion and installation
 
-Only opacity animates. Negative staggered delays make the complete fading trail visible
-immediately, with a 1.2-second default cycle. The loop keeps its own duration under reduced
-motion, following the 4AF spinner contract; it never collapses into a 1ms strobe. This differs
-from upstream's static reduced-motion state.
+Only opacity animates, on a 1.2s cycle. Staggered negative delays show the full trail from the
+first frame. The loop keeps its duration under reduced motion rather than collapsing into a
+strobe.
 
-Installing through the 4AF CLI brings in the shared theme keyframe and local utilities.
-No `loading-dev`, Motion, or Base UI package is required by this component; it uses React
-and the existing 4AF styling utilities.
+It needs no animation or primitive package. The CLI installs the theme keyframe and the
+utilities it uses.
 
 ## Source
 

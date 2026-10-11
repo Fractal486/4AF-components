@@ -15,8 +15,6 @@ A centred modal with enter and exit motion and an optional validated multi-step 
 
 ## Notes
 
-Base UI owns focus trapping, dismissal, scroll locking, and accessible labelling. Motion
-keeps the popup mounted long enough for the exit animation to finish. `DialogContent` accepts
-`portalContainer` when a caller-owned mount point is needed and `backdropClassName` for extra
-backdrop styling. `DialogSteps` uses compositor-backed layout projection when its phases have
-different sizes.
+Base UI handles focus trapping, dismissal, scroll locking, and labelling. `DialogContent`
+accepts `portalContainer` for a mount point of your own and `backdropClassName` for extra
+backdrop styling. `DialogSteps` animates between steps of different sizes.

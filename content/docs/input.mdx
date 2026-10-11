@@ -16,7 +16,7 @@ and disabled states; an optional leading icon; and custom number steppers.
 ## Leading icon
 
 `startIcon` takes any node and pins it to the leading edge of the field, inside the border.
-It is optional, and a field without one renders the bare `<input>` with no wrapper at all.
+Without it, the field renders a bare `<input>` with no wrapper.
 
 ```tsx
 import { Search } from "lucide-react";
@@ -24,9 +24,8 @@ import { Search } from "lucide-react";
 <Input startIcon={<Search />} placeholder="Search…" />
 ```
 
-The glyph is rendered decoratively — `aria-hidden`, `pointer-events-none`, and sized to 16px —
-so it is never announced and a click on it still lands on the field. Label the input itself; the
-icon is not a substitute for a name. The field carries `data-icon-start` and takes the matching
+The icon is decorative (`aria-hidden`, `pointer-events-none`, 16px), so it is never announced
+and clicks pass through to the field. Give the input its own label. The field carries `data-icon-start` and takes the matching
 leading padding, and the icon dims with the input when it is disabled.
 
 On `default` and `plain` the glyph sits at the field's own 12px inset. `underline` drops its

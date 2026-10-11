@@ -10,21 +10,21 @@ description: A button that confirms an asynchronous action with loading, success
 
 **Main export:** `ActionButton`
 
-Runs asynchronous work and presents idle, pending, success, and error states without changing
-width, then reverts.
+Runs an async `action` and shows pending, success, and error states without changing width,
+then reverts to idle.
 
-`size` uses the Button scale: `xs` is 24px, `sm` is 30px, `md` is 34px, and `lg` is 38px.
-The corresponding square icon sizes are `icon-xs`, `icon-sm`, `icon`, and `icon-lg`.
+`size` uses the Button scale: `xs` is 24px, `sm` is 30px, `md` is 34px, and `lg` is 38px. The
+square icon sizes are `icon-xs`, `icon-sm`, `icon`, and `icon-lg`.
 
-When no resting icon is provided, the visible label remains centred even though the pending and
-outcome glyphs reserve their space. Actions with an icon keep the icon-and-label group centred.
+Without a resting `icon`, the label stays centred while the status glyphs reserve their space.
+With an icon, the icon and label stay centred as a group.
 
-`pendingMode` controls the pending presentation. It defaults to `"label"`, which keeps the
-pending label beside the shared loader. Set it to `"icon"` to morph the label out as the loader
-morphs in, centred over the same label-sized content box, and back again when the action
-settles — the same poses and spring as every other swap. The hidden label keeps the button width
-stable, and the resting label remains its accessible name while `aria-busy` and `announce`
-describe the work:
+`pendingMode` sets the pending presentation:
+
+| `pendingMode` | Pending state |
+| --- | --- |
+| `"label"` (default) | The pending label beside the loader. |
+| `"icon"` | The label morphs out and the loader morphs in, centred in the label-sized box. The button keeps its width, and the resting label stays its accessible name while `aria-busy` and `announce` describe the work. |
 
 ```tsx
 <ActionButton
@@ -39,25 +39,18 @@ describe the work:
 
 ## Waiting states
 
-Supply `loader={<MySpinner />}` for this button, or use
-[LoaderProvider](/docs/reference/engineering#shared-loading-indicators) for a subtree default.
-ASCII is the fallback; Copy Button and Delete Button inherit the slot. The former SVG `Spinner`
-export is deprecated and now follows the provider too.
+`loader={<MySpinner />}` sets this button's indicator, and
+[LoaderProvider](/docs/reference/engineering#shared-loading-indicators) sets a default for a
+subtree. ASCII is the fallback. Copy Button and Delete Button inherit the slot. The deprecated
+SVG `Spinner` export also follows the provider.
 
-The glyph and label morph in **separate boxes** in Action Button, Action Toggle, and the menu's
-action row. A reserved glyph box keeps the label in place across either loader style and
-the success/error icons.
+The glyph and the label morph in separate boxes in Action Button, Action Toggle, and the menu's
+action row. The reserved glyph box keeps the label in place across loader styles and the success
+and error icons.
 
-Every visible change animates. Glyphs and per-state labels morph; the icon-only pending swap
-morphs the whole label group; and a label-only action's centring offset slides away when a status
-glyph arrives instead of jumping.
+A label only animates when it changes. Pass `labels={{ pending: "Saving" }}` when the word should
+change, and leave it out when only the glyph should move. With `pendingMode="icon"`,
+`labels.pending` is not shown.
 
-That split matters at the call site: a label with no per-state override does not animate. Pass
-`labels={{ pending: "Saving" }}` when the word should change, and leave it out when only the
-glyph should move in the default mode. Use `pendingMode="icon"` when the pending state should
-show only the centred loader; `labels.pending` is then ignored visually while the button keeps
-the label-sized geometry.
-
-Action Toggle follows the same rule for its glyph: with `fillIcon` and no `icons.pressed`, it
-does not swap the glyph on press because there is nothing to morph to, and a fill transition plus
-a morph on one element fight over it.
+Action Toggle with `fillIcon` and no `icons.pressed` does not swap its glyph on press; the fill
+transition is the only change.

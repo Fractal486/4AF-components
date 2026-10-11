@@ -13,16 +13,12 @@ description parts
 
 A focus-trapped Base UI dialog that enters from an edge.
 
-### Knowing when it has gone
+### After the exit
 
-`SheetContent` takes `onExitComplete`, fired once the exit animation has finished and the
-panel has left the DOM.
-
-A sheet driven by a parent's own state does not need it — the parent already holds the
-`open` flag and can keep it until it likes. It matters for a host that only knows *whether*
-a sheet should exist: one driven by a store, or opened from a notification. Such a host has
-to unmount the sheet to close it, which tears the panel out before the exit begins. With
-this, it closes first and forgets the sheet when the callback lands.
+`SheetContent` takes `onExitComplete`, called once the exit animation has finished and the
+panel has left the DOM. Use it when the host can only mount or unmount the sheet, for example
+when the sheet is driven by a store: close the sheet first, then clear the host's state in the
+callback, so the exit animation isn't cut short.
 
 ```tsx
 <SheetContent onExitComplete={() => store.clear()}>

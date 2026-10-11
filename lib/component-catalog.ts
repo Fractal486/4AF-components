@@ -99,7 +99,7 @@ export const COMPONENT_CATEGORIES = [
     ],
   },
   {
-    name: "Navigation and application structure",
+    name: "Navigation and layout",
     slugs: [
       "breadcrumb",
       "tabs",

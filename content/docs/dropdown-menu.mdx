@@ -8,20 +8,19 @@ description: A Base UI menu with submenus, checkable items, groups, and keyboard
 
 ## API
 
-`DropdownMenu loader={<MySpinner />}` supplies the menu's loading indicator, including
-portalled rows. Omit it to inherit [LoaderProvider](/docs/reference/engineering#shared-loading-indicators), with ASCII as the fallback.
-`DropdownMenuActionItem` and `DropdownMenuCheckboxItem` accept `loader` for one row;
-custom `icons.pending` takes precedence.
-
 **Main exports:** root, trigger, content, item, checkbox, radio, submenu, shortcut, and
 nested-select parts
 
-A Base UI menu with keyboard navigation, safe submenu pointer travel, Kbd-style shortcuts,
-destructive rows, original submenus, and searchable single and multi-select subpanels.
+A Base UI menu with keyboard navigation, safe submenu pointer travel, keyboard shortcut hints,
+destructive rows, navigation submenus, and searchable single and multi-select subpanels.
 
-Disabled rows can take an optional `disabledReason`. When present, hovering the row opens an
-immediate right-side tooltip explaining why it is unavailable. This use case skips the normal
-tooltip delay:
+`DropdownMenu loader={<MySpinner />}` supplies the menu's loading indicator, including portalled
+rows. Omit it to inherit [LoaderProvider](/docs/reference/engineering#shared-loading-indicators),
+with ASCII as the fallback. `DropdownMenuActionItem` and `DropdownMenuCheckboxItem` accept
+`loader` for one row; a custom `icons.pending` takes precedence.
+
+A disabled row can take a `disabledReason`. Hovering the row then opens a tooltip on its right
+explaining why, without the usual tooltip delay:
 
 ```tsx
 <DropdownMenuItem disabled disabledReason="Billing is available on the Pro plan.">
@@ -31,9 +30,9 @@ tooltip delay:
 
 ## Nested panels
 
-Dropdown Menu includes three reusable nested-panel forms:
+Dropdown Menu includes three nested-panel forms:
 
-- the original navigation submenu;
+- a navigation submenu;
 - a single-select panel with the chosen value shown in the parent row and a checkmark in the
   panel;
 - a multi-select panel using small Checkbox components and an `N selected` parent label.
@@ -65,17 +64,15 @@ icon and label carry the state:
 </DropdownMenuCheckboxItem>
 ```
 
-Use `fillIcon` when the glyph does not change shape—a bookmark, star, or heart only changes
-weight, so there is nothing to morph to and it becomes a fill transition on one element. Either
-way, the row keeps its `menuitemcheckbox` semantics.
+Use `fillIcon` instead when the glyph keeps its shape, such as a bookmark, star, or heart that
+only fills in. Either way, the row keeps its `menuitemcheckbox` semantics.
 
-Rows left-align every Morph inside them and mute a morphing leading icon to the same weight as a
-plain one. Do not pass `place-items-start` or a text colour at the call site.
+Rows left-align every Morph inside them and mute a morphing leading icon to match a plain one.
+Don't pass `place-items-start` or a text colour at the call site.
 
 ## Asynchronous rows
 
-`DropdownMenuActionItem` is the row that runs something, shows how it went, and puts itself
-back—the menu's Action Button:
+`DropdownMenuActionItem` runs an action, shows the result, and reverts, like Action Button:
 
 ```tsx
 <DropdownMenuActionItem
@@ -88,14 +85,13 @@ back—the menu's Action Button:
 </DropdownMenuActionItem>
 ```
 
-It defaults to `closeOnClick={false}` because an outcome shown on a row the user can no longer
-see is no outcome at all. Override it when the result is visible on the page behind the menu. It
-takes the same `labels`, `icons`, `revertAfter`, `pendingDelay`, `announce`, `onSuccess`, and
+It defaults to `closeOnClick={false}` so the result stays visible. Override it when the result
+shows on the page behind the menu instead. It takes the same `labels`, `icons`, `revertAfter`, `pendingDelay`, `announce`, `onSuccess`, and
 `onError` as Action Button, and both morph between states without resizing the row.
 
-When the row should persist in a new state, give `DropdownMenuCheckboxItem` an `action`. It holds
-its current state while pending and calls `onCheckedChange` only after success—the menu equivalent
-of Action Toggle:
+For a row that should stay in its new state, give `DropdownMenuCheckboxItem` an `action`. It
+keeps its current state while pending and calls `onCheckedChange` only after success, like
+Action Toggle:
 
 ```tsx
 <DropdownMenuCheckboxItem action={(muted) => setMuted(id, muted)}>
@@ -103,11 +99,10 @@ of Action Toggle:
 </DropdownMenuCheckboxItem>
 ```
 
-Without `action`, the row is the plain synchronous checkbox it has always been. With it, the
-tick holds and the loader runs in its slot until the work settles. A failure needs no rollback
-because nothing moved. With `indicator={false}`, there is no tick slot for the loader, so the
-children function receives status as a second argument for the caller to render.
+Without `action`, it is a plain synchronous checkbox. With it, the tick stays and the loader runs
+in its slot until the work settles; on failure the state is unchanged. With `indicator={false}`
+there is no tick slot for the loader, so the children function receives
+status as a second argument for the caller to render.
 
-Both deferred rows keep their status announcement outside the row element. A menu item's
-accessible name is built from its contents, so an `sr-only` live region inside would rename the
-row to “Mute thread Working” for as long as it ran.
+Both async rows announce their status from outside the row element, so the status text never
+becomes part of the row's accessible name.

@@ -10,9 +10,30 @@ description: A compact label for statuses, categories, and counts.
 
 **Main exports:** `Badge`, `BadgeIconsProvider`, types `BadgeStatus` and `BadgeIcons`
 
-`status="loading"` accepts `loader={<MySpinner />}` or inherits
-[LoaderProvider](/docs/reference/engineering#shared-loading-indicators), with ASCII as the fallback.
-An explicit `icon` takes precedence, and `icon={null}` hides it.
+A label for statuses, categories, and counts, with an optional icon or dot. Label and glyph
+changes animate through the shared `Morph` component.
+
+The default size is `sm`. Boxed badges are 16px high with a 4px radius at `sm`, 20px with a 4px
+radius at `md`, and 24px with a 6px radius at `lg`.
+
+## Variants
+
+| Variant | Treatment |
+| --- | --- |
+| `solid` (default) | A translucent status-coloured fill; text and icon in the same, stronger status colour. |
+| `outline` | No fill and a grey outline; only the text and icon follow `status`. |
+| `plain` | No background or outline. |
+
+`shape="pill"` fully rounds `solid` and `outline` badges; `rounded` is the default and `plain`
+ignores it.
+
+| Prop | Description |
+| --- | --- |
+| `color` | Any CSS colour, replacing the `solid` fill. Used as given, so pass a translucent colour for the default wash look. Text and icon keep the `status` colour. Ignored by `plain` and `outline`. The badge carries `data-color` while it applies. |
+
+```tsx
+<Badge color="oklch(0.7 0.15 250 / 0.15)">Beta</Badge>
+```
 
 ## Status icons
 
@@ -27,8 +48,9 @@ An explicit `icon` takes precedence, and `icon={null}` hides it.
 
 | Prop / part | Description |
 | --- | --- |
-| `icon` | One glyph for this badge, whatever its status. |
+| `icon` | One glyph for this badge, whatever its status. `icon={null}` hides it. |
 | `icons` | Per-status glyphs for this badge, e.g. `{ danger: <CircleX /> }`. Unnamed statuses fall through. |
+| `loader` | The loading glyph for `status="loading"`. |
 | `BadgeIconsProvider icons={…}` | Per-status glyphs for every badge in a subtree, portals included. Nested providers merge over outer ones. |
 
 Precedence, most specific first: `icon`, `icons`, `loader` (loading only), `BadgeIconsProvider`,
@@ -41,39 +63,12 @@ sized to the badge (`size-2.5` / `size-3` / `size-3.5`) unless they set their ow
 </BadgeIconsProvider>
 ```
 
-A status badge with outline and status treatments, an optional icon or dot, and animated label
-and glyph changes powered by the shared `Morph` component.
-
-The default size is `sm`. Boxed badges are 16px high with a 4px radius at `sm`, 20px high with
-a 4px radius at `md`, and 24px high with a 6px radius at `lg`. The `plain` variant remains
-boxless at every size. The default `shape` is `rounded`; use `shape="pill"` for fully rounded
-boxed badges.
-
-## Variants
-
-`plain` has no background or outline. `solid` uses a semi-transparent status-coloured fill,
-with the text and icon in the same, more visible status colour. `outline` has no fill and
-always uses a gray outline; only its text and icon colour changes with `status`.
-
-| Prop | Description |
-| --- | --- |
-| `color` | Any CSS colour, replacing the `solid` fill. Used as given, so pass a translucent colour for the default wash look. Text and icon keep the `status` colour. Ignored by `plain` and `outline`. The badge carries `data-color` while it applies. |
-
-```tsx
-<Badge color="oklch(0.7 0.15 250 / 0.15)">Beta</Badge>
-```
-
-## Shape
-
-`rounded` preserves the compact corner radius used by default. `pill` gives `solid` and
-`outline` badges a fully rounded shape; it has no visible effect on the boxless `plain` variant.
-
 ## Layout animation
 
-Badge animates its width when its content changes. Set `animateLayout={false}` for a
-static badge inside a list that filters or reorders, such as a Command Palette or table row.
-Otherwise it FLIP-animates its own position as the row moves—sliding within a row that does not
-animate and adding layout cost. A badge whose content actually changes keeps the default.
+Badge animates its width when its content changes. In a list that filters or reorders, such as a
+Command Palette or a table row, set `animateLayout={false}` on badges whose content doesn't
+change. Otherwise the badge FLIP-animates its own position as the row moves, which slides it
+within the row and adds layout cost.
 
 ```tsx
 <Badge animateLayout={false}>Beta</Badge>

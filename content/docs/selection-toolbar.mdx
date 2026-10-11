@@ -12,20 +12,18 @@ description: A contextual action toolbar that appears for a selection of items.
 `SelectionToolbarActionButton`, `SelectionToolbarToggle`, `SelectionToolbarActionToggle`,
 `SelectionToolbarToggleGroup`, `SelectionToolbarSeparator`, `useSelectionToolbar`
 
-A bar of ghost-button actions over selected text, using the tooltip material. A Base UI Popover
-anchors to the range itself so it follows the text while scrolling, and Base UI Toolbar provides
-roving tabindex. Its items may be plain, async with pending, success, and error in place, toggle,
-deferred toggle, or exclusive group. It swallows `mousedown` so a press cannot collapse the
-selection, and hands the captured text and range to every action.
+A bar of actions over selected text, styled like a tooltip. A Base UI Popover anchors it to the
+selected range, so it follows the text while scrolling, and Base UI Toolbar handles arrow-key
+focus. Pressing an item doesn't collapse the selection, and every action receives the captured
+text and range.
 
-Toolbar action controls are compact 24px-high controls with 6px corners inside the toolbar's 8px
-shell. This fixed child geometry applies to the Button, Action Button, Toggle, and Action Toggle
-items, including their icon-only forms.
+Items are 24px high with 6px corners inside the toolbar's 8px shell, including icon-only
+forms.
 
 ## Item kinds
 
-The bar's items mirror the menu's rows without nested panels. Each is the library component that
-already owns that behaviour rather than a toolbar-local reimplementation.
+The items match the menu's row types, without nested panels. Each is built on the matching
+library component.
 
 | Item | Built on | Default dismissal |
 | --- | --- | --- |
@@ -36,18 +34,12 @@ already owns that behaviour rather than a toolbar-local reimplementation.
 | `SelectionToolbarToggleGroup` | Base UI `ToggleGroup` in `Toolbar.Group` | — |
 | `SelectionToolbarSeparator` | Base UI `Toolbar.Separator` | — |
 
-Async actions remain visible because their outcome appears inside the toolbar. Toggles remain
-visible because users often operate neighboring states. A plain button completes an action and
-leaves.
-
 Every action receives the selection as it was when the bar opened: `onAction(text, range)`,
-`action(text, range)`, or `onAction(pressed, text, range)`. By the time a click handler runs,
-the live selection may belong to something else. Do not call `window.getSelection()` from an
-action.
+`action(text, range)`, or `onAction(pressed, text, range)`. Use these instead of
+`window.getSelection()`, which may have changed by the time the handler runs.
 
-`variant="destructive"` is quieted to red ink on a neutral hover rather than a solid red fill,
-matching the menu's destructive row. A 24px slab of red inside a 32px bar is louder than the bar
-it sits in.
+`variant="destructive"` uses red text on a neutral hover rather than a solid red fill, like the
+menu's destructive row.
 
 For state derived from the active range, render a small child component and call
 `useSelectionToolbar()` inside it:

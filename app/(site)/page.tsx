@@ -22,27 +22,27 @@ const SECTIONS = [
 const CONTRACT = [
   {
     rule: "Behaviour from Base UI",
-    detail: "Focus traps, dismissal and keyboard navigation come from one primitive layer, never hand-rolled copies.",
+    detail: "Focus, dismissal and keyboard navigation come from Base UI, not hand-written copies.",
   },
   {
     rule: "State on the element",
-    detail: "data-* attributes say what a component is doing, so styles and tests read the DOM instead of props.",
+    detail: "data-* attributes expose what a component is doing, so styles and tests read the DOM rather than props.",
   },
   {
     rule: "Motion on the compositor",
-    detail: "Only transform, opacity, filter and clip-path animate. Nothing relayouts mid-frame.",
+    detail: "Animations use transform, opacity, filter and clip-path, which skip layout. The one exception is a collapsible panel's height.",
   },
   {
     rule: "Durations from tokens",
-    detail: "Every transition reads a --duration-* token, so reduced motion reaches every component at once.",
+    detail: "Every transition reads a --duration-* token, so reduced motion shortens all of them at once.",
   },
   {
     rule: "Controlled or uncontrolled",
-    detail: "value, defaultValue and onValueChange behave the same way across the library.",
+    detail: "value, defaultValue and onValueChange work the same way in every component.",
   },
   {
     rule: "Lists open ready",
-    detail: "Selects, menus and the command palette open with a row marked, so Enter always has an answer.",
+    detail: "Selects, menus and the command palette open with a row already highlighted, so Enter works straight away.",
   },
 ] as const;
 
@@ -117,12 +117,12 @@ export default async function IndexPage() {
         <article>
           <header className="max-w-180">
             <h1 className="mb-[1.1rem] text-[length:clamp(1.9rem,3.4vw,2.75rem)] leading-[1.12] font-semibold tracking-[-0.03em] text-balance">
-              Interface parts for React, rebuilt to one contract.{" "}
+              React components, built to one contract.{" "}
               <span className="text-subtle-foreground">Installed by you or your agent.</span>
             </h1>
             <p className="mb-6 max-w-[52ch] text-[17px] leading-[1.65] tracking-[-0.01em] text-pretty text-muted-foreground">
-              4AF is a personal library of {componentCount} React components, built on Base UI.
-              They all share the same tokens, motion and keyboard behaviour.
+              4AF is a personal library of {componentCount} React components built on Base UI.
+              They share one set of tokens, one motion system and the same keyboard behaviour.
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <Button asChild size="lg">
@@ -138,23 +138,23 @@ export default async function IndexPage() {
               </Button>
             </div>
             <p className="mt-5 text-sm text-muted-foreground">
-              Working with a coding agent?{" "}
-              <a href="#install" className={INLINE_LINK}>
-                Install through the agent skill ↓
-              </a>
+              Using a coding agent? Point it at the{" "}
+              <Link href="/docs/reference/agent-skill" className={INLINE_LINK}>
+                agent skill
+              </Link>
+              .
             </p>
           </header>
 
-          <Section id="components" title="Interface parts for React.">
+          <Section id="components" title="Components">
             <Wide>
               <SpecimenBoard />
             </Wide>
           </Section>
 
-          <Section id="contract" title="Rebuilt to one contract.">
+          <Section id="contract" title="The contract">
             <p className={PROSE}>
-              Every component is held to the same rules. One that doesn&apos;t meet all of them
-              isn&apos;t in the library.
+              Every component in the library meets all six rules.
             </p>
             <dl className="mt-3 max-w-180 border-t">
               {CONTRACT.map(({ rule, detail }) => (
@@ -166,11 +166,11 @@ export default async function IndexPage() {
             </dl>
           </Section>
 
-          <Section id="install" title="Installed by you or your agent.">
+          <Section id="install" title="Install">
             <p className={PROSE}>
               The 4AF CLI serves components straight from this repository. It checks that your
-              project is ready, can preview every file before writing, and installs a component
-              with the utilities it needs and the theme.
+              project is set up, can preview every file before writing, and installs the component
+              together with the utilities and theme it needs.
             </p>
             <div className="relative mt-3 max-w-180 rounded-lg border bg-surface">
               <pre className="overflow-x-auto p-4 pr-14 font-mono text-xs leading-6">
@@ -189,12 +189,12 @@ export default async function IndexPage() {
               <FileBrowser files={files} />
             </Wide>
             <p className={cn(PROSE, "mt-4")}>
-              Coding agents use the same CLI through the{" "}
+              Coding agents run the same CLI through the{" "}
               <Link href="/docs/reference/agent-skill" className={INLINE_LINK}>
                 agent skill
               </Link>
-              , which also covers choosing components and checking a project first. Every flag is in
-              the{" "}
+              , which also covers choosing components and checking a project first. Every flag is
+              listed in the{" "}
               <Link href="/docs/reference/cli" className={INLINE_LINK}>
                 CLI reference
               </Link>
@@ -204,8 +204,8 @@ export default async function IndexPage() {
 
           <Section id="about" title="About">
             <p className={PROSE}>
-              4AF is a personal library, built to be reused across its author&apos;s own projects
-              and published as it grows.
+              4AF is a personal library. I build it for my own projects and publish it as it
+              grows.
             </p>
             <p className={PROSE}>
               Original work is released under MIT-0, so you can copy it without attribution. Some

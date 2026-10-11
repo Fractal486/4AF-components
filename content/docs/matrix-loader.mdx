@@ -8,12 +8,12 @@ description: A compact 4×4 dot loader with several delay patterns.
 
 ## API
 
-**Main export:** MatrixLoader
+**Main export:** `MatrixLoader`
 
-MatrixLoader renders sixteen decorative dots with a shared color-pulse cycle. Use variant for
-scan or twinkle timing; size for the dot scale; and duration for the cycle length in seconds.
+A 4×4 grid of dots that pulse in turn. `variant` sets the pattern (`scan` or `twinkle`), `size`
+the dot scale, and `duration` the cycle length in seconds.
 
-Pass label when the loader itself should announce a busy status. Leave it out when nearby text
-already communicates the loading state.
+Pass `label` when the loader itself should announce a busy status. Leave it out when nearby text
+already says what is loading.
 
-The loop keeps its own duration under reduced motion so it does not collapse into a strobe.
+The loop keeps its duration under reduced motion rather than collapsing into a strobe.

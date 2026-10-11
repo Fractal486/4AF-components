@@ -10,18 +10,15 @@ description: A compact document outline visualized as interactive depth-aware li
 
 **Main export:** `TableOfContentsLines`
 
-Dense line-based heading navigation with one active heading, a longer header rule, equal shorter
-rules between headings with none below the final heading, heading-relative indentation, and an
-expanding hover treatment. When its height is constrained, it remains scrollable without exposing
-a browser scrollbar and smoothly keeps the active entry centered, including first and last entries
-through internal scroll space at the rail's edges.
+Compact heading navigation drawn as lines. Each heading gets a line, indented by its level, with
+two shorter lines between consecutive headings. The active heading's line extends and darkens, as
+does a hovered one. When no heading is on screen, the last heading scrolled past stays active.
 
-`labels` decides whether the headings are always readable (`always`, the default) or held back
-until the list is hovered or focused (`hover`), leaving only the rules. The reveal is scoped to
-the whole list rather than a row — one label appearing under the pointer while the rest stayed
-hidden would be a different component — and it also fires on `:has(:focus-visible)`, so keyboard
-users are not navigating an unlabelled rail while a mouse click — which focuses the entry but
-never sets `focus-visible` — does not pin the list open. Touch screens never hover, so there the labels stay put.
+Give it a height and it scrolls on its own, without a visible scrollbar, keeping the active entry
+centred.
 
-`rootRef` is the document's scroll root. Pass it whenever the article scrolls inside a container;
-the TOC uses it to track the active heading, while its own navigation rail scrolls independently.
+`labels="hover"` hides the headings until the list is hovered or keyboard-focused, leaving only
+the lines; `always` (default) shows them. On touch screens the headings always show.
+
+`rootRef` is the document's scroll root. Pass it when the article scrolls inside a container
+rather than the page.

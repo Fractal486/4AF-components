@@ -3,19 +3,9 @@ title: Design System
 description: The visual language, semantic tokens, geometry, depth, typography, and motion of 4AF.
 ---
 
-4AF feels like a set of precise instruments: quiet, compact, warm-neutral, and tactile. The
-shell recedes so interactive states can be unmistakable without making every surface loud.
-The system uses one amber accent as a deliberate signal rather than a default coat of paint.
-
-## Visual atmosphere
-
-- **Restrained and utilitarian.** Controls are compact, legible, and free of ornamental chrome.
-- **Warm rather than clinical.** Neutral ramps carry a subtle warm hue instead of Tailwind's
-  common blue-grey cast.
-- **Tactile but controlled.** Press feedback, travelling indicators, and short entrances make
-  controls feel physical without delaying work.
-- **Layered by purpose.** Fill and elevation communicate whether something is sunk into the
-  page, anchored to it, or floating above it.
+4AF uses warm-neutral greys, a single amber accent, compact controls, and short, physical
+motion. Fill and elevation show whether something is sunk into the page, anchored to it, or
+floating above it.
 
 ## Color palette and roles
 
@@ -32,10 +22,9 @@ the library by remapping those roles without rewriting component classes.
 | Destructive | Vivid red (`oklch(0.6 0.225 26)`) | The same red | Irreversible and failed actions |
 | Success | Deep green (`oklch(0.52 0.13 152)`) | The same green | Confirmed outcomes only |
 
-Primary is ink, not color. Amber is spent on focus and exceptional emphasis; destructive red
-and success green only appear when their meanings are real. This keeps color informative.
-Quiet destructive actions may use red text without adding a red hover surface; the danger signal
-remains clear without turning a compact menu or toolbar row into a solid warning block.
+Primary is ink, not colour. Amber is used for focus and rare emphasis; destructive red and
+success green appear only when they mean something. Quiet destructive actions, such as menu and
+toolbar rows, use red text without a red hover fill.
 
 A component's fill communicates its layer. `background` is the page and sunk wells such as
 Input, Checkbox, Radio, and Sidebar Inset. `surface` is chrome and anchored popups such as
@@ -48,17 +37,15 @@ decides what those semantic roles resolve to.
 Geist Sans is the interface voice: compact, neutral, and highly legible. Geist Mono is reserved
 for code, command examples, keyboard hints, and small technical labels.
 
-The scale is deliberately modest: 11px technical labels, 12px compact text, 13px default UI,
-15px body copy, then 18px, 22px, 28px, and 36px headings. Display sizes tighten their leading
-and tracking; body copy receives more air. Updating numbers opt into tabular figures so labels
-around them do not shift.
+The scale: 11px technical labels, 12px compact text, 13px default UI, 15px body copy, then
+18px, 22px, 28px, and 36px headings. Larger sizes tighten their leading and tracking; body copy
+gets more. Numbers that update in place use tabular figures so the text around them doesn't
+shift.
 
 ## Geometry and shape
 
-Corners range from a precise 3px rounding to a generous 28px container radius. Nested shapes
-are concentric: the outer radius equals the inner radius plus the padding between them. A
-14px shell with 4px of padding therefore contains a 10px child. Reusing one radius for both
-creates visibly uneven corners.
+Radii range from 3px to 28px. Nested shapes are concentric: the outer radius equals the inner
+radius plus the padding between them, so a 14px shell with 4px of padding holds a 10px child.
 
 Controls are compact by default. Icons remain geometrically centered inside their boxes;
 leading and trailing icons beside text receive optical spacing through component attributes
@@ -69,48 +56,45 @@ objects such as badges, checkboxes, radios, sliders, and table density keep thei
 Their corner radii follow two tiers: 6px for `xs`/`sm` and 8px for `md`/`lg`.
 Labeled button content uses an 8px icon-label gap at `xs`/`sm`, 10px at `md`, and 12px at `lg`;
 leading and trailing icons receive a small optical edge adjustment.
-Checkbox is fixed at 16px with a 4px radius. Other rectangular controls reuse the applicable
-tier for their existing sizes: compact controls use 6px and form-row controls use 8px. Circular,
-pill-shaped, status, and list-row objects keep their intentional geometry.
+Checkbox is fixed at 16px with a 4px radius. Other rectangular controls follow the same tiers:
+6px for compact controls and 8px for form rows. Circular, pill-shaped, status, and list-row
+elements keep their own geometry.
 
 ## Depth and elevation
 
-Buttons and cards use a transparent `shadow-border`: a hairline ring, a close lift, and a soft
-ambient shadow. It reads correctly over any background and avoids the boxed-in look of a hard
-border. Raised and overlay surfaces increase separation progressively.
+Buttons and cards use `shadow-border`: a translucent hairline ring, a close lift, and a soft
+ambient shadow, which works over any background. Raised and overlay surfaces add more
+separation.
 
-Dark mode replaces most drop-shadow depth with restrained luminous rings. Heavy shadows become
-grey smudges on near-black, while a translucent edge preserves the layer boundary. Real borders
-remain reserved for dividers and table cells, whose purpose is separation rather than elevation.
+In dark mode, most drop shadows are replaced by faint light rings, since shadows barely show on
+near-black. Real borders are kept for dividers and table cells.
 
 ## Component styling
 
-- **Buttons** use neutral ink as the ordinary primary action, compact geometry, optical icon
-  spacing, and tactile press feedback. Joined buttons keep their outer box still so seams do not
-  open during a press.
-- **Fields** sit at the background layer and strengthen their ring on focus. Invalid state is
-  semantic and accessible, not merely a red decoration.
-- **Anchored panels** use the surface layer with a scale, blur, and fade entrance originating
-  near the trigger.
-- **Overlays** use the raised layer and stronger elevation. Their behavior and focus management
-  come from Base UI.
-- **Status UI** shares severity colors across alerts, badges, and outcomes so the same state
-  reads consistently whether it is a sentence, label, or temporary notification.
+- **Buttons** use neutral ink for the primary action, with optical icon spacing and press
+  feedback. Joined buttons keep their outer box still while pressed, so seams don't open.
+- **Fields** sit on the background layer and strengthen their ring on focus. Invalid state is
+  exposed to assistive technology, not only shown in red.
+- **Anchored panels** use the surface layer and enter with a scale, blur, and fade from the
+  trigger.
+- **Overlays** use the raised layer and stronger elevation, with behaviour and focus management
+  from Base UI.
+- **Status** colours are shared by alerts, badges, and action outcomes, so a state looks the
+  same as a sentence or a label.
 
 ## Layout principles
 
-Whitespace is compact but not crowded. Related controls sit in close groups; sections receive
-clearer separation than individual fields. Page shells keep navigation stable and give the
-content region ownership of scrolling. Popups and overlays are positioned relative to the
-control that summoned them, preserving spatial continuity.
+Spacing is compact. Related controls sit in close groups, and sections are separated more
+clearly than individual fields. Page shells keep navigation fixed and let the content region
+scroll. Popups open next to the control that opened them.
 
 ## Motion language
 
-Motion explains state and spatial relationships. CSS handles hover, focus, press, and simple
-entrances. Motion is reserved for exit lifecycles, gestures, springs, and layout animation.
-Transitions name the exact compositor-friendly properties they change.
+CSS handles hover, focus, press, and simple entrances. The Motion library is used only for
+exit animations, gestures, springs, and layout animation. Transitions name the exact properties
+they change.
 
-Four duration roles—fast, base, slow, and slower—cover everything from focus feedback to sheets.
-Reduced-motion preferences collapse CSS transitions to 1ms so lifecycle events still fire;
-JavaScript motion uses zero-duration transitions. Decorative loops stop instead of accelerating
-into a strobe.
+Four durations, fast, base, slow, and slower, cover everything from focus feedback to sheets.
+Under reduced motion, CSS transitions collapse to 1ms so lifecycle events still fire, and
+Motion transitions run with zero duration. Looping loaders keep their own speed rather than
+collapsing into a strobe.

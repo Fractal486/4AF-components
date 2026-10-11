@@ -15,19 +15,23 @@ icons, and full keyboard and ARIA behaviour.
 
 ## Searching and cancelling
 
-In single-select mode, the committed selection uses normal foreground text at rest and dims
-only while the search field is focused. Typing starts a fresh query over it. Clicking outside
-discards the query and restores the selection in normal foreground text. Escape discards the
-query while keeping focus; deleting the query also preserves the choice. Choosing a row commits a new selection. Opening highlights the current selection,
-while typing highlights the top match. When the selection has an icon, focusing replaces it
-with a dimmed search icon; leaving the field restores the selected option’s icon. Clicking
-a row also unfocuses the field, restoring its normal label and icon. Keyboard selection
-retains focus, and multi-select continues to stay open for additional choices.
+In single-select mode:
 
-`inputValue` / `defaultInputValue` and `onInputValueChange` represent the search query,
-separately from `value` / `defaultValue` and `onValueChange`. `itemToStringLabel` also supplies
-the selected placeholder for custom item shapes. Multi-selection retains its existing count
-summary and checkbox behavior.
+- The selected value shows in normal text, and dims while the field is focused. Typing starts a
+  new query over it.
+- Opening highlights the current selection; typing highlights the top match.
+- Choosing a row commits it. Clicking a row also unfocuses the field; selecting with the keyboard
+  keeps focus.
+- Escape discards the query and keeps focus. Clicking outside, or deleting the query, keeps the
+  current selection.
+- When the selection has an icon, focusing the field swaps it for a dimmed search icon until the
+  field loses focus.
+
+In multi-select mode the panel stays open for more choices.
+
+`inputValue` / `defaultInputValue` and `onInputValueChange` hold the search query, separately
+from `value` / `defaultValue` and `onValueChange`. `itemToStringLabel` also supplies the selected
+label for custom item shapes. Multi-select shows a count summary and checkboxes.
 
 ## Sizing
 
@@ -37,9 +41,8 @@ button radius: 6px for `sm` and 8px for `md`.
 
 ## Item data
 
-The Combobox value may carry its own icon. An item is its value—`<SearchSelectItem value={item}>`—
-so there is no key to look up in a separate mapping. Put the icon on each item object when a
-preselected value must resolve before the popup has mounted:
+An item is its own value (`<SearchSelectItem value={item}>`), so the icon goes on the item
+object. Do this when a preselected value must show its icon before the panel has opened:
 
 ```tsx
 const fruits = [{ value: "apple", label: "Apple", icon: <Apple /> }];
@@ -47,7 +50,7 @@ const fruits = [{ value: "apple", label: "Apple", icon: <Apple /> }];
 <SearchSelect items={fruits} defaultValue={fruits[0]}>
 ```
 
-No type change is needed: Base UI types Combobox `items` as `readonly any[]`, and this convention
-extends the `{ value, label }` shape it already treats specially. An icon passed only to
-`SearchSelectItem` still cannot resolve before mount because nothing outside the popup has seen
-it. Resolution order is the mounted item, then `iconForValue`, then the value's own `icon`.
+No type change is needed: Base UI types Combobox `items` as `readonly any[]`, and `icon` sits
+beside the `{ value, label }` fields it already reads. An icon passed only to `SearchSelectItem`
+can't show before the panel has mounted. Resolution order is the mounted item, then
+`iconForValue`, then the value's own `icon`.

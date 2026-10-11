@@ -11,16 +11,17 @@ description: A responsive application sidebar with rails, panels, menus, and col
 **Main exports:** `SidebarProvider`, `Sidebar`, `SidebarPanel`, `SidebarHeaderButton`, and the
 menu, group, submenu, action, badge, and skeleton parts
 
-A responsive application sidebar with sidebar, floating, inset, split, split-floating, and
-split-inset layouts; controlled collapse; collapsible menu rows with built-in chevrons; sections;
-nested rows; a canonical full-width primary header action; badges; and loading skeletons. Split
-layouts use `SidebarRailButton` controls with
-`value` and `SidebarPanel` sections; `activePanel`, `defaultActivePanel`, and
-`onActivePanelChange` support controlled or uncontrolled wide-panel selection.
+A responsive application sidebar.
 
-`SidebarRailButton tooltip="Projects"` shows a description beside the fixed icon rail.
-Its transition plays even when the tooltip group is warm; moving between icons still opens
-their descriptions immediately. Motion durations continue to respect reduced motion.
+- `variant`: `sidebar`, `floating`, `inset`, `split`, `split-floating`, or `split-inset`.
+- Controlled or uncontrolled collapse, menu sections, nested rows, collapsible menu rows, badges,
+  and loading skeletons.
+- A full-width primary action in the header (`SidebarHeaderButton`).
+- Split layouts pair `SidebarRailButton` controls, each with a `value`, with `SidebarPanel`
+  sections. `activePanel`, `defaultActivePanel`, and `onActivePanelChange` select the wide panel.
+
+`SidebarRailButton tooltip="Projects"` labels a rail icon. Moving between rail icons opens their
+tooltips immediately, and the entrance transition still plays.
 
 With `collapsible="offcanvas"`, collapsed navigation leaves the tab order and accessibility
 tree once its exit finishes. If collapse happens while focus is inside, focus returns to the
@@ -59,14 +60,12 @@ row, use `SidebarMenuCollapsible` with `SidebarMenuCollapsibleTrigger` and
 </SidebarMenu>
 ```
 
-The trigger includes a trailing `ChevronDown` by default. It points right while closed and
-rotates down while open. Pass `chevron={false}` only when the trigger supplies a custom
-indicator. A sibling `SidebarMenuAction` is placed immediately before the chevron so the
-chevron remains the final icon in the row. A sibling `SidebarMenuBadge` reserves its own slot
-before the action and chevron, so counters never overlap them. Hovering a nested row keeps its
-highlight local to that row instead of highlighting the collapsible parent. The collapsible root
-accepts Base UI's `defaultOpen`,
-`open`, `onOpenChange`, and `disabled` props.
+The trigger includes a trailing `ChevronDown` that points right while closed and down while
+open. Pass `chevron={false}` when the trigger supplies its own indicator. A sibling
+`SidebarMenuAction` sits just before the chevron, and a sibling `SidebarMenuBadge` takes its own
+slot before both, so they never overlap. Hovering a nested row highlights only that row. The
+collapsible root accepts Base UI's `defaultOpen`, `open`, `onOpenChange`, and `disabled`
+props.
 
 ## Header composition
 
@@ -88,10 +87,9 @@ Dropdown Menu rather than embedding a separate menu implementation in Sidebar.
 
 ### Pinning the panel open
 
-`hideCollapseHandle` drops the edge strip that toggles the panel. It is for a panel whose
-owner has pinned it — a controlled `open` it never changes — where the strip would sit
-there doing nothing. An inert control reads as breakage; an absent one reads as "not
-available here", which is the truth.
+`hideCollapseHandle` removes the edge strip that toggles the panel. Use it when the panel is
+pinned open (a controlled `open` that never changes), so there is no control that does
+nothing.
 
 ```tsx
 <Sidebar variant="split-inset" collapsible="icon" hideCollapseHandle={pinned} rail={rail}>

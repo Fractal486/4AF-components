@@ -17,21 +17,20 @@ compact sort/filter trigger.
 
 ### Trigger variants
 
-`SelectTrigger` and `SelectSortTrigger` accept `variant="default" | "ghost" | "plain"`. The
-default is the boxed field or chip. `ghost` uses Button's muted ghost colors while keeping the
-default trigger spacing, so leading and trailing icons stay aligned. `plain` removes the
-background, border, and horizontal padding, leaving the label/value with the dropdown icon
-immediately after it. In plain sort triggers, an optional `icon` remains leading, while the
-dropdown chevron follows the label. The focus ring remains for keyboard users. The older
-`outline={false}` form is still supported as a compatibility alias for `variant="plain"`.
-Use `variant="ghost"` when you want the Button ghost treatment without changing the trigger's
-geometry.
+`SelectTrigger` and `SelectSortTrigger` accept `variant="default" | "ghost" | "plain"`:
 
-With neither `label` nor `showValue`, `SelectSortTrigger` is a bare glyph, and its box
-becomes a square matching Button's icon sizes — 24/30/34px for `xs`/`sm`/`md`. The padded
-chip is sized for text, so a lone glyph in it comes out 38×30 and reads as a mistake in the
-row of icon buttons a toolbar chip usually stands in. A toolbar can drive this off the
-selection, so a chip names a filter only once there is one:
+| `variant` | Trigger |
+| --- | --- |
+| `default` | The boxed field or chip. |
+| `ghost` | Button's muted ghost colours with the default spacing, so leading and trailing icons stay aligned. |
+| `plain` | No background, border, or horizontal padding; the dropdown icon follows the label or value directly. A sort trigger's `icon` stays leading. |
+
+The focus ring remains for keyboard users. `outline={false}` is still accepted as an alias for
+`variant="plain"`.
+
+With neither `label` nor `showValue`, `SelectSortTrigger` shows only its glyph in a square box
+matching Button's icon sizes: 24, 30, or 34px for `xs`, `sm`, or `md`. A toolbar can switch this
+on the selection, so the chip names a filter only once one is set:
 
 ```tsx
 <SelectSortTrigger icon={<ListFilter />} showValue={value !== null} aria-label="Sort" />
@@ -44,10 +43,10 @@ When `SelectContent` has no explicit `width`, it follows the trigger: default an
 keep a trigger-width panel, while plain triggers use content width — the longest option label plus
 the reserved checkmark slot. Set `width="trigger"` or `width="content"` to override that default.
 
-`SelectContent` opens with a row already active by default: the current selection (the most recent
-enabled one in a multi-select), or the first enabled row when nothing is selected. Typing moves the active row to
-the top enabled match. Disabled rows stay visible but cannot become the initial active row or
-the search field's Enter target. When every match is disabled, no row is active. Set
+`SelectContent` opens with a row already active: the current selection (the most recent enabled
+one in a multi-select), or the first enabled row when nothing is selected. Typing moves the
+active row to the top enabled match. Disabled rows stay visible but are never the initial active
+row or the search field's Enter target; when every match is disabled, no row is active. Set
 `autoFocusFirstItem={false}` to opt out for menu-like controls such as a sort trigger.
 
 `onValueChange(value, details)` can reject a selection with `details.cancel()`. The trigger,
@@ -55,7 +54,7 @@ checked rows, and the selection offered on reopening all retain the accepted val
 
 ```tsx
 <Select defaultValue="active" items={{ active: "Active", paused: "Paused" }}>
-  <SelectTrigger variant="plain" label="Fruit">
+  <SelectTrigger variant="plain" label="Status">
     <SelectValue />
   </SelectTrigger>
   <SelectContent>
@@ -144,28 +143,22 @@ import { SelectContent, SelectItem, SelectSeparator } from "@/components/ui/sele
 
 <ComponentDemo name="select-sort" />
 
-Install `select`, then use `SelectSortTrigger`. It automatically:
+`SelectSortTrigger` ships in `select`; there is no separate `select-sort` item. It:
 
-- uses a dashed border while no value is selected;
-- becomes filled and solid when a value is selected;
-- remains filled while its panel is open;
-- reads and displays the selected label or labels from Select context;
-- rotates the chevron with the same treatment as the normal Select trigger.
+- has a dashed border while no value is selected;
+- becomes filled and solid once a value is selected, and while its panel is open;
+- shows the selected label or labels from Select context;
+- rotates its chevron like the normal Select trigger.
 
-Use `variant="ghost"` for Button's muted ghost colors with the default spacing and icon placement,
-or `variant="plain"` for a transparent, borderless sort/filter trigger. In plain mode its
-label/value and dropdown chevron remain adjacent, and a supplied sort/filter `icon` remains
-leading.
+It takes the same `variant="ghost"` and `variant="plain"` options as `SelectTrigger`.
 
 When `multiple` is enabled, the same trigger becomes a filter control and supports the nested
 `SelectSub` panels described above. Nested rows participate in the multi-selection and keep the
 panel open while choices are toggled.
 
-The clear footer is independently optional. Add `clearable` to `SelectContent` when the panel
-should offer it. It renders a compact `xs` ghost reset button with an accessible `SelectSeparator`
-above it by default; the button is disabled when there is nothing selected and clearing keeps the
-panel open. Hovering the action transfers the active-row treatment from the last option to Clear,
-so the panel never paints two highlighted rows at once.
+Add `clearable` to `SelectContent` for a clear footer: a compact `xs` ghost reset button with a
+`SelectSeparator` above it. The button is disabled when nothing is selected, and clearing keeps
+the panel open. Hovering it moves the active-row highlight from the list to the button.
 
 ```tsx
 import {
@@ -184,18 +177,13 @@ import {
 </Select>
 ```
 
-Pass `footerActions` for buttons of the panel's own. They share the footer row evenly, so a
-pair reads as a pair rather than as two more list rows, and they take the same active mark on
-hover that `clearable` does. Each takes a `label`, an optional leading `icon`, a `checked` tick
-for an action that is also a state the selection is already in, and `keepOpen` for one that
-should leave the panel up. `clearable` appends to them, so a panel can offer both.
+`footerActions` adds buttons for actions on the selection, such as Archive or "Select all". They
+share the footer row evenly and take the same hover highlight as `clearable`. Each takes a
+`label`, an optional leading `icon`, `checked` to show a tick, and `keepOpen` to leave the panel
+open. `clearable` adds its button after them.
 
-A footer action is an action on the *selection* — Archive, Clear, "Select all" — not one more
-option to pick. Anything that belongs in the list belongs in the list.
-
-A row in the list can act too — "Create …" above a filtered set, say. Give it
-`indicator={false}` so it drops the multi-select checkbox and the single-select tick, which
-would otherwise promise a box that stays ticked.
+For a list row that runs an action instead of being selected, such as "Create …" above a
+filtered list, pass `indicator={false}` to drop the checkbox or tick.
 
 ```tsx
 <Select<string> multiple value={tags} onValueChange={setTags}>
@@ -215,8 +203,6 @@ would otherwise promise a box that stays ticked.
 </Select>
 ```
 
-The API is documented here while the registry intentionally has no separate `select-sort` item.
-
 ## Preselected icons
 
 Declare option icons in the root `items` collection when a closed, preselected trigger must show
@@ -229,8 +215,6 @@ its icon on first paint:
 >
 ```
 
-Do this whenever a preselected value must show its icon. `SelectItem`'s own `icon` prop only
-registers when the popup mounts, so on a cold load the closed trigger has nothing to show until
-the panel has opened once. `items` is the mapping that exists beforehand, which is also why the
-label reads from it. Use `iconForValue` when the icon is computed rather than declared.
+`SelectItem`'s own `icon` only registers once the panel has mounted, so a closed trigger can't
+show it on first load. Use `iconForValue` when the icon is computed rather than declared.
 Resolution order is the mounted item, then `iconForValue`, then `items`.

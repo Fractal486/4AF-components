@@ -3,11 +3,10 @@ title: Components
 description: Every installable 4AF component, generated directly from the registry.
 ---
 
-The catalog contains **<ComponentCount /> installable components**. Each entry below comes
-from `registry.json`, the same source read by `pnpm 4af list`, so this page cannot drift from
-the installer.
+The catalog contains **<ComponentCount /> installable components**, generated from
+`registry.json`, the same source `pnpm 4af list` reads.
 
-Shared foundation items such as the theme, `cn`, `slot`, motion presets, and `use-action`
-are installed transitively and do not appear as standalone components.
+Shared foundation items such as the theme, `cn`, `slot`, motion presets, and `use-action` are
+installed as dependencies and aren't listed here.
 
 <ComponentCatalog />

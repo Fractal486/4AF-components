@@ -10,15 +10,11 @@ description: A clipboard action with transient success feedback and icon morphin
 
 **Main export:** `CopyButton`
 
-A clipboard-specialized Action Button with visual and screen-reader confirmation.
+An Action Button that copies text to the clipboard, with visual and screen-reader confirmation.
 
-`size` controls the overall scale and accepts `xs`, `sm`, `md`, or `lg`. With a label, those
-map to the standard button sizes. Without a label, they map to the corresponding square
-`icon-xs`, `icon-sm`, `icon`, or `icon-lg` button. When omitted on an icon-only button, the
-default is the square `icon` size.
-
-When a label is present, the copy icon uses the same size-aware 8px/10px/12px gap as a standard
-Button, so the labeled component keeps the shared button geometry.
+`size` accepts `xs`, `sm`, `md`, or `lg`. With a label these are the standard button sizes;
+without one they are the matching square `icon-xs`, `icon-sm`, `icon`, or `icon-lg` sizes. An
+icon-only button defaults to `icon`. With a label, the icon gap matches Button (8, 10, or 12px).
 
 ## Resolve values on press
 
@@ -28,24 +24,20 @@ Button, so the labeled component keeps the shared button geometry.
 value: string | (() => string | Promise<string>)
 ```
 
-Reach for the function form whenever the text is not already sitting in a variable—it has to be
-assembled from a selection, read from the DOM, or fetched. Computing it eagerly to satisfy a
-string means doing that work on every render for a button that may never be pressed, and if the
-work is a request, requesting on every state change.
+Use the function form when the text is assembled from a selection, read from the DOM, or
+fetched. It runs on press, so nothing is computed or requested on every render.
 
 ```tsx
 <CopyButton value={() => selected.map((row) => row.url).join("\n")} />
 <CopyButton value={async () => (await fetchDocument(id)).body} />
 ```
 
-The pending state resolves this correctly in both directions without configuration: a plain
-string or synchronous function finishes inside `pendingDelay` and goes straight to the check
-mark, while a value that genuinely waits crosses the threshold and shows the spinner. A function
-that throws or rejects lands on the error state and never writes to the clipboard, so `onCopy`
-reports only text that actually got there.
+A string or a synchronous function finishes within `pendingDelay` and goes straight to the check
+mark; a value that takes longer shows the loader. A function that throws or rejects shows the
+error state and writes nothing, so `onCopy` only reports text that was copied.
 
-`icon` overrides the resting glyph when what is being copied has its own symbol and two copy
-buttons beside each other would otherwise look identical. The success check remains unaffected.
+`icon` replaces the resting glyph, for example to tell apart two copy buttons that copy
+different things. The success check is unchanged.
 
 ```tsx
 <CopyButton icon={<Link />} value={() => rows.map((row) => row.url).join("\n")} />
@@ -53,14 +45,10 @@ buttons beside each other would otherwise look identical. The success check rema
 
 ### Copying from somewhere else
 
-`writeToClipboard(text)` is exported alongside the button. A clipboard write does not
-always live on a `CopyButton` — a menu row runs the same write through its own loading
-state — and it carries the part worth not reimplementing: `navigator.clipboard` exists only
-in a secure context, so on plain HTTP (a lot of local and intranet apps) it falls back to
-the deprecated `execCommand` path. It rejects on failure rather than returning false, so a
-caller cannot report a copy that did not happen.
+`writeToClipboard(text)` is exported for clipboard writes outside the button, such as a menu
+row. `navigator.clipboard` only exists in secure contexts, so on plain HTTP it falls back to
+`execCommand`. It rejects on failure instead of returning false.
 
 ```tsx
 await writeToClipboard(item.url);
 ```
-

@@ -10,17 +10,16 @@ description: A navigable heading outline that tracks the active document section
 
 **Main export:** `TableOfContents`
 
-Heading navigation with a dashed inactive rail, smooth document scrolling, a long-prose fallback,
-and `span` or `single` active-marker variants. When its height is constrained, the TOC remains
-scrollable without exposing a browser scrollbar and smoothly keeps the active entry centered,
-including first and last entries through internal scroll space at the rail's edges.
+Heading navigation with a dashed rail and an active marker. `variant="span"` (default) marks
+every visible heading; `variant="single"` marks one. Clicking an entry scrolls the document
+smoothly. When no heading is on screen, the last heading scrolled past stays active.
 
-`labels` decides whether the headings are always readable (`always`, the default) or held back
-until the list is hovered or focused (`hover`), leaving the rail and its marker alone on screen.
-The entries keep their boxes either way, so the rail geometry — measured from those rows — is
-identical in both. The reveal is scoped to the whole list rather than a row, fires on
-`:has(:focus-visible)` as well as hover — a mouse click focuses an entry but never sets
-`focus-visible`, so it cannot pin the list open — and is disabled under `pointer: coarse`, where nothing hovers.
+Give it a height and it scrolls on its own, without a visible scrollbar, keeping the active entry
+centred.
 
-`rootRef` is the document's scroll root. Pass it whenever the article scrolls inside a container;
-the TOC uses it to track the active heading, while its own navigation rail scrolls independently.
+`labels="hover"` hides the headings until the list is hovered or keyboard-focused, leaving the
+rail and marker; `always` (default) shows them. The rail geometry is the same either way. On touch
+screens the headings always show.
+
+`rootRef` is the document's scroll root. Pass it when the article scrolls inside a container
+rather than the page.

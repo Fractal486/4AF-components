@@ -35,26 +35,19 @@ Base UI tabs with a travelling Motion indicator; `segment`, `pill`, and `underli
 </TabsTab>
 ```
 
-The rectangular segment treatment uses the shared control tiers: an 8px track contains tabs
-with 6px corners. The pill treatment remains fully rounded, and the underline treatment only
-rounds its top corners.
-
-`size` is `md` by default. `sm` drops a type step and tightens the padding, putting the pill
-track at 32px — the height of an Input or a small Button — so a row of tabs lines up with the
-controls beside it instead of standing a row taller. The segment radii step down with it, from
-an 8px track around 6px tabs to a 7px track around 5px tabs, so the corners stay concentric at
-both sizes.
+`size` is `md` by default. `sm` uses a smaller type step and tighter padding, with a 32px pill
+track. Segment corners step down with it, from an 8px track around 6px tabs to a 7px track around
+5px tabs. Pill tabs are fully rounded, and underline tabs round only their top corners.
 
 ## Scrolling and edge fades
 
 Set `maxWidth` on `TabsList` to enable a horizontally scrolling bar in any variant.
 Use a number for pixels (`maxWidth={280}`) or a CSS length (`maxWidth="20rem"`).
-The bar also stays within its parent's width. Without `maxWidth`, the existing layout is unchanged.
+The bar never grows past its parent's width, so give it a parent with a definite width.
 
-An edge fades with a subtle, tapered blur only while there are more tabs hidden on that side. The fade includes the
-track and the underline variant's dimmed rule. Touch and horizontal trackpad scrolling work
-natively, with the scrollbar hidden. Clicking a tab in the half of the bar that has more
-hidden content scrolls it toward the center, stopping at the beginning or end of the list.
-Keyboard focus, initial selection, and externally controlled selection also reveal hidden tabs.
-Reduced motion makes automatic scrolling immediate. Focus rings sit inside scrollable tabs
-so they are not clipped. This option is intended for horizontal tab lists.
+An edge fades with a tapered blur while more tabs are hidden on that side, including the track
+and the underline variant's rule. Touch and trackpad scrolling work natively, with the scrollbar
+hidden. Clicking a tab in the half of the bar with more hidden content scrolls it toward the
+centre. Keyboard focus, the initial selection, and controlled selection changes also bring hidden
+tabs into view. Under reduced motion the scrolling is instant. Focus rings sit inside the tabs so
+they aren't clipped. Scrolling applies to horizontal tab lists only.

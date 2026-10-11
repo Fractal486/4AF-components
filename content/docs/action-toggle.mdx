@@ -10,18 +10,18 @@ description: An asynchronous toggle that commits its pressed state only after th
 
 **Main export:** `ActionToggle`
 
+A toggle that runs an async `action` and changes state only when it succeeds. Use it for states
+such as Follow/Following or Subscribe/Subscribed.
+
 `loader={<MySpinner />}` supplies the pending indicator. Otherwise it inherits
 [LoaderProvider](/docs/reference/engineering#shared-loading-indicators), defaulting to ASCII.
 A supplied `icons.pending` takes precedence.
 
-A toggle whose state has to be earned: it waits on the action, lands when it succeeds, and stays
-put when it fails. Use it for states such as Follow/Following or Subscribe/Subscribed.
+## Persistent state
 
-## A state that must be earned
-
-Action Button always reverts—its model is idle → outcome → idle, and there is no opt-out.
-`revertAfter={Infinity}` clamps to a 32-bit integer and fires almost immediately. When the new
-state should stick, use Action Toggle:
+Action Button always returns to idle, and `revertAfter={Infinity}` does not hold it: the value
+clamps to a 32-bit integer and fires almost immediately. Use Action Toggle when the new state
+should stay:
 
 ```tsx
 <ActionToggle
@@ -34,12 +34,7 @@ state should stick, use Action Toggle:
 </ActionToggle>
 ```
 
-It is a separate component rather than a flag on Action Button for the reason Toggle is separate
-from Button: a button does something, this is something afterwards, and the difference is
-`aria-pressed`.
+It sets `aria-pressed`, which is why it is a separate component, as Toggle is from Button.
 
-It is deliberately not optimistic. The label holds and the loader runs until the action settles,
-because a control that already reads “Following” while a spinner insists it is still working is
-saying two things at once. A failure needs no rollback, since nothing moved: it shows the error
-briefly and goes quiet. `onPressedChange` fires only on success, so a controlled parent is never
-told about a change that did not happen.
+It is not optimistic. The label stays and the loader runs until the action settles. On failure it
+shows the error briefly and keeps its previous state. `onPressedChange` fires only on success.

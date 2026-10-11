@@ -10,26 +10,34 @@ description: A Base UI range control with multiple thumb styles, labels, ticks, 
 
 **Main export:** `Slider`
 
-A controlled or uncontrolled numeric slider with a spring-gliding fill and three thumb variants:
-`bar` for a thin handle, `circle` for a round thumb centered in a thick rounded rail whose fill
-encapsulates it and remains behind it at the minimum, and `knob` for a small round dot on a thin
-rail (4px for `md`, 2px for `sm`) it overhangs entirely. The knob grows by a quarter while dragged. Optional display
-props include `label`, `showValue`, and `showTicks`; the `knob` rail carries the fill alone and
-renders no ticks to keep the thin rail clear. Set `range` to render two
-independently draggable thumbs and a fill between them; pass `[start, end]` to `value` or
-`defaultValue`, and the range callback receives the updated tuple. Without `range`, the component
-keeps its single numeric value API.
-`inlineLabel` moves the label and the value inside the bar, one at each end, in place of the row
-above it. Within 8px of either, the thumb dodges: it fades to 15% opacity and drops the grab stretch,
-returning to its resting height, and restores as it leaves. At either end of the rail it never dodges.
-The thumb carries `data-dodged` while dodging. Under reduced motion only the fade remains. The inline value is `muted-foreground` at rest and `foreground` while the slider
-is in use. It applies to the `bar` thumb only and is ignored by `circle` and `knob`, whose rails are
-too thin to hold a line of text.
+A controlled or uncontrolled numeric slider with a spring-animated fill. Optional `label`,
+`showValue`, `showTicks`, and `showValueTooltip`.
 
-On the `bar` thumb, ticks are hidden at rest and the fill is `foreground/15`. While the slider is in
-use (hovered, dragged, or keyboard-focused) the ticks fade in and the fill steps up to
-`foreground/20`. `circle` and `knob` keep their ticks and fill constant.
+| `thumb` | Shape |
+| --- | --- |
+| `bar` | A thin handle that stretches taller while grabbed. |
+| `circle` | A round thumb inside a thick rounded rail. The fill wraps the thumb and stays behind it at the minimum. |
+| `knob` | A small dot on a thin rail (4px at `md`, 2px at `sm`) that it overhangs. It grows by a quarter while dragged. Its rail shows the fill only, never ticks. |
 
-`showValueTooltip` is off by default; enable it to show the live value above the thumb while the
-thumb is hovered or keyboard-focused. It stays visible during pointer drag, follows the thumb
-continuously during motion, and closes after release when the pointer is no longer over the thumb.
+`range` renders two thumbs with a fill between them. Pass `[start, end]` to `value` or
+`defaultValue`; the range callback receives the updated tuple. Without `range`, the value is a
+single number.
+
+## Bar thumb
+
+On the `bar` thumb, ticks are hidden at rest and the fill is `foreground/15`. While the slider is
+in use (hovered, dragged, or keyboard-focused), the ticks fade in and the fill steps up to
+`foreground/20`. `circle` and `knob` keep both constant.
+
+`inlineLabel` moves the label and the value inside the bar, one at each end, replacing the row
+above it. Within 8px of either, the thumb dodges: it fades to 15% opacity and drops its grab
+stretch, then restores as it moves away. It never dodges at either end of the rail. The thumb
+carries `data-dodged` while dodging; under reduced motion only the fade remains. The inline value
+is `muted-foreground` at rest and `foreground` while the slider is in use. `circle` and `knob`
+ignore `inlineLabel`.
+
+## Value tooltip
+
+`showValueTooltip` (off by default) shows the live value above the thumb while it is hovered or
+keyboard-focused. It stays open while dragging, follows the thumb, and closes after release once
+the pointer has left the thumb.
