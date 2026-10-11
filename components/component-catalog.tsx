@@ -1,4 +1,5 @@
 import { componentCategories, componentCount } from "@/lib/component-catalog";
+import { InlineLink } from "@/components/inline-link";
 import {
   Table,
   TableBody,
@@ -36,12 +37,12 @@ export function ComponentCatalog() {
                 {category.components.map((component) => (
                   <TableRow key={component.name}>
                     <TableCell className="align-top">
-                      <a
+                      <InlineLink
                         href={`/docs/${component.name}`}
-                        className="font-mono text-xs font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
+                        className="font-mono text-xs font-medium"
                       >
                         {component.name}
-                      </a>
+                      </InlineLink>
                     </TableCell>
                     <TableCell className="align-top font-mono text-xs leading-5">
                       {component.mainApi}

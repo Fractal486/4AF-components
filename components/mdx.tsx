@@ -5,6 +5,7 @@ import { ComponentCatalog, ComponentCount } from "@/components/component-catalog
 import { ComponentReference } from "@/components/component-reference";
 import { DocsCodePre } from "@/components/docs-code-block";
 import { DocsHeading } from "@/components/docs-heading";
+import { InlineLink } from "@/components/inline-link";
 import { ComponentDemo } from "@/stories/component-demo";
 import { cn } from "@/registry/lib/cn";
 import {
@@ -32,6 +33,7 @@ function DocsTable({ className, ...props }: ComponentProps<"table">) {
 export function getMDXComponents(components?: MDXComponents) {
   return {
     ...defaultMdxComponents,
+    a: InlineLink,
     h1: (props: ComponentProps<"h1">) => <DocsHeading as="h1" {...props} />,
     h2: (props: ComponentProps<"h2">) => <DocsHeading as="h2" {...props} />,
     h3: (props: ComponentProps<"h3">) => <DocsHeading as="h3" {...props} />,

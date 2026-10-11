@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   // The agent entry point: every page as Markdown, plus the install commands.
   alternates: { types: { "text/plain": "/llms.txt" } },
   title: "4AF — components",
-  description: "A portable React component library built on Base UI.",
+  description: "Quiet, minimal React components with just enough motion, built on Base UI.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

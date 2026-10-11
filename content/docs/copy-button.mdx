@@ -16,6 +16,10 @@ An Action Button that copies text to the clipboard, with visual and screen-reade
 without one they are the matching square `icon-xs`, `icon-sm`, `icon`, or `icon-lg` sizes. An
 icon-only button defaults to `icon`. With a label, the icon gap matches Button (8, 10, or 12px).
 
+A labelled button swaps its label to "Copied" on success. `swapLabel={false}` keeps the label and
+changes only the glyph; the copy is still announced. `iconPosition="end"` (from Action Button)
+puts the glyph after the label.
+
 ## Resolve values on press
 
 `value` takes a function as well as a string:

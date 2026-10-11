@@ -58,6 +58,11 @@ export interface CopyButtonProps
   children?: ReactNode;
   /** Overridable for translation — these are announced, not just displayed. */
   labels?: { copy: string; copied: string; failed: string };
+  /**
+   * Whether a labelled button swaps its label to `labels.copied` on success. Defaults to
+   * `true`. With `false` only the glyph changes; the outcome is still announced.
+   */
+  swapLabel?: boolean;
   /** Fired once the text is genuinely on the clipboard, not merely attempted. */
   onCopy?: (value: string) => void;
 }
@@ -74,6 +79,7 @@ export function CopyButton({
   labels = { copy: "Copy", copied: "Copied", failed: "Couldn't copy" },
   onCopy,
   onSuccess,
+  swapLabel = true,
   variant = "outline",
   size,
   ...props
@@ -103,7 +109,7 @@ export function CopyButton({
       aria-label={children ? undefined : labels.copy}
       // Success swaps the label only when there is one. Icon-only falls through to just
       // the check mark, which is the right amount of confirmation for a 32px button.
-      labels={{ success: children ? labels.copied : undefined }}
+      labels={{ success: children && swapLabel ? labels.copied : undefined }}
       announce={{ success: labels.copied, error: labels.failed }}
       onSuccess={() => {
         onCopy?.(copied.current);

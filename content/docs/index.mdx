@@ -1,15 +1,14 @@
 ---
 title: Overview
-description: A small, portable React component library built on Base UI.
+description: Quiet, minimal React components with just enough motion, built on Base UI.
 ---
 
-4AF Components is a personal library of polished, reusable React components. It is built on
-[Base UI](https://base-ui.com/) for behavior, designed around composable APIs, and distributed
-through a shadcn-compatible registry at `https://4af.selfsimilar.dev`.
+4AF Components is a personal library of minimal React components with just enough motion. It
+is built on [Base UI](https://base-ui.com/) and distributed through a shadcn registry at
+`https://4af.selfsimilar.dev`.
 
-The library is intentionally small. Each component is refined to share the same tokens,
-motion rules, accessibility expectations, and installation workflow instead of becoming a
-collection of unrelated snippets.
+The library is intentionally small, and every component shares the same tokens and motion, so
+any two of them sit together without adjustment.
 
 The catalog currently contains **<ComponentCount /> installable components**. The generated
 [component catalog](/docs/reference/components) always matches the registry, while the
@@ -18,14 +17,13 @@ coding agents.
 
 ## What the library values
 
-- **Base UI behavior.** Focus management, dismissal, keyboard navigation, and other interaction
-  primitives come from Base UI rather than hand-rolled copies.
-- **Composable APIs.** Components forward props and refs, expose variants through CVA, and keep
-  state available on the DOM for styling and testing.
-- **Semantic styling.** Components consume the 4AF theme's semantic color, radius, elevation,
-  and motion tokens instead of hard-coded colors or durations.
-- **Portable installation.** Components can be installed into another shadcn-compatible project
-  with the shadcn CLI, including the shared theme and utilities they need.
+- **Minimal by default.** Compact controls, warm-neutral greys, and one amber accent kept for
+  focus. Nothing is decorative.
+- **Just enough motion.** Animation marks a change, such as a press, a swap, or a panel opening
+  or closing. It is short, never makes you wait, and turns down with the reduced-motion setting.
+- **Solid underneath.** Behaviour comes from Base UI, styling from semantic tokens, and every
+  component forwards props and refs and works controlled or uncontrolled. The full rules are in
+  [Engineering](/docs/reference/engineering).
 
 ## Install a component
 

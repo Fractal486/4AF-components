@@ -36,7 +36,7 @@ function Cell({ children }: { children: ReactNode }) {
 /** The landing page's standout components, each live. */
 export function SpecimenBoard() {
   return (
-    <div className="grid gap-px overflow-hidden rounded-lg border bg-border sm:grid-cols-2 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-px overflow-hidden rounded-lg border bg-border sm:grid-cols-2 xl:grid-cols-3">
       <Cell>
         <Select items={SORTS} defaultValue="name">
           <SelectTrigger aria-label="Sort" label="Sort" className="w-40">
@@ -74,7 +74,7 @@ export function SpecimenBoard() {
           className="w-full min-w-0 items-center"
         >
           {/* Narrower than its tabs, so the list scrolls with fades at the clipped edges. */}
-          <TabsList maxWidth={240}>
+          <TabsList maxWidth={240} className="self-center">
             {TABS.map((tab) => (
               <TabsTab key={tab} value={tab.toLowerCase()}>
                 {tab}

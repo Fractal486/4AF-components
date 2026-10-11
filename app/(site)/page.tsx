@@ -1,65 +1,64 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import { highlight } from "fumadocs-core/highlight";
 import { Github } from "lucide-react";
+import { DocsCodeBlock } from "@/components/docs-code-block";
+import { InlineLink } from "@/components/inline-link";
 import { FileBrowser } from "@/components/landing/file-browser";
 import { installedFiles } from "@/components/landing/install-files";
 import { SpecimenBoard } from "@/components/landing/specimen-board";
 import { PageFrame } from "@/components/site/page-frame";
 import { componentCount } from "@/lib/component-catalog";
 import { REPOSITORY } from "@/lib/site-nav";
-import { publicInstallCommand } from "@/lib/site";
+import { AGENT_PROMPT, publicInstallCommand } from "@/lib/site";
 import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
 import { CopyButton } from "@/registry/ui/copy-button/copy-button";
 
 const SECTIONS = [
   { id: "components", title: "Components" },
-  { id: "contract", title: "The contract" },
+  { id: "principles", title: "Principles" },
   { id: "install", title: "Install" },
   { id: "about", title: "About" },
 ] as const;
 
-const CONTRACT = [
+const PRINCIPLES = [
   {
-    rule: "Behaviour from Base UI",
-    detail: "Base UI supplies focus, dismissal and keyboard navigation. Calendar uses react-day-picker.",
+    rule: "Minimal by default",
+    detail: "Compact controls, warm-neutral greys, and one amber accent kept for focus. Nothing is decorative.",
   },
   {
-    rule: "State on the element",
-    detail: "data-* attributes expose what a component is doing, so styles and tests read the DOM rather than props.",
+    rule: "Just enough motion",
+    detail: "Animation marks a change: a press, a swap, a panel opening or closing. It is short, and it never makes you wait.",
   },
   {
-    rule: "Prefer compositor-friendly motion",
-    detail: "Animations favor transform, opacity, filter and clip-path. Collapsible and Sidebar have documented layout-motion exceptions.",
-  },
-  {
-    rule: "Durations from tokens",
-    detail: "CSS transitions use duration tokens; JavaScript animations respect reduced motion separately.",
-  },
-  {
-    rule: "Controlled or uncontrolled",
-    detail: "Interactive components support controlled and uncontrolled state through their value, checked, pressed or open APIs.",
-  },
-  {
-    rule: "Lists open ready",
-    detail: "Selects, menus and the command palette open with a row already highlighted, so Enter works straight away.",
+    rule: "Quiet when asked",
+    detail: "Every duration reads one token, so reduced motion turns the whole library down at once.",
   },
 ] as const;
 
 const INSTALL = publicInstallCommand("button");
 
 const PROSE = "max-w-180 text-[16px] leading-[1.65] text-pretty text-muted-foreground";
-const INLINE_LINK =
-  "rounded-xs text-foreground underline decoration-border-strong underline-offset-[3px] outline-none transition-[text-decoration-color] duration-(--duration-fast) hover:decoration-current focus-visible:ring-2 focus-visible:ring-ring";
 
-function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
+function Section({
+  id,
+  title,
+  className,
+  children,
+}: {
+  id: string;
+  title: string;
+  className?: string;
+  children: ReactNode;
+}) {
   return (
     <section
       id={id}
       aria-labelledby={`${id}-title`}
       // Clears the sticky top bar below lg; the rail sits beside the content above it.
-      className="mt-10 scroll-mt-14 border-t pt-7 sm:mt-13 sm:pt-9 lg:scroll-mt-0"
+      className={cn("mt-10 scroll-mt-14 border-t pt-7 sm:mt-13 sm:pt-9 lg:scroll-mt-0", className)}
     >
       <h2 id={`${id}-title`} className="mb-4 text-xl font-semibold tracking-[-0.015em] sm:text-[22px]">
         {title}
@@ -113,11 +112,11 @@ export default async function IndexPage() {
         <article>
           <header className="max-w-180">
             <h1 className="mb-[1.1rem] text-[length:clamp(1.9rem,3.4vw,2.75rem)] leading-[1.12] font-semibold tracking-[-0.03em] text-balance">
-              React components, built to one contract.
+              Minimal React components built on Base UI.
             </h1>
             <p className="mb-6 max-w-[52ch] text-[17px] leading-[1.65] tracking-[-0.01em] text-pretty text-muted-foreground">
-              4AF is a personal library of {componentCount} React components built on Base UI.
-              They share theme tokens, motion conventions and keyboard interaction patterns.
+              4AF is a personal opinionated library of {componentCount} components; compact and
+              warm-neutral, and animate only when and where needed.
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <Button asChild size="lg">
@@ -126,39 +125,68 @@ export default async function IndexPage() {
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <a href={REPOSITORY}>
+                <a href={REPOSITORY} target="_blank" rel="noopener noreferrer">
                   <Github aria-hidden="true" />
                   View on GitHub
                 </a>
               </Button>
             </div>
-            <p className="mt-5 text-sm text-muted-foreground">
-              Using a coding agent? Point it at the{" "}
-              <Link href="/docs/reference/agent-skill" className={INLINE_LINK}>
-                agent skill
-              </Link>
-              .
-            </p>
+            <CopyButton
+              value={AGENT_PROMPT}
+              size="md"
+              variant="plain"
+              iconPosition="end"
+              swapLabel={false}
+              // Secondary to the two buttons above, and flush with their left edge.
+              className="mt-3 px-0 text-muted-foreground hover:text-foreground"
+            >
+              <span className="inline-flex items-center gap-2.5">
+                {/* Decorative: the label names the button. `outline-none` drops the
+                    theme's image outline, which would box in the transparent logo. */}
+                {/* Served at 4x the 20px display height and not re-encoded: the optimiser
+                    picks a small width for a 45px image and recompresses it soft. */}
+                <Image
+                  src="/agents.png"
+                  alt=""
+                  width={365}
+                  height={160}
+                  unoptimized
+                  className="h-5 w-auto outline-none"
+                />
+                Agent prompt
+              </span>
+            </CopyButton>
           </header>
 
-          <Section id="components" title="Components">
+          <Section
+            id="components"
+            title="Components"
+            // The plain agent-prompt button above already carries space below its text.
+            className="mt-7 sm:mt-8"
+          >
             <Wide>
               <SpecimenBoard />
             </Wide>
           </Section>
 
-          <Section id="contract" title="The contract">
-            <p className={PROSE}>
-              The library follows these conventions.
-            </p>
+          <Section id="principles" title="Principles">
             <dl className="mt-3 max-w-180 border-t">
-              {CONTRACT.map(({ rule, detail }) => (
+              {PRINCIPLES.map(({ rule, detail }) => (
                 <div key={rule} className="grid gap-1 border-b py-4 sm:grid-cols-[13rem_minmax(0,1fr)] sm:gap-6">
                   <dt className="text-[15px] font-medium">{rule}</dt>
                   <dd className="text-[15px] leading-[1.6] text-muted-foreground">{detail}</dd>
                 </div>
               ))}
             </dl>
+            <p className={cn(PROSE, "mt-4")}>
+              Underneath, behaviour comes from Base UI, state is exposed as{" "}
+              <code className="font-mono text-sm">data-*</code> attributes, and every component
+              works controlled or uncontrolled. The full rules are in{" "}
+              <InlineLink href="/docs/reference/engineering">
+                Engineering
+              </InlineLink>
+              .
+            </p>
           </Section>
 
           <Section id="install" title="Install">
@@ -166,18 +194,11 @@ export default async function IndexPage() {
               Install any component with the shadcn CLI. The theme, the shared utilities, and the
               components it builds on come with it.
             </p>
-            <div className="relative mt-3 max-w-180 rounded-lg border bg-surface">
-              <pre className="overflow-x-auto p-4 pr-14 font-mono text-xs leading-6">
+            <DocsCodeBlock className="my-0 mt-3 max-w-180">
+              <pre className="min-w-full w-max px-4 pr-14 font-mono text-xs leading-6">
                 <code>{INSTALL}</code>
               </pre>
-              <CopyButton
-                value={INSTALL}
-                variant="ghost"
-                size="xs"
-                aria-label="Copy install command"
-                className="absolute top-2.5 right-2.5"
-              />
-            </div>
+            </DocsCodeBlock>
             <p className={cn(PROSE, "mt-4")}>Installing the button writes these files:</p>
             <Wide className="mt-0">
               <FileBrowser files={files} />
@@ -185,16 +206,16 @@ export default async function IndexPage() {
             <p className={cn(PROSE, "mt-4")}>
               Add <code className="font-mono text-sm">--dry-run</code> to see every change before
               anything is written. Short names, browsing the catalog, and updating are covered in{" "}
-              <Link href="/docs/reference/installation" className={INLINE_LINK}>
+              <InlineLink href="/docs/reference/installation">
                 Installation
-              </Link>
+              </InlineLink>
               .
             </p>
             <p className={cn(PROSE, "mt-4")}>
               Coding agents can start at{" "}
-              <a href="/llms.txt" className={INLINE_LINK}>
+              <InlineLink href="/llms.txt">
                 /llms.txt
-              </a>
+              </InlineLink>
               , which has these commands and links every page as Markdown.
             </p>
           </Section>
@@ -202,14 +223,14 @@ export default async function IndexPage() {
           <Section id="about" title="About">
             <p className={PROSE}>
               4AF is a personal library. I build it for my own projects and publish it as it
-              grows.
+              grows. The logo was made in MS Paint.
             </p>
             <p className={PROSE}>
               Original work is released under MIT-0, so you can copy it without attribution. Some
               components include code under other licences; see the{" "}
-              <a href={`${REPOSITORY}/blob/main/THIRD_PARTY_NOTICES.md`} className={INLINE_LINK}>
+              <InlineLink href={`${REPOSITORY}/blob/main/THIRD_PARTY_NOTICES.md`} external={false}>
                 licence notices
-              </a>
+              </InlineLink>
               .
             </p>
           </Section>

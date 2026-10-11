@@ -48,6 +48,11 @@ export interface ActionButtonProps
   children?: ReactNode;
   /** An icon shown beside the resting label. */
   icon?: ReactNode;
+  /**
+   * Which side of the label the glyph sits on — the resting icon and the pending, success,
+   * and error glyphs that replace it. Defaults to `"start"`.
+   */
+  iconPosition?: "start" | "end";
   /** Labels per state. Each falls back to the resting label. */
   labels?: { pending?: ReactNode; success?: ReactNode; error?: ReactNode };
   /** Whether pending keeps its label beside the loader or shows only a centered loader. */
@@ -84,6 +89,7 @@ export function ActionButton({
   action,
   children,
   icon,
+  iconPosition = "start",
   labels,
   loader,
   pendingMode = "label",
@@ -119,6 +125,17 @@ export function ActionButton({
   const override = status === "idle" || pendingIconOnly ? undefined : labels?.[status];
   const labelKey = pendingIconOnly ? "idle" : override == null ? "idle" : status;
   const glyphKey = pendingIconOnly ? "idle" : status;
+  const glyph = (
+    <Morph
+      activeKey={glyphKey}
+      items={{
+        idle: icon,
+        pending: <LoadingIndicator loader={loader} />,
+        success: <AnimatedCheck />,
+        error: <TriangleAlert />,
+      }}
+    />
+  );
   const labelled =
     Boolean(children) ||
     Boolean(labels && (labels.pending ?? labels.success ?? labels.error));
@@ -127,13 +144,14 @@ export function ActionButton({
   // label to the right, so centre the idle label by half the reserved slot and gap. Once a
   // status glyph is visible, the icon-and-label group should be centred as a group.
   // Intentional icon-plus-label actions stay centred in every state.
+  // The nudge points away from the reserved slot, so it flips with `iconPosition`.
   const labelOnlyOffset =
     !icon && labelled && status === "idle"
       ? size === "xs" || size === "sm"
-        ? "-translate-x-2.5"
+        ? iconPosition === "end" ? "translate-x-2.5" : "-translate-x-2.5"
         : size === "icon-xs" || size === "icon-sm" || size === "icon" || size === "icon-lg"
-          ? "-translate-x-2"
-          : "-translate-x-3"
+          ? iconPosition === "end" ? "translate-x-2" : "-translate-x-2"
+          : iconPosition === "end" ? "translate-x-3" : "-translate-x-3"
       : undefined;
 
   return (
@@ -154,6 +172,7 @@ export function ActionButton({
         aria-busy={status === "pending" || undefined}
         data-status={status}
         data-pending-mode={pendingMode}
+        data-icon-position={iconPosition}
         {...props}
       >
         {/* The outer grid keeps one intrinsic content box. In icon-only pending mode the
@@ -193,15 +212,7 @@ export function ActionButton({
                 the widest and never resizes as it moves through them. A button that changes
                 width mid-action moves the target out from under the cursor — and here the
                 cursor is still on it, waiting. */}
-            <Morph
-              activeKey={glyphKey}
-              items={{
-                idle: icon,
-                pending: <LoadingIndicator loader={loader} />,
-                success: <AnimatedCheck />,
-                error: <TriangleAlert />,
-              }}
-            />
+            {iconPosition === "start" && glyph}
             {labelled && (
               <Morph
                 activeKey={labelKey}
@@ -213,6 +224,7 @@ export function ActionButton({
                 }}
               />
             )}
+            {iconPosition === "end" && glyph}
           </motion.span>
 
           {pendingMode === "icon" && (

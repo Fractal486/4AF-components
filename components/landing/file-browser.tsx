@@ -3,8 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
 
-const SCROLLBAR =
-  "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground [&::-webkit-scrollbar-corner]:bg-transparent";
+const SCROLLBAR = "code-scrollbar";
 
 export interface BrowsedFile {
   path: string;

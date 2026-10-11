@@ -37,10 +37,11 @@ const renderCodeActions: NonNullable<CodeBlockProps["Actions"]> = (props) => (
   <CodeActions {...props} />
 );
 
-export function DocsCodeBlock({ className, allowCopy = true, ...props }: CodeBlockProps) {
+export function DocsCodeBlock({ className, viewportProps, allowCopy = true, ...props }: CodeBlockProps) {
   return (
     <CodeBlock
       {...props}
+      viewportProps={{ ...viewportProps, className: cn("code-scrollbar", viewportProps?.className) }}
       className={cn("rounded-[8px] bg-muted dark:bg-surface-raised", className)}
       allowCopy={false}
       Actions={allowCopy === false || allowCopy === "false" ? undefined : renderCodeActions}

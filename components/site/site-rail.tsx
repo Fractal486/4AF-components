@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -22,8 +23,16 @@ const SCROLLBAR =
 
 function Brand() {
   return (
-    <Link href="/" className={cn("rounded-xs text-[15px] font-semibold tracking-[-0.01em]", FOCUS)}>
-      4AF Components
+    <Link href="/" className={cn("inline-flex items-center gap-2.5 rounded-xs text-[15px] font-semibold tracking-[-0.01em]", FOCUS)}>
+      <Image
+        src="/icon.png"
+        alt=""
+        width={822}
+        height={724}
+        unoptimized
+        className="h-4 w-auto shrink-0 invert outline-none dark:invert-0"
+      />
+      <span>4AF Components</span>
     </Link>
   );
 }
@@ -79,10 +88,12 @@ function NavLink({
 function RailNav({
   nav,
   className,
+  fadeClassName = "from-background",
   onNavigate,
 }: {
   nav: NavGroup[];
   className?: string;
+  fadeClassName?: string;
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
@@ -215,11 +226,11 @@ function RailNav({
       {/* Overlay only the content, leaving the scrollbar and pointer input available. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 me-1.5 h-6 bg-linear-to-b from-background to-transparent opacity-0 transition-[opacity] duration-(--duration-fast) group-data-[overflow-top]/rail-nav:opacity-100"
+        className={cn("pointer-events-none absolute inset-x-0 top-0 me-1.5 h-6 bg-linear-to-b to-transparent opacity-0 transition-[opacity] duration-(--duration-fast) group-data-[overflow-top]/rail-nav:opacity-100", fadeClassName)}
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 me-1.5 h-6 bg-linear-to-t from-background to-transparent opacity-0 transition-[opacity] duration-(--duration-fast) group-data-[overflow-bottom]/rail-nav:opacity-100"
+        className={cn("pointer-events-none absolute inset-x-0 bottom-0 me-1.5 h-6 bg-linear-to-t to-transparent opacity-0 transition-[opacity] duration-(--duration-fast) group-data-[overflow-bottom]/rail-nav:opacity-100", fadeClassName)}
       />
     </div>
   );
@@ -239,7 +250,7 @@ function RailFooter({ repository }: { repository: string }) {
     <div className="flex items-center justify-between gap-4">
       <div className="flex items-center gap-2">
         <Button asChild variant="ghost" size="icon-sm">
-          <a href={repository} aria-label="GitHub">
+          <a href={repository} target="_blank" rel="noopener noreferrer" aria-label="GitHub">
             <GitHubMark />
           </a>
         </Button>
@@ -275,7 +286,7 @@ export function SiteRail({
           nav={nav}
           className="px-6 pb-8"
         />
-        <div className="border-t px-6 py-4">
+        <div className="px-6 py-4">
           <RailFooter repository={repository} />
         </div>
       </aside>
@@ -300,8 +311,9 @@ export function SiteRail({
                 nav={nav}
                 onNavigate={() => setMenuOpen(false)}
                 className="px-5 pt-6 pb-8"
+                fadeClassName="from-surface-raised"
               />
-              <div className="border-t px-5 py-4">
+              <div className="px-5 py-4">
                 <RailFooter repository={repository} />
               </div>
             </SheetContent>

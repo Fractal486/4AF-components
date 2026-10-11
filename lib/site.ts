@@ -19,3 +19,13 @@ export function registryItemUrl(name: string) {
 export function publicInstallCommand(name: string) {
   return `npx shadcn@latest add ${registryItemUrl(name)}`;
 }
+
+/** A prompt for a coding agent, copied from the landing page. */
+export const AGENT_PROMPT = [
+  `Use the 4AF React component library (${SITE_URL}).`,
+  `Start by reading ${SITE_URL}/llms.txt: it has the install commands and links every`,
+  "component's documentation as Markdown.",
+  `Before using a component, read its page at ${SITE_URL}/docs/<name>.md.`,
+  `Install components with the shadcn CLI: npx shadcn@latest add ${SITE_URL}/r/<name>.json`,
+  "(run it with --dry-run first to preview the changes).",
+].join(" ");

@@ -70,6 +70,34 @@ describe("ActionButton", () => {
     await waitFor(() => expect(button).toHaveAttribute("data-status", "error"));
   });
 
+  it("places the glyph after the label with iconPosition end", () => {
+    render(
+      <ActionButton action={() => undefined} icon={<svg data-testid="glyph" />} iconPosition="end">
+        Save
+      </ActionButton>,
+    );
+
+    const button = screen.getByRole("button", { name: "Save" });
+    expect(button).toHaveAttribute("data-icon-position", "end");
+    const group = button.querySelector('[data-slot="action-button-group"]');
+    // The label's box comes first and the glyph's box last.
+    expect(group?.firstElementChild).toHaveTextContent("Save");
+    expect(group?.lastElementChild?.querySelector('[data-testid="glyph"]')).not.toBeNull();
+  });
+
+  it("nudges a label-only action the other way when the glyph slot is at the end", () => {
+    render(
+      <ActionButton action={() => undefined} iconPosition="end">
+        Save
+      </ActionButton>,
+    );
+
+    const content = screen
+      .getByRole("button")
+      .querySelector('[data-slot="action-button-content"]');
+    expect(content?.firstElementChild).toHaveClass("translate-x-3");
+  });
+
   it("centres a label-only action despite the reserved status glyph slot", () => {
     render(<ActionButton action={() => undefined}>Save</ActionButton>);
 

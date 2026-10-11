@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, ArrowRight, FileText, Maximize2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Maximize2 } from "lucide-react";
 import { getMDXComponents } from "@/components/mdx";
 import { DownloadSkillButton } from "@/components/download-skill-button";
+import { InlineLink } from "@/components/inline-link";
 import { PageFrame } from "@/components/site/page-frame";
 import { siblings, siteNav } from "@/lib/site-nav";
 import { source } from "@/lib/source";
+import { SITE_URL } from "@/lib/site";
 import { Button } from "@/registry/ui/button/button";
+import { CopyButton } from "@/registry/ui/copy-button/copy-button";
 
 interface DocsPageProps {
   params: Promise<{ slug?: string[] }>;
@@ -46,12 +49,26 @@ export default async function Page({ params }: DocsPageProps) {
             </p>
           ) : null}
           <div className="mt-1 flex flex-wrap items-center gap-2">
-            <Button asChild variant="outline" size="sm">
-              <a href={`${page.url}.md`} target="_blank" rel="noreferrer">
-                <FileText aria-hidden />
-                View as Markdown
-              </a>
-            </Button>
+            <div className="flex items-center gap-3">
+              <CopyButton
+                value={`${SITE_URL}${page.url}.md`}
+                variant="outline"
+                size="sm"
+                iconPosition="start"
+                swapLabel={false}
+              >
+                Copy Markdown link
+              </CopyButton>
+              <InlineLink
+                href={`${page.url}.md`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="View Markdown in a new tab"
+                className="text-xs"
+              >
+                View ↗
+              </InlineLink>
+            </div>
             {page.url === "/docs/sidebar-layout" ? (
               <Button asChild variant="outline" size="sm">
                 <a
@@ -74,7 +91,7 @@ export default async function Page({ params }: DocsPageProps) {
         </div>
 
         {previous || next ? (
-          <nav aria-label="Pages" className="mt-16 grid gap-3 border-t pt-6 sm:grid-cols-2">
+          <nav aria-label="Pages" className="mt-16 grid grid-cols-2 gap-3 border-t pt-6">
             {previous ? (
               <Link
                 href={previous.href}

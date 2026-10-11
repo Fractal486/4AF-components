@@ -1,8 +1,7 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { RotateCcw } from "lucide-react";
-import { Fragment, useState, type ComponentType } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Controls } from "@/inspector/controls";
 import {
   initialValues,
@@ -71,13 +70,13 @@ const LOADER_DEMOS = new Set([
   "alert", "badge", "dropdown-menu", "command-palette", "selection-toolbar",
 ]);
 const LOADER_CONTROLS = {
-  loader: { kind: "select", options: ["ascii", "classic"], defaultValue: "ascii", label: "Loader" },
+  loader: { kind: "select", options: ["ascii", "classic"], defaultValue: "classic", label: "Loader" },
 } as const;
 
 function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
   const [values, setValues] = useState(() => initialValues(entry.controls));
   const [replayKey, setReplayKey] = useState(0);
-  const [loader, setLoader] = useState<"ascii" | "classic">("ascii");
+  const [loader, setLoader] = useState<"ascii" | "classic">("classic");
   const hasLoaderSetting = LOADER_DEMOS.has(entry.slug);
   const hasControls = Object.keys(entry.controls).length > 0;
   const isAppShell = entry.slug === "sidebar";
@@ -155,68 +154,120 @@ function loadingPreview() {
   );
 }
 
-function lazyEntry<S extends ControlSchema>(
-  load: () => Promise<Entry<S>>,
-): ComponentType {
-  return dynamic(
-    async () => {
-      const entry = await load();
-      return function LoadedEntry() {
-        return <EntryPreview entry={entry} />;
-      };
-    },
-    { ssr: false, loading: loadingPreview },
-  );
+type DemoName = Exclude<ComponentDemoName, "ascii-loader">;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyEntry = Entry<any>;
+
+/** Demos already downloaded this session, so a page that has one renders it immediately. */
+const loaded = new Map<DemoName, AnyEntry>();
+
+function loadDemo(name: DemoName) {
+  return demos[name]().then((entry) => {
+    loaded.set(name, entry);
+    return entry;
+  });
 }
 
-const demos: Record<Exclude<ComponentDemoName, "ascii-loader">, ComponentType> = {
-  "action-button": lazyEntry(async () => (await import("@/inspector/entries/action-button")).actionButtonEntry),
-  "action-toggle": lazyEntry(async () => (await import("@/inspector/entries/action-toggle")).actionToggleEntry),
-  alert: lazyEntry(async () => (await import("@/inspector/entries/alert")).alertEntry),
-  "alert-dialog": lazyEntry(async () => (await import("@/inspector/entries/alert-dialog")).alertDialogEntry),
-  badge: lazyEntry(async () => (await import("@/inspector/entries/badge")).badgeEntry),
-  breadcrumb: lazyEntry(async () => (await import("@/inspector/entries/breadcrumb")).breadcrumbEntry),
-  button: lazyEntry(async () => (await import("@/inspector/entries/button")).buttonEntry),
-  "button-group": lazyEntry(async () => (await import("@/inspector/entries/button-group")).buttonGroupEntry),
-  checkbox: lazyEntry(async () => (await import("@/inspector/entries/checkbox")).checkboxEntry),
-  collapsible: lazyEntry(async () => (await import("@/inspector/entries/collapsible")).collapsibleEntry),
-  "command-palette": lazyEntry(async () => (await import("@/inspector/entries/command-palette")).commandPaletteEntry),
-  "copy-button": lazyEntry(async () => (await import("@/inspector/entries/copy-button")).copyButtonEntry),
-  "date-picker": lazyEntry(async () => (await import("@/inspector/entries/date-picker")).datePickerEntry),
-  "delete-button": lazyEntry(async () => (await import("@/inspector/entries/delete-button")).deleteButtonEntry),
-  dialog: lazyEntry(async () => (await import("@/inspector/entries/dialog")).dialogEntry),
-  "dropdown-menu": lazyEntry(async () => (await import("@/inspector/entries/dropdown-menu")).dropdownMenuEntry),
-  empty: lazyEntry(async () => (await import("@/inspector/entries/empty")).emptyEntry),
-  "hover-card": lazyEntry(async () => (await import("@/inspector/entries/hover-card")).hoverCardEntry),
-  input: lazyEntry(async () => (await import("@/inspector/entries/input")).inputEntry),
-  "matrix-loader": lazyEntry(async () => (await import("@/inspector/entries/matrix-loader")).matrixLoaderEntry),
-  "classic-loader": lazyEntry(async () => (await import("@/inspector/entries/classic-loader")).classicLoaderEntry),
-  morph: lazyEntry(async () => (await import("@/inspector/entries/morph")).morphEntry),
-  popover: lazyEntry(async () => (await import("@/inspector/entries/popover")).popoverEntry),
-  progress: lazyEntry(async () => (await import("@/inspector/entries/progress")).progressEntry),
-  radio: lazyEntry(async () => (await import("@/inspector/entries/radio")).radioEntry),
-  select: lazyEntry(async () => (await import("@/inspector/entries/select")).selectEntry),
-  "select-sort": lazyEntry(async () => (await import("@/inspector/entries/select-sort")).selectSortEntry),
-  "select-aligned": lazyEntry(async () => (await import("@/inspector/entries/select-aligned")).selectAlignedEntry),
-  "select-search": lazyEntry(async () => (await import("@/inspector/entries/select-search")).selectSearchEntry),
-  "selection-toolbar": lazyEntry(async () => (await import("@/inspector/entries/selection-toolbar")).selectionToolbarEntry),
-  separator: lazyEntry(async () => (await import("@/inspector/entries/separator")).separatorEntry),
-  sheet: lazyEntry(async () => (await import("@/inspector/entries/sheet")).sheetEntry),
-  sidebar: lazyEntry(async () => (await import("@/inspector/entries/sidebar")).sidebarEntry),
-  "sidebar-layout": lazyEntry(async () => (await import("@/inspector/entries/sidebar")).sidebarEntry),
-  skeleton: lazyEntry(async () => (await import("@/inspector/entries/skeleton")).skeletonEntry),
-  slider: lazyEntry(async () => (await import("@/inspector/entries/slider")).sliderEntry),
-  switch: lazyEntry(async () => (await import("@/inspector/entries/switch")).switchEntry),
-  "data-table": lazyEntry(async () => (await import("@/inspector/entries/data-table")).dataTableEntry),
-  table: lazyEntry(async () => (await import("@/inspector/entries/table")).tableEntry),
-  "table-of-contents": lazyEntry(async () => (await import("@/inspector/entries/table-of-contents")).tableOfContentsEntry),
-  "table-of-contents-lines": lazyEntry(async () => (await import("@/inspector/entries/table-of-contents-lines")).tableOfContentsLinesEntry),
-  tabs: lazyEntry(async () => (await import("@/inspector/entries/tabs")).tabsEntry),
-  "scramble-text": lazyEntry(async () => (await import("@/inspector/entries/scramble-text")).scrambleTextEntry),
-  "text-shimmer": lazyEntry(async () => (await import("@/inspector/entries/text-shimmer")).textShimmerEntry),
-  textarea: lazyEntry(async () => (await import("@/inspector/entries/textarea")).textareaEntry),
-  toggle: lazyEntry(async () => (await import("@/inspector/entries/toggle")).toggleEntry),
-  tooltip: lazyEntry(async () => (await import("@/inspector/entries/tooltip")).tooltipEntry),
+let preloadScheduled = false;
+
+/**
+ * Downloads the remaining demos one at a time while the browser is idle, once the first
+ * demo has rendered. Page switches stay instant because each page still needs only its own
+ * demo up front; this just makes it likely that demo is already here when the page opens.
+ */
+function preloadRemainingDemos() {
+  if (preloadScheduled) return;
+  preloadScheduled = true;
+  const whenIdle = (task: () => void) =>
+    typeof window.requestIdleCallback === "function"
+      ? window.requestIdleCallback(task, { timeout: 2000 })
+      : globalThis.setTimeout(task, 200);
+  const queue = (Object.keys(demos) as DemoName[]).filter((name) => !loaded.has(name));
+  const next = () => {
+    const name = queue.shift();
+    if (!name) return;
+    if (loaded.has(name)) return whenIdle(next);
+    void loadDemo(name).finally(() => whenIdle(next));
+  };
+  whenIdle(next);
+}
+
+function LazyDemo({ name }: { name: DemoName }) {
+  // Nothing is loaded on the server or during hydration, so both render the placeholder.
+  const [entry, setEntry] = useState<AnyEntry | undefined>(() =>
+    typeof window === "undefined" ? undefined : loaded.get(name),
+  );
+
+  useEffect(() => {
+    // Already here: the initial state picked it up, so only the background queue remains.
+    if (entry) {
+      preloadRemainingDemos();
+      return;
+    }
+    let active = true;
+    void loadDemo(name).then((next) => {
+      if (!active) return;
+      setEntry(() => next);
+      preloadRemainingDemos();
+    });
+    return () => {
+      active = false;
+    };
+    // Keyed by `name` at the call site, so `entry` only matters on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [name]);
+
+  return entry ? <EntryPreview entry={entry} /> : loadingPreview();
+}
+
+const demos: Record<DemoName, () => Promise<AnyEntry>> = {
+  "action-button": async () => (await import("@/inspector/entries/action-button")).actionButtonEntry,
+  "action-toggle": async () => (await import("@/inspector/entries/action-toggle")).actionToggleEntry,
+  alert: async () => (await import("@/inspector/entries/alert")).alertEntry,
+  "alert-dialog": async () => (await import("@/inspector/entries/alert-dialog")).alertDialogEntry,
+  badge: async () => (await import("@/inspector/entries/badge")).badgeEntry,
+  breadcrumb: async () => (await import("@/inspector/entries/breadcrumb")).breadcrumbEntry,
+  button: async () => (await import("@/inspector/entries/button")).buttonEntry,
+  "button-group": async () => (await import("@/inspector/entries/button-group")).buttonGroupEntry,
+  checkbox: async () => (await import("@/inspector/entries/checkbox")).checkboxEntry,
+  collapsible: async () => (await import("@/inspector/entries/collapsible")).collapsibleEntry,
+  "command-palette": async () => (await import("@/inspector/entries/command-palette")).commandPaletteEntry,
+  "copy-button": async () => (await import("@/inspector/entries/copy-button")).copyButtonEntry,
+  "date-picker": async () => (await import("@/inspector/entries/date-picker")).datePickerEntry,
+  "delete-button": async () => (await import("@/inspector/entries/delete-button")).deleteButtonEntry,
+  dialog: async () => (await import("@/inspector/entries/dialog")).dialogEntry,
+  "dropdown-menu": async () => (await import("@/inspector/entries/dropdown-menu")).dropdownMenuEntry,
+  empty: async () => (await import("@/inspector/entries/empty")).emptyEntry,
+  "hover-card": async () => (await import("@/inspector/entries/hover-card")).hoverCardEntry,
+  input: async () => (await import("@/inspector/entries/input")).inputEntry,
+  "matrix-loader": async () => (await import("@/inspector/entries/matrix-loader")).matrixLoaderEntry,
+  "classic-loader": async () => (await import("@/inspector/entries/classic-loader")).classicLoaderEntry,
+  morph: async () => (await import("@/inspector/entries/morph")).morphEntry,
+  popover: async () => (await import("@/inspector/entries/popover")).popoverEntry,
+  progress: async () => (await import("@/inspector/entries/progress")).progressEntry,
+  radio: async () => (await import("@/inspector/entries/radio")).radioEntry,
+  select: async () => (await import("@/inspector/entries/select")).selectEntry,
+  "select-sort": async () => (await import("@/inspector/entries/select-sort")).selectSortEntry,
+  "select-aligned": async () => (await import("@/inspector/entries/select-aligned")).selectAlignedEntry,
+  "select-search": async () => (await import("@/inspector/entries/select-search")).selectSearchEntry,
+  "selection-toolbar": async () => (await import("@/inspector/entries/selection-toolbar")).selectionToolbarEntry,
+  separator: async () => (await import("@/inspector/entries/separator")).separatorEntry,
+  sheet: async () => (await import("@/inspector/entries/sheet")).sheetEntry,
+  sidebar: async () => (await import("@/inspector/entries/sidebar")).sidebarEntry,
+  "sidebar-layout": async () => (await import("@/inspector/entries/sidebar")).sidebarEntry,
+  skeleton: async () => (await import("@/inspector/entries/skeleton")).skeletonEntry,
+  slider: async () => (await import("@/inspector/entries/slider")).sliderEntry,
+  switch: async () => (await import("@/inspector/entries/switch")).switchEntry,
+  "data-table": async () => (await import("@/inspector/entries/data-table")).dataTableEntry,
+  table: async () => (await import("@/inspector/entries/table")).tableEntry,
+  "table-of-contents": async () => (await import("@/inspector/entries/table-of-contents")).tableOfContentsEntry,
+  "table-of-contents-lines": async () => (await import("@/inspector/entries/table-of-contents-lines")).tableOfContentsLinesEntry,
+  tabs: async () => (await import("@/inspector/entries/tabs")).tabsEntry,
+  "scramble-text": async () => (await import("@/inspector/entries/scramble-text")).scrambleTextEntry,
+  "text-shimmer": async () => (await import("@/inspector/entries/text-shimmer")).textShimmerEntry,
+  textarea: async () => (await import("@/inspector/entries/textarea")).textareaEntry,
+  toggle: async () => (await import("@/inspector/entries/toggle")).toggleEntry,
+  tooltip: async () => (await import("@/inspector/entries/tooltip")).tooltipEntry,
 };
 
 export function ComponentDemo({ name }: { name: ComponentDemoName }) {
@@ -228,6 +279,5 @@ export function ComponentDemo({ name }: { name: ComponentDemoName }) {
     );
   }
 
-  const Demo = demos[name];
-  return <Demo />;
+  return <LazyDemo key={name} name={name} />;
 }

@@ -66,6 +66,28 @@ describe("CopyButton", () => {
     expect(content?.firstElementChild).toHaveClass("gap-[inherit]");
   });
 
+  it("keeps its label with swapLabel false and still announces the copy", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+
+    render(
+      <CopyButton value="hello" swapLabel={false}>
+        Copy prompt
+      </CopyButton>,
+    );
+
+    const button = screen.getByRole("button", { name: "Copy prompt" });
+    await userEvent.click(button);
+
+    await waitFor(() => expect(button).toHaveAttribute("data-status", "success"));
+    expect(button).toHaveTextContent("Copy prompt");
+    expect(button).not.toHaveTextContent("Copied");
+    expect(screen.getByText("Copied", { selector: "[aria-live] *, [aria-live]" })).toBeInTheDocument();
+  });
+
   it("composes onCopy with the inherited onSuccess callback", async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     const onCopy = vi.fn();
