@@ -12,7 +12,7 @@ export default function NotFound() {
         That route doesn&apos;t match a page in the component catalog.
       </p>
       <Button asChild variant="outline" size="sm" className="mt-3">
-        <Link href="/docs">Back to the library</Link>
+        <Link href="/">Back to the library</Link>
       </Button>
     </div>
   );
