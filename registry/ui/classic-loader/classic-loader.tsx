@@ -7,7 +7,7 @@ import {
   type ReactElement,
 } from "react";
 import { cn } from "@/registry/lib/cn";
-import { Slot } from "@/registry/lib/slot";
+import { Slot, useSlotChild } from "@/registry/lib/slot";
 import {
   classicLoaderVariants,
   type ClassicLoaderVariants,
@@ -63,7 +63,7 @@ export const ClassicLoader = forwardRef<HTMLElement, ClassicLoaderProps>(
   function ClassicLoader(
     {
       asChild = false,
-      children,
+      children: childrenProp,
       className,
       speed = 1,
       label,
@@ -73,6 +73,7 @@ export const ClassicLoader = forwardRef<HTMLElement, ClassicLoaderProps>(
     },
     ref,
   ) {
+    const children = useSlotChild(childrenProp) as ReactElement | undefined;
     const Root = asChild ? Slot : "span";
     const playbackSpeed = Number.isFinite(speed) && speed > 0 ? speed : 1;
     const cycle = 1.2 / playbackSpeed;

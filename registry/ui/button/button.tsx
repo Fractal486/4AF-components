@@ -16,6 +16,7 @@ import {
 import { cn } from "@/registry/lib/cn";
 import { PRESS_SCALE, spring } from "@/registry/lib/motion";
 import { LoadingIndicator } from "@/registry/lib/loader";
+import { useSlotChild } from "@/registry/lib/slot";
 import { buttonVariants, type ButtonVariants } from "./button.variants";
 
 /**
@@ -104,10 +105,11 @@ export function Button({
   pressed = false,
   pressTarget = "button",
   disabled,
-  children,
+  children: childrenProp,
   ref,
   ...props
 }: ButtonProps) {
+  const children = useSlotChild(childrenProp);
   const isDisabled = disabled || loading;
   const icons = iconEdges(children, asChild);
   const reduceMotion = useReducedMotion();

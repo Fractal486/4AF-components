@@ -17,7 +17,7 @@ import {
   type RefObject,
 } from "react";
 import { cn } from "@/registry/lib/cn";
-import { Slot } from "@/registry/lib/slot";
+import { Slot, useSlotChild } from "@/registry/lib/slot";
 import { breadcrumbListVariants, type BreadcrumbListVariants } from "./breadcrumb.variants";
 
 /**
@@ -173,7 +173,13 @@ export interface BreadcrumbEllipsisProps extends ComponentProps<"span"> {
   asChild?: boolean;
 }
 
-export function BreadcrumbEllipsis({ asChild = false, className, children, ...props }: BreadcrumbEllipsisProps) {
+export function BreadcrumbEllipsis({
+  asChild = false,
+  className,
+  children: childrenProp,
+  ...props
+}: BreadcrumbEllipsisProps) {
+  const children = useSlotChild(childrenProp);
   const dots = <MoreHorizontal aria-hidden />;
 
   if (asChild && isValidElement(children)) {

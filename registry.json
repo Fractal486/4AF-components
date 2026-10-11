@@ -338,7 +338,8 @@
         "http://localhost:3000/r/4af-theme.json",
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/motion.json",
-        "http://localhost:3000/r/loader.json"
+        "http://localhost:3000/r/loader.json",
+        "http://localhost:3000/r/slot.json"
       ],
       "files": [
         {

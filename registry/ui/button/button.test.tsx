@@ -1,6 +1,16 @@
 import { createEvent, fireEvent, render, screen } from "@testing-library/react";
+import { act, Suspense, type ReactElement } from "react";
 import { vi } from "vitest";
 import { Button } from "./button";
+
+/** The shape React's RSC client hands a client component for a child it hasn't resolved. */
+function lazyChild(element: ReactElement) {
+  return {
+    $$typeof: Symbol.for("react.lazy"),
+    _payload: Promise.resolve(element),
+    _init: (payload: unknown) => payload,
+  } as unknown as ReactElement;
+}
 
 describe("Button", () => {
   it("uses Base UI's safe non-submit default", () => {
@@ -130,5 +140,18 @@ describe("Button", () => {
     const link = screen.getByRole("link", { name: "Read docs" });
     expect(link.className).not.toContain("active:scale-[0.95]");
     expect(link.className).toContain("[&:active_[data-slot=button-content]]:scale-[0.95]");
+  });
+
+  it("accepts an asChild link that arrives as a lazy server reference", async () => {
+    await act(async () => {
+      render(
+        <Suspense>
+          <Button asChild>{lazyChild(<a href="/docs">Browse</a>)}</Button>
+        </Suspense>,
+      );
+    });
+
+    const link = await screen.findByRole("link", { name: "Browse" });
+    expect(link).toHaveAttribute("data-variant", "primary");
   });
 });
