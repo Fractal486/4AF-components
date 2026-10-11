@@ -3,6 +3,7 @@ import { SITE_URL } from "@/lib/site";
 import { source } from "@/lib/source";
 
 export const revalidate = false;
+export const dynamic = "force-static";
 
 /**
  * The entry point for agents: every page's Markdown address, grouped as in the

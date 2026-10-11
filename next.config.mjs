@@ -1,23 +1,27 @@
 import { createMDX } from "fumadocs-mdx/next";
+import { PHASE_DEVELOPMENT_SERVER } from "next/constants.js";
 
 /** @type {import("next").NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   typescript: { ignoreBuildErrors: false },
-  async rewrites() {
-    return [
-      {
-        source: "/docs.md",
-        destination: "/llms.mdx/docs",
-      },
-      {
-        source: "/docs/:path*.md",
-        destination: "/llms.mdx/docs/:path*",
-      },
-    ];
-  },
 };
 
 const withMDX = createMDX();
 
-export default withMDX(nextConfig);
+const configureNext = (phase) => withMDX({
+  ...nextConfig,
+  // Development serves these aliases through Next; the export creates real .md files.
+  ...(phase === PHASE_DEVELOPMENT_SERVER
+    ? {
+        async rewrites() {
+          return [
+            { source: "/docs.md", destination: "/llms.mdx/docs/index.md" },
+            { source: "/docs/:path*.md", destination: "/llms.mdx/docs/:path*.md" },
+          ];
+        },
+      }
+    : { output: "export" }),
+});
+
+export default configureNext;

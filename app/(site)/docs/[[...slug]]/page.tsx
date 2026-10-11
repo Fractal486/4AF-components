@@ -12,6 +12,8 @@ interface DocsPageProps {
   params: Promise<{ slug?: string[] }>;
 }
 
+export const dynamicParams = false;
+
 export default async function Page({ params }: DocsPageProps) {
   const { slug = [] } = await params;
   // The overview lives at `/`; the docs index stays as content for the Markdown export.

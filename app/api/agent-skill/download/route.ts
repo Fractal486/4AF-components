@@ -2,7 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { deflateRawSync } from "node:zlib";
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-static";
 export const runtime = "nodejs";
 
 const skillRoot = path.join(process.cwd(), ".agents", "skills", "4af-components");
@@ -115,18 +115,13 @@ function createZip(files: Array<{ name: string; data: Buffer }>) {
 }
 
 export async function GET() {
-  try {
-    const archive = createZip(await collectFiles(skillRoot));
+  // Fail the build if the archive cannot be produced, rather than publishing a broken download.
+  const archive = createZip(await collectFiles(skillRoot));
 
-    return new Response(archive, {
-      headers: {
-        "Cache-Control": "no-store",
-        "Content-Disposition": 'attachment; filename="4af-components-skill.zip"',
-        "Content-Type": "application/zip",
-      },
-    });
-  } catch (error) {
-    console.error("Unable to package the 4AF Components skill", error);
-    return new Response("The skill archive is unavailable.", { status: 500 });
-  }
+  return new Response(archive, {
+    headers: {
+      "Content-Disposition": 'attachment; filename="4af-components-skill.zip"',
+      "Content-Type": "application/zip",
+    },
+  });
 }

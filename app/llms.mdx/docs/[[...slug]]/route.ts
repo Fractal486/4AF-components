@@ -7,10 +7,16 @@ interface MarkdownRouteProps {
 }
 
 export const revalidate = false;
+export const dynamic = "force-static";
+export const dynamicParams = false;
 
 export async function GET(_request: Request, { params }: MarkdownRouteProps) {
   const { slug = [] } = await params;
-  const page = source.getPage(slug);
+  if (!slug.at(-1)?.endsWith(".md")) notFound();
+  const pageSlug = slug.length === 1 && slug[0] === "index.md"
+    ? []
+    : [...slug.slice(0, -1), slug.at(-1)!.slice(0, -3)];
+  const page = source.getPage(pageSlug);
   if (!page) notFound();
 
   return new Response(await getLLMText(page), {
@@ -21,5 +27,10 @@ export async function GET(_request: Request, { params }: MarkdownRouteProps) {
 }
 
 export function generateStaticParams() {
-  return source.generateParams();
+  // Explicit extensions allow a page and its nested pages to coexist as static files.
+  return source.generateParams().map(({ slug = [] }) => ({
+    slug: slug.length === 0
+      ? ["index.md"]
+      : [...slug.slice(0, -1), `${slug.at(-1)}.md`],
+  }));
 }

@@ -45,6 +45,20 @@ from the deployed site. `pnpm build` runs `shadcn build` first, so a deploy serv
 `pnpm dev`, then add from `http://localhost:3000/r/<component>.json`; its dependencies still come
 from the deployed site.
 
+## Static site deployment
+
+Production uses a Next.js static export for Cloudflare Pages. `pnpm build` generates the
+registry, prerenders the site, then publishes the exported Markdown at `/docs.md` and
+`/docs/<slug>.md` via `scripts/finalize-export.mjs`. Development keeps those URLs through
+Next rewrites. Search uses Fumadocs' browser-side static client and `/api/search` index;
+the skill download is also generated at build time. Keep route handlers static and avoid
+request-time server features.
+
+`pnpm start` previews `out/` through Wrangler Pages on port 8788. `pnpm test:export` verifies
+the exported files, search results, and ZIP contents; pass `http://127.0.0.1:8788` to check
+the running preview's headers and routing too. Static response headers and redirects belong
+in `public/_headers` and `public/_redirects`, not in Next's production config.
+
 `AGENTS.md` is the always-on contract: it explains architecture and non-negotiable rules. When
 the `$4af-components` skill is available, invoke it for richer guidance; it uses the shadcn CLI
 rather than reimplementing installation logic.

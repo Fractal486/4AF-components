@@ -19,7 +19,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${sans.variable} ${mono.variable}`} suppressHydrationWarning>
       <body className="flex min-h-screen flex-col antialiased">
-        <RootProvider theme={{ storageKey: "4af-theme" }}>{children}</RootProvider>
+        <RootProvider theme={{ storageKey: "4af-theme" }} search={{ options: { type: "static" } }}>
+          {children}
+        </RootProvider>
       </body>
     </html>
   );

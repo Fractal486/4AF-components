@@ -1,0 +1,12 @@
+/api/search
+  Content-Type: application/json; charset=utf-8
+
+/api/agent-skill/download
+  Content-Type: application/zip
+  Content-Disposition: attachment; filename="4af-components-skill.zip"
+
+/*.md
+  Content-Type: text/markdown; charset=utf-8
+
+/llms.mdx/*
+  Content-Type: text/markdown; charset=utf-8

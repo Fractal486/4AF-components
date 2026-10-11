@@ -18,7 +18,7 @@ and composition guidance live on each component's own page.
 registry/     Reusable components, utilities, and motion presets
 stories/      Shared Fumadocs demo adapter
 content/docs/ Fumadocs MDX pages for the complete installable catalog
-app/          The Next.js shell, docs routes, and local search endpoint
+app/          The Next.js shell, docs routes, and exported search index
 inspector/    Data-driven demo entries, controls, and schemas
 _incoming/    Temporary staging for downloaded components; never imported
 ```
@@ -43,11 +43,31 @@ pnpm lint                # Check code conventions and portability
 pnpm test                # Run component and registry tests
 pnpm registry:validate   # Validate registry.json and its files
 pnpm registry:build      # Generate install files in public/r (served at /r/*.json)
+pnpm build               # Export the complete site to out/ (stop pnpm dev first)
+pnpm start               # Preview out/ with Cloudflare Pages at localhost:8788
+pnpm test:export         # Verify exported docs, registry, search, and skill ZIP
 ```
 
 > [!WARNING]
 > Never run `pnpm build` while `pnpm dev` is running. Both use `.next`, and doing so can
 > make the development page appear without styles.
+
+## Cloudflare Pages
+
+The production build is a static export. Search runs in the browser using Fumadocs' generated
+index; the skill ZIP, Markdown documents, and registry files are produced during the build.
+No server or Pages Functions are needed. `public/_headers` preserves the search and download
+content types, and `public/_redirects` sends `/docs` to the homepage.
+
+For local production checks, stop `pnpm dev`, run `pnpm build`, then `pnpm start`.
+With that preview running, `pnpm test:export http://127.0.0.1:8788` also checks HTTP routing,
+content types, the download, and search against the Pages server.
+
+When connecting this repository to Pages, use `pnpm build` as the build command and `out`
+as the output directory. The build environment needs Node 24.19.0 or newer and pnpm 12.11.2
+(matching `package.json`). `wrangler.jsonc` records the output directory and the Pages project
+name, `4af-components`. Add `4af.selfsimilar.dev` as a custom domain after the first successful
+deployment. Preparing or previewing the export does not publish it.
 
 ## Install a component in another project
 

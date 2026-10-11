@@ -10,7 +10,7 @@ const config = defineConfig([
   ...nextVitals,
   ...nextTs,
   globalIgnores([
-    ".next/**", "node_modules/**", "_incoming/**", "next-env.d.ts",
+    ".next/**", "out/**", ".wrangler/**", "node_modules/**", "_incoming/**", "next-env.d.ts",
     ".agents/skills/**/assets/**", ".claude/skills/**/assets/**",
   ]),
   {
