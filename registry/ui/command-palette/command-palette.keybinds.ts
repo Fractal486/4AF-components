@@ -83,6 +83,7 @@ export function formatKeybind(value: string): string[] {
   return splitKeybind(value).map((part) => {
     switch (part.toLowerCase()) {
       case "mod":
+        return "Ctrl/⌘";
       case "cmd":
       case "command":
       case "meta":

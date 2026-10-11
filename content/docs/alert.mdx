@@ -27,11 +27,11 @@ import { Alert } from "@/components/ui/alert";
 
 | Variant | Ink | Glyph | Announced as |
 | --- | --- | --- | --- |
-| `error` (default) | Destructive red | Hexagon alert | `role="alert"` |
+| `error` (default) | Destructive red | Octagonal alert | `role="alert"` |
 | `warning` | Amber accent | Lucide triangle | `role="status"` |
 | `success` | Success green | Lucide check | `role="status"` |
 | `info` | Foreground ink | Lucide info | `role="status"` |
-| `loading` | Muted grey | Shared loader (ASCII by default) | `role="status"` |
+| `loading` | Muted grey | Shared loader (`AsciiLoader` by default) | `role="status"` |
 
 The inks match Badge's status colours. The loading glyph is hidden from assistive technology, so
 only the sentence is announced.
@@ -51,6 +51,3 @@ Use [Badge](/docs/badge) for a status on a row. When an alert describes a field,
 />
 <Alert id="email-error">{error}</Alert>
 ```
-
-This component was previously `FieldError`, installed as `field-error`. `FieldError` is still
-exported as a deprecated alias; the install name has changed.

@@ -8,10 +8,9 @@ import { inputVariants, type InputVariants } from "@/registry/ui/ui/input.varian
 /**
  * A multi-line field — the Input, taller.
  *
- * It wears the exact same treatment (`inputVariants`): the same border, the same focus
- * ring that grows on `--duration-fast`, the same `variant`/`tone` axes. There's no Base UI
- * textarea primitive, so this is a native `<textarea>` — a textarea has no behaviour a
- * primitive would own, only the visual contract, which it shares wholesale with Input.
+ * A native `<textarea>` sharing Input's default border and focus styling. It supports
+ * neutral or accent focus tone, but does not expose Input's variant axis.
+ * There is no Base UI textarea primitive.
  *
  * The one addition is the corner grip. The native resize handle is the browser's, not
  * ours, so it's turned off (`resize-none`) and replaced with a grip that drags the height

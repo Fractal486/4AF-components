@@ -16,7 +16,7 @@ async, server-driven, and paginated search, header text fields, per-panel header
 checkboxes, keybinds, and destructive actions.
 
 `loader={<MySpinner />}` supplies the palette's search, panel, and action indicators. Omit it to
-inherit [LoaderProvider](/docs/reference/engineering#shared-loading-indicators), with ASCII as
+inherit [LoaderProvider](/docs/reference/engineering#shared-loading-indicators), with `AsciiLoader` as
 the fallback. `CommandItem` data and `CommandPanelLoading` accept their own `loader`; a custom
 `icons.pending` takes precedence for action rows.
 
@@ -26,6 +26,10 @@ page uses `⌘⇧P` / `Ctrl+Shift+P` instead, so it doesn't clash with the site 
 `useCommandSearch` discards results from cancelled requests, even when the search callback
 ignores its abort signal. Clearing the query or disabling search resets the results, and a late
 response cannot bring them back or appear during the next query's debounce.
+
+Root `onSearch(query, signal)` returns `Promise<CommandGroup[]>`; returned order is preserved.
+Use `searchDebounce` and `loadingMessage` to configure waiting behavior. In custom panels,
+render the initial loader while `searching && results === null`.
 
 Header navigation buttons use the compact 6px radius.
 
@@ -49,8 +53,8 @@ The registry item includes:
 - grouped action panels with section labels, icons, keybinds, search, and destructive actions;
 - async or server-driven search: pass `onSearch` on the root with `groups` as the resting state,
   or call `useCommandSearch` in a custom panel and render `CommandPanelLoading` for its first-load
-  state. Root failures render `searchErrorMessage`; custom panels receive the failure as the
-  hook's `error`;
+  state. Root failures render `searchErrorMessage` (default: “Search failed. Change your query to
+  retry.”); custom panels receive the failure as the hook's `error`;
 - paginated custom panels: observe the shared keyboard and pointer highlight with
   `useCommandPanelHighlight`, fetch when the last row is reached, and pass that request as
   `additionalRefreshing` to `useCommandSearch` so the panel header keeps showing its inline
@@ -96,9 +100,9 @@ previous one, wrapping at either end and skipping disabled tabs. Focus stays whe
 so the header search field keeps its query and you can continue typing after switching.
 Panels without a tab bar keep ordinary Tab focus navigation; open menus keep their own keys.
 
-The indicator is measured from the selected tab and moved with a layout animation, as on Tabs.
-Measurements account for the palette's opening scale, so the indicator lines up even on a panel
-the palette opens straight onto.
+The indicator animates between the selected tabs.
+
+Use these panel tab parts instead of nesting the standalone `Tabs` component.
 
 ## Opening on a page
 
@@ -129,6 +133,11 @@ because Base UI drops its own highlight while focus is inside the menu.
 When the selection reaches the first row, the list scrolls to its top, so the section label above
 that row is visible. This applies to the root list and to `CommandPanelList`.
 
+The root list primes its first row from the `items` collection through `autoHighlight`.
+Custom panels have no such collection, so `CommandPanelList` activates its first row after
+mount. Preserve that initialization when changing panel composition; root highlighting does
+not initialize custom panels.
+
 The no-results state is the height of one section label plus one row with a description.
 
 ## Panel footer
@@ -150,9 +159,9 @@ the right — and fills the right corner with two optional slots, in this order:
 ```
 
 Neither key is configurable, and nothing else can go in that corner, so every panel uses the
-same keys. `enter` takes `label`, `onClick`, `disabled`, and `type` — `"submit"` submits the panel's form
-instead of calling `onClick`. `actions` takes the menu's own props: `items` or `groups`, plus
-`label`, `searchPlaceholder`, and `emptyMessage`.
+same keys. `enter` takes `label`, `onClick`, `disabled`, and `type`. `"submit"` submits the containing
+form; an `onClick` handler, if provided, also runs. `actions` takes the menu's own props:
+`items` or `groups`, plus `label`, `searchPlaceholder`, and `emptyMessage`.
 
 An actions row normally runs `onSelect` and closes the menu. The fields below make it show its
 result in place instead, keeping the menu open. They match Dropdown Menu's row types:
@@ -182,8 +191,7 @@ triangle. `revertAfter` and `pendingDelay` behave as on Action Button. The two t
 no success tick; the changed label is the confirmation. An item with none of these fields closes
 the menu and calls `onSelect`.
 
-`confirm` closes the menu. The first press arms and morphs the row to
-`confirm.label`, “Confirm?” by default; the second runs `onSelect` and dismisses the menu by the
-ordinary path. It disarms on Escape, when the menu closes, and after `confirm.resetAfter`—three
-seconds by default, while `0` means never. A press within 350ms of arming is ignored, so one
+`confirm` requires two presses: the first arms the row and shows `confirm.label`, “Confirm?”
+by default; the second runs `onSelect` and closes the menu. It disarms on Escape, when the
+menu closes, and after `confirm.resetAfter`—three seconds by default, while `0` means never. A press within 350ms of arming is ignored, so one
 double-click cannot confirm what it just armed. Delete Button follows the same rules.

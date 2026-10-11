@@ -14,14 +14,13 @@ A toggle that runs an async `action` and changes state only when it succeeds. Us
 such as Follow/Following or Subscribe/Subscribed.
 
 `loader={<MySpinner />}` supplies the pending indicator. Otherwise it inherits
-[LoaderProvider](/docs/reference/engineering#shared-loading-indicators), defaulting to ASCII.
+[LoaderProvider](/docs/reference/engineering#shared-loading-indicators), defaulting to `AsciiLoader`.
 A supplied `icons.pending` takes precedence.
 
 ## Persistent state
 
-Action Button always returns to idle, and `revertAfter={Infinity}` does not hold it: the value
-clamps to a 32-bit integer and fires almost immediately. Use Action Toggle when the new state
-should stay:
+[Action Button](/docs/action-button) shows a temporary outcome, then returns to idle.
+Use Action Toggle when the new state should persist:
 
 ```tsx
 <ActionToggle
@@ -38,3 +37,6 @@ It sets `aria-pressed`, which is why it is a separate component, as Toggle is fr
 
 It is not optimistic. The label stays and the loader runs until the action settles. On failure it
 shows the error briefly and keeps its previous state. `onPressedChange` fires only on success.
+
+With `fillIcon` and no `icons.pressed`, the same glyph fills when pressed instead of being
+replaced.

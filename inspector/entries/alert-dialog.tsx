@@ -28,8 +28,7 @@ export const alertDialogEntry = defineEntry({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this project?</AlertDialogTitle>
             <AlertDialogDescription>
-              This permanently removes the project and everything in it. You can&apos;t undo
-              this — clicking outside won&apos;t dismiss it, so choose below.
+              This permanently deletes the project and its contents.
             </AlertDialogDescription>
           </AlertDialogHeader>
 

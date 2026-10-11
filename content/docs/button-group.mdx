@@ -14,3 +14,7 @@ Joins two or more Buttons into one control, horizontally or vertically. Inner co
 flattened, each seam gets one hairline, and one outline wraps the group. `variant` and `size`
 are passed to the buttons as defaults: `xs`, `sm`, `md`, or `lg`, or `icon-xs`, `icon-sm`,
 `icon`, and `icon-lg` for icon-only buttons.
+
+The group uses `role="group"`; each button keeps its own tab stop. Use [Tabs](/docs/tabs) when
+controls switch between content panels. Grouped buttons default to `pressTarget="content"` so
+press feedback leaves the joined edges still.

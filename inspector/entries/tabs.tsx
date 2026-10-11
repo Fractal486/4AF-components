@@ -18,7 +18,7 @@ export const tabsEntry = defineEntry({
     variant: select(VARIANTS, "segment"),
     size: select(SIZES, "md", "Size"),
     overflow: bool(false, "Scrollable"),
-    maxWidth: num(280, { min: 160, max: 440, step: 20, label: "Max width" }),
+    maxWidth: num(280, { min: 160, max: 440, step: 20, label: "Max width (px)" }),
     // The track treatment — segment/pill only, so it's disabled for underline.
     appearance: select(APPEARANCES, "default", "Appearance", (v) => v.variant === "underline"),
     counts: bool(false, "Counts"),

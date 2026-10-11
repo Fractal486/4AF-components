@@ -120,10 +120,10 @@ describe("component documentation", () => {
 
   it("retains the component-specific guidance from the former monolithic guide", () => {
     const requiredNotes: Record<string, string[]> = {
-      alert: ["same 14px slot", "FieldError"],
+      alert: ["same 14px slot", "aria-describedby"],
       button: ["scale to `0.95`", "pressTarget=\"content\""],
-      "action-button": ["SVG `Spinner`", "fillIcon"],
-      "action-toggle": ["revertAfter={Infinity}", "onPressedChange"],
+      "action-button": ["labels.pending", "pendingMode"],
+      "action-toggle": ["new state should persist", "onPressedChange", "fillIcon"],
       "copy-button": ["Promise<string>", "<CopyButton icon="],
       badge: ["animateLayout={false}", "FLIP-animates"],
       select: [
@@ -138,10 +138,10 @@ describe("component documentation", () => {
       ],
       "select-aligned": [
         'variant="default" | "ghost" | "plain"',
-        "Default and ghost panels",
+        "default and ghost panels match the trigger width",
         "Fruit: Banana",
       ],
-      "select-search": ["readonly any[]", "SearchSelectItem"],
+      "select-search": ["Resolution order", "iconForValue", "SearchSelectItem"],
       "command-palette": [
         "helpers.openPanel",
         "additionalRefreshing",
@@ -169,15 +169,17 @@ describe("component documentation", () => {
     }
   });
 
-  it("keeps the former family-overview guidance in the agent skill reference", () => {
+  it("keeps the agent catalog's explicit count and component links consistent with the registry", () => {
     const reference = readFileSync(
       resolve(".agents/skills/4af-components/references/component-catalog.md"),
       "utf8",
     );
 
-    // Select sizing, from the deleted select-overview page.
-    for (const phrase of ["30px", "34px"]) expect(reference).toContain(phrase);
-    // Why sidebar and sidebar-layout stay separate, from the deleted sidebar-overview page.
-    expect(reference).toContain("viewport and scrolling strategy");
+    const installable = registry.items.filter((item) => item.type === "registry:ui");
+    const statedCount = reference.match(/contains (\d+) installable UI items/);
+    expect(Number(statedCount?.[1])).toBe(installable.length);
+    for (const { name } of installable) {
+      expect(reference).toContain(`content/docs/${name}.mdx`);
+    }
   });
 });

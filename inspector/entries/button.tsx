@@ -38,6 +38,7 @@ export const buttonEntry = defineEntry({
           size={size}
           loading={loading}
           disabled={disabled}
+          aria-label={isIconOnly ? label : undefined}
         >
           <a href="https://example.com" target="_blank" rel="noreferrer">
             {content}

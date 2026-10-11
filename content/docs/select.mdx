@@ -74,8 +74,8 @@ at `xs`/`sm` and 8px at `md`.
 ## Nested select panels
 
 Use `SelectSub` to put a second select panel behind a row in `SelectContent`. The trigger keeps
-the chevron after its label, opens on hover or with `ArrowRight`/`Enter`, and `ArrowLeft` or
-`Escape` returns focus to the parent row. Its children are ordinary `SelectItem`s: they use the
+the chevron after its label. `ArrowRight` or `Enter` opens the panel; `ArrowLeft` or `Escape`
+returns focus to the parent row. Its children are ordinary `SelectItem`s: they use the
 same single- or multi-select value, check state, keyboard navigation, and close behavior as rows
 in the main panel. When the parent `SelectContent` is searchable, its field also searches these
 nested rows: a matching parent trigger remains in the main panel, and opening it reveals the
@@ -182,8 +182,7 @@ share the footer row evenly and take the same hover highlight as `clearable`. Ea
 `label`, an optional leading `icon`, `checked` to show a tick, and `keepOpen` to leave the panel
 open. `clearable` adds its button after them.
 
-For a list row that runs an action instead of being selected, such as "Create …" above a
-filtered list, pass `indicator={false}` to drop the checkbox or tick.
+`indicator={false}` hides the checkbox or tick; it does not prevent selection.
 
 ```tsx
 <Select<string> multiple value={tags} onValueChange={setTags}>

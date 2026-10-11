@@ -9,10 +9,8 @@ import { cn } from "@/registry/lib/cn";
  * a radius here quietly became the shape of every text line in the library. Corners are opt-in:
  * `rounded-full` for an avatar, `rounded-lg` for a thumbnail.
  *
- * The pulse is a looping indicator, so — like a spinner — reduced motion switches it off
- * (`motion-reduce:animate-none`): a static block still reads as "loading", whereas
- * collapsing the loop's duration would make it strobe. Not `"use client"`: it's a plain
- * styled div.
+ * Reduced motion disables the pulse, leaving a static placeholder. No `"use client"`
+ * directive is needed: this is a styled div.
  */
 export function Skeleton({ className, ...props }: ComponentProps<"div">) {
   return (

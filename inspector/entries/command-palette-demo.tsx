@@ -321,7 +321,7 @@ export function CommandPaletteDemo({
   };
 
   const navigation: CommandGroup["items"] = [
-    { id: "home", label: "Go to Home", description: "Your dashboard overview", icon: <Home />, shortcut: "G H", keywords: ["dashboard"], onSelect: run("Go to Home") },
+    { id: "home", label: "Go to Home", description: "Your dashboard overview", icon: <Home />, keywords: ["dashboard"], onSelect: run("Go to Home") },
     {
       id: "docs",
       label: "Open Documentation",
@@ -342,12 +342,12 @@ export function CommandPaletteDemo({
       keywords: ["help", "guide"],
       onSelect: run("Open Documentation"),
     },
-    { id: "settings", label: "Open Settings", icon: <Settings />, shortcut: "⌘,", keywords: ["preferences", "prefs"], onSelect: run("Open Settings") },
+    { id: "settings", label: "Open Settings", icon: <Settings />, keywords: ["preferences", "prefs"], onSelect: run("Open Settings") },
   ];
 
   const actions: CommandGroup["items"] = [
-    { id: "new", label: "New File", icon: <Plus />, shortcut: "⌘N", onSelect: run("New File") },
-    { id: "copy", label: "Copy Link", icon: <Copy />, shortcut: "⌘C", onSelect: run("Copy Link") },
+    { id: "new", label: "New File", icon: <Plus />, onSelect: run("New File") },
+    { id: "copy", label: "Copy Link", icon: <Copy />, onSelect: run("Copy Link") },
     {
       id: "rename",
       label: "Rename Project…",
@@ -380,7 +380,7 @@ export function CommandPaletteDemo({
     {
       id: "projects",
       label: "Projects…",
-      description: "A list panel with its own ⌘J actions menu",
+      description: "A project list with keyboard actions",
       icon: <FolderOpen />,
       keywords: ["switch", "workspace"],
       headerActions: <PaletteHeaderActions />,
@@ -419,7 +419,7 @@ export function CommandPaletteDemo({
         label: "Search shortcuts",
         placeholder: "Search shortcuts…",
       },
-      panel: (helpers) => <ShortcutsPanel query={helpers.query} variant={tabs} />,
+      panel: (helpers) => <ShortcutsPanel query={helpers.query} variant={tabs} openingShortcut={shortcut} />,
     },
     {
       id: "theme",
@@ -456,14 +456,16 @@ export function CommandPaletteDemo({
       <Button
         variant="outline"
         onClick={() => setOpen(true)}
-        aria-keyshortcuts="Control+Shift+P Meta+Shift+P"
+        aria-keyshortcuts={shortcut ? "Control+Shift+P Meta+Shift+P" : undefined}
       >
         Open palette
-        <span className="ml-1 flex items-center gap-0.5 text-subtle-foreground">
-          <kbd className="rounded-xs border border-current/50 px-1 py-0.5 font-mono text-2xs">⌘</kbd>
-          <kbd className="rounded-xs border border-current/50 px-1 py-0.5 font-mono text-2xs">⇧</kbd>
-          <kbd className="rounded-xs border border-current/50 px-1 py-0.5 font-mono text-2xs">P</kbd>
-        </span>
+        {shortcut && (
+          <span className="ml-1 flex items-center gap-0.5 text-subtle-foreground">
+            <kbd className="rounded-xs border border-current/50 px-1 py-0.5 font-mono text-2xs">Ctrl/⌘</kbd>
+            <kbd className="rounded-xs border border-current/50 px-1 py-0.5 font-mono text-2xs">⇧</kbd>
+            <kbd className="rounded-xs border border-current/50 px-1 py-0.5 font-mono text-2xs">P</kbd>
+          </span>
+        )}
       </Button>
 
       <p className="flex h-5 items-center gap-1.5 text-sm text-muted-foreground">
@@ -501,9 +503,7 @@ const SHORTCUT_SECTIONS = [
     id: "general",
     label: "General",
     shortcuts: [
-      { keys: ["⌘", "K"], action: "Open the palette" },
-      { keys: ["⌘", "J"], action: "Actions for the selected row" },
-      { keys: ["?"], action: "Keyboard shortcuts" },
+      { keys: ["Esc"], action: "Go back or close the palette" },
       { keys: ["Tab"], action: "Next panel tab" },
       { keys: ["Shift", "Tab"], action: "Previous panel tab" },
     ],
@@ -512,18 +512,18 @@ const SHORTCUT_SECTIONS = [
     id: "navigation",
     label: "Navigation",
     shortcuts: [
-      { keys: ["G", "H"], action: "Go to Home" },
-      { keys: ["J"], action: "Next item" },
-      { keys: ["K"], action: "Previous item" },
+      { keys: ["↓"], action: "Next list item" },
+      { keys: ["↑"], action: "Previous list item" },
+      { keys: ["Enter"], action: "Activate the highlighted item" },
     ],
   },
   {
-    id: "editing",
-    label: "Editing",
+    id: "projects",
+    label: "Projects panel",
     shortcuts: [
-      { keys: ["⌘", "N"], action: "New file" },
-      { keys: ["⌘", "C"], action: "Copy link" },
-      { keys: ["⌘", ","], action: "Open settings" },
+      { keys: ["Ctrl/⌘", "J"], action: "Show project actions" },
+      { keys: ["Ctrl/⌘", "D"], action: "Duplicate the selected project" },
+      { keys: ["Ctrl/⌘", "L"], action: "Copy the selected project's name" },
     ],
   },
 ] as const;
@@ -531,14 +531,23 @@ const SHORTCUT_SECTIONS = [
 // A tabbed panel: the tab row narrows to one section, and the header field filters within
 // whichever is selected. The tabs only re-filter one list, so a single tab panel whose
 // value follows the selection is all the wiring it needs.
-function ShortcutsPanel({ query, variant }: { query: string; variant: "fill" | "underline" }) {
+function ShortcutsPanel({ query, variant, openingShortcut }: {
+  query: string;
+  variant: "fill" | "underline";
+  openingShortcut: boolean;
+}) {
   const [tab, setTab] = useState("all");
   const needle = query.trim().toLowerCase();
   const sections = SHORTCUT_SECTIONS
     .filter((section) => tab === "all" || section.id === tab)
     .map((section) => ({
       ...section,
-      shortcuts: section.shortcuts.filter((shortcut) => shortcut.action.toLowerCase().includes(needle)),
+      shortcuts: [
+        ...(section.id === "general" && openingShortcut
+          ? [{ keys: ["Ctrl/⌘", "Shift", "P"], action: "Open or close the palette" }]
+          : []),
+        ...section.shortcuts,
+      ].filter((shortcut) => shortcut.action.toLowerCase().includes(needle)),
     }))
     .filter((section) => section.shortcuts.length > 0);
 
@@ -620,14 +629,15 @@ function ProjectsPanel({
   helpers: CommandPanelHelpers;
   onDone: (summary: string) => void;
 }) {
+  const [projects, setProjects] = useState<string[]>([...PROJECTS]);
   const [selected, setSelected] = useState<string>(PROJECTS[0]);
   const query = helpers.query.trim();
   const normalizedQuery = query.toLowerCase();
-  const visibleProjects = PROJECTS.filter((project) =>
+  const visibleProjects = projects.filter((project) =>
     project.toLowerCase().includes(normalizedQuery),
   );
 
-  // Contextual actions for whichever project is highlighted — the ⌘J menu in the footer.
+  // Contextual actions target the checked project, independently of row highlight.
   // Their keybinds also work while this panel is open, without opening the menu first.
   const actionGroups: CommandGroup[] = [
     {
@@ -655,7 +665,14 @@ function ProjectsPanel({
           label: "Duplicate project",
           icon: <Copy />,
           keybind: "mod+d",
-          onSelect: () => onDone(`Duplicated ${selected}`),
+          onSelect: () => {
+            let name = `${selected} copy`;
+            let suffix = 2;
+            while (projects.includes(name)) name = `${selected} copy ${suffix++}`;
+            setProjects((current) => [...current, name]);
+            setSelected(name);
+            onDone(`Duplicated ${selected} as ${name}`);
+          },
         },
       ],
     },
@@ -677,7 +694,7 @@ function ProjectsPanel({
           icon: <Bell />,
           defaultChecked: false,
           action: () => new Promise((resolve) => setTimeout(resolve, 900)),
-          labels: { pending: "Subscribing…", checked: "Watching" },
+          labels: { pending: "Updating watch status…", checked: "Watching" },
           icons: { checked: <BellOff /> },
         },
         {
@@ -694,10 +711,17 @@ function ProjectsPanel({
       items: [
         {
           id: "copy",
-          label: "Copy project link",
+          label: "Copy project name",
           icon: <Copy />,
           keybind: "mod+l",
-          onSelect: () => onDone(`Copied link to ${selected}`),
+          onSelect: async () => {
+            try {
+              await navigator.clipboard.writeText(selected);
+              onDone(`Copied ${selected}`);
+            } catch {
+              onDone("Could not copy the project name");
+            }
+          },
         },
       ],
     },
@@ -862,7 +886,7 @@ function NewProjectPanel({
             value={visibility}
             onValueChange={(value) => setVisibility(value as Visibility)}
           >
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-44" aria-label="Visibility">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -880,7 +904,7 @@ function NewProjectPanel({
             <span className="text-sm text-foreground">Notifications</span>
             <span className="text-xs text-muted-foreground">Send project updates</span>
           </div>
-          <Switch checked={notifications} onCheckedChange={setNotifications} />
+          <Switch aria-label="Send project updates" checked={notifications} onCheckedChange={setNotifications} />
         </div>
       </CommandPanelBody>
 
@@ -927,7 +951,7 @@ function SettingsPanel({
             >
               {/* A fixed field width — the trigger is `w-full` by default, so without this
                   it stretched across the panel. The popup matches it via `--anchor-width`. */}
-              <SelectTrigger className="w-44">
+              <SelectTrigger className="w-44" aria-label="Visibility">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -983,6 +1007,7 @@ function SettingsPanel({
                 {label}
               </span>
               <Switch
+                aria-label={label}
                 checked={features[key]}
                 onCheckedChange={(checked) => setFeatures((f) => ({ ...f, [key]: checked }))}
               />

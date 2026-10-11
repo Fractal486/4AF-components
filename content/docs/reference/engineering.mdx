@@ -8,13 +8,17 @@ Every component follows the contract below.
 ## Component contract
 
 - Base UI is the canonical behavior layer for focus management, keyboard navigation, roving
-  focus, dialogs, popups, collision handling, dismissal, and ARIA wiring.
+  focus, dialogs, popups, collision handling, dismissal, and ARIA wiring. Calendar uses
+  react-day-picker because Base UI has no calendar primitive.
 - Components forward props and refs, support controlled and uncontrolled state where relevant,
   and allow element replacement when the underlying element may reasonably change.
 - Variants live beside the component in a `.variants.ts` file and use CVA.
 - State is exposed on the element through attributes such as `data-state`, `data-variant`, and
   `data-loading`, so styling and tests read the DOM.
-- Components use semantic theme tokens rather than fixed colors or raw palette utilities.
+- Components use semantic theme tokens by default. Direct palette ramps are reserved for
+  status accents and fixed neutral control states, as documented in the root contract.
+- Add `"use client"` when client APIs, hooks, context, or interaction require it. Table uses
+  client context even though its presentation parts have no interactive state.
 - A panel of rows (select, searchable menu, command palette) opens with a row already active:
   the current selection, or the most recent one when several are chosen, otherwise the first
   row. Typing moves it to the top match. In the selects, hovering moves the active row; in the
@@ -25,35 +29,40 @@ Every component follows the contract below.
 
 ## Motion contract
 
-Hover, press, focus, and simple fades are CSS-first. Motion is used only when an element must
-remain mounted for exit, follow a gesture, settle with spring physics, or animate layout.
+Hover, focus, simple fades, and ordinary press feedback are CSS-first. Button and Toggle use
+Motion for spring presses. Motion also handles retained exits such as Morph's outgoing content,
+gestures, springs, and layout animation. Base UI popups can use CSS exits through their presence
+lifecycle.
 
-Transitions name their properties and don't animate layout properties. CSS durations use the
-shared motion tokens. Reduced motion is handled in both CSS and JavaScript, because CSS can't
-change a Motion transition.
+Transitions name their properties and prefer compositor-friendly motion. Collapsible's height
+transition and Sidebar's shell dimensions and offcanvas position are accepted layout-motion
+exceptions. CSS durations use the shared motion tokens; JavaScript duration and easing defaults
+mirror those tokens and must be updated together. CSS overrides do not change JavaScript
+animations, so reduced motion is handled separately in both.
 
 ## Shared loading indicators
 
 Loading indicators are caller-supplied React nodes. `LoaderProvider` installs automatically
 with a consuming component and reaches React portals. Component `loader` props override it;
 existing custom pending icons override both. Omitted values inherit; `null` hides the indicator.
-ASCII is the fallback. Alternative loaders and their settings belong to the caller.
+`AsciiLoader` is the fallback. Alternative loaders and their settings belong to the caller.
 
 ```tsx
 import { LoaderProvider } from "@/lib/loader";
 import { Button } from "@/components/ui/button";
 import { ClassicLoader } from "@/components/ui/classic-loader";
+import { MatrixLoader } from "@/components/ui/matrix-loader";
 
 <LoaderProvider loader={<ClassicLoader speed={1} />}>
   <Button loading>Save</Button>
-  <Button loading loader={<MySpinner />}>Custom</Button>
+  <Button loading loader={<MatrixLoader />}>Custom</Button>
 </LoaderProvider>
 ```
 
-Install Classic separately through the CLI if you choose it. Library implementations use
+Install `classic-loader` and `matrix-loader` separately through the CLI to use this example. Library implementations use
 `LoadingIndicator` from `registry/lib/loader`; the shared helper does not import Classic or
-maintain a variant/speed API. Its decorative square constrains the supplied node; the consuming
-component owns announcements.
+maintain a variant/speed API. The helper renders the node inside a fixed-size decorative wrapper;
+the consuming component owns announcements.
 
 ## Repository boundaries
 
@@ -97,8 +106,13 @@ pages:
 | `cn` | Class-name composition with `clsx` and `tailwind-merge` |
 | `slot` | Small local helper for `asChild` composition |
 | `motion` | Shared spring and easing presets |
-| `loader` | Caller-supplied loading slots and provider defaults, with an ASCII fallback |
+| `loader` | Caller-supplied loading slots and provider defaults, with `AsciiLoader` as the fallback |
 | `use-action` | Run, pending, outcome, and revert state shared by Action Button and asynchronous menu rows |
+| `table-of-contents-scroll` | Active-entry centering, endpoint padding, and overflow-edge state for constrained contents rails |
+| `table-of-contents-tracking` | Heading activation, visibility observation, and click-to-scroll settling shared by both contents variants |
+
+Use the matching action component or menu row for standard async controls. For a custom control,
+`useAction` provides the shared pending, outcome, and reset behavior directly.
 
 `cn` uses Tailwind Merge 3 for Tailwind 4 utilities, including custom-property forms such as
 `duration-(--duration-fast)` and `w-(--sidebar-width)`. The theme's `shadow-border`,
@@ -138,6 +152,8 @@ Never run `pnpm build` while `pnpm dev` is running. They share `.next`, and a pr
 can remove CSS chunks that the development server is still serving.
 
 When a component is added or renamed, update `registry.json`, its demo entry when it has one, and
-its `content/docs/` page. Navigation, the component count, and the public catalog are derived from
-those sources. Use `pnpm 4af list` to confirm the installable catalog rather than maintaining a
-second hard-coded CLI list.
+its `content/docs/` page. When public API or behavior changes, update the component page's
+API/notes and `lib/component-reference.ts`. Update `COMPONENTS.md` and the agent catalog when
+the installable catalog or composition guidance changes. Navigation, the component count, and
+the public catalog are derived from those sources. Use `pnpm 4af list` to confirm the installable
+catalog rather than maintaining a second hard-coded CLI list.

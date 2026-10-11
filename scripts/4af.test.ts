@@ -14,6 +14,19 @@ afterEach(() => {
 });
 
 describe("4AF CLI", () => {
+  it.each([[], ["help"], ["--help"], ["-h"], ["install", "--help"]])("prints help successfully for %j", (...args) => {
+    const result = spawnSync(process.execPath, [resolve("scripts/4af.ts"), ...args], { encoding: "utf8" });
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("4AF component CLI");
+    expect(result.stderr).toBe("");
+  });
+
+  it("explains an unknown command and exits unsuccessfully", () => {
+    const result = spawnSync(process.execPath, [resolve("scripts/4af.ts"), "unknown"], { encoding: "utf8" });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("Unknown command 'unknown'. Run pnpm 4af help.");
+  });
+
   it.each(["overwrite", "dry-run"])("parses --%s as a boolean without consuming the component name", (flag) => {
     expect(parseArgs(["install", `--${flag}`, "button"]).positional).toEqual(["button"]);
     expect(parseArgs(["install", "button"]).options[flag]).toBeUndefined();

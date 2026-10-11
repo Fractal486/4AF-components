@@ -18,7 +18,7 @@ export interface ActionToggleProps
   pressed?: boolean;
   /** Uncontrolled starting state. @default false */
   defaultPressed?: boolean;
-  /** Called once the action has settled, never before. */
+  /** Called after the action succeeds and the state changes. */
   onPressedChange?: (pressed: boolean) => void;
   /** The resting label, unpressed. */
   children?: ReactNode;
@@ -43,21 +43,9 @@ export interface ActionToggleProps
 }
 
 /**
- * A toggle whose state has to be earned: press it, it waits, and it lands — or it
- * doesn't, and nothing moved. Follow ⇄ Following, Subscribe ⇄ Subscribed, a setting that
- * isn't on until the server says so.
- *
- * **Why this isn't `ActionButton` with the revert switched off.** A button *does*
- * something and goes back to how it was; its whole model is idle → outcome → idle. This
- * *is* something afterwards, and the difference is `aria-pressed` — the same argument
- * that keeps `Toggle` from being a prop on `Button`. Base UI's Toggle owns that here.
- *
- * **And why it isn't optimistic.** Flipping the label immediately and rolling it back on
- * failure is the fashionable choice, but it can't be combined with a spinner: a control
- * that already says "Following" while a spinner insists it's still working is telling the
- * user two things at once, and one of them is a guess. So the label holds, the loader
- * runs, and the state changes when it's true. A failure needs no rollback because nothing
- * moved — it just says so and goes quiet.
+ * Updates pressed state after the action resolves. Rejections preserve the previous
+ * state and show error feedback. The label stays unchanged while pending unless
+ * `labels.pending` is supplied. Base UI's Toggle owns `aria-pressed`.
  *
  * ```tsx
  * <ActionToggle

@@ -1,4 +1,3 @@
-import { CalendarDays } from "lucide-react";
 import {
   HoverCard,
   HoverCardContent,
@@ -26,7 +25,7 @@ export const hoverCardEntry = defineEntry({
           href="#"
           onClick={(event) => event.preventDefault()}
         >
-          @basecn
+          @alexmorgan
         </HoverCardTrigger>
         <HoverCardContent side={side} loading={loading} loadingContent={<HoverCardSkeleton />}>
           <div className="flex gap-3">
@@ -34,17 +33,13 @@ export const hoverCardEntry = defineEntry({
               aria-hidden
               className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground"
             >
-              BC
+              AM
             </span>
             <div className="min-w-0 space-y-1">
-              <p className="font-semibold text-foreground">Base UI</p>
-              <p className="text-muted-foreground">@basecn</p>
+              <p className="font-semibold text-foreground">Alex Morgan</p>
+              <p className="text-muted-foreground">@alexmorgan</p>
               <p className="text-pretty text-muted-foreground">
-                Unstyled, accessible primitives — the behaviour layer this library is built on.
-              </p>
-              <p className="flex items-center gap-1.5 pt-1 text-xs text-muted-foreground">
-                <CalendarDays className="size-3.5" />
-                Joined December 2023
+                Product designer working on thoughtful, accessible interfaces.
               </p>
             </div>
           </div>

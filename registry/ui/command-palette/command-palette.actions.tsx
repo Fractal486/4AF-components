@@ -174,7 +174,7 @@ export function CommandPanelActions({
       <SelectTrigger outline={false} chevron={false} className={cn(ACTION_CLASS, "h-auto")}>
         {label}
         <span className="flex items-center gap-0.5">
-          <Kbd>⌘</Kbd>
+          <Kbd>Ctrl/⌘</Kbd>
           <Kbd>{ACTIONS_HOTKEY.toUpperCase()}</Kbd>
         </span>
       </SelectTrigger>

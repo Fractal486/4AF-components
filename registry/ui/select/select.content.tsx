@@ -88,7 +88,12 @@ export function SelectContent({
   searchPlaceholder?: string;
   /** Message shown when a panel search has no matching options. */
   emptyMessage?: ReactNode;
-  /** Focus the first option when the panel opens. Turn this off for menu-like uses. */
+  /**
+   * Activate the current selection on open, or the most recent enabled selection in a
+   * multi-select; otherwise activate the first enabled row. A query activates the first
+   * enabled match. This is separate from search-field focus. Set false for menu-like uses.
+   * @default true
+   */
   autoFocusFirstItem?: boolean;
   /** A full-width, compact `xs` ghost footer button that resets the selection to none. */
   clearable?: boolean;

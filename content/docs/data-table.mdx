@@ -80,7 +80,7 @@ row keeps its columns aligned.
 all is a union, so selected values outside `rows` are kept. The header checkbox is indeterminate
 while the selection is partial and checks from there.
 
-Rows expose `data-selected`. `aria-selected` is not set, being invalid on a plain `table` row.
+Rows expose `data-selected` for styling; their checkboxes expose selection to assistive technology.
 
 `selectionBar` turns the header into an action row while anything is selected: the labels give way
 to a count and `selectionActions` sits at the right end, with the select-all still in place so the

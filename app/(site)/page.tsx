@@ -22,23 +22,23 @@ const SECTIONS = [
 const CONTRACT = [
   {
     rule: "Behaviour from Base UI",
-    detail: "Focus, dismissal and keyboard navigation come from Base UI, not hand-written copies.",
+    detail: "Base UI supplies focus, dismissal and keyboard navigation. Calendar uses react-day-picker.",
   },
   {
     rule: "State on the element",
     detail: "data-* attributes expose what a component is doing, so styles and tests read the DOM rather than props.",
   },
   {
-    rule: "Motion on the compositor",
-    detail: "Animations use transform, opacity, filter and clip-path, which skip layout. The one exception is a collapsible panel's height.",
+    rule: "Prefer compositor-friendly motion",
+    detail: "Animations favor transform, opacity, filter and clip-path. Collapsible and Sidebar have documented layout-motion exceptions.",
   },
   {
     rule: "Durations from tokens",
-    detail: "Every transition reads a --duration-* token, so reduced motion shortens all of them at once.",
+    detail: "CSS transitions use duration tokens; JavaScript animations respect reduced motion separately.",
   },
   {
     rule: "Controlled or uncontrolled",
-    detail: "value, defaultValue and onValueChange work the same way in every component.",
+    detail: "Interactive components support controlled and uncontrolled state through their value, checked, pressed or open APIs.",
   },
   {
     rule: "Lists open ready",
@@ -122,7 +122,7 @@ export default async function IndexPage() {
             </h1>
             <p className="mb-6 max-w-[52ch] text-[17px] leading-[1.65] tracking-[-0.01em] text-pretty text-muted-foreground">
               4AF is a personal library of {componentCount} React components built on Base UI.
-              They share one set of tokens, one motion system and the same keyboard behaviour.
+              They share theme tokens, motion conventions and keyboard interaction patterns.
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <Button asChild size="lg">
@@ -154,7 +154,7 @@ export default async function IndexPage() {
 
           <Section id="contract" title="The contract">
             <p className={PROSE}>
-              Every component in the library meets all six rules.
+              The library follows these conventions.
             </p>
             <dl className="mt-3 max-w-180 border-t">
               {CONTRACT.map(({ rule, detail }) => (

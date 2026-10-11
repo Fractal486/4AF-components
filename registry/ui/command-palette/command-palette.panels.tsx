@@ -52,7 +52,7 @@ function highlightLabel(label: string, positions: number[]): ReactNode {
  *
  *   <form className="flex min-h-0 flex-1 flex-col" onSubmit={…}>
  *     <CommandPanelBody className="flex flex-col gap-4">…fields…</CommandPanelBody>
- *     <CommandPanelFooter><CommandPanelAction type="submit" …/></CommandPanelFooter>
+ *     <CommandPanelFooter enter={{ label: "Save", type: "submit" }} />
  *   </form>
  *
  * The split is what lets the footer be a plain sibling of the scroll area instead of

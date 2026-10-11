@@ -69,10 +69,8 @@ export type SelectItemProps = Omit<
   /** Optional trailing content in place of the selection indicator. */
   end?: ReactNode;
   /**
-   * The selection indicator: a checkbox in a multiple panel, a trailing tick in a single
-   * one. Turn it off for a row that *does* something rather than being a state the
-   * selection is in — "Create …", say — where a box that never stays ticked is a promise
-   * the row cannot keep.
+   * Show a checkbox in a multiple panel or a trailing tick in a single panel.
+   * Set false to hide the glyph; this does not prevent selection.
    */
   indicator?: boolean;
   /** Optional element id. */

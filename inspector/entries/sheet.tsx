@@ -29,8 +29,7 @@ export const sheetEntry = defineEntry({
           <SheetHeader>
             <SheetTitle>Edit profile</SheetTitle>
             <SheetDescription>
-              Make changes to your profile here. Focus is trapped inside, the page
-              behind is inert, and Escape or a click outside closes it.
+              Update your profile details.
             </SheetDescription>
           </SheetHeader>
 

@@ -1,37 +1,110 @@
 # 4AF Component Catalog for Agents
 
-Use this reference to choose components, distinguish installable items from bundled APIs,
-and find the likely source files. For exact current names run `pnpm 4af list`; for exact
-props inspect the implementation in `registry/ui/`.
+Use this chooser to select an installable component. Run `pnpm 4af list` for current install
+names and `pnpm 4af docs <component>` for its complete API, notes, and install/usage examples.
+The links below open the same owning documentation pages.
 
-For the complete narrative reference for one component, run `pnpm 4af docs <component>`;
-it reads the matching Fumadocs page and expands its install and usage examples into plain
-Markdown.
+## Sources of truth
 
-## Contents
+- `registry.json` defines install names, files, and dependencies; `registry/ui/` defines props
+  and behavior. Follow the public entry point's re-exports to locate an implementation.
+- `content/docs/<name>.mdx` owns component guidance; `lib/component-reference.ts` owns the
+  shared usage snippet rendered by the website and CLI.
+- `inspector/entries/` contains demonstrations, not installation boundaries. A bundled export
+  such as `SelectSortTrigger` installs with `select`, not as a separate item.
+- [Design](../../../../content/docs/reference/design.mdx) owns shared geometry and tokens;
+  [Engineering](../../../../content/docs/reference/engineering.mdx) owns the contract,
+  shared utilities, and loading-indicator composition.
 
-- [Source-of-truth model](#source-of-truth-model)
-- [Component modules](#component-modules)
-- [Shared foundation](#shared-foundation)
-- [Shared control geometry](#shared-control-geometry)
-- [Installable catalog](#installable-catalog)
-- [Bundled APIs and composition](#bundled-apis-and-composition)
-- [Inspector and registry parity](#inspector-and-registry-parity)
+## Installable catalog
 
-## Source-of-truth model
+The catalog contains 47 installable UI items.
 
-| Surface | Meaning |
+### Actions
+
+| Install name and docs | Choose it for |
 | --- | --- |
-| Registry item | Installable source bundle named in `registry.json` and accepted by `pnpm 4af install`. |
-| Export or subcomponent | API bundled inside a registry item, such as `SelectSortTrigger` inside `select`. |
-| Inspector entry | Web UI demonstration. It may show a whole registry item or one specialized use. |
+| [`button`](../../../../content/docs/button.mdx) | Immediate actions, links styled as buttons, and icon controls. |
+| [`button-group`](../../../../content/docs/button-group.mdx) | Related buttons joined into one visual group; each keeps its own tab stop. |
+| [`toggle`](../../../../content/docs/toggle.mdx) | A pressed state that changes immediately. |
+| [`action-button`](../../../../content/docs/action-button.mdx) | An async action with temporary success or error feedback. |
+| [`action-toggle`](../../../../content/docs/action-toggle.mdx) | A pressed state that changes only after an async action succeeds. |
+| [`copy-button`](../../../../content/docs/copy-button.mdx) | Clipboard actions with confirmation. |
+| [`delete-button`](../../../../content/docs/delete-button.mdx) | A destructive action confirmed by a second press. |
+| [`morph`](../../../../content/docs/morph.mdx) | Animated replacement of text or icons with reserved space. |
 
-Use sources in this order:
+### Fields and selection
 
-1. `registry/ui/<name>/` for implementation and props.
-2. `registry.json` and `pnpm 4af list` for installation names and dependencies.
-3. `inspector/entries/` for demonstrations and usage examples.
-4. Root `COMPONENTS.md` and this reference for orientation.
+| Install name and docs | Choose it for |
+| --- | --- |
+| [`input`](../../../../content/docs/input.mdx) | Text or number entry, with optional leading icons. |
+| [`textarea`](../../../../content/docs/textarea.mdx) | Multiline text entry. |
+| [`switch`](../../../../content/docs/switch.mdx) | An on/off setting. |
+| [`checkbox`](../../../../content/docs/checkbox.mdx) | Boolean or indeterminate selection. |
+| [`radio`](../../../../content/docs/radio.mdx) | One choice from a visible group. |
+| [`slider`](../../../../content/docs/slider.mdx) | A numeric value or range selected along a rail. |
+| [`select`](../../../../content/docs/select.mdx) | Single or multiple selection from a button trigger; optional panel search and nested options. |
+| [`select-search`](../../../../content/docs/select-search.mdx) | Single or multiple selection with an editable search field as the trigger. |
+| [`select-aligned`](../../../../content/docs/select-aligned.mdx) | Single selection aligned over its button trigger when space and input method allow. |
+| [`date-picker`](../../../../content/docs/date-picker.mdx) | Date or date-range entry; also bundles the standalone Calendar. |
+
+### Feedback and status
+
+| Install name and docs | Choose it for |
+| --- | --- |
+| [`progress`](../../../../content/docs/progress.mdx) | Determinate progress. |
+| [`alert`](../../../../content/docs/alert.mdx) | An inline status message or an associated field error. |
+| [`badge`](../../../../content/docs/badge.mdx) | A compact status, category, or count. |
+| [`skeleton`](../../../../content/docs/skeleton.mdx) | A placeholder shaped like loading content. |
+| [`empty`](../../../../content/docs/empty.mdx) | An empty state with optional action. |
+| [`text-shimmer`](../../../../content/docs/text-shimmer.mdx) | A looping highlight for a work-in-progress label. |
+| [`scramble-text`](../../../../content/docs/scramble-text.mdx) | A brief random-character text reveal. |
+| [`ascii-loader`](../../../../content/docs/ascii-loader.mdx) | A compact text spinner. |
+| [`matrix-loader`](../../../../content/docs/matrix-loader.mdx) | A grid of animated dots. |
+| [`classic-loader`](../../../../content/docs/classic-loader.mdx) | A radial spinner made of fading bars. |
+
+### Navigation and layout
+
+| Install name and docs | Choose it for |
+| --- | --- |
+| [`breadcrumb`](../../../../content/docs/breadcrumb.mdx) | A navigation trail with optional expandable middle items. |
+| [`tabs`](../../../../content/docs/tabs.mdx) | Switching between content panels. |
+| [`collapsible`](../../../../content/docs/collapsible.mdx) | Showing or hiding a section. |
+| [`table`](../../../../content/docs/table.mdx) | Presenting rows without selection, sort controls, or row menus. |
+| [`data-table`](../../../../content/docs/data-table.mdx) | Tables with selection, sort controls, or row menus; the caller orders the data. |
+| [`table-of-contents`](../../../../content/docs/table-of-contents.mdx) | Heading navigation with a rail and spanning or single-heading marker. |
+| [`table-of-contents-lines`](../../../../content/docs/table-of-contents-lines.mdx) | Compact heading navigation drawn as depth-aware lines. |
+| [`separator`](../../../../content/docs/separator.mdx) | A horizontal or vertical divider. |
+| [`command-palette`](../../../../content/docs/command-palette.mdx) | Command search, nested lists, or custom panels, including async search. |
+| [`sidebar`](../../../../content/docs/sidebar.mdx) | Responsive navigation, including split rail/panel layouts. |
+| [`sidebar-layout`](../../../../content/docs/sidebar-layout.mdx) | An optional viewport and scrolling shell around Sidebar. |
+
+### Overlays and menus
+
+| Install name and docs | Choose it for |
+| --- | --- |
+| [`tooltip`](../../../../content/docs/tooltip.mdx) | A short hover or focus description. |
+| [`sheet`](../../../../content/docs/sheet.mdx) | A dialog entering from an edge. |
+| [`dialog`](../../../../content/docs/dialog.mdx) | A centered dialog, including bundled multi-step flows. |
+| [`alert-dialog`](../../../../content/docs/alert-dialog.mdx) | A confirmation dialog that blocks backdrop dismissal. |
+| [`popover`](../../../../content/docs/popover.mdx) | An interactive panel anchored to a trigger. |
+| [`selection-toolbar`](../../../../content/docs/selection-toolbar.mdx) | Actions on selected text, with the captured text and range passed to handlers. |
+| [`hover-card`](../../../../content/docs/hover-card.mdx) | A rich preview opened by hover or focus. |
+| [`dropdown-menu`](../../../../content/docs/dropdown-menu.mdx) | Action menus, checkable rows, submenus, or nested searchable selection panels. |
+
+## Bundled composition choices
+
+Use the host component's parts instead of rebuilding their state handling:
+
+| Need | Bundled API and owning docs |
+| --- | --- |
+| A compact sort/filter select trigger | `SelectSortTrigger` in [Select](../../../../content/docs/select.mdx) |
+| Temporary async feedback in a menu | `DropdownMenuActionItem` in [Dropdown Menu](../../../../content/docs/dropdown-menu.mdx) |
+| Persistent checked state after an async menu action | `DropdownMenuCheckboxItem` with `action` in [Dropdown Menu](../../../../content/docs/dropdown-menu.mdx) |
+| Tabs within a command panel | `CommandPanelTabs` in [Command Palette](../../../../content/docs/command-palette.mdx#panel-tabs) |
+| Actions and toggles over selected text | The matching item parts in [Selection Toolbar](../../../../content/docs/selection-toolbar.mdx#item-kinds) |
+| An expandable sidebar row | `SidebarMenuCollapsible` in [Sidebar](../../../../content/docs/sidebar.mdx#collapsible-menu-sections) |
+| A validated multi-step dialog | `DialogSteps` and `DialogStep` in [Dialog](../../../../content/docs/dialog.mdx) |
 
 ## Component modules
 
@@ -60,474 +133,9 @@ When adding or moving a module, update those file entries and preserve resolving
 The other select implementations (`select-aligned` and `select-search`) also live in
 `registry/ui/select/`, but are separate installable items.
 
-## Shared foundation
-
-These entries install transitively:
-
-| Item | Purpose |
-| --- | --- |
-| `4af-theme` | Semantic colors, typography, radii, shadows, keyframes, and motion tokens. |
-| `cn` | Class composition through `clsx` and `tailwind-merge`. |
-| `slot` | Local helper for `asChild` composition. |
-| `motion` | Shared Motion spring and easing presets. |
-| `use-action` | `useAction` — the run/pending/outcome/revert machine behind `ActionButton`, `ActionToggle`, `DropdownMenuActionItem`, and the command palette action rows. Use it directly for anything else that runs and reports. |
-| `table-of-contents-scroll` | Endpoint padding, active-entry centering, and optional overflow-edge state for a constrained contents rail. |
-| `table-of-contents-tracking` | Shared heading activation, visibility observation, click-to-scroll settling, and cleanup for contents variants. |
-
-## Shared control geometry
-
-Button controls use four text/square tiers: `xs` is 24px, `sm` is 30px, `md` is 34px, and
-`lg` is 38px. Button corners are 6px at `xs`/`sm` and 8px at `md`/`lg`; the base Select and
-select-aligned also use the 24px `xs` tier, while other rectangular controls keep their existing
-sizes. Labeled button
-content gaps are 8px at `xs`/`sm`, 10px at `md`, and 12px at `lg`, with optical edge adjustment
-for leading and trailing icons.
-
-Checkbox is the fixed exception: it has one 16px box with a 4px radius and no `size` prop.
-Badge boxes keep their own size geometry and accept `shape="rounded" | "pill"`. Selection
-Toolbar action controls are fixed at 24px high with 6px corners inside an 8px toolbar shell.
-
-## Installable catalog
-
-The catalog currently contains 46 installable UI items. Verify the count and names with
-`pnpm 4af list` before making registry-wide claims.
-
-### Actions
-
-| Install name | Main API | Use it for |
-| --- | --- | --- |
-| `button` | `Button` | Primary, outline, ghost, plain, destructive, link, and icon controls; the 24/30/34/38px `xs`/`sm`/`md`/`lg` scale; loading; `asChild`; optional press scaling. |
-| `button-group` | `ButtonGroup` | Joining two or more Buttons into one control: flattened inner corners, one hairline per seam, the shared Button scale including `xs`, a single outline around the run, horizontal or vertical. |
-| `toggle` | `Toggle` | Base UI pressed/unpressed controls using Button visuals and sizes. |
-| `morph` | `Morph` | Animated icon or text replacement that reserves stable space. |
-| `action-button` | `ActionButton` | Async actions with the shared Button scale, idle/pending/success/error states, then a revert to idle; pending can keep its label or show a centered loader only without resizing. |
-| `action-toggle` | `ActionToggle` | An async toggle: waits on the action, lands when it succeeds, stays put when it fails. Follow/Following, Subscribe/Subscribed. |
-| `copy-button` | `CopyButton` | Clipboard actions with visual and screen-reader confirmation; `size` follows the Button scale for both labeled and icon-only forms. |
-| `delete-button` | `DeleteButton` | Quiet destructive, two-step confirmation with Escape, blur, and timeout disarming; `size` follows the Button scale. |
-
-### Fields and selection
-
-| Install name | Main API | Use it for |
-| --- | --- | --- |
-| `input` | `Input` | Default, plain, and underline fields; a 34px/8px default field; an optional decorative `startIcon` on the leading edge; compact 6px number steppers; invalid/disabled states. |
-| `textarea` | `Textarea` | Matching 34px/8px form treatment with an optional 16px custom resize grip using 6px corners. |
-| `switch` | `Switch` | Binary on/off state with a sliding thumb whose center grows toward the track center into a rounded pill on press; adaptive or fixed tone. |
-| `checkbox` | `Checkbox` | Fixed 16px/4px boolean or indeterminate selection with an animated tick and optional label; it has no size axis. |
-| `radio` | `RadioGroup`, `Radio` | Single-choice selection groups. |
-| `slider` | `Slider` | Numeric input with `bar`, `circle`, and `knob` thumbs, optional ticks/labels, `range` mode with two draggable thumbs, and an opt-in `showValueTooltip` that follows the active thumb during drag. The `bar` reveals its ticks and brightens its fill while in use; with `inlineLabel` its thumb dodges (fades, at resting height) under the label and value, except at either end of the rail. |
-| `select` | `Select`, trigger/content/item/separator parts, `SelectSortTrigger`, `SelectSub` parts | Base UI single/multi select with 24px `xs`, 30px `sm`, and 34px `md` trigger/row sizes, optional panel search and clear footer, compact sort/filter trigger, accessible separators, and nested option panels. |
-| `select-aligned` | `AlignedSelect` and trigger/content/item/group parts | A select that opens *on* its trigger: default/ghost panel at the trigger's width, plain panel at the longest row plus check slot, selected row landing on the value it replaces, `ChevronsUpDown` glyph, and an `xs` size with a 24px trigger and popup rows. The macOS pop-up button. |
-| `select-search` | `SearchSelect` and input/content/item parts | Editable Combobox trigger with filtering and single/multi selection. |
-| `date-picker` | `DatePicker`, `DateRangePicker`, `Calendar` | Date or range field with Select-trigger geometry (default/ghost/plain, xs/sm/md); calendar in a Base UI popover, bottom sheet on phones; react-day-picker grid; optional clear and hidden ISO form value. |
-
-### Feedback and status
-
-| Install name | Main API | Use it for |
-| --- | --- | --- |
-| `progress` | `Progress`, `ProgressLabel`, `ProgressValue` | Determinate progress with transform-driven fill. |
-| `alert` | `Alert` | Inline status line (glyph + sentence, no surface): `error` (hexagon, `role="alert"`), `warning` (amber triangle), `success` (green check), `info` (neutral), `loading` (shared loader); not tied to field context. |
-| `badge` | `Badge`, `BadgeIconsProvider` | Outline/status labels with optional icon or dot, animated content changes, and `shape="rounded" | "pill"` for boxed variants. Status glyphs are replaceable per badge (`icons`) or per subtree (`BadgeIconsProvider`); `color` overrides the solid fill with any CSS colour. |
-| `skeleton` | `Skeleton` | Generic loading placeholders, square and shaped entirely by utility classes — there is no shape axis, and corners are opt-in; animation respects reduced motion. |
-| `empty` | `Empty` and composition parts | Empty states with optional dashed placeholder treatment. |
-| `text-shimmer` | `TextShimmer` | Translating masked highlight for working labels; ellipsis truncation and static text under reduced motion or without text-mask support. Component and shared theme CSS ship together; no `animate-text-shimmer` theme token. |
-| `scramble-text` | `ScrambleText` | Reveals text through a short per-grapheme scramble animation, preserving whitespace and honoring reduced motion. |
-| `ascii-loader` | `AsciiLoader` | A looping braille spinner for compact async status affordances. |
-| `matrix-loader` | `MatrixLoader` | A compact 4×4 dot loader with scan, twinkle, and size variants. |
-| `classic-loader` | `ClassicLoader` | Twelve fading radial bars from loading.dev, locally adapted with CSS-only motion, size variants, speed as a playback multiplier, and an optional status label. Inherits currentColor; no loading-dev or animation runtime dependency. |
-
-### Navigation and layout
-
-| Install name | Main API | Use it for |
-| --- | --- | --- |
-| `breadcrumb` | `Breadcrumb`, `BreadcrumbList`, item/link/page/separator parts, `BreadcrumbEllipsis`, `BreadcrumbCollapse` | A nav-landmark trail with `asChild` links, `aria-current` page, RTL-mirrored separators, and `sm`/`md` sizes. `BreadcrumbCollapse` hides middle crumbs behind an ellipsis button and reveals them in place (transform-only FLIP); `BreadcrumbEllipsis asChild` can instead be a menu trigger. |
-| `tabs` | `Tabs`, `TabsList`, `TabsTab`, `TabsCount`, `TabsPanel` | Segment, pill, or underline tabs with a traveling indicator; `appearance="default" | "solid" | "outline"` (outline: bordered track, inset fill) for segment and pill; `TabsCount` adds a dim count after a label; `TabsList maxWidth` enables scrolling with edge fades and click-to-center. Segment tracks use 8px corners and their tabs use 6px corners. |
-| `collapsible` | `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` | Disclosure rows (`plain`/`card`) with a rotating chevron, shared 6px plain or 8px card trigger corners, a height slide so following rows travel rather than jump, and a blur-fade on the content. |
-| `table` | `Table`, `TableCaption`, and header/body/footer/row/head/cell parts | Presentational tables in two densities (`sm` by default), with a pinned header, optional grid lines, a caption pinned below the scrolling box, and a loading state. No controls and no state — install `data-table` for any of those. |
-| `data-table` | `DataTable`, `DataTableRow`, `DataTableHead`, `DataTableRowActions`, plus the re-exported table layout parts | The stateful table: checkbox column with an indeterminate select-all, a selection action row over the header taking compact 24px Button actions, three-step `sortKey` sorting with `ChevronsUpDown` when unsorted, and a per-row actions column. Composes `table`. |
-| `table-of-contents` | `TableOfContents` | Heading navigation with a dashed inactive rail, smooth document scrolling, long-prose fallback, and `span` or `single` active marker variants. `labels="hover"` withholds the headings until the list is hovered or focused, leaving only the rail. A height-constrained rail hides its browser scrollbar and smoothly centers every active entry, including endpoints; pass `rootRef` for an independently scrolling article. |
-| `table-of-contents-lines` | `TableOfContentsLines` | Dense line-based heading navigation with one active heading, a longer header rule, equal shorter rules between headings (none below the final heading), heading-relative indentation, and an expanding hover treatment. `labels="hover"` withholds the headings until the list is hovered or focused, leaving only the rules. A height-constrained rail hides its browser scrollbar and smoothly centers every active entry, including endpoints; pass `rootRef` for an independently scrolling article. |
-| `separator` | `Separator` | An accessible horizontal or vertical divider built on Base UI Separator. |
-| `command-palette` | `CommandPalette`, panel/list/row/tab/footer parts, `Kbd`, and `useCommandSearch` | Fuzzy command search, groups, nested/custom panels, panel tab rows (`fill` or `underline`), opening on a page (`initialItemId`), async/server-driven search, configurable headers, 6px compact header navigation controls, keybinds (default ⌘K/Ctrl+K), selection, actions, and Dialog-style enter/exit motion. |
-| `sidebar` | Provider, panel, group/menu/submenu/action/badge/skeleton parts | Default/floating/inset and split/split-floating/split-inset sidebars, collapse, collapsible rows with built-in chevrons, nested rows, split rail/panel selection, actions, badges, skeletons, and shared 6px/8px menu and rail radii. |
-| `sidebar-layout` | `SidebarLayout` | Optional page shell around Sidebar with inset surface, title, collapse control, and actions. |
-
-### Overlays and menus
-
-| Install name | Main API | Use it for |
-| --- | --- | --- |
-| `tooltip` | `TooltipProvider`, `Tooltip` | Delayed hover/focus descriptions with collision-aware placement, optional controlled `open`, press behavior, and hoverable-popup control. Provider-linked instant transitions skip popup motion. |
-| `sheet` | `Sheet` and composition parts | Focus-trapped edge dialogs. |
-| `dialog` | `Dialog` parts, `DialogSteps`, `DialogStep` | Centered modals and optional validated multi-step flows. |
-| `alert-dialog` | `AlertDialog` parts | Decision-forcing modal that cannot dismiss by clicking away. |
-| `popover` | `Popover` parts | Interactive anchored panels with optional modal behavior. |
-| `selection-toolbar` | `SelectionToolbar`, button/action-button/toggle/action-toggle/toggle-group/separator parts | Actions over selected text — copy, highlight, quote. Anchored to the range, hands the captured text and range to every action. Its Button-like actions are fixed at 24px high with 6px corners inside an 8px shell. Plain items dismiss the bar on press; async and toggle items keep it up so their state is visible. |
-| `hover-card` | `HoverCard`, trigger/content parts, `HoverCardSkeleton` | Rich previews opened by hover or keyboard focus, with built-in loading placeholders. |
-| `dropdown-menu` | Menu, checkbox/radio/submenu, shortcut, and nested-select parts | Keyboard menus, safe submenus, destructive items, Kbd hints, searchable selection panels, and immediate disabled-reason tooltips. |
-
-## Bundled APIs and composition
-
-Public features, not separate install names.
-
-### Alert
-
-No surface, no field context — use it for any short inline status. Under a field, connect
-with `aria-describedby` and mark the field invalid.
-
-| Variant | Ink | Glyph | Role |
-| --- | --- | --- | --- |
-| `error` (default) | Destructive | Hexagon | `alert` |
-| `warning` | Amber accent | Triangle | `status` |
-| `success` | Success green | Check | `status` |
-| `info` | Foreground ink | Info | `status` |
-| `loading` | Muted grey | Shared loader (ASCII by default) | `status` |
-
-Set `variant`; do not restyle one variant to imitate another — the role and glyph do not
-follow the colour. Pulls in `loader`. Renamed from `FieldError`/`field-error`: a
-deprecated `FieldError` alias still compiles, but the install name is `alert`.
-
-### Async work
-
-Waiting states accept a React node: `loader={<MySpinner />}`. `LoaderProvider` from `@/lib/loader`
-sets a subtree default, including portals; custom pending icons take precedence over the local
-slot and provider. ASCII is the fallback. Alternative indicators are optional, installed by the
-caller. Copy/Delete Button and menu/palette rows support the same slot.
-`Button`'s deprecated SVG `Spinner` now follows the provider as well.
-
-| After the work | Use |
-| --- | --- |
-| Reverts to how it was | `action-button` (`copy-button` for the clipboard) |
-| Lands in a new state | `action-toggle` |
-| Runs inside a menu | `DropdownMenuActionItem` |
-| Anything else | `useAction` directly |
-
-`ActionButton` always reverts — `revertAfter={Infinity}` clamps to a 32-bit int and fires
-almost immediately. `ActionToggle` is not optimistic: the label holds until the action
-settles and `onPressedChange` fires only on success.
-
-Glyph and label morph in separate boxes (the ASCII loader is a text glyph, far narrower than an
-icon; morphing them together slides the label). So a label with no per-state override does
-not animate — pass `labels={{ pending: … }}` only when the word should change. `ActionToggle`
-with `fillIcon` and no `icons.pressed` does not swap the glyph either; the fill is the
-animation. `ActionButton` additionally takes `pendingMode="icon"` to hide the pending label and
-centre the loader over the reserved label-sized content box; the default `"label"` mode keeps
-the pending label beside it. Do not wrap the label and icon in one `Morph` when building
-something similar.
-
-### Press scaling
-
-`Button` and `Toggle` take `pressScale={false}` — for anchored triggers whose popup would
-appear to move. `Button` takes `pressTarget="content"` when its edges are joined to a
-neighbour's; `ButtonGroup` sets it already. `ActionButton`, `CopyButton`, and
-`DeleteButton` inherit both.
-
-### ButtonGroup
-
-Takes plain `Button` children and clones them for position, `variant`/`size` defaults, and
-press target. The group owns the single outline; the buttons drop theirs. It is
-`role="group"` and every button keeps its own tab stop — for selecting between options use
-`tabs`.
-
-### Badge
-
-`animateLayout={false}` for a static badge in a list that filters or reorders; otherwise
-the pill FLIP-animates as the row moves.
-
-Status glyphs: `icon` (one glyph, any status) > `icons` (per status, this badge) > `loader`
-(loading only) > `BadgeIconsProvider` (per status, subtree) > default. Default `danger` is
-`OctagonAlert`. A `null` entry hides that status's icon.
-
-### Input
-
-`startIcon` takes any node and pins it inside the leading edge of the field; omit it and the
-component renders the bare `<input>` with no wrapper element at all. The glyph is decorative —
-`aria-hidden`, `pointer-events-none`, 16px — so it never earns a name and never steals the click
-that focuses the field. Still label the input itself; do not treat the icon as the label.
-
-The field carries `data-icon-start` and takes its leading padding from that attribute, so the
-padding follows the icon rather than a caller-supplied `className`. `default` and `plain` sit the
-glyph at the field's 12px inset; `underline` has no horizontal padding, so it goes flush. A number
-field composes with it: the icon owns the leading edge, the steppers keep the trailing one, and
-both share the single `data-slot="input-wrapper"` span.
-
-### Select family
-
-`SelectSortTrigger` ships inside `select` (there is no `select-sort` item); `clearable` on
-`SelectContent` adds the clear footer — a compact `xs` ghost reset button with a `SelectSeparator`
-above it by default. `SelectSub`, `SelectSubTrigger`, and `SelectSubContent` add nested panels whose child
-`SelectItem`s use the parent select's value and check state; multi-select submenu triggers show a
-dimmed selected-child count before their chevron.
-
-`SelectContent footerActions` adds buttons for actions on the selection, sharing the footer
-row evenly; `clearable` appends the built-in clear button. Each action requires `key`, `label`,
-and `onSelect`, and accepts `icon`, `disabled`, `checked`, and `keepOpen`. Actions close the
-panel by default; set `keepOpen` to retain it. `SelectItem indicator={false}` hides the
-single-select tick or multi-select checkbox for a row that acts rather than stays selected.
-
-| Install name | Selection modes | Trigger | Panel entrance | Search location |
-| --- | --- | --- | --- | --- |
-| `select` | Single or multiple | Button/field | Scale, blur, fade | Optional inside panel |
-| `select-search` | Single or multiple | Editable Combobox | Standard positioned panel | Trigger field |
-| `select-aligned` | Single only | Button/field | Fade, opening *over* the trigger | Optional pinned field |
-
-Multi selection uses Checkbox. All three take `size="sm" | "md"`,
-default `sm`. `sm` is a 30px control with compact text and 14px glyphs; `md` is 34px and lines
-up with a medium Button or Input in a form row; the size scales the trigger and the option
-rows together, with 6px corners at `sm` and 8px at `md`. Inside a Command Palette keep `sm`.
-The base `select` and `select-aligned` additionally accept `size="xs"`, which scales both the
-trigger and option rows to 24px with 6px corners.
-`select-aligned` takes optional sections
-(`AlignedSelectGroup` + `AlignedSelectGroupLabel`, which hide themselves when a search empties
-them) and an optional pinned search field (`searchable` on the content).
-
-`select`'s `SelectTrigger` and `SelectSortTrigger`, plus `select-aligned`'s
-`AlignedSelectTrigger`, accept `variant="default" | "ghost" | "plain"`. `ghost` uses Button's
-muted ghost colors while keeping the default trigger geometry, so icons stay aligned. `plain`
-removes the trigger surface, border, and horizontal padding, leaving the label/value and dropdown
-glyph adjacent.
-`SelectTrigger` and `AlignedSelectTrigger` also accept an optional dimmed `label` before the value;
-for example, `label="Fruit"` displays `Fruit: Banana`.
-The older `outline={false}` prop remains a compatibility alias for `variant="plain"`.
-When panel `width` is omitted, default and ghost triggers keep a trigger-width panel and plain
-triggers use the longest row plus the reserved check slot; pass `width="trigger" | "content"` to
-override it.
-
-Every panel in the family opens with a row already active, before anything is typed: the
-current selection where there is one (the most recent, when several are chosen), otherwise the
-first row, and the top match once a query narrows the list. Hovering moves the mark; leaving the
-panel keeps it. The mark is `data-panel-active`; the search variant uses Base UI's
-`data-highlighted` via `autoHighlight` plus `keepHighlight`, where `"always"` is only for a
-select with nothing chosen because it pins row one over the selection. `autoFocusFirstItem={false}` opts out, for
-menu-like uses such as a sort control.
-
-`select-aligned` overlaps the trigger through Base UI's `alignItemWithTrigger`, which applies
-to pointer input only and switches off when there is no room — it falls back to an ordinary
-dropdown, so do not try to force it. Row padding plus panel padding equals the trigger's
-padding, and that is what lines the selected label up with the value it covers; restyle one and
-restyle all three.
-
-For an icon on a closed trigger before the panel has ever opened:
-
-- `select` — put `icon` in the `items` array (array form only; the record form is
-  `{ value: label }`).
-- `select-search` — put `icon` on the item data; the item *is* the
-  value. Do not widen its `items` type or key a lookup on `item.value`.
-
-Order: mounted item, then `iconForValue`, then `items`/the value. An icon passed only to
-the item element cannot resolve before mount.
-
-### Slider
-
-`inlineLabel` moves the label and value into opposite ends of the rail for the `bar` thumb,
-replacing the row above it. The thumb dims while passing under the text. `circle` and `knob`
-ignore this prop because their rails cannot hold the text; use the ordinary label row there.
-
-### Command Palette
-
-Root groups/rows, nested lists, custom panels via `helpers.openPanel`, search or
-text-field panel headers, per-panel header actions, badges, checkboxes, Kbd hints,
-destructive states, action panels.
-
-Enter and exit mirror Dialog: the backdrop fades, the panel scales in from a small blur,
-and the exit fades and blurs without reversing the entrance. Use `keepMounted`/
-`AnimatePresence` and honor reduced motion.
-
-The root `shortcut` prop defaults to `true` (`⌘K` / `Ctrl+K`). The inspector demo turns that
-binding off on the component and uses `⌘⇧P` / `Ctrl+Shift+P` instead so it does not compete with
-Fumadocs' own command shortcut.
-
-Every list — the root list and every custom panel's — opens with its first row already
-selected, before anything is typed, and follows the new first row as a query narrows the list;
-Enter runs it without an arrow press. Selection and hover are separate: the selected row carries
-`data-highlighted` and moves on arrow keys or a press, while hover is a weaker fill only, so
-sweeping the cursor never changes what Enter runs. A row whose actions menu is open carries
-`data-frozen`, styled identically.
-
-The root list primes that first row from its `items` collection via `autoHighlight`. A custom
-panel has no such collection, so `CommandPanelList` primes its own first row from the DOM after
-commit — do not remove that, and do not assume `autoHighlight` covers panels.
-
-Escape clears a non-empty header field only when that header is `type="search"`; other
-headers go back. Keep Select controls in headers at `size="sm"`.
-
-Actions rows take four shapes as item fields. The first three are the dropdown menu's, and
-keep the menu open: `action` alone runs/confirms/reverts; `action` +
-`checked`/`defaultChecked` lands in the new state; `checked`/`defaultChecked` alone flips
-at once. The fourth is `DeleteButton`'s: `confirm` arms on the first press and runs
-`onSelect` and closes on the second, disarming on Escape, on the menu closing, or after
-`confirm.resetAfter` (3s; `0` never).
-
-`labels`/`icons` supply the `checked`, `pending`, `success` and `error` states;
-`revertAfter` and `pendingDelay` as on `ActionButton`. An item with none of these fields
-closes the menu and calls `onSelect`.
-
-Async root results: `onSearch(query, signal) => Promise<CommandGroup[]>`, with `groups` as
-the resting state while the query is empty. Returned order is preserved. Tune with
-`searchDebounce`, `loadingMessage`, and `searchErrorMessage`; debounce, abort,
-out-of-order dropping, loading, and rejected searches are handled. In a custom panel call
-`useCommandSearch(helpers.query, source)`, render `CommandPanelLoading` while
-`searching && results === null`, and use the returned `error` for a panel-specific failure
-state.
-
-A custom panel's footer has two optional slots on the right and nothing else: `enter` (the
-primary action, always the return key) and `actions` (the contextual menu, always Cmd/Ctrl+J).
-Neither chord is configurable, and there is no children slot — do not try to put a third
-affordance in that corner.
-
-Panel tabs: wrap everything below a custom panel's header in `CommandPanelTabs` (a Base UI
-Tabs root), with `CommandPanelTabList` + `CommandPanelTab` for the row and
-`CommandPanelTabPanel` around the body. `variant` is `fill` (a muted fill slides behind the
-selected tab, the default) or `underline` (a hairline slides along the rule under the row).
-Tabs select on arrow focus by default (`activateOnFocus`), since they usually re-filter one
-list; a single `CommandPanelTabPanel` whose `value` follows the selection is enough then.
-The palette also cycles enabled tabs on Tab / Shift+Tab, wrapping while keeping current focus.
-Panels without tabs retain ordinary focus navigation. The indicator divides its measurement
-by the palette's entrance scale — keep that, or a panel the
-palette opens on gets an indicator a few pixels off its tab. Do not nest `Tabs` in a panel.
-
-`initialItemId` opens the palette straight onto one item's panel or sub-list (a `?` help
-shortcut, say); Escape and Back then close the palette instead of revealing the root list.
-`Kbd` is the palette's key chip, exported for panels that list keys.
-
-### Dropdown Menu
-
-Three nested-panel forms: navigation submenu, single-select with a trailing checkmark, and
-checkbox multi-select. Selection panels can search. Safe pointer travel keeps the parent
-active on the way into a panel.
-
-Select-style triggers keep their label or placeholder on the left and show the selected value or
-count, dimmed, before the chevron. Their optional search field is text-only, and the no-results
-state matches the height of one select row.
-
-Disabled rows accept an optional `disabledReason`. The disabled row itself becomes an immediate
-right-side tooltip trigger on hover, while remaining unavailable for selection:
-
-```tsx
-<DropdownMenuItem disabled disabledReason="Billing is available on the Pro plan.">
-  Billing
-</DropdownMenuItem>
-```
-
-`DropdownMenuCheckboxItem` takes `children` as `(checked, status) => …` and
-`indicator={false}` to drop the tick, so the icon and label carry the state. Wrap swapping
-parts in `Morph`; use `fillIcon` when only the glyph's weight changes. Rows already
-left-align Morphs and mute a morphing leading icon — do not set `place-items-start` or a
-text colour.
-
-| Row behaviour | Use |
-| --- | --- |
-| Runs, confirms, reverts | `DropdownMenuActionItem` (`closeOnClick={false}` by default) |
-| Runs, then lands checked | `DropdownMenuCheckboxItem` with `action` |
-| Flips immediately | `DropdownMenuCheckboxItem`, no `action` |
-
-Do not hand-roll either with `useState` and `setTimeout`; both run on `useAction`.
-
-### Selection Toolbar
-
-Item kinds mirror the menu's rows. Use the part, don't rebuild it on `SelectionToolbarButton`.
-
-| Item | Wraps | Dismisses the bar |
-| --- | --- | --- |
-| `SelectionToolbarButton` | `Button` | Yes (`keepOpen` opts out) |
-| `SelectionToolbarActionButton` | `ActionButton` | No (`closeOnSuccess` opts in) |
-| `SelectionToolbarToggle` | `Toggle` | Never |
-| `SelectionToolbarActionToggle` | `ActionToggle` | Never |
-| `SelectionToolbarToggleGroup` | Base UI `ToggleGroup` | — |
-
-Async and toggle items keep the bar up because that is where their state is drawn. Every
-action receives the captured `(text, range)` — never call `window.getSelection()` inside one.
-`variant="destructive"` is quieted to red ink automatically; do not add a red fill.
-
-For an item whose state depends on the selection, write a small component and call
-`useSelectionToolbar()` inside it — it renders within the bar even though it is created
-outside, so the hook reads the right selection.
-
-### Sidebar
-
-`sidebar` covers default, floating, inset, and split forms, collapsible sections, row
-actions, badges, nested rows, search/button headers, and row skeletons. Use
-`SidebarMenuCollapsible` for an expandable row; `SidebarMenuCollapsibleTrigger` includes a
-trailing `ChevronDown` by default and accepts `chevron={false}` when a custom indicator is
-needed. A sibling `SidebarMenuAction` is placed before that chevron, and a sibling
-`SidebarMenuBadge` reserves a slot before both controls so counters do not overlap them. Hovering
-nested rows keeps the highlight on the row under the pointer rather than highlighting the
-collapsible parent.
-`SidebarGroup` is visual grouping only. Compose a row action with `dropdown-menu`.
-
-Offcanvas collapse removes hidden navigation from keyboard focus and assistive technology.
-Keep a `SidebarTrigger` outside the panel in the same provider so keyboard users can reopen it;
-collapse returns focus there when focus was inside the navigation.
-
-Split variants are `split`, `split-floating`, and `split-inset`. Provide the fixed `rail` with
-`SidebarRailButton` controls and `SidebarPanel` sections; use `activePanel`,
-`defaultActivePanel`, and `onActivePanelChange` when the wide panel selection needs to be
-controlled or observed.
-
-`SidebarRailButton tooltip` shows a right-side description that keeps animating in a warm
-tooltip group. Moving between rail icons still opens immediately; reduced motion uses the
-shared duration tokens.
-
-`Sidebar hideCollapseHandle` removes the edge strip that toggles the panel. Use it when the
-owner pins the panel with a controlled `open` value; it hides the handle without controlling
-the open state itself.
-
-A header takes one full-width `SidebarHeaderButton`, or two wrapped in `SidebarHeaderRow`,
-which splits the width and stacks them when the sidebar collapses; `className="flex-none"`
-opts a button out.
-
-`sidebar` is the low-level navigation family and `sidebar-layout` the optional frame around
-it; they stay separate so a consumer can take the responsive sidebar without also taking one
-viewport and scrolling strategy.
-
-`sidebar-layout` is the optional shell: content surface, page header, collapse control,
-title, header actions.
-
-### Table and Data Table
-
-Two installable items, split on state. `table` is presentation only — markup, densities,
-`bordered`, `stickyHeader`, `TableCaption`, `loading`, the scroll container — with no controls and
-no Motion, Lucide or Checkbox. `data-table` adds every control and composes `table`.
-
-Install `table` if the table only presents rows; `data-table` the moment it needs a checkbox, a
-sort control or a row menu. Do not add controls to `table`.
-
-`data-table` re-exports `TableCaption`, `TableHeader`, `TableBody`, `TableFooter` and `TableCell`
-unchanged. `DataTableRow` replaces `TableRow`; `DataTableHead` replaces `TableHead` and must be
-used for **every** header cell, sortable or not, or the label will not fade under the selection bar.
-
-| Need | Item | Prop |
-| --- | --- | --- |
-| Density, grid lines, pinned header, caption | `table` | `size` (`sm` 36px rows, `md` 44px, both with a 36px header), `bordered`, `stickyHeader`, `TableCaption` first |
-| Loading placeholders | either | `loading` (+ `loadingRows`); shape is read off the header, sets `aria-busy` |
-| Checkbox column | `data-table` | `selectable` |
-| What select-all covers | `data-table` | `rows` (the page you are rendering, not every row you have) |
-| Selection state | `data-table` | `value` / `onValueChange`, or `defaultValue` |
-| Name a row's checkbox | `data-table` | `selectLabel` on `DataTableRow` |
-| Header becomes an action row while selecting | `data-table` | `selectionBar` + `selectionActions` (needs `selectable`) |
-| Sortable column | `data-table` | `sortKey` on `DataTableHead` |
-| Per-row menu | `data-table` | `actionColumn` on the root + `actions` on each `DataTableRow` |
-
-Columns are opened on the **root**, never per row: `selectable` and `actionColumn` add the gutter
-cells to every row, header and placeholders included. Do not write those cells by hand.
-
-Sorting cycles ascending → descending → unsorted; switching columns restarts at ascending. The
-component owns the control, the state and `aria-sort` and reports `{ column, direction } | null` —
-order the rows yourself.
-
-`selectionBar` swaps the labels for an `N selected` count with `selectionActions` at the right end,
-keeping the select-all in place. The count covers the whole selection, not only the part `rows`
-covers; use `xs` Buttons. A row is selectable when it has a `value`; one without still gets an
-empty cell so columns stay aligned. Select-all is a union. Rows expose `data-selected`, not
-`aria-selected`, which is invalid on a plain table row.
-
-For the row menu use `DataTableRowActions` — it owns the trigger and takes `DropdownMenuItem`
-children; do not hand-roll one. Its `label` is required: give it the row's subject. The contents
-are hidden until the row is hovered, and also shown on visible focus in the row, while the menu is
-open, and where the pointer has no hover; selection does not reveal them.
-
 ## Inspector and registry parity
 
-The inspector is a review site, not the installable catalog. `sidebar-layout` appears
-inside the Sidebar demo, and the two Table of Contents entries share one stacked page while using
-separate demo canvases. The "Select · Sort" entry demonstrates `SelectSortTrigger`
-(install `select`). Demo helpers, sample data, navigation, settings controls, and page
-wrappers are not registry components.
+Each installable UI item has its own documentation page. Some pages compose another item's
+demo: Sidebar Layout uses the Sidebar demo, while each Table of Contents variant has its own
+page and demo. “Select · Sort” demonstrates `SelectSortTrigger`, which installs with `select`.
+Demo helpers, sample data, settings controls, and page wrappers are not registry components.

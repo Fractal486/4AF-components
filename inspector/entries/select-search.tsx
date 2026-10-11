@@ -24,7 +24,7 @@ type Fruit = (typeof FRUITS)[number];
 
 export const selectSearchEntry = defineEntry({
   slug: "select-search",
-  name: "BaseUI Search",
+  name: "Select Search",
   controls: {
     size: select(["sm", "md"] as const, "sm"),
     tone: select(["neutral", "accent"], "neutral", "Focus"),
@@ -46,6 +46,7 @@ export const selectSearchEntry = defineEntry({
             disabled={disabled}
           >
             <SearchSelectInput
+              aria-label="Fruits"
               placeholder="Search fruits…"
               tone={tone}
               aria-invalid={invalid ? true : undefined}
@@ -73,6 +74,7 @@ export const selectSearchEntry = defineEntry({
             iconForValue={icons ? (value) => <FruitIcon value={value.value} /> : undefined}
           >
             <SearchSelectInput
+              aria-label="Fruit"
               placeholder="Search a fruit…"
               tone={tone}
               aria-invalid={invalid ? true : undefined}

@@ -40,8 +40,8 @@ const TONES = {
 type Tone = keyof typeof TONES;
 
 const PARAGRAPHS = [
-  "Select any of this text and a small bar appears over it. It is the tooltip's material — the same fill, the same hairline, the same drop shadow — holding two ghost buttons, because a selection toolbar is an annotation on what you just did rather than a panel you opened.",
-  "The bar is anchored to the selection itself rather than to any element, so it follows the text as the page scrolls, and it waits for you to let go of the mouse before it appears. Pressing an action dismisses it: the selection has been acted on, and a bar that lingers over it is just something else to close.",
+  "Select text to copy or highlight it. Choose a color in the toolbar to change the highlighter.",
+  "Highlights remain while you select another passage. Use Clear to remove all highlights.",
 ];
 
 /** A highlighted span, as character offsets into one paragraph's text. */

@@ -27,10 +27,9 @@ a footer pinned inside it doesn't scroll away with the content.
 Nothing renders there until something portals in. The slot is `display: contents`, so the
 portalled panel becomes a direct flex child of the row and sets its own width.
 
-`useSidebarLayoutRailSlot()` returns the slot element, or `null` outside a layout. Use it instead
-of looking up the id during render: the slot isn't in the document during the first render, and
-the hook provides it one render later. `SIDEBAR_LAYOUT_RAIL_SLOT_ID` is exported for code that
-can't reach the context.
+`useSidebarLayoutRailSlot()` returns the slot's mount point, or `null` when it is unavailable.
+Prefer the hook to a DOM lookup. `SIDEBAR_LAYOUT_RAIL_SLOT_ID` is exported for code that cannot
+access the context.
 
 ```tsx
 function DetailRail({ children }: { children: ReactNode }) {

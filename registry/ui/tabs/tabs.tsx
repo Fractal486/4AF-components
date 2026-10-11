@@ -63,17 +63,15 @@ export interface TabsProps
   variant?: Variant;
   /**
    * The track and chip treatment, `segment`/`pill` only (`underline` ignores it).
-   * `default` is a raised surface chip on a muted track; `solid` a dark, borderless chip on a
-   * brighter track; `outline` a bordered, unfilled track with a muted fill under the selected
+   * `default` is a raised surface chip on a muted track; `solid` a borderless background
+   * chip on a border track; `outline` a bordered, unfilled track with a muted fill under the selected
    * tab, at the same heights. @default "default"
    */
   appearance?: TabsAppearance;
   /** @deprecated Use `appearance="solid"`. Ignored when `appearance` is set. */
   solid?: boolean;
   /**
-   * `sm` drops a type step and tightens the padding, putting the pill track at 32px — the
-   * height of an Input or a small Button, so a row of tabs lines up with the controls beside
-   * it rather than standing a row taller. @default md
+   * `sm` uses smaller text and tighter spacing, with a 32px pill track. @default md
    */
   size?: Size;
   className?: string;

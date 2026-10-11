@@ -19,7 +19,7 @@ const SECTIONS: (TocItem & { body: string })[] = [
     id: "toc-installation",
     title: "Installation",
     level: 2,
-    body: "Copy the component in, wire it to your headings, and give each heading a stable id. The list is data — an array of { id, title, level } — so it stays in sync with the page however you generate it.",
+    body: "Install with the 4AF CLI, then pass an array of { id, title, level } that matches the page headings. Give each heading a stable ID.",
   },
   {
     id: "toc-usage",
@@ -31,13 +31,13 @@ const SECTIONS: (TocItem & { body: string })[] = [
     id: "toc-configuration",
     title: "Configuration",
     level: 3,
-    body: "Levels drive the indent, so a nested heading sits under its parent. Use the span variant to show every visible heading, or single to keep the marker beside one current heading.",
+    body: "Heading levels control indentation. Nested headings sit under their parent, and the active entry follows your scroll position.",
   },
   {
     id: "toc-styling",
     title: "Styling",
     level: 3,
-    body: "The rail and marker are aligned SVG strokes. Colour and spacing come from semantic tokens and utilities, so the whole thing re-themes with the rest of the library.",
+    body: "Colors and spacing use the library’s theme tokens. Adjust them with utilities to match the surrounding page.",
   },
   {
     id: "toc-accessibility",

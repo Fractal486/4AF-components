@@ -90,34 +90,12 @@ export const dataTableSortIconVariants = cva([
 ]);
 
 /**
- * The actions column's reveal.
+ * Reveal actions on row hover, visible keyboard focus within the row, or an open menu.
+ * Keep the open-menu condition because portal focus leaves the row. Use `focus-visible`
+ * so pointer-restored focus alone does not reveal actions. Selection does not reveal them.
  *
- * On the contents, never on the cell: the column is `w-px` and sized by what it holds, so
- * hiding the cell itself would collapse the column and shift every other one each time the
- * pointer crossed a row.
- *
- * Opacity rather than `hidden` or `display: none`, because the control has to stay in the tab
- * order — visible focus inside the row is what brings it back for a keyboard user who can't
- * hover to find it.
- *
- * `focus-visible`, not `focus-within`, and the difference is the whole reason this is written
- * the long way. Dismissing the menu returns focus to the trigger, as it should; but a dismissal
- * by *pointer* restores that focus without the browser marking it visible. Keyed off
- * `focus-within`, a click anywhere outside the table left the ⋯ of whichever row you had last
- * opened stranded on screen — revealed by the focus, dimmed because nothing was hovering it.
- * `:has(*:focus-visible)` reveals it for the keyboard user and stays out of the pointer's way.
- *
- * Selection deliberately does *not* hold it up. Ticking a few rows would otherwise light up a
- * column of ⋯ buttons that have nothing to do with the bulk action being set up, and the noise
- * grows with the size of the selection. The pointer says which row you mean; the checkbox does
- * not.
- *
- * An open menu holds it up too, and that one is not a nicety: a menu portals its popup, so focus
- * leaves the row entirely — without this, moving the pointer off a row would fade out the very
- * trigger whose menu is standing open in front of you.
- *
- * The last clause is the one that matters most in practice. A pointer that can't hover has no
- * way to reveal anything, so on touch the column is simply always there.
+ * Animate opacity on the contents, not the cell, to preserve column width and tab order.
+ * Always show actions on devices without hover.
  */
 export const dataTableRowActionsVariants = cva([
   "flex items-center justify-end opacity-0",
@@ -128,16 +106,8 @@ export const dataTableRowActionsVariants = cva([
 ]);
 
 /**
- * The row menu's trigger.
- *
- * Two separate signals, and conflating them is the mistake this exists to avoid: the *row's*
- * hover reveals the glyph, and the *glyph's* own hover lifts it. Button's `plain` variant is
- * `text-foreground`, so without this the ⋯ would arrive at full strength the instant the pointer
- * touched anywhere in the row — announcing itself as the thing you were reaching for when you
- * were most likely reaching past it.
- *
- * Muted on arrival, then foreground when the pointer is actually on it, when it takes focus, and
- * while its menu stands open.
+ * The row's hover reveals the trigger in muted ink. The trigger's own hover, focus,
+ * or open menu strengthens it to foreground ink.
  */
 export const dataTableRowActionsTriggerVariants = cva([
   "text-muted-foreground transition-[color] duration-(--duration-fast) ease-out",

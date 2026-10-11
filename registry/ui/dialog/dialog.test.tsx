@@ -79,7 +79,7 @@ describe("DialogSteps", () => {
       ),
     );
     expect(screen.queryByRole("button", { name: "Next" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Save changes" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Done" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Go to Review" })).toHaveAttribute(
       "aria-current",
       "step",
@@ -129,7 +129,7 @@ describe("DialogSteps", () => {
     expect(validateStep).toHaveBeenCalledWith(0, "forward");
   });
 
-  it("blocks the final Save action when submission is invalid", async () => {
+  it("blocks the final Done action when completion is invalid", async () => {
     const user = userEvent.setup();
     const validateStep = vi.fn(() => false);
 
@@ -142,9 +142,9 @@ describe("DialogSteps", () => {
       </Dialog>,
     );
 
-    await user.click(screen.getByRole("button", { name: "Save changes" }));
+    await user.click(screen.getByRole("button", { name: "Done" }));
 
-    expect(screen.getByRole("button", { name: "Save changes" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Done" })).toBeInTheDocument();
     expect(validateStep).toHaveBeenCalledWith(1, "submit");
   });
 });

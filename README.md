@@ -27,9 +27,9 @@ The dependency direction remains one-way: `app/content/stories` → `inspector` 
 Anything under `registry/` must remain independent from Next.js, Fumadocs, and the demo
 site.
 
-Every installable component now has a Fumadocs page. Each page includes an interactive demo
-and a shared Install & Usage panel. The old inspector routes and story files are gone; the
-data-driven entries remain as the demo source for those pages.
+Every installable component has a Fumadocs page with a shared Install & Usage panel.
+Component pages load interactive demos from `inspector/entries` through the shared Fumadocs
+adapter.
 
 Every page is also available as Markdown by appending `.md` to its URL, for example
 `/docs/button.md` or `/docs.md` for the overview.
@@ -58,7 +58,7 @@ pnpm registry:build      # Generate private install files in public/r
 1. From this repository, run:
 
    ```bash
-   pnpm 4af install button --project C:\Projects\my-app
+   pnpm 4af install button --project /absolute/path/to/my-app
    ```
 
    Replace `button` with any name shown by `pnpm 4af list`.
@@ -69,7 +69,7 @@ pnpm registry:build      # Generate private install files in public/r
 2. To check a target project before installing:
 
    ```bash
-   pnpm 4af doctor --project C:\Projects\my-app
+   pnpm 4af doctor --project /absolute/path/to/my-app
    ```
 
 Dependencies and the 4AF theme are included automatically. Agents should use this CLI

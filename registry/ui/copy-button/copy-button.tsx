@@ -63,19 +63,9 @@ export interface CopyButtonProps
 }
 
 /**
- * Copies to the clipboard and confirms it.
- *
- * This is ActionButton with one specific action, and that's the whole point: the state
- * machine — pending, success, failure, the revert timer, the unmount guard, the
- * announcement — lives in exactly one place. Copying is the only thing this file owns,
- * and the only thing about copying that's hard is `navigator.clipboard` not existing
- * half the time.
- *
- * For a plain string the spinner never appears: a clipboard write resolves in about a
- * millisecond, and the `pendingDelay` below outlives it, so the button goes straight from
- * copy to check — which is what actually happened. A lazy `value` that has to fetch
- * outlives the same delay and does show it, which is equally honest: the delay separates
- * "instant" from "actually waiting" rather than hiding the spinner outright.
+ * Copies text to the clipboard with ActionButton's status feedback and announcements.
+ * The loader appears if resolving the value and writing it to the clipboard takes
+ * longer than `pendingDelay` (50ms by default).
  */
 export function CopyButton({
   value,
@@ -104,18 +94,8 @@ export function CopyButton({
       icon={icon}
       variant={variant}
       size={buttonSize}
-      // Just long enough to tell "already done" from "actually waiting", and no longer.
-      //
-      // A resolved string, or a function that returns one, finishes within a microtask —
-      // far inside this window — so the spinner never appears for a copy that was instant,
-      // which would read as a glitch rather than as progress. Anything that genuinely
-      // waits (a fetch behind a lazy `value`) crosses it and gets the spinner.
-      //
-      // It has to stay small. At a couple of hundred milliseconds it lands *after* the
-      // press spring has settled, so the button visibly finishes its press, sits there,
-      // and only then admits it's working — the delay stops reading as "instant" and
-      // starts reading as lag. 50ms is ~3 frames: below the threshold where a person
-      // perceives a gap at all, and still an eternity next to a microtask.
+      // Avoid a brief loader for fast copies; slower value resolution or clipboard
+      // writes show it after 50ms.
       pendingDelay={50}
       // With a label, the label names the button. Without one there's no text at all,
       // so it needs an aria-label — and adding one *as well as* a label would override

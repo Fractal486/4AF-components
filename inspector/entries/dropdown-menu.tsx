@@ -138,7 +138,7 @@ export const dropdownMenuEntry = defineEntry({
               work settles, so the row never claims to be muted before it is. */}
           <DropdownMenuCheckboxItem
             action={() => new Promise((resolve) => setTimeout(resolve, 1200))}
-            announce={{ pending: "Muting thread" }}
+            announce={{ pending: "Updating mute status" }}
           >
             Mute thread
           </DropdownMenuCheckboxItem>

@@ -31,7 +31,7 @@ export function ActionToggleDemo({
       icon={<Plus />}
       icons={{ pressed: <Check /> }}
       labels={{ pressed: "Following", error: "Try again" }}
-      announce={{ pending: "Following", error: "Could not follow" }}
+      announce={{ pending: "Updating follow status", error: "Could not update follow status" }}
     >
       Follow
     </ActionToggle>

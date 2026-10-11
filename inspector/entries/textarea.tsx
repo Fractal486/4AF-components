@@ -27,7 +27,7 @@ export const textareaEntry = defineEntry({
           aria-label="Textarea preview"
           rows={4}
         />
-        {invalid && <Alert id="textarea-error">Please enter a valid value.</Alert>}
+        {invalid && <Alert id="textarea-error">Example validation error.</Alert>}
       </div>
     );
   },

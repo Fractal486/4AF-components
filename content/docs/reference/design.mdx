@@ -9,8 +9,9 @@ floating above it.
 
 ## Color palette and roles
 
-Components consume semantic roles, never raw palette values. A consuming project can reskin
-the library by remapping those roles without rewriting component classes.
+Components consume semantic roles by default. Direct palette ramps are reserved for status
+accents and fixed neutral control states. A consuming project can reskin the semantic roles;
+it must also remap the relevant ramps to change those exceptions.
 
 | Role | Light treatment | Dark treatment | Purpose |
 | --- | --- | --- | --- |
@@ -25,6 +26,9 @@ the library by remapping those roles without rewriting component classes.
 Primary is ink, not colour. Amber is used for focus and rare emphasis; destructive red and
 success green appear only when they mean something. Quiet destructive actions, such as menu and
 toolbar rows, use red text without a red hover fill.
+
+The destructive fill deliberately favors a brighter red with white text. This pairing falls
+below the 4.5:1 contrast target for normal text; OKLCH lightness alone is not a contrast check.
 
 A component's fill communicates its layer. `background` is the page and sunk wells such as
 Input, Checkbox, Radio, and Sidebar Inset. `surface` is chrome and anchored popups such as
@@ -60,6 +64,16 @@ Checkbox is fixed at 16px with a 4px radius. Other rectangular controls follow t
 6px for compact controls and 8px for form rows. Circular, pill-shaped, status, and list-row
 elements keep their own geometry.
 
+### Optical alignment
+
+Center icon-only controls by their SVG box. If a glyph appears off-center, inspect its ink with
+`getBBox()` before adding an offset: a glyph may already be optically balanced within the box,
+so a blanket shift can misalign it. Correct a custom glyph inside its SVG rather than moving
+every icon-only button.
+
+Beside text, leading and trailing icons use `data-icon-start` / `data-icon-end` to reduce the
+padding on their side by 2px. Keep this text-button spacing separate from icon-only centering.
+
 ## Depth and elevation
 
 Buttons and cards use `shadow-border`: a translucent hairline ring, a close lift, and a soft
@@ -90,11 +104,14 @@ scroll. Popups open next to the control that opened them.
 
 ## Motion language
 
-CSS handles hover, focus, press, and simple entrances. The Motion library is used only for
-exit animations, gestures, springs, and layout animation. Transitions name the exact properties
-they change.
+CSS handles hover, focus, ordinary press feedback, and simple entrances and exits. Button and
+Toggle use Motion for spring presses. Motion also handles retained exits such as Morph's outgoing
+content, gestures, springs, and layout animation. Transitions name the exact properties they
+change and prefer compositor-friendly motion; Collapsible and Sidebar have documented layout-motion
+exceptions.
 
-Four durations, fast, base, slow, and slower, cover everything from focus feedback to sheets.
-Under reduced motion, CSS transitions collapse to 1ms so lifecycle events still fire, and
-Motion transitions run with zero duration. Looping loaders keep their own speed rather than
-collapsing into a strobe.
+Four CSS durations, fast, base, slow, and slower, cover focus feedback through sheets. JavaScript
+duration and easing defaults mirror the CSS tokens and must be updated together; runtime CSS
+overrides do not change JavaScript animations. Under reduced motion, CSS transitions collapse to
+1ms so lifecycle events still fire, and Motion transitions run with zero duration. Looping loaders
+keep their own speed rather than collapsing into a strobe.

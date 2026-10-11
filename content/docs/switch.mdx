@@ -10,6 +10,8 @@ description: A Base UI switch with a rounded center-pill press response.
 
 **Main export:** `Switch`
 
-A Base UI switch with a sliding thumb and adaptive or fixed tone. On pointer press, only the
-thumb's middle section grows toward the track's center between fixed rounded end caps, so the
-response reads as a short pill instead of a stretched oval.
+A Base UI switch with a sliding thumb that expands toward the track's center while pressed
+with a pointer.
+
+`tone="adaptive"` (default) changes the thumb color with the checked state to contrast with the
+track. `tone="fixed"` keeps the thumb dark in both states.

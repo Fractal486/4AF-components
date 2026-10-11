@@ -360,8 +360,9 @@ export interface AlignedSelectContentProps extends ComponentProps<typeof BaseSel
   /** Shown in place of the list when a query matches nothing. */
   emptyMessage?: ReactNode;
   /**
-   * Make the first row active when a searchable panel opens, so Enter has an answer without
-   * an arrow press. Turn it off for menu-like uses. @default true
+   * Activate the selected row when a searchable panel opens, or the first enabled row
+   * when nothing is selected. A query activates the first enabled match. Search-field
+   * focus is separate. Set false for menu-like uses. @default true
    */
   autoFocusFirstItem?: boolean;
   /** Names the search field for screen readers. */

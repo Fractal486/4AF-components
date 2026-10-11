@@ -10,7 +10,7 @@ export const scrambleTextEntry = defineEntry({
       min: 8,
       max: 160,
       step: 8,
-      label: "Interval",
+      label: "Interval (ms)",
     }),
   },
   render({ label, intervalMs }) {

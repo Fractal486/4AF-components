@@ -54,7 +54,9 @@ describe("CommandPalette", () => {
     );
 
     await user.type(screen.getByPlaceholderText("Type a command or search…"), "status");
-    expect(await screen.findByRole("alert")).toHaveTextContent("Search failed. Try again.");
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Search failed. Change your query to retry.",
+    );
   });
 
   it("keeps its query when a controlled owner rejects a close request", async () => {

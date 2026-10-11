@@ -23,18 +23,9 @@ export interface UseActionOptions {
 }
 
 /**
- * Run something, report how it went, and put the status away again.
- *
- * This is the part of "a button that does a thing" that isn't the button. Every app
- * writes it by hand and every app gets some part of it wrong: the double-submit while
- * the request is in flight, the `setState` landing on an unmounted component, the
- * failure that silently renders as success, the revert that fires on the previous
- * press's clock.
- *
- * It's a hook rather than a component because the same machine has to drive things that
- * are not buttons — a menu row that briefly reads "Copied", say — and those can't borrow
- * a button's markup to get its behaviour. `ActionButton` is this hook plus a Button;
- * `DropdownMenuActionItem` is this hook plus a menu row.
+ * Runs an action with pending, success, and error states. Prevents concurrent runs,
+ * ignores updates after unmount, and resets the outcome after `revertAfter`.
+ * Shared by ActionButton and asynchronous menu rows.
  */
 export function useAction({
   action,

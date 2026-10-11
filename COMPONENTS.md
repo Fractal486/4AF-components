@@ -1,6 +1,6 @@
 # 4AF Components
 
-The documentation is organized by topic instead of duplicated in one registry essay:
+## Documentation index
 
 - [Overview](content/docs/index.mdx)
 - [Generated component catalog](content/docs/reference/components.mdx)
@@ -8,84 +8,20 @@ The documentation is organized by topic instead of duplicated in one registry es
 - [Design system](content/docs/reference/design.mdx)
 - [Engineering contract](content/docs/reference/engineering.mdx)
 - [Agent skill](.agents/skills/4af-components/SKILL.md)
+- [Component chooser for agents](.agents/skills/4af-components/references/component-catalog.md)
 
-Component-specific APIs and composition guidance live on the matching page under
-[`content/docs/`](content/docs/). Agents can print one page as plain Markdown with
-`pnpm 4af docs <component>`. `registry.json`, component source, and `pnpm 4af list` remain
-authoritative for installable items.
+## Sources of truth
 
-Loading states accept a caller-supplied `loader` node. `LoaderProvider loader={<MySpinner />}`
-sets a subtree default, including menus; local slots override it and custom pending
-icons take precedence. ASCII is the fallback. The small helper installs with consuming components;
-Classic, Matrix, or a custom loader remain optional. Copy/Delete Button and selection-toolbar
-actions inherit this through their buttons. See the engineering page for composition examples.
+Component APIs, examples, and composition guidance belong on the matching page under
+[`content/docs/`](content/docs/). Run `pnpm 4af docs <component>` to read that page as plain
+Markdown, including its canonical install and usage examples from
+[`lib/component-reference.ts`](lib/component-reference.ts).
 
-`TextShimmer` uses a translating masked overlay, with static text for reduced motion or
-unsupported text masks. Its component and shared registry theme must stay in sync; the
-`animate-text-shimmer` class activates the overlay without a Tailwind animation token.
-`Tooltip` honors Base UI's instant state when moving between provider-linked triggers.
-Split-sidebar rail tooltips keep their transition during these instant openings.
+[`registry.json`](registry.json) and `pnpm 4af list` define the installable catalog;
+[`registry/ui/`](registry/ui/) defines the implementation and props. The website catalog and
+count are generated from the registry. Demo entries illustrate usage and do not define install
+boundaries.
 
-`TabsList` accepts `maxWidth` to enable horizontal scrolling with directional edge fades in
-all three tab variants. Clicking a tab toward a faded side brings it toward the center.
-
-`CommandPalette` panels have their own tab row: `CommandPanelTabs` puts tabs directly under a
-custom panel's header, marked by a sliding `fill` or `underline` indicator. Use it rather than
-nesting `Tabs` in a panel — its indicator corrects for the palette's entrance scale.
-Tab / Shift+Tab cycle enabled panel tabs with wraparound while keeping search focus.
-`initialItemId` opens the palette straight onto one page; Escape there closes the palette.
-
-`ActionButton` defaults to a label beside its pending loader. Use `pendingMode="icon"` for a
-centered loader-only pending state; the label morphs out as the loader morphs in, and it keeps
-the label-sized content box so the button does not resize while the action runs.
-
-The table family is split on state. `table` presents rows — densities, borders, a pinned header,
-a caption, a loading state — and has no controls at all. `data-table` composes it and adds every
-control: the checkbox column, the selection action row, column sorting, and the per-row actions
-column. Open a gutter column on the root (`selectable`, `actionColumn`), never by writing cells
-into individual rows.
-
-Both Table of Contents variants own their constrained navigation rail: set a height with
-`className`, pass `rootRef` for an independently scrolling article, and they will keep the active
-entry centered while hiding only the rail's browser scrollbar. Their heading tracking and
-click-to-scroll behavior comes from the shared `table-of-contents-tracking` helper.
-
-`SidebarMenuCollapsible` is the expandable-row primitive inside `sidebar`; its trigger includes
-a trailing `ChevronDown` by default and rotates it from right to down as the panel opens. Pass
-`chevron={false}` when supplying a custom indicator. A sibling `SidebarMenuAction` is laid out
-immediately before the chevron. A sibling `SidebarMenuBadge` reserves a slot before the action
-and chevron, so counters do not overlap either control. Hovering nested rows keeps the highlight
-on the row under the pointer rather than highlighting the collapsible parent. `SidebarGroup`
-remains a visual grouping
-wrapper and is not collapsible on its own.
-
-Offcanvas sidebars hide collapsed navigation from keyboard focus and assistive technology.
-Keep a `SidebarTrigger` outside the panel in the same provider so keyboard users can reopen it;
-collapse returns focus there when focus was inside the navigation.
-
-The installable select variants are `select`, `select-search`, and `select-aligned`.
-
-The `select` family includes `SelectSeparator` for accessible dividers between option groups.
-It is a Base UI list part, not an option, so it stays out of highlighting and selection. The
-opt-in `clearable` footer uses a compact `xs` ghost Button, carries an `X` glyph that
-`clearIcon` overrides (`null` for a word on its own), and includes a `SelectSeparator` above
-it by default; `footerActions` puts the panel's own buttons in that same row, sharing its width
-and taking the same active mark, with `clearable` appended to them. Multi-select submenu triggers show their selected-child count before the chevron.
-`SelectItem` takes `indicator={false}` for a row that acts rather than selects — it drops the
-multi-select checkbox and the single-select tick.
-The `select` and `select-aligned` triggers also accept `variant="ghost"`: Button ghost colors with
-the default trigger geometry, keeping leading and trailing icons aligned.
-They also accept an optional dimmed `label` before the value, such as `Fruit: Banana`.
-The base `select` also accepts `size="xs"` for a 24px trigger and popup rows; `sm` and `md`
-remain the 30px and 34px shared sizes.
-`select-aligned` additionally accepts `size="xs"` for a 24px trigger and popup rows; `sm` and
-`md` keep the trigger and rows at their matching sizes.
-
-`MatrixLoader` is the compact 4×4 status loader. Use `variant` for the scan or twinkle
-delay pattern, and `label` only when the loader itself should announce the
-busy state.
-
-`ClassicLoader` is the twelve-bar radial spinner adapted from loading.dev. Install
-`classic-loader` for a local CSS-only copy with size and speed (a playback multiplier) controls;
-it inherits `currentColor`. Its upstream MIT notice travels with the installed source.
-Use `label` only when the spinner itself should announce the busy state.
+When API or behavior changes, update its owning component page and canonical usage reference.
+Keep this file as an index and the agent chooser focused on selecting components; link to the
+owning page instead of adding another copy of its API guidance.

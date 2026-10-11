@@ -312,7 +312,7 @@
     {
       "name": "loader",
       "type": "registry:lib",
-      "description": "Small context and loading slot for caller-supplied indicators, with an ASCII fallback.",
+      "description": "Small context and loading slot for caller-supplied indicators, with AsciiLoader as the fallback.",
       "registryDependencies": [
         "http://localhost:3000/r/cn.json",
         "http://localhost:3000/r/ascii-loader.json"
@@ -427,7 +427,7 @@
     {
       "name": "textarea",
       "type": "registry:ui",
-      "description": "A multi-line field sharing the Input treatment (border, focus ring, variant/tone), plus a custom drag-to-resize corner grip in place of the native handle.",
+      "description": "A multiline text field with neutral or accent focus styling and an optional resize handle.",
       "dependencies": [
         "class-variance-authority"
       ],
@@ -452,7 +452,7 @@
     {
       "name": "alert",
       "type": "registry:ui",
-      "description": "An inline status line — a glyph plus a sentence, no surface. Destructive error (role=alert), amber warning, green success, neutral info, and a muted loading line with the ASCII spinner.",
+      "description": "An inline status line — a glyph plus a sentence, no surface. Destructive error (role=alert), amber warning, green success, neutral info, and a muted loading line with AsciiLoader by default.",
       "dependencies": [
         "class-variance-authority",
         "lucide-react"
@@ -478,7 +478,7 @@
     {
       "name": "toggle",
       "type": "registry:ui",
-      "description": "A button that holds a state. Fills its icon rather than swapping it.",
+      "description": "A button with a persistent pressed state and optional icon fill.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -581,7 +581,7 @@
     {
       "name": "action-toggle",
       "type": "registry:ui",
-      "description": "A toggle whose state has to be earned: it waits on an async action, lands when it succeeds, and stays put when it fails. Follow/Following, Subscribe/Subscribed.",
+      "description": "A toggle that changes state after its action succeeds and preserves its previous state on failure.",
       "dependencies": [
         "lucide-react"
       ],
@@ -602,7 +602,7 @@
     {
       "name": "tabs",
       "type": "registry:ui",
-      "description": "Segment, pill, or underline tabs with a travelling indicator, a default, solid, or outline appearance for segment and pill, an optional TabsCount after a label, and optional max-width scrolling with edge fades. Base UI behaviour, Motion layout animation.",
+      "description": "Segment, pill, or underline tabs with an animated indicator, optional counts, and horizontal scrolling.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -758,7 +758,7 @@
     {
       "name": "badge",
       "type": "registry:ui",
-      "description": "A plain, solid, or gray-outline status badge with rounded or pill-shaped boxed geometry that morphs its glyph and label on change, and springs to the new width. Status glyphs can be replaced per badge (icons) or per subtree (BadgeIconsProvider). A color prop overrides the solid fill with any CSS colour. Uses the shared Morph animation for content swaps and layout motion; tokens for the status tints (amber warning, green success).",
+      "description": "A status badge with animated content changes, optional icons or dots, and plain, solid, or outline styles.",
       "dependencies": [
         "class-variance-authority",
         "lucide-react",
@@ -787,7 +787,7 @@
     {
       "name": "skeleton",
       "type": "registry:ui",
-      "description": "A loading placeholder — a square muted block that pulses while content loads, shaped entirely by utility classes; reduced motion switches the pulse off rather than strobing.",
+      "description": "A muted placeholder with square corners by default, shaped by utility classes. Pulses while content loads; reduced motion disables the pulse.",
       "dependencies": [],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
@@ -855,7 +855,7 @@
     {
       "name": "data-table",
       "type": "registry:ui",
-      "description": "The stateful table: a checkbox column with an indeterminate select-all, a selection action row that covers the header, three-step column sorting, and a per-row actions column with a ready-made row menu that reveals on hover or focus. Composes the presentational table rather than replacing it.",
+      "description": "A table with row selection, sort controls, bulk actions, and row menus. The caller orders the data.",
       "dependencies": [
         "class-variance-authority",
         "lucide-react",
@@ -979,7 +979,7 @@
     {
       "name": "scramble-text",
       "type": "registry:ui",
-      "description": "A short encrypted-character reveal for text that is appearing or changing, with whitespace preservation and reduced-motion support.",
+      "description": "A short random-character reveal for text that is appearing or changing, with whitespace preservation and reduced-motion support.",
       "dependencies": [],
       "registryDependencies": [
         "http://localhost:3000/r/4af-theme.json",
@@ -996,7 +996,7 @@
     {
       "name": "select",
       "type": "registry:ui",
-      "description": "A single or multi-select on Base UI — keyboard, typeahead and collision-aware positioning — with 24px xs, 30px sm, and 34px md trigger and option-row sizes, default, ghost, and plain trigger variants, plus optional dimmed labels before values. Plain panels size to the longest option plus the check slot by default. The panel blurs and scales in from the trigger; multi-select keeps it open while animated checkbox rows are toggled, and optional separators, nested panels with selected counts, panel search, and a compact xs ghost clear footer keep related choices in place.",
+      "description": "Single or multiple selection with optional search, nested options, and footer actions.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -1203,7 +1203,7 @@
     {
       "name": "select-aligned",
       "type": "registry:ui",
-      "description": "A select with default, ghost, and plain trigger variants plus an optional dimmed label before the value that opens on its trigger rather than below it: the default and ghost panels take the trigger's width, while plain panels size to the longest option plus the check slot; the selected row lands on the value it replaces, the macOS pop-up button behaviour. Optional 24px xs trigger and popup rows, dimmed sections, and a pinned in-panel search field.",
+      "description": "A single-select menu that aligns the selected option with its trigger when space and input method allow.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -1272,7 +1272,7 @@
     {
       "name": "selection-toolbar",
       "type": "registry:ui",
-      "description": "A bar of actions over selected text. Base UI Popover anchored to the range itself plus Base UI Toolbar for the row; plain, async, toggle and exclusive-group items. It swallows mousedown so the press can't collapse the selection, and hands the captured text to the action.",
+      "description": "A floating toolbar for selected text, with action buttons, async actions, and toggles.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority"
@@ -1365,7 +1365,7 @@
     {
       "name": "alert-dialog",
       "type": "registry:ui",
-      "description": "A modal that interrupts to force a decision. Base UI AlertDialog behaviour (role=alertdialog, no click-away dismiss); shares Dialog's Motion enter/exit.",
+      "description": "A confirmation dialog that blocks backdrop dismissal. Escape and close controls dismiss it.",
       "dependencies": [
         "@base-ui/react",
         "motion"
@@ -1387,7 +1387,7 @@
     {
       "name": "date-picker",
       "type": "registry:ui",
-      "description": "A date or date-range field that opens a calendar in a Base UI popover, or a bottom sheet on phones. react-day-picker owns the grid and keyboard navigation; focus opens on the selected day (or today), months slide in from the direction travelled with a CSS-only transition, and a half-picked range previews under the pointer. Default, ghost, and plain triggers in xs, sm, and md; optional clear action and hidden ISO form value. Also exports the standalone Calendar.",
+      "description": "Date and date-range fields with a desktop popover, mobile sheet, and standalone Calendar.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -1422,7 +1422,7 @@
     {
       "name": "breadcrumb",
       "type": "registry:ui",
-      "description": "A breadcrumb trail: nav landmark, ordered list, links with asChild, aria-current page, presentational separators mirrored in RTL, sm and md sizes. BreadcrumbCollapse hides a run of middle crumbs behind an ellipsis button and reveals them in place with a transform-only FLIP; the ellipsis can also render onto a menu trigger.",
+      "description": "A breadcrumb trail with links, separators, and expandable middle items.",
       "dependencies": [
         "class-variance-authority",
         "lucide-react"

@@ -30,9 +30,8 @@ leaving the glyph directly beside the label. The focus ring remains for keyboard
 It also accepts an optional `label`, rendered as a dimmed prefix before the value. For example,
 `label="Fruit"` displays `Fruit: Banana`.
 
-When `AlignedSelectContent` has no explicit `width`, it follows the trigger.
-Default and ghost panels use the trigger's width; plain panels use the longest option label plus
-the reserved checkmark slot. Set `width="trigger"` or `width="content"` to override.
+By default, default and ghost panels match the trigger width; plain panels fit their content.
+Set `width="trigger"` or `width="content"` on `AlignedSelectContent` to override.
 
 ```tsx
 <AlignedSelectTrigger variant="plain" label="City" placeholder="Pick a city" />

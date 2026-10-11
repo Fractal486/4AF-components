@@ -41,16 +41,8 @@ With an icon, the icon and label stay centred as a group.
 
 `loader={<MySpinner />}` sets this button's indicator, and
 [LoaderProvider](/docs/reference/engineering#shared-loading-indicators) sets a default for a
-subtree. ASCII is the fallback. Copy Button and Delete Button inherit the slot. The deprecated
-SVG `Spinner` export also follows the provider.
-
-The glyph and the label morph in separate boxes in Action Button, Action Toggle, and the menu's
-action row. The reserved glyph box keeps the label in place across loader styles and the success
-and error icons.
+subtree. `AsciiLoader` is the fallback. Copy Button and Delete Button inherit the slot.
 
 A label only animates when it changes. Pass `labels={{ pending: "Saving" }}` when the word should
 change, and leave it out when only the glyph should move. With `pendingMode="icon"`,
 `labels.pending` is not shown.
-
-Action Toggle with `fillIcon` and no `icons.pressed` does not swap its glyph on press; the fill
-transition is the only change.

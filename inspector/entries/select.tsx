@@ -59,7 +59,7 @@ function FruitOptions({ icons }: { icons: boolean }) {
 
 export const selectEntry = defineEntry({
   slug: "select",
-  name: "BaseUI",
+  name: "Select",
   controls: {
     size: select(["xs", "sm", "md"] as const, "sm"),
     disabled: bool(false),

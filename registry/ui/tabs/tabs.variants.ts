@@ -33,14 +33,14 @@ export const tabsListVariants = cva("relative flex items-center", {
     },
     /* The track and chip treatment (segment/pill only; underline ignores it):
        `default` — a raised surface chip with a hairline on a muted track;
-       `solid` — a dark, borderless chip on a brighter track;
+       `solid` — a borderless background chip on a border track;
        `outline` — a bordered, unfilled track with a muted fill under the selected tab. */
     appearance: { default: "", solid: "", outline: "" },
     size: { sm: "", md: "" },
   },
   compoundVariants: [
     { variant: ["segment", "pill"], appearance: "default", class: "bg-muted" },
-    // Brighter track so the dark, borderless pill reads against it.
+    // Border track behind the borderless background chip.
     { variant: ["segment", "pill"], appearance: "solid", class: "bg-border" },
     { variant: ["segment", "pill"], appearance: "outline", class: "border border-border" },
     /* Radii are concentric — outer = inner + padding — so a 2px track around a 6px tab
@@ -79,8 +79,8 @@ export const tabVariants = cva(
     // Base UI drives selection, and the attribute it actually sets is `aria-selected`
     // — not `data-selected`. Styling off the ARIA attribute has the nice property that
     // the styling can't drift from what a screen reader is told. `text-foreground` reads
-    // on both pills: light ink on the surface chip, and the flipped light-on-dark on the
-    // solid one (the background fill is dark in dark mode, near-white in light).
+    // on both chips: foreground text contrasts with the surface or background fill
+    // in either theme.
     "text-muted-foreground hover:text-foreground aria-selected:text-foreground",
   ],
   {
@@ -93,9 +93,7 @@ export const tabVariants = cva(
         underline: "-mb-px",
       },
       appearance: { default: "", solid: "", outline: "" },
-      /* `sm` drops a type step and tightens the padding, landing the pill track on 32px —
-         the height of an Input or a small Button, so a row of tabs lines up with the
-         controls beside it instead of standing a row taller. */
+      /* `sm` uses smaller text and tighter spacing, with a 32px pill track. */
       size: { sm: "text-xs", md: "text-sm" },
     },
     compoundVariants: [
@@ -120,8 +118,9 @@ export const tabVariants = cva(
 /**
  * The travelling indicator. One per list, positioned over the selected tab.
  *
- * Only the vertical placement and the look live here — `left` and `width` are measured
- * from the active tab and animated inline, so they must not be set in these classes.
+ * Only the vertical placement and appearance live here. `left` and `width` define the
+ * measured target; Motion animates the layout change with transforms. Do not set those
+ * target properties in these classes.
  * `inset-y-*` matches the list's padding so the chip lines up with the tab it sits under.
  */
 export const tabIndicatorVariants = cva("pointer-events-none absolute z-0", {
@@ -135,7 +134,7 @@ export const tabIndicatorVariants = cva("pointer-events-none absolute z-0", {
     size: { sm: "", md: "" },
   },
   compoundVariants: [
-    // Raised surface chip with a hairline, vs. a dark borderless fill.
+    // Raised surface chip with a hairline, or a borderless background fill.
     { variant: ["segment", "pill"], appearance: "default", class: "bg-surface shadow-border" },
     { variant: ["segment", "pill"], appearance: "solid", class: "bg-background" },
     { variant: ["segment", "pill"], appearance: "outline", class: "bg-muted" },

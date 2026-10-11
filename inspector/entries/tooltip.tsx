@@ -23,7 +23,7 @@ export const tooltipEntry = defineEntry({
           <Tooltip content={content} side={side} align={align}>
             <Button variant="outline">Hover me</Button>
           </Tooltip>
-          <Tooltip content="Opens instantly — the grace window is still warm" side={side} align={align}>
+          <Tooltip content="Preview deployment" side={side} align={align}>
             <Button variant="outline">And me</Button>
           </Tooltip>
         </div>

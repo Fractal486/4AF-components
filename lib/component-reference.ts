@@ -8,8 +8,6 @@ export const componentReferences = {
 
 <ActionButton
   action={() => saveChanges()}
-  pendingMode="icon"
-  loader={<MySpinner />}
   labels={{ success: "Saved" }}
 >
   Save changes
@@ -18,7 +16,7 @@ export const componentReferences = {
   "action-toggle": {
     usage: `import { ActionToggle } from "@/components/ui/action-toggle";
 
-<ActionToggle loader={<MySpinner />} action={(following) => setFollowing(following)}>
+<ActionToggle action={(following) => setFollowing(following)}>
   Follow
 </ActionToggle>`,
   },
@@ -26,7 +24,7 @@ export const componentReferences = {
     usage: `import { Alert } from "@/components/ui/alert";
 
 <Alert variant="success">Changes saved.</Alert>
-<Alert variant="loading" loader={<MySpinner />}>Checking availability…</Alert>`,
+<Alert variant="loading">Checking availability…</Alert>`,
   },
   "alert-dialog": {
     usage: `import {
@@ -102,7 +100,7 @@ export const componentReferences = {
     usage: `import { Badge } from "@/components/ui/badge";
 
 <Badge variant="solid" shape="pill">Approved</Badge>
-<Badge status="loading" loader={<MySpinner />}>Syncing</Badge>
+<Badge status="loading">Syncing</Badge>
 <Badge status="danger" icons={{ danger: <CircleX /> }}>Failed</Badge>
 <Badge color="oklch(0.7 0.15 250 / 0.15)">Beta</Badge>`,
   },
@@ -110,7 +108,7 @@ export const componentReferences = {
     usage: `import { Button } from "@/components/ui/button";
 
 <Button variant="primary">Deploy</Button>
-<Button loading loader={<MySpinner />}>Deploy</Button>`,
+<Button loading>Deploy</Button>`,
   },
   "button-group": {
     usage: `import { ButtonGroup } from "@/components/ui/button-group";
@@ -141,10 +139,7 @@ import { Button } from "@/components/ui/button";
   "command-palette": {
     usage: `import { CommandPalette } from "@/components/ui/command-palette";
 
-<CommandPalette groups={groups} loader={<MySpinner />} />
-
-// Custom panels using CommandPanelTabs: Tab / Shift+Tab cycle enabled tabs,
-// wrapping at either end while keeping focus in the header search field.`,
+<CommandPalette groups={groups} />`,
   },
   "copy-button": {
     usage: `import { CopyButton } from "@/components/ui/copy-button";
@@ -160,12 +155,16 @@ import { Button } from "@/components/ui/button";
     usage: `import {
   Dialog,
   DialogContent,
+  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 
 <Dialog>
   <DialogTrigger>Open dialog</DialogTrigger>
-  <DialogContent>Dialog content</DialogContent>
+  <DialogContent>
+    <DialogTitle>Edit project</DialogTitle>
+    Project settings
+  </DialogContent>
 </Dialog>`,
   },
   "dropdown-menu": {
@@ -248,8 +247,8 @@ import { Button } from "@/components/ui/button";
   radio: {
     usage: `import { Radio, RadioGroup } from "@/components/ui/radio";
 
-<RadioGroup defaultValue="comfortable">
-  <Radio value="comfortable">Comfortable</Radio>
+<RadioGroup aria-label="Density" defaultValue="comfortable">
+  <Radio value="comfortable" label="Comfortable" />
 </RadioGroup>`,
   },
   select: {
@@ -324,12 +323,16 @@ import { Button } from "@/components/ui/button";
     usage: `import {
   Sheet,
   SheetContent,
+  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 
 <Sheet>
   <SheetTrigger>Open sheet</SheetTrigger>
-  <SheetContent>Sheet content</SheetContent>
+  <SheetContent>
+    <SheetTitle>Edit project</SheetTitle>
+    Project settings
+  </SheetContent>
 </Sheet>`,
   },
   sidebar: {
@@ -356,10 +359,7 @@ import { Button } from "@/components/ui/button";
     </SidebarContent>
   </Sidebar>
   <main><SidebarTrigger />Page content</main>
-</SidebarProvider>
-
-// Split rails: SidebarRailButton tooltip="Projects" keeps its tooltip animated,
-// including when moving between icons in a warm tooltip group.`,
+</SidebarProvider>`,
   },
   "sidebar-layout": {
     usage: `import { SidebarLayout } from "@/components/ui/sidebar-layout";

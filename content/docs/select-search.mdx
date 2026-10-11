@@ -50,7 +50,15 @@ const fruits = [{ value: "apple", label: "Apple", icon: <Apple /> }];
 <SearchSelect items={fruits} defaultValue={fruits[0]}>
 ```
 
-No type change is needed: Base UI types Combobox `items` as `readonly any[]`, and `icon` sits
-beside the `{ value, label }` fields it already reads. An icon passed only to `SearchSelectItem`
-can't show before the panel has mounted. Resolution order is the mounted item, then
-`iconForValue`, then the value's own `icon`.
+An icon passed only to `SearchSelectItem` is available after the panel mounts. Resolution order
+is the mounted item, then `iconForValue`, then the value's own `icon`.
+
+## Highlight implementation
+
+Opening activates the current selection, or the most recently selected value in multi-select;
+without a selection it activates the first enabled row. A query activates the top match, and
+leaving the panel keeps the active row.
+
+The Base UI integration uses `autoHighlight="always"` only when nothing is selected: that mode
+pins the first row over an existing selection. With a selection, plain `autoHighlight` restores
+it. Keep `keepHighlight` enabled so pointer exit does not clear the mark and reset Enter's target.

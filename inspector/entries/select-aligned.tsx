@@ -40,7 +40,7 @@ const REGIONS = [
 
 export const selectAlignedEntry = defineEntry({
   slug: "select-aligned",
-  name: "Aligned",
+  name: "Select Aligned",
   controls: {
     size: select(SIZES, "sm"),
     variant: select(["default", "ghost", "plain"] as const, "default", "Variant"),

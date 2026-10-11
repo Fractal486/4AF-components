@@ -26,7 +26,7 @@ import { alertVariants, type AlertVariants } from "./alert.variants";
  * checking, then saved or failed — swaps its glyph without the text shifting sideways.
  */
 
-/** The hexagon outline with an alert bar. Painted with `currentColor`. */
+/** An octagonal alert icon. Painted with `currentColor`. */
 function HexagonAlertIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 16 16" aria-hidden="true" className={className}>
@@ -43,7 +43,7 @@ function HexagonAlertIcon({ className }: { className?: string }) {
 /**
  * The other four glyphs ship with something else and are used exactly as they come:
  * Lucide's triangle, check and info are the ones Badge already shows for those statuses,
- * and the loading indicator follows LoaderProvider. The hexagon above is hand-drawn only
+ * and the loading indicator follows LoaderProvider. The octagonal icon above is hand-drawn only
  * because Lucide has no equivalent.
  *
  * The loader uses the same 14px box as the other icons, which is what

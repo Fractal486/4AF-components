@@ -11,10 +11,8 @@ import { spring } from "@/registry/lib/motion";
  * Not icon-specific: the animation doesn't care whether it's moving an `<svg>` or the
  * word "Following". Copy → check, play → pause, "Follow" → "Following".
  *
- * This is one of the few places Motion genuinely earns its bundle size. The enter is
- * easy — CSS does enters fine. The problem is that the *outgoing* content has to keep
- * animating after React has already decided to unmount it, and AnimatePresence is the
- * only thing that keeps it alive long enough to leave.
+ * Morph uses AnimatePresence to retain outgoing content through its exit. Base UI
+ * popups can use CSS exits through their presence lifecycle.
  *
  *   <Morph activeKey={copied ? "done" : "idle"}
  *          items={{ idle: <CopyIcon />, done: <CheckIcon /> }} />

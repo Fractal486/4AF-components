@@ -20,8 +20,8 @@ import {
  * and Space, and unmounting the panel when it's closed so nothing inside stays reachable
  * by Tab or by a screen reader.
  *
- * **This is the library's one deliberate exception to compositor-only motion.** The
- * contract says never animate `height`, and the reason is sound: a growing box relayouts
+ * **Height animation is a documented exception to compositor-only motion, alongside Sidebar.**
+ * A growing box relayouts
  * everything below it on every frame. But a disclosure's whole job *is* to change the
  * height of the page, and there is no transform that moves the rows underneath — clip a
  * panel and the space it occupies doesn't change; snap the space open and the next row

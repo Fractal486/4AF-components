@@ -33,7 +33,7 @@ export const inputEntry = defineEntry({
           aria-describedby={invalid ? "input-error" : undefined}
           aria-label="Input preview"
         />
-        {invalid && <Alert id="input-error">Please enter a valid value.</Alert>}
+        {invalid && <Alert id="input-error">Example validation error.</Alert>}
       </div>
     );
   },

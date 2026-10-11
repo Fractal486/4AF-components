@@ -224,39 +224,21 @@ export interface DialogStepsProps extends Omit<ComponentProps<"div">, "children"
   defaultStep?: number;
   /** Called whenever navigation changes the active phase. */
   onStepChange?: (step: number) => void;
-  /** Return false to block forward navigation or the final Save action. */
+  /** Return false to block forward navigation or the final Done action. */
   validateStep?: (step: number, direction: DialogStepValidationDirection) => boolean;
   /** Accessible names for the dots. Defaults to “Step 1”, “Step 2”, and so on. */
   labels?: readonly string[];
 }
 
 /**
- * How far an arriving phase travels. Far enough that `duration.slow` is spent on visible
- * movement — over a short distance, the tail of that curve is a phase sitting still.
+ * Distance an arriving phase travels, in pixels.
  */
 const STEP_OFFSET = 24;
 
 /**
  * `custom` is the travel direction: 1 forward, -1 back, 0 when motion is reduced.
- *
- * **Only the arriving phase animates.** The one you're leaving is cut, not faded, and
- * that's the whole design:
- *
- * - Cross-fading them stacks two sets of text on top of each other, and the blur turns
- *   the doubled copy into a smear.
- * - Sequencing them instead — leave, then arrive — fixes the overlap but buys a delay
- *   before anything new appears, and the new phase is precisely what the click asked for.
- *   Past ~100ms of nothing, a click reads as laggy.
- *
- * Cutting the old phase costs nothing, because it's replaced in the same region on the
- * same frame.
- *
- * `ease.out` is doing two jobs at once, which is why the swap can be a full
- * `duration.slow` without feeling sluggish: it's steep enough that the arriving phase is
- * ~70% of the way there a fifth of the way in — so it answers the click on the first few
- * frames and leaves no gap where the body reads as empty — and then spends the rest of the
- * time settling, which is what stops it feeling clipped. A delay, or a shallower curve,
- * puts that responsiveness back at the start where it gets noticed as lag.
+ * Only the arriving phase animates. The outgoing phase unmounts immediately to avoid
+ * overlapping text during a cross-fade or a blank interval between sequential transitions.
  */
 const stepVariants = {
   enter: (direction: number) => ({
@@ -273,23 +255,13 @@ const stepVariants = {
 };
 
 /**
- * A phased dialog body with clickable progress dots and previous/next arrows.
+ * A phased dialog body with progress dots and previous/next controls.
+ * Re-keying on `activeStep` replays the entrance; the outgoing phase unmounts immediately
+ * without AnimatePresence so text cannot overlap. Motion's size layout projection uses
+ * transforms while document layout updates immediately, without animating `height`.
  *
- * The arriving phase slides a short distance in the direction of travel while fading in
- * through a blur; the phase it replaces is cut on the same frame. See `stepVariants` for
- * why nothing animates on the way out.
- *
- * The body uses Motion's size layout projection, which animates the visual size with a
- * compositor transform while the document layout updates immediately. That keeps the
- * transition smooth without animating the `height` property itself.
- *
- * No AnimatePresence, and that's the point: with no exit to hold, the old phase can
- * unmount immediately, which is what makes overlapping content structurally impossible
- * rather than something the timing has to dodge. Re-keying the wrapper on `activeStep` is
- * enough to replay the entrance.
- *
- * It's a composition inside DialogContent: Base UI still owns the modal focus trap,
- * dismissal, and title/description relationships.
+ * Compose inside DialogContent: Base UI owns modal focus, dismissal, and title/description
+ * relationships.
  */
 export function DialogSteps({
   children,
@@ -444,7 +416,7 @@ function DialogStepsNavigation({
               event.preventDefault();
             }
           }}
-          render={<Button size="sm" className="justify-self-end">Save changes</Button>}
+          render={<Button size="sm" className="justify-self-end">Done</Button>}
         />
       ) : (
         <Button

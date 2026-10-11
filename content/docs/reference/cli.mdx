@@ -31,7 +31,9 @@ because they are installed automatically as dependencies.
 pnpm 4af doctor --project C:\Projects\my-app
 ```
 
-Checks the package, shadcn configuration, and aliases without changing the target.
+Checks that `package.json` exists and `components.json` defines `ui` and `lib` aliases;
+warns if no global CSS file is configured. It does not validate package contents or resolve
+aliases. The target is not changed.
 
 ## Read a component reference
 

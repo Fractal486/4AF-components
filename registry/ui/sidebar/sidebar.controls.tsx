@@ -18,7 +18,7 @@ export function SidebarTrigger({
     <TooltipProvider delay={500}>
       <Tooltip
         content={
-          <kbd>⌘B</kbd>
+          <kbd>Ctrl/⌘ B</kbd>
         }
         delay={500}
       >

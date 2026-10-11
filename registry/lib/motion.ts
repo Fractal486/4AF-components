@@ -1,13 +1,13 @@
 /**
- * Motion presets, mirroring the CSS custom properties in `app/globals.css`.
+ * JS duration and easing defaults mirror the CSS tokens and must be updated together.
  *
- * CSS handles hover, press and simple enter/exit. These presets are for the cases
- * CSS genuinely can't do: spring physics, gestures, interruptible transitions and
- * layout animation. Keeping both sides in sync from one source of truth is what
- * stops a Motion-driven dialog from feeling different to a CSS-driven popover.
+ * CSS handles hover, focus, ordinary presses, and simple enter/exit transitions.
+ * Button and Toggle use these presets for spring presses; other uses include retained
+ * exits, gestures, springs, and layout animation. Runtime CSS overrides do not change
+ * these constants. JavaScript animations respect reduced motion separately.
  */
 
-/** Cubic-bezier curves, identical to the `--ease-*` custom properties. */
+/** Cubic-bezier defaults matching the corresponding CSS `--ease-*` tokens. */
 export const ease = {
   /** Default for anything entering or responding to input. Decelerates into place. */
   out: [0.16, 1, 0.3, 1],
@@ -15,7 +15,7 @@ export const ease = {
   in: [0.7, 0, 0.84, 0],
 } as const;
 
-/** Durations in seconds (Motion's unit), identical to the `--duration-*` properties. */
+/** Duration defaults in seconds (Motion's unit), matching the corresponding CSS tokens. */
 export const duration = {
   /** Hover, press, focus ring. Fast enough to feel like a direct response. */
   fast: 0.15,

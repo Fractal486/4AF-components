@@ -37,7 +37,7 @@ export interface ButtonProps
   loading?: boolean;
   /** Overrides the nearest LoaderProvider for this button's loading indicator. */
   loader?: ReactNode;
-  /** Disable the tactile press scale. Defaults to `true`; useful for anchored triggers. */
+  /** Animate a scale change while pressed. Set false for anchored triggers. @default true */
   pressScale?: boolean;
   /**
    * Holds the button in its pressed state — e.g. while a popover or menu it triggers is

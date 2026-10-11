@@ -16,7 +16,7 @@ destructive rows, navigation submenus, and searchable single and multi-select su
 
 `DropdownMenu loader={<MySpinner />}` supplies the menu's loading indicator, including portalled
 rows. Omit it to inherit [LoaderProvider](/docs/reference/engineering#shared-loading-indicators),
-with ASCII as the fallback. `DropdownMenuActionItem` and `DropdownMenuCheckboxItem` accept
+with `AsciiLoader` as the fallback. `DropdownMenuActionItem` and `DropdownMenuCheckboxItem` accept
 `loader` for one row; a custom `icons.pending` takes precedence.
 
 A disabled row can take a `disabledReason`. Hovering the row then opens a tooltip on its right

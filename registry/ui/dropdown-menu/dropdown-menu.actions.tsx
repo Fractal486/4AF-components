@@ -158,7 +158,7 @@ export interface DropdownMenuCheckboxItemProps
    *
    * Without it the row is what it has always been: a synchronous checkbox that flips on
    * click. With it the row defers — the tick holds, the loader runs in its place, and
-   * `onCheckedChange` fires only once the action has settled. A failure needs no rollback
+   * `onCheckedChange` fires only after the action succeeds. A failure needs no rollback
    * because nothing moved; it shows briefly and the row goes quiet.
    *
    * This is `ActionToggle` for a menu row, and it works the same way for the same reason:

@@ -6,7 +6,7 @@ export const textShimmerEntry = defineEntry({
   name: "Text Shimmer",
   controls: {
     label: text("Syncing changes…", "Label"),
-    duration: num(2.5, { min: 0.5, max: 6, step: 0.5, label: "Duration" }),
+    duration: num(2.5, { min: 0.5, max: 6, step: 0.5, label: "Duration (seconds)" }),
   },
   render({ label, duration }) {
     return <TextShimmer duration={duration} className="text-lg font-medium">{label}</TextShimmer>;

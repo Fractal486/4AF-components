@@ -49,24 +49,12 @@ import {
 } from "./data-table.variants";
 
 /**
- * A table with controls in it.
+ * Selection, three-step sort controls, a selection action bar, and per-row actions,
+ * composed from the presentational [table](../table/table.tsx) parts. This component owns
+ * selection and sort state plus `aria-sort`; the caller orders the data.
  *
- * `table` presents rows; this presents rows you can act on. Everything stateful lives here —
- * the selection, the three-step sort cycle, the bar that takes over the header, the per-row
- * actions column — and everything presentational is composed from `table` rather than
- * restated: the same `<tr>`, the same densities, the same gutter cell, the same pinned header.
- * There is exactly one row implementation in the library and it is the base one.
- *
- * What this component genuinely owns is **selection**, because that is the part a consumer
- * would otherwise write again every time: the select-all that has to go indeterminate when the
- * selection is partial, and stay in step with rows checked one at a time. Sorting is here for
- * the narrower reason that it is a control with state and an `aria-sort` contract, and a table
- * that is only presenting rows shouldn't carry the Motion and icons that come with it.
- *
- * Rows don't grow their gutter cells by hand: `selectable` and `actionColumn` on the root add
- * the columns, and each `DataTableRow` fills in its own cells on whichever side of the header
- * line it finds itself. Writing those cells into every row is the version of this API where
- * one row eventually goes missing and the whole column shifts.
+ * Set `selectable` and `actionColumn` on the root to add gutter cells consistently to
+ * headers, body rows, and placeholders. Do not add those cells by hand.
  */
 
 export type TableSortDirection = "asc" | "desc";
@@ -344,10 +332,8 @@ export function DataTableRow({
   return (
     <TableRow
       data-action-row={isActionRow || undefined}
-      // `data-selected`, and deliberately not `aria-selected`: that attribute is only
-      // meaningful on a row inside a `grid` or `treegrid`, and on a plain `table` row it is
-      // invalid rather than merely unhelpful. The checkbox already announces the state,
-      // which is the honest place for it to live.
+      // Rows expose `data-selected` for styling; their checkboxes expose selection
+      // to assistive technology.
       data-selected={isSelected || undefined}
       className={className}
       {...props}

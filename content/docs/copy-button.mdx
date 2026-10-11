@@ -32,9 +32,9 @@ fetched. It runs on press, so nothing is computed or requested on every render.
 <CopyButton value={async () => (await fetchDocument(id)).body} />
 ```
 
-A string or a synchronous function finishes within `pendingDelay` and goes straight to the check
-mark; a value that takes longer shows the loader. A function that throws or rejects shows the
-error state and writes nothing, so `onCopy` only reports text that was copied.
+The loader appears if resolving the value and writing it to the clipboard takes longer than
+`pendingDelay` (50ms by default). A function that throws or rejects shows the error state and
+writes nothing, so `onCopy` only reports text that was copied.
 
 `icon` replaces the resting glyph, for example to tell apart two copy buttons that copy
 different things. The success check is unchanged.

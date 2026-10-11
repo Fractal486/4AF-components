@@ -73,7 +73,7 @@ export interface CommandItem {
   checked?: boolean;
   /** Uncontrolled starting state. Its presence is what makes the row a toggle. */
   defaultChecked?: boolean;
-  /** Called once the row has actually settled into the new state. */
+  /** Called when the checked state changes, after success if an action is provided. */
   onCheckedChange?: (checked: boolean) => void;
   /** Labels for the row's other states. Each falls back to `label`. */
   labels?: { checked?: ReactNode; pending?: ReactNode; success?: ReactNode; error?: ReactNode };
@@ -156,7 +156,10 @@ export interface CommandPaletteProps {
   searchDebounce?: number;
   /** Shown in place of the results while `onSearch` is in flight. @default "Searching…" */
   loadingMessage?: ReactNode;
-  /** Shown when `onSearch` rejects. Receives the error when supplied as a function. */
+  /**
+   * Shown when `onSearch` rejects. Receives the error when supplied as a function.
+   * @default "Search failed. Change your query to retry."
+   */
   searchErrorMessage?: ReactNode | ((error: unknown) => ReactNode);
   /** Bind ⌘K / Ctrl-K to toggle the palette globally. @default true */
   shortcut?: boolean;
@@ -189,7 +192,7 @@ export interface CommandPaletteProps {
 export interface UseCommandSearchOptions {
   /** Wait this long after a keystroke before calling `onSearch`, in ms. @default 200 */
   debounce?: number;
-  /** Search only while this is true — e.g. a panel that isn't the active page. @default true */
+  /** Enable search for the active panel; set false for inactive panels. @default true */
   enabled?: boolean;
   /** Keep the panel header loader on for an additional async operation, such as pagination. */
   additionalRefreshing?: boolean;
@@ -231,7 +234,7 @@ export interface CommandPanelFooterProps {
   enter?: {
     label: ReactNode;
     onClick?: () => void;
-    /** `"submit"` submits the panel's form instead of calling `onClick`. @default "button" */
+    /** `"submit"` submits the containing form. A supplied `onClick` also runs. @default "button" */
     type?: "button" | "submit";
     disabled?: boolean;
   };

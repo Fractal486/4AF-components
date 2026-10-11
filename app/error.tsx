@@ -24,16 +24,16 @@ export default function RouteError({
   return (
     <div className="flex min-h-[60svh] flex-col items-center justify-center gap-3 text-center">
       <p className="font-mono text-xs tracking-widest text-subtle-foreground uppercase">Error</p>
-      <h1 className="text-lg font-medium text-foreground">This component threw</h1>
+      <h1 className="text-lg font-medium text-foreground">Couldn&apos;t load this page</h1>
       <p className="max-w-sm text-sm text-muted-foreground">
-        {error.message || "Something failed while rendering the component documentation."}
+        {error.message || "Something went wrong. Try again."}
       </p>
       <Button onClick={reset} variant="outline" size="sm" className="mt-3">
         <RotateCw />
         Try again
       </Button>
       {error.digest && (
-        <p className="font-mono text-xs text-subtle-foreground">digest {error.digest}</p>
+        <p className="font-mono text-xs text-subtle-foreground">Error ID {error.digest}</p>
       )}
     </div>
   );

@@ -8,8 +8,7 @@ description: Choose, install, integrate, inspect, and maintain components in the
 Use the repository CLI and source as the authority. Do not manually copy component files,
 guess registry URLs, or reproduce the CLI's temporary registry-server workflow.
 
-The library repository is normally at `C:\Files\Development\4AF-components`. If it is
-elsewhere, locate the directory containing both `registry.json` and `scripts/4af.ts`.
+Locate the repository directory containing `registry.json` and `scripts/4af.ts`.
 
 ## Route the task
 
@@ -38,9 +37,11 @@ pnpm 4af install <component> --project <absolute-target-project>
 If the current working directory is the target project, use `pnpm --dir` with the library
 path, for example:
 
-```text
-pnpm --dir C:\Files\Development\4AF-components 4af install button --project C:\Projects\my-app
+```bash
+pnpm --dir "<library-repository>" 4af install button --project "<absolute-target-project>"
 ```
+
+Replace the quoted placeholders with the absolute paths on your machine.
 
 Run `doctor` on an unfamiliar target: it needs `package.json`, shadcn `components.json`,
 and `ui` and `lib` aliases. `--dry-run` prints the full mutation plan — files, theme CSS
@@ -65,19 +66,23 @@ Larger components use internal sibling modules behind the existing public entry 
 For their file map, see [Component modules](references/component-catalog.md#component-modules).
 Inspect the registry item's complete `files` list when changing or installing one.
 
-Follow the component contract in the root `AGENTS.md`: Base UI for behaviour, forwarded
-refs and props, controlled and uncontrolled state, CVA variants in the sibling
-`.variants.ts`, state exposed as `data-*` attributes, semantic tokens, named transition
-properties and duration tokens, no animated layout properties, no needless Motion runtime.
+Follow the component contract in the root `AGENTS.md`: Base UI for interaction primitives
+(react-day-picker for Calendar), forwarded refs and props, controlled and uncontrolled state
+where relevant, CVA variants in the sibling `.variants.ts`, state exposed as `data-*`
+attributes, semantic tokens with the documented ramp exceptions, named transition properties,
+and CSS duration tokens. Prefer compositor-friendly motion; Collapsible and Sidebar have
+documented layout-motion exceptions. Add `"use client"` when client APIs, hooks, context, or
+interaction require it.
 A panel of rows opens with a row already active (`data-panel-active`, or Base UI's
-`autoHighlight`) before anything is typed: the current selection, else the first row, and the
-top match once a query narrows the list (the most recent choice when several are selected).
+`data-highlighted`): the current selection, the most recent selected value for multi-select,
+or otherwise the first enabled row. A query activates the first match. Preserve the mark when
+the pointer leaves.
 Preserve unrelated work in a dirty worktree.
 
 Use `LoadingIndicator` from `registry/lib/loader` for library waiting states. The public
 `loader` slot accepts a React node; `LoaderProvider loader={<MySpinner />}` sets a subtree
 default, including portals. Local slots override it; custom pending icons take precedence.
-ASCII is the fallback. Alternative indicators and speed/size settings belong to the caller;
+`AsciiLoader` is the fallback. Alternative indicators and speed/size settings belong to the caller;
 do not add native loader variants or make consuming components depend on Classic/Matrix.
 
 For a component change:
@@ -87,9 +92,11 @@ For a component change:
 2. Change portable behaviour and API in `registry/`; keep demo-only state in `inspector/`.
 3. Update the inspector demonstration when the public feature needs visible coverage.
 4. Update `registry.json` when files, dependencies, or installable items change.
-5. Update root `COMPONENTS.md` and
+5. When public API or behavior changes, update the component page's API/notes in
+   `content/docs/<component>.mdx` and its shared usage snippet in `lib/component-reference.ts`.
+6. Update root `COMPONENTS.md` and
    [references/component-catalog.md](references/component-catalog.md) when the public
-   catalog, composition guidance, or notable API changes.
+   catalog or composition guidance changes.
 
 ## Verify changes
 

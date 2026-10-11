@@ -102,7 +102,7 @@ describe("Tabs", () => {
       </Tabs>,
     );
 
-    // 16px of line box + 12px of padding inside a 4px track: 32px, the height of an Input.
+    // 16px of line box + 12px of padding inside a 4px track: 32px.
     expect(container.querySelector('[role="tablist"]')).toHaveClass("p-0.5", "gap-0.5");
     expect(screen.getByRole("tab", { name: "One" })).toHaveClass("px-2.5", "py-1.5", "text-xs");
   });

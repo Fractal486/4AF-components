@@ -223,7 +223,7 @@ export function CommandPalette({
   onSearch,
   searchDebounce = 200,
   loadingMessage = "Searching…",
-  searchErrorMessage = "Search failed. Try again.",
+  searchErrorMessage = "Search failed. Change your query to retry.",
   shortcut = true,
   placeholder = "Type a command or search…",
   emptyMessage = "No results found.",

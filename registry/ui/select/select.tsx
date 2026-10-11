@@ -34,15 +34,10 @@ export {
 } from "./select.trigger";
 
 /**
- * A single or multi-select — the accessible version, on Base UI.
+ * A single or multi-select with Base UI keyboard navigation, typeahead, focus management,
+ * positioning, form input, and ARIA. The panel scales and blurs in, then fades on close.
  *
- * Base UI drives the behaviour — keyboard navigation, typeahead, focus into the list and
- * back, collision-aware placement, the hidden form input, full ARIA — which is exactly
- * what a hand-rolled dropdown gets wrong. The panel simply blurs and scales in from the
- * trigger's edge (a gap opens off it), the chevron flips, and it fades back out on close.
- *
- * Pass `multiple` to keep the panel open while several checkbox rows are toggled; the
- * same value and item parts automatically switch to their count and checkbox forms.
+ * `multiple` keeps the panel open and switches values and items to count/checkbox forms.
  */
 
 interface SelectOptionInfo {
@@ -56,12 +51,8 @@ interface SelectOptionRegistration extends SelectOptionInfo {
 }
 
 /**
- * Resolve a value's label from Base UI's `items` prop — the canonical mapping that exists
- * precisely so a trigger can show a *preselected* value's label before the popup (and its
- * `SelectItem`s) has ever mounted. Without this, a sort/filter chip with a `defaultValue`
- * shows the raw value ("updated") until the panel is opened once and the items register
- * their labels. Supports both `items` shapes: a `{ value: label }` record and a
- * `{ value, label }[]` array.
+ * Resolve a label before the popup mounts from an `items` record (`{ value: label }`)
+ * or array (`{ value, label }[]`). Mounted items register their labels separately.
  */
 function labelFromItems(items: unknown, value: unknown): ReactNode | undefined {
   if (!items) return undefined;
@@ -77,17 +68,8 @@ function labelFromItems(items: unknown, value: unknown): ReactNode | undefined {
 }
 
 /**
- * The same lookup for the icon, and it exists for the same reason.
- *
- * A `SelectItem`'s icon is registered when the item mounts, which is when the popup
- * first opens — so the icon registry is guaranteed *empty* at the one moment the closed
- * trigger first paints, and populated ever after. That's a failure shape that hides
- * itself: it looks right the moment you click to check, and it's wrong on every cold
- * load. `items` is the mapping that exists before anything mounts, so an icon declared
- * there resolves on first paint.
- *
- * Only the array form carries icons — the record form is `{ value: label }` and has
- * nowhere to put one.
+ * Read an icon from array-form item data before the popup mounts.
+ * The record form (`{ value: label }`) carries labels only.
  */
 function iconFromItems(items: unknown, value: unknown): ReactNode | undefined {
   if (!Array.isArray(items)) return undefined;

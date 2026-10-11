@@ -8,7 +8,7 @@ export const actionToggleEntry = defineEntry({
     variant: select(["outline", "primary", "ghost"], "outline"),
     size: select(["sm", "md", "lg"], "md"),
     fail: bool(false, "Make it fail"),
-    duration: num(1200, { min: 200, max: 3000, step: 200, label: "Work takes (ms)" }),
+    duration: num(1200, { min: 200, max: 3000, step: 200, label: "Simulated delay (ms)" }),
   },
   render({ variant, size, fail, duration }) {
     return (

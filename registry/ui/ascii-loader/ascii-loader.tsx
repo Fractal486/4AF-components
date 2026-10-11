@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { cn } from "@/registry/lib/cn";
 
 /**
- * A looping ASCII spinner — the braille cycle rendered as a swapped glyph.
+ * A text spinner using Unicode Braille characters.
  *
  * It's text, not an SVG, so it sits on the baseline of whatever it's beside and scales
  * with the surrounding font size rather than needing its own dimensions. No transform,

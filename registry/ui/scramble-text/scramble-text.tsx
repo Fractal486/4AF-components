@@ -94,7 +94,8 @@ function shouldReduceMotion() {
 }
 
 /**
- * Reveals text one grapheme at a time through a short encrypted-character scramble.
+ * Reveals text one grapheme at a time through a short random-character scramble.
+ * Uses Intl.Segmenter for graphemes, falling back to Unicode code points without it.
  * Whitespace remains readable throughout, and reduced motion skips the animation.
  */
 export function ScrambleText({

@@ -28,7 +28,7 @@ export const emptyEntry = defineEntry({
           </EmptyMedia>
           <EmptyTitle>No messages yet</EmptyTitle>
           <EmptyDescription>
-            You&apos;re all caught up. New messages will show up here as they arrive.
+            New messages will appear here.
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>

@@ -25,26 +25,12 @@ import {
 } from "./table.variants";
 
 /**
- * A table, and nothing more than a table.
+ * Presentational semantic table parts: densities, borders, a scroll container, a pinned
+ * header, and loading placeholders. Native table elements own row/header semantics.
+ * Selection, sort controls, and row actions live in the companion
+ * [data-table](../data-table/data-table.tsx), which composes these parts.
  *
- * There is no Base UI primitive here and there shouldn't be: `<table>` already carries every
- * semantic a table needs — the row and column relationships, the header associations, the
- * announcement of position — and no headless library improves on HTML it can only
- * re-describe.
- *
- * So the parts here are thin by design. They own the design foundation's borders, densities,
- * the scroll container the table has to live in, the pinned header, and placeholder rows.
- * They own **no controls and no state**: nothing here sorts, selects, or opens a menu.
- *
- * That line is the whole point of the split. Selection is a state machine — a select-all that
- * goes indeterminate on a partial selection and stays in step with rows checked one at a
- * time — and sorting is a three-step cycle with a control and an `aria-sort` contract. Both
- * live in `data-table`, which composes these parts rather than reimplementing them. A table
- * that is only presenting rows should not have to carry either, or the Checkbox and Motion
- * they bring with them.
- *
- * `"use client"` covers the file because of the context these parts share. They hold no state
- * of their own.
+ * `"use client"` is required for shared context; these parts hold no interactive state.
  */
 
 interface TableContextValue {

@@ -15,23 +15,14 @@ import { ease, spring } from "@/registry/lib/motion";
 import { Button, type ButtonProps } from "@/registry/ui/button/button";
 
 /**
- * An alert dialog — a modal that interrupts to force a decision.
+ * A confirmation dialog that blocks backdrop dismissal. Escape and close controls dismiss it.
  *
- * It shares Dialog's surface and Motion enter/exit, but it is a different Base UI
- * primitive on purpose. `AlertDialog.Root` renders `role="alertdialog"` (assistive tech
- * announces it as an interruption demanding a response, not a passive panel) and — unlike
- * Dialog — it can't be dismissed by clicking the backdrop. You can't dodge the choice by
- * clicking away; you answer with a button. That's the whole reason it's separate: not
- * "a dialog with less content", but "a dialog you can't ignore".
+ * Base UI supplies `role="alertdialog"`, focus management, and dismissal. Place
+ * `AlertDialogCancel` first, or set `initialFocus`, when cancellation should receive
+ * initial focus. Callers determine the order of the action and cancel controls.
  *
- * So there's deliberately no corner close button here — an ✕ would be exactly the dismiss
- * escape hatch the primitive removes. Provide `AlertDialogCancel` and `AlertDialogAction`;
- * Cancel comes first in the DOM, so focus lands on the safe choice by default.
- *
- * Enter and exit are Motion's and asymmetric, the same as Dialog: it scales up out of a
- * blur (a move that earns the attention an interruption wants) and leaves by simply fading
- * and blurring. Base UI's `keepMounted` hands unmount timing to AnimatePresence so the
- * exit finishes before the DOM is torn down.
+ * The surface uses Dialog's asymmetric Motion enter/exit. Base UI's `keepMounted`
+ * delegates unmount timing to AnimatePresence so the exit finishes before removal.
  */
 
 const AlertDialogOpenContext = createContext(false);
@@ -171,8 +162,8 @@ export function AlertDialogDescription({
 }
 
 /**
- * The safe choice. Closes without acting, and — being first in the DOM — is where focus
- * lands when the dialog opens. Defaults to the neutral outline button.
+ * Closes without acting. Place it first or set `initialFocus` when cancellation should
+ * receive initial focus. Defaults to the neutral outline button.
  */
 export function AlertDialogCancel({ variant = "outline", children = "Cancel", ...props }: ButtonProps) {
   return (

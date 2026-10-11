@@ -167,7 +167,7 @@ export async function doctor(options: CliOptions): Promise<ComponentsConfig> {
   console.log(`registry\t${components.length} installable components`);
   for (const warning of warnings) console.log(`warning\t${warning}`);
   for (const error of errors) console.log(`error\t${error}`);
-  if (errors.length) throw new Error("Target project is not ready for 4AF components.");
+  if (errors.length) throw new Error("Target project is missing required 4AF configuration.");
   console.log("status\tok");
   return readJson<ComponentsConfig>(componentsConfigPath);
 }
@@ -506,6 +506,7 @@ function printHelp() {
   console.log(`4AF component CLI
 
 Commands:
+  pnpm 4af help
   pnpm 4af list
   pnpm 4af docs <component>
   pnpm 4af doctor --project <path>
@@ -521,7 +522,9 @@ shadcn ${SHADCN_VERSION} non-interactively in the target project. The 4AF theme 
 export async function main(args = process.argv.slice(2)) {
   try {
     const { command, positional, options } = parseArgs([...args]);
-    if (command === "list") {
+    if (command === "help" || command === "--help" || command === "-h" || options.help || options.h) {
+      printHelp();
+    } else if (command === "list") {
       listComponents();
     } else if (command === "docs") {
       await docsComponent(positional[0]);
@@ -530,8 +533,9 @@ export async function main(args = process.argv.slice(2)) {
     } else if (command === "install") {
       await installComponent(positional[0], options);
     } else {
+      console.error(`4AF: Unknown command '${command}'. Run pnpm 4af help.`);
       printHelp();
-      if (command !== "help") process.exitCode = 1;
+      process.exitCode = 1;
     }
   } catch (error) {
     console.error(`4AF: ${error instanceof Error ? error.message : String(error)}`);

@@ -78,7 +78,8 @@ under `content/docs/reference/`.
 Every component in `registry/ui/` must satisfy all of this. It's the reason the library is
 worth reusing; a component that skips a line here is a component we'll rewrite later.
 
-- **Behaviour comes from a primitive, and the primitive is Base UI.** Never hand-roll a
+- **Use Base UI for interaction primitives.** Calendar uses react-day-picker because Base UI
+  has no calendar primitive. Never hand-roll a
   focus trap, roving tabindex, or dismiss logic. Base UI is the *canonical* layer: a
   component that arrives on Radix or Headless UI gets ported during refinement, not kept.
   Shipping two behaviour layers means two focus traps, two portal strategies, and two
@@ -87,50 +88,45 @@ worth reusing; a component that skips a line here is a component we'll rewrite l
   primitive for.)
 - **Composable.** `ref` forwarded, props spread, `asChild` wherever an element swap is
   plausible (use `registry/lib/slot.tsx`).
-- **Variants in a sibling `.variants.ts`** via CVA. That file is the "versions" axis.
+- **Variants in a sibling `.variants.ts`** via CVA. That file holds the variant definitions.
 - **State on the element.** `data-variant`, `data-loading`, `data-state`. Styling and tests
   hook off attributes, not off conditional `className` strings.
-- **Controlled and uncontrolled** both work (`value` / `defaultValue` / `onValueChange`).
-- **A list panel never opens with nothing ready.** Any panel of rows — select, searchable
-  menu, command palette — marks a row the moment it opens, before anything is typed, so Enter
-  always has an answer and the arrows always start somewhere visible. Nobody presses Down to
-  get out of a search field. The row is the **current selection** where there is one, so
-  reopening a select on its value and pressing Enter confirms that value rather than quietly
-  moving it to the top of the list; otherwise it's the **first row**. With several rows chosen
-  it's the **most recent** of them — that is how Base UI's Combobox resolves it internally
-  (`selectedIndex` comes off the last entry of the value array), and the hand-rolled selects
-  follow it so all selects open on the same row. A query overrides both:
-  once the list is narrowed, the top match is the better guess at what Enter should take, and
-  the selection may not even be in the list any more. The mark is `data-panel-active`, or Base
-  UI's `data-highlighted` where the primitive owns the highlight — and there
-  `autoHighlight="always"` pins row one unconditionally, so it's for the *nothing selected*
-  case only; the plain mode restores the selected row and still jumps to the top match on
-  every keystroke. Pair it with `keepHighlight`, or the pointer merely leaving the panel clears
-  the active row and `autoHighlight` re-aims Enter at row one.
-  `autoFocusFirstItem={false}` is the opt-out, for menu-like uses.
-- **Motion is compositor-only.** Animate `transform`/`scale`, `opacity`, `filter`,
-  `clip-path`. Never `width`, `height`, `top`, `left` — those relayout every frame.
+- **Controlled and uncontrolled state** both work where relevant, using the component's
+  value, checked, pressed, or open API.
+- **List panels open with an active row.** Activate the current selection, the most recent
+  selected value for multi-select, or the first enabled row when nothing is selected.
+  A query activates the first match. Keep the active row when the pointer leaves.
+  Use `data-panel-active`, or Base UI's `data-highlighted` when it owns the highlight.
+  `autoFocusFirstItem={false}` opts out for menu-like uses. See the
+  [Select Search implementation notes](content/docs/select-search.mdx#highlight-implementation)
+  for Base UI's `autoHighlight` / `keepHighlight` requirements.
+- **Prefer compositor-friendly motion.** Animate `transform`/`scale`, `opacity`, `filter`,
+  and `clip-path`. Collapsible's height transition and Sidebar's shell dimensions and
+  offcanvas position are accepted layout-motion exceptions. Other components must avoid
+  animating layout properties such as `width`, `height`, `top`, and `left`.
 - **Name the properties you transition.** `transition-[scale,opacity]`, never bare
   `transition` or `transition: all` (which is `transition-property: all` — the browser then
   watches every property, and variant switches animate their own padding).
-- **Durations come from tokens**: `duration-(--duration-fast|base|slow|slower)`. Never a
+- **CSS durations come from tokens**: `duration-(--duration-fast|base|slow|slower)`. Never a
   hardcoded `duration-150`, or the component won't respond to the motion controls.
+  JavaScript duration and easing defaults mirror the CSS tokens and must be updated together;
+  JavaScript animations handle reduced motion separately.
 - **`will-change` only when a measured stutter justifies it.** Each one costs a
   compositing layer.
-- **`"use client"` only when interactive.**
+- **Add `"use client"` when client APIs, hooks, context, or interaction require it.**
 
 ## Motion
 
 CSS-first. Reach for Motion only when CSS genuinely can't do the job:
 
-- **An element must animate while leaving.** React unmounts it immediately; only
-  `AnimatePresence` can hold it on screen long enough to exit. (This is what `IconMorph`
-  is for, and it's the most common honest reason.)
+- **A React-controlled swap needs outgoing content retained for exit.** `Morph` uses
+  `AnimatePresence` for this. Base UI popups can use CSS exits through their presence lifecycle.
 - **Drag / swipe**, and anything that follows a finger and then settles.
 - **Spring physics** — a spring absorbs a new target mid-flight, a tween restarts.
 - **Layout animation** (FLIP): a tab indicator sliding between tabs.
 
-Hover, press, focus and simple fades are CSS. They don't need a runtime.
+Hover, focus, simple fades, and ordinary press feedback use CSS. Button and Toggle use Motion
+for spring press feedback; their CSS composition paths use the duration tokens.
 
 **Reduced motion is handled twice, because the cascade doesn't reach JS.**
 
@@ -164,37 +160,35 @@ Plus one-off sources for specific jobs (loaders, charts). Same loop applies.
 2. **Rebuild to the contract.** Don't polish the download; rewrite it. Most public
    components fail on `transition: all`, hardcoded durations, hex colours, and missing
    `asChild`.
-3. **Tokens only.** No hex, no `slate-*`/`zinc-*`. Semantic tokens (`bg-surface`,
-   `text-muted-foreground`, `shadow-border`) or the ramps (`--color-accent-*`).
+3. **Tokens only.** No hex, no `slate-*`/`zinc-*`. Use semantic tokens (`bg-surface`,
+   `text-muted-foreground`, `shadow-border`) by default. The ramp exceptions are status
+   accents (such as warning ink and fills) and fixed neutral control states (such as
+   Switch's fixed tone and Checkbox/Radio's dark resting fills).
 4. **Variants + demo controls**, then an entry in `inspector/entries/` and an MDX page.
 5. **Review at 4x**, then in reduced motion, then by keyboard only, then in both themes.
 6. `/review-animations` and `/code-review`.
 
 ## Design foundation (`app/globals.css`)
 
-Warm-neutral greys (hue 70, chroma under 0.01) rather than the default cold slate; a single
-amber accent. Three layers: **ramps** (raw scales, components never touch them) →
-**semantic tokens** (what components consume) → **motion**.
+Warm-neutral greys (hue 70, low chroma) rather than the default cold slate; a single
+amber accent. Three layers: **ramps** (raw scales, used directly only for the exceptions above) →
+**semantic tokens** (the default component styling roles) → **motion**.
 
 Two colour decisions worth not re-litigating:
 
 - **Primary is ink, not colour.** Colour is a signal; the neutral action is the default,
   while amber is reserved for the ring and other focused signals.
-- **`accent-600` and `danger-600` sit at L 0.50–0.52** because that's the lightest a hue can
-  be while still carrying white text at WCAG AA. `destructive` stays at L 0.52 with white
-  text in both themes: dark-on-red reads as a warning label rather than a button.
+- **Destructive uses `oklch(0.6 0.225 26)` with white text in both themes.** The design
+  reference records the contrast tradeoff; OKLCH lightness alone does not establish WCAG contrast.
 
 Radii are **concentric**: `outer = inner + padding`. An `rounded-xl` (14px) card with
 `p-1` (4px) holds `rounded-lg` (10px) children. Reusing the same radius on both is the most
 common reason an interface feels subtly wrong.
 
-**Optical alignment belongs in the SVG, not in margins.** Icon-only buttons centre
-*geometrically*, and that's correct — Lucide already balances its glyphs inside the 24×24
-box (the play triangle, whose mass sits left of its bounding box, ships pre-shifted 1 unit
-right). Measure the ink with `getBBox()` before "fixing" anything; a blanket optical offset
-would push the correctly-centred glyphs off. What *does* need correcting is an icon sitting
-**beside** something: a leading or trailing icon in a text button shaves 2px off its side,
-driven by `data-icon-start` / `data-icon-end`.
+**Center icon-only controls geometrically.** Measure SVG ink before adding an offset;
+use `data-icon-start` / `data-icon-end` for text-button edge spacing. See the
+[optical alignment reference](content/docs/reference/design.mdx#optical-alignment)
+for measurement guidance.
 
 Buttons and cards get depth from **`shadow-border`**, not `border`. A shadow is built from
 transparency, so it sits correctly on any background. Keep real borders for dividers and

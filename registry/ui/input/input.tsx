@@ -11,7 +11,7 @@ import { inputVariants, type InputVariants } from "./input.variants";
  *
  * Base UI keeps this field compatible with its Field primitive and provides the
  * controlled/uncontrolled value APIs. This wrapper only adds the 4AF visual contract,
- * data attributes, and the source project's safe autocomplete default.
+ * data attributes. Autocomplete is off by default and can be overridden.
  */
 export interface InputProps
   extends Omit<ComponentProps<typeof BaseInput>, "className">,
