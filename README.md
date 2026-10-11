@@ -65,7 +65,8 @@ content types, the download, and search against the Workers server.
 
 When connecting this repository to Workers, use `pnpm build` as the build command,
 `pnpm run deploy` as the deploy command, and `pnpm exec wrangler preview` as the preview command.
-The build environment needs Node 24.19.0 or newer and pnpm 12.11.2 (matching `package.json`).
+The build environment needs Node 24.19.0 or newer and pnpm 12.11.2 or newer. These are minimum
+requirements with no upper version limit; the repository does not pin a package-manager version.
 `wrangler.jsonc` records the static assets directory (`out`), custom 404 behavior, and Worker
 name, `4af-components`. Add `4af.selfsimilar.dev` as a custom domain after the first successful
 deployment. Preparing or previewing the export does not publish it.
