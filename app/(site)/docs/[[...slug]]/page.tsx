@@ -7,7 +7,7 @@ import { InlineLink } from "@/components/inline-link";
 import { PageFrame } from "@/components/site/page-frame";
 import { siblings, siteNav } from "@/lib/site-nav";
 import { source } from "@/lib/source";
-import { SITE_URL } from "@/lib/site";
+import { pageAlternates, SITE_URL } from "@/lib/site";
 import { Button } from "@/registry/ui/button/button";
 import { CopyButton } from "@/registry/ui/copy-button/copy-button";
 
@@ -137,5 +137,6 @@ export async function generateMetadata({ params }: DocsPageProps) {
   return {
     title: `${page.data.title} — 4AF`,
     description: page.data.description,
+    alternates: pageAlternates(slug.length === 0 ? "/" : page.url),
   };
 }

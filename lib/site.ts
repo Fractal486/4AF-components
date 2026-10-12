@@ -7,6 +7,14 @@
  */
 export const SITE_URL = "https://4af.selfsimilar.dev";
 
+/** Next replaces nested metadata fields, so keep the agent link alongside each canonical. */
+export function pageAlternates(pathname: string) {
+  return {
+    canonical: `${SITE_URL}${pathname}`,
+    types: { "text/plain": `${SITE_URL}/llms.txt` },
+  };
+}
+
 /** The registry's address template, for `shadcn registry add @4af=…`. */
 export const REGISTRY_TEMPLATE = `${SITE_URL}/r/{name}.json`;
 

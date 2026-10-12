@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { Metadata } from "next";
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import { highlight } from "fumadocs-core/highlight";
@@ -11,10 +12,14 @@ import { SpecimenBoard } from "@/components/landing/specimen-board";
 import { PageFrame } from "@/components/site/page-frame";
 import { componentCount } from "@/lib/component-catalog";
 import { REPOSITORY } from "@/lib/site-nav";
-import { AGENT_PROMPT, publicInstallCommand } from "@/lib/site";
+import { AGENT_PROMPT, pageAlternates, publicInstallCommand } from "@/lib/site";
 import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
 import { CopyButton } from "@/registry/ui/copy-button/copy-button";
+
+export const metadata: Metadata = {
+  alternates: pageAlternates("/"),
+};
 
 const SECTIONS = [
   { id: "components", title: "Components" },
