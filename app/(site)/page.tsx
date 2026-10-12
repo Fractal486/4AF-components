@@ -2,7 +2,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
-import { highlight } from "fumadocs-core/highlight";
+import { highlightSource } from "@/components/landing/highlight-source";
 import { Github } from "lucide-react";
 import { DocsCodeBlock } from "@/components/docs-code-block";
 import { InlineLink } from "@/components/inline-link";
@@ -84,17 +84,8 @@ async function installFiles() {
     files.map(async ({ path, code, lang }) => ({
       path,
       lines: code.trimEnd().split("\n").length,
-      code: await highlight(code, {
-        lang,
-        themes: { light: "github-light", dark: "github-dark" },
-        defaultColor: false,
-        components: {
-          // With `defaultColor: false` the inline style only carries Shiki's colour variables.
-          pre: ({ className, ...props }) => (
-            <pre {...props} className={cn(className, "min-w-max py-4 font-mono text-xs leading-5")} />
-          ),
-        },
-      }),
+      // Highlight once at build time and keep the inert tokens out of React hydration.
+      code: <div dangerouslySetInnerHTML={{ __html: await highlightSource(code, lang) }} />,
     })),
   );
 }

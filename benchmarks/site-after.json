@@ -1,0 +1,178 @@
+{
+  "browser": "155.0.8059.39",
+  "viewport": "1440x1000",
+  "runs": 5,
+  "pages": {
+    "/": {
+      "htmlBytes": 533880,
+      "htmlGzipBytes": 45463,
+      "median": {
+        "headingReads": 60,
+        "lcp": 108,
+        "cls": 0.0000051054325810185185,
+        "scripts": 35,
+        "scriptBytes": 1452907,
+        "taskMs": 1244.173,
+        "layoutMs": 20.416,
+        "scriptMs": 121.628
+      },
+      "samples": [
+        {
+          "headingReads": 60,
+          "lcp": 156,
+          "cls": 0.0000051054325810185185,
+          "scripts": 35,
+          "scriptBytes": 1452907,
+          "taskMs": 1257.522,
+          "layoutMs": 44.976,
+          "scriptMs": 123.96799999999999
+        },
+        {
+          "headingReads": 60,
+          "lcp": 112,
+          "cls": 0.0000051054325810185185,
+          "scripts": 35,
+          "scriptBytes": 1452907,
+          "taskMs": 1244.173,
+          "layoutMs": 19.141,
+          "scriptMs": 121.628
+        },
+        {
+          "headingReads": 60,
+          "lcp": 108,
+          "cls": 0.0000051054325810185185,
+          "scripts": 35,
+          "scriptBytes": 1452907,
+          "taskMs": 1329.393,
+          "layoutMs": 20.416,
+          "scriptMs": 121.973
+        },
+        {
+          "headingReads": 60,
+          "lcp": 104,
+          "cls": 0.0000051054325810185185,
+          "scripts": 35,
+          "scriptBytes": 1452907,
+          "taskMs": 1242.44,
+          "layoutMs": 20.682,
+          "scriptMs": 118.637
+        },
+        {
+          "headingReads": 60,
+          "lcp": 108,
+          "cls": 0.0000051054325810185185,
+          "scripts": 35,
+          "scriptBytes": 1452907,
+          "taskMs": 1186.126,
+          "layoutMs": 18.970000000000002,
+          "scriptMs": 120.34100000000001
+        }
+      ],
+      "files": [
+        {
+          "name": "components/ui/button.tsx",
+          "sha256": "61a518cdded4c29f77deb82c7467c112660e5b387ccd539ac0e00d6e53f7e9dc"
+        },
+        {
+          "name": "components/ui/button.variants.ts",
+          "sha256": "41dcb1f7d64725485dcf91895ca81415c26be38a8e8da27123f052bc37466a68"
+        },
+        {
+          "name": "components/ui/classic-loader.tsx",
+          "sha256": "9db7a7c8053500a9dcbfc770576bcbb3ba1955fbd0628db28114f8b4271db74f"
+        },
+        {
+          "name": "components/ui/classic-loader.variants.ts",
+          "sha256": "196aab0fd256602c23e59795299591a062097346c087e6bfa1e934bb3a161797"
+        },
+        {
+          "name": "lib/cn.ts",
+          "sha256": "9abf2646327e5c59ef627cb09f908ed3b70c019637f7d9c8d680fb77d0c23994"
+        },
+        {
+          "name": "lib/motion.ts",
+          "sha256": "3e3d8adfc608b2621561442064852a41f099b67c00c3db009b83c546b50c68d9"
+        },
+        {
+          "name": "lib/loader.tsx",
+          "sha256": "988027485ba30606caf855b50b259cb24f7d483e79fc6ca139c8b8b16d179b24"
+        },
+        {
+          "name": "lib/slot.tsx",
+          "sha256": "c1898d7ee574bec96f1f20bc39ab21967797d47292c61afafc53862aee511de4"
+        },
+        {
+          "name": "lib/refs.ts",
+          "sha256": "0c0ee692b09a130f406f9848b40b01eb84061f1d926cfaf47c16c8f9c31ac897"
+        }
+      ]
+    },
+    "/docs/button": {
+      "htmlBytes": 165465,
+      "htmlGzipBytes": 18261,
+      "median": {
+        "headingReads": 130,
+        "lcp": 88,
+        "cls": 0.0000051054325810185185,
+        "scripts": 86,
+        "scriptBytes": 2005585,
+        "taskMs": 1109.731,
+        "layoutMs": 20.233999999999998,
+        "scriptMs": 143.373
+      },
+      "samples": [
+        {
+          "headingReads": 130,
+          "lcp": 88,
+          "cls": 0.0000051054325810185185,
+          "scripts": 86,
+          "scriptBytes": 2005585,
+          "taskMs": 1125.8919999999998,
+          "layoutMs": 28.852,
+          "scriptMs": 144.73
+        },
+        {
+          "headingReads": 130,
+          "lcp": 80,
+          "cls": 0.0000051054325810185185,
+          "scripts": 86,
+          "scriptBytes": 2005585,
+          "taskMs": 1109.731,
+          "layoutMs": 20.066,
+          "scriptMs": 141.63600000000002
+        },
+        {
+          "headingReads": 130,
+          "lcp": 76,
+          "cls": 0.0000051054325810185185,
+          "scripts": 86,
+          "scriptBytes": 2005585,
+          "taskMs": 1090.233,
+          "layoutMs": 20.233999999999998,
+          "scriptMs": 135.369
+        },
+        {
+          "headingReads": 130,
+          "lcp": 96,
+          "cls": 0.0000051054325810185185,
+          "scripts": 86,
+          "scriptBytes": 2005585,
+          "taskMs": 1126.354,
+          "layoutMs": 24.707,
+          "scriptMs": 145.85899999999998
+        },
+        {
+          "headingReads": 130,
+          "lcp": 108,
+          "cls": 0.0000051054325810185185,
+          "scripts": 86,
+          "scriptBytes": 2005585,
+          "taskMs": 1056.854,
+          "layoutMs": 18.776999999999997,
+          "scriptMs": 143.373
+        }
+      ],
+      "files": []
+    }
+  }
+}

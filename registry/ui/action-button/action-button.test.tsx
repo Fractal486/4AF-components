@@ -209,8 +209,8 @@ describe("ActionButton", () => {
 
     // Not by name: the stand-in glyph is real text, so it joins the accessible name.
     const button = screen.getByRole("button");
-    // Two boxes, not one: the loader is a text glyph and about half the advance width of
-    // an icon, so a single Morph would centre the narrower state and slide the label.
+    // Two boxes keep custom loaders with different widths from sliding the label
+    // when the glyph changes.
     const morphs = button.querySelectorAll('[data-slot="morph"]');
     expect(morphs).toHaveLength(2);
 

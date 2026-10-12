@@ -305,7 +305,7 @@ export function SiteRail({
                 </Button>
               }
             />
-            <SheetContent side="left" className="flex w-72 max-w-[85vw] flex-col gap-0 p-0">
+            <SheetContent side="left" exitMotion="slide" className="flex w-72 max-w-[85vw] flex-col gap-0 p-0">
               <SheetTitle className="sr-only">Navigation</SheetTitle>
               <RailNav
                 nav={nav}

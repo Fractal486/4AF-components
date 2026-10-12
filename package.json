@@ -18,7 +18,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "registry:validate": "shadcn registry validate",
-    "registry:build": "shadcn build"
+    "registry:build": "shadcn build",
+    "benchmark:site": "node scripts/benchmark-site.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -27,6 +28,7 @@
     "fumadocs-core": "16.17.1",
     "fumadocs-mdx": "15.4.7",
     "fumadocs-ui": "16.17.1",
+    "hast-util-to-html": "^9.0.5",
     "lucide-react": "^0.469.0",
     "motion": "^12.42.2",
     "next": "^16.3.0",
@@ -49,6 +51,7 @@
     "eslint-config-next": "^16.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "jsdom": "^29.1.1",
+    "playwright-core": "^1.64.0",
     "postcss": "^8.5.18",
     "shadcn": "4.13.1",
     "tailwindcss": "^4.0.0",

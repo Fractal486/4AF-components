@@ -92,9 +92,9 @@ Check a registry item's complete `files` list when changing one.
 
 Loading states use `LoadingIndicator` from `registry/lib/loader`. The public `loader` slot takes
 a React node; `LoaderProvider loader={<MySpinner />}` sets a default for a subtree, portals
-included. A local slot overrides it, and a custom pending icon overrides both. `AsciiLoader` is
-the fallback. Don't add built-in loader variants or make a component depend on Classic or
-Matrix; alternative indicators and their settings belong to the caller.
+included. A local slot overrides it, and a custom pending icon overrides both. `ClassicLoader` is
+the fallback and installs through the shared loader utility. Don't add built-in loader variants;
+alternative indicators such as ASCII or Matrix and their settings belong to the caller.
 
 When editing a public API or behavior, update its component page's API/notes and the shared
 usage reference as well as the source, tests, registry metadata, and demo that changed. The

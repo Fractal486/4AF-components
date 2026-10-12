@@ -45,7 +45,7 @@ animations, so reduced motion is handled separately in both.
 Loading indicators are caller-supplied React nodes. `LoaderProvider` installs automatically
 with a consuming component and reaches React portals. Component `loader` props override it;
 existing custom pending icons override both. Omitted values inherit; `null` hides the indicator.
-`AsciiLoader` is the fallback. Alternative loaders and their settings belong to the caller.
+`ClassicLoader` is the fallback and installs automatically. Alternative loaders and their settings belong to the caller.
 
 ```tsx
 import { LoaderProvider } from "@/lib/loader";
@@ -59,9 +59,9 @@ import { MatrixLoader } from "@/components/ui/matrix-loader";
 </LoaderProvider>
 ```
 
-Install `classic-loader` and `matrix-loader` separately through the CLI to use this example. Library implementations use
-`LoadingIndicator` from `registry/lib/loader`; the shared helper does not import Classic or
-maintain a variant/speed API. The helper renders the node inside a fixed-size decorative wrapper;
+Install `matrix-loader` separately through the CLI to use this example; `classic-loader` installs
+with Button. Library implementations use `LoadingIndicator` from `registry/lib/loader`; the
+shared helper imports Classic as its fallback and has no variant/speed API. It renders the node inside a fixed-size decorative wrapper;
 the consuming component owns announcements.
 
 ## Repository boundaries
@@ -105,7 +105,7 @@ pages:
 | `cn` | Class-name composition with `clsx` and `tailwind-merge` |
 | `slot` | Small local helper for `asChild` composition |
 | `motion` | Shared spring and easing presets |
-| `loader` | Caller-supplied loading slots and provider defaults, with `AsciiLoader` as the fallback |
+| `loader` | Caller-supplied loading slots and provider defaults, with `ClassicLoader` as the fallback |
 | `use-action` | Run, pending, outcome, and revert state shared by Action Button and asynchronous menu rows |
 | `table-of-contents-scroll` | Active-entry centering, endpoint padding, and overflow-edge state for constrained contents rails |
 | `table-of-contents-tracking` | Heading activation, visibility observation, and click-to-scroll settling shared by both contents variants |

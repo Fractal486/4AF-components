@@ -113,7 +113,7 @@ function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
               <Fragment key={replayKey}>{entry.render(values)}</Fragment>
             </>
           ) : (
-            <LoaderProvider loader={loader === "classic" ? <ClassicLoader /> : undefined}>{entry.render(values)}</LoaderProvider>
+            <LoaderProvider loader={loader === "ascii" ? <AsciiLoader /> : undefined}>{entry.render(values)}</LoaderProvider>
           )}
         </div>
         {hasControls || hasLoaderSetting ? (
@@ -147,9 +147,10 @@ function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
 }
 
 function loadingPreview() {
+  // Reserve the EntryPreview height so loading a demo does not move the article.
   return (
-    <div className="not-prose first:mt-0 my-6 grid min-h-72 place-items-center rounded-xl bg-background shadow-border">
-      <AsciiLoader label="Loading component demo" />
+    <div className="not-prose first:mt-0 my-6 grid h-[42rem] place-items-center rounded-xl bg-background shadow-border">
+      <ClassicLoader label="Loading component demo" />
     </div>
   );
 }

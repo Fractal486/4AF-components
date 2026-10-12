@@ -1,10 +1,10 @@
 "use client";
 
 import { createContext, useContext, type ReactNode } from "react";
-import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
+import { ClassicLoader } from "@/registry/ui/classic-loader/classic-loader";
 import { cn } from "./cn";
 
-const LoaderContext = createContext<ReactNode>(<AsciiLoader />);
+const LoaderContext = createContext<ReactNode>(<ClassicLoader />);
 
 /** Supply any loader for a subtree, including its portals. Omitted values inherit. */
 export function LoaderProvider({ loader, children }: { loader?: ReactNode; children?: ReactNode }) {

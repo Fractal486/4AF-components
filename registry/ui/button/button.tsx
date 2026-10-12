@@ -303,10 +303,3 @@ function ButtonLoading({ label, loader, children }: { label: string; loader?: Re
     </>
   );
 }
-
-/**
- * @deprecated Supply a loader prop or use LoaderProvider. This compatibility export follows LoaderProvider as well.
- */
-export function Spinner() {
-  return <LoadingIndicator className="size-4" />;
-}

@@ -43,14 +43,14 @@ describe("Alert", () => {
     }
   });
 
-  it("spins the ASCII loader for the loading line, without announcing it twice", () => {
+  it("shows the classic spinner for the loading line, without announcing it twice", () => {
     const { container } = render(<Alert variant="loading">Checking…</Alert>);
 
     // The message is already the announcement, so the loader must stay out of the
     // accessibility tree rather than adding a live region of its own.
-    const loader = container.querySelector("[aria-hidden=true]");
-    expect(loader?.textContent).toMatch(/[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏]/);
-    expect(container.querySelector("svg")).toBeNull();
+    const loader = container.querySelector('[data-slot="classic-loader"]');
+    expect(loader).toHaveAttribute("aria-hidden", "true");
+    expect(loader?.querySelector("svg")).toBeInTheDocument();
     expect(screen.getAllByRole("status")).toHaveLength(1);
   });
 

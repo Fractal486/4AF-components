@@ -18,7 +18,7 @@ describe("Sheet", () => {
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
-  it("reports when the exit has finished and the panel has left", async () => {
+  it.each(["fade", "slide"] as const)("reports when the %s exit has finished and the panel has left", async (exitMotion) => {
     // A host that only knows whether the sheet should exist has nowhere else to learn
     // this: unmounting on the press cuts the exit off before it starts, and a timeout is
     // a guess that drifts the moment the animation changes.
@@ -27,13 +27,14 @@ describe("Sheet", () => {
 
     render(
       <Sheet defaultOpen>
-        <SheetContent onExitComplete={onExitComplete}>
+        <SheetContent exitMotion={exitMotion} onExitComplete={onExitComplete}>
           <SheetClose>Close sheet</SheetClose>
         </SheetContent>
       </Sheet>,
     );
 
     expect(onExitComplete).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog")).toHaveAttribute("data-exit-motion", exitMotion);
 
     await user.click(screen.getByRole("button", { name: "Close sheet" }));
 

@@ -39,9 +39,12 @@ Set `width="trigger"` or `width="content"` on `AlignedSelectContent` to override
 
 ## Overlapping the trigger
 
-The overlap applies to pointer input only. Opened from the keyboard, or when there is no room,
-such as near a viewport edge or with a list too long to centre on the selected row, the panel
-opens as an ordinary dropdown below the trigger.
+Mouse and keyboard openings overlap the trigger when there is enough room. **Touch input
+opens an ordinary dropdown**, usually below the trigger: Base UI disables overlap for touch
+even though `alignItemWithTrigger` is enabled. This applies to the demo and installed component.
+
+The panel also falls back to an ordinary dropdown near a viewport edge, when there is not
+enough room for alignment, or in Safari while pinch-zoomed.
 
 Row labels line up with the trigger's value because the panel's padding plus a row's padding
 equals the trigger's padding. If you restyle one, restyle the others to match. The selected

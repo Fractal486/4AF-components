@@ -60,7 +60,7 @@ The catalog contains 47 installable UI items.
 | [`scramble-text`](https://4af.selfsimilar.dev/docs/scramble-text.md) | A brief random-character text reveal. |
 | [`ascii-loader`](https://4af.selfsimilar.dev/docs/ascii-loader.md) | A compact text spinner. |
 | [`matrix-loader`](https://4af.selfsimilar.dev/docs/matrix-loader.md) | A grid of animated dots. |
-| [`classic-loader`](https://4af.selfsimilar.dev/docs/classic-loader.md) | A radial spinner made of fading bars. |
+| [`classic-loader`](https://4af.selfsimilar.dev/docs/classic-loader.md) | The default radial spinner, installed automatically with loading components. |
 
 ### Navigation and layout
 
@@ -83,7 +83,7 @@ The catalog contains 47 installable UI items.
 | Install name and docs | Choose it for |
 | --- | --- |
 | [`tooltip`](https://4af.selfsimilar.dev/docs/tooltip.md) | A short hover or focus description. |
-| [`sheet`](https://4af.selfsimilar.dev/docs/sheet.md) | A dialog entering from an edge. |
+| [`sheet`](https://4af.selfsimilar.dev/docs/sheet.md) | A dialog entering from an edge, with a fade or full-slide exit; mobile sidebars use the slide. |
 | [`dialog`](https://4af.selfsimilar.dev/docs/dialog.md) | A centered dialog, including bundled multi-step flows. |
 | [`alert-dialog`](https://4af.selfsimilar.dev/docs/alert-dialog.md) | A confirmation dialog that blocks backdrop dismissal. |
 | [`popover`](https://4af.selfsimilar.dev/docs/popover.md) | An interactive panel anchored to a trigger. |

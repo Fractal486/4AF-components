@@ -110,6 +110,7 @@ export const componentReferences = {
     usage: `import { Button } from "@/components/ui/button";
 
 <Button variant="primary">Deploy</Button>
+// Uses LoaderProvider's indicator, or ClassicLoader by default.
 <Button loading>Deploy</Button>`,
   },
   "button-group": {
@@ -331,7 +332,7 @@ import { Button } from "@/components/ui/button";
 
 <Sheet>
   <SheetTrigger>Open sheet</SheetTrigger>
-  <SheetContent>
+  <SheetContent exitMotion="fade">
     <SheetTitle>Edit project</SheetTitle>
     Project settings
   </SheetContent>
@@ -349,6 +350,7 @@ import { Button } from "@/components/ui/button";
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
+// Mobile navigation slides back out with a faster exit.
 <SidebarProvider>
   <Sidebar>
     <SidebarContent>

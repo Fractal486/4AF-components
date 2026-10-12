@@ -312,10 +312,10 @@
     {
       "name": "loader",
       "type": "registry:lib",
-      "description": "Small context and loading slot for caller-supplied indicators, with AsciiLoader as the fallback.",
+      "description": "Small context and loading slot for caller-supplied indicators, with ClassicLoader as the fallback.",
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/cn.json",
-        "https://4af.selfsimilar.dev/r/ascii-loader.json"
+        "https://4af.selfsimilar.dev/r/classic-loader.json"
       ],
       "files": [
         {
@@ -457,7 +457,7 @@
     {
       "name": "alert",
       "type": "registry:ui",
-      "description": "An inline status line — a glyph plus a sentence, no surface. Destructive error (role=alert), amber warning, green success, neutral info, and a muted loading line with AsciiLoader by default.",
+      "description": "An inline status line — a glyph plus a sentence, no surface. Destructive error (role=alert), amber warning, green success, neutral info, and a muted loading line with ClassicLoader by default.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/alert (Markdown: https://4af.selfsimilar.dev/docs/alert.md)",
       "dependencies": [
         "class-variance-authority",
@@ -1350,7 +1350,7 @@
     {
       "name": "sheet",
       "type": "registry:ui",
-      "description": "A dialog that slides in from an edge. Base UI Dialog behaviour, Motion enter/exit.",
+      "description": "A dialog that slides in from an edge, with a fade or full-slide exit. Base UI Dialog behaviour, Motion enter/exit.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/sheet (Markdown: https://4af.selfsimilar.dev/docs/sheet.md)",
       "dependencies": [
         "@base-ui/react",
@@ -1580,7 +1580,7 @@
     {
       "name": "sidebar",
       "type": "registry:ui",
-      "description": "A collapsible application sidebar with default, floating, inset, and split layouts, animated split-rail icon tooltips, collapsible rows with built-in chevrons, nested rows, actions, badges, and loading skeletons.",
+      "description": "A collapsible application sidebar with default, floating, inset, and split layouts, mobile slide-in and faster slide-out, animated split-rail icon tooltips, collapsible rows with built-in chevrons, nested rows, actions, badges, and loading skeletons.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/sidebar (Markdown: https://4af.selfsimilar.dev/docs/sidebar.md)",
       "dependencies": [
         "@base-ui/react",

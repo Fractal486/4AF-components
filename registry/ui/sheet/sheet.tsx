@@ -18,7 +18,7 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
-import { ease, spring } from "@/registry/lib/motion";
+import { duration, ease, spring } from "@/registry/lib/motion";
 import { Button } from "@/registry/ui/button/button";
 import { sheetContentVariants, type SheetContentVariants } from "./sheet.variants";
 
@@ -33,9 +33,8 @@ import { sheetContentVariants, type SheetContentVariants } from "./sheet.variant
  * The enter and exit are Motion's, not CSS. Base UI's CSS-transition exit for Dialog is
  * unreliable in this version, and — more importantly — the two directions want to be
  * *asymmetric*, which AnimatePresence expresses directly: the panel slides in from its
- * edge (movement earns attention on arrival), but leaves by drifting a little and fading
- * with a blur, never sliding all the way back out. An exit shouldn't demand the attention
- * the enter does.
+ * edge, then either drifts and fades with a blur or slides back to the same edge.
+ * Navigation uses the full slide to preserve its position, with a faster exit than entry.
  *
  * Base UI's `keepMounted` lets AnimatePresence own the unmount timing, so the exit gets
  * to finish before the DOM is torn down.
@@ -112,6 +111,8 @@ export interface SheetContentProps
     SheetContentVariants {
   className?: string;
   showClose?: boolean;
+  /** Default: a short drift, fade, and blur. Use slide for navigation drawers. */
+  exitMotion?: "fade" | "slide";
   /**
    * Fired once the exit animation has finished and the panel has left the DOM.
    *
@@ -129,6 +130,7 @@ export function SheetContent({
   className,
   children,
   showClose = true,
+  exitMotion = "fade",
   onExitComplete,
   ...props
 }: SheetContentProps) {
@@ -154,6 +156,7 @@ export function SheetContent({
             }
           />
           <BaseDialog.Popup
+            data-exit-motion={exitMotion}
             className={cn(sheetContentVariants({ side: resolvedSide }), className)}
             render={
               <motion.div
@@ -164,7 +167,14 @@ export function SheetContent({
                 exit={
                   reduceMotion
                     ? { opacity: 0, transition: { duration: 0 } }
-                    : { ...exitTo[resolvedSide], transition: { duration: 0.28, ease: ease.out } }
+                    : exitMotion === "slide"
+                      ? {
+                          ...enterFrom[resolvedSide],
+                          opacity: 1,
+                          filter: "blur(0px)",
+                          transition: { type: "tween", duration: duration.slow * 0.8, ease: ease.out },
+                        }
+                      : { ...exitTo[resolvedSide], transition: { duration: 0.28, ease: ease.out } }
                 }
                 transition={reduceMotion ? { duration: 0 } : spring.smooth}
               />

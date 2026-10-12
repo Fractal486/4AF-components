@@ -22,6 +22,13 @@ Component APIs, examples, and composition guidance belong on the matching page u
 count are generated from the registry. Demo entries illustrate usage and do not define install
 boundaries.
 
+Loading components install the shared loader utility and `ClassicLoader` as their default
+indicator. See [shared loading indicators](content/docs/reference/engineering.mdx#shared-loading-indicators)
+for provider overrides and alternative loaders.
+
+Mobile Sidebar panels use Sheet's full-slide exit. See [Sheet](content/docs/sheet.mdx)
+for `exitMotion` and [Sidebar](content/docs/sidebar.mdx) for mobile navigation behavior.
+
 When API or behavior changes, update its owning component page and canonical usage reference.
 Keep this file as an index and the agent chooser focused on selecting components; link to the
 owning page instead of adding another copy of its API guidance.

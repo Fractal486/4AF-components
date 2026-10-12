@@ -43,7 +43,7 @@ and the status glyphs that replace it after the label; the button carries
 
 `loader={<MySpinner />}` sets this button's indicator, and
 [LoaderProvider](/docs/reference/engineering#shared-loading-indicators) sets a default for a
-subtree. `AsciiLoader` is the fallback. Copy Button and Delete Button inherit the slot.
+subtree. `ClassicLoader` is the fallback. Copy Button and Delete Button inherit the slot.
 
 A label only animates when it changes. Pass `labels={{ pending: "Saving" }}` when the word should
 change, and leave it out when only the glyph should move. With `pendingMode="icon"`,

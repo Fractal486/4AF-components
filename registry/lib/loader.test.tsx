@@ -23,7 +23,7 @@ it("inherits supplied nodes through nested providers and portals, with local ove
   rerender(<LoaderProvider loader={<span>Changed</span>}>{createPortal(<LoadingIndicator />, document.body)}</LoaderProvider>);
   expect(screen.getByText("Changed")).toBeInTheDocument();
   rerender(<LoadingIndicator />);
-  expect(document.querySelector('[data-slot="loader"]')).toHaveTextContent("⠋");
+  expect(document.querySelector('[data-slot="loader"] [data-slot="classic-loader"]')).toBeInTheDocument();
 });
 
 it("supplies button, action, toggle, alert and badge loaders without replacing custom icons", () => {

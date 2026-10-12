@@ -30,12 +30,11 @@ import {
  * It's the macOS pop-up button, and the reason to reach for it over the plain Select is that it
  * keeps the eye where it already is: nothing travels, so there's nothing to re-find.
  *
- * The positioning is Base UI's `alignItemWithTrigger`, not arithmetic here — which matters
- * for the two cases it handles that hand-rolled maths gets wrong. It applies to **pointer
- * input only**, and it switches itself off when there isn't room to overlap. Both are
- * deliberate: opened from the keyboard there is no pointer to keep still, and a panel
- * clamped against the viewport edge can't honour the alignment anyway. In either case it
- * falls back to an ordinary dropdown rather than fighting for it.
+ * Base UI's `alignItemWithTrigger` owns the positioning. Mouse and keyboard openings
+ * overlap the trigger when there is room. Touch openings use an ordinary dropdown:
+ * Base UI disables overlap for touch input even when `alignItemWithTrigger` is true.
+ * It also falls back near viewport edges or when the panel cannot fit, and in Safari
+ * while pinch-zoomed.
  *
  * The trigger's glyph is `ChevronsUpDown`, and that's the honest signal: a single
  * chevron-down promises the panel appears *below*, which here it doesn't. Two chevrons say
