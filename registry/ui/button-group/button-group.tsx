@@ -142,6 +142,9 @@ export function ButtonGroup({
                 : "middle";
 
         return cloneElement(child, {
+          // The flattened list is new, so it needs keys of its own: the child's, or its
+          // position when it was written out by hand rather than mapped.
+          key: child.key ?? index,
           // Group classes first, the child's own last, so a caller can still
           // override any of this on a single button.
           className: cn(

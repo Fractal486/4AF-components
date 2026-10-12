@@ -1,8 +1,22 @@
 import { render, screen } from "@testing-library/react";
+import { vi } from "vitest";
 import { Button } from "@/registry/ui/button/button";
 import { ButtonGroup } from "./button-group";
 
 describe("ButtonGroup", () => {
+  it("keys the buttons it clones, so hand-written children don't warn", () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    render(
+      <ButtonGroup>
+        <Button>One</Button>
+        <Button>Two</Button>
+      </ButtonGroup>,
+    );
+    const keyWarnings = error.mock.calls.filter((call) => String(call[0]).includes('unique "key"'));
+    error.mockRestore();
+    expect(keyWarnings).toEqual([]);
+  });
+
   it("flattens only the joined side of each button", () => {
     render(
       <ButtonGroup>
