@@ -100,7 +100,7 @@ export function SpecimenBoard() {
 
       <Cell>
         <div className="w-full max-w-60">
-          <Slider thumb="bar" label="Volume" inlineLabel showTicks step={25} defaultValue={50} />
+          <Slider thumb="bar" label="Volume" inlineLabel showTicks step={10} defaultValue={50} />
         </div>
       </Cell>
     </div>

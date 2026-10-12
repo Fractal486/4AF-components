@@ -29,7 +29,8 @@ const PILL_GAP_PX = 2; // `gap-0.5` between tabs
 const PILL_TAB_PX = 20; // `px-2.5` on a tab
 const PILL_CHAR_PX = 6; // one `text-xs` character, averaged over mixed-case Latin
 const SETTINGS_FIELD_PX = 192; // `max-w-48`, the text control this lines up with
-const CONTROL_ROW = "grid min-w-0 grid-cols-1 gap-2 @min-[20rem]:grid-cols-[minmax(0,1fr)_minmax(0,auto)] @min-[20rem]:items-center @min-[20rem]:gap-4";
+// Wrap only when this label and control cannot fit together, regardless of panel width.
+const CONTROL_ROW = "flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-2";
 
 export function fitsPillTabs(labels: readonly string[]): boolean {
   // One option is not a choice, and a lone pill reads as a button that does nothing.
@@ -138,7 +139,7 @@ function Control({
             variant="pill"
             appearance="outline"
             size="sm"
-            className="justify-self-end"
+            className="ml-auto max-w-full shrink-0"
             value={value as string}
             onValueChange={(next) => onChange(next)}
           >
@@ -170,7 +171,7 @@ function Control({
           <AlignedSelectTrigger
             aria-labelledby={labelId}
             variant="plain"
-            className="justify-self-end"
+            className="ml-auto max-w-full shrink-0"
           />
           <AlignedSelectContent>
             {def.options.map((option) => (
@@ -190,7 +191,7 @@ function Control({
     return (
       <div className={CONTROL_ROW}>
         <span className="min-w-0 text-sm text-muted-foreground">{label}</span>
-        <div className="flex min-w-0 items-center gap-2 justify-self-end">
+        <div className="ml-auto flex min-w-0 max-w-full shrink-0 items-center gap-2">
           <Slider
             aria-label={label}
             className="w-28 shrink-0"
@@ -215,7 +216,7 @@ function Control({
   const labelId = `${id}-label`;
 
   return (
-    <label className="grid min-w-0 grid-cols-1 gap-2 @min-[20rem]:grid-cols-[minmax(0,1fr)_minmax(0,12rem)] @min-[20rem]:items-center @min-[20rem]:gap-4">
+    <label className={CONTROL_ROW}>
       <span id={labelId} className="min-w-0 text-sm text-muted-foreground">
         {label}
       </span>
@@ -223,7 +224,7 @@ function Control({
         id={id}
         aria-labelledby={labelId}
         tone="accent"
-        className="w-full max-w-48 justify-self-end"
+        className="ml-auto w-48 max-w-full shrink-0"
         value={value as string}
         placeholder={def.placeholder}
         onChange={(e) => onChange(e.target.value)}
