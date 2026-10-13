@@ -20,13 +20,12 @@ export const sheetEntry = defineEntry({
   name: "Sheet",
   controls: {
     side: select(SIDES, "right"),
-    exitMotion: select(["fade", "slide"] as const, "fade", "Exit motion"),
   },
-  render({ side, exitMotion }) {
+  render({ side }) {
     return (
       <Sheet>
         <SheetTrigger render={<Button variant="outline">Open sheet</Button>} />
-        <SheetContent side={side} exitMotion={exitMotion}>
+        <SheetContent side={side}>
           <SheetHeader>
             <SheetTitle>Edit profile</SheetTitle>
             <SheetDescription>

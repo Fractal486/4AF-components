@@ -1350,7 +1350,7 @@
     {
       "name": "sheet",
       "type": "registry:ui",
-      "description": "A dialog that slides in from an edge, with a fade or full-slide exit. Base UI Dialog behaviour, Motion enter/exit.",
+      "description": "A dialog that slides in from an edge. Base UI Dialog behaviour, Motion enter/exit.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/sheet (Markdown: https://4af.selfsimilar.dev/docs/sheet.md)",
       "dependencies": [
         "@base-ui/react",
@@ -1580,7 +1580,7 @@
     {
       "name": "sidebar",
       "type": "registry:ui",
-      "description": "A collapsible application sidebar with default, floating, inset, and split layouts, mobile slide-in and faster slide-out, animated split-rail icon tooltips, collapsible rows with built-in chevrons, nested rows, actions, badges, and loading skeletons.",
+      "description": "A collapsible application sidebar with default, floating, inset, and split layouts, animated split-rail icon tooltips, collapsible rows with built-in chevrons, nested rows, actions, badges, and loading skeletons.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/sidebar (Markdown: https://4af.selfsimilar.dev/docs/sidebar.md)",
       "dependencies": [
         "@base-ui/react",

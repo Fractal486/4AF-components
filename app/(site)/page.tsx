@@ -136,48 +136,8 @@ export default async function IndexPage() {
             4AF is a personal opinionated library of {componentCount} components; compact and
             warm-neutral, and animate only when and where needed.
           </p>
-          <div className="flex flex-wrap items-center gap-3">
-            <Button asChild size="lg">
-              <Link href="/docs/reference/components">
-                Browse components
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <a href={REPOSITORY} target="_blank" rel="noopener noreferrer">
-                <Github aria-hidden="true" />
-                View on GitHub
-              </a>
-            </Button>
-          </div>
-          <CopyButton
-            value={AGENT_PROMPT}
-            size="md"
-            variant="plain"
-            iconPosition="end"
-            swapLabel={false}
-            // Secondary to the two buttons above, and flush with their left edge.
-            className="mt-3 px-0 text-muted-foreground hover:text-foreground"
-          >
-            <span className="inline-flex items-center gap-2.5">
-              {/* Decorative: the label names the button. `outline-none` drops the
-                  theme's image outline, which would box in the transparent logo. */}
-              {/* Served at 4x the 20px display height and not re-encoded: the optimiser
-                  picks a small width for a 45px image and recompresses it soft. */}
-              <Image
-                src="/agents.png"
-                alt=""
-                width={365}
-                height={160}
-                unoptimized
-                className="h-5 w-auto outline-none"
-              />
-              Agent prompt
-            </span>
-          </CopyButton>
-          {/* Below lg the photo gets its own strip after the copy instead of sitting behind it,
-              so the description and buttons stay near the top of a phone screen: full width,
-              fading out at top and bottom, with the same blending. */}
-          <div aria-hidden className="relative -mx-5 mt-4 aspect-[2/1] sm:-mx-10 lg:hidden">
+          {/* Below lg the photo follows the description. The actions overlap its lower edge. */}
+          <div aria-hidden className="relative -mx-5 aspect-[2/1] sm:-mx-10 lg:hidden">
             <Image
               src="/hero-architecture.webp"
               alt=""
@@ -187,6 +147,47 @@ export default async function IndexPage() {
               className="object-cover object-[55%_45%] outline-none [mask-image:linear-gradient(to_bottom,transparent,black_22%,black_78%,transparent)] invert hue-rotate-180 contrast-125 brightness-110 mix-blend-multiply dark:invert-0 dark:hue-rotate-0 dark:brightness-90 dark:mix-blend-screen"
             />
           </div>
+          <div className="relative -mt-6 lg:mt-0">
+            <div className="grid grid-cols-2 gap-3 lg:flex lg:flex-wrap lg:items-center">
+              <Button asChild size="lg" className="h-11 min-w-0 px-2 text-xs min-[360px]:text-sm sm:px-5 sm:text-base lg:h-[38px]">
+                <Link href="/docs/reference/components">
+                  Browse components
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="h-11 min-w-0 gap-2 px-2 text-xs min-[360px]:text-sm sm:gap-3 sm:px-5 sm:text-base lg:h-[38px]">
+                <a href={REPOSITORY} target="_blank" rel="noopener noreferrer">
+                  <Github aria-hidden="true" />
+                  View on GitHub
+                </a>
+              </Button>
+            </div>
+            <CopyButton
+              value={AGENT_PROMPT}
+              size="md"
+              variant="plain"
+              iconPosition="end"
+              swapLabel={false}
+              // Secondary to the two buttons above, and flush with their left edge.
+              className="mt-3 h-11 px-0 text-muted-foreground hover:text-foreground lg:h-[34px]"
+            >
+              <span className="inline-flex items-center gap-2.5">
+                {/* Decorative: the label names the button. `outline-none` drops the
+                    theme's image outline, which would box in the transparent logo. */}
+                {/* Served at 4x the 20px display height and not re-encoded: the optimiser
+                    picks a small width for a 45px image and recompresses it soft. */}
+                <Image
+                  src="/agents.png"
+                  alt=""
+                  width={365}
+                  height={160}
+                  unoptimized
+                  className="h-5 w-auto outline-none"
+                />
+                Agent prompt
+              </span>
+            </CopyButton>
+          </div>
+
         </div>
       </header>
     <PageFrame toc={toc} mobileToc={false}>

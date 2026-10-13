@@ -7,6 +7,7 @@ import { ChevronDown, Menu, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useSearchContext } from "fumadocs-ui/contexts/search";
 import { ThemeSwitch } from "fumadocs-ui/layouts/shared/slots/theme-switch";
+import type { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import type { NavGroup, NavItem } from "@/lib/site-nav";
 import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
@@ -15,7 +16,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/registry/ui/collapsible/collapsible";
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/registry/ui/sheet/sheet";
+import { Sheet, SheetTitle, SheetTrigger } from "@/registry/ui/sheet/sheet";
+import { SiteNavigationContent } from "./site-navigation-content";
 
 const FOCUS = "outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const SCROLLBAR =
@@ -273,6 +275,7 @@ export function SiteRail({
   repository: string;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuActions = useRef<BaseDialog.Root.Actions | null>(null);
   const { setOpenSearch } = useSearchContext();
 
   return (
@@ -297,7 +300,15 @@ export function SiteRail({
           <Button variant="ghost" size="icon" aria-label="Search" onClick={() => setOpenSearch(true)}>
             <Search />
           </Button>
-          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+          <Sheet
+            open={menuOpen}
+            actionsRef={menuActions}
+            onOpenChange={(open, details) => {
+              // Motion owns this drawer's exit; keep Base UI from hiding it early.
+              if (!open) details.preventUnmountOnClose();
+              setMenuOpen(open);
+            }}
+          >
             <SheetTrigger
               render={
                 <Button variant="ghost" size="icon" aria-label="Open navigation">
@@ -305,18 +316,21 @@ export function SiteRail({
                 </Button>
               }
             />
-            <SheetContent side="left" exitMotion="slide" className="flex w-72 max-w-[85vw] flex-col gap-0 p-0">
+            <SiteNavigationContent
+              open={menuOpen}
+              onExitComplete={() => menuActions.current?.unmount()}
+            >
               <SheetTitle className="sr-only">Navigation</SheetTitle>
               <RailNav
                 nav={nav}
-                onNavigate={() => setMenuOpen(false)}
+                onNavigate={() => menuActions.current?.close()}
                 className="px-5 pt-6 pb-8"
                 fadeClassName="from-surface-raised"
               />
               <div className="px-5 py-4">
                 <RailFooter repository={repository} />
               </div>
-            </SheetContent>
+            </SiteNavigationContent>
           </Sheet>
         </div>
       </div>

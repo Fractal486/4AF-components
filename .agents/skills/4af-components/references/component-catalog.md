@@ -83,7 +83,7 @@ The catalog contains 47 installable UI items.
 | Install name and docs | Choose it for |
 | --- | --- |
 | [`tooltip`](https://4af.selfsimilar.dev/docs/tooltip.md) | A short hover or focus description. |
-| [`sheet`](https://4af.selfsimilar.dev/docs/sheet.md) | A dialog entering from an edge, with a fade or full-slide exit; mobile sidebars use the slide. |
+| [`sheet`](https://4af.selfsimilar.dev/docs/sheet.md) | A dialog entering from an edge. |
 | [`dialog`](https://4af.selfsimilar.dev/docs/dialog.md) | A centered dialog, including bundled multi-step flows. |
 | [`alert-dialog`](https://4af.selfsimilar.dev/docs/alert-dialog.md) | A confirmation dialog that blocks backdrop dismissal. |
 | [`popover`](https://4af.selfsimilar.dev/docs/popover.md) | An interactive panel anchored to a trigger. |

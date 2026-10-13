@@ -332,7 +332,7 @@ import { Button } from "@/components/ui/button";
 
 <Sheet>
   <SheetTrigger>Open sheet</SheetTrigger>
-  <SheetContent exitMotion="fade">
+  <SheetContent>
     <SheetTitle>Edit project</SheetTitle>
     Project settings
   </SheetContent>
@@ -350,7 +350,6 @@ import { Button } from "@/components/ui/button";
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
-// Mobile navigation slides back out with a faster exit.
 <SidebarProvider>
   <Sidebar>
     <SidebarContent>

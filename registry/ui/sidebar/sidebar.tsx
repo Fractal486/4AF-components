@@ -208,7 +208,6 @@ export function Sidebar({
       <Sheet open={openMobile} onOpenChange={setOpenMobile}>
         <SheetContent
           side={side}
-          exitMotion="slide"
           showClose={false}
           data-slot="sidebar"
           data-mobile="true"

@@ -13,11 +13,6 @@ description parts
 
 A focus-trapped Base UI dialog that enters from an edge.
 
-`SheetContent` accepts `exitMotion="fade"` (default) for a short drift, fade, and blur,
-or `exitMotion="slide"` to slide fully back to its `side` without fading or blurring.
-The slide exit takes 240ms, 20% faster than the entrance spring's 300ms visual duration.
-Reduced motion makes both directions immediate. Mobile sidebars use the slide exit.
-
 ### After the exit
 
 `SheetContent` takes `onExitComplete`, called once the exit animation has finished and the
