@@ -129,7 +129,7 @@ export default async function IndexPage() {
           />
         </div>
         <div className="relative pb-4 lg:max-w-[30rem] lg:pt-20 lg:pb-4">
-          <h1 className="mb-[1.1rem] text-[length:clamp(1.9rem,3.4vw,2.75rem)] leading-[1.12] font-semibold tracking-[-0.03em] text-balance">
+          <h1 className="mb-[1.1rem] text-[length:clamp(1.9rem,3.4vw,2.75rem)] leading-[1.12] font-semibold tracking-[-0.03em] text-wrap lg:text-balance">
             Minimal React components built on Base UI.
           </h1>
           <p className="mb-6 max-w-[52ch] text-[17px] leading-[1.65] tracking-[-0.01em] text-pretty text-muted-foreground">
@@ -148,13 +148,13 @@ export default async function IndexPage() {
             />
           </div>
           <div className="relative -mt-6 lg:mt-0">
-            <div className="grid grid-cols-2 gap-3 lg:flex lg:flex-wrap lg:items-center">
-              <Button asChild size="lg" className="min-w-0 px-2 text-xs min-[360px]:text-sm sm:px-5 sm:text-base">
+            <div className="-mx-5 flex flex-wrap items-center justify-center gap-3 sm:-mx-10 lg:mx-0 lg:justify-start">
+              <Button asChild size="lg">
                 <Link href="/docs/reference/components">
                   Browse components
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="min-w-0 gap-2 px-2 text-xs min-[360px]:text-sm sm:gap-3 sm:px-5 sm:text-base">
+              <Button asChild size="lg" variant="outline">
                 <a href={REPOSITORY} target="_blank" rel="noopener noreferrer">
                   <Github aria-hidden="true" />
                   View on GitHub
