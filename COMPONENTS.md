@@ -26,6 +26,9 @@ Loading components install the shared loader utility and `ClassicLoader` as thei
 indicator. See [shared loading indicators](content/docs/reference/engineering.mdx#shared-loading-indicators)
 for provider overrides and alternative loaders.
 
+For custom application frames, see [Sidebar Layout's header slots](content/docs/sidebar-layout.mdx#api).
+For multiline input inside an existing editor surface, see [Textarea's plain variant](content/docs/textarea.mdx#api).
+
 When API or behavior changes, update its owning component page and canonical usage reference.
 Keep this file as an index and the agent chooser focused on selecting components; link to the
 owning page instead of adding another copy of its API guidance.

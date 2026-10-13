@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { createPortal } from "react-dom";
 import { describe, expect, it } from "vitest";
 import {
@@ -8,6 +8,27 @@ import {
 } from "./sidebar-layout";
 
 describe("SidebarLayout", () => {
+  it("replaces the title with custom content while retaining header actions", () => {
+    const props = {
+      sidebar: <aside>Sidebar</aside>,
+      title: "Page title",
+      headerActions: <button>Save</button>,
+    };
+    const { rerender } = render(
+      <SidebarLayout {...props} headerContent={<nav aria-label="Page path">Workspace / Notes</nav>} />,
+    );
+    const header = screen.getByRole("navigation", { name: "Page path" }).closest("header");
+    expect(screen.queryByText("Page title")).not.toBeInTheDocument();
+    expect(header).toContainElement(screen.getByRole("button", { name: "Save" }));
+    expect(header).toHaveClass("bg-surface");
+
+    rerender(<SidebarLayout {...props} headerContent={null} headerClassName="bg-background" />);
+    expect(screen.getByText("Page title")).toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "Page path" })).not.toBeInTheDocument();
+    expect(header).toHaveClass("bg-background");
+    expect(header).not.toHaveClass("bg-surface");
+  });
+
   it("keeps the app frame fixed while the content area owns page scrolling", () => {
     const { container } = render(
       <SidebarLayout sidebar={<aside>Sidebar</aside>}>

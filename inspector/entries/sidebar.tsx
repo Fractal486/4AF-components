@@ -37,8 +37,9 @@ export const sidebarEntry = defineEntry({
     collapsible: select(COLLAPSIBLE, "icon"),
     // Swaps the nav rows for their loading skeletons.
     loading: bool(false, "Loading"),
+    customHeader: bool(false, "Custom header"),
   },
-  render({ layout, variant, collapsible, loading }) {
+  render({ layout, variant, collapsible, loading, customHeader }) {
     const resolvedVariant = resolveSidebarVariant(layout, variant);
 
     return (
@@ -49,6 +50,7 @@ export const sidebarEntry = defineEntry({
         variant={resolvedVariant}
         collapsible={collapsible}
         loading={loading}
+        customHeader={customHeader}
       />
     );
   },

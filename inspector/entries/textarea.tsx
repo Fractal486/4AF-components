@@ -8,16 +8,18 @@ export const textareaEntry = defineEntry({
   slug: "textarea",
   name: "Textarea",
   controls: {
+    variant: select(["default", "plain"] as const, "default", "Variant"),
     tone: select(TONES, "neutral", "Focus tone"),
     placeholder: text("Type something...", "Placeholder"),
     resizable: bool(true, "Resize grip"),
     disabled: bool(false),
     invalid: bool(false),
   },
-  render({ tone, placeholder, resizable, disabled, invalid }) {
+  render({ variant, tone, placeholder, resizable, disabled, invalid }) {
     return (
       <div className="w-full max-w-sm">
         <Textarea
+          variant={variant}
           tone={tone}
           placeholder={placeholder}
           resizable={resizable}

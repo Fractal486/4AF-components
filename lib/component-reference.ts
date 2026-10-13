@@ -367,7 +367,14 @@ import { Button } from "@/components/ui/button";
   "sidebar-layout": {
     usage: `import { SidebarLayout } from "@/components/ui/sidebar-layout";
 
-<SidebarLayout sidebar={<Sidebar />}>Page content</SidebarLayout>`,
+<SidebarLayout
+  sidebar={<Sidebar />}
+  title="Notes"
+  headerContent={<nav aria-label="Page path">Workspace / Notes</nav>}
+  headerActions={<button type="button">Save</button>}
+>
+  Page content
+</SidebarLayout>`,
   },
   skeleton: {
     usage: `import { Skeleton } from "@/components/ui/skeleton";
@@ -514,7 +521,8 @@ import { Button } from "@/components/ui/button";
   textarea: {
     usage: `import { Textarea } from "@/components/ui/textarea";
 
-<Textarea placeholder="Write a note…" />`,
+<Textarea aria-label="Notes" placeholder="Write a note…" />
+<Textarea variant="plain" aria-label="Draft" placeholder="Write inside your own editor surface…" />`,
   },
   toggle: {
     usage: `import { Toggle } from "@/components/ui/toggle";

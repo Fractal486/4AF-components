@@ -149,12 +149,12 @@ export default async function IndexPage() {
           </div>
           <div className="relative -mt-6 lg:mt-0">
             <div className="grid grid-cols-2 gap-3 lg:flex lg:flex-wrap lg:items-center">
-              <Button asChild size="lg" className="h-11 min-w-0 px-2 text-xs min-[360px]:text-sm sm:px-5 sm:text-base lg:h-[38px]">
+              <Button asChild size="lg" className="min-w-0 px-2 text-xs min-[360px]:text-sm sm:px-5 sm:text-base">
                 <Link href="/docs/reference/components">
                   Browse components
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="h-11 min-w-0 gap-2 px-2 text-xs min-[360px]:text-sm sm:gap-3 sm:px-5 sm:text-base lg:h-[38px]">
+              <Button asChild size="lg" variant="outline" className="min-w-0 gap-2 px-2 text-xs min-[360px]:text-sm sm:gap-3 sm:px-5 sm:text-base">
                 <a href={REPOSITORY} target="_blank" rel="noopener noreferrer">
                   <Github aria-hidden="true" />
                   View on GitHub
@@ -168,7 +168,7 @@ export default async function IndexPage() {
               iconPosition="end"
               swapLabel={false}
               // Secondary to the two buttons above, and flush with their left edge.
-              className="mt-3 h-11 px-0 text-muted-foreground hover:text-foreground lg:h-[34px]"
+              className="mt-3 px-0 text-muted-foreground hover:text-foreground"
             >
               <span className="inline-flex items-center gap-2.5">
                 {/* Decorative: the label names the button. `outline-none` drops the

@@ -1,3 +1,5 @@
+"use client";
+
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
 import {
@@ -43,6 +45,8 @@ export interface SidebarLayoutProps extends Omit<SidebarProviderProps, "children
   sidebar: ReactNode;
   /** The current page or panel label shown in the header. */
   title?: ReactNode;
+  /** Replace the title slot with custom content, before the right-side actions. */
+  headerContent?: ReactNode;
   /** Optional controls rendered on the header's right side. */
   headerActions?: ReactNode;
   /** Replace the default left-aligned SidebarTrigger, or pass null to omit it. */
@@ -55,6 +59,7 @@ export interface SidebarLayoutProps extends Omit<SidebarProviderProps, "children
 export function SidebarLayout({
   sidebar,
   title,
+  headerContent,
   headerActions,
   collapseControl,
   headerClassName,
@@ -72,14 +77,14 @@ export function SidebarLayout({
         <header
           data-slot="sidebar-layout-header"
           className={cn(
-            "flex h-12 shrink-0 items-center gap-2 border-b border-border px-3",
+            "flex h-12 shrink-0 items-center gap-2 border-b border-border bg-surface px-3",
             headerClassName,
           )}
         >
           {collapseControl === undefined ? <SidebarTrigger /> : collapseControl}
-          {title !== undefined && (
+          {headerContent ?? (title !== undefined ? (
             <span className="min-w-0 truncate text-sm text-muted-foreground">{title}</span>
-          )}
+          ) : null)}
           <div
             data-slot="sidebar-layout-header-actions"
             className="ml-auto flex items-center gap-2"

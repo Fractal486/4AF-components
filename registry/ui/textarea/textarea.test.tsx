@@ -1,10 +1,29 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import { createRef } from "react";
 import { vi } from "vitest";
 import { Textarea } from "./textarea";
 
 describe("Textarea", () => {
-  it("captures, tracks, and releases a resize pointer", () => {
-    render(<Textarea aria-label="Notes" />);
+  it("switches to a plain field while preserving native input behavior and its ref", () => {
+    const ref = createRef<HTMLTextAreaElement>();
+    const onChange = vi.fn();
+    const { rerender } = render(<Textarea aria-label="Notes" ref={ref} />);
+    const field = screen.getByRole("textbox", { name: "Notes" });
+    expect(field).toHaveAttribute("data-variant", "default");
+    expect(field).toHaveClass("border", "border-border");
+
+    rerender(<Textarea aria-label="Notes" variant="plain" ref={ref} onChange={onChange} />);
+    expect(ref.current).toBe(field);
+    expect(field).toHaveAttribute("data-variant", "plain");
+    expect(field).toHaveClass("border-0", "shadow-none");
+    expect(field).not.toHaveClass("border", "border-border");
+    fireEvent.change(field, { target: { value: "A note" } });
+    expect(onChange).toHaveBeenCalledOnce();
+    expect(field).toHaveValue("A note");
+  });
+
+  it.each(["default", "plain"] as const)("captures, tracks, and releases a resize pointer with %s styling", (variant) => {
+    render(<Textarea aria-label="Notes" variant={variant} />);
     const textarea = screen.getByRole("textbox", { name: "Notes" });
     const grip = screen.getByRole("button", { name: "Resize" });
     Object.defineProperty(textarea, "offsetHeight", { configurable: true, value: 100 });

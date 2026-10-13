@@ -12,5 +12,16 @@ description: A multiline text field aligned with the 4AF input tones and sizing 
 
 A multiline field matching Input, with an optional pointer-captured corner resize grip.
 
+| Prop | Values | Default |
+| --- | --- | --- |
+| `variant` | `default`, `plain` | `default` |
+| `tone` | `neutral`, `accent` | `neutral` |
+| `resizable` | `boolean` | `true` |
+
+`default` provides the standalone bordered field. `plain` removes the border and focus shadow
+for editors whose surrounding surface already supplies the frame. Both retain native textarea
+props, refs, disabled handling, and the optional resize grip. The field exposes its choices as
+`data-variant` and `data-tone`.
+
 The field uses the medium form-row treatment with an 8px radius. When `resizable` is enabled,
 the 16px corner grip uses the compact 6px radius.

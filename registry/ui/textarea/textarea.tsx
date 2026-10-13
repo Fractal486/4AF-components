@@ -8,8 +8,8 @@ import { inputVariants, type InputVariants } from "@/registry/ui/ui/input.varian
 /**
  * A multi-line field — the Input, taller.
  *
- * A native `<textarea>` sharing Input's default border and focus styling. It supports
- * neutral or accent focus tone, but does not expose Input's variant axis.
+ * A native `<textarea>` sharing Input's border and focus styling. Choose the bordered
+ * default or a plain field when its surrounding surface already provides the frame.
  * There is no Base UI textarea primitive.
  *
  * The one addition is the corner grip. The native resize handle is the browser's, not
@@ -23,7 +23,9 @@ const MIN_HEIGHT = 64;
 export interface TextareaProps extends Omit<ComponentProps<"textarea">, "className" | "ref"> {
   className?: string;
   ref?: Ref<HTMLTextAreaElement>;
-  /** Focus colour — only axis a textarea carries (it's always the bordered `default` box). */
+  /** `default` is bordered; `plain` removes the border and focus shadow. */
+  variant?: "default" | "plain";
+  /** Focus colour. */
   tone?: InputVariants["tone"];
   /** The drag-to-resize grip in the corner. */
   resizable?: boolean;
@@ -31,6 +33,7 @@ export interface TextareaProps extends Omit<ComponentProps<"textarea">, "classNa
 
 export function Textarea({
   className,
+  variant = "default",
   tone = "neutral",
   resizable = true,
   disabled,
@@ -67,11 +70,11 @@ export function Textarea({
     <div className="relative w-full" data-slot="textarea">
       <textarea
         ref={mergedRef}
-        data-variant="default"
+        data-variant={variant}
         data-tone={tone ?? "neutral"}
         disabled={disabled}
         className={cn(
-          inputVariants({ variant: "default", tone: tone ?? "neutral" }),
+          inputVariants({ variant, tone: tone ?? "neutral" }),
           // Override the Input's single-line box: a block element that grows, no native
           // resize (the grip owns it), a touch more vertical padding, and room so the last
           // line's text doesn't run under the grip.

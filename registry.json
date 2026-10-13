@@ -431,7 +431,7 @@
     {
       "name": "textarea",
       "type": "registry:ui",
-      "description": "A multiline text field with neutral or accent focus styling and an optional resize handle.",
+      "description": "A multiline text field with bordered or plain variants, neutral or accent focus styling, and an optional resize handle.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/textarea (Markdown: https://4af.selfsimilar.dev/docs/textarea.md)",
       "dependencies": [
         "class-variance-authority"
@@ -1638,7 +1638,7 @@
     {
       "name": "sidebar-layout",
       "type": "registry:ui",
-      "description": "An optional viewport shell that composes Sidebar with a contained, independently scrolling inset surface, page title header, header actions, and a left-aligned collapse trigger before the title.",
+      "description": "An optional viewport shell composing Sidebar with independently scrolling content, a surface-colored header with a title or custom content, header actions, and a left-aligned collapse trigger.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/sidebar-layout (Markdown: https://4af.selfsimilar.dev/docs/sidebar-layout.md)",
       "dependencies": [],
       "registryDependencies": [

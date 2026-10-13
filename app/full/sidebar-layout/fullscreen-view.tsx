@@ -21,6 +21,7 @@ export function SidebarLayoutFullscreen() {
         variant={resolveSidebarVariant(values.layout, values.variant)}
         collapsible={values.collapsible}
         loading={values.loading}
+        customHeader={values.customHeader}
         fullscreen
       />
 

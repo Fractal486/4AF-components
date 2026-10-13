@@ -14,6 +14,17 @@ A viewport-height application shell around Sidebar. Navigation and the header st
 the inset content region handles vertical scrolling. The header holds a collapse control on the
 left, the page title, and optional actions on the right.
 
+| Prop | Purpose |
+| --- | --- |
+| `title` | Text or a node rendered in the default truncated title slot. |
+| `headerContent` | Custom content replacing the title slot, between the collapse control and actions. `null` or `undefined` falls back to `title`. |
+| `headerActions` | Controls on the right side of the header. |
+| `headerClassName` | Classes merged after the default header styling. |
+
+The header uses `bg-surface`, matching the sidebar. Override it through `headerClassName`
+when the surrounding shell needs a different background. `headerContent` can hold breadcrumbs,
+tabs, or a custom heading without replacing the collapse control or action area.
+
 It is a separate item from `sidebar` so the navigation components can be used without this page
 frame. To fit it inside a box instead of the viewport, override the provider height with
 `className`, as the demo on this page does with `h-full`.

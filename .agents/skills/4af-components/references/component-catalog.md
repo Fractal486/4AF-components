@@ -37,7 +37,7 @@ The catalog contains 47 installable UI items.
 | Install name and docs | Choose it for |
 | --- | --- |
 | [`input`](https://4af.selfsimilar.dev/docs/input.md) | Text or number entry, with optional leading icons. |
-| [`textarea`](https://4af.selfsimilar.dev/docs/textarea.md) | Multiline text entry. |
+| [`textarea`](https://4af.selfsimilar.dev/docs/textarea.md) | Multiline text entry with a bordered or plain treatment. |
 | [`switch`](https://4af.selfsimilar.dev/docs/switch.md) | An on/off setting. |
 | [`checkbox`](https://4af.selfsimilar.dev/docs/checkbox.md) | Boolean or indeterminate selection. |
 | [`radio`](https://4af.selfsimilar.dev/docs/radio.md) | One choice from a visible group. |
@@ -76,7 +76,7 @@ The catalog contains 47 installable UI items.
 | [`separator`](https://4af.selfsimilar.dev/docs/separator.md) | A horizontal or vertical divider. |
 | [`command-palette`](https://4af.selfsimilar.dev/docs/command-palette.md) | Command search, nested lists, or custom panels, including async search. |
 | [`sidebar`](https://4af.selfsimilar.dev/docs/sidebar.md) | Responsive navigation, including split rail/panel layouts. |
-| [`sidebar-layout`](https://4af.selfsimilar.dev/docs/sidebar-layout.md) | An optional viewport and scrolling shell around Sidebar. |
+| [`sidebar-layout`](https://4af.selfsimilar.dev/docs/sidebar-layout.md) | A viewport and scrolling shell with a surface-colored header and custom title content. |
 
 ### Overlays and menus
 

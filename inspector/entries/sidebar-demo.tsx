@@ -96,11 +96,13 @@ export function SidebarDemo({
   variant,
   collapsible,
   loading,
+  customHeader = false,
   fullscreen = false,
 }: {
   variant: "sidebar" | "floating" | "inset" | "split" | "split-floating" | "split-inset";
   collapsible: "offcanvas" | "icon" | "none";
   loading: boolean;
+  customHeader?: boolean;
   fullscreen?: boolean;
 }) {
   const [active, setActive] = useState<string>("dashboard");
@@ -624,6 +626,12 @@ export function SidebarDemo({
         </Sidebar>
         }
         title={active[0]!.toUpperCase() + active.slice(1)}
+        headerContent={customHeader ? (
+          <div className="flex min-w-0 items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Workspace /</span>
+            <span className="truncate text-foreground">{active[0]!.toUpperCase() + active.slice(1)}</span>
+          </div>
+        ) : undefined}
         // The demo is one page — persisting the rail state to a cookie would leak
         // between visits and fight the control panel.
         persist={false}
