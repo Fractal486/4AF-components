@@ -44,6 +44,15 @@ export function GenerationDemo({
       setPending(false);
     };
     cancelCurrent.current = cancel;
+    // Only a width change moves the layout under the drawing. Mobile browsers also fire
+    // `resize` when the address bar shows or hides on touch and scroll; that only changes
+    // the height, and the overlay scrolls with the demo, so it plays on.
+    let width = window.innerWidth;
+    const resized = () => {
+      if (window.innerWidth === width) return;
+      width = window.innerWidth;
+      cancel();
+    };
 
     async function play() {
       try {
@@ -80,13 +89,13 @@ export function GenerationDemo({
           });
           // The runtime now owns opacity; release the server-rendered hiding rule.
           setPending(false);
-          window.addEventListener("resize", cancel);
+          window.addEventListener("resize", resized);
           // generate() measures on a later animation frame, not before it returns.
           // Retain the exclusions until completion or cancellation.
           await run.finished;
         } finally {
           skipped.forEach((element) => element.removeAttribute("data-t-generate-skip"));
-          window.removeEventListener("resize", cancel);
+          window.removeEventListener("resize", resized);
         }
         if (!disposed) {
           setRunning(false);
@@ -119,7 +128,7 @@ export function GenerationDemo({
       observer.disconnect();
       run?.cancel();
       cancelCurrent.current = null;
-      window.removeEventListener("resize", cancel);
+      window.removeEventListener("resize", resized);
     };
   }, [attempt, name, enabled]);
 
