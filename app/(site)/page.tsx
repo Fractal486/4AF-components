@@ -149,13 +149,14 @@ export default async function IndexPage() {
             />
           </div>
           <div className="relative -mt-6 lg:mt-0">
+            {/* Natural widths, a notch smaller on phones so both fit on one row. */}
             <div className="flex flex-wrap items-center gap-3">
-              <Button asChild size="lg">
+              <Button asChild size="lg" className="px-3 text-xs min-[360px]:px-4 min-[360px]:text-sm sm:px-5 sm:text-base">
                 <Link href="/docs/reference/components">
                   Browse components
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
+              <Button asChild size="lg" variant="outline" className="gap-2 px-3 text-xs min-[360px]:px-4 min-[360px]:text-sm sm:gap-3 sm:px-5 sm:text-base">
                 <a href={REPOSITORY} target="_blank" rel="noopener noreferrer">
                   <Github aria-hidden="true" />
                   View on GitHub

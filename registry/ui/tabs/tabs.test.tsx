@@ -51,6 +51,27 @@ describe("Tabs", () => {
     expect(list).not.toHaveAttribute("data-overflow-right");
   });
 
+  it("measures the indicator in the list's own pixels under a scaled ancestor", async () => {
+    render(
+      <Tabs defaultValue="two">
+        <TabsList aria-label="Scaled">
+          <TabsTab value="one">One</TabsTab>
+          <TabsTab value="two">Two</TabsTab>
+        </TabsList>
+      </Tabs>,
+    );
+    const list = screen.getByRole("tablist");
+    // Laid out 200px wide, drawn at half size.
+    Object.defineProperty(list, "offsetWidth", { configurable: true, value: 200 });
+    vi.spyOn(list, "getBoundingClientRect").mockReturnValue({ left: 10, right: 110, width: 100 } as DOMRect);
+    vi.spyOn(screen.getByRole("tab", { name: "Two" }), "getBoundingClientRect")
+      .mockReturnValue({ left: 50, right: 90, width: 40 } as DOMRect);
+
+    fireEvent.click(screen.getByRole("tab", { name: "One" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Two" }));
+    await waitFor(() => expect(list.querySelector('[aria-hidden="true"]')).toHaveStyle({ left: "80px", width: "80px" }));
+  });
+
   it("keeps its internal measurement ref when a consumer supplies one", () => {
     const ref = createRef<HTMLDivElement>();
 

@@ -3,7 +3,9 @@
 import { RotateCcw } from "lucide-react";
 import { Fragment, useEffect, useState } from "react";
 import { Controls } from "@/inspector/controls";
+import { GenerationDemo } from "@/inspector/entries/generation-demo";
 import {
+  defineEntry,
   initialValues,
   type ControlSchema,
   type Entry,
@@ -69,6 +71,17 @@ const LOADER_DEMOS = new Set([
   "button", "action-button", "action-toggle", "copy-button", "delete-button",
   "alert", "badge", "dropdown-menu", "command-palette", "selection-toolbar",
 ]);
+// Sizing belongs to the demo shell; every entry uses the same reveal.
+const DEMO_WIDTHS: Partial<Record<ComponentDemoName, string>> = {
+  input: "max-w-sm", textarea: "max-w-sm", slider: "max-w-sm",
+  progress: "max-w-sm", skeleton: "max-w-sm",
+  select: "max-w-56", "select-search": "max-w-56", "select-aligned": "max-w-56",
+  empty: "max-w-md", collapsible: "max-w-md", tabs: "max-w-md",
+  separator: "max-w-xs", "selection-toolbar": "max-w-lg",
+  table: "max-w-xl", "data-table": "max-w-xl",
+  "table-of-contents": "max-w-2xl", "table-of-contents-lines": "max-w-2xl",
+  sidebar: "max-w-full",
+};
 const LOADER_CONTROLS = {
   loader: { kind: "select", options: ["ascii", "classic"], defaultValue: "classic", label: "Loader" },
 } as const;
@@ -81,12 +94,15 @@ function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
   const hasControls = Object.keys(entry.controls).length > 0;
   const isAppShell = entry.slug === "sidebar";
   const isScrambleText = entry.slug === "scramble-text";
+  const demoWidth = DEMO_WIDTHS[entry.slug as ComponentDemoName];
+  const settingsKey = JSON.stringify([values, loader]);
 
   return (
     <div className="not-prose first:mt-0 my-6">
       <div
+        data-demo-box
         className={cn(
-          "relative grid h-[42rem] min-w-0 grid-rows-[minmax(0,1fr)_auto] items-center justify-items-center gap-8 overflow-hidden rounded-xl bg-background p-6 shadow-border",
+          "relative isolate grid h-[42rem] min-w-0 grid-rows-[minmax(0,1fr)_auto] items-center justify-items-center gap-8 overflow-hidden rounded-xl bg-background p-6 shadow-border",
           isAppShell && "min-h-0 items-stretch justify-items-stretch gap-3 p-3",
         )}
       >
@@ -96,25 +112,46 @@ function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
             isAppShell && "items-stretch",
           )}
         >
-          {isScrambleText ? (
-            <>
-              <Tooltip content="Replay animation" delay={0}>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Replay Scramble Text animation"
-                  className="absolute top-3 right-3 z-10"
-                  onClick={() => setReplayKey((current) => current + 1)}
-                >
-                  <RotateCcw />
-                </Button>
-              </Tooltip>
-              <Fragment key={replayKey}>{entry.render(values)}</Fragment>
-            </>
-          ) : (
-            <LoaderProvider loader={loader === "ascii" ? <AsciiLoader /> : undefined}>{entry.render(values)}</LoaderProvider>
+          {isScrambleText && (
+            <Tooltip content="Replay animation" delay={0}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Replay Scramble Text animation"
+                className="absolute top-3 right-3 z-10"
+                onClick={() => setReplayKey((current) => current + 1)}
+              >
+                <RotateCcw />
+              </Button>
+            </Tooltip>
           )}
+          <LoaderProvider loader={loader === "ascii" ? <AsciiLoader /> : undefined}>
+            <GenerationDemo
+              key={entry.slug}
+              name={entry.name}
+              contentKey={settingsKey}
+              loading={entry.slug === "table" && values.loading === true}
+              className={cn(
+                "flex min-w-0 max-w-full flex-col items-center",
+                demoWidth && "w-full",
+                demoWidth,
+                (entry.slug === "table" || entry.slug === "data-table" || entry.slug === "collapsible") && "self-start",
+                isAppShell && "h-full min-h-0 items-stretch",
+              )}
+              targetClassName={cn(
+                "flex min-w-0 w-fit max-w-full items-center justify-center",
+                demoWidth && "w-full",
+                isAppShell && "h-full min-h-0 items-stretch",
+              )}
+            >
+              {(revealed) => (
+                <Fragment key={`${settingsKey}-${replayKey}`}>
+                  {entry.render(isScrambleText && !revealed ? { ...values, intervalMs: 0 } : values)}
+                </Fragment>
+              )}
+            </GenerationDemo>
+          </LoaderProvider>
         </div>
         {hasControls || hasLoaderSetting ? (
           <section
@@ -155,7 +192,7 @@ function loadingPreview() {
   );
 }
 
-type DemoName = Exclude<ComponentDemoName, "ascii-loader">;
+type DemoName = ComponentDemoName;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyEntry = Entry<any>;
 
@@ -222,6 +259,12 @@ function LazyDemo({ name }: { name: DemoName }) {
 }
 
 const demos: Record<DemoName, () => Promise<AnyEntry>> = {
+  "ascii-loader": async () => defineEntry({
+    slug: "ascii-loader",
+    name: "ASCII Loader",
+    controls: {},
+    render: () => <AsciiLoader label="Loading" className="text-sm text-muted-foreground" />,
+  }),
   "action-button": async () => (await import("@/inspector/entries/action-button")).actionButtonEntry,
   "action-toggle": async () => (await import("@/inspector/entries/action-toggle")).actionToggleEntry,
   alert: async () => (await import("@/inspector/entries/alert")).alertEntry,
@@ -272,13 +315,5 @@ const demos: Record<DemoName, () => Promise<AnyEntry>> = {
 };
 
 export function ComponentDemo({ name }: { name: ComponentDemoName }) {
-  if (name === "ascii-loader") {
-    return (
-      <div className="not-prose first:mt-0 my-6 grid min-h-72 place-items-center rounded-xl bg-background shadow-border">
-        <AsciiLoader label="Loading" className="text-sm text-muted-foreground" />
-      </div>
-    );
-  }
-
   return <LazyDemo key={name} name={name} />;
 }

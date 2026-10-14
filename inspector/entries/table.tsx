@@ -30,6 +30,7 @@ const NUMBER = new Intl.NumberFormat("en-GB");
 
 const TOTAL = RELEASES.reduce((sum, release) => sum + release.downloads, 0);
 
+
 export const tableEntry = defineEntry({
   slug: "table",
   name: "Table",

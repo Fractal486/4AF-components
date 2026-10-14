@@ -167,9 +167,15 @@ export function TabsList({
       // `clientLeft` is the list's left border: the rects are border-box, but the
       // indicator is positioned from inside the border. Without it, a bordered track
       // (`appearance="outline"`) shifts the fill 1px toward the end.
-      const left = tabRect.left - listRect.left - list.clientLeft + list.scrollLeft;
-      setBox((previous) => previous?.left === left && previous.width === tabRect.width
-        ? previous : { left, width: tabRect.width });
+      // Rects are in screen pixels; under a scaled ancestor (a dialog's enter scale, a
+      // zoomed canvas) divide them back into the list's own pixels. `offsetWidth` is
+      // rounded, so a sub-pixel difference is rounding, not scale.
+      const scale = list.offsetWidth > 0 && Math.abs(listRect.width - list.offsetWidth) >= 1
+        ? listRect.width / list.offsetWidth : 1;
+      const left = (tabRect.left - listRect.left) / scale - list.clientLeft + list.scrollLeft;
+      const width = tabRect.width / scale;
+      setBox((previous) => previous?.left === left && previous.width === width
+        ? previous : { left, width });
     };
 
     measure();

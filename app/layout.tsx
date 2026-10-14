@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { RootProvider } from "fumadocs-ui/provider/next";
+import { SiteProviders } from "@/components/site/providers";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -25,9 +25,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${sans.variable} ${mono.variable}`} suppressHydrationWarning>
       <body className="flex min-h-screen flex-col antialiased">
-        <RootProvider theme={{ storageKey: "4af-theme" }} search={{ options: { type: "static" } }}>
+        <SiteProviders>
           {children}
-        </RootProvider>
+        </SiteProviders>
       </body>
     </html>
   );

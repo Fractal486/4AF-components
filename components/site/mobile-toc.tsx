@@ -32,7 +32,10 @@ export function MobileToc({ items }: { items: TocItem[] }) {
       }}>
         <PopoverTrigger
           aria-label="On this page"
-          className="flex h-10 w-full items-center gap-2.5 px-5 text-left text-sm text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:px-10 lg:px-0"
+          // Lined up with the top bar above it (`px-4`): the ring's ink starts 1px inside its
+          // box, so 15px puts it under the logo, and 26px centres the chevron under the menu
+          // icon (a 34px button with a 16px icon, 16px from the edge).
+          className="flex h-10 w-full items-center gap-2.5 pr-[26px] pl-[15px] text-left text-sm text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring lg:px-0"
         >
           <svg viewBox="0 0 20 20" className="size-4 shrink-0" aria-hidden="true">
             <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.2" />
@@ -45,8 +48,10 @@ export function MobileToc({ items }: { items: TocItem[] }) {
           aria-label="On this page"
           align="start"
           sideOffset={0}
+          // Edge to edge under the bar: no collision inset, side borders, or corners.
+          positionerProps={{ collisionPadding: 0 }}
           finalFocus={() => !navigating.current}
-          className="w-(--anchor-width) max-w-none rounded-t-none p-3"
+          className="w-(--anchor-width) max-w-none rounded-none border-x-0 border-t-0 bg-background/80 p-3 backdrop-blur-md"
         >
           <nav aria-label="Page sections" className="code-scrollbar max-h-[50dvh] overflow-y-auto">
             {items.map((item) => (
@@ -54,7 +59,7 @@ export function MobileToc({ items }: { items: TocItem[] }) {
                 key={item.id}
                 href={`#${item.id}`}
                 aria-current={item.id === activeId ? "location" : undefined}
-                className="block rounded-sm py-2 pr-3 text-sm text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring aria-[current]:bg-muted aria-[current]:text-foreground"
+                className="block rounded-sm py-2 pr-3 text-sm text-muted-foreground outline-none hover:bg-foreground/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring aria-[current]:bg-foreground/8 aria-[current]:text-foreground"
                 style={{ paddingLeft: 12 + ((item.level ?? 2) - minLevel) * 12 }}
                 onClick={(event) => {
                   if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
