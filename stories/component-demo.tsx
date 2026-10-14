@@ -104,6 +104,8 @@ function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
         className={cn(
           "relative isolate grid h-[42rem] min-w-0 grid-rows-[minmax(0,1fr)_auto] items-center justify-items-center gap-8 overflow-hidden rounded-xl bg-background p-6 shadow-border",
           isAppShell && "min-h-0 items-stretch justify-items-stretch gap-3 p-3",
+          // Reserve the bottom row for the replay control.
+          "pb-14",
         )}
       >
         <div

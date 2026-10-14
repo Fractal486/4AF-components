@@ -134,8 +134,8 @@ export default async function IndexPage() {
             Minimal React components built on Base&nbsp;UI.
           </h1>
           <p className="mb-6 max-w-[52ch] text-[17px] leading-[1.65] tracking-[-0.01em] text-pretty text-muted-foreground">
-            4AF is a personal opinionated library of {componentCount} components; compact and
-            warm-neutral, and animate only when and where needed.
+            4AF is a personal, opinionated library of {componentCount} components: compact,
+            warm-neutral, and animated only where it helps.
           </p>
           {/* Below lg the photo follows the description. The actions overlap its lower edge. */}
           <div aria-hidden className="relative -mx-5 aspect-[2/1] sm:-mx-10 lg:hidden">

@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   alternates: { types: { "text/plain": "/llms.txt" } },
   title: "4AF — components",
   description: "Quiet, minimal React components with just enough motion, built on Base UI.",
+  // The image itself is `app/opengraph-image.png`; this asks X for the large card.
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
