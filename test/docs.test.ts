@@ -1,5 +1,6 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { parse as parseYaml } from "yaml";
 import {
   componentCategories,
   componentCatalogMarkdown,
@@ -25,6 +26,24 @@ describe("component documentation", () => {
       .filter((name) => !existsSync(resolve("content/docs", `${name}.mdx`)));
 
     expect(missing).toEqual([]);
+  });
+
+  it("parses the front matter of every page", () => {
+    // An unquoted `: ` in a value is a nested mapping in YAML, which fails the build.
+    const failures = readdirSync(resolve("content/docs"), { recursive: true, encoding: "utf8" })
+      .filter((file) => file.endsWith(".mdx"))
+      .flatMap((file) => {
+        const match = readFileSync(resolve("content/docs", file), "utf8").match(/^---\r?\n([\s\S]*?)\r?\n---/);
+        if (!match) return [];
+        try {
+          parseYaml(match[1]!);
+          return [];
+        } catch {
+          return [file];
+        }
+      });
+
+    expect(failures).toEqual([]);
   });
 
   it("lists every installable component in the docs sidebar", () => {
