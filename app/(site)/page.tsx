@@ -129,8 +129,9 @@ export default async function IndexPage() {
           />
         </div>
         <div className="relative pb-4 lg:max-w-[30rem] lg:pt-20 lg:pb-4">
-          <h1 className="mb-[1.1rem] text-[length:clamp(1.9rem,3.4vw,2.75rem)] leading-[1.12] font-semibold tracking-[-0.03em] text-wrap lg:text-balance">
-            Minimal React components built on Base UI.
+          <h1 className="mb-[1.1rem] text-[length:clamp(1.9rem,3.4vw,2.75rem)] leading-[1.12] font-semibold tracking-[-0.03em] text-balance">
+            {/* A no-break space keeps the name "Base UI" on one line. */}
+            Minimal React components built on Base&nbsp;UI.
           </h1>
           <p className="mb-6 max-w-[52ch] text-[17px] leading-[1.65] tracking-[-0.01em] text-pretty text-muted-foreground">
             4AF is a personal opinionated library of {componentCount} components; compact and
@@ -148,7 +149,7 @@ export default async function IndexPage() {
             />
           </div>
           <div className="relative -mt-6 lg:mt-0">
-            <div className="-mx-5 flex flex-wrap items-center justify-center gap-3 sm:-mx-10 lg:mx-0 lg:justify-start">
+            <div className="flex flex-wrap items-center gap-3">
               <Button asChild size="lg">
                 <Link href="/docs/reference/components">
                   Browse components
@@ -252,8 +253,21 @@ export default async function IndexPage() {
 
           <Section id="about" title="About">
             <p className={PROSE}>
-              4AF is a personal library. I build it for my own projects and publish it as it
-              grows. The logo was made in MS Paint.
+              4AF is a personal library by{" "}
+              <InlineLink href="https://selfsimilar.dev">
+                {/* Decorative: the label names the link. Served at 4x its 20px size. */}
+                <Image
+                  src="/fractal.webp"
+                  alt=""
+                  width={80}
+                  height={80}
+                  unoptimized
+                  className="mr-1 inline-block size-5 align-[-0.3em] outline-none"
+                />
+                Fractal
+              </InlineLink>
+              . I build it for my own projects and publish it as it grows. The logo was made in
+              MS Paint.
             </p>
             <p className={PROSE}>
               Original work is released under MIT-0, so you can copy it without attribution. Some
