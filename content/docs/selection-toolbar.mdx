@@ -17,6 +17,11 @@ selected range, so it follows the text while scrolling, and Base UI Toolbar hand
 focus. Pressing an item doesn't collapse the selection, and every action receives the captured
 text and range.
 
+`onOpenChange(open)` reports each committed visibility change once: opening on selection,
+closing when selection collapses or leaves the region, dismissal by an action or Escape, and
+closing when disabled. Repeated selection events and cancelled outside presses do not notify
+again. Initial closed state, callback replacement, and unmount do not emit notifications.
+
 Items are 24px high with 6px corners inside the toolbar's 8px shell, including icon-only
 forms.
 

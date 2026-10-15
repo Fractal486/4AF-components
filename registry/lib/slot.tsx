@@ -9,10 +9,13 @@ import {
   type ReactElement,
   type ReactNode,
   type Ref,
-  use,
 } from "react";
 import { cn } from "./cn";
 import { composeRefs } from "./refs";
+import { useSlotChild } from "./slot-child";
+
+// Re-exported so existing `@/registry/lib/slot` imports keep working.
+export { useSlotChild };
 
 /**
  * Renders its props onto its child instead of onto a wrapper element.
@@ -38,40 +41,6 @@ export function Slot({
 
   const child = children as ReactElement<Record<string, unknown>>;
   return cloneElement(child, mergeProps(slotProps, child.props));
-}
-
-const REACT_LAZY = Symbol.for("react.lazy");
-
-/**
- * Unwraps a child that arrives as a lazy reference instead of an element.
- *
- * A Server Component that writes `<Button asChild><Link /></Button>` sends `Link` across
- * the RSC boundary, and React may hand it to the client component as a lazy node whose
- * payload is the pending element. `isValidElement` is false for that node, so every
- * `asChild` check would reject a perfectly good child. `use()` resolves the payload,
- * suspending until it arrives. Anything else passes through untouched.
- */
-export function useSlotChild(children: ReactNode): ReactNode {
-  if (
-    typeof children === "object" &&
-    children !== null &&
-    "$$typeof" in children &&
-    children.$$typeof === REACT_LAZY &&
-    "_payload" in children &&
-    isPromiseLike(children._payload)
-  ) {
-    return use(children._payload as PromiseLike<ReactNode>);
-  }
-  return children;
-}
-
-function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "then" in value &&
-    typeof value.then === "function"
-  );
 }
 
 /**

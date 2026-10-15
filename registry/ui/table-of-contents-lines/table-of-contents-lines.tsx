@@ -8,6 +8,7 @@ import {
   type RefObject,
 } from "react";
 import { cn } from "@/registry/lib/cn";
+import { useMergedRefs } from "@/registry/lib/refs";
 import {
   useCenterActiveTableOfContentsItem,
   useTableOfContentsEdgePadding,
@@ -45,10 +46,12 @@ export function TableOfContentsLines({
   rootRef,
   labels = "always",
   className,
+  ref,
   ...props
 }: TableOfContentsLinesProps) {
   const revealsLabels = labels === "hover";
   const navRef = useRef<HTMLElement>(null);
+  const mergedRef = useMergedRefs(navRef, ref);
   const minLevel = useMemo(
     () => (items.length ? Math.min(...items.map((item) => item.level ?? 2)) : 2),
     [items],
@@ -66,7 +69,7 @@ export function TableOfContentsLines({
 
   return (
     <nav
-      ref={navRef}
+      ref={mergedRef}
       aria-label="Table of contents"
       data-variant="lines"
       className={cn(tableOfContentsLinesVariants({ labels }), className)}

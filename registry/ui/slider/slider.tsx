@@ -13,6 +13,7 @@ import {
 } from "motion/react";
 import {
   useEffect,
+  useId,
   useLayoutEffect,
   useRef,
   useState,
@@ -129,6 +130,8 @@ export interface SliderProps
   showValueTooltip?: boolean;
   /** Text shown above the track on the left, opposite the value. */
   label?: ReactNode;
+  /** Accessible names for the lower and upper range handles, overriding the shared label. */
+  thumbLabels?: readonly [string, string];
   /**
    * Move the label and the value *inside* the bar, one at each end, instead of above it.
    * The thumb dims as it passes under either, so the text stays readable.
@@ -212,6 +215,9 @@ export function Slider({
   showValue = true,
   showValueTooltip = false,
   label,
+  thumbLabels,
+  "aria-label": ariaLabel,
+  "aria-labelledby": ariaLabelledBy,
   inlineLabel = false,
   thumb = "bar",
   size = "md",
@@ -220,6 +226,8 @@ export function Slider({
   className,
   ...props
 }: SliderProps) {
+  const labelId = useId();
+  const labelledBy = ariaLabelledBy ?? (ariaLabel == null && label != null ? labelId : undefined);
   const isBar = thumb === "bar";
   const isCircle = thumb === "circle";
   const isKnob = thumb === "knob";
@@ -616,6 +624,8 @@ export function Slider({
       step={normalizedStep}
       disabled={disabled}
       data-range={isRange ? "true" : undefined}
+      aria-label={ariaLabel}
+      aria-labelledby={labelledBy}
       className={cn("relative w-full", className)}
       {...props}
     >
@@ -627,7 +637,7 @@ export function Slider({
             disabled && "opacity-50",
           )}
         >
-          {label != null && <span className="text-muted-foreground">{label}</span>}
+          {label != null && <span id={labelId} className="text-muted-foreground">{label}</span>}
           {showValue && (
             // `tabular` so the number doesn't reflow the row as its digits change. No
             // `font-mono` — it inherits Geist Sans from the body.
@@ -749,11 +759,20 @@ export function Slider({
             because the visual thumb below is what's seen. When opted in, the same thumb
             is the tooltip anchor, so the value popup follows Base UI's real thumb position. */}
         {thumbIndices.map((index) => {
+          const bound = index === 0 ? "minimum" : "maximum";
+          const boundId = `${labelId}-${bound}`;
+          const customLabel = isRange ? thumbLabels?.[index] : undefined;
           const baseThumb = (
             <BaseSlider.Thumb
               key={`slider-thumb-${index}`}
               ref={thumbRefs[index]}
               index={index}
+              aria-label={customLabel ?? (isRange
+                ? labelledBy ? undefined : [ariaLabel, bound].filter(Boolean).join(" ")
+                : ariaLabel)}
+              aria-labelledby={customLabel == null && labelledBy
+                ? isRange ? `${labelledBy} ${boundId}` : labelledBy
+                : undefined}
               className={cn("opacity-0", dims.thumb)}
               onPointerDown={() => handleThumbPointerDown(index)}
               onPointerEnter={() => setThumbHover(index, true)}
@@ -841,6 +860,13 @@ export function Slider({
           </motion.div>
         ))}
 
+        {isRange && (
+          <span className="sr-only">
+            <span id={`${labelId}-minimum`}>minimum</span>
+            <span id={`${labelId}-maximum`}>maximum</span>
+          </span>
+        )}
+
         {/* Inline label and value — last, so they paint over the thumb rather than under it.
             The thumb is what yields here: it fades as it arrives (see `inlineDim`), so the
             text never has to compete with a solid handle sliding beneath it. `inset-0`
@@ -859,7 +885,7 @@ export function Slider({
               // its label to separate it from the number; inside the bar both sit on the rail,
               // the fill and the thumb, and a dimmed label is one thing too many to read
               // through.
-              <span ref={inlineLabelRef} className="truncate text-foreground">
+              <span id={labelId} ref={inlineLabelRef} className="truncate text-foreground">
                 {label}
               </span>
             )}

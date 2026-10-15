@@ -140,9 +140,23 @@ import { Button } from "@/components/ui/button";
 </Collapsible>`,
   },
   "command-palette": {
-    usage: `import { CommandPalette } from "@/components/ui/command-palette";
+    usage: `import { CommandPalette, CommandPanelBody, CommandPanelFooter } from "@/components/ui/command-palette";
 
-<CommandPalette groups={groups} />`,
+<CommandPalette groups={[{ items: [{
+  id: "project",
+  label: "Project actions",
+  panel: () => <>
+    <CommandPanelBody>Manage this project.</CommandPanelBody>
+    <CommandPanelFooter actions={{ items: [{
+      id: "delete",
+      label: "Delete project",
+      keybind: "mod+shift+d",
+      confirm: { label: "Confirm deletion?" },
+      onSelect: deleteProject,
+    }] }} />
+  </>,
+}] }]} />
+// The shortcut opens the actions menu and arms confirmation before it can delete.`,
   },
   "copy-button": {
     usage: `import { CopyButton } from "@/components/ui/copy-button";
@@ -271,7 +285,7 @@ import { Button } from "@/components/ui/button";
   <SelectTrigger variant="ghost" label="Fruit">
     <SelectValue />
   </SelectTrigger>
-  <SelectContent>
+  <SelectContent clearable>
     <SelectItem value="apple">Apple</SelectItem>
     <SelectSeparator />
     <SelectSub>
@@ -281,7 +295,9 @@ import { Button } from "@/components/ui/button";
       </SelectSubContent>
     </SelectSub>
   </SelectContent>
-</Select>`,
+</Select>
+// Clear reports null (or [] for multiple) to onValueChange(value, details).
+// Call details.cancel() in that callback to keep the selection.`,
   },
   "select-aligned": {
     usage: `import {
@@ -313,7 +329,7 @@ import { Button } from "@/components/ui/button";
   "selection-toolbar": {
     usage: `import { SelectionToolbar } from "@/components/ui/selection-toolbar";
 
-<SelectionToolbar actions={<Button>Archive</Button>}>
+<SelectionToolbar onOpenChange={setToolbarOpen} actions={<Button>Archive</Button>}>
   Selectable content
 </SelectionToolbar>`,
   },
@@ -386,9 +402,9 @@ import { Button } from "@/components/ui/button";
 
 <Slider aria-label="Volume" defaultValue={60} showValueTooltip />
 
-<Slider aria-label="Price range" range defaultValue={[20, 80]} />
+<Slider label="Price" range defaultValue={[20, 80]} thumbLabels={["Lowest price", "Highest price"]} />
 
-<Slider aria-label="Volume" label="Volume" defaultValue={60} inlineLabel />`,
+<Slider label="Volume" defaultValue={60} inlineLabel />`,
   },
   switch: {
     usage: `import { Switch } from "@/components/ui/switch";
@@ -475,6 +491,7 @@ import { Button } from "@/components/ui/button";
     usage: `import { TableOfContents } from "@/components/ui/table-of-contents";
 
 <TableOfContents
+  ref={tocRef}
   items={headings}
   rootRef={articleRef}
   className="max-h-80"
@@ -484,6 +501,7 @@ import { Button } from "@/components/ui/button";
     usage: `import { TableOfContentsLines } from "@/components/ui/table-of-contents-lines";
 
 <TableOfContentsLines
+  ref={tocRef}
   items={headings}
   rootRef={articleRef}
   className="max-h-80"

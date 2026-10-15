@@ -40,6 +40,9 @@ strobe.
 It needs no animation or primitive package. The CLI installs the theme keyframe and the
 utilities it uses.
 
+It is not a client component, so a Server Component such as `app/loading.tsx` can render it
+directly, without adding a client boundary. Only `asChild` renders the client-side `Slot`.
+
 ## Source
 
 Adapted from Jakub Krehel's [loading.dev Classic spinner](https://loading.dev/spinners/classic).

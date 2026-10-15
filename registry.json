@@ -255,6 +255,11 @@
           "path": "registry/lib/slot.tsx",
           "type": "registry:lib",
           "target": "@lib/slot.tsx"
+        },
+        {
+          "path": "registry/lib/slot-child.ts",
+          "type": "registry:lib",
+          "target": "@lib/slot-child.ts"
         }
       ]
     },
@@ -917,6 +922,7 @@
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/refs.json",
         "https://4af.selfsimilar.dev/r/table-of-contents-scroll.json",
         "https://4af.selfsimilar.dev/r/table-of-contents-tracking.json"
       ],
@@ -944,6 +950,7 @@
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/refs.json",
         "https://4af.selfsimilar.dev/r/table-of-contents-scroll.json",
         "https://4af.selfsimilar.dev/r/table-of-contents-tracking.json"
       ],

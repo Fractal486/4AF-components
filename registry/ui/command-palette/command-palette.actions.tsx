@@ -50,6 +50,8 @@ export function CommandPanelActions({
 }: CommandPanelActionsProps) {
   const [open, setOpen] = useState(false);
   const reportActionsOpen = useContext(ActionsOpenContext);
+  const pendingActionRef = useRef<string | null>(null);
+  const stayOpenRef = useRef(false);
 
   // Every open/close goes through here so the list behind the menu learns about it in the
   // same event, not from an effect a render later.
@@ -61,6 +63,10 @@ export function CommandPanelActions({
   const setMenuOpen = useCallback(
     (next: boolean | ((current: boolean) => boolean)) => {
       const resolved = typeof next === "function" ? next(open) : next;
+      if (!resolved) {
+        pendingActionRef.current = null;
+        stayOpenRef.current = false;
+      }
       setOpen(resolved);
       reportActionsOpen?.(resolved);
     },
@@ -88,13 +94,17 @@ export function CommandPanelActions({
   const [rowHandlers] = useState(() => new Map<string, () => boolean>());
   // Set by the selection so the close request that follows it knows to stand down. Base UI
   // fires the value change first, which is the only reason a flag works here.
-  const stayOpenRef = useRef(false);
-  const rowScope = useMemo(() => ({ handlers: rowHandlers, menuOpen: open }), [rowHandlers, open]);
-
   const runAction = useCallback(
     (item: CommandItem) => {
       if (item.disabled) return;
       const handler = rowHandlers.get(item.id);
+      // Stateful rows mount with the popup. Open it first, then let registration deliver
+      // this press: a missing handler must never bypass confirmation or drop an action.
+      if (staysOpen(item) && (!open || !handler)) {
+        pendingActionRef.current = item.id;
+        setMenuOpen(true);
+        return;
+      }
       // A handler that returns false has decided the menu should close after all — the
       // confirming press of a confirm row — so it falls through to the ordinary path.
       if (handler && handler()) {
@@ -104,8 +114,20 @@ export function CommandPanelActions({
       setMenuOpen(false);
       item.onSelect?.();
     },
-    [rowHandlers, setMenuOpen],
+    [open, rowHandlers, setMenuOpen],
   );
+
+  const registerHandler = useCallback((item: CommandItem, handler: () => boolean) => {
+    rowHandlers.set(item.id, handler);
+    if (open && pendingActionRef.current === item.id) {
+      pendingActionRef.current = null;
+      runAction(item);
+    }
+    return () => {
+      if (rowHandlers.get(item.id) === handler) rowHandlers.delete(item.id);
+    };
+  }, [open, rowHandlers, runAction]);
+  const rowScope = useMemo(() => ({ registerHandler, menuOpen: open }), [registerHandler, open]);
 
   // Base UI closes a Select when an item is pressed. A row that reports its outcome in
   // place needs the menu to stay up, so that one close request is cancelled — the same
@@ -226,7 +248,7 @@ function staysOpen(item: CommandItem): boolean {
  * path an ordinary row takes.
  */
 interface ActionRowScope {
-  handlers: Map<string, () => boolean>;
+  registerHandler: (item: CommandItem, handler: () => boolean) => () => void;
   menuOpen: boolean;
 }
 
@@ -315,12 +337,8 @@ function CommandActionRow({ item, end }: { item: CommandItem; end?: ReactNode })
 
   // Registered by id so the menu can route its selection here and leave itself open.
   useEffect(() => {
-    const handlers = scope?.handlers;
-    if (!handlers || !staysOpen(item)) return;
-    handlers.set(item.id, press);
-    return () => {
-      handlers.delete(item.id);
-    };
+    if (!scope || !staysOpen(item)) return;
+    return scope.registerHandler(item, press);
   }, [scope, item, press]);
 
   // A toggle's outcome is the new state, so `success` rests rather than confirming.

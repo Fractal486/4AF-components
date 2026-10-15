@@ -50,7 +50,7 @@ export const sliderEntry = defineEntry({
           showTicks={showTicks}
           showValueTooltip={showValueTooltip}
           disabled={disabled}
-          aria-label={label.trim() || "Preview slider"}
+          aria-label={label.trim() ? undefined : "Preview slider"}
         />
       </div>
     );

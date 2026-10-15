@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
+import { StrictMode } from "react";
 import {
   SelectionToolbar,
   SelectionToolbarActionButton,
@@ -36,6 +37,55 @@ function selectText(testId: string, by: "pointer" | "keyboard" = "pointer") {
 }
 
 describe("SelectionToolbar", () => {
+  it.each(["collapse", "action", "disable", "escape"])("notifies once when opening and closing by %s", (method) => {
+    const onOpenChange = vi.fn();
+    const example = (disabled = false) => (
+      <StrictMode>
+        <SelectionToolbar disabled={disabled} onOpenChange={onOpenChange} actions={actions(() => {})}>
+          <p data-testid="prose">The quick brown fox</p>
+        </SelectionToolbar>
+      </StrictMode>
+    );
+    const { rerender } = render(example());
+    expect(onOpenChange).not.toHaveBeenCalled();
+    selectText("prose");
+    expect(onOpenChange.mock.calls).toEqual([[true]]);
+    fireEvent.pointerUp(document.body);
+    fireEvent.mouseUp(screen.getByTestId("prose"));
+    fireEvent.click(screen.getByTestId("prose"));
+    expect(onOpenChange.mock.calls).toEqual([[true]]);
+    if (method === "collapse") {
+      document.getSelection()!.removeAllRanges();
+      fireEvent(document, new Event("selectionchange"));
+    } else if (method === "action") {
+      fireEvent.click(screen.getByRole("button", { name: "Copy" }));
+    } else if (method === "disable") {
+      rerender(example(true));
+      rerender(example(false));
+    } else {
+      fireEvent.keyDown(screen.getByRole("toolbar"), { key: "Escape" });
+    }
+    expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
+    expect(screen.queryByRole("toolbar")).not.toBeInTheDocument();
+  });
+
+  it("uses the latest callback without replaying visibility on callback changes", () => {
+    const first = vi.fn();
+    const next = vi.fn();
+    const example = (onOpenChange: (open: boolean) => void) => (
+      <SelectionToolbar onOpenChange={onOpenChange} actions={actions(() => {})}>
+        <p data-testid="prose">The quick brown fox</p>
+      </SelectionToolbar>
+    );
+    const { rerender } = render(example(first));
+    selectText("prose");
+    rerender(example(next));
+    expect(first.mock.calls).toEqual([[true]]);
+    expect(next).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Copy" }));
+    expect(next.mock.calls).toEqual([[false]]);
+  });
+
   it("stays out of the way until there is a selection", () => {
     render(
       <SelectionToolbar actions={actions(() => {})}>

@@ -227,7 +227,8 @@ function preloadRemainingDemos() {
     const name = queue.shift();
     if (!name) return;
     if (loaded.has(name)) return whenIdle(next);
-    void loadDemo(name).finally(() => whenIdle(next));
+    // A failed speculative download must not stop the queue or reject unobserved.
+    void loadDemo(name).then(() => whenIdle(next), () => whenIdle(next));
   };
   whenIdle(next);
 }
@@ -237,6 +238,7 @@ function LazyDemo({ name }: { name: DemoName }) {
   const [entry, setEntry] = useState<AnyEntry | undefined>(() =>
     typeof window === "undefined" ? undefined : loaded.get(name),
   );
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     // Already here: the initial state picked it up, so only the background queue remains.
@@ -245,11 +247,16 @@ function LazyDemo({ name }: { name: DemoName }) {
       return;
     }
     let active = true;
-    void loadDemo(name).then((next) => {
-      if (!active) return;
-      setEntry(() => next);
-      preloadRemainingDemos();
-    });
+    void loadDemo(name).then(
+      (next) => {
+        if (!active) return;
+        setEntry(() => next);
+        preloadRemainingDemos();
+      },
+      () => {
+        if (active) setFailed(true);
+      },
+    );
     return () => {
       active = false;
     };
@@ -257,7 +264,18 @@ function LazyDemo({ name }: { name: DemoName }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name]);
 
-  return entry ? <EntryPreview entry={entry} /> : loadingPreview();
+  if (entry) return <EntryPreview entry={entry} />;
+  if (failed) {
+    return (
+      <div className="not-prose first:mt-0 my-6 grid h-[42rem] place-items-center rounded-xl bg-background shadow-border">
+        <div className="flex flex-col items-center gap-3 p-6 text-center">
+          <p role="alert" className="text-sm text-muted-foreground">This demo couldn’t load. Reload the page to try again.</p>
+          <Button variant="outline" onClick={() => window.location.reload()}>Reload page</Button>
+        </div>
+      </div>
+    );
+  }
+  return loadingPreview();
 }
 
 const demos: Record<DemoName, () => Promise<AnyEntry>> = {

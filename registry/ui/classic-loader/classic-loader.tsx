@@ -7,7 +7,10 @@ import {
   type ReactElement,
 } from "react";
 import { cn } from "@/registry/lib/cn";
-import { Slot, useSlotChild } from "@/registry/lib/slot";
+import { Slot } from "@/registry/lib/slot";
+// Not from `slot`: that module is client-only, and a Server Component can't call its
+// exports. Rendering `Slot` is fine; calling `useSlotChild` from there is not.
+import { useSlotChild } from "@/registry/lib/slot-child";
 import {
   classicLoaderVariants,
   type ClassicLoaderVariants,

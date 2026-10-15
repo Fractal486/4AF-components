@@ -1,4 +1,5 @@
 import { DirectionProvider } from "@base-ui/react/direction-provider";
+import { Field } from "@base-ui/react/field";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
@@ -11,6 +12,38 @@ import {
 import { Slider } from "./slider";
 
 describe("Slider", () => {
+  it.each([false, true])("names the input from its visible label (inline: %s)", (inlineLabel) => {
+    render(<Slider label={<strong>Volume</strong>} inlineLabel={inlineLabel} />);
+    expect(screen.getByRole("slider", { name: "Volume" })).toBeInTheDocument();
+  });
+
+  it("forwards explicit names and preserves external label precedence", () => {
+    const { rerender } = render(<Slider label="Visible" aria-label="Volume" />);
+    expect(screen.getByRole("slider", { name: "Volume" })).toBeInTheDocument();
+    rerender(<><span id="external">External volume</span><Slider label="Visible" aria-label="Volume" aria-labelledby="external" /></>);
+    expect(screen.getByRole("slider", { name: "External volume" })).toBeInTheDocument();
+  });
+
+  it.each(["visible", "aria", "external"])("distinguishes range handles with a %s label", (kind) => {
+    render(<>
+      <span id="price">Price</span>
+      <Slider range defaultValue={[20, 80]} {...(kind === "visible" ? { label: "Price" } : kind === "aria" ? { "aria-label": "Price" } : { "aria-labelledby": "price" })} />
+    </>);
+    expect(screen.getByRole("slider", { name: "Price minimum" })).toHaveAttribute("aria-valuenow", "20");
+    expect(screen.getByRole("slider", { name: "Price maximum" })).toHaveAttribute("aria-valuenow", "80");
+  });
+
+  it("supports caller-provided range handle names", () => {
+    render(<Slider range label="Budget" thumbLabels={["Lowest price", "Highest price"]} />);
+    expect(screen.getByRole("slider", { name: "Lowest price" })).toBeInTheDocument();
+    expect(screen.getByRole("slider", { name: "Highest price" })).toBeInTheDocument();
+  });
+
+  it("keeps Base UI Field labeling when no local name is supplied", () => {
+    render(<Field.Root><Field.Label>Volume</Field.Label><Slider /></Field.Root>);
+    expect(screen.getByRole("slider", { name: "Volume" })).toBeInTheDocument();
+  });
+
   it.each(["bar", "circle", "knob"] as const)(
     "renders two independently keyboard-draggable thumbs in range mode (%s)",
     async (thumb) => {

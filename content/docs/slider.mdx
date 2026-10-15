@@ -23,6 +23,11 @@ A controlled or uncontrolled numeric slider with a spring-animated fill. Optiona
 `defaultValue`; the range callback receives the updated tuple. Without `range`, the value is a
 single number.
 
+The visible `label` names the slider input, including with `inlineLabel`. Without a visible
+label, supply `aria-label` or `aria-labelledby`; an explicit accessible label takes precedence
+over `label`. Range handles append “minimum” and “maximum” to the shared name. Set
+`thumbLabels={["Lowest price", "Highest price"]}` to give the two handles custom names instead.
+
 ## Bar thumb
 
 On the `bar` thumb, ticks are hidden at rest and the fill is `foreground/15`. While the slider is

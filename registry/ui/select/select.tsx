@@ -1,7 +1,8 @@
 "use client";
 
 import { Select as BaseSelect } from "@base-ui/react/select";
-import { useCallback, useMemo, useRef, useState, type ComponentProps, type ReactNode } from "react";
+import { createChangeEventDetails } from "@base-ui/react/internals/createBaseUIEventDetails";
+import { useCallback, useMemo, useRef, useState, type ComponentProps, type MouseEvent, type ReactNode } from "react";
 import { SelectContext } from "./select.context";
 import type { SelectSize } from "./select.shared";
 import { isEquivalentNode } from "./select.utils";
@@ -375,12 +376,13 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
     }
   }
 
-  const clear = useCallback(() => {
+  const clear = useCallback((event?: MouseEvent<HTMLButtonElement>) => {
     const empty = (multiple ? ([] as Value[]) : null) as Value | Value[] | null;
-    if (!isValueControlled) setUncontrolledValue(empty);
-    // Notify a controlled consumer. A manual clear has no Base UI event details.
-    (onValueChange as ((v: never, d?: never) => void) | undefined)?.(empty as never);
-  }, [isValueControlled, multiple, onValueChange]);
+    // Select has no clear-press reason. Use its programmatic-change reason, retaining the
+    // originating click and the same cancellation contract as ordinary option changes.
+    const details = createChangeEventDetails("none", event?.nativeEvent, event?.currentTarget);
+    handleValueChange(empty as never, details);
+  }, [handleValueChange, multiple]);
 
   const [icons, setIcons] = useState<Map<unknown, ReactNode>>(() => new Map());
   const registerIcon = useCallback((value: unknown, icon: ReactNode | undefined) => {

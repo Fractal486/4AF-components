@@ -1,4 +1,4 @@
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useContext, type MouseEvent, type ReactNode } from "react";
 import type { SelectSize } from "./select.shared";
 import type { SelectTriggerVariant } from "./select.variants";
 
@@ -40,7 +40,7 @@ interface SelectContextValue {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   /** Reset the selection to none (single → null, multiple → empty). */
-  clear: () => void;
+  clear: (event?: MouseEvent<HTMLButtonElement>) => void;
 }
 
 export const SelectContext = createContext<SelectContextValue>({

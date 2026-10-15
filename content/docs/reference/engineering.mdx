@@ -103,7 +103,7 @@ pages:
 | --- | --- |
 | `4af-theme` | Semantic colors, typography, radii, elevation, keyframes, and motion durations |
 | `cn` | Class-name composition with `clsx` and `tailwind-merge` |
-| `slot` | Small local helper for `asChild` composition |
+| `slot` | Small local helper for `asChild` composition. `useSlotChild` lives in a separate server-compatible module, so components that render on the server can call it |
 | `motion` | Shared spring and easing presets |
 | `loader` | Caller-supplied loading slots and provider defaults, with `ClassicLoader` as the fallback |
 | `use-action` | Run, pending, outcome, and revert state shared by Action Button and asynchronous menu rows |

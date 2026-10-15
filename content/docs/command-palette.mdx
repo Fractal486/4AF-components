@@ -195,3 +195,9 @@ the menu and calls `onSelect`.
 by default; the second runs `onSelect` and closes the menu. It disarms on Escape, when the
 menu closes, and after `confirm.resetAfter`—three seconds by default, while `0` means never. A press within 350ms of arming is ignored, so one
 double-click cannot confirm what it just armed. Delete Button follows the same rules.
+
+An action's `keybind` works while its custom panel is mounted, even before the actions menu has
+opened. For async, toggle, and confirmation rows, the shortcut opens the menu and uses the same
+behavior as a row press, so pending feedback and confirmation remain visible. Confirmation still
+requires a second press after the 350ms guard; closing the menu disarms it. Ordinary `onSelect`
+shortcuts run immediately.

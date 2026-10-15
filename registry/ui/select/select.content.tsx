@@ -11,6 +11,7 @@ import {
   useRef,
   useState,
   type ComponentProps,
+  type MouseEvent,
   type ReactNode,
 } from "react";
 import { SELECT_CLEAR_ACTION, SelectContext } from "./select.context";
@@ -42,7 +43,7 @@ export interface SelectFooterAction {
   disabled?: boolean;
   /** A trailing check, for an action that is also a state the selection is already in. */
   checked?: boolean;
-  onSelect: () => void;
+  onSelect: (event: MouseEvent<HTMLButtonElement>) => void;
   /** Leave the panel open. By default running an action closes it, as picking a row does. */
   keepOpen?: boolean;
 }
@@ -253,9 +254,8 @@ export function SelectContent({
             label: clearLabel,
             icon: clearIcon,
             disabled: values.length === 0,
-            onSelect: () => clear(),
-            // `clear` already closes a single select through its own value change, and a
-            // multiple one stays open the way picking a row does.
+            onSelect: clear,
+            // Keep the panel available for a replacement choice, including after a rejected clear.
             keepOpen: true,
             activeKey: SELECT_CLEAR_ACTION,
           } satisfies SelectFooterAction & { activeKey: unknown },
@@ -442,8 +442,8 @@ export function SelectContent({
                       size="xs"
                       data-panel-active={Object.is(activeItem, key) || undefined}
                       disabled={action.disabled}
-                      onClick={() => {
-                        action.onSelect();
+                      onClick={(event) => {
+                        action.onSelect(event);
                         if (!action.keepOpen) setOpen(false);
                       }}
                       onPointerMove={(event) => {

@@ -114,6 +114,7 @@ export interface SelectionToolbarProps {
   className?: string;
   /** Class for the floating bar. */
   toolbarClassName?: string;
+  /** Called once per committed visibility change, including selection, action, and disabled changes. */
   onOpenChange?: (open: boolean) => void;
   ref?: Ref<HTMLDivElement>;
 }
@@ -155,6 +156,12 @@ export function SelectionToolbar({
   const sourceRef = useRef<"pointer" | "keyboard">("pointer");
 
   const open = selection !== null && !disabled;
+  const reportedOpenRef = useRef(false);
+  useEffect(() => {
+    if (reportedOpenRef.current === open) return;
+    reportedOpenRef.current = open;
+    onOpenChange?.(open);
+  }, [open, onOpenChange]);
 
   /** The current selection, if it's a real one inside the region. */
   const read = useCallback(() => {
@@ -329,7 +336,6 @@ export function SelectionToolbar({
           // What's left is Escape and focus leaving. Every other close goes through
           // `close()` directly.
           if (!next) close();
-          onOpenChange?.(next);
         }}
       >
         <BasePopover.Portal>

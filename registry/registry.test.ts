@@ -17,6 +17,66 @@ const registry = JSON.parse(readFileSync(resolve("registry.json"), "utf8")) as {
 };
 const items = new Map(registry.items.map((item) => [item.name, item]));
 
+function resolveSource(specifier: string, importer: string) {
+  const raw =
+    specifier === "@/registry/ui/ui/input.variants"
+      ? "registry/ui/input/input.variants"
+      : specifier === "@/registry/ui/ui/button.variants"
+        ? "registry/ui/button/button.variants"
+      : specifier.startsWith("@/")
+        ? specifier.slice(2)
+        : specifier.startsWith(".")
+          ? relative(process.cwd(), resolve(dirname(importer), specifier)).replaceAll("\\", "/")
+          : null;
+  if (!raw) return null;
+  return [raw, `${raw}.ts`, `${raw}.tsx`, `${raw}/index.ts`, `${raw}/index.tsx`].find((path) =>
+    existsSync(resolve(path)),
+  );
+}
+
+const isClientModule = (source: ts.SourceFile) => {
+  const first = source.statements[0];
+  return (
+    first != null &&
+    ts.isExpressionStatement(first) &&
+    ts.isStringLiteral(first.expression) &&
+    first.expression.text === "use client"
+  );
+};
+
+// React hooks that the server build doesn't provide. A module calling one already runs only
+// on the client, under an importer's "use client", whether or not it says so itself.
+const CLIENT_ONLY_REACT = new Set([
+  "useActionState",
+  "useContext",
+  "useDeferredValue",
+  "useEffect",
+  "useEffectEvent",
+  "useEvent",
+  "useImperativeHandle",
+  "useInsertionEffect",
+  "useLayoutEffect",
+  "useOptimistic",
+  "useReducer",
+  "useRef",
+  "useState",
+  "useSyncExternalStore",
+  "useTransition",
+]);
+
+const usesClientOnlyReact = (source: ts.SourceFile) =>
+  source.statements.some(
+    (statement) =>
+      ts.isImportDeclaration(statement) &&
+      ts.isStringLiteral(statement.moduleSpecifier) &&
+      statement.moduleSpecifier.text === "react" &&
+      statement.importClause?.namedBindings != null &&
+      ts.isNamedImports(statement.importClause.namedBindings) &&
+      statement.importClause.namedBindings.elements.some((element) =>
+        CLIENT_ONLY_REACT.has((element.propertyName ?? element.name).text),
+      ),
+  );
+
 describe("registry", () => {
   it("links every component to its docs page, which shadcn prints after installing it", () => {
     for (const item of registry.items.filter((entry) => entry.type === "registry:ui")) {
@@ -61,23 +121,6 @@ describe("registry", () => {
     };
     const packageName = (specifier: string) =>
       specifier.startsWith("@") ? specifier.split("/").slice(0, 2).join("/") : specifier.split("/")[0]!;
-    const resolveSource = (specifier: string, importer: string) => {
-      const raw =
-        specifier === "@/registry/ui/ui/input.variants"
-          ? "registry/ui/input/input.variants"
-          : specifier === "@/registry/ui/ui/button.variants"
-            ? "registry/ui/button/button.variants"
-          : specifier.startsWith("@/")
-            ? specifier.slice(2)
-            : specifier.startsWith(".")
-              ? relative(process.cwd(), resolve(dirname(importer), specifier)).replaceAll("\\", "/")
-              : null;
-      if (!raw) return null;
-      return [raw, `${raw}.ts`, `${raw}.tsx`, `${raw}/index.ts`, `${raw}/index.tsx`].find((path) =>
-        existsSync(resolve(path)),
-      );
-    };
-
     const missing: string[] = [];
     for (const item of registry.items) {
       const closure = closureFor(item);
@@ -125,6 +168,46 @@ describe("registry", () => {
     }
 
     expect(missing).toEqual([]);
+  });
+
+  // A Server Component sees a "use client" module's exports as client references: it can
+  // render a component from there, but calling a hook or function from there throws. So a
+  // module that could render on the server may only take components (PascalCase) from one.
+  it("keeps server-compatible modules from calling client-only exports", () => {
+    const paths = new Set(registry.items.flatMap((item) => item.files?.map((file) => file.path) ?? []));
+    const parse = (path: string) =>
+      ts.createSourceFile(path, readFileSync(resolve(path), "utf8"), ts.ScriptTarget.Latest, true);
+
+    const violations: string[] = [];
+    for (const path of paths) {
+      if (!/\.tsx?$/.test(path) || /\.test\.tsx?$/.test(path)) continue;
+      const source = parse(path);
+      if (isClientModule(source) || usesClientOnlyReact(source)) continue;
+
+      for (const statement of source.statements) {
+        if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) {
+          continue;
+        }
+        const clause = statement.importClause;
+        if (!clause || clause.isTypeOnly) continue;
+        const target = resolveSource(statement.moduleSpecifier.text, path);
+        if (!target || !isClientModule(parse(target))) continue;
+
+        const bindings = clause.namedBindings;
+        const names = [
+          ...(clause.name ? [clause.name.text] : []),
+          ...(bindings && ts.isNamedImports(bindings)
+            ? bindings.elements.filter((element) => !element.isTypeOnly).map((element) => element.name.text)
+            : []),
+          ...(bindings && ts.isNamespaceImport(bindings) ? [`* as ${bindings.name.text}`] : []),
+        ];
+        for (const name of names) {
+          if (!/^[A-Z]/.test(name)) violations.push(`${path} imports ${name} from client-only ${target}`);
+        }
+      }
+    }
+
+    expect(violations).toEqual([]);
   });
 
   it("does not install Motion for the CSS-only table of contents", () => {

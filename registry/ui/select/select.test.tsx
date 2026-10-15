@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
 import { vi } from "vitest";
 import {
@@ -34,6 +34,55 @@ function FruitOptions() {
 }
 
 describe("Base UI Select", () => {
+  it.each([false, true])("lets an uncontrolled selection reject Clear (multiple=%s)", async (multiple) => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn((_value, details) => details.cancel());
+    render(
+      <Select multiple={multiple} items={FRUITS} defaultValue={multiple ? ["banana"] : "banana"} onValueChange={onValueChange}>
+        <SelectTrigger aria-label="Fruit"><SelectValue /></SelectTrigger>
+        <SelectContent clearable><SelectItem value="banana">Banana</SelectItem></SelectContent>
+      </Select>,
+    );
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    const clear = await screen.findByRole("button", { name: "Clear" });
+    await user.click(clear);
+    expect(onValueChange).toHaveBeenCalledExactlyOnceWith(multiple ? [] : null, expect.objectContaining({
+      reason: "none", event: expect.objectContaining({ type: "click" }), trigger: clear, isCanceled: true,
+    }));
+    expect(screen.getByRole("option", { name: "Banana" })).toHaveAttribute("aria-selected", "true");
+    expect(clear).toBeEnabled();
+    expect(screen.getByRole("combobox", { name: "Fruit" })).toHaveTextContent(multiple ? "1 selected" : "Banana");
+  });
+
+  it.each([false, true])("lets the controlled owner accept or reject Clear (multiple=%s)", async (multiple) => {
+    const user = userEvent.setup();
+    let reject = true;
+    function Example() {
+      const [value, setValue] = useState<string | string[] | null>(multiple ? ["banana"] : "banana");
+      return (
+        <Select multiple={multiple} items={FRUITS} value={value} onValueChange={(next, details) => {
+          if (reject) details.cancel();
+          else setValue(next);
+        }}>
+          <SelectTrigger aria-label="Fruit"><SelectValue placeholder="Pick fruit" /></SelectTrigger>
+          <SelectContent clearable><SelectItem value="banana">Banana</SelectItem></SelectContent>
+        </Select>
+      );
+    }
+    render(<Example />);
+    const trigger = screen.getByRole("combobox", { name: "Fruit" });
+    await user.click(trigger);
+    const clear = await screen.findByRole("button", { name: "Clear" });
+    await user.click(clear);
+    expect(trigger).toHaveTextContent(multiple ? "1 selected" : "Banana");
+    expect(clear).toBeEnabled();
+    reject = false;
+    await user.click(clear);
+    expect(trigger).toHaveTextContent("Pick fruit");
+    expect(clear).toBeDisabled();
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+  });
+
   it("preserves a canceled choice and reopens on the accepted selection", async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn((_value, details) => details.cancel());
@@ -362,7 +411,7 @@ describe("Base UI Select", () => {
     expect(apple).not.toHaveClass("data-[highlighted]:bg-muted");
 
     await user.click(clearButton);
-    await waitFor(() => expect(onValueChange).toHaveBeenLastCalledWith([]));
+    await waitFor(() => expect(onValueChange).toHaveBeenLastCalledWith([], expect.objectContaining({ isCanceled: false })));
     expect(clearButton).toBeDisabled();
     expect(trigger).toHaveAttribute("aria-expanded", "true");
   });

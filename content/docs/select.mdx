@@ -160,6 +160,11 @@ Add `clearable` to `SelectContent` for a clear footer: a compact `xs` ghost rese
 `SelectSeparator` above it. The button is disabled when nothing is selected, and clearing keeps
 the panel open. Hovering it moves the active-row highlight from the list to the button.
 
+Clear calls `onValueChange(null, details)` for a single selection or
+`onValueChange([], details)` for multiple selections. The details use `reason: "none"` and
+include the native click event and Clear button as `trigger`. Call `details.cancel()` to keep
+the current selection; controlled callers can leave their value unchanged to reject the change.
+
 ```tsx
 import {
   Select,
@@ -180,7 +185,7 @@ import {
 `footerActions` adds buttons for actions on the selection, such as Archive or "Select all". They
 share the footer row evenly and take the same hover highlight as `clearable`. Each takes a
 `label`, an optional leading `icon`, `checked` to show a tick, and `keepOpen` to leave the panel
-open. `clearable` adds its button after them.
+open. `onSelect(event)` receives the button's React click event. `clearable` adds its button after them.
 
 `indicator={false}` hides the checkbox or tick; it does not prevent selection.
 
