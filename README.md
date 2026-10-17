@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./app/icon.png" alt="4AF Components logo" width="160" />
+</p>
+
 # 4AF Components
 
 A personal React component library with a self-hosted Fumadocs site for documentation and
