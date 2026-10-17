@@ -84,6 +84,7 @@
           "shadow-overlay": "var(--elevation-overlay)",
           "shadow-overlay-drop": "var(--elevation-overlay-drop)",
           "animate-icon-pop": "icon-pop var(--duration-slow) var(--ease-out)",
+          "animate-blur-text-in": "blur-text-in var(--duration-slow) ease-out backwards",
           "animate-matrix-pulse": "matrix-pulse var(--matrix-cycle, 1.2s) var(--ease-in-out) infinite",
           "animate-classic-fade": "classic-fade 1.2s linear infinite"
         },
@@ -150,6 +151,13 @@
           },
           "100%": {
             "scale": "1"
+          }
+        },
+        "@keyframes blur-text-in": {
+          "from": {
+            "opacity": "0",
+            "filter": "blur(0.22em)",
+            "translate": "0 0.45em"
           }
         },
         "@keyframes text-shimmer": {
@@ -1025,6 +1033,24 @@
           "path": "registry/ui/scramble-text/scramble-text.tsx",
           "type": "registry:ui",
           "target": "@ui/scramble-text.tsx"
+        }
+      ]
+    },
+    {
+      "name": "blur-text",
+      "type": "registry:ui",
+      "description": "Text that blurs and rises into place letter by letter or word by word. A CSS entrance for headings and short lines, shown at once under reduced motion.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/blur-text (Markdown: https://4af.selfsimilar.dev/docs/blur-text.md)",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/blur-text/blur-text.tsx",
+          "type": "registry:ui",
+          "target": "@ui/blur-text.tsx"
         }
       ]
     },

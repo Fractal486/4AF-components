@@ -17,7 +17,7 @@ notes, and install/usage examples. The links below open the same owning document
 
 ## Installable catalog
 
-The catalog contains 47 installable UI items.
+The catalog contains 48 installable UI items.
 
 ### Actions
 
@@ -58,6 +58,7 @@ The catalog contains 47 installable UI items.
 | [`empty`](https://4af.selfsimilar.dev/docs/empty.md) | An empty state with optional action. |
 | [`text-shimmer`](https://4af.selfsimilar.dev/docs/text-shimmer.md) | A looping highlight for a work-in-progress label. |
 | [`scramble-text`](https://4af.selfsimilar.dev/docs/scramble-text.md) | A brief random-character text reveal. |
+| [`blur-text`](https://4af.selfsimilar.dev/docs/blur-text.md) | Text that blurs and rises in, letter by letter or word by word. |
 | [`ascii-loader`](https://4af.selfsimilar.dev/docs/ascii-loader.md) | A compact text spinner. |
 | [`matrix-loader`](https://4af.selfsimilar.dev/docs/matrix-loader.md) | A grid of animated dots. |
 | [`classic-loader`](https://4af.selfsimilar.dev/docs/classic-loader.md) | The default radial spinner, installed automatically with loading components. |

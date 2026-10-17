@@ -4,17 +4,19 @@ import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import { highlightSource } from "@/components/landing/highlight-source";
 import { Github } from "lucide-react";
-import { DocsCodeBlock } from "@/components/docs-code-block";
 import { InlineLink } from "@/components/inline-link";
 import { AsciiFooter } from "@/components/landing/ascii-footer";
 import { FileBrowser } from "@/components/landing/file-browser";
+import { InstallCommand } from "@/components/landing/install-command";
+import "@/components/landing/reveal.css";
 import { installedFiles } from "@/components/landing/install-files";
 import { MobileToc } from "@/components/site/mobile-toc";
 import { PageFrame } from "@/components/site/page-frame";
-import { componentCount } from "@/lib/component-catalog";
+import { componentCount, registryComponents } from "@/lib/component-catalog";
 import { REPOSITORY } from "@/lib/site-nav";
-import { AGENT_PROMPT, pageAlternates, publicInstallCommand } from "@/lib/site";
+import { AGENT_PROMPT, pageAlternates } from "@/lib/site";
 import { cn } from "@/registry/lib/cn";
+import { BlurText } from "@/registry/ui/blur-text/blur-text";
 import { Button } from "@/registry/ui/button/button";
 import { CopyButton } from "@/registry/ui/copy-button/copy-button";
 
@@ -43,7 +45,11 @@ const PRINCIPLES = [
   },
 ] as const;
 
-const INSTALL = publicInstallCommand("button");
+// Every installable component, starting with the button whose files are shown below.
+const INSTALL_NAMES = [
+  "button",
+  ...registryComponents.map(({ name }) => name).filter((name) => name !== "button"),
+];
 
 const PROSE = "max-w-180 text-[16px] leading-[1.65] text-pretty text-muted-foreground";
 
@@ -122,18 +128,25 @@ export default async function IndexPage() {
             src="/hero-architecture.webp"
             alt=""
             fill
-            priority
+            // Either copy of the photo can be the LCP, depending on the viewport, so both load
+            // eagerly at high priority rather than one being preloaded. They share one URL, so
+            // the file is still fetched once.
+            loading="eager"
+            fetchPriority="high"
             unoptimized
             sizes="60vw"
-            className="object-cover object-[60%_45%] outline-none [mask-image:radial-gradient(ellipse_62%_90%_at_64%_50%,black_55%,transparent),linear-gradient(to_right,transparent_26%,black_52%)] [mask-composite:intersect] invert hue-rotate-180 contrast-125 brightness-110 mix-blend-multiply dark:invert-0 dark:hue-rotate-0 dark:brightness-90 dark:mix-blend-screen"
+            className="landing-reveal-fade object-cover object-[60%_45%] outline-none [--reveal-delay:300ms] [mask-image:radial-gradient(ellipse_62%_90%_at_64%_50%,black_55%,transparent),linear-gradient(to_right,transparent_26%,black_52%)] [mask-composite:intersect] invert hue-rotate-180 contrast-125 brightness-110 mix-blend-multiply dark:invert-0 dark:hue-rotate-0 dark:brightness-90 dark:mix-blend-screen"
           />
         </div>
         <div className="relative pb-4 lg:max-w-[30rem] lg:pt-20 lg:pb-4">
-          <h1 className="mb-[1.1rem] text-[length:clamp(1.9rem,3.4vw,2.75rem)] leading-[1.12] font-semibold tracking-[-0.03em] text-balance">
-            {/* A no-break space keeps the name "Base UI" on one line. */}
-            Minimal React components built on Base&nbsp;UI.
-          </h1>
-          <p className="mb-6 max-w-[52ch] text-[17px] leading-[1.65] tracking-[-0.01em] text-pretty text-muted-foreground">
+          {/* A no-break space keeps the name "Base UI" on one line. */}
+          <BlurText
+            as="h1"
+            className="mb-[1.1rem] text-[length:clamp(1.9rem,3.4vw,2.75rem)] leading-[1.12] font-semibold tracking-[-0.03em] text-balance"
+          >
+            {"Minimal React components built on Base\u00a0UI."}
+          </BlurText>
+          <p className="landing-reveal mb-6 max-w-[52ch] text-[17px] [--reveal-delay:250ms] leading-[1.65] tracking-[-0.01em] text-pretty text-muted-foreground">
             4AF is a personal, opinionated library of {componentCount} components: compact,
             warm-neutral, and animated only where it helps.
           </p>
@@ -143,12 +156,14 @@ export default async function IndexPage() {
               src="/hero-architecture.webp"
               alt=""
               fill
+              loading="eager"
+              fetchPriority="high"
               unoptimized
               sizes="100vw"
-              className="object-cover object-[55%_45%] outline-none [mask-image:linear-gradient(to_bottom,transparent,black_22%,black_78%,transparent)] invert hue-rotate-180 contrast-125 brightness-110 mix-blend-multiply dark:invert-0 dark:hue-rotate-0 dark:brightness-90 dark:mix-blend-screen"
+              className="landing-reveal-fade object-cover object-[55%_45%] outline-none [--reveal-delay:350ms] [mask-image:linear-gradient(to_bottom,transparent,black_22%,black_78%,transparent)] invert hue-rotate-180 contrast-125 brightness-110 mix-blend-multiply dark:invert-0 dark:hue-rotate-0 dark:brightness-90 dark:mix-blend-screen"
             />
           </div>
-          <div className="relative -mt-6 lg:mt-0">
+          <div className="landing-reveal relative -mt-6 [--reveal-delay:400ms] lg:mt-0">
             {/* Natural widths, a notch smaller on phones so both fit on one row. */}
             <div className="flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="px-3 text-xs min-[360px]:px-4 min-[360px]:text-sm sm:px-5 sm:text-base">
@@ -192,6 +207,8 @@ export default async function IndexPage() {
 
         </div>
       </header>
+    {/* The content and its "On this page" rail enter together, last. */}
+    <div className="landing-reveal [--reveal-delay:500ms]">
     <PageFrame toc={toc} mobileToc={false}>
         <article>
 
@@ -226,11 +243,7 @@ export default async function IndexPage() {
               Install any component with the shadcn CLI. The theme, the shared utilities, and the
               components it builds on come with it.
             </p>
-            <DocsCodeBlock className="my-0 mt-3 max-w-180">
-              <pre className="min-w-full w-max px-4 pr-14 font-mono text-xs leading-6">
-                <code>{INSTALL}</code>
-              </pre>
-            </DocsCodeBlock>
+            <InstallCommand names={INSTALL_NAMES} />
             <p className={cn(PROSE, "mt-4")}>Installing the button writes these files:</p>
             <Wide className="mt-0">
               <FileBrowser files={files} />
@@ -281,6 +294,7 @@ export default async function IndexPage() {
           </Section>
         </article>
     </PageFrame>
+    </div>
       {/* Runs from the rail, like the hero (it cancels <main>'s left gutter), and ends with the
           content column: from xl that column leaves 11rem for "On this page" plus a 3rem gap. */}
       <AsciiFooter

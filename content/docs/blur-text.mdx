@@ -1,0 +1,35 @@
+---
+title: Blur Text
+description: Text that blurs and rises into place, letter by letter or word by word.
+---
+
+<ComponentDemo name="blur-text" />
+<ComponentReference name="blur-text" />
+
+## API
+
+**Main export:** `BlurText`
+
+A one-shot entrance for a heading or a short line. Each segment fades in, sharpens, and rises
+into place, starting one after another.
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `children` | — | The text, as a string. Changing it replays the entrance. |
+| `as` | `"span"` | The element to render, such as `"h1"` or `"p"`. |
+| `by` | `"character"` | `"character"` or `"word"`: what enters one after another. |
+| `delay` | `0` | Milliseconds before the first segment starts. |
+| `stagger` | spread over 300ms | Milliseconds between segments. By default the starts are spread across 300ms, whatever the length. |
+
+Other span props and `className` go to the rendered element, which carries
+`data-slot="blur-text"` and `data-by`.
+
+## Behaviour
+
+- It plays on first paint, with CSS only: no client JavaScript and no Motion. Each segment uses
+  the theme's `animate-blur-text-in` animation with its own delay.
+- The rise and blur are sized in `em`, so the effect scales with the text.
+- A word's letters never wrap apart. A no-break space joins words into one unbreakable group, for
+  example `"Base UI"`.
+- The full text is read once by assistive technology; the animated letters are hidden from it.
+- Under reduced motion the text is shown immediately.

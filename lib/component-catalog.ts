@@ -50,7 +50,7 @@ export const COMPONENT_FAMILIES = [
     slugs: ["table-of-contents", "table-of-contents-lines"],
   },
   { name: "Tabs", slugs: ["tabs"] },
-  { name: "Text Effects", slugs: ["text-shimmer", "scramble-text"] },
+  { name: "Text Effects", slugs: ["text-shimmer", "scramble-text", "blur-text"] },
   { name: "Tooltip", slugs: ["tooltip"] },
 ] as const;
 
@@ -93,6 +93,7 @@ export const COMPONENT_CATEGORIES = [
       "empty",
       "text-shimmer",
       "scramble-text",
+      "blur-text",
       "ascii-loader",
       "matrix-loader",
       "classic-loader",
@@ -174,6 +175,7 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   tabs: "Tabs, TabsList, TabsTab, TabsCount, TabsPanel",
   "text-shimmer": "TextShimmer",
   "scramble-text": "ScrambleText",
+  "blur-text": "BlurText",
   textarea: "Textarea",
   toggle: "Toggle",
   tooltip: "TooltipProvider, Tooltip",

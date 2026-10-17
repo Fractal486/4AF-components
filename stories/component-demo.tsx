@@ -62,6 +62,7 @@ export type ComponentDemoName =
   | "table-of-contents-lines"
   | "tabs"
   | "scramble-text"
+  | "blur-text"
   | "text-shimmer"
   | "textarea"
   | "toggle"
@@ -94,6 +95,8 @@ function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
   const hasControls = Object.keys(entry.controls).length > 0;
   const isAppShell = entry.slug === "sidebar";
   const isScrambleText = entry.slug === "scramble-text";
+  const isBlurText = entry.slug === "blur-text";
+  const replayable = isScrambleText || isBlurText;
   const demoWidth = DEMO_WIDTHS[entry.slug as ComponentDemoName];
   const settingsKey = JSON.stringify([values, loader]);
 
@@ -114,13 +117,13 @@ function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
             isAppShell && "items-stretch",
           )}
         >
-          {isScrambleText && (
+          {replayable && (
             <Tooltip content="Replay animation" delay={0}>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Replay Scramble Text animation"
+                aria-label={`Replay ${entry.name} animation`}
                 className="absolute top-3 right-3 z-10"
                 onClick={() => setReplayKey((current) => current + 1)}
               >
@@ -148,7 +151,9 @@ function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
               )}
             >
               {(revealed) => (
-                <Fragment key={`${settingsKey}-${replayKey}`}>
+                // Blur Text plays on mount, so it remounts once the demo is revealed to play
+                // where it can be seen; Scramble Text waits on its interval instead.
+                <Fragment key={`${settingsKey}-${replayKey}-${isBlurText && revealed}`}>
                   {entry.render(isScrambleText && !revealed ? { ...values, intervalMs: 0 } : values)}
                 </Fragment>
               )}
@@ -328,6 +333,7 @@ const demos: Record<DemoName, () => Promise<AnyEntry>> = {
   "table-of-contents-lines": async () => (await import("@/inspector/entries/table-of-contents-lines")).tableOfContentsLinesEntry,
   tabs: async () => (await import("@/inspector/entries/tabs")).tabsEntry,
   "scramble-text": async () => (await import("@/inspector/entries/scramble-text")).scrambleTextEntry,
+  "blur-text": async () => (await import("@/inspector/entries/blur-text")).blurTextEntry,
   "text-shimmer": async () => (await import("@/inspector/entries/text-shimmer")).textShimmerEntry,
   textarea: async () => (await import("@/inspector/entries/textarea")).textareaEntry,
   toggle: async () => (await import("@/inspector/entries/toggle")).toggleEntry,

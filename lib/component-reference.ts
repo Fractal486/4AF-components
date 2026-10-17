@@ -536,6 +536,12 @@ import { Button } from "@/components/ui/button";
 
 <ScrambleText>Deploying changes…</ScrambleText>`,
   },
+  "blur-text": {
+    usage: `import { BlurText } from "@/components/ui/blur-text";
+
+<BlurText as="h1">Minimal React components</BlurText>
+<BlurText by="word" delay={200}>Built on Base UI.</BlurText>`,
+  },
   textarea: {
     usage: `import { Textarea } from "@/components/ui/textarea";
 

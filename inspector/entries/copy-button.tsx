@@ -1,8 +1,9 @@
 import { CopyButton } from "@/registry/ui/copy-button/copy-button";
-import { bool, defineEntry, num, select, text } from "../schema";
+import { bool, defineEntry, num, select } from "../schema";
 
 const VARIANTS = ["outline", "ghost", "plain", "primary"] as const;
 const SIZES = ["xs", "sm", "md", "lg"] as const;
+const VALUE = "npx shadcn@latest add https://4af.selfsimilar.dev/r/copy-button.json";
 
 export const copyButtonEntry = defineEntry({
   slug: "copy-button",
@@ -12,11 +13,10 @@ export const copyButtonEntry = defineEntry({
     size: select(SIZES, "md"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     withLabel: bool(false, "Show a label"),
-    value: text("npx shadcn@latest add https://4af.selfsimilar.dev/r/copy-button.json", "Text to copy"),
     revertAfter: num(2000, { min: 500, max: 5000, step: 500, label: "Revert after (ms)" }),
-    lazy: bool(false, "Fetch the text on press"),
+    lazy: bool(false, "Async value"),
   },
-  render({ variant, size, shape, withLabel, value, revertAfter, lazy }) {
+  render({ variant, size, shape, withLabel, revertAfter, lazy }) {
     return (
       <CopyButton
         key={withLabel ? "labelled" : "icon"}
@@ -26,9 +26,9 @@ export const copyButtonEntry = defineEntry({
           lazy
             ? async () => {
                 await new Promise((resolve) => setTimeout(resolve, 900));
-                return value;
+                return VALUE;
               }
-            : value
+            : VALUE
         }
         variant={variant}
         size={size}

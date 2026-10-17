@@ -52,6 +52,13 @@ export default function SiteSearchDialog(props: SharedProps) {
 
   return (
     <SearchDialog {...search} {...props}>
+      {/* Matched query text in results, which Fumadocs marks as the `fd-search` highlight. Its
+          own utilities for this are excluded in globals.css, because Next's CSS parser rejects
+          `::highlight()`; an inline style element never goes through that parser. React
+          hoists it into the head once. */}
+      <style href="fd-search-highlight" precedence="default">
+        {"::highlight(fd-search){color:var(--color-fd-primary);text-decoration-line:underline}"}
+      </style>
       <SearchDialogOverlay />
       <SearchDialogContent>
         <SearchDialogHeader>

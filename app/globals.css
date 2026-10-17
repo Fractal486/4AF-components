@@ -2,6 +2,12 @@
 @import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/preset.css";
 
+/* Fumadocs' search list styles matched text with `[&_::highlight(fd-search)]:*` utilities.
+   Next's CSS parser doesn't recognise `::highlight()`, so the nested rule they generate warns on
+   every compile and is dropped. Not generating them silences that; the site's search dialog
+   renders the same style itself, outside the CSS pipeline. */
+@source not inline("[&_::highlight(fd-search)]:text-fd-primary [&_::highlight(fd-search)]:underline");
+
 /*
  * ============================================================================
  * 4AF — design foundation
@@ -147,6 +153,19 @@
     }
     100% {
       scale: 1;
+    }
+  }
+
+  /* Blur Text: a letter or word blurring and rising into place. In `em`, so it scales with
+     the text. `backwards` holds the hidden first frame through each segment's delay and
+     then drops the animation, so no filter is left on the resting text. */
+  --animate-blur-text-in: blur-text-in var(--duration-slow) ease-out backwards;
+
+  @keyframes blur-text-in {
+    from {
+      opacity: 0;
+      filter: blur(0.22em);
+      translate: 0 0.45em;
     }
   }
 
