@@ -1,6 +1,8 @@
-/* The landing page's entrance. The title's letters blur in on first paint (BlurText);
-   everything marked `.landing-reveal` follows with the same blur-and-rise, also from first
-   paint, and each element sets its own `--reveal-delay` to stagger behind the title. */
+/* The landing page's entrance. The title's letters blur in (BlurText, marked
+   `.landing-title`); everything marked `.landing-reveal` follows with the same blur-and-rise,
+   each element setting its own `--reveal-delay` to stagger behind the title. All of it is
+   held paused, hidden on its first frame, until RevealGate marks the page ready once it has
+   hydrated and loaded. */
 
 @keyframes landing-reveal {
   from {
@@ -29,6 +31,16 @@
    the edge mask intact. */
 .landing-reveal-fade {
   animation: landing-reveal-fade 900ms ease-out var(--reveal-delay, 0ms) backwards;
+}
+
+.landing-reveal,
+.landing-reveal-fade,
+.landing-title .animate-blur-text-in {
+  animation-play-state: paused;
+}
+
+:root[data-landing-ready] :is(.landing-reveal, .landing-reveal-fade, .landing-title .animate-blur-text-in) {
+  animation-play-state: running;
 }
 
 @media (prefers-reduced-motion: reduce) {

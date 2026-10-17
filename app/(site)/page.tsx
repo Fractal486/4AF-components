@@ -8,7 +8,7 @@ import { InlineLink } from "@/components/inline-link";
 import { AsciiFooter } from "@/components/landing/ascii-footer";
 import { FileBrowser } from "@/components/landing/file-browser";
 import { InstallCommand } from "@/components/landing/install-command";
-import "@/components/landing/reveal.css";
+import { RevealGate } from "@/components/landing/reveal";
 import { installedFiles } from "@/components/landing/install-files";
 import { MobileToc } from "@/components/site/mobile-toc";
 import { PageFrame } from "@/components/site/page-frame";
@@ -113,6 +113,11 @@ export default async function IndexPage() {
     <>
       {/* The narrow-screen "On this page" bar, directly under the top bar rather than after
           the hero, which sits outside the page frame. */}
+      <RevealGate />
+      {/* Without JavaScript the gate never opens, so run the entrance straight away. */}
+      <noscript>
+        <style>{".landing-reveal,.landing-reveal-fade,.landing-title .animate-blur-text-in{animation-play-state:running}"}</style>
+      </noscript>
       <MobileToc items={toc} />
       {/* Copy on the page background at the left; the photograph is a layer behind the whole
           hero, running off the right edge of the main area, and fades out under the copy. The
@@ -142,7 +147,7 @@ export default async function IndexPage() {
           {/* A no-break space keeps the name "Base UI" on one line. */}
           <BlurText
             as="h1"
-            className="mb-[1.1rem] text-[length:clamp(1.9rem,3.4vw,2.75rem)] leading-[1.12] font-semibold tracking-[-0.03em] text-balance"
+            className="landing-title mb-[1.1rem] text-[length:clamp(1.9rem,3.4vw,2.75rem)] leading-[1.12] font-semibold tracking-[-0.03em] text-balance"
           >
             {"Minimal React components built on Base\u00a0UI."}
           </BlurText>
@@ -209,7 +214,18 @@ export default async function IndexPage() {
       </header>
     {/* The content and its "On this page" rail enter together, last. */}
     <div className="landing-reveal [--reveal-delay:500ms]">
-    <PageFrame toc={toc} mobileToc={false}>
+    <PageFrame
+      toc={toc}
+      mobileToc={false}
+      footer={
+        // Runs from the rail, like the hero (it cancels <main>'s left gutter), and ends with
+        // the content column, beside "On this page", which stays pinned next to it.
+        <AsciiFooter
+          // Pulled up into the content column's bottom padding (4rem, 7rem from sm).
+          className="-mt-8 sm:-mt-16 lg:-ml-[clamp(2rem,4vw,4rem)]"
+        />
+      }
+    >
         <article>
 
           <Section
@@ -295,12 +311,6 @@ export default async function IndexPage() {
         </article>
     </PageFrame>
     </div>
-      {/* Runs from the rail, like the hero (it cancels <main>'s left gutter), and ends with the
-          content column: from xl that column leaves 11rem for "On this page" plus a 3rem gap. */}
-      <AsciiFooter
-        // Pulled up into the page frame's bottom padding (4rem, 7rem from sm).
-        className="-mt-8 sm:-mt-16 lg:-ml-[clamp(2rem,4vw,4rem)] xl:mr-56"
-      />
     </>
   );
 }
