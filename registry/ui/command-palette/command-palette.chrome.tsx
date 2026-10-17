@@ -61,11 +61,12 @@ export const ACTION_CLASS = cn(
 const INERT_HINT_CLASS =
   "flex items-center gap-1 rounded-xs -my-1 px-1.5 py-1 text-2xs text-subtle-foreground";
 
-/** A standard 16px icon slot for palette rows and custom panel content. */
+/** A standard 16px icon slot for palette rows and custom panel content. A loader in it
+    gets the same 16px box as an icon, rather than its own `1em`. */
 export function CommandIcon({ className, ...props }: ComponentProps<"span">) {
   return (
     <span
-      className={cn("flex size-4 shrink-0 items-center justify-center [&_svg]:size-4", className)}
+      className={cn("flex size-4 shrink-0 items-center justify-center [&_svg]:size-4 [&_[data-slot=loader]]:size-4", className)}
       {...props}
     />
   );

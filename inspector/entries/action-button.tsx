@@ -7,22 +7,26 @@ export const actionButtonEntry = defineEntry({
   controls: {
     variant: select(["primary", "outline", "plain", "destructive"], "primary"),
     size: select(["xs", "sm", "md", "lg"], "md"),
+    shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     fail: bool(false, "Make it fail"),
     withIcon: bool(true, "Show leading icon"),
     pendingMode: select(["label", "icon"], "label", "Pending content"),
+    sizing: select(["widest", "current"], "widest", "Width"),
     duration: num(1200, { min: 200, max: 3000, step: 200, label: "Simulated delay (ms)" }),
     revertAfter: num(2000, { min: 500, max: 5000, step: 500, label: "Revert after (ms)" }),
   },
-  render({ variant, size, fail, withIcon, pendingMode, duration, revertAfter }) {
+  render({ variant, size, shape, fail, withIcon, pendingMode, sizing, duration, revertAfter }) {
     return (
       <ActionButtonDemo
         variant={variant}
         size={size}
+        shape={shape}
         fail={fail}
         duration={duration}
         revertAfter={revertAfter}
         withIcon={withIcon}
         pendingMode={pendingMode}
+        sizing={sizing}
       />
     );
   },

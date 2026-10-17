@@ -437,7 +437,7 @@ export function CommandPalette({
           activeHeaderActions && "-mr-1.5",
         )}
       >
-        {panelSearching && <LoadingIndicator className="text-sm text-subtle-foreground" />}
+        {panelSearching && <LoadingIndicator className="size-4 text-sm text-subtle-foreground" />}
         {activeHeaderActions}
       </div>
     ) : null;
@@ -774,7 +774,7 @@ export function CommandPalette({
               />
 
               {searching && hasVisibleItems && (
-                <LoadingIndicator className="shrink-0 text-sm text-subtle-foreground" />
+                <LoadingIndicator className="size-4 shrink-0 text-sm text-subtle-foreground" />
               )}
 
               <kbd className={cn(KBD, "hidden sm:block")}>
@@ -813,7 +813,7 @@ export function CommandPalette({
             <Autocomplete.Empty className="text-center text-sm text-muted-foreground">
               {searching ? (
                 <div className="flex items-center justify-center gap-2 px-4 py-8">
-                  <LoadingIndicator className="text-sm text-subtle-foreground" />
+                  <LoadingIndicator className="size-4 text-sm text-subtle-foreground" />
                   <span>{loadingMessage}</span>
                 </div>
               ) : searchError ? (

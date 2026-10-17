@@ -2,6 +2,7 @@
 
 import { TriangleAlert } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { cn } from "@/registry/lib/cn";
 import { useAction } from "@/registry/lib/use-action";
 import { LoadingIndicator } from "@/registry/lib/loader";
 import { Morph } from "@/registry/ui/morph/morph";
@@ -30,6 +31,11 @@ export interface ActionToggleProps
       warning triangle. */
   icons?: { pressed?: ReactNode; pending?: ReactNode; error?: ReactNode };
   loader?: ReactNode;
+  /**
+   * `"widest"` (the default) holds the control at the width of its widest state.
+   * `"current"` fits it to the showing state and animates the width as the state changes.
+   */
+  sizing?: "widest" | "current";
   /** How long a failure is shown before the control goes quiet again, in ms.
       @default 2000 */
   revertAfter?: number;
@@ -68,6 +74,7 @@ export function ActionToggle({
   labels,
   loader,
   icons,
+  sizing = "widest",
   revertAfter,
   pendingDelay,
   announce,
@@ -120,6 +127,9 @@ export function ActionToggle({
           ? "on"
           : "off";
   const labelled = Boolean(children) || Boolean(labels?.pressed);
+  // A fitted control drops the glyph's gap while no glyph is showing, on the same clock as
+  // the Morph's width, so a label-only resting state sits centred.
+  const glyphShown = glyphKey === "off" ? icon != null : true;
 
   return (
     <Toggle
@@ -130,6 +140,7 @@ export function ActionToggle({
       data-status={status}
       variant={variant}
       size={size}
+      data-sizing={sizing}
       {...props}
     >
       {/* One box, so the button's own gap applies between glyph and label rather than a
@@ -140,10 +151,18 @@ export function ActionToggle({
           state and drags the label sideways on every status change. Each Morph is handed
           every state at once, so the control reserves the width of the widest and holds
           still — "Follow" and "Following" are different widths, and a button that resizes
-          as it lands moves out from under the cursor that's still resting on it. */}
-      <span className="inline-flex items-center gap-[inherit]">
+          as it lands moves out from under the cursor that's still resting on it.
+          `sizing="current"` trades that away on purpose. */}
+      <span
+        className={cn(
+          "inline-flex items-center",
+          sizing === "current" && "transition-[gap] duration-(--duration-base) ease-out",
+          sizing === "current" && !glyphShown ? "gap-0" : "gap-[inherit]",
+        )}
+      >
         <Morph
           activeKey={glyphKey}
+          sizing={sizing}
           items={{
             off: icon,
             on: icons?.pressed ?? icon,
@@ -154,6 +173,7 @@ export function ActionToggle({
         {labelled && (
           <Morph
             activeKey={labelKey}
+            sizing={sizing}
             items={{
               off: children,
               on: labels?.pressed,

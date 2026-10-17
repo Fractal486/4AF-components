@@ -13,6 +13,9 @@ description: An asynchronous toggle that commits its pressed state only after th
 A toggle that runs an async `action` and changes state only when it succeeds. Use it for states
 such as Follow/Following or Subscribe/Subscribed.
 
+By default the control keeps the width of its widest state. `sizing="current"` fits it to the
+showing state and animates the width as it changes. The control carries `data-sizing`.
+
 `loader={<MySpinner />}` supplies the pending indicator. Otherwise it inherits
 [LoaderProvider](/docs/reference/engineering#shared-loading-indicators), defaulting to `ClassicLoader`.
 A supplied `icons.pending` takes precedence.

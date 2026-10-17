@@ -34,7 +34,7 @@ const LARGE_RADIUS: ButtonSize[] = ["md", "icon", "lg", "icon-lg"];
 
 type ItemProps = {
   className?: string;
-} & Pick<ButtonProps, "variant" | "size" | "pressScale" | "pressTarget">;
+} & Pick<ButtonProps, "variant" | "size" | "shape" | "pressScale" | "pressTarget">;
 
 export interface ButtonGroupProps
   extends Omit<ComponentProps<"div">, "children">,
@@ -47,6 +47,9 @@ export interface ButtonGroupProps
   variant?: ButtonProps["variant"];
   /** Size for every Button in the group. Same deal: a default, not an override. */
   size?: ButtonProps["size"];
+  /** Shape for every Button in the group, also a default. `pill` rounds the group's outer
+      ends fully. */
+  shape?: ButtonProps["shape"];
   children?: ReactNode;
 }
 
@@ -100,6 +103,7 @@ export function ButtonGroup({
   orientation = "horizontal",
   variant,
   size,
+  shape,
   children,
   ...props
 }: ButtonGroupProps) {
@@ -113,19 +117,23 @@ export function ButtonGroup({
   // drawn against the fill it actually sits on.
   const variants = items.map((child) => child.props.variant ?? variant ?? "primary");
   const sizes = items.map((child) => child.props.size ?? size ?? "md");
+  // Read off the first child, like the radius: its outer corners are the group's.
+  const firstShape = items[0]?.props.shape ?? shape ?? "rectangular";
 
   return (
     <div
       role="group"
       data-slot="button-group"
       data-orientation={orientation}
+      data-shape={firstShape}
       className={cn(
         buttonGroupVariants({
           orientation,
           // Asked of the children rather than of the group's own prop, so
           // `<ButtonGroup><Button variant="outline" /></ButtonGroup>` is framed too.
           framed: variants.includes("outline"),
-          radius: LARGE_RADIUS.includes(sizes[0] ?? "md") ? "lg" : "md",
+          radius:
+            firstShape === "pill" ? "full" : LARGE_RADIUS.includes(sizes[0] ?? "md") ? "lg" : "md",
         }),
         className,
       )}
@@ -158,6 +166,7 @@ export function ButtonGroup({
           ...(child.type === Button && {
             variant: child.props.variant ?? variant,
             size: child.props.size ?? size,
+            shape: child.props.shape ?? shape,
             // The press moves to the label. Shrinking a joined button's box would
             // pull its edges away from its neighbours' and open a gap down both
             // seams; the label has no such neighbours, and carries the same spring.

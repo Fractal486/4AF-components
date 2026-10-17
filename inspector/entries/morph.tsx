@@ -9,28 +9,38 @@ export const morphEntry = defineEntry({
   name: "Morph",
   controls: {
     variant: select(VARIANTS, "outline"),
+    shape: select(["rectangular", "pill"], "rectangular", "Shape"),
+    sizing: select(["widest", "current"], "widest", "Width"),
   },
-  render({ variant }) {
+  render({ variant, shape, sizing }) {
     return (
       <div className="flex flex-col items-center gap-6">
         <div className="flex items-center gap-3">
           <IconToggle
             variant={variant}
+            shape={shape}
             labels={["Play", "Pause"]}
             icons={[<Play key="play" />, <Pause key="pause" />]}
           />
           <IconToggle
             variant={variant}
+            shape={shape}
             labels={["Open menu", "Close menu"]}
             icons={[<Menu key="menu" />, <X key="x" />]}
           />
           <IconToggle
             variant={variant}
+            shape={shape}
             labels={["Dark theme", "Light theme"]}
             icons={[<Moon key="moon" />, <Sun key="sun" />]}
           />
         </div>
-        <TextToggle variant={variant} labels={["Follow", "Following"]} />
+        <TextToggle
+          variant={variant}
+          shape={shape}
+          sizing={sizing}
+          labels={["Follow", "Following"]}
+        />
       </div>
     );
   },

@@ -7,12 +7,21 @@ export const actionToggleEntry = defineEntry({
   controls: {
     variant: select(["outline", "primary", "ghost"], "outline"),
     size: select(["sm", "md", "lg"], "md"),
+    shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     fail: bool(false, "Make it fail"),
+    sizing: select(["widest", "current"], "widest", "Width"),
     duration: num(1200, { min: 200, max: 3000, step: 200, label: "Simulated delay (ms)" }),
   },
-  render({ variant, size, fail, duration }) {
+  render({ variant, size, shape, fail, sizing, duration }) {
     return (
-      <ActionToggleDemo variant={variant} size={size} fail={fail} duration={duration} />
+      <ActionToggleDemo
+        variant={variant}
+        size={size}
+        shape={shape}
+        fail={fail}
+        sizing={sizing}
+        duration={duration}
+      />
     );
   },
 });

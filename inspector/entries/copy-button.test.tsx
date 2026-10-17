@@ -14,6 +14,7 @@ describe("CopyButton inspector", () => {
       copyButtonEntry.render({
         variant: "outline",
         size: "lg",
+        shape: "rectangular",
         withLabel: true,
         value: "hello",
         revertAfter: 2000,
@@ -31,6 +32,7 @@ describe("CopyButton inspector", () => {
       copyButtonEntry.render({
         variant: "outline",
         size: "lg",
+        shape: "rectangular",
         withLabel: false,
         value: "hello",
         revertAfter: 2000,

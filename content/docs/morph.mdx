@@ -13,6 +13,13 @@ description: A size-stable animated content swap for icons, labels, and status c
 Swaps icons or text with an animation. Every item shares one grid cell sized to the largest, so
 the surrounding control never resizes during a swap. Under reduced motion the swap is instant.
 
+`sizing` sets how the box is sized:
+
+| `sizing` | Box size |
+| --- | --- |
+| `"widest"` (default) | The largest item, in every state. |
+| `"current"` | The showing item. The width transitions over `--duration-base` and is instant under reduced motion. Without `ResizeObserver` the box resizes without animating. The box carries `data-sizing`. |
+
 With a single item, Morph skips the hidden sizing copy, so the content appears once in the DOM
 and to assistive technology.
 

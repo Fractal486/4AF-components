@@ -131,8 +131,9 @@ worth reusing; a component that skips a line here is a component we'll rewrite l
   [Select Search implementation notes](content/docs/select-search.mdx#highlight-implementation)
   for Base UI's `autoHighlight` / `keepHighlight` requirements.
 - **Prefer compositor-friendly motion.** Animate `transform`/`scale`, `opacity`, `filter`,
-  and `clip-path`. Collapsible's height transition and Sidebar's shell dimensions and
-  offcanvas position are accepted layout-motion exceptions. Other components must avoid
+  and `clip-path`. Collapsible's height transition, Sidebar's shell dimensions and
+  offcanvas position, and Morph's opt-in `sizing="current"` width are accepted layout-motion
+  exceptions. Other components must avoid
   animating layout properties such as `width`, `height`, `top`, and `left`.
 - **Name the properties you transition.** `transition-[scale,opacity]`, never bare
   `transition` or `transition: all` (which is `transition-property: all` — the browser then

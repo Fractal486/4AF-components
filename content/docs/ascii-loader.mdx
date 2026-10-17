@@ -10,6 +10,10 @@ description: A compact loading indicator using Unicode Braille characters, with 
 
 **Main export:** `AsciiLoader`
 
-A looping braille spinner, and the library's default loading indicator.
+A looping braille spinner.
 [LoaderProvider](/docs/reference/engineering#shared-loading-indicators) and component `loader`
 slots accept any other indicator. `speed` is seconds per cycle.
+
+The glyph follows the surrounding font size. Passed as a component's `loader`, it sits centred
+in the loader slot, which reserves the same box as the icons around it, so swapping between an
+icon and the spinner does not shift the layout.

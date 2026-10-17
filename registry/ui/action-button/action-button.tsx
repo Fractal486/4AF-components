@@ -55,6 +55,11 @@ export interface ActionButtonProps
   iconPosition?: "start" | "end";
   /** Labels per state. Each falls back to the resting label. */
   labels?: { pending?: ReactNode; success?: ReactNode; error?: ReactNode };
+  /**
+   * `"widest"` (the default) holds the button at the width of its widest state. `"current"`
+   * fits it to the showing state and animates the width as the state changes.
+   */
+  sizing?: "widest" | "current";
   /** Whether pending keeps its label beside the loader or shows only a centered loader. */
   pendingMode?: "label" | "icon";
   /** How long the outcome holds before returning to idle, in ms. */
@@ -92,6 +97,7 @@ export function ActionButton({
   iconPosition = "start",
   labels,
   loader,
+  sizing = "widest",
   pendingMode = "label",
   revertAfter = 2000,
   pendingDelay = 0,
@@ -125,9 +131,11 @@ export function ActionButton({
   const override = status === "idle" || pendingIconOnly ? undefined : labels?.[status];
   const labelKey = pendingIconOnly ? "idle" : override == null ? "idle" : status;
   const glyphKey = pendingIconOnly ? "idle" : status;
+  const fit = sizing === "current";
   const glyph = (
     <Morph
       activeKey={glyphKey}
+      sizing={sizing}
       items={{
         idle: icon,
         pending: <LoadingIndicator loader={loader} />,
@@ -145,8 +153,10 @@ export function ActionButton({
   // status glyph is visible, the icon-and-label group should be centred as a group.
   // Intentional icon-plus-label actions stay centred in every state.
   // The nudge points away from the reserved slot, so it flips with `iconPosition`.
+  // A fitted button reserves nothing, so it has nothing to compensate for. It drops the
+  // glyph's gap instead while no glyph is showing, on the same clock as the Morph's width.
   const labelOnlyOffset =
-    !icon && labelled && status === "idle"
+    !fit && !icon && labelled && status === "idle"
       ? size === "xs" || size === "sm"
         ? iconPosition === "end" ? "translate-x-2.5" : "-translate-x-2.5"
         : size === "icon-xs" || size === "icon-sm" || size === "icon" || size === "icon-lg"
@@ -172,6 +182,7 @@ export function ActionButton({
         aria-busy={status === "pending" || undefined}
         data-status={status}
         data-pending-mode={pendingMode}
+        data-sizing={sizing}
         data-icon-position={iconPosition}
         {...props}
       >
@@ -193,7 +204,11 @@ export function ActionButton({
             data-slot="action-button-group"
             data-state={pendingIconOnly ? "hidden" : "visible"}
             className={cn(
-              "inline-flex items-center gap-[inherit] transition-[translate] duration-(--duration-fast) ease-out",
+              "inline-flex items-center ease-out",
+              fit
+                ? "transition-[gap] duration-(--duration-base)"
+                : "transition-[translate] duration-(--duration-fast)",
+              fit && glyphKey === "idle" && icon == null ? "gap-0" : "gap-[inherit]",
               labelOnlyOffset,
             )}
             variants={morphVariants}
@@ -211,11 +226,13 @@ export function ActionButton({
                 Each Morph is handed every state at once, so the button reserves the width of
                 the widest and never resizes as it moves through them. A button that changes
                 width mid-action moves the target out from under the cursor — and here the
-                cursor is still on it, waiting. */}
+                cursor is still on it, waiting. `sizing="current"` trades that away on
+                purpose. */}
             {iconPosition === "start" && glyph}
             {labelled && (
               <Morph
                 activeKey={labelKey}
+                sizing={sizing}
                 items={{
                   idle: children,
                   pending: labels?.pending,

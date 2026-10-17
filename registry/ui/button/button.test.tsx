@@ -59,6 +59,37 @@ describe("Button", () => {
     expect(screen.getByRole("button", { name: "Large icon" })).toHaveClass("size-[38px]", "rounded-[8px]");
   });
 
+  it("rounds a pill fully, replacing the radius its size gives it", () => {
+    render(
+      <>
+        <Button>Rectangular</Button>
+        <Button shape="pill">Pill</Button>
+      </>,
+    );
+
+    const rectangular = screen.getByRole("button", { name: "Rectangular" });
+    const pill = screen.getByRole("button", { name: "Pill" });
+    expect(rectangular).toHaveAttribute("data-shape", "rectangular");
+    expect(rectangular).toHaveClass("rounded-[8px]");
+    expect(pill).toHaveAttribute("data-shape", "pill");
+    expect(pill).toHaveClass("rounded-full");
+    expect(pill).not.toHaveClass("rounded-[8px]");
+  });
+
+  it("sizes the loader slot to the button's icons", () => {
+    render(
+      <>
+        <Button loading size="sm">Small</Button>
+        <Button loading>Medium</Button>
+      </>,
+    );
+
+    const [small, medium] = screen.getAllByRole("button");
+    expect(small).toHaveClass("[&_[data-slot=loader]]:size-3.5", "[&_svg]:size-3.5");
+    expect(medium).toHaveClass("[&_[data-slot=loader]]:size-4", "[&_svg]:size-4");
+    expect(medium!.querySelector('[data-slot="loader"]')).toBeInTheDocument();
+  });
+
   it("keeps the child link and its semantics with asChild", () => {
     const onClick = vi.fn();
     render(

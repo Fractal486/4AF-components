@@ -15,6 +15,11 @@ description: A composable Base UI button with variants, loading state, asChild s
 | `variant` | `primary` (default), `outline`, `ghost`, `plain`, `destructive`, `link` |
 | `size` | `xs` (24px), `sm` (30px), `md` (34px), `lg` (38px) |
 | Square icon sizes | `icon-xs`, `icon-sm`, `icon`, `icon-lg`, matching the heights above |
+| `shape` | `rectangular` (default), `pill` |
+
+`rectangular` uses the size's corner radius: 6px at `xs`/`sm`, 8px at `md`/`lg`. `pill` rounds the
+ends fully; square icon sizes become circles. The button carries `data-shape`. Toggle, Button
+Group, Action Button, Action Toggle, Copy Button, and Delete Button accept `shape`.
 
 The gap between icon and label is 8px at `xs`/`sm`, 10px at `md`, and 12px at `lg`. Leading and
 trailing icons get a small optical edge adjustment; icon-only buttons have no gap.
@@ -22,7 +27,8 @@ trailing icons get a small optical edge adjustment; icon-only buttons have no ga
 `loading` blocks interaction without changing the button's size. `loader={<MySpinner />}` sets
 its indicator; otherwise it inherits
 [LoaderProvider](/docs/reference/engineering#shared-loading-indicators), with `ClassicLoader` as the
-fallback. The slot reserves a square and keeps the busy announcement.
+fallback. The slot is a square the size of the button's icons (14px at `xs`/`sm`, 16px at
+`md`/`lg`) and keeps the busy announcement.
 
 The deprecated `Spinner` export has been removed. Use the `loader` prop or `LoaderProvider`
 to supply a custom indicator.

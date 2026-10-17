@@ -10,12 +10,13 @@ export const copyButtonEntry = defineEntry({
   controls: {
     variant: select(VARIANTS, "outline"),
     size: select(SIZES, "md"),
+    shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     withLabel: bool(false, "Show a label"),
     value: text("npx shadcn@latest add https://4af.selfsimilar.dev/r/copy-button.json", "Text to copy"),
     revertAfter: num(2000, { min: 500, max: 5000, step: 500, label: "Revert after (ms)" }),
     lazy: bool(false, "Fetch the text on press"),
   },
-  render({ variant, size, withLabel, value, revertAfter, lazy }) {
+  render({ variant, size, shape, withLabel, value, revertAfter, lazy }) {
     return (
       <CopyButton
         key={withLabel ? "labelled" : "icon"}
@@ -31,6 +32,7 @@ export const copyButtonEntry = defineEntry({
         }
         variant={variant}
         size={size}
+        shape={shape}
         revertAfter={revertAfter}
       >
         {withLabel ? "Copy command" : undefined}

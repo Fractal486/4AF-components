@@ -67,14 +67,14 @@ const SIZE: Record<
   sm: {
     field: "h-[30px] text-xs",
     glyph: "size-3.5",
-    iconSlot: "size-3.5 [&>svg]:size-3.5",
+    iconSlot: "size-3.5 [&>svg]:size-3.5 [&_[data-slot=loader]]:size-3.5",
     row: "min-h-[30px] text-xs",
     radius: "rounded-[6px]",
   },
   md: {
     field: "h-[34px] text-sm",
     glyph: "size-4",
-    iconSlot: "size-4 [&>svg]:size-4",
+    iconSlot: "size-4 [&>svg]:size-4 [&_[data-slot=loader]]:size-4",
     row: "min-h-[34px] text-sm",
     radius: "rounded-[8px]",
   },

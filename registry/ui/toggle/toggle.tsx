@@ -51,6 +51,7 @@ export function Toggle({
   className,
   variant = "ghost",
   size = "icon",
+  shape = "rectangular",
   fillIcon = false,
   pressScale = true,
   ...props
@@ -73,7 +74,7 @@ export function Toggle({
         />
       )}
       className={cn(
-        buttonVariants({ variant, size }),
+        buttonVariants({ variant, size, shape }),
         // Base UI sets `data-pressed`. Styling off it keeps the look and the ARIA from
         // ever drifting apart — they're driven by the same attribute.
         pressedVariants({ variant }),
@@ -85,6 +86,7 @@ export function Toggle({
         ],
         className,
       )}
+      data-shape={shape}
       {...props}
     />
   );

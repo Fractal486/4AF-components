@@ -106,6 +106,26 @@ describe("ButtonGroup", () => {
     expect(group()).toHaveClass("rounded-[8px]");
   });
 
+  it("passes a pill shape down and rounds the group's outer ends to match", () => {
+    render(
+      <ButtonGroup shape="pill" variant="outline" aria-label="Pills">
+        <Button>One</Button>
+        <Button>Two</Button>
+        <Button>Three</Button>
+      </ButtonGroup>,
+    );
+
+    const group = screen.getByRole("group", { name: "Pills" });
+    const [first, middle, last] = screen.getAllByRole("button");
+    expect(group).toHaveAttribute("data-shape", "pill");
+    expect(group).toHaveClass("rounded-full");
+    expect(first).toHaveAttribute("data-shape", "pill");
+    expect(first).toHaveClass("rounded-full", "rounded-e-none");
+    expect(middle).toHaveClass("rounded-none");
+    expect(middle).not.toHaveClass("rounded-full");
+    expect(last).toHaveClass("rounded-full", "rounded-s-none");
+  });
+
   it("draws the outline once, on the group, and drops it on the buttons", () => {
     const { container } = render(
       <ButtonGroup variant="outline">

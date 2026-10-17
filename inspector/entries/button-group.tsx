@@ -24,11 +24,12 @@ export const buttonGroupEntry = defineEntry({
     variant: select(VARIANTS, "outline"),
     size: select(SIZES, "md"),
     orientation: select(["horizontal", "vertical"], "horizontal"),
+    shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     count: num(3, { min: 2, max: 5, label: "Buttons" }),
     icon: select(["none", "leading", "only"], "leading"),
     disableSecond: bool(false, "Disable the second button"),
   },
-  render({ variant, size, orientation, count, icon, disableSecond }) {
+  render({ variant, size, orientation, shape, count, icon, disableSecond }) {
     const iconOnly = icon === "only";
 
     return (
@@ -36,6 +37,7 @@ export const buttonGroupEntry = defineEntry({
         variant={variant}
         size={iconOnly ? ICON_SIZE[size] : size}
         orientation={orientation}
+        shape={shape}
         aria-label="Item actions"
       >
         {ACTIONS.slice(0, count).map(({ label, icon: Icon }, index) => (

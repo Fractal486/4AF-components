@@ -6,13 +6,17 @@ import { ActionToggle } from "@/registry/ui/action-toggle/action-toggle";
 export function ActionToggleDemo({
   variant,
   size,
+  shape,
   duration,
   fail,
+  sizing,
 }: {
   variant: "outline" | "primary" | "ghost";
   size: "sm" | "md" | "lg";
+  shape: "rectangular" | "pill";
   duration: number;
   fail: boolean;
+  sizing: "widest" | "current";
 }) {
   async function follow() {
     await new Promise((resolve, reject) =>
@@ -28,6 +32,8 @@ export function ActionToggleDemo({
       action={follow}
       variant={variant}
       size={size}
+      shape={shape}
+      sizing={sizing}
       icon={<Plus />}
       icons={{ pressed: <Check /> }}
       labels={{ pressed: "Following", error: "Try again" }}

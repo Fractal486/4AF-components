@@ -18,7 +18,8 @@ import { Morph } from "@/registry/ui/morph/morph";
  * Morph does the swap, and it's handed both states at once so the button reserves the
  * width of the wider one and never resizes. That matters more here than anywhere else:
  * the cursor is already on the button, waiting to press again, and a button that grows
- * under a resting cursor moves the target out from under it.
+ * under a resting cursor moves the target out from under it. `sizing="current"` trades
+ * that away on purpose, for a row where the empty space reads worse.
  *
  * Three ways out, because arming something destructive and then being stuck with it is
  * its own kind of alarming: Escape, moving focus away, and a timeout.
@@ -55,6 +56,11 @@ export interface DeleteButtonProps
   armed?: boolean;
   defaultArmed?: boolean;
   onArmedChange?: (armed: boolean) => void;
+  /**
+   * `"widest"` (the default) holds the button at the width of its wider state. `"current"`
+   * fits it to the showing state and animates the width when it arms and disarms.
+   */
+  sizing?: "widest" | "current";
   /** How long an armed button waits before disarming itself, in ms. `0` never does. */
   resetAfter?: number;
   /** Announced when the button arms. A state change nobody can see is one they don't know about. */
@@ -72,6 +78,7 @@ export function DeleteButton({
   defaultArmed = false,
   onArmedChange,
   resetAfter = 3000,
+  sizing = "widest",
   announce = "Press again to confirm",
   size,
   className,
@@ -143,10 +150,12 @@ export function DeleteButton({
           onBlur?.(event);
         }}
         data-armed={isArmed || undefined}
+        data-sizing={sizing}
         {...props}
       >
         <Morph
           activeKey={isArmed ? "armed" : "idle"}
+          sizing={sizing}
           items={{
             idle: <Content gap={contentGap} icon={icon}>{children}</Content>,
             armed: <Content gap={contentGap} icon={confirmIcon}>{confirmLabel}</Content>,

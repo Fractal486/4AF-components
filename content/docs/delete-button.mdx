@@ -13,4 +13,8 @@ description: A destructive action button with deliberate confirmation feedback.
 A destructive button that asks for confirmation: the first press arms it and the second runs
 it. Escape, blur, and a timeout disarm it.
 
+By default the button keeps the width of its wider state. `sizing="current"` fits it to the
+showing state and animates the width when it arms and disarms. The button carries
+`data-sizing`.
+
 `size` uses the Button scale: `xs` is 24px, `sm` is 30px, `md` is 34px, and `lg` is 38px.

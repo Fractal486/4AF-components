@@ -62,6 +62,23 @@ it("keeps menu root and row overrides in the portal", () => {
   expect(screen.queryByText("Outer")).toBeNull();
 });
 
+it("gives a menu row's loader the row's 14px glyph box", () => {
+  render(<DropdownMenu defaultOpen><DropdownMenuContent>
+    <DropdownMenuActionItem action={pending}>Run</DropdownMenuActionItem>
+  </DropdownMenuContent></DropdownMenu>);
+  const run = screen.getByRole("menuitem", { name: "Run" });
+  fireEvent.click(run);
+  expect(run).toHaveClass("[&_svg]:size-3.5", "[&_[data-slot=loader]]:size-3.5");
+  expect(run.querySelector('[data-slot="loader"]')).toBeInTheDocument();
+});
+
+it("sizes the palette's standalone loader like its 16px icons", () => {
+  render(<CommandPalette open initialItemId="panel" groups={[{
+    items: [{ id: "panel", label: "Panel", panel: () => <CommandPanelLoading /> }],
+  }]} />);
+  expect(document.querySelector('[data-slot="loader"]')).toHaveClass("size-4");
+});
+
 it("passes palette defaults into a custom panel", () => {
   render(<CommandPalette open loader={<span>Palette</span>} initialItemId="panel" groups={[{
     items: [{ id: "panel", label: "Panel", panel: () => <CommandPanelLoading /> }],

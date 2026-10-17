@@ -11,13 +11,14 @@ export const buttonEntry = defineEntry({
   controls: {
     variant: select(VARIANTS, "primary"),
     size: select([...SIZES, "icon-xs", "icon-sm", "icon", "icon-lg"], "md"),
+    shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     label: text("Deploy", "Label"),
     icon: select(["none", "leading", "trailing"], "none"),
     loading: bool(false),
     disabled: bool(false),
     asChild: bool(false, "Render as link"),
   },
-  render({ variant, size, label, icon, loading, disabled, asChild }) {
+  render({ variant, size, shape, label, icon, loading, disabled, asChild }) {
     const isIconOnly = size.startsWith("icon");
 
     const content = isIconOnly ? (
@@ -36,6 +37,7 @@ export const buttonEntry = defineEntry({
           asChild
           variant={variant}
           size={size}
+          shape={shape}
           loading={loading}
           disabled={disabled}
           aria-label={isIconOnly ? label : undefined}
@@ -51,6 +53,7 @@ export const buttonEntry = defineEntry({
       <Button
         variant={variant}
         size={size}
+        shape={shape}
         loading={loading}
         disabled={disabled}
         aria-label={isIconOnly ? label : undefined}

@@ -36,6 +36,9 @@ export const buttonGroupVariants = cva(
       radius: {
         md: "rounded-[6px]",
         lg: "rounded-[8px]",
+        /** A pill group: its first and last buttons are pills with their inner ends
+            flattened, so the outline rounds fully too. */
+        full: "rounded-full",
       },
     },
     defaultVariants: {

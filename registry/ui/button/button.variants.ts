@@ -32,6 +32,9 @@ export const buttonVariants = cva(
 
     // Icons: sized in one place, and made inert so a click always lands on the
     // button rather than on the SVG (which is what breaks `event.target` checks).
+    // Each size gives the loader slot the same box as its icons. On its own the slot is
+    // `1em`, which is 2px smaller than the icon at every size but `lg`, so a spinner
+    // replacing an icon would visibly shrink.
     "[&_svg]:pointer-events-none [&_svg]:shrink-0",
 
     // Motion. Only `scale` and the colours actually change, so only those are
@@ -94,14 +97,21 @@ export const buttonVariants = cva(
         link: "text-foreground underline decoration-border underline-offset-4 hover:decoration-current",
       },
       size: {
-        xs: `h-6 ${buttonContentGap({ size: "xs" })} rounded-[6px] px-2.5 text-xs [&_svg]:size-3.5`,
-        sm: `h-[30px] ${buttonContentGap({ size: "sm" })} rounded-[6px] px-3 text-xs [&_svg]:size-3.5`,
-        md: `h-[34px] ${buttonContentGap({ size: "md" })} rounded-[8px] px-3.5 text-sm [&_svg]:size-4`,
-        lg: `h-[38px] ${buttonContentGap({ size: "lg" })} rounded-[8px] px-5 text-base [&_svg]:size-4`,
-        "icon-xs": "size-6 rounded-[6px] [&_svg]:size-3.5",
-        "icon-sm": "size-[30px] rounded-[6px] [&_svg]:size-3.5",
-        icon: "size-[34px] rounded-[8px] [&_svg]:size-4",
-        "icon-lg": "size-[38px] rounded-[8px] [&_svg]:size-4",
+        xs: `h-6 ${buttonContentGap({ size: "xs" })} rounded-[6px] px-2.5 text-xs [&_svg]:size-3.5 [&_[data-slot=loader]]:size-3.5`,
+        sm: `h-[30px] ${buttonContentGap({ size: "sm" })} rounded-[6px] px-3 text-xs [&_svg]:size-3.5 [&_[data-slot=loader]]:size-3.5`,
+        md: `h-[34px] ${buttonContentGap({ size: "md" })} rounded-[8px] px-3.5 text-sm [&_svg]:size-4 [&_[data-slot=loader]]:size-4`,
+        lg: `h-[38px] ${buttonContentGap({ size: "lg" })} rounded-[8px] px-5 text-base [&_svg]:size-4 [&_[data-slot=loader]]:size-4`,
+        "icon-xs": "size-6 rounded-[6px] [&_svg]:size-3.5 [&_[data-slot=loader]]:size-3.5",
+        "icon-sm": "size-[30px] rounded-[6px] [&_svg]:size-3.5 [&_[data-slot=loader]]:size-3.5",
+        icon: "size-[34px] rounded-[8px] [&_svg]:size-4 [&_[data-slot=loader]]:size-4",
+        "icon-lg": "size-[38px] rounded-[8px] [&_svg]:size-4 [&_[data-slot=loader]]:size-4",
+      },
+      /** `rectangular` keeps the corner radius the size gives it; `pill` rounds the ends
+          fully, which turns the square icon sizes into circles. Listed after `size` so
+          the radius it sets is the one `cn` keeps. */
+      shape: {
+        rectangular: "",
+        pill: "rounded-full",
       },
     },
     compoundVariants: [
@@ -130,6 +140,7 @@ export const buttonVariants = cva(
     defaultVariants: {
       variant: "primary",
       size: "md",
+      shape: "rectangular",
     },
   },
 );

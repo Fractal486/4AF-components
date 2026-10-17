@@ -97,6 +97,7 @@ export function Button({
   className,
   variant,
   size,
+  shape,
   asChild = false,
   loading = false,
   loader,
@@ -178,7 +179,7 @@ export function Button({
       {...props}
       ref={ref}
       className={cn(
-        buttonVariants({ variant, size }),
+        buttonVariants({ variant, size, shape }),
         asChild &&
           pressScale &&
           !pressesContent &&
@@ -198,6 +199,7 @@ export function Button({
       // doing without reaching into React.
       data-variant={variant ?? "primary"}
       data-size={size ?? "md"}
+      data-shape={shape ?? "rectangular"}
       data-loading={loading || undefined}
       data-pressed={pressed || undefined}
       data-icon-start={icons.start || undefined}
@@ -296,7 +298,7 @@ function ButtonLoading({ label, loader, children }: { label: string; loader?: Re
         {children}
       </span>
       <span className="absolute inset-0 inline-flex items-center justify-center">
-        {/* The shared box scales with the button's font size in either loader style. */}
+        {/* The button's size gives this box its icon size, in either loader style. */}
         <LoadingIndicator loader={loader} />
         <span className="sr-only">{label}</span>
       </span>

@@ -110,6 +110,48 @@ describe("ActionButton", () => {
     expect(content?.firstElementChild).toHaveClass("transition-[translate]");
   });
 
+  it("fits a label-only action to its showing state with sizing=\"current\"", async () => {
+    let resolveAction: () => void;
+    const action = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveAction = resolve;
+        }),
+    );
+
+    render(
+      <ActionButton action={action} sizing="current" labels={{ pending: "Saving" }}>
+        Save
+      </ActionButton>,
+    );
+
+    const button = screen.getByRole("button", { name: "Save" });
+    const group = button.querySelector('[data-slot="action-button-group"]');
+    const morphs = button.querySelectorAll('[data-slot="morph"]');
+
+    expect(button).toHaveAttribute("data-sizing", "current");
+    expect([...morphs].map((morph) => morph.getAttribute("data-sizing"))).toEqual(["current", "current"]);
+    // Nothing is reserved, so there is no offset to centre against — only the empty
+    // glyph's gap to drop, which returns with the loader.
+    expect(group).not.toHaveClass("-translate-x-3");
+    expect(group).toHaveClass("gap-0");
+
+    fireEvent.click(button);
+    expect(group).toHaveClass("gap-[inherit]");
+
+    await act(async () => resolveAction!());
+  });
+
+  it("forwards the button shape", () => {
+    render(
+      <ActionButton action={() => undefined} shape="pill">
+        Save
+      </ActionButton>,
+    );
+
+    expect(screen.getByRole("button", { name: "Save" })).toHaveAttribute("data-shape", "pill");
+  });
+
   it("centres the pending status icon and label as a group", async () => {
     let resolveAction: () => void;
     const action = vi.fn(

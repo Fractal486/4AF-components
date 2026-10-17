@@ -11,6 +11,9 @@ export const itemBase = cn(
   // Size/inert every glyph, but only mute the *leading* icons (direct children) — the
   // nested check/dot indicators keep the item's foreground ink.
   "[&_svg]:pointer-events-none [&_svg]:size-3.5 [&_svg]:shrink-0 [&>svg]:text-muted-foreground",
+  // A loader takes the glyphs' 14px box. Its own `1em` is the row's 12px text, so a
+  // spinner replacing an icon would shrink.
+  "[&_[data-slot=loader]]:size-3.5",
   // A morphing icon is a leading icon too, and the rule above misses it: `Morph` wraps
   // its content in a span, so the glyph is a grandchild and inherits the row's full-ink
   // `text-foreground` instead — one row's icon brighter than every other row's, for no

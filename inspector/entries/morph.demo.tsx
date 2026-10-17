@@ -6,15 +6,18 @@ import { Morph } from "@/registry/ui/morph/morph";
 import { Toggle } from "@/registry/ui/toggle/toggle";
 
 type Variant = "primary" | "outline" | "ghost" | "plain";
+type Shape = "rectangular" | "pill";
 
 export function IconToggle({
   labels,
   icons,
   variant = "outline",
+  shape,
 }: {
   labels: [string, string];
   icons: [ReactNode, ReactNode];
   variant?: Variant;
+  shape?: Shape;
 }) {
   const [on, setOn] = useState(false);
 
@@ -22,6 +25,7 @@ export function IconToggle({
     <Button
       variant={variant}
       size="icon"
+      shape={shape}
       onClick={() => setOn((value) => !value)}
       aria-label={on ? labels[1] : labels[0]}
       aria-pressed={on}
@@ -34,9 +38,13 @@ export function IconToggle({
 export function TextToggle({
   labels,
   variant = "outline",
+  shape,
+  sizing,
 }: {
   labels: [string, string];
   variant?: Variant;
+  shape?: Shape;
+  sizing?: "widest" | "current";
 }) {
   const [on, setOn] = useState(false);
 
@@ -44,11 +52,16 @@ export function TextToggle({
     <Toggle
       variant={variant}
       size="md"
+      shape={shape}
       pressed={on}
       onPressedChange={setOn}
       aria-label={on ? labels[1] : labels[0]}
     >
-      <Morph activeKey={on ? "on" : "off"} items={{ off: labels[0], on: labels[1] }} />
+      <Morph
+        activeKey={on ? "on" : "off"}
+        sizing={sizing}
+        items={{ off: labels[0], on: labels[1] }}
+      />
     </Toggle>
   );
 }

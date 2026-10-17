@@ -150,7 +150,7 @@ export function CommandPanelLoading({
         className,
       )}
     >
-      <LoadingIndicator loader={loader} className="text-sm text-subtle-foreground" />
+      <LoadingIndicator loader={loader} className="size-4 text-sm text-subtle-foreground" />
       <span>{children}</span>
     </div>
   );
@@ -251,7 +251,7 @@ export function CommandPanelRow({
       className={cn(
         "group flex min-h-9 items-center gap-2.5 rounded-sm px-2.5 text-sm text-muted-foreground outline-none select-none",
         badge ? "py-1.5" : "py-2",
-        interactive ? "cursor-pointer" : "cursor-default",
+        "cursor-default",
         destructive
           ? "text-destructive data-highlighted:bg-muted data-highlighted:text-destructive data-frozen:bg-muted data-frozen:text-destructive"
           : "data-highlighted:bg-muted data-highlighted:text-foreground data-frozen:bg-muted data-frozen:text-foreground",
@@ -366,7 +366,7 @@ export function CommandRow({
       // same attribute), applied instantly with no transition so it keeps up with a fast
       // ↑↓ and doesn't smear across rows under the pointer.
       className={cn(
-        "group flex min-h-9 cursor-pointer items-center gap-2.5 rounded-sm px-2.5 text-sm text-muted-foreground outline-none select-none",
+        "group flex min-h-9 cursor-default items-center gap-2.5 rounded-sm px-2.5 text-sm text-muted-foreground outline-none select-none",
         compactRow ? "py-1.5" : "py-2",
         item.destructive
           ? "data-highlighted:bg-muted text-destructive data-highlighted:text-destructive data-frozen:bg-muted data-frozen:text-destructive"

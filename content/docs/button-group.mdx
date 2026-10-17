@@ -15,6 +15,9 @@ flattened, each seam gets one hairline, and one outline wraps the group. `varian
 are passed to the buttons as defaults: `xs`, `sm`, `md`, or `lg`, or `icon-xs`, `icon-sm`,
 `icon`, and `icon-lg` for icon-only buttons.
 
+`shape` is also passed as a default. With `shape="pill"` the outer ends and the outline round
+fully and the inner ends stay flat. The group's `data-shape` follows its first button.
+
 The group uses `role="group"`; each button keeps its own tab stop. Use [Tabs](/docs/tabs) when
 controls switch between content panels. Grouped buttons default to `pressTarget="content"` so
 press feedback leaves the joined edges still.
