@@ -72,18 +72,38 @@ function clamp(value: number, min: number, max: number) {
 
 // Base UI's hidden thumb takes the press, but sits at the value while the drawn bar thumb
 // rides up to 8px inside it (the fill's edge on the single bar, the inset travel in a range).
-// At the drawn thumb's own 4px it missed every press on the drawn thumb, which Base UI then
+// At the drawn thumb's own 2px it missed every press on the drawn thumb, which Base UI then
 // took as a track press at the pointer: the value dropped, the thumb jumped, and it trailed
 // the cursor for the whole drag. 24px covers the drawn thumb wherever it sits.
 const BAR_HIT_WIDTH = "w-6";
 
 /** How much taller the bar thumb grows while held. */
 const BAR_GRAB_STRETCH = 1.35;
+/** How much wider it grows: 2px to 3px, enough to read as taken hold of. */
+const BAR_GRAB_WIDEN = 1.5;
+
+// The bar's ticks read like a ruler: short marks, a taller one every few steps, and the
+// tallest at the midpoint. Heights per size, short to tall.
+const BAR_TICK_HEIGHTS = {
+  md: ["h-1.5", "h-2.5", "h-3.5"],
+  sm: ["h-1", "h-2", "h-3"],
+} as const;
+
+/**
+ * A tick's ruler level: 2 at the midpoint, 1 every fifth step (or at the quarters when there
+ * are fewer than ten steps), 0 otherwise.
+ */
+function barTickLevel(index: number, stepCount: number): 0 | 1 | 2 {
+  if (index * 2 === stepCount) return 2;
+  if (stepCount >= 10 ? index % 5 === 0 : (index * 4) % stepCount === 0) return 1;
+  return 0;
+}
 
 /**
  * The bar thumb, built from parts so it can grow without distorting: two round caps and a
  * middle. Held, the caps slide apart and only the middle stretches to bridge them, so the
- * ends stay round where a `scaleY` on one pill would squash them into ovals. All three move
+ * ends stay round where a `scaleY` on one pill would squash them into ovals. It also widens:
+ * the caps scale evenly, staying circles, and the middle widens to match. All three move
  * on the same spring, so they stay joined; the shadow is one drop-shadow on the group, so
  * the joins never show.
  */
@@ -109,31 +129,34 @@ function BarThumb({
     <motion.div
       data-slot="slider-thumb"
       data-dodged={dodged ? "" : undefined}
-      className="absolute inset-0 rounded-full drop-shadow-sm group-has-[:focus-visible]:ring-4 group-has-[:focus-visible]:ring-ring/40"
+      className="absolute inset-0 rounded-full drop-shadow-sm group-has-[[type=range]:focus-visible]:ring-4 group-has-[[type=range]:focus-visible]:ring-ring/40"
       animate={{ opacity: dodged ? DODGE_OPACITY : 1 }}
       transition={reduceMotion ? { duration: 0 } : { duration: duration.fast, ease: "easeOut" }}
     >
       <motion.span
         className="absolute inset-x-0 top-0 aspect-square rounded-full bg-foreground"
-        animate={{ y: stretched ? -reach : 0 }}
+        animate={{ y: stretched ? -reach : 0, scale: stretched ? BAR_GRAB_WIDEN : 1 }}
         transition={transition}
       />
       <motion.span
         className="absolute inset-x-0 bg-foreground"
         style={{ top: capRadius, bottom: capRadius }}
-        animate={{ scaleY: stretched ? middleScale : 1 }}
+        animate={{
+          scaleY: stretched ? middleScale : 1,
+          scaleX: stretched ? BAR_GRAB_WIDEN : 1,
+        }}
         transition={transition}
       />
       <motion.span
         className="absolute inset-x-0 bottom-0 aspect-square rounded-full bg-foreground"
-        animate={{ y: stretched ? reach : 0 }}
+        animate={{ y: stretched ? reach : 0, scale: stretched ? BAR_GRAB_WIDEN : 1 }}
         transition={transition}
       />
     </motion.div>
   );
 }
 
-// The fader fill's edge and a tick at the same spot would draw as two lines, so a tick is
+// The fader fill's edge and a tick at the same spot would draw as a doubled line, so a tick is
 // switched off — no fade — only while the edge sits within half a pixel of it, so it never
 // vanishes ahead of the fill.
 const EDGE_HIDE_PX = 0.5;
@@ -162,6 +185,99 @@ function FaderTick({
     return (Math.abs(edge - percent) / 100) * width < EDGE_HIDE_PX ? 0 : 1;
   });
   return <motion.span className={className} style={{ ...style, opacity }} />;
+}
+
+/** A typed value clamped to the range and snapped to the nearest step, or null if unreadable. */
+function parseTypedValue(text: string, min: number, max: number, step: number): number | null {
+  const typed = Number(text.trim().replace(",", "."));
+  if (text.trim() === "" || !Number.isFinite(typed)) return null;
+  const snapped = Math.round((clamp(typed, min, max) - min) / step) * step + min;
+  // Snapping in floating point leaves tails (0.30000000000000004); round them to the step's
+  // own precision.
+  const decimals = (String(step).split(".")[1] ?? "").length;
+  return clamp(Number(snapped.toFixed(decimals)), min, max);
+}
+
+/**
+ * The shown value, editable in place: a text cursor over the number itself, and a click
+ * turns it into an input sized to its contents. Enter or leaving the field commits the
+ * typed value, clamped and snapped to the step; Escape cancels. The hit area is the number's
+ * own box, and a press on it is kept from the control, so it never starts a drag.
+ */
+function EditableValue({
+  index = 0,
+  value,
+  min,
+  max,
+  step,
+  label,
+  onCommit,
+  className,
+}: {
+  /** Which thumb's value this is; a range shows one editable value per thumb. */
+  index?: number;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  label: string;
+  onCommit: (index: number, value: number) => void;
+  className?: string;
+}) {
+  const [draft, setDraft] = useState<string | null>(null);
+  // Escape unmounts the input, and a blur fired on the way out must not commit the draft.
+  const cancelledRef = useRef(false);
+
+  const commit = () => {
+    if (draft === null) return;
+    if (!cancelledRef.current) {
+      const next = parseTypedValue(draft, min, max, step);
+      if (next !== null && next !== value) onCommit(index, next);
+    }
+    cancelledRef.current = false;
+    setDraft(null);
+  };
+
+  if (draft !== null) {
+    return (
+      <input
+        autoFocus
+        aria-label={label}
+        inputMode="decimal"
+        value={draft}
+        size={Math.max(draft.length, 1)}
+        onChange={(event) => setDraft(event.target.value)}
+        onFocus={(event) => event.currentTarget.select()}
+        onBlur={commit}
+        onPointerDown={(event) => event.stopPropagation()}
+        onKeyDown={(event) => {
+          // Kept from the slider, whose arrow keys would otherwise move the thumb as well.
+          event.stopPropagation();
+          if (event.key === "Enter") commit();
+          if (event.key === "Escape") {
+            cancelledRef.current = true;
+            setDraft(null);
+          }
+        }}
+        // Sized to the text where `field-sizing` is supported; `size` covers the rest.
+        style={{ fieldSizing: "content" } as CSSProperties}
+        className={cn(
+          "pointer-events-auto m-0 min-w-[1ch] border-0 bg-transparent p-0 text-right tabular text-foreground outline-none",
+          className,
+        )}
+      />
+    );
+  }
+
+  return (
+    <BaseSlider.Value
+      onPointerDown={(event) => event.stopPropagation()}
+      onClick={() => setDraft(String(value))}
+      className={cn("pointer-events-auto cursor-text tabular", className)}
+    >
+      {(formatted) => formatted[index]}
+    </BaseSlider.Value>
+  );
 }
 
 export type SliderRange = readonly [number, number];
@@ -279,8 +395,8 @@ const DIMS = {
     sm: { control: "h-4", rail: "inset-x-0 top-1/2 h-0.5 -translate-y-1/2", thumb: "size-2 rounded-full", thumbPx: 8, thumbHeightPx: 8, fillCapRadiusPx: 0, fillRadiusPx: 0, tooltipSideOffset: 8, tickInset: "inset-x-1", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
   },
   bar: {
-    md: { control: "h-10", rail: "inset-0", thumb: "h-5 w-1 rounded-full", thumbPx: 4, thumbHeightPx: 20, fillCapRadiusPx: 8, fillRadiusPx: 6, tooltipSideOffset: -2, tickInset: "inset-x-2", tick: "h-2 rounded-none", tickCenterX: "", tickHairline: true },
-    sm: { control: "h-8", rail: "inset-0", thumb: "h-4 w-1 rounded-full", thumbPx: 4, thumbHeightPx: 16, fillCapRadiusPx: 8, fillRadiusPx: 6, tooltipSideOffset: 0, tickInset: "inset-x-2", tick: "h-1.5 rounded-none", tickCenterX: "", tickHairline: true },
+    md: { control: "h-10", rail: "inset-0", thumb: "h-4 w-0.5 rounded-full", thumbPx: 2, thumbHeightPx: 16, fillCapRadiusPx: 8, fillRadiusPx: 0, tooltipSideOffset: -2, tickInset: "inset-x-2", tick: "rounded-none", tickCenterX: "", tickHairline: true },
+    sm: { control: "h-8", rail: "inset-0", thumb: "h-3 w-0.5 rounded-full", thumbPx: 2, thumbHeightPx: 12, fillCapRadiusPx: 8, fillRadiusPx: 0, tooltipSideOffset: 0, tickInset: "inset-x-2", tick: "rounded-none", tickCenterX: "", tickHairline: true },
   },
 } as const;
 
@@ -300,16 +416,18 @@ const KNOB_GRAB_SCALE = {
 const DODGE_APPROACH_PX = 8;
 const DODGE_OPACITY = 0.15;
 
-// "In use" for the bar: hovered, dragged, or keyboard-focused. The ticks fade in, the fill
+// "In use" for the bar: hovered, dragged, or keyboard-focused. Focus means the slider's own
+// range input, not anything focused inside the control, so typing into the editable value
+// doesn't light up the thumb's ring or the ticks. The ticks fade in, the fill
 // steps up and the inline value comes to full ink; at rest the bar is just a rail and a fill.
 // The slow token, not the base one: these are ambient changes the hand didn't ask for, so they
 // ease in rather than snap with the cursor.
 const BAR_TICKS_IN_USE =
-  "opacity-0 transition-[opacity] duration-(--duration-slow) ease-out group-hover:opacity-100 group-data-[dragging-index]:opacity-100 group-has-[:focus-visible]:opacity-100";
+  "opacity-0 transition-[opacity] duration-(--duration-slow) ease-out group-hover:opacity-100 group-data-[dragging-index]:opacity-100 group-has-[[type=range]:focus-visible]:opacity-100";
 const BAR_FILL_IN_USE =
-  "transition-[background-color] duration-(--duration-slow) ease-out group-hover:bg-foreground/20 group-data-[dragging-index]:bg-foreground/20 group-has-[:focus-visible]:bg-foreground/20";
+  "transition-[background-color] duration-(--duration-slow) ease-out group-hover:bg-foreground/20 group-data-[dragging-index]:bg-foreground/20 group-has-[[type=range]:focus-visible]:bg-foreground/20";
 const INLINE_VALUE_IN_USE =
-  "text-muted-foreground transition-[color] duration-(--duration-slow) ease-out group-hover:text-foreground group-data-[dragging-index]:text-foreground group-has-[:focus-visible]:text-foreground";
+  "text-muted-foreground transition-[color] duration-(--duration-slow) ease-out group-hover:text-foreground group-data-[dragging-index]:text-foreground group-has-[[type=range]:focus-visible]:text-foreground";
 
 const INLINE_GUTTER = { md: "px-3", sm: "px-2.5" } as const;
 const NO_SPANS: readonly SliderSpan[] = [];
@@ -365,7 +483,7 @@ export function Slider({
   const [dodged, setDodged] = useState<ThumbFlags>([false, false]);
   const controlRef = useRef<HTMLDivElement>(null);
   const inlineLabelRef = useRef<HTMLSpanElement>(null);
-  const inlineValueRef = useRef<HTMLOutputElement>(null);
+  const inlineValueRef = useRef<HTMLSpanElement>(null);
   const inlineSpansRef = useRef<readonly SliderSpan[]>(NO_SPANS);
   const thumb0Ref = useRef<HTMLDivElement>(null);
   const thumb1Ref = useRef<HTMLDivElement>(null);
@@ -467,8 +585,7 @@ export function Slider({
       getSliderThumbCenter(p, controlWidth, thumbTravelInsetPx, followFillPx, isRtl) -
       dims.thumbPx / 2,
   );
-  // The fader fill is a whole rounded, bordered box slid along the rail rather than a clip,
-  // so its leading end keeps its radius and border. Translating by its own width keeps it
+  // The fader fill is a whole box slid along the rail rather than a clip. Translating by its own width keeps it
   // exact before the control is measured; the rail clips the part slid out of view.
   const faderFillX = useTransform(pos0, (p) => `${isRtl ? p : p - 100}%`);
 
@@ -638,7 +755,18 @@ export function Slider({
         )
       : [];
 
-  const handleValueChange = (next: number | readonly number[], details?: { reason?: string }) => {
+  const handleValueChange = (
+    next: number | readonly number[],
+    details?: { reason?: string; activeThumbIndex?: number },
+  ) => {
+    // With both range thumbs on one value, the press can't tell which was meant — it picks
+    // by distance, and the two are equally close — but Base UI resolves it from the drag's
+    // direction. Hand the grab (its stretch, its tooltip) to the thumb that is actually moving.
+    const moving = details?.activeThumbIndex;
+    if (details?.reason === "drag" && (moving === 0 || moving === 1) && moving !== draggingIndex) {
+      activeThumbIndexRef.current = moving;
+      setDraggingIndex(moving);
+    }
     const nextValue = isRange
       ? normalizeSliderRange(next, normalizedMin, normalizedMax)
       : normalizeSliderValue(next, normalizedMin, normalizedMax);
@@ -655,6 +783,45 @@ export function Slider({
         nextValue as number,
       );
     }
+  };
+
+  // The shown numbers can be typed into — one per thumb — unless the slider is disabled.
+  const editableValue = !disabled;
+  const valueName = typeof label === "string" ? label : (ariaLabel ?? "value");
+  const editLabel = (index: 0 | 1) =>
+    isRange
+      ? `Edit ${thumbLabels?.[index] ?? `${valueName} ${index === 0 ? "minimum" : "maximum"}`}`
+      : `Edit ${valueName}`;
+  // A typed value moves its thumb like any value from outside: it glides there. In a range it
+  // can't cross the other thumb; it stops at it.
+  const commitTypedValue = (index: number, typed: number) => {
+    if (!isRange) return handleValueChange(typed);
+    const [low, high] = normalizedThumbValues;
+    handleValueChange(index === 0 ? [Math.min(typed, high), high] : [low, Math.max(typed, low)]);
+  };
+  const renderValue = (className: string) => {
+    if (!editableValue) return <BaseSlider.Value className={cn("tabular", className)} />;
+    const editable = (index: 0 | 1) => (
+      <EditableValue
+        index={index}
+        value={normalizedThumbValues[index]}
+        min={normalizedMin}
+        max={normalizedMax}
+        step={normalizedStep}
+        label={editLabel(index)}
+        onCommit={commitTypedValue}
+        className={className}
+      />
+    );
+    return isRange ? (
+      <span className="inline-flex items-baseline gap-1">
+        {editable(0)}
+        <span aria-hidden className={className}>–</span>
+        {editable(1)}
+      </span>
+    ) : (
+      editable(0)
+    );
   };
 
   const isPointerOverThumb = (
@@ -770,11 +937,10 @@ export function Slider({
           )}
         >
           {label != null && <span id={labelId} className="text-muted-foreground">{label}</span>}
-          {showValue && (
+          {showValue &&
             // `tabular` so the number doesn't reflow the row as its digits change. No
             // `font-mono` — it inherits Geist Sans from the body.
-            <BaseSlider.Value className="tabular text-foreground" />
-          )}
+            renderValue("text-foreground")}
         </div>
       )}
 
@@ -822,17 +988,14 @@ export function Slider({
             isBar ? "rounded-md" : "rounded-full",
           )}
         >
-          {/* Fill — the single bar's is a whole rounded box whose edge is the value (see
-              `faderFillX`); otherwise a clip that rounds past a thumb it holds (circle, a
-              range bar) or ends at the thumb's centre (knob). */}
+          {/* Fill — the single bar's is a whole box slid along the rail, its straight edge
+              the value (see `faderFillX`); otherwise a clip that reaches past a thumb it
+              holds, rounded for the circle, or ends at the thumb's centre (knob). */}
           {followFillPx > 0 ? (
             <motion.div
               aria-hidden
               data-slot="slider-fill"
-              className={cn(
-                "absolute inset-0 rounded-md border border-foreground/10 bg-foreground/15",
-                BAR_FILL_IN_USE,
-              )}
+              className={cn("absolute inset-0 bg-foreground/15", BAR_FILL_IN_USE)}
               style={{ x: faderFillX }}
             />
           ) : (
@@ -891,8 +1054,11 @@ export function Slider({
               // the same true hairline.
               const hairline = `${hairlinePx}px`;
               const tickClass = cn(
-                "absolute top-1/2 -translate-y-1/2 bg-foreground/25",
+                // The bar's marks sit quieter: the rail already has an outline and a fill.
+                "absolute top-1/2 -translate-y-1/2",
+                isBar ? "bg-foreground/10" : "bg-foreground/25",
                 dims.tick,
+                isBar && BAR_TICK_HEIGHTS[size][barTickLevel(i, stepCount)],
                 dims.tickCenterX,
               );
               const tickStyle = { left, ...(dims.tickHairline && { width: hairline }) };
@@ -911,6 +1077,17 @@ export function Slider({
               );
             })}
           </div>
+
+          {/* The bar's outline: a hairline around the whole rail in the stronger border
+              colour — the default one reads as no border at all against the muted rail. Drawn
+              as an overlay above the fill rather than as the rail's own border, so it takes no
+              space and the fill, ticks, and thumb keep their exact positions. */}
+          {isBar && (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 rounded-[inherit] border border-border-strong"
+            />
+          )}
         </div>
 
         {/* Base UI's thumb: the input lives here for focus, keyboard and ARIA. Hidden,
@@ -998,7 +1175,7 @@ export function Slider({
                 "absolute inset-0 origin-center bg-foreground shadow-sm",
                 // A thin vertical handle, or a round knob the height of the rail.
                 dims.thumb,
-                "group-has-[:focus-visible]:ring-4 group-has-[:focus-visible]:ring-ring/40",
+                "group-has-[[type=range]:focus-visible]:ring-4 group-has-[[type=range]:focus-visible]:ring-ring/40",
               )}
               // A round thumb can't stretch one axis without going oval, so it grabs by
               // growing evenly (the bar stretches; see BarThumb). Keep this on the inner shape
@@ -1051,10 +1228,11 @@ export function Slider({
             {showValue && (
               // Dim at rest, full ink while the slider is in use — the number matters most
               // while it is changing.
-              <BaseSlider.Value
-                ref={inlineValueRef}
-                className={cn("shrink-0 tabular", INLINE_VALUE_IN_USE)}
-              />
+              // The wrapper carries the measuring ref, so the thumb keeps dodging the number
+              // while it is being edited too.
+              <span ref={inlineValueRef} className="inline-flex shrink-0">
+                {renderValue(INLINE_VALUE_IN_USE)}
+              </span>
             )}
           </div>
         )}

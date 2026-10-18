@@ -168,7 +168,7 @@ describe("Slider", () => {
     );
 
     const slider = screen.getByRole("slider");
-    expect(container.querySelector("[data-base-ui-tooltip-trigger]")).toHaveClass("h-5", "w-6");
+    expect(container.querySelector("[data-base-ui-tooltip-trigger]")).toHaveClass("h-4", "w-6");
     await user.tab();
     const valueTooltip = () =>
       document.querySelector('[data-base-ui-focusable][data-side="top"]');
@@ -270,6 +270,87 @@ describe("Slider", () => {
     await waitFor(() => expect(at("30%").style.opacity).toBe("0"));
     expect(at("20%").style.opacity).toBe("1");
     expect(at("40%").style.opacity).toBe("1");
+  });
+
+  it("gives the bar's ticks ruler heights: tallest at the midpoint, taller every fifth step", () => {
+    const { container } = render(
+      <Slider aria-label="Amount" min={0} max={100} step={5} defaultValue={0} />,
+    );
+    const heightAt = (left: string) =>
+      Array.from(container.querySelectorAll<HTMLElement>('[data-slot="slider-ticks"] > span'))
+        .find((tick) => tick.style.left === left)!
+        .className.split(" ").find((name) => /^h-[\d.]+$/.test(name));
+
+    expect(heightAt("50%")).toBe("h-3.5");
+    expect(heightAt("25%")).toBe("h-2.5");
+    expect(heightAt("75%")).toBe("h-2.5");
+    expect(heightAt("10%")).toBe("h-1.5");
+  });
+
+  it("edits the shown value in place, clamped and snapped, and cancels on Escape", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(
+      <Slider
+        aria-label="Volume"
+        label="Volume"
+        showValue
+        defaultValue={40}
+        step={10}
+        onValueChange={onValueChange}
+      />,
+    );
+    const slider = screen.getByRole("slider");
+
+    await user.click(screen.getByText("40"));
+    const input = screen.getByRole("textbox", { name: "Edit Volume" });
+    await user.clear(input);
+    await user.type(input, "47{Enter}");
+    // Snapped to the step of 10.
+    expect(onValueChange).toHaveBeenLastCalledWith(50);
+    expect(slider).toHaveAttribute("aria-valuenow", "50");
+
+    await user.click(screen.getByText("50"));
+    await user.clear(screen.getByRole("textbox", { name: "Edit Volume" }));
+    await user.type(screen.getByRole("textbox", { name: "Edit Volume" }), "999{Enter}");
+    // Clamped to the maximum.
+    expect(slider).toHaveAttribute("aria-valuenow", "100");
+
+    await user.click(screen.getByText("100"));
+    await user.clear(screen.getByRole("textbox", { name: "Edit Volume" }));
+    await user.type(screen.getByRole("textbox", { name: "Edit Volume" }), "10{Escape}");
+    expect(screen.queryByRole("textbox")).toBeNull();
+    expect(slider).toHaveAttribute("aria-valuenow", "100");
+  });
+
+  it("edits each end of a range, never past the other", async () => {
+    const user = userEvent.setup();
+    render(<Slider aria-label="Price" range showValue defaultValue={[20, 80]} />);
+    const [low, high] = screen.getAllByRole("slider");
+
+    await user.click(screen.getByText("20"));
+    const lowInput = screen.getByRole("textbox", { name: "Edit Price minimum" });
+    await user.clear(lowInput);
+    await user.type(lowInput, "35{Enter}");
+    expect(low).toHaveAttribute("aria-valuenow", "35");
+
+    // Past the other end, it stops at it.
+    await user.click(screen.getByText("80"));
+    const highInput = screen.getByRole("textbox", { name: "Edit Price maximum" });
+    await user.clear(highInput);
+    await user.type(highInput, "10{Enter}");
+    expect(high).toHaveAttribute("aria-valuenow", "35");
+  });
+
+  it("leaves the thumb's focus ring off while the value is being typed", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<Slider aria-label="Volume" inlineLabel showValue defaultValue={40} />);
+    await user.click(screen.getByText("40"));
+    expect(screen.getByRole("textbox")).toHaveFocus();
+    // The ring answers only the slider's own range input.
+    expect(container.querySelector('[data-slot="slider-thumb"]')!.className).toContain(
+      "group-has-[[type=range]:focus-visible]:ring-4",
+    );
   });
 
   it("keeps the fill correction tied to the animated thumb position", () => {
@@ -535,6 +616,53 @@ describe("Slider", () => {
       // Past the end, still held: the fill is whole, not one value behind. Motion writes a
       // zero translate as `none`.
       await waitFor(() => expect(["none", "translateX(0%)"]).toContain(fill.style.transform));
+    } finally {
+      Object.assign(Element.prototype, capture);
+      rect.mockRestore();
+      width.mockRestore();
+    }
+  });
+
+  it("grabs the range thumb that actually moves when both share a value", async () => {
+    const width = vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockReturnValue(200);
+    const rect = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
+      left: 0, right: 200, width: 200, top: 0, bottom: 40, height: 40, x: 0, y: 0, toJSON() {},
+    } as DOMRect);
+    const capture = {
+      setPointerCapture: Element.prototype.setPointerCapture,
+      releasePointerCapture: Element.prototype.releasePointerCapture,
+      hasPointerCapture: Element.prototype.hasPointerCapture,
+    };
+    Element.prototype.setPointerCapture = () => {};
+    Element.prototype.releasePointerCapture = () => {};
+    Element.prototype.hasPointerCapture = () => true;
+    try {
+      const { container } = render(
+        <Slider aria-label="Price" range step={1} defaultValue={[50, 50]} />,
+      );
+      const control = container.querySelector(".group") as HTMLElement;
+      const pointer = { clientY: 20, buttons: 1, pointerId: 1, pointerType: "mouse" };
+      await act(async () => {
+        fireEvent.pointerDown(control, { ...pointer, clientX: 100 });
+      });
+      for (const clientX of [110, 130, 150]) {
+        await act(async () => {
+          fireEvent.pointerMove(document, { ...pointer, clientX });
+          await new Promise((resolve) => setTimeout(resolve, 40));
+        });
+      }
+
+      // The right thumb moved, so it holds the grab's widened middle; the stationary left one
+      // (picked at the press, both being equally close) eases back to its resting width.
+      const middles = Array.from(
+        container.querySelectorAll<HTMLElement>('[data-slot="slider-thumb"] > span:nth-child(2)'),
+      );
+      const widthScale = (element: HTMLElement) =>
+        Number(/scaleX\(([\d.]+)\)/.exec(element.style.transform)?.[1] ?? 1);
+      await waitFor(() => {
+        expect(widthScale(middles[1]!)).toBeGreaterThan(1.4);
+        expect(widthScale(middles[0]!)).toBeLessThan(1.05);
+      });
     } finally {
       Object.assign(Element.prototype, capture);
       rect.mockRestore();
