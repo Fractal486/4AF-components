@@ -1,10 +1,8 @@
 import { Archive, Copy, Share2, SquarePen, Trash2 } from "lucide-react";
 import { Button } from "@/registry/ui/button/button";
 import { ButtonGroup } from "@/registry/ui/button-group/button-group";
+import { CONTROL_VARIANTS, TEXT_SIZES } from "../button-options";
 import { bool, defineEntry, num, select } from "../schema";
-
-const VARIANTS = ["outline", "primary", "destructive", "ghost"] as const;
-const SIZES = ["xs", "sm", "md", "lg"] as const;
 
 const ACTIONS = [
   { label: "Copy", icon: Copy },
@@ -21,8 +19,8 @@ export const buttonGroupEntry = defineEntry({
   slug: "button-group",
   name: "Button Group",
   controls: {
-    variant: select(VARIANTS, "outline"),
-    size: select(SIZES, "md"),
+    variant: select(CONTROL_VARIANTS, "outline"),
+    size: select(TEXT_SIZES, "md"),
     orientation: select(["horizontal", "vertical"], "horizontal"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     count: num(3, { min: 2, max: 5, label: "Buttons" }),

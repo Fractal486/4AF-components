@@ -1,3 +1,4 @@
+import { CONTROL_VARIANTS, TEXT_SIZES } from "../button-options";
 import { bool, defineEntry, num, select } from "../schema";
 import { ActionButtonDemo } from "./action-button.demo";
 
@@ -5,8 +6,8 @@ export const actionButtonEntry = defineEntry({
   slug: "action-button",
   name: "Action Button",
   controls: {
-    variant: select(["primary", "outline", "plain", "destructive"], "primary"),
-    size: select(["xs", "sm", "md", "lg"], "md"),
+    variant: select(CONTROL_VARIANTS, "primary"),
+    size: select(TEXT_SIZES, "md"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     fail: bool(false, "Make it fail"),
     withIcon: bool(true, "Show leading icon"),

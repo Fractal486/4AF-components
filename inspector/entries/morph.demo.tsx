@@ -4,8 +4,9 @@ import { useState, type ReactNode } from "react";
 import { Button } from "@/registry/ui/button/button";
 import { Morph } from "@/registry/ui/morph/morph";
 import { Toggle } from "@/registry/ui/toggle/toggle";
+import type { ControlVariant } from "../button-options";
 
-type Variant = "primary" | "outline" | "ghost" | "plain";
+type Variant = ControlVariant;
 type Shape = "rectangular" | "pill";
 
 export function IconToggle({

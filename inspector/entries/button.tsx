@@ -1,16 +1,14 @@
 import { ArrowRight, Plus } from "lucide-react";
 import { Button } from "@/registry/ui/button/button";
+import { BUTTON_VARIANTS, ICON_SIZES, TEXT_SIZES } from "../button-options";
 import { bool, defineEntry, select, text } from "../schema";
-
-const VARIANTS = ["primary", "outline", "ghost", "plain", "destructive", "link"] as const;
-const SIZES = ["xs", "sm", "md", "lg"] as const;
 
 export const buttonEntry = defineEntry({
   slug: "button",
   name: "Button",
   controls: {
-    variant: select(VARIANTS, "primary"),
-    size: select([...SIZES, "icon-xs", "icon-sm", "icon", "icon-lg"], "md"),
+    variant: select(BUTTON_VARIANTS, "primary"),
+    size: select([...TEXT_SIZES, ...ICON_SIZES], "md"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     label: text("Deploy", "Label"),
     icon: select(["none", "leading", "trailing"], "none"),

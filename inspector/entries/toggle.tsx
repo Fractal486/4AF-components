@@ -1,15 +1,14 @@
 import { Bell, Bookmark, Heart, Star } from "lucide-react";
 import { Toggle } from "@/registry/ui/toggle/toggle";
+import { CONTROL_VARIANTS, ICON_SIZES } from "../button-options";
 import { bool, defineEntry, select } from "../schema";
-
-const VARIANTS = ["ghost", "outline", "plain", "primary"] as const;
 
 export const toggleEntry = defineEntry({
   slug: "toggle",
   name: "Toggle",
   controls: {
-    variant: select(VARIANTS, "ghost"),
-    size: select(["icon-sm", "icon", "icon-lg"], "icon"),
+    variant: select(CONTROL_VARIANTS, "ghost"),
+    size: select(ICON_SIZES, "icon"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     fillIcon: bool(true, "Fill the icon when pressed"),
     defaultPressed: bool(false, "Start pressed"),

@@ -2,6 +2,7 @@
 
 import { Rocket } from "lucide-react";
 import { ActionButton } from "@/registry/ui/action-button/action-button";
+import type { ControlVariant, TextSize } from "../button-options";
 
 export function ActionButtonDemo({
   variant,
@@ -14,8 +15,8 @@ export function ActionButtonDemo({
   pendingMode,
   sizing,
 }: {
-  variant: "primary" | "outline" | "plain" | "destructive";
-  size: "xs" | "sm" | "md" | "lg";
+  variant: ControlVariant;
+  size: TextSize;
   shape: "rectangular" | "pill";
   revertAfter: number;
   duration: number;

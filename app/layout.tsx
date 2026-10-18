@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   // The agent entry point: every page as Markdown, plus the install commands.
   alternates: { types: { "text/plain": "/llms.txt" } },
   title: "4AF — components",
-  description: "Quiet, minimal React components with just enough motion, built on Base UI.",
+  description: "React components built on Base UI, with compact sizing, a warm-neutral palette, and short animations.",
   // The image itself is `app/opengraph-image.png`; this asks X for the large card.
   twitter: { card: "summary_large_image" },
 };

@@ -1,14 +1,13 @@
 import { Menu, Moon, Pause, Play, Sun, X } from "lucide-react";
+import { CONTROL_VARIANTS } from "../button-options";
 import { defineEntry, select } from "../schema";
 import { IconToggle, TextToggle } from "./morph.demo";
-
-const VARIANTS = ["primary", "outline", "ghost", "plain"] as const;
 
 export const morphEntry = defineEntry({
   slug: "morph",
   name: "Morph",
   controls: {
-    variant: select(VARIANTS, "outline"),
+    variant: select(CONTROL_VARIANTS, "outline"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     sizing: select(["widest", "current"], "widest", "Width"),
   },

@@ -1,27 +1,27 @@
 ---
 title: Overview
-description: Quiet, minimal React components with just enough motion, built on Base UI.
+description: React components built on Base UI, with compact sizing, a warm-neutral palette, and short animations.
 ---
 
-4AF Components is a personal library of minimal React components with just enough motion. It
-is built on [Base UI](https://base-ui.com/) and distributed through a shadcn registry at
+4AF Components is a personal library of React components. It is built on
+[Base UI](https://base-ui.com/) and distributed through a shadcn registry at
 `https://4af.selfsimilar.dev`.
 
-The library is intentionally small, and every component shares the same tokens and motion, so
-any two of them sit together without adjustment.
+Every component uses the same tokens and motion settings, so components can be combined without
+style adjustments.
 
 The catalog currently contains **<ComponentCount /> installable components**. The generated
 [component catalog](/docs/reference/components) always matches the registry, while the
 [Agent Skill](/docs/reference/agent-skill) packages the install workflow and reference material
 for coding agents.
 
-## What the library values
+## Design and behaviour
 
-- **Minimal by default.** Compact controls, warm-neutral greys, and one amber accent kept for
-  focus. Nothing is decorative.
-- **Just enough motion.** Animation marks a change, such as a press, a swap, or a panel opening
-  or closing. It is short, never makes you wait, and turns down with the reduced-motion setting.
-- **Solid underneath.** Behaviour comes from Base UI, styling from semantic tokens, and every
+- **Visual style.** Compact controls, warm-neutral greys, and a single amber accent used for
+  focus rings.
+- **Motion.** Animations mark state changes, such as presses, content swaps, and panels opening
+  or closing. They last 150 to 450ms and follow the reduced-motion setting.
+- **Implementation.** Behaviour comes from Base UI and styling from semantic tokens. Every
   component forwards props and refs and works controlled or uncontrolled. The full rules are in
   [Engineering](/docs/reference/engineering).
 

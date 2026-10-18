@@ -2,6 +2,7 @@
 
 import { Check, Plus } from "lucide-react";
 import { ActionToggle } from "@/registry/ui/action-toggle/action-toggle";
+import type { ControlVariant, TextSize } from "../button-options";
 
 export function ActionToggleDemo({
   variant,
@@ -11,8 +12,8 @@ export function ActionToggleDemo({
   fail,
   sizing,
 }: {
-  variant: "outline" | "primary" | "ghost";
-  size: "sm" | "md" | "lg";
+  variant: ControlVariant;
+  size: TextSize;
   shape: "rectangular" | "pill";
   duration: number;
   fail: boolean;

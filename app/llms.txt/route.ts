@@ -14,7 +14,7 @@ export function GET() {
   const lines = [
     "# 4AF Components",
     "",
-    "> A personal library of minimal React components with just enough motion, built on Base UI and installed with the shadcn CLI.",
+    "> A personal library of React components built on Base UI and installed with the shadcn CLI.",
     "",
     "Components install with the shadcn CLI, run in a project with a shadcn `components.json`",
     "(`npx shadcn@latest init` creates one). The theme, shared utilities, and component",

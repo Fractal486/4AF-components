@@ -32,16 +32,19 @@ const SECTIONS = [
 
 const PRINCIPLES = [
   {
-    rule: "Minimal by default",
-    detail: "Compact controls, warm-neutral greys, and one amber accent kept for focus. Nothing is decorative.",
+    rule: "Neutral & one accent",
+    href: "/docs/reference/design",
+    detail: "Warm-neutral greys and compact controls. Amber appears only on focus rings.",
   },
   {
-    rule: "Just enough motion",
-    detail: "Animation marks a change: a press, a swap, a panel opening or closing. It is short, and it never makes you wait.",
+    rule: "Motion w/ purpose",
+    href: "/docs/reference/engineering#motion-contract",
+    detail: "Motion only where it feels good, not where it's decoration. Reduced motion switches it off, except for spinners.",
   },
   {
-    rule: "Quiet when asked",
-    detail: "Every duration reads one token, so reduced motion turns the whole library down at once.",
+    rule: "One contract",
+    href: "/docs/reference/engineering#component-contract",
+    detail: "Every component is rebuilt to the same rules: Base UI for behaviour, semantic tokens for styling, state exposed as data-* attributes, forwarded props and refs, and controlled or uncontrolled use.",
   },
 ] as const;
 
@@ -152,8 +155,8 @@ export default async function IndexPage() {
             {"Minimal React components built on Base\u00a0UI."}
           </BlurText>
           <p className="landing-reveal mb-6 max-w-[52ch] text-[17px] [--reveal-delay:250ms] leading-[1.65] tracking-[-0.01em] text-pretty text-muted-foreground">
-            4AF is a personal, opinionated library of {componentCount} components: compact,
-            warm-neutral, and animated only where it helps.
+            4AF is a personal library of {componentCount} components with compact sizing, a
+            warm-neutral palette, and short animations on state changes.
           </p>
           {/* Below lg the photo follows the description. The actions overlap its lower edge. */}
           <div aria-hidden className="relative -mx-5 aspect-[2/1] sm:-mx-10 lg:hidden">
@@ -236,22 +239,18 @@ export default async function IndexPage() {
             className="mt-0 border-t-0 pt-0 sm:mt-0 sm:pt-0"
           >
             <dl className="mt-3 max-w-180 border-t">
-              {PRINCIPLES.map(({ rule, detail }) => (
+              {PRINCIPLES.map(({ rule, href, detail }) => (
                 <div key={rule} className="grid gap-1 border-b py-4 sm:grid-cols-[13rem_minmax(0,1fr)] sm:gap-6">
-                  <dt className="text-[15px] font-medium">{rule}</dt>
+                  <dt className="text-[15px] font-medium">
+                    {/* InlineLink sets a normal weight; the label keeps the term's medium one. */}
+                    <InlineLink href={href} className="font-medium">
+                      {rule}
+                    </InlineLink>
+                  </dt>
                   <dd className="text-[15px] leading-[1.6] text-muted-foreground">{detail}</dd>
                 </div>
               ))}
             </dl>
-            <p className={cn(PROSE, "mt-4")}>
-              Underneath, behaviour comes from Base UI, state is exposed as{" "}
-              <code className="font-mono text-sm">data-*</code> attributes, and every component
-              works controlled or uncontrolled. The full rules are in{" "}
-              <InlineLink href="/docs/reference/engineering">
-                Engineering
-              </InlineLink>
-              .
-            </p>
           </Section>
 
           <Section id="install" title="Install">

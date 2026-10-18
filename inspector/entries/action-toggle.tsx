@@ -1,3 +1,4 @@
+import { CONTROL_VARIANTS, TEXT_SIZES } from "../button-options";
 import { bool, defineEntry, num, select } from "../schema";
 import { ActionToggleDemo } from "./action-toggle.demo";
 
@@ -5,8 +6,8 @@ export const actionToggleEntry = defineEntry({
   slug: "action-toggle",
   name: "Action Toggle",
   controls: {
-    variant: select(["outline", "primary", "ghost"], "outline"),
-    size: select(["sm", "md", "lg"], "md"),
+    variant: select(CONTROL_VARIANTS, "outline"),
+    size: select(TEXT_SIZES, "md"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     fail: bool(false, "Make it fail"),
     sizing: select(["widest", "current"], "widest", "Width"),
