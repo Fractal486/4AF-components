@@ -49,9 +49,9 @@ Select-style triggers keep their label or placeholder on the left and show the s
 selection count, dimmed, immediately before the chevron. Searchable panels use a plain text field
 without a leading search icon, and the no-results state is the same height as one option row.
 
-A checkbox item can also read as a toggle button rather than a ticked row. Its `children` may be
-a function of checked state, and `indicator={false}` drops the left tick and its indent so the
-icon and label carry the state:
+A checkbox item shows Checkbox's box and its self-drawing tick in the leading slot. It can also
+read as a toggle button instead. Its `children` may be a function of checked state, and
+`indicator={false}` drops the checkbox and its indent so the icon and label carry the state:
 
 ```tsx
 <DropdownMenuCheckboxItem indicator={false}>
@@ -99,9 +99,9 @@ Action Toggle:
 </DropdownMenuCheckboxItem>
 ```
 
-Without `action`, it is a plain synchronous checkbox. With it, the tick stays and the loader runs
-in its slot until the work settles; on failure the state is unchanged. With `indicator={false}`
-there is no tick slot for the loader, so the children function receives
+Without `action`, it is a plain synchronous checkbox. With it, the loader takes the checkbox's
+slot until the work settles; on failure the state is unchanged. With `indicator={false}`
+there is no checkbox slot for the loader, so the children function receives
 status as a second argument for the caller to render.
 
 Both async rows announce their status from outside the row element, so the status text never

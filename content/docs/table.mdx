@@ -25,7 +25,9 @@ parts.
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `size` | `"sm" \| "md"` | `"sm"` | Row density. |
-| `bordered` | `boolean` | `false` | Frame around the table and a rule between every pair of columns. Row rules are always drawn. |
+| `outline` | `boolean` | `false` | Rounded frame around the table, on its scroll container. |
+| `verticalLines` | `boolean` | `false` | A rule between every pair of columns. |
+| `horizontalLines` | `boolean` | `true` | A rule between rows and under the header. |
 | `stickyHeader` | `boolean` | `true` | Pins the header row to the top of the scroll container. |
 | `loading` | `boolean` | `false` | Fill the body with placeholder rows and mark the table busy. |
 | `loadingRows` | `number` | `5` | How many placeholder rows to draw. |
@@ -61,7 +63,7 @@ columns you intend to render.
 ## Layout
 
 The table sits in a scroll container carrying the library's thin scrollbar; style it with
-`wrapperClassName`. With `bordered`, the frame is drawn on that container.
+`wrapperClassName`. With `outline`, the frame is drawn on that container.
 
 The header needs a bounded height to pin to:
 
@@ -74,16 +76,19 @@ when the table sits on a raised surface.
 
 ## Rules
 
-Boundaries — under the header, over the footer, and the frame when `bordered` — are 1.5px at the
-full `border` token. Separators between rows and columns are 1px at 60% of it.
+Every rule inside the table — between rows, under the header, above the footer, and between
+columns — is 1px at 60% of the `border` token. The outline is 1px at the full token.
+
+The header and footer rows are 36px at both sizes. Rows have no hover highlight; `data-table` adds
+one to its rows, which can be selected and acted on.
 
 A vertical rule belongs to the leading edge of the cell that starts the column, which is how a
 column declines its own rule: `data-table`'s checkbox and actions columns draw none.
 
 ## Composing on top
 
-`useTableContext()` returns `size`, `bordered`, `stickyHeader`, `loading`, `loadingRows` and
-`columns`. `useTableSection()` returns `"header" | "body" | "footer"` — a row can't infer this,
+`useTableContext()` returns `size`, `outline`, `verticalLines`, `horizontalLines`, `stickyHeader`,
+`loading`, `loadingRows` and `columns`. `useTableSection()` returns `"header" | "body" | "footer"` — a row can't infer this,
 since a `<thead>` and a `<tbody>` hold identical `<tr>`s.
 
 With `rowComponent`, these are what `data-table` builds on. Reach for them if you are adding a

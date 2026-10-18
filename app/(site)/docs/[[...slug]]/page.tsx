@@ -56,6 +56,7 @@ export default async function Page({ params }: DocsPageProps) {
                 size="sm"
                 iconPosition="start"
                 swapLabel={false}
+                className="cursor-default"
               >
                 Copy Markdown link
               </CopyButton>

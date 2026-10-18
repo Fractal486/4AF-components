@@ -72,7 +72,9 @@ export const tabVariants = cva(
     "font-medium whitespace-nowrap select-none",
     // Only the colour changes on hover — the indicator is a separate element and
     // moves under Motion, so naming `color` keeps the browser from watching the rest.
-    "transition-[color] duration-(--duration-fast) ease-out",
+    // The slow token: at the fast one the label's highlight read as a snap; a hover is
+    // ambient, so it eases in rather than keeping pace with the cursor.
+    "transition-[color] duration-(--duration-slow) ease-out",
     "outline-none focus-visible:ring-2 focus-visible:ring-ring",
     "focus-visible:ring-offset-2 focus-visible:ring-offset-background",
     "disabled:cursor-not-allowed disabled:opacity-50",
@@ -101,8 +103,10 @@ export const tabVariants = cva(
       { variant: "segment", size: "sm", class: "rounded-[5px] px-2 py-1" },
       { variant: "pill", size: "md", class: "px-3.5 py-1.5" },
       { variant: "pill", size: "sm", class: "px-2.5 py-1.5" },
-      { variant: "underline", size: "md", class: "rounded-t-[8px] px-3 pt-1.5 pb-2.5" },
-      { variant: "underline", size: "sm", class: "rounded-t-[6px] px-2.5 pt-1 pb-2" },
+      // Compact: the underline marks the label alone, so the tab needs only enough padding
+      // to space the labels apart and give the focus ring room.
+      { variant: "underline", size: "md", class: "rounded-t-[6px] px-2 py-1" },
+      { variant: "underline", size: "sm", class: "rounded-t-[5px] px-1.5 pt-0.5 pb-1" },
       // Outlined segment: with the 3px padding and 1px border, 34px and 30px, the md and
       // sm Input and Select heights.
       { variant: "segment", appearance: "outline", size: "md", class: "rounded-[4px] px-3 py-[3px]" },
@@ -128,7 +132,8 @@ export const tabIndicatorVariants = cva("pointer-events-none absolute z-0", {
     variant: {
       segment: "inset-y-0.5",
       pill: "rounded-full",
-      underline: "bottom-0 h-px bg-foreground",
+      // A pixel down, so it sits over the list's 1px separator instead of just above it.
+      underline: "-bottom-px h-[1.5px] bg-foreground",
     },
     appearance: { default: "", solid: "", outline: "" },
     size: { sm: "", md: "" },

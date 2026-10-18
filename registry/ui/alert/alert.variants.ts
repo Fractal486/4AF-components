@@ -7,11 +7,11 @@ import { cva, type VariantProps } from "class-variance-authority";
  *
  * The inks are Badge's status colours, value for value. A line under a field and a badge
  * beside it are the same claim at two sizes, and if their greens or ambers differ at all
- * they read as two different severities rather than one. Amber steps to `accent-400` in
- * the dark theme because `accent-700` is tuned for white behind it and goes muddy on ink.
+ * they read as two different severities rather than one. Amber steps to `warning-400` in
+ * the dark theme because `warning-700` is tuned for white behind it and goes muddy on ink.
  *
- * Amber is otherwise reserved for the focus ring; a caution is the one other thing it's
- * for, and the two never appear in the same role.
+ * Amber is reserved for warnings; the focus ring is the blue accent, so a caution never
+ * reads as focus.
  *
  * The two neutrals are not interchangeable, and the difference is weight rather than hue.
  * `info` is full-strength ink — a note the user is meant to read. `loading` is muted,
@@ -22,7 +22,7 @@ export const alertVariants = cva("mt-1.5 flex items-center gap-1.5 text-sm", {
   variants: {
     variant: {
       error: "text-destructive",
-      warning: "text-accent-700 dark:text-accent-400",
+      warning: "text-warning-700 dark:text-warning-400",
       success: "text-success",
       info: "text-foreground",
       loading: "text-muted-foreground",

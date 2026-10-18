@@ -1,8 +1,8 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
 /**
- * The scroll container, which is also where the outer frame lives when the table is
- * `bordered`.
+ * The scroll container, which is also where the outer frame lives when the table has an
+ * `outline`.
  *
  * The frame is on the wrapper rather than the table for one reason: `border-collapse`
  * ignores `border-radius`, so a border on a collapsed table can only ever be a square one.
@@ -24,12 +24,12 @@ export const tableWrapperVariants = cva(
   ],
   {
     variants: {
-      bordered: {
+      outline: {
         true: "rounded-md border border-border",
         false: "",
       },
     },
-    defaultVariants: { bordered: false },
+    defaultVariants: { outline: false },
   },
 );
 
@@ -101,50 +101,50 @@ export const tableRowVariants = cva([
   // Named, so a cell can react to the state of the row it sits in — which is how the
   // actions column reveals itself on hover without every cell in the row hearing about it.
   "group/row",
-  // No transition. A row wash is feedback about where the cursor *is*, and easing it in
-  // makes the pointer arrive before the answer does; the eye reads that as lag rather than
-  // as polish. The colours below are quiet enough that there is nothing to soften anyway.
+  // The base row has no hover wash: a plain table is read, not acted on, and a row that
+  // lights up under the cursor promises an action it doesn't have. DataTable adds the hover
+  // (`tableInteractiveRowVariants`) for its selectable rows.
   //
-  // A wash rather than a fill: white on hover, one step above it when selected. The
-  // `bg-white/[…]` form states the colour exactly — `oklch(1 0 0)` *is* white — while
-  // sidestepping the arbitrary-value parser that reads a bare `/` inside `bg-[oklch(…)]`
-  // as an opacity modifier.
-  //
-  // Mirrored to black for the light theme, because white over a white surface is nothing at
-  // all and a row that gives no feedback under the cursor reads as inert.
-  //
-  // `not-data-[selected]` rather than trusting source order: a hover rule and a
-  // data-attribute rule have identical specificity, so which one won a selected-and-hovered
-  // row would come down to whatever order Tailwind happened to emit them in. Scoping the
-  // hover out of the selected case settles it in the class list instead.
-  "hover:not-data-[selected]:bg-black/[0.01] dark:hover:not-data-[selected]:bg-white/[0.01]",
+  // The selected wash is here because `data-selected` is how DataTable marks a row, and the
+  // base row never sets it. A wash rather than a fill: the `bg-white/[…]` form states the
+  // colour exactly — `oklch(1 0 0)` *is* white — while sidestepping the arbitrary-value parser
+  // that reads a bare `/` inside `bg-[oklch(…)]` as an opacity modifier. Mirrored to black for
+  // the light theme, because white over a white surface is nothing at all.
   "data-[selected]:bg-black/[0.02] dark:data-[selected]:bg-white/[0.02]",
 ]);
 
 /**
- * Two tiers of rule, and the difference between them is what the eye reads as structure.
+ * The hover wash for a row you can act on — DataTable's. No transition: a row wash is feedback
+ * about where the cursor *is*, and easing it in makes the pointer arrive before the answer
+ * does, which reads as lag rather than polish.
  *
- * A **boundary** — under the header, over the footer — is 1.5px at the full `border` token. It
- * divides one kind of content from another, and it is the only line in the table that should
- * announce itself.
+ * `not-data-[selected]` rather than trusting source order: a hover rule and a data-attribute
+ * rule have identical specificity, so which won a selected-and-hovered row would come down to
+ * whatever order Tailwind emitted them in. Scoping the hover out of the selected case settles
+ * it in the class list instead.
+ */
+export const tableInteractiveRowVariants = cva(
+  "hover:not-data-[selected]:bg-black/[0.01] dark:hover:not-data-[selected]:bg-white/[0.01]",
+);
+
+/**
+ * Every rule inside the table is a **separator**: 1px at 60% of the `border` token, there to be
+ * followed along, not looked at. That includes the one under the header, which reads as part of
+ * the same quiet grid rather than as a heavier boundary. Only the footer's top edge is lifted, to
+ * 1.5px at the full token, to divide totals from data.
  *
- * A **separator** — between rows, and between columns when `bordered` — is 1px at 60% of that
- * token. It is there to be followed along, not looked at. At full strength every line in the
- * table carried the same weight, so the header's rule read as one more row rule and the grid
- * flattened into a wireframe.
+ * Which rules are drawn is three independent switches: `horizontalLines` (between rows and under
+ * the header), `verticalLines` (between columns), and `outline` (the frame, on the wrapper).
  *
- * Both are on the cells, because `border-separate` ignores borders anywhere else. The `bordered`
- * variants below deliberately don't restate a colour: the base owns it, so the vertical rules
- * inherit the separator tier and only the bottom edge is lifted to the boundary one.
+ * All of them are on the cells, because `border-separate` ignores borders anywhere else. The
+ * variants below deliberately don't restate a colour: the base owns it.
  */
 export const tableHeadVariants = cva(
   [
     // Muted and small: a column header names the data, it isn't part of it. `whitespace-nowrap`
     // because a wrapped header changes the height of the whole header row.
     "text-left align-middle font-medium whitespace-nowrap text-muted-foreground",
-    // The boundary. `border-border/60` first, then the bottom edge back up to full: tailwind-merge
-    // drops an earlier per-side colour when a later all-sides one lands, so the order is load-bearing.
-    "border-border/60 border-b-[1.5px] border-b-border",
+    "border-border/60",
   ],
   {
     variants: {
@@ -163,18 +163,23 @@ export const tableHeadVariants = cva(
         sm: "h-9 px-2.5 text-xs",
         md: "h-9 px-3 text-xs",
       },
+      /** The rule under the header, on the same separator tier as the rows. */
+      horizontal: {
+        true: "border-b",
+        false: "",
+      },
       /**
        * The vertical rule between columns, and it belongs to the cell's **leading** edge — the
        * cell that starts a new column draws the line that begins it. The first cell in a row
-       * doesn't get one: the wrapper's frame is already drawn there, and a second line on top
-       * of it reads heavier than the rest of the grid.
+       * doesn't get one: that edge is the table's own, where the outline goes, and a second line
+       * on top of it reads heavier than the rest of the grid.
        *
        * Leading rather than trailing so a column can decline its own rule. On the trailing edge
        * the line before the actions column belonged to the last *data* cell, which had no way to
        * know what followed it — and `:last-child` was the selection bar's `<th>` anyway, so the
        * old `not-last` quietly stopped excluding the right cell as soon as a selection stood.
        */
-      bordered: {
+      vertical: {
         true: "not-first:border-l",
         false: "",
       },
@@ -196,11 +201,11 @@ export const tableHeadVariants = cva(
         false: "",
       },
     },
-    defaultVariants: { size: "sm", bordered: false, pinned: false },
+    defaultVariants: { size: "sm", horizontal: true, vertical: false, pinned: false },
   },
 );
 
-export const tableCellVariants = cva(["border-b border-border/60 align-middle text-foreground"], {
+export const tableCellVariants = cva(["border-border/60 align-middle text-foreground"], {
   variants: {
     /**
      * `md` is the comfortable reading table, not a spacious one. At 48px it put 14px above and
@@ -211,13 +216,18 @@ export const tableCellVariants = cva(["border-b border-border/60 align-middle te
       sm: "h-9 px-2.5 py-1.5",
       md: "h-11 px-3 py-2",
     },
+    /** The rule between rows. */
+    horizontal: {
+      true: "border-b",
+      false: "",
+    },
     /** The vertical rule, on the cell's leading edge. See `tableHeadVariants`. */
-    bordered: {
+    vertical: {
       true: "not-first:border-l",
       false: "",
     },
   },
-  defaultVariants: { size: "sm", bordered: false },
+  defaultVariants: { size: "sm", horizontal: true, vertical: false },
 });
 
 /**
@@ -225,35 +235,25 @@ export const tableCellVariants = cva(["border-b border-border/60 align-middle te
  * content — a checkbox or a menu button plus padding — so it takes the narrowest column the
  * table can give it and the data columns keep the rest.
  *
+ * A gutter column draws no vertical rule, in either direction, and that is the point of owning
+ * the leading edge: the checkbox column doesn't need one because it is already against the
+ * table's edge, and the actions column shouldn't have one because there is nothing behind it to
+ * divide — the ⋯ is hidden until the row is hovered, so the rule would fence off an empty strip.
+ *
  * Deliberately not named for selection. The same cell is the checkbox column at the leading
  * edge and the actions column at the trailing one, and a placeholder row draws it empty at
  * both ends so a loading table keeps the shape of a loaded one.
  */
 export const tableGutterCellVariants = cva("w-px border-border/60 align-middle", {
   variants: {
-    /**
-     * Which rule this cell draws. A gutter cell sits in the header and in the body, so it can't
-     * take its weight from `pinned` — that axis is about `stickyHeader`, and a header row still
-     * needs the boundary rule when the table isn't pinned at all.
-     */
-    section: {
-      header: "border-b-[1.5px] border-b-border",
-      body: "border-b",
+    /** The rule under the cell, matching the data cells beside it, in the header or the body. */
+    horizontal: {
+      true: "border-b",
+      false: "",
     },
     size: {
       sm: "px-2.5",
       md: "px-3",
-    },
-    /**
-     * A gutter column draws no vertical rule, in either direction, and that is the point of
-     * owning the leading edge: the checkbox column doesn't need one because it is already
-     * against the frame, and the actions column shouldn't have one because there is nothing
-     * behind it to divide — the ⋯ is hidden until the row is hovered, so the rule would be
-     * fencing off an empty strip.
-     */
-    bordered: {
-      true: "",
-      false: "",
     },
     /**
      * A fill, so rows travelling underneath don't show through, plus the pixel of it above that
@@ -264,7 +264,7 @@ export const tableGutterCellVariants = cva("w-px border-border/60 align-middle",
       false: "",
     },
   },
-  defaultVariants: { section: "body", size: "sm", bordered: false, pinned: false },
+  defaultVariants: { horizontal: true, size: "sm", pinned: false },
 });
 
 export type TableVariants = VariantProps<typeof tableCellVariants>;

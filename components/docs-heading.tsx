@@ -28,7 +28,7 @@ export function DocsHeading({ as: Tag = "h2", id, className, children, ...props 
           url.hash = id;
           return url.href;
         }}
-        className="not-prose shrink-0 text-muted-foreground opacity-0 transition-[opacity] duration-(--duration-fast) group-hover/heading:opacity-100 group-focus-within/heading:opacity-100 pointer-coarse:opacity-100"
+        className="not-prose shrink-0 cursor-default text-muted-foreground opacity-0 transition-[opacity] duration-(--duration-fast) group-hover/heading:opacity-100 group-focus-within/heading:opacity-100 pointer-coarse:opacity-100"
       />
     </Tag>
   );

@@ -4,6 +4,7 @@ import {
   Bookmark,
   CreditCard,
   Download,
+  Ellipsis,
   Link2,
   LogOut,
   Settings,
@@ -53,14 +54,16 @@ export const dropdownMenuEntry = defineEntry({
           render={(props, state) => (
             <Button
               {...props}
-              variant="outline"
+              variant="plain"
+              size="icon"
+              aria-label="Options"
               pressed={state.open}
               // Menu opens on mousedown, which can interrupt Motion's pointer press
               // when the popup mounts. Drive this held scale from Base UI's state attr.
               pressScale={false}
               className="transition-[background-color,box-shadow,color,opacity,scale] active:scale-[0.95] motion-reduce:active:scale-100 data-[popup-open]:scale-[0.95] motion-reduce:data-[popup-open]:scale-100"
             >
-              Options
+              <Ellipsis />
             </Button>
           )}
         />

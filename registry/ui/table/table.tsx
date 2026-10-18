@@ -35,7 +35,9 @@ import {
 
 interface TableContextValue {
   size: TableVariants["size"];
-  bordered: TableVariants["bordered"];
+  outline: boolean;
+  verticalLines: boolean;
+  horizontalLines: boolean;
   stickyHeader: boolean;
   loading: boolean;
   loadingRows: number;
@@ -45,7 +47,9 @@ interface TableContextValue {
 
 const TableContext = createContext<TableContextValue>({
   size: "sm",
-  bordered: false,
+  outline: false,
+  verticalLines: false,
+  horizontalLines: true,
   stickyHeader: true,
   loading: false,
   loadingRows: 5,
@@ -74,7 +78,9 @@ export function useTableSection() {
   return useContext(TableSectionContext);
 }
 
-export interface TableProps extends Omit<ComponentProps<"table">, "className">, TableVariants {
+export interface TableProps
+  extends Omit<ComponentProps<"table">, "className">,
+    Pick<TableVariants, "size"> {
   className?: string;
   /**
    * Row density. `sm` is the default because the usual reason to reach for a table is to see
@@ -83,11 +89,12 @@ export interface TableProps extends Omit<ComponentProps<"table">, "className">, 
   size?: TableVariants["size"];
   /** Class for the scroll container the table sits in. */
   wrapperClassName?: string;
-  /**
-   * Draw the grid: a frame around the table and a rule between every pair of columns. The
-   * row rules are there either way — this is the vertical half of the grid plus the edges.
-   */
-  bordered?: boolean;
+  /** Draw a rounded frame around the table, on its scroll container. @default false */
+  outline?: boolean;
+  /** Draw a rule between every pair of columns. @default false */
+  verticalLines?: boolean;
+  /** Draw a rule between rows and under the header. @default true */
+  horizontalLines?: boolean;
   /**
    * Pin the header row to the top of the scroll container. It only has somewhere to pin to
    * once that container is bounded, so give it a height through `wrapperClassName`.
@@ -114,7 +121,9 @@ export function Table({
   className,
   wrapperClassName,
   size = "sm",
-  bordered = false,
+  outline = false,
+  verticalLines = false,
+  horizontalLines = true,
   stickyHeader = true,
   loading = false,
   loadingRows = 5,
@@ -135,7 +144,9 @@ export function Table({
   const context = useMemo<TableContextValue>(
     () => ({
       size,
-      bordered,
+      outline,
+      verticalLines,
+      horizontalLines,
       stickyHeader,
       loading,
       loadingRows,
@@ -144,7 +155,7 @@ export function Table({
       columns,
       Row: rowComponent,
     }),
-    [size, bordered, stickyHeader, loading, loadingRows, columns, rowComponent],
+    [size, outline, verticalLines, horizontalLines, stickyHeader, loading, loadingRows, columns, rowComponent],
   );
 
   return (
@@ -156,12 +167,14 @@ export function Table({
             table's own layout box. */}
         <div
           data-slot="table-wrapper"
-          className={cn(tableWrapperVariants({ bordered }), wrapperClassName)}
+          className={cn(tableWrapperVariants({ outline }), wrapperClassName)}
         >
           <table
             data-slot="table"
             data-size={size}
-            data-bordered={bordered || undefined}
+            data-outline={outline || undefined}
+            data-vertical-lines={verticalLines || undefined}
+            data-horizontal-lines={horizontalLines || undefined}
             aria-busy={loading || undefined}
             className={cn(tableVariants(), className)}
             {...props}
@@ -290,6 +303,8 @@ export function TableBody({ className, children, ...props }: ComponentProps<"tbo
 }
 
 export function TableFooter({ className, ...props }: ComponentProps<"tfoot">) {
+  const { horizontalLines } = useContext(TableContext);
+
   return (
     <TableSectionContext.Provider value="footer">
       <tfoot
@@ -297,10 +312,12 @@ export function TableFooter({ className, ...props }: ComponentProps<"tfoot">) {
         // Its cells carry the rule above the footer and drop the one below it, for the same
         // reason: in this border model a row group can't draw either.
         className={cn(
-          // The footer's top rule is a boundary, same as the header's bottom one: it divides
-          // totals from data. Only the top edge is lifted — the cells keep the separator tier
-          // for their verticals.
-          "font-medium [&>tr>*]:border-t-[1.5px] [&>tr>*]:border-t-border [&>tr>*]:border-b-0",
+          // The footer's top rule is the same separator as every other rule in the table, and
+          // follows `horizontalLines` like them. Its rows are the header's height at both
+          // densities: a totals row is meta-text about the data, like the header, not one more
+          // record — so at `md` it doesn't take a data row's 44px.
+          "font-medium [&>tr>*]:h-9 [&>tr>*]:border-b-0",
+          horizontalLines && "[&>tr>*]:border-t",
           className,
         )}
         {...props}
@@ -327,25 +344,36 @@ export function TableRow({ className, ...props }: ComponentProps<"tr">) {
 }
 
 export function TableHead({ className, scope = "col", ...props }: ComponentProps<"th">) {
-  const { size, bordered, stickyHeader } = useContext(TableContext);
+  const { size, verticalLines, horizontalLines, stickyHeader } = useContext(TableContext);
 
   return (
     <th
       data-slot="table-head"
       scope={scope}
-      className={cn(tableHeadVariants({ size, bordered, pinned: stickyHeader }), className)}
+      className={cn(
+        tableHeadVariants({
+          size,
+          horizontal: horizontalLines,
+          vertical: verticalLines,
+          pinned: stickyHeader,
+        }),
+        className,
+      )}
       {...props}
     />
   );
 }
 
 export function TableCell({ className, ...props }: ComponentProps<"td">) {
-  const { size, bordered } = useContext(TableContext);
+  const { size, verticalLines, horizontalLines } = useContext(TableContext);
 
   return (
     <td
       data-slot="table-cell"
-      className={cn(tableCellVariants({ size, bordered }), className)}
+      className={cn(
+        tableCellVariants({ size, horizontal: horizontalLines, vertical: verticalLines }),
+        className,
+      )}
       {...props}
     />
   );

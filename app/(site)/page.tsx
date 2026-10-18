@@ -34,7 +34,7 @@ const PRINCIPLES = [
   {
     rule: "Neutral & one accent",
     href: "/docs/reference/design",
-    detail: "Warm-neutral greys and compact controls. Amber appears only on focus rings.",
+    detail: "Warm-neutral greys and compact controls. Blue appears only on focus rings.",
   },
   {
     rule: "Motion w/ purpose",

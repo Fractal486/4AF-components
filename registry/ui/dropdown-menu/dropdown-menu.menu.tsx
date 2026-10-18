@@ -1,4 +1,5 @@
 import { cn } from "@/registry/lib/cn";
+import { radioVariants } from "@/registry/ui/radio/radio.variants";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 import { ChevronRight } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
@@ -153,17 +154,29 @@ export function DropdownMenuRadioItem({
       {...props}
     >
       <span className={INDICATOR_SLOT}>
-        {/* Base UI's own indicator, styled like the standalone Radio's dot. `keepMounted`
-            matters: without it the indicator is transition-status-gated and can miss the
-            group's initial value on first paint, which is why it showed empty. It scales
-            in when selected and out when not. */}
-        <BaseMenu.RadioItemIndicator
-          keepMounted
-          className={cn(
-            "size-2 rounded-full bg-primary transition-[scale,opacity] duration-(--duration-fast)",
-            "scale-0 opacity-0 data-[checked]:scale-100 data-[checked]:opacity-100",
-          )}
-        />
+        {/* Radio's own circle — the same recessed well — drawn rather than nested, as a real
+            Radio is a button. Sized to the row's 14px slot. Its 1.5px border leaves 11px
+            inside, and the dot is inset 2px on every side, making it 7px. Whole-pixel insets
+            rather than `left-1/2` plus a translate: on an odd-sized dot that translate is
+            half a pixel, which the scale animation draws sub-pixel and the resting dot snaps
+            off, so the two disagreed on its size. */}
+        <span
+          data-slot="dropdown-menu-radio"
+          className={cn(radioVariants({ size: "sm" }), "size-3.5 cursor-default")}
+        >
+          {/* Base UI's own indicator, styled like the standalone Radio's dot. `keepMounted`
+              matters: without it the indicator is
+              transition-status-gated and can miss the group's initial value on first paint,
+              which is why it showed empty. It scales in when selected and out when not. */}
+          <BaseMenu.RadioItemIndicator
+            keepMounted
+            className={cn(
+              "absolute inset-[2px] rounded-full bg-primary",
+              "scale-0 opacity-0 transition-[scale,opacity] duration-(--duration-fast) ease-out",
+              "data-[checked]:scale-100 data-[checked]:opacity-100",
+            )}
+          />
+        </span>
       </span>
       {children}
     </BaseMenu.RadioItem>

@@ -16,7 +16,7 @@
  * Direction: "instrument". The library is a set of precise tools, so the shell
  * is quiet and the components are loud. Warm-neutral greys (H 70, chroma held
  * under 0.01) rather than the cold slate every Tailwind project defaults to,
- * with a single amber accent that the neutrals were tuned to sit beside.
+ * with a single blue accent, kept for focus.
  *
  * Everything is OKLCH: equal lightness steps read as equal brightness steps,
  * and hue stays put as lightness moves, so the ramps below don't drift.
@@ -59,19 +59,33 @@
   --color-neutral-950: oklch(0.155 0.006 70);
   --color-neutral-1000: oklch(0.118 0.005 70);
 
-  /* Amber. `-600` sits at L 0.50 deliberately: that's the highest lightness that
-     still clears WCAG AA against white text, so it can carry a solid button. */
-  --color-accent-50: oklch(0.977 0.017 75);
-  --color-accent-100: oklch(0.954 0.038 75);
-  --color-accent-200: oklch(0.907 0.076 72);
-  --color-accent-300: oklch(0.849 0.116 68);
-  --color-accent-400: oklch(0.774 0.153 60);
-  --color-accent-500: oklch(0.702 0.176 52);
-  --color-accent-600: oklch(0.5 0.145 45);
-  --color-accent-700: oklch(0.44 0.126 42);
-  --color-accent-800: oklch(0.371 0.101 40);
-  --color-accent-900: oklch(0.31 0.08 40);
-  --color-accent-950: oklch(0.22 0.056 40);
+  /* Blue, the accent: the focus ring, selection, and the rare deliberate emphasis. The
+     standard Tailwind blue scale. */
+  --color-accent-50: oklch(0.97 0.014 254.604);
+  --color-accent-100: oklch(0.932 0.032 255.585);
+  --color-accent-200: oklch(0.882 0.059 254.128);
+  --color-accent-300: oklch(0.809 0.105 251.813);
+  --color-accent-400: oklch(0.707 0.165 254.624);
+  --color-accent-500: oklch(0.623 0.214 259.815);
+  --color-accent-600: oklch(0.546 0.245 262.881);
+  --color-accent-700: oklch(0.488 0.243 264.376);
+  --color-accent-800: oklch(0.424 0.199 265.638);
+  --color-accent-900: oklch(0.379 0.146 265.522);
+  --color-accent-950: oklch(0.282 0.091 267.935);
+
+  /* Amber, for warnings. `-600` sits at L 0.50 deliberately: that's the highest lightness
+     that still clears WCAG AA against white text. */
+  --color-warning-50: oklch(0.977 0.017 75);
+  --color-warning-100: oklch(0.954 0.038 75);
+  --color-warning-200: oklch(0.907 0.076 72);
+  --color-warning-300: oklch(0.849 0.116 68);
+  --color-warning-400: oklch(0.774 0.153 60);
+  --color-warning-500: oklch(0.702 0.176 52);
+  --color-warning-600: oklch(0.5 0.145 45);
+  --color-warning-700: oklch(0.44 0.126 42);
+  --color-warning-800: oklch(0.371 0.101 40);
+  --color-warning-900: oklch(0.31 0.08 40);
+  --color-warning-950: oklch(0.22 0.056 40);
 
   /* Red. Same L 0.52 ceiling for the same reason. */
   --color-danger-50: oklch(0.971 0.014 20);
@@ -265,9 +279,9 @@
   --destructive-foreground: oklch(1 0 0);
   --destructive-hover: var(--color-danger-700);
 
-  /* Green sits at L 0.52 like danger/accent-600 — the lightest a hue carries white at AA,
-     so a white glyph reads on the success chip. The one non-neutral, non-amber, non-red
-     signal in the system; spent only on a genuine success confirmation. */
+  /* Green sits at L 0.52 like danger/warning-600 — the lightest a hue carries white at AA,
+     so a white glyph reads on the success chip. Beside the blue accent, the amber warning,
+     and the red danger, the one other signal in the system; spent only on a genuine success confirmation. */
   --success: oklch(0.52 0.13 152);
   --success-foreground: oklch(1 0 0);
 
@@ -322,10 +336,7 @@
   --primary-foreground: var(--color-neutral-950);
   --primary-hover: oklch(1 0 0);
 
-  /* The dark surface can carry a brighter amber than white ever could, and it
-     needs to — `accent-600` on near-black is muddy. Text flips to ink. */
-  /* Amber is a light hue — dark text on it is correct, and is what the eye
-     expects. Red is not: `danger-500` is bright enough that it would also need
+  /* Red needs white text: `danger-500` is bright enough that it would otherwise need
      dark ink to pass contrast, and dark-on-red reads as a warning label, not a
      button. So dark mode holds destructive at the same L 0.52 as light mode,
      where white text clears AA and the button still reads as a button. */

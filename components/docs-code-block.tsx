@@ -20,6 +20,7 @@ function CodeActions({ className }: HTMLAttributes<HTMLDivElement>) {
       <CopyButton
         size="xs"
         variant="ghost"
+        className="cursor-default"
         value={() => {
           const pre = ref.current?.closest("figure")?.querySelector("pre");
           if (!pre) throw new Error("Code block content is unavailable.");

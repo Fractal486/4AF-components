@@ -360,8 +360,14 @@ describe("DataTable", () => {
     expect(selectAll()).toBeDisabled();
   });
 
+  it("washes its body rows on hover, which the base table's rows don't", () => {
+    render(<People selectable />);
+    const row = screen.getByText("Ada Lovelace").closest("tr")!;
+    expect(row.className).toContain("hover:not-data-[selected]:bg-black/[0.01]");
+  });
+
   it("draws no vertical rule beside either gutter column", () => {
-    const { container } = render(<People selectable actionColumn bordered />);
+    const { container } = render(<People selectable actionColumn outline verticalLines />);
 
     const row = screen.getByText("Ada Lovelace").closest("tr")!;
     const cells = [...row.children];

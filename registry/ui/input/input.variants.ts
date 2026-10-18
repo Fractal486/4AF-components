@@ -13,7 +13,9 @@ export const inputVariants = cva(
     // aside for it: the icon's own inset (12px) plus its 16px box plus an 8px gap.
     "data-[icon-start]:ps-9",
     "outline-none",
-    "transition-[border-color,box-shadow,color,opacity] duration-(--duration-fast) ease-out",
+    // The slow token, well behind a button's hover: the focus border and ring are a state
+    // settling in, not a response that has to keep up with the cursor.
+    "transition-[border-color,box-shadow,color,opacity] duration-(--duration-slow) ease-out",
     "disabled:cursor-not-allowed disabled:opacity-50",
     // Invalid mirrors the `accent` focus treatment in destructive red, persisting whether
     // or not the field is focused. The red border is shared by every variant (on

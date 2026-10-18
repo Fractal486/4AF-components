@@ -36,20 +36,24 @@ export const tableEntry = defineEntry({
   name: "Table",
   controls: {
     size: select(SIZES, "sm"),
-    bordered: bool(false, "Grid lines"),
+    outline: bool(false, "Outline"),
+    verticalLines: bool(false, "Vertical lines"),
+    horizontalLines: bool(true, "Horizontal lines"),
     scroll: bool(true, "Bounded height"),
     loading: bool(false, "Loading"),
     footer: bool(false, "Footer"),
     caption: bool(true, "Caption"),
   },
-  render({ size, bordered, scroll, loading, footer, caption }) {
+  render({ size, outline, verticalLines, horizontalLines, scroll, loading, footer, caption }) {
     return (
       // `self-start` keeps the table at the top of the preview box rather than floating in
       // the middle of it — a table is read from its header down, not from its centre out.
       <div className="w-full max-w-xl self-start">
         <Table
           size={size}
-          bordered={bordered}
+          outline={outline}
+          verticalLines={verticalLines}
+          horizontalLines={horizontalLines}
           loading={loading}
           // The header pins to the scroll container, so it needs one with a height to pin to.
           wrapperClassName={scroll ? "max-h-64" : undefined}

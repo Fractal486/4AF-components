@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority";
  * `solid` adds a translucent wash of that status colour while keeping the text and glyph
  * stronger; `outline` has a neutral gray outline and no fill; `plain` drops the box entirely.
  * `shape` keeps boxed badges softly rounded by default or fully rounds them into a pill.
- * `warning` spends the amber accent (that's what amber is *for*, a caution signal) and
+ * `warning` spends the amber warning ramp (that's what amber is *for*, a caution signal) and
  * `success` the green token; tints are translucent so a solid badge sits on any surface.
  */
 export const badgeVariants = cva(
@@ -21,7 +21,7 @@ export const badgeVariants = cva(
         neutral: "text-muted-foreground",
         info: "text-foreground",
         success: "text-success",
-        warning: "text-accent-700 dark:text-accent-400",
+        warning: "text-warning-700 dark:text-warning-400",
         danger: "text-destructive",
         loading: "text-muted-foreground",
       },
@@ -47,7 +47,7 @@ export const badgeVariants = cva(
       { variant: "solid", status: "neutral", class: "bg-muted-foreground/10" },
       { variant: "solid", status: "info", class: "bg-primary/[0.06]" },
       { variant: "solid", status: "success", class: "bg-success/10" },
-      { variant: "solid", status: "warning", class: "bg-accent-500/10" },
+      { variant: "solid", status: "warning", class: "bg-warning-500/10" },
       { variant: "solid", status: "danger", class: "bg-destructive/10" },
       { variant: "solid", status: "loading", class: "bg-muted-foreground/10" },
     ],

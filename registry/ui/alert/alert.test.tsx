@@ -24,7 +24,7 @@ describe("Alert", () => {
   it("publishes its variant and takes that status's ink", () => {
     const inks = {
       error: "text-destructive",
-      warning: "text-accent-700",
+      warning: "text-warning-700",
       success: "text-success",
       // The two neutrals differ by weight, not hue, so this pair has to stay distinct.
       info: "text-foreground",

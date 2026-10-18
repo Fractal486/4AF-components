@@ -38,7 +38,10 @@ import {
 // `ui/ui/` is not a typo: a sibling `.variants` file is imported through the alias in
 // `tsconfig.json` so the registry build rewrites it to `@/components/ui/table.variants` in the
 // target project. The plain `@/registry/ui/table/…` form resolves here and installs broken.
-import { tableGutterCellVariants } from "@/registry/ui/ui/table.variants";
+import {
+  tableGutterCellVariants,
+  tableInteractiveRowVariants,
+} from "@/registry/ui/ui/table.variants";
 import {
   dataTableHeadContentVariants,
   dataTableRowActionsTriggerVariants,
@@ -309,7 +312,7 @@ export function DataTableRow({
   children,
   ...props
 }: DataTableRowProps) {
-  const { size, bordered, stickyHeader, loading } = useTableContext();
+  const { size, horizontalLines, stickyHeader, loading } = useTableContext();
   const section = useTableSection();
   const {
     selectable,
@@ -335,7 +338,8 @@ export function DataTableRow({
       // Rows expose `data-selected` for styling; their checkboxes expose selection
       // to assistive technology.
       data-selected={isSelected || undefined}
-      className={className}
+      // Its rows can be acted on, so they answer the cursor; the base table's don't.
+      className={cn(section === "body" && tableInteractiveRowVariants(), className)}
       {...props}
     >
       {selectable && section === "header" && (
@@ -344,7 +348,7 @@ export function DataTableRow({
           // Above the selection bar, which covers the rest of the row: the checkbox is how
           // the selection gets cleared, so it is the one control that must stay reachable.
           className={cn(
-            tableGutterCellVariants({ section: "header", size, bordered, pinned: stickyHeader }),
+            tableGutterCellVariants({ horizontal: horizontalLines, size, pinned: stickyHeader }),
             "relative z-10",
           )}
         >
@@ -368,7 +372,7 @@ export function DataTableRow({
 
       {selectable && section !== "header" && (
         <td
-          className={tableGutterCellVariants({ section: "body", size, bordered })}
+          className={tableGutterCellVariants({ horizontal: horizontalLines, size })}
           onClick={(event) => event.stopPropagation()}
           onKeyDown={(event) => event.stopPropagation()}
         >
@@ -394,7 +398,7 @@ export function DataTableRow({
           // cleared. This one holds nothing but a screen-reader label, and lifting it would
           // park an opaque empty box over the right end of the bar — which is exactly where
           // `selectionActions` sit. It stays under the bar and lets the actions through.
-          className={tableGutterCellVariants({ section: "header", size, bordered, pinned: stickyHeader })}
+          className={tableGutterCellVariants({ horizontal: horizontalLines, size, pinned: stickyHeader })}
         >
           {/* Visually empty — a label over a column of icon buttons is noise — but a column
               with no accessible name at all leaves the cells under it unexplained. */}
@@ -404,7 +408,7 @@ export function DataTableRow({
 
       {actionColumn && section !== "header" && (
         <td
-          className={tableGutterCellVariants({ section: "body", size, bordered })}
+          className={tableGutterCellVariants({ horizontal: horizontalLines, size })}
           // Same reasoning as the checkbox cell: opening a row's menu is not clicking the row,
           // and a table with a row-level handler shouldn't fire it on the way to the menu.
           onClick={(event) => event.stopPropagation()}

@@ -15,7 +15,7 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
-import { duration, ease, spring } from "@/registry/lib/motion";
+import { duration, ease } from "@/registry/lib/motion";
 import { useMergedRefs } from "@/registry/lib/refs";
 import {
   tabIndicatorVariants,
@@ -172,8 +172,17 @@ export function TabsList({
       // rounded, so a sub-pixel difference is rounding, not scale.
       const scale = list.offsetWidth > 0 && Math.abs(listRect.width - list.offsetWidth) >= 1
         ? listRect.width / list.offsetWidth : 1;
-      const left = (tabRect.left - listRect.left) / scale - list.clientLeft + list.scrollLeft;
-      const width = tabRect.width / scale;
+      let left = (tabRect.left - listRect.left) / scale - list.clientLeft + list.scrollLeft;
+      let width = tabRect.width / scale;
+      // The underline spans the label, not the whole tab: drop the tab's horizontal padding
+      // from both ends. Computed padding is already in the list's own pixels, unscaled.
+      if (variant === "underline") {
+        const { paddingLeft, paddingRight } = getComputedStyle(active);
+        const start = Number.parseFloat(paddingLeft) || 0;
+        const end = Number.parseFloat(paddingRight) || 0;
+        left += start;
+        width = Math.max(width - start - end, 0);
+      }
       setBox((previous) => previous?.left === left && previous.width === width
         ? previous : { left, width });
     };
@@ -261,9 +270,17 @@ export function TabsList({
           // animate from.
           layout
           // `cn`, so a compound's inset or radius replaces the variant's base one.
-          className={cn(tabIndicatorVariants({ variant, appearance, size }))}
+          className={cn(
+            tabIndicatorVariants({ variant, appearance, size }),
+            // A scrolling list clips to its padding box, which the separator sits just
+            // outside of, so there the underline stays inside rather than being cut off.
+            variant === "underline" && maxWidth !== undefined && "bottom-0",
+          )}
           style={{ left: box.left, width: box.width }}
-          transition={reduceMotion ? { duration: 0 } : spring.snappy}
+          // A tween on the expo ease-out, not a spring: a spring starts from rest, so it
+          // eases in before it decelerates. A tab switch answers a click, so the indicator
+          // leaves at full speed and decelerates into place.
+          transition={reduceMotion ? { duration: 0 } : { duration: duration.slow, ease: ease.out }}
         />
       )}
       {children}

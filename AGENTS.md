@@ -202,13 +202,13 @@ Plus one-off sources for specific jobs (loaders, charts). Same loop applies.
 ## Design foundation (`app/globals.css`)
 
 Warm-neutral greys (hue 70, low chroma) rather than the default cold slate; a single
-amber accent. Three layers: **ramps** (raw scales, used directly only for the exceptions above) →
+blue accent. Three layers: **ramps** (raw scales, used directly only for the exceptions above) →
 **semantic tokens** (the default component styling roles) → **motion**.
 
 Two colour decisions worth not re-litigating:
 
 - **Primary is ink, not colour.** Colour is a signal; the neutral action is the default,
-  while amber is reserved for the ring and other focused signals.
+  while blue is reserved for the ring and other focused signals.
 - **Destructive uses `oklch(0.6 0.225 26)` with white text in both themes.** The design
   reference records the contrast tradeoff; OKLCH lightness alone does not establish WCAG contrast.
 

@@ -189,9 +189,11 @@ describe("DropdownMenu", () => {
     expect(slot?.className).toContain("left-2.5");
     expect(slot?.className).toContain("size-3.5");
 
-    // And no size on the glyph itself: the row sizes every svg, and `.row svg` outranks a
-    // class on the element, so one set here would be silently overruled.
-    expect(slot?.querySelector("svg")?.getAttribute("class")).not.toContain("size-");
+    // The slot holds a drawn checkbox, checked here. Its tick is sized with an important
+    // class: the row sizes every svg, and `.row svg` would otherwise outrank it.
+    const box = slot?.querySelector('[data-slot="dropdown-menu-checkbox"]');
+    expect(box).toHaveAttribute("data-checked");
+    expect(box?.querySelector("svg")?.getAttribute("class")).toContain("size-[70%]!");
   });
 
   it("keeps a glyph Morph centred in an icon slot rather than start-aligned", async () => {

@@ -37,13 +37,17 @@ export interface CheckboxProps
   labelClassName?: string;
 }
 
-export function Checkbox({
-  className,
-  disabled,
-  label,
-  labelClassName,
-  ...props
-}: CheckboxProps) {
+export interface CheckboxMarkProps extends Omit<SVGMotionProps<SVGSVGElement>, "children"> {
+  checked: boolean;
+  indeterminate?: boolean;
+}
+
+/**
+ * The checkbox's mark: the tick that draws itself in and rubs out, or the indeterminate
+ * dash. Exported so a row that shows a checkbox without being one — a menu's checkbox
+ * item — strikes the same tick, with the same timing, as the real control.
+ */
+export function CheckboxMark({ checked, indeterminate = false, ...props }: CheckboxMarkProps) {
   const reduceMotion = useReducedMotion();
 
   // The tick draws in after the box has started filling, and rubs out faster than it
@@ -52,6 +56,52 @@ export function Checkbox({
     ? { duration: 0 }
     : { duration: 0.2, ease: ease.out, delay: 0.08 };
   const drawOut = reduceMotion ? { duration: 0 } : { duration: 0.15, ease: ease.in };
+
+  return (
+    <motion.svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={3.5}
+      aria-hidden="true"
+      {...props}
+    >
+      {indeterminate ? (
+        <motion.line
+          x1="5"
+          y1="12"
+          x2="19"
+          y2="12"
+          strokeLinecap="round"
+          initial={false}
+          animate={{ pathLength: 1, opacity: 1 }}
+          transition={drawIn}
+        />
+      ) : (
+        <motion.path
+          d="M4.5 12.75l6 6 9-13.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          initial={false}
+          animate={
+            checked
+              ? { pathLength: 1, opacity: 1, transition: drawIn }
+              : { pathLength: 0, opacity: 0, transition: drawOut }
+          }
+        />
+      )}
+    </motion.svg>
+  );
+}
+
+export function Checkbox({
+  className,
+  disabled,
+  label,
+  labelClassName,
+  ...props
+}: CheckboxProps) {
+  const reduceMotion = useReducedMotion();
 
   const box = (
     <BaseCheckbox.Root
@@ -75,42 +125,14 @@ export function Checkbox({
         keepMounted
         className="grid size-[70%] place-items-center text-current"
         render={(indicatorProps, state) => (
-          <motion.svg
+          <CheckboxMark
             // Cast: Base UI types these as DOM span props, and `onAnimationStart` and
             // friends mean different things to React and to Motion. Type-level only —
             // Base UI passes data attributes and a ref, not animation callbacks.
             {...(indicatorProps as unknown as SVGMotionProps<SVGSVGElement>)}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={3.5}
-            aria-hidden="true"
-          >
-            {state.indeterminate ? (
-              <motion.line
-                x1="5"
-                y1="12"
-                x2="19"
-                y2="12"
-                strokeLinecap="round"
-                initial={false}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={drawIn}
-              />
-            ) : (
-              <motion.path
-                d="M4.5 12.75l6 6 9-13.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                initial={false}
-                animate={
-                  state.checked
-                    ? { pathLength: 1, opacity: 1, transition: drawIn }
-                    : { pathLength: 0, opacity: 0, transition: drawOut }
-                }
-              />
-            )}
-          </motion.svg>
+            checked={state.checked}
+            indeterminate={state.indeterminate}
+          />
         )}
       />
     </BaseCheckbox.Root>

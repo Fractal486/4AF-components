@@ -1,12 +1,36 @@
 import { cn } from "@/registry/lib/cn";
 import { useAction, type ActionStatus } from "@/registry/lib/use-action";
 import { LoadingIndicator } from "@/registry/lib/loader";
+import { CheckboxMark } from "@/registry/ui/checkbox/checkbox";
+import { checkboxVariants } from "@/registry/ui/checkbox/checkbox.variants";
 import { Morph } from "@/registry/ui/morph/morph";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 import { Check, TriangleAlert } from "lucide-react";
 import { useState, type ComponentProps, type ReactNode } from "react";
 import { DropdownMenuItem, type DropdownMenuItemProps } from "./dropdown-menu.menu";
 import { DisabledReasonTooltip, INDICATOR_SLOT, itemBase } from "./dropdown-menu.shared";
+
+/**
+ * The checkbox a checkbox row shows: Checkbox's own box and mark — the same border, fill,
+ * dark-mode well, and the tick that draws itself in — drawn rather than nested, because a
+ * real Checkbox is a button and a button inside a menu item splits focus and is invalid
+ * markup. Sized down to the row's 14px glyph slot.
+ *
+ * The mark's size is marked important: `itemBase` sizes every svg in the row, and its
+ * `.row svg` would otherwise outrank a class here.
+ */
+function MenuCheckbox({ checked }: { checked: boolean }) {
+  return (
+    <span
+      data-slot="dropdown-menu-checkbox"
+      data-checked={checked ? "" : undefined}
+      data-unchecked={checked ? undefined : ""}
+      className={cn(checkboxVariants(), "size-3.5 cursor-default")}
+    >
+      <CheckboxMark checked={checked} className="size-[70%]!" />
+    </span>
+  );
+}
 
 export interface DropdownMenuActionItemProps
   extends Omit<DropdownMenuItemProps, "onClick" | "children"> {
@@ -259,16 +283,9 @@ export function DropdownMenuCheckboxItem({
                       `.row svg` beats a class on the element itself, so anything set here
                       would be a statement the CSS quietly overrules. */}
                   <Morph
-                    activeKey={
-                      status === "pending" || status === "error"
-                        ? status
-                        : state.checked
-                          ? "on"
-                          : "off"
-                    }
+                    activeKey={status === "pending" || status === "error" ? status : "box"}
                     items={{
-                      on: <Check />,
-                      off: null,
+                      box: <MenuCheckbox checked={state.checked} />,
                       pending: <LoadingIndicator loader={loader} />,
                       error: <TriangleAlert />,
                     }}

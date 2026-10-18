@@ -175,28 +175,28 @@ describe("Table", () => {
     expect(screen.getAllByTestId("gutter")).toHaveLength(2);
   });
 
-  it("separates a boundary rule from a separator rule", () => {
-    const { container } = render(<People caption="People" />);
+  it("draws the rule under the header on the same separator tier as the rows", () => {
+    render(<People caption="People" />);
 
     const head = screen.getByRole("columnheader", { name: "Name" });
     const cell = screen.getByText("Ada Lovelace");
 
-    // The boundary under the header: thicker, and at the full token. It is the only line in the
-    // table meant to announce itself.
-    expect(head.className).toContain("border-b-[1.5px]");
-    expect(head.className).toContain("border-b-border");
-    // The separator between rows: 1px, and quieter. At full strength every line carried the same
-    // weight and the header's rule read as one more row rule.
-    expect(cell.className).toContain("border-b");
-    expect(cell.className).toContain("border-border/60");
-    expect(cell.className).not.toContain("border-b-[1.5px]");
-
-    // The header's own verticals stay on the separator tier — only its bottom edge is lifted.
-    expect(head.className).toContain("border-border/60");
-    expect(container.querySelector("tfoot")).toBeNull();
+    // One quiet tier for every rule inside the table: 1px at 60% of the border token.
+    for (const element of [head, cell]) {
+      expect(element.className).toContain("border-b");
+      expect(element.className).toContain("border-border/60");
+      expect(element.className).not.toContain("border-b-[1.5px]");
+    }
   });
 
-  it("gives the footer the same boundary rule as the header", () => {
+  it("turns horizontal rules off, under the header too", () => {
+    render(<People horizontalLines={false} />);
+
+    expect(screen.getByRole("columnheader", { name: "Name" }).className).not.toMatch(/\bborder-b\b/);
+    expect(screen.getByText("Ada Lovelace").className).not.toMatch(/\bborder-b\b/);
+  });
+
+  it("gives the footer the header's height and the same quiet rule as the rows", () => {
     const { container } = render(
       <Table>
         <TableHeader>
@@ -217,13 +217,20 @@ describe("Table", () => {
       </Table>,
     );
 
-    // Totals divided from data is the same kind of division as labels from data.
     const footer = container.querySelector("tfoot")!;
-    expect(footer.className).toContain("[&>tr>*]:border-t-[1.5px]");
-    expect(footer.className).toContain("[&>tr>*]:border-t-border");
+    expect(footer.className).toContain("[&>tr>*]:border-t");
+    expect(footer.className).not.toContain("[&>tr>*]:border-t-[1.5px]");
+    // The header's 36px at both densities, rather than an `md` data row's 44px.
+    expect(footer.className).toContain("[&>tr>*]:h-9");
   });
 
-  it("draws the grid only when asked, and never past the last column", () => {
+  it("leaves the base table's rows without a hover wash", () => {
+    render(<People />);
+    const row = screen.getByText("Ada Lovelace").closest("tr")!;
+    expect(row.className).not.toContain("hover:");
+  });
+
+  it("draws the outline and the vertical rules independently, never past the last column", () => {
     const { container, rerender } = render(<People />);
 
     const wrapper = () => container.querySelector('[data-slot="table-wrapper"]')!;
@@ -232,16 +239,18 @@ describe("Table", () => {
     expect(wrapper()).not.toHaveClass("border");
     expect(cells().some((cell) => cell.className.includes("border-l"))).toBe(false);
 
-    rerender(<People bordered />);
-
+    rerender(<People outline />);
     // The frame is the wrapper's, because `border-collapse` ignores `border-radius` and a
     // border on the table itself could only ever be square.
     expect(wrapper()).toHaveClass("border", "rounded-md");
+    expect(cells().some((cell) => cell.className.includes("border-l"))).toBe(false);
+
+    rerender(<People verticalLines />);
+    expect(wrapper()).not.toHaveClass("border");
     // Every cell carries the rule on its leading edge, and `not-first` keeps it off the row's
-    // left edge where the frame already is.
+    // left edge, where the table's own edge is.
     expect(cells().every((cell) => cell.className.includes("not-first:border-l"))).toBe(true);
-    // The verticals take the separator tier from the base rather than restating a colour —
-    // which is what leaves the header's bottom edge as the only boundary in the grid.
+    // The verticals take the separator tier from the base rather than restating a colour.
     expect(cells().every((cell) => cell.className.includes("border-border/60"))).toBe(true);
   });
 

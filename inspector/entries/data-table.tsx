@@ -77,7 +77,9 @@ export const dataTableEntry = defineEntry({
     selectable: bool(true, "Checkbox column"),
     selectionBar: bool(true, "Selection action row"),
     actionColumn: bool(true, "Row actions column"),
-    bordered: bool(false, "Grid lines"),
+    outline: bool(false, "Outline"),
+    verticalLines: bool(false, "Vertical lines"),
+    horizontalLines: bool(true, "Horizontal lines"),
     scroll: bool(true, "Bounded height"),
     loading: bool(false, "Loading"),
     footer: bool(false, "Footer"),
@@ -93,7 +95,9 @@ function DataTableDemo({
   selectable,
   selectionBar,
   actionColumn,
-  bordered,
+  outline,
+  verticalLines,
+  horizontalLines,
   scroll,
   loading,
   footer,
@@ -103,7 +107,9 @@ function DataTableDemo({
   selectable: boolean;
   selectionBar: boolean;
   actionColumn: boolean;
-  bordered: boolean;
+  outline: boolean;
+  verticalLines: boolean;
+  horizontalLines: boolean;
   scroll: boolean;
   loading: boolean;
   footer: boolean;
@@ -125,7 +131,9 @@ function DataTableDemo({
       <DataTable
         size={size}
         selectable={selectable}
-        bordered={bordered}
+        outline={outline}
+        verticalLines={verticalLines}
+        horizontalLines={horizontalLines}
         loading={loading}
         selectionBar={selectionBar}
         actionColumn={actionColumn}

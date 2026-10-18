@@ -67,7 +67,7 @@ export const buttonVariants = cva(
     "will-change-transform",
 
     // Focus is a ring offset from the button, not a colour change: it stays
-    // legible on every variant, including the ones that are already amber.
+    // legible on every variant, including the coloured ones.
     "outline-none focus-visible:ring-2 focus-visible:ring-ring",
     "focus-visible:ring-offset-2 focus-visible:ring-offset-background",
 
