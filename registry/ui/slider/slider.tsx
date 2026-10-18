@@ -424,8 +424,13 @@ const DODGE_OPACITY = 0.15;
 // ease in rather than snap with the cursor.
 const BAR_TICKS_IN_USE =
   "opacity-0 transition-[opacity] duration-(--duration-slow) ease-out group-hover:opacity-100 group-data-[dragging-index]:opacity-100 group-has-[[type=range]:focus-visible]:opacity-100";
+// The fill colour. `--slider-fill` sets it from outside; by default it is the foreground at
+// 15%. The bar's in-use step mixes in 8% foreground, so a custom colour deepens (or, in the
+// dark theme, lightens) the same way the default grey steps up to about 20%.
+const FILL_COLOR =
+  "[--slider-fill-rest:var(--slider-fill,color-mix(in_oklab,var(--color-foreground)_15%,transparent))] [--slider-fill-active:color-mix(in_oklab,var(--slider-fill-rest),var(--color-foreground)_8%)] bg-(color:--slider-fill-rest)";
 const BAR_FILL_IN_USE =
-  "transition-[background-color] duration-(--duration-slow) ease-out group-hover:bg-foreground/20 group-data-[dragging-index]:bg-foreground/20 group-has-[[type=range]:focus-visible]:bg-foreground/20";
+  "transition-[background-color] duration-(--duration-slow) ease-out group-hover:bg-(color:--slider-fill-active) group-data-[dragging-index]:bg-(color:--slider-fill-active) group-has-[[type=range]:focus-visible]:bg-(color:--slider-fill-active)";
 const INLINE_VALUE_IN_USE =
   "text-muted-foreground transition-[color] duration-(--duration-slow) ease-out group-hover:text-foreground group-data-[dragging-index]:text-foreground group-has-[[type=range]:focus-visible]:text-foreground";
 
@@ -995,14 +1000,14 @@ export function Slider({
             <motion.div
               aria-hidden
               data-slot="slider-fill"
-              className={cn("absolute inset-0 bg-foreground/15", BAR_FILL_IN_USE)}
+              className={cn("absolute inset-0", FILL_COLOR, BAR_FILL_IN_USE)}
               style={{ x: faderFillX }}
             />
           ) : (
             <motion.div
               aria-hidden
               data-slot="slider-fill"
-              className={cn("absolute inset-0 bg-foreground/15", isBar && BAR_FILL_IN_USE)}
+              className={cn("absolute inset-0", FILL_COLOR, isBar && BAR_FILL_IN_USE)}
               style={{ clipPath: fillClip }}
             />
           )}

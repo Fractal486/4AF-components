@@ -18,6 +18,13 @@ from step to step instead, from 0.05s for small steps up to 0.25s for steps half
 wide. Track clicks, keyboard steps, and values set from outside
 glide on a softer spring. Under reduced motion every change is instant.
 
+Set `--slider-fill` to change the fill colour; it defaults to the foreground at 15%. While the bar
+is in use, the fill mixes in 8% foreground.
+
+```tsx
+<Slider aria-label="Volume" style={{ "--slider-fill": "var(--color-ring)" } as React.CSSProperties} />
+```
+
 With `showValue`, the number is editable: it shows a text cursor on hover,
 and a click turns it into an input. Enter or leaving the field commits the typed value, clamped
 to the range and snapped to the step; Escape cancels. A press on the number never starts a drag.

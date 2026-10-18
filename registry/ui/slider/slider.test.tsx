@@ -507,7 +507,16 @@ describe("Slider", () => {
     expect(ticks.className).toContain("opacity-0");
     expect(ticks.className).toContain("group-hover:opacity-100");
     expect(container.querySelector('[data-slot="slider-fill"]')!.className).toContain(
-      "group-hover:bg-foreground/20",
+      "group-hover:bg-(color:--slider-fill-active)",
+    );
+  });
+
+  it("takes its fill colour from --slider-fill, with the default grey as the fallback", () => {
+    const { container } = render(<Slider aria-label="Volume" defaultValue={40} />);
+    const fill = container.querySelector('[data-slot="slider-fill"]')!;
+    expect(fill.className).toContain("bg-(color:--slider-fill-rest)");
+    expect(fill.className).toContain(
+      "[--slider-fill-rest:var(--slider-fill,color-mix(in_oklab,var(--color-foreground)_15%,transparent))]",
     );
   });
 
