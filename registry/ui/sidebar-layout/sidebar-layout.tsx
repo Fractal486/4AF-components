@@ -74,10 +74,12 @@ export function SidebarLayout({
     <SidebarProvider {...providerProps} className={cn("h-svh overflow-hidden", className)}>
       {sidebar}
       <SidebarInset className="min-h-0 overflow-hidden">
+        {/* At least 48px, and it wraps rather than overflowing when the actions don't fit
+            beside the title on a narrow screen. With one row it is exactly the old `h-12`. */}
         <header
           data-slot="sidebar-layout-header"
           className={cn(
-            "flex h-12 shrink-0 items-center gap-2 border-b border-border bg-surface px-3",
+            "flex min-h-12 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-b border-border bg-surface px-3 py-1 md:py-0",
             headerClassName,
           )}
         >
@@ -87,7 +89,9 @@ export function SidebarLayout({
           ) : null)}
           <div
             data-slot="sidebar-layout-header-actions"
-            className="ml-auto flex items-center gap-2"
+            // Shrinks and wraps within the header instead of forcing it wider; a step tighter
+            // on small screens, where the room for actions is shortest.
+            className="ml-auto flex max-w-full min-w-0 flex-wrap items-center gap-1 sm:gap-2"
           >
             {headerActions}
           </div>
@@ -97,7 +101,13 @@ export function SidebarLayout({
         <div className="flex min-h-0 flex-1">
           <div
             data-slot="sidebar-layout-content"
-            className={cn("flex min-h-0 flex-1 flex-col overflow-y-auto", contentClassName)}
+            // `min-w-0` so wide content (a table, a code block) scrolls inside the column
+            // instead of pushing the layout past the screen; `overscroll-contain` so reaching
+            // the end of the content doesn't scroll the page behind it.
+            className={cn(
+              "flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain",
+              contentClassName,
+            )}
           >
             <RailSlotContext value={railSlot}>{children}</RailSlotContext>
           </div>

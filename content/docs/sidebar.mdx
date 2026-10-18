@@ -27,7 +27,11 @@ With `collapsible="offcanvas"`, collapsed navigation leaves the tab order and ac
 tree once its exit finishes. If collapse happens while focus is inside, focus returns to the
 external `SidebarTrigger` in the same provider, or the edge `SidebarRail` when present. Keep a
 trigger outside the panel so keyboard users can reopen it. Icon and noncollapsing sidebars keep
-their navigation available.
+their navigation available. `SidebarTrigger` sets `aria-expanded` to whether the panel it
+toggles is open: the drawer on mobile, the sidebar on desktop.
+
+On mobile the sidebar renders as a drawer. `className` styles the desktop sidebar only; style the
+drawer with `mobileClassName`.
 
 ## Menu control geometry
 

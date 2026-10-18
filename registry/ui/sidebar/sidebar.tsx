@@ -123,6 +123,11 @@ export interface SidebarProps extends ComponentProps<"div"> {
    * reads as breakage rather than as absence.
    */
   hideCollapseHandle?: boolean;
+  /**
+   * Classes for the mobile drawer. `className` styles the desktop sidebar only; on mobile the
+   * sidebar renders inside a sheet, which this reaches instead.
+   */
+  mobileClassName?: string;
 }
 
 export function Sidebar({
@@ -134,6 +139,7 @@ export function Sidebar({
   defaultActivePanel = "default",
   onActivePanelChange,
   hideCollapseHandle = false,
+  mobileClassName,
   className,
   children,
   ...props
@@ -216,6 +222,7 @@ export function Sidebar({
               ? "w-[calc(var(--sidebar-width)+var(--sidebar-width-icon))]"
               : "w-(--sidebar-width)",
             "bg-surface p-0",
+            mobileClassName,
           )}
           style={
             {
@@ -236,7 +243,9 @@ export function Sidebar({
               <div
                 data-slot="sidebar-rail-column"
                 className={cn(
-                  "flex h-full w-(--sidebar-width-icon) shrink-0 flex-col items-center gap-2 overflow-y-auto bg-surface p-2",
+                  // `overflow-x-hidden` as on desktop: setting only the vertical axis makes the
+                  // other `auto` too, and a wide rail item showed a stray horizontal scrollbar.
+                  "flex h-full w-(--sidebar-width-icon) shrink-0 flex-col items-center gap-2 overflow-x-hidden overflow-y-auto bg-surface p-2",
                   SIDEBAR_SCROLLBAR,
                   "border-r border-border",
                 )}

@@ -27,6 +27,8 @@ export function SidebarTrigger({
           variant="ghost"
           size="icon-sm"
           aria-label="Toggle sidebar"
+          // Whether the panel it toggles is open: the drawer on mobile, the sidebar on desktop.
+          aria-expanded={isOpen}
           className={className}
           onClick={(event) => {
             onClick?.(event);

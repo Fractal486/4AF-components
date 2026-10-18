@@ -451,4 +451,19 @@ describe("SidebarMenuCollapsible", () => {
       "group-has-data-[slot=sidebar-menu-action]/menu-collapsible:right-14!",
     );
   });
+
+  it("reports whether the sidebar it toggles is open", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <SidebarProvider persist={false}>
+        <SidebarTrigger />
+        <Sidebar>Panel</Sidebar>
+      </SidebarProvider>,
+    );
+    const trigger = container.querySelector<HTMLElement>('[data-slot="sidebar-trigger"]')!;
+
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+  });
 });

@@ -50,6 +50,28 @@ describe("SidebarLayout", () => {
     );
   });
 
+  it("lets the header wrap and keeps wide content and scroll chaining inside the column", () => {
+    const { container } = render(
+      <SidebarLayout sidebar={<aside>Sidebar</aside>} headerActions={<button>Share</button>}>
+        <div>Page content</div>
+      </SidebarLayout>,
+    );
+
+    // At least 48px, wrapping rather than overflowing when the actions don't fit.
+    expect(container.querySelector('[data-slot="sidebar-layout-header"]')).toHaveClass(
+      "min-h-12",
+      "flex-wrap",
+    );
+    expect(container.querySelector('[data-slot="sidebar-layout-header-actions"]')).toHaveClass(
+      "min-w-0",
+      "flex-wrap",
+    );
+    expect(container.querySelector('[data-slot="sidebar-layout-content"]')).toHaveClass(
+      "min-w-0",
+      "overscroll-contain",
+    );
+  });
+
   it("puts the rail slot beside the scroll container, not inside it", () => {
     // A rail inside the scrolling column can only ever be as tall as the viewport minus
     // however far the page has scrolled, and its footer scrolls away with the content.
