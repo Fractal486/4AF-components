@@ -4,11 +4,15 @@ export const switchTrackVariants = cva([
   // The track is a flex row; the thumb is its only child. Toggling `justify` from
   // start to end is what moves the thumb, and the thumb's `layout` animation turns
   // that positional change into a slide.
-  "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full px-0.5",
+  "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full px-0.5",
   "justify-start data-[checked]:justify-end",
   // Only the colour crossfades in CSS — the slide is Motion's, on transform.
   "transition-[background-color] duration-(--duration-base) ease-out",
   "bg-muted data-[checked]:bg-primary",
+  // Hover lightens the track in both themes: the on-track to its hover token, the off-track
+  // a step toward white (a fixed neutral, like the `fixed` thumb).
+  "not-data-[disabled]:hover:bg-[color-mix(in_oklab,var(--color-muted),var(--color-white)_12%)]",
+  "not-data-[disabled]:data-[checked]:hover:bg-primary-hover",
   "outline-none focus-visible:ring-2 focus-visible:ring-ring",
   "focus-visible:ring-offset-2 focus-visible:ring-offset-background",
   // `data-[disabled]`, not `disabled:` — Base UI renders the switch as a non-native

@@ -19,11 +19,12 @@ import {
  *
  * Two motions, both worth the Motion runtime:
  *  - the thumb *slides* rather than cutting, via a `layout` animation on the transform;
- *  - its middle section grows while held, between fixed rounded end caps. That
- *    press-stretch is the detail that makes it feel like an object rather than a
- *    checkbox, while keeping the thumb's ends round instead of turning the circle
- *    into an oval. It grows toward the track's center, so the outer edge stays put.
- *    It is all transform-driven, so the press stays off the layout path.
+ *  - its middle section grows between fixed rounded end caps: a little on hover, more
+ *    while held. That stretch is the detail that makes it feel like an object rather
+ *    than a checkbox, while keeping the thumb's ends round instead of turning the circle
+ *    into an oval. It grows toward the track's center, so the outer edge stays put, and
+ *    on release it lets go as the thumb slides, landing as a circle. It is all
+ *    transform-driven, so it stays off the layout path.
  *
  * `tone` is the two versions: `adaptive` flips the thumb light/dark to stay in contrast
  * with the track; `fixed` holds it dark in both states.
@@ -34,7 +35,9 @@ export interface SwitchProps
   className?: string;
 }
 
-const PRESSED_EXTENSION = 3;
+/** How far the thumb stretches toward the track's center on hover, and while pressed. */
+const HOVER_EXTENSION = 1.5;
+const PRESSED_EXTENSION = 3.5;
 /** How far the bridge tucks under each cap, so their antialiased edges never meet. */
 const BRIDGE_OVERLAP = 0.5;
 const BRIDGE_WIDTH = PRESSED_EXTENSION + BRIDGE_OVERLAP * 2;
@@ -45,6 +48,7 @@ export function Switch({
   disabled,
   onPointerDown,
   onPointerUp,
+  onPointerEnter,
   onPointerLeave,
   onPointerCancel,
   checked,
@@ -56,6 +60,12 @@ export function Switch({
   // state, not by `checked`. A keyboard toggle skips it, which is correct — there's no
   // thumb being held down.
   const [pressed, setPressed] = useState(false);
+  // Hover is a mouse affordance; a touch has no hover to answer. After a release the hover
+  // stretch stays off until the pointer leaves, so the thumb lands as a circle instead of
+  // stretching again the moment its slide ends.
+  const [hovered, setHovered] = useState(false);
+  const [settled, setSettled] = useState(false);
+  const extension = pressed ? PRESSED_EXTENSION : hovered && !settled ? HOVER_EXTENSION : 0;
   const [uncontrolledChecked, setUncontrolledChecked] = useState(defaultChecked ?? false);
   const isChecked = checked ?? uncontrolledChecked;
   const reduceMotion = useReducedMotion();
@@ -75,6 +85,11 @@ export function Switch({
   );
 
   const release = () => setPressed(false);
+  const leave = () => {
+    setPressed(false);
+    setHovered(false);
+    setSettled(false);
+  };
 
   return (
     <BaseSwitch.Root
@@ -93,11 +108,16 @@ export function Switch({
       }}
       onPointerUp={(event) => {
         onPointerUp?.(event);
+        if (pressed) setSettled(true);
         release();
+      }}
+      onPointerEnter={(event) => {
+        onPointerEnter?.(event);
+        if (event.pointerType === "mouse" && !disabled) setHovered(true);
       }}
       onPointerLeave={(event) => {
         onPointerLeave?.(event);
-        release();
+        leave();
       }}
       onPointerCancel={(event) => {
         onPointerCancel?.(event);
@@ -123,7 +143,7 @@ export function Switch({
               animate={
                 reduceMotion
                   ? undefined
-                  : { x: pressed && isChecked ? -PRESSED_EXTENSION : 0 }
+                  : { x: isChecked ? -extension : 0 }
               }
             />
             {/* Starts half a pixel inside the start cap and ends half a pixel inside the
@@ -144,7 +164,7 @@ export function Switch({
               animate={
                 reduceMotion
                   ? undefined
-                  : { x: pressed && !isChecked ? PRESSED_EXTENSION : 0 }
+                  : { x: isChecked ? 0 : extension }
               }
             />
           </motion.span>

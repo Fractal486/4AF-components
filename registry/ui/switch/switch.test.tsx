@@ -17,12 +17,30 @@ describe("Switch", () => {
         transform: "none",
       });
       expect(container.querySelector('[data-slot="switch-thumb-cap-end"]')).toHaveStyle({
-        transform: "translateX(3px)",
+        transform: "translateX(3.5px)",
       });
       expect(container.querySelector('[data-slot="switch-thumb-middle"]')).toHaveStyle({
         transform: "none",
       });
     });
+  });
+
+  it("stretches a little on hover, and lands as a circle after a press until the pointer leaves", async () => {
+    const { container } = render(<Switch aria-label="Notifications" />);
+    const control = screen.getByRole("switch", { name: "Notifications" });
+    const end = () => container.querySelector('[data-slot="switch-thumb-cap-end"]');
+
+    fireEvent.pointerEnter(control, { pointerType: "mouse" });
+    await waitFor(() => expect(end()).toHaveStyle({ transform: "translateX(1.5px)" }));
+
+    fireEvent.pointerDown(control, { pointerType: "mouse" });
+    fireEvent.pointerUp(control, { pointerType: "mouse" });
+    // Still hovered, but the release lets the stretch go so the thumb lands as a circle.
+    await waitFor(() => expect(end()).toHaveStyle({ transform: "none" }));
+
+    fireEvent.pointerLeave(control, { pointerType: "mouse" });
+    fireEvent.pointerEnter(control, { pointerType: "mouse" });
+    await waitFor(() => expect(end()).toHaveStyle({ transform: "translateX(1.5px)" }));
   });
 
   it("extends a checked thumb toward the center from the other side", async () => {
@@ -36,7 +54,7 @@ describe("Switch", () => {
     await waitFor(() => {
       expect(thumb).toHaveAttribute("data-pressed", "true");
       expect(container.querySelector('[data-slot="switch-thumb-cap-start"]')).toHaveStyle({
-        transform: "translateX(-3px)",
+        transform: "translateX(-3.5px)",
       });
       expect(container.querySelector('[data-slot="switch-thumb-cap-end"]')).toHaveStyle({
         transform: "none",
