@@ -740,7 +740,7 @@
     {
       "name": "slider",
       "type": "registry:ui",
-      "description": "A slider whose thumb springs between steps and grabs while held, with optional range mode, ticks, labels, and a live value tooltip. Base UI behaviour.",
+      "description": "A slider whose thumb tracks the pointer while dragged, glides on track clicks and keyboard steps, and grabs while held, with optional range mode, ticks, labels, and a live value tooltip. Base UI behaviour.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/slider (Markdown: https://4af.selfsimilar.dev/docs/slider.md)",
       "dependencies": [
         "@base-ui/react",

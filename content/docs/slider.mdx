@@ -10,12 +10,17 @@ description: A Base UI range control with multiple thumb styles, labels, ticks, 
 
 **Main export:** `Slider`
 
-A controlled or uncontrolled numeric slider with a spring-animated fill. Optional `label`,
-`showValue`, `showTicks`, and `showValueTooltip`.
+A controlled or uncontrolled numeric slider. Optional `label`, `showValue`, `showTicks`, and
+`showValueTooltip`.
+
+A dragged thumb tracks the pointer 1:1. With fewer than 50 steps across the range, it slides
+from step to step instead, from 0.05s for small steps up to 0.25s for steps half the range
+wide. Track clicks, keyboard steps, and values set from outside
+glide on a softer spring. Under reduced motion every change is instant.
 
 | `thumb` | Shape |
 | --- | --- |
-| `bar` | A thin handle that stretches taller while grabbed. |
+| `bar` | A fader. The fill is a rounded, bordered box whose edge marks the value across the full width, empty at the minimum. A thin 4px thumb rides 8px inside its edge, parked 8px from either end, and stretches taller while grabbed. Ticks sit at the value positions, without the end marks, and the tick at the fill's edge is hidden. In range mode the fill reaches 8px past each thumb. |
 | `circle` | A round thumb inside a thick rounded rail. The fill wraps the thumb and stays behind it at the minimum. |
 | `knob` | A small dot on a thin rail (4px at `md`, 2px at `sm`) that it overhangs. It grows by a quarter while dragged. Its rail shows the fill only, never ticks. |
 

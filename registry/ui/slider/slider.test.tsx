@@ -1,10 +1,11 @@
 import { DirectionProvider } from "@base-ui/react/direction-provider";
 import { Field } from "@base-ui/react/field";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
   getSliderControlWidth,
   getSliderFillOffset,
+  getSliderThumbCenter,
   getSliderInlineDim,
   getSliderRangeFillInset,
   getSliderThumbDodged,
@@ -167,7 +168,7 @@ describe("Slider", () => {
     );
 
     const slider = screen.getByRole("slider");
-    expect(container.querySelector("[data-base-ui-tooltip-trigger]")).toHaveClass("h-5", "w-1.5");
+    expect(container.querySelector("[data-base-ui-tooltip-trigger]")).toHaveClass("h-5", "w-6");
     await user.tab();
     const valueTooltip = () =>
       document.querySelector('[data-base-ui-focusable][data-side="top"]');
@@ -238,7 +239,37 @@ describe("Slider", () => {
     const tickPositions = Array.from(container.querySelectorAll("span"))
       .map((element) => element.style.left)
       .filter(Boolean);
-    expect(tickPositions).toEqual(["0%", "30%", "60%", "90%"]);
+    // The single bar is a fader, which leaves out the mark on the rail's own edge at 0%.
+    expect(tickPositions).toEqual(["30%", "60%", "90%"]);
+  });
+
+  it("rides a fader thumb 8px inside the fill's edge, parked 8px from either end", () => {
+    // The fill's edge is the value across the full 200px; the thumb sits 8px inside it.
+    expect(getSliderThumbCenter(50, 200, 8, 8)).toBe(92);
+    expect(getSliderThumbCenter(100, 200, 8, 8)).toBe(192);
+    // Until the fill passes 16px the thumb stays parked at 8px.
+    expect(getSliderThumbCenter(0, 200, 8, 8)).toBe(8);
+    expect(getSliderThumbCenter(5, 200, 8, 8)).toBe(8);
+    // In RTL the fill grows from the right, so the thumb rides to the edge's right.
+    expect(getSliderThumbCenter(50, 200, 8, 8, true)).toBe(108);
+    expect(getSliderThumbCenter(100, 200, 8, 8, true)).toBe(192);
+    // Without a fill to follow, the thumb travels inset at both ends.
+    expect(getSliderThumbCenter(0, 200, 8)).toBe(8);
+    expect(getSliderThumbCenter(100, 200, 8)).toBe(192);
+  });
+
+  it("hides the single bar's tick where the fill's edge rests, so the two never stack", async () => {
+    const { container } = render(
+      <Slider aria-label="Amount" min={0} max={100} step={10} defaultValue={30} />,
+    );
+    const ticks = Array.from(
+      container.querySelectorAll<HTMLElement>('[data-slot="slider-ticks"] > span'),
+    );
+    const at = (left: string) => ticks.find((tick) => tick.style.left === left)!;
+
+    await waitFor(() => expect(at("30%").style.opacity).toBe("0"));
+    expect(at("20%").style.opacity).toBe("1");
+    expect(at("40%").style.opacity).toBe("1");
   });
 
   it("keeps the fill correction tied to the animated thumb position", () => {
@@ -315,8 +346,10 @@ describe("Slider", () => {
     },
   );
 
+  // The single bar's thumb stays parked 8px in until the fill passes 16px (8% of this 200px
+  // rail), so it only meets the label once the value is past that.
   it.each([
-    [5, true],
+    [20, true],
     [0, false],
   ] as const)("at value %s, dodges the thumb under inline text: %s", async (value, expected) => {
     // jsdom has no layout: give every element a 200px width so the thumb has a rail to travel.
@@ -380,6 +413,10 @@ describe("Slider", () => {
     expect(getSliderThumbDodged(194, 6, 200, [label, value])).toBe(false);
     // One step in from the end, it dodges again.
     expect(getSliderThumbDodged(190, 6, 200, [label, value])).toBe(true);
+    // A 4px bar thumb the fill holds travels 8px in, so it parks 6px from each edge.
+    expect(getSliderThumbDodged(6, 4, 200, [label, value], 8, 8)).toBe(false);
+    expect(getSliderThumbDodged(190, 4, 200, [label, value], 8, 8)).toBe(false);
+    expect(getSliderThumbDodged(12, 4, 200, [label, value], 8, 8)).toBe(true);
   });
 
   it("shows the bar's ticks and steps up its fill only while in use", () => {
@@ -463,5 +500,45 @@ describe("Slider", () => {
     });
 
     expect(getSliderControlWidth(control)).toBe(286);
+  });
+
+  it("draws the dragged thumb and fill at the value while still held, all the way to the end", async () => {
+    // jsdom has no layout: a 200px control, and pointer capture as a no-op.
+    const width = vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockReturnValue(200);
+    const rect = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
+      left: 0, right: 200, width: 200, top: 0, bottom: 40, height: 40, x: 0, y: 0, toJSON() {},
+    } as DOMRect);
+    const capture = {
+      setPointerCapture: Element.prototype.setPointerCapture,
+      releasePointerCapture: Element.prototype.releasePointerCapture,
+      hasPointerCapture: Element.prototype.hasPointerCapture,
+    };
+    Element.prototype.setPointerCapture = () => {};
+    Element.prototype.releasePointerCapture = () => {};
+    Element.prototype.hasPointerCapture = () => true;
+    try {
+      const { container } = render(<Slider aria-label="Volume" defaultValue={40} step={1} />);
+      const control = container.querySelector(".group") as HTMLElement;
+      const fill = container.querySelector('[data-slot="slider-fill"]') as HTMLElement;
+      const pointer = { clientY: 20, buttons: 1, pointerId: 1, pointerType: "mouse" };
+
+      await act(async () => {
+        fireEvent.pointerDown(control, { ...pointer, clientX: 80 });
+      });
+      for (const clientX of [120, 160, 199, 240]) {
+        await act(async () => {
+          fireEvent.pointerMove(document, { ...pointer, clientX });
+          await new Promise((resolve) => setTimeout(resolve, 40));
+        });
+      }
+
+      // Past the end, still held: the fill is whole, not one value behind. Motion writes a
+      // zero translate as `none`.
+      await waitFor(() => expect(["none", "translateX(0%)"]).toContain(fill.style.transform));
+    } finally {
+      Object.assign(Element.prototype, capture);
+      rect.mockRestore();
+      width.mockRestore();
+    }
   });
 });

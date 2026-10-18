@@ -3,13 +3,14 @@
 import { Slider as BaseSlider } from "@base-ui/react/slider";
 import { useDirection } from "@base-ui/react/direction-provider";
 import {
+  animate,
   motion,
   useMotionTemplate,
   useMotionValue,
   useMotionValueEvent,
   useReducedMotion,
-  useSpring,
   useTransform,
+  type MotionValue,
 } from "motion/react";
 import {
   useEffect,
@@ -18,12 +19,14 @@ import {
   useRef,
   useState,
   type ComponentProps,
+  type CSSProperties,
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
-import { duration } from "@/registry/lib/motion";
+import { duration, spring } from "@/registry/lib/motion";
 import { Tooltip } from "@/registry/ui/tooltip/tooltip";
 import {
+  getSliderThumbCenter,
   getSliderControlWidth,
   getSliderFillOffset,
   getSliderRangeFillInset,
@@ -39,21 +42,126 @@ import {
  * integration and RTL. None of that is hand-rolled.
  *
  * The feel is Motion's. Base UI's thumb is kept but hidden — it's the focus and
- * behaviour target — and a spring-driven thumb and fill are drawn over it. A spring, not
- * a fixed transition, is the point: it's velocity-aware, so the thumb follows a fast drag
- * tightly and still glides smoothly between snapped steps, where a fixed-duration ease
- * would trail the pointer. The thumb also stretches taller while held, so it reads as
- * something grabbed.
+ * behaviour target — and a thumb and fill are drawn over it. A thumb under the pointer
+ * tracks it 1:1; movement the pointer isn't carrying (a track click's jump, keyboard steps,
+ * a value set from outside) glides on a spring. The thumb also stretches taller while held,
+ * so it reads as something grabbed.
  */
 
-// Critically damped glide for the thumb/fill — no overshoot, follows closely.
-const SPRING_GLIDE = { stiffness: 700, damping: 50, mass: 0.5 } as const;
+// The glide for moves the pointer isn't carrying — a track click, a keyboard step, a value
+// set from outside. A soft spring with a hint of overshoot, so a move settles into place.
+const SPRING_GLIDE = spring.smooth;
+// Notch to notch under a held thumb on a coarse-step slider. The slide scales with the
+// square root of the notch's share of the track — four times the distance, twice the time —
+// from 0.05s for the finest coarse step to 0.25s for a half-track jump, so a small notch
+// keeps up with the cursor and a large one still reads as travel. No bounce, and Motion
+// carries the velocity into each retarget, so a run of notches flows instead of restarting.
+function notchSpring(notchShare: number) {
+  return { type: "spring", visualDuration: clamp(0.35 * Math.sqrt(notchShare), 0.05, 0.25), bounce: 0 } as const;
+}
+// At 50 or more steps a notch is at most 2% of the track, so 1:1 tracking reads as
+// continuous. The same count past which ticks are hidden as noise.
+const FINE_STEP_COUNT = 50;
 // Grab stretch — quick, and no overshoot (bounce 0), so it settles cleanly rather than
 // wobbling.
 const SPRING_GRAB = { type: "spring", visualDuration: 0.2, bounce: 0 } as const;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
+}
+
+// Base UI's hidden thumb takes the press, but sits at the value while the drawn bar thumb
+// rides up to 8px inside it (the fill's edge on the single bar, the inset travel in a range).
+// At the drawn thumb's own 4px it missed every press on the drawn thumb, which Base UI then
+// took as a track press at the pointer: the value dropped, the thumb jumped, and it trailed
+// the cursor for the whole drag. 24px covers the drawn thumb wherever it sits.
+const BAR_HIT_WIDTH = "w-6";
+
+/** How much taller the bar thumb grows while held. */
+const BAR_GRAB_STRETCH = 1.35;
+
+/**
+ * The bar thumb, built from parts so it can grow without distorting: two round caps and a
+ * middle. Held, the caps slide apart and only the middle stretches to bridge them, so the
+ * ends stay round where a `scaleY` on one pill would squash them into ovals. All three move
+ * on the same spring, so they stay joined; the shadow is one drop-shadow on the group, so
+ * the joins never show.
+ */
+function BarThumb({
+  dodged,
+  stretched,
+  heightPx,
+  widthPx,
+  reduceMotion,
+}: {
+  dodged: boolean;
+  stretched: boolean;
+  heightPx: number;
+  widthPx: number;
+  reduceMotion: boolean;
+}) {
+  const capRadius = widthPx / 2;
+  const reach = ((BAR_GRAB_STRETCH - 1) * heightPx) / 2;
+  const middleScale = 1 + (2 * reach) / (heightPx - widthPx);
+  const transition = reduceMotion ? { duration: 0 } : SPRING_GRAB;
+
+  return (
+    <motion.div
+      data-slot="slider-thumb"
+      data-dodged={dodged ? "" : undefined}
+      className="absolute inset-0 rounded-full drop-shadow-sm group-has-[:focus-visible]:ring-4 group-has-[:focus-visible]:ring-ring/40"
+      animate={{ opacity: dodged ? DODGE_OPACITY : 1 }}
+      transition={reduceMotion ? { duration: 0 } : { duration: duration.fast, ease: "easeOut" }}
+    >
+      <motion.span
+        className="absolute inset-x-0 top-0 aspect-square rounded-full bg-foreground"
+        animate={{ y: stretched ? -reach : 0 }}
+        transition={transition}
+      />
+      <motion.span
+        className="absolute inset-x-0 bg-foreground"
+        style={{ top: capRadius, bottom: capRadius }}
+        animate={{ scaleY: stretched ? middleScale : 1 }}
+        transition={transition}
+      />
+      <motion.span
+        className="absolute inset-x-0 bottom-0 aspect-square rounded-full bg-foreground"
+        animate={{ y: stretched ? reach : 0 }}
+        transition={transition}
+      />
+    </motion.div>
+  );
+}
+
+// The fader fill's edge and a tick at the same spot would draw as two lines, so a tick is
+// switched off — no fade — only while the edge sits within half a pixel of it, so it never
+// vanishes ahead of the fill.
+const EDGE_HIDE_PX = 0.5;
+
+/**
+ * A tick on the single bar. It follows the fill's drawn edge rather than the value, so the
+ * mark the fill rests on disappears and the ones it glides across blink out as it passes.
+ */
+function FaderTick({
+  percent,
+  position,
+  width,
+  className,
+  style,
+}: {
+  /** The tick's physical left-to-right position, 0–100. */
+  percent: number;
+  /** The fill edge's drawn position, on the same scale. */
+  position: MotionValue<number>;
+  width: number;
+  className: string;
+  style: CSSProperties;
+}) {
+  const opacity = useTransform(position, (edge) => {
+    if (width <= 0) return Math.abs(edge - percent) < 0.001 ? 0 : 1;
+    return (Math.abs(edge - percent) / 100) * width < EDGE_HIDE_PX ? 0 : 1;
+  });
+  return <motion.span className={className} style={{ ...style, opacity }} />;
 }
 
 export type SliderRange = readonly [number, number];
@@ -155,22 +263,24 @@ export interface SliderProps
 
 // Every size-dependent value in one place, keyed by shape then size, so the rail height
 // and rounding, the thumb, the pixel width the fill/tick maths needs, and the tick inset
-// (half that width) never drift out of step. `rail` positions the track within the
-// control — `inset-0` fills a thick circle rail; a fixed height centres a thin rail so the
+// (the thumb's travel inset) never drift out of step. `fillCapRadiusPx` is how far the fill
+// reaches past the thumb's centre — which is also the thumb's travel inset, so at either
+// end the fill still holds it — and `fillRadiusPx` rounds the fill's leading end. `rail`
+// positions the track within the control — `inset-0` fills a thick circle rail; a fixed height centres a thin rail so the
 // round thumb overhangs. `knob` rides a thin rail (4px for md, 2px for sm), so its rail reads as
 // a line the dot travels along rather than a track it sits in.
 const DIMS = {
   circle: {
-    md: { control: "h-7", rail: "inset-0", thumb: "size-5 rounded-full", thumbPx: 20, fillCapRadiusPx: 14, tooltipSideOffset: 8, tickInset: "inset-x-3.5", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
-    sm: { control: "h-6", rail: "inset-0", thumb: "size-4 rounded-full", thumbPx: 16, fillCapRadiusPx: 12, tooltipSideOffset: 8, tickInset: "inset-x-3", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    md: { control: "h-7", rail: "inset-0", thumb: "size-5 rounded-full", thumbPx: 20, thumbHeightPx: 20, fillCapRadiusPx: 14, fillRadiusPx: 14, tooltipSideOffset: 8, tickInset: "inset-x-3.5", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    sm: { control: "h-6", rail: "inset-0", thumb: "size-4 rounded-full", thumbPx: 16, thumbHeightPx: 16, fillCapRadiusPx: 12, fillRadiusPx: 12, tooltipSideOffset: 8, tickInset: "inset-x-3", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
   },
   knob: {
-    md: { control: "h-5", rail: "inset-x-0 top-1/2 h-1 -translate-y-1/2", thumb: "size-2.5 rounded-full", thumbPx: 10, fillCapRadiusPx: 0, tooltipSideOffset: 8, tickInset: "inset-x-[5px]", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
-    sm: { control: "h-4", rail: "inset-x-0 top-1/2 h-0.5 -translate-y-1/2", thumb: "size-2 rounded-full", thumbPx: 8, fillCapRadiusPx: 0, tooltipSideOffset: 8, tickInset: "inset-x-1", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    md: { control: "h-5", rail: "inset-x-0 top-1/2 h-1 -translate-y-1/2", thumb: "size-2.5 rounded-full", thumbPx: 10, thumbHeightPx: 10, fillCapRadiusPx: 0, fillRadiusPx: 0, tooltipSideOffset: 8, tickInset: "inset-x-[5px]", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    sm: { control: "h-4", rail: "inset-x-0 top-1/2 h-0.5 -translate-y-1/2", thumb: "size-2 rounded-full", thumbPx: 8, thumbHeightPx: 8, fillCapRadiusPx: 0, fillRadiusPx: 0, tooltipSideOffset: 8, tickInset: "inset-x-1", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
   },
   bar: {
-    md: { control: "h-10", rail: "inset-0", thumb: "h-5 w-1.5 rounded-sm", thumbPx: 6, fillCapRadiusPx: 0, tooltipSideOffset: -2, tickInset: "inset-x-[3px]", tick: "h-2 rounded-none", tickCenterX: "", tickHairline: true },
-    sm: { control: "h-8", rail: "inset-0", thumb: "h-4 w-1.5 rounded-sm", thumbPx: 6, fillCapRadiusPx: 0, tooltipSideOffset: 0, tickInset: "inset-x-[3px]", tick: "h-1.5 rounded-none", tickCenterX: "", tickHairline: true },
+    md: { control: "h-10", rail: "inset-0", thumb: "h-5 w-1 rounded-full", thumbPx: 4, thumbHeightPx: 20, fillCapRadiusPx: 8, fillRadiusPx: 6, tooltipSideOffset: -2, tickInset: "inset-x-2", tick: "h-2 rounded-none", tickCenterX: "", tickHairline: true },
+    sm: { control: "h-8", rail: "inset-0", thumb: "h-4 w-1 rounded-full", thumbPx: 4, thumbHeightPx: 16, fillCapRadiusPx: 8, fillRadiusPx: 6, tooltipSideOffset: 0, tickInset: "inset-x-2", tick: "h-1.5 rounded-none", tickCenterX: "", tickHairline: true },
   },
 } as const;
 
@@ -229,12 +339,14 @@ export function Slider({
   const labelId = useId();
   const labelledBy = ariaLabelledBy ?? (ariaLabel == null && label != null ? labelId : undefined);
   const isBar = thumb === "bar";
-  const isCircle = thumb === "circle";
   const isKnob = thumb === "knob";
   const inline = inlineLabel && isBar;
   const dims = DIMS[thumb][size];
   const roundThumbGrabScale = isKnob ? KNOB_GRAB_SCALE[size] : 1.12;
-  const thumbTravelInsetPx = isCircle ? dims.fillCapRadiusPx : dims.thumbPx / 2;
+  // A thumb the fill holds (circle, bar) travels inset by the fill's reach past it; the knob,
+  // which the fill only meets, by half its own width.
+  const thumbTravelInsetPx = dims.fillCapRadiusPx > 0 ? dims.fillCapRadiusPx : dims.thumbPx / 2;
+  const holdsThumb = dims.fillCapRadiusPx > 0;
   const reduceMotion = useReducedMotion();
   const direction = useDirection();
   const isRtl = direction === "rtl";
@@ -242,6 +354,10 @@ export function Slider({
   const normalizedMax = Number.isFinite(max) && max > normalizedMin ? max : normalizedMin + 1;
   const normalizedStep = Number.isFinite(step) && step > 0 ? step : 1;
   const isRange = range || isSliderRange(value) || isSliderRange(defaultValue);
+  // A single bar works like a fader: the fill's edge is the value, running the full width
+  // from nothing at the minimum, and the thumb rides `fillCapRadiusPx` inside it. A range has
+  // two edges to hold, so it keeps the inset travel with the fill reaching past each thumb.
+  const followFillPx = isBar && !isRange ? dims.fillCapRadiusPx : 0;
   const [internal, setInternal] = useState<SliderValue | undefined>(defaultValue);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
   const [thumbHovered, setThumbHovered] = useState<ThumbFlags>([false, false]);
@@ -267,38 +383,49 @@ export function Slider({
   const normalizedThumbValues: ThumbValues = Array.isArray(normalizedValue)
     ? [normalizedValue[0], normalizedValue[1]]
     : [normalizedValue, normalizedValue];
-  const visualPercent0 =
-    isRtl
-      ? 100 -
-        ((normalizedThumbValues[0] - normalizedMin) /
-          (normalizedMax - normalizedMin)) *
-        100
-      : ((normalizedThumbValues[0] - normalizedMin) /
-          (normalizedMax - normalizedMin)) *
-        100;
-  const visualPercent1 =
-    isRtl
-      ? 100 -
-        ((normalizedThumbValues[1] - normalizedMin) /
-          (normalizedMax - normalizedMin)) *
-        100
-      : ((normalizedThumbValues[1] - normalizedMin) /
-          (normalizedMax - normalizedMin)) *
-        100;
+  // A value as a physical left-to-right position along the control, 0–100.
+  const toVisualPercent = (thumbValue: number) => {
+    const percent = ((thumbValue - normalizedMin) / (normalizedMax - normalizedMin)) * 100;
+    return isRtl ? 100 - percent : percent;
+  };
+  const visualPercent0 = toVisualPercent(normalizedThumbValues[0]);
+  const visualPercent1 = toVisualPercent(normalizedThumbValues[1]);
 
   const thumbWidthPx = dims.thumbPx;
 
-  // Spring-smoothed position drives transform-only visual layers.
-  const target0 = useMotionValue(visualPercent0);
-  const target1 = useMotionValue(visualPercent1);
+  // The drawn position drives transform-only visual layers. Each value change picks how the
+  // drawn thumb gets there: the thumb being dragged follows the pointer (directly, or on the
+  // short notch spring when steps are coarse); everything else glides.
+  const fineSteps = (normalizedMax - normalizedMin) / normalizedStep >= FINE_STEP_COUNT;
+  const heldSpring = notchSpring(Math.min(normalizedStep / (normalizedMax - normalizedMin), 1));
+  const pos0 = useMotionValue(visualPercent0);
+  const pos1 = useMotionValue(visualPercent1);
+  const targetsRef = useRef([visualPercent0, visualPercent1]);
+  // Moves one drawn thumb to a new position. Called from the value-change handler, inside the
+  // pointer event, so the move lands before React renders and is drawn in the same frame —
+  // the way a fader writes its fill. Not from a layout effect: React tears down the
+  // `useTransform` subscriptions before re-running layout effects, so a move made there is
+  // missed and the drawn thumb trails one value behind, short of the end at the end of a drag.
+  //
+  // Base UI's change reason says whether the pointer is carrying the thumb: `drag` follows it,
+  // and everything else — a track press's jump, a keyboard step, a value from outside — glides.
+  // Counting changes per press instead mistook the first drag step for a press's jump whenever
+  // the press itself landed on the thumb and changed nothing.
+  const follow = (index: 0 | 1, to: number, reason?: string) => {
+    if (targetsRef.current[index] === to) return;
+    targetsRef.current[index] = to;
+    const position = index === 0 ? pos0 : pos1;
+    const held = reason === "drag";
+    if (reduceMotion || (held && fineSteps)) position.jump(to);
+    else animate(position, to, held ? heldSpring : SPRING_GLIDE);
+  };
+  // Values from outside — a controlled value, or a controlled parent declining a change. After
+  // every render the drawn thumbs settle on the value actually rendered; `follow` returns at
+  // once when nothing has changed.
   useEffect(() => {
-    target0.set(visualPercent0);
-    target1.set(visualPercent1);
-  }, [target0, target1, visualPercent0, visualPercent1]);
-  const smooth0 = useSpring(target0, SPRING_GLIDE);
-  const smooth1 = useSpring(target1, SPRING_GLIDE);
-  const pos0 = reduceMotion ? target0 : smooth0;
-  const pos1 = reduceMotion ? target1 : smooth1;
+    follow(0, visualPercent0);
+    follow(1, visualPercent1);
+  });
   const [tooltipAlignOffsets, setTooltipAlignOffsets] = useState<ThumbValues>([0, 0]);
   const visualPercentsRef = useRef<ThumbValues>([visualPercent0, visualPercent1]);
   useLayoutEffect(() => {
@@ -312,11 +439,11 @@ export function Slider({
     const measure = () => {
       const nextWidth = getSliderControlWidth(control);
       setControlWidth(nextWidth);
-      const travelWidth = Math.max(nextWidth - thumbTravelInsetPx * 2, 0);
       setTooltipAlignOffsets(
         visualPercentsRef.current.map(
           (percent) =>
-            (percent / 100) * travelWidth + thumbTravelInsetPx - nextWidth / 2,
+            getSliderThumbCenter(percent, nextWidth, thumbTravelInsetPx, followFillPx, isRtl) -
+            nextWidth / 2,
         ) as ThumbValues,
       );
       // Captured with the width because ticks are snapped to the *device* pixel grid, and
@@ -327,21 +454,23 @@ export function Slider({
     const observer = new ResizeObserver(measure);
     observer.observe(control);
     return () => observer.disconnect();
-  }, [dims.thumbPx, thumbTravelInsetPx]);
+  }, [dims.thumbPx, thumbTravelInsetPx, followFillPx, isRtl]);
   const thumbX0 = useTransform(
     pos0,
     (p) =>
-      (p / 100) * Math.max(controlWidth - thumbTravelInsetPx * 2, 0) +
-      thumbTravelInsetPx -
+      getSliderThumbCenter(p, controlWidth, thumbTravelInsetPx, followFillPx, isRtl) -
       dims.thumbPx / 2,
   );
   const thumbX1 = useTransform(
     pos1,
     (p) =>
-      (p / 100) * Math.max(controlWidth - thumbTravelInsetPx * 2, 0) +
-      thumbTravelInsetPx -
+      getSliderThumbCenter(p, controlWidth, thumbTravelInsetPx, followFillPx, isRtl) -
       dims.thumbPx / 2,
   );
+  // The fader fill is a whole rounded, bordered box slid along the rail rather than a clip,
+  // so its leading end keeps its radius and border. Translating by its own width keeps it
+  // exact before the control is measured; the rail clips the part slid out of view.
+  const faderFillX = useTransform(pos0, (p) => `${isRtl ? p : p - 100}%`);
 
   // Whether each thumb is under the inline text. Checked on every frame of the thumb's own
   // spring, with the spans read from a ref, but React only hears about it when a thumb
@@ -357,7 +486,7 @@ export function Slider({
     if (inline) {
       setThumbDodged(
         0,
-        getSliderThumbDodged(latest, dims.thumbPx, controlWidth, inlineSpansRef.current, DODGE_APPROACH_PX),
+        getSliderThumbDodged(latest, dims.thumbPx, controlWidth, inlineSpansRef.current, DODGE_APPROACH_PX, thumbTravelInsetPx),
       );
     }
   });
@@ -365,7 +494,7 @@ export function Slider({
     if (inline) {
       setThumbDodged(
         1,
-        getSliderThumbDodged(latest, dims.thumbPx, controlWidth, inlineSpansRef.current, DODGE_APPROACH_PX),
+        getSliderThumbDodged(latest, dims.thumbPx, controlWidth, inlineSpansRef.current, DODGE_APPROACH_PX, thumbTravelInsetPx),
       );
     }
   });
@@ -395,8 +524,8 @@ export function Slider({
       // a value widening from 99 to 100 can reach a thumb that is standing still.
       const width = getSliderControlWidth(control);
       const next: ThumbFlags = [
-        getSliderThumbDodged(thumbX0.get(), dims.thumbPx, width, spans, DODGE_APPROACH_PX),
-        getSliderThumbDodged(thumbX1.get(), dims.thumbPx, width, spans, DODGE_APPROACH_PX),
+        getSliderThumbDodged(thumbX0.get(), dims.thumbPx, width, spans, DODGE_APPROACH_PX, thumbTravelInsetPx),
+        getSliderThumbDodged(thumbX1.get(), dims.thumbPx, width, spans, DODGE_APPROACH_PX, thumbTravelInsetPx),
       ];
       setDodged((previous) =>
         previous[0] === next[0] && previous[1] === next[1] ? previous : next,
@@ -409,7 +538,7 @@ export function Slider({
     if (inlineLabelRef.current) observer.observe(inlineLabelRef.current);
     if (inlineValueRef.current) observer.observe(inlineValueRef.current);
     return () => observer.disconnect();
-  }, [dims.thumbPx, inline, label, showValue, thumbX0, thumbX1]);
+  }, [dims.thumbPx, inline, label, showValue, thumbTravelInsetPx, thumbX0, thumbX1]);
 
   // Base UI's tooltip positioner listens for layout changes, but the slider thumb moves
   // through a transform-driven spring. Feed the positioner the thumb's current cross-axis
@@ -455,18 +584,18 @@ export function Slider({
       thumbWidthPx,
       dims.fillCapRadiusPx,
       thumbTravelInsetPx,
-      isCircle,
+      holdsThumb,
       firstFieldPercent,
       lastFieldPercent,
     );
   });
   const ltrFillClip = useMotionTemplate`inset(0 calc(100% - ${fillProgress}% - ${offset}px) 0 0)`;
   const rtlFillClip = useMotionTemplate`inset(0 0 0 calc(100% - ${fillProgress}% - ${offset}px))`;
-  const ltrCircleFillClip = useMotionTemplate`inset(0 calc(100% - ${fillProgress}% - ${offset}px) 0 0 round ${dims.fillCapRadiusPx}px)`;
-  const rtlCircleFillClip = useMotionTemplate`inset(0 0 0 calc(100% - ${fillProgress}% - ${offset}px) round ${dims.fillCapRadiusPx}px)`;
+  const ltrRoundFillClip = useMotionTemplate`inset(0 calc(100% - ${fillProgress}% - ${offset}px) 0 0 round ${dims.fillRadiusPx}px)`;
+  const rtlRoundFillClip = useMotionTemplate`inset(0 0 0 calc(100% - ${fillProgress}% - ${offset}px) round ${dims.fillRadiusPx}px)`;
   const rangeStartPosition = isRtl ? pos1 : pos0;
   const rangeEndPosition = isRtl ? pos0 : pos1;
-  const rangeBoundaryInset = isCircle ? dims.fillCapRadiusPx : 0;
+  const rangeBoundaryInset = dims.fillCapRadiusPx;
   const rangeStartInset = useTransform(rangeStartPosition, (position) => {
     return getSliderRangeFillInset(
       position,
@@ -489,13 +618,13 @@ export function Slider({
       lastFieldPercent,
     );
   });
-  const rangeFillClip = useMotionTemplate`inset(0 calc(100% - ${rangeEndInset}px) 0 ${rangeStartInset}px${isCircle ? ` round ${dims.fillCapRadiusPx}px` : ""})`;
+  const rangeFillClip = useMotionTemplate`inset(0 calc(100% - ${rangeEndInset}px) 0 ${rangeStartInset}px${holdsThumb ? ` round ${dims.fillRadiusPx}px` : ""})`;
   const fillClip = isRange
     ? rangeFillClip
-    : isCircle
+    : holdsThumb
       ? isRtl
-        ? rtlCircleFillClip
-        : ltrCircleFillClip
+        ? rtlRoundFillClip
+        : ltrRoundFillClip
       : isRtl
         ? rtlFillClip
         : ltrFillClip;
@@ -509,11 +638,14 @@ export function Slider({
         )
       : [];
 
-  const handleValueChange = (next: number | readonly number[]) => {
+  const handleValueChange = (next: number | readonly number[], details?: { reason?: string }) => {
     const nextValue = isRange
       ? normalizeSliderRange(next, normalizedMin, normalizedMax)
       : normalizeSliderValue(next, normalizedMin, normalizedMax);
     if (!controlled) setInternal(nextValue);
+    const nextThumbs = Array.isArray(nextValue) ? nextValue : [nextValue, nextValue];
+    follow(0, toVisualPercent(nextThumbs[0]), details?.reason);
+    follow(1, toVisualPercent(nextThumbs[1]), details?.reason);
     if (isRange) {
       (onValueChange as ((value: SliderRange) => void) | undefined)?.(
         nextValue as SliderRange,
@@ -687,21 +819,35 @@ export function Slider({
           className={cn(
             "absolute overflow-hidden bg-muted",
             dims.rail,
-            isBar ? "rounded-lg" : "rounded-full",
+            isBar ? "rounded-md" : "rounded-full",
           )}
         >
-          {/* Fill — a circle gets a rounded cap centred on the thumb, so the fill
-              encapsulates it; other variants end at the thumb's centre. */}
-          <motion.div
-            aria-hidden
-            data-slot="slider-fill"
-            className={cn("absolute inset-0 bg-foreground/15", isBar && BAR_FILL_IN_USE)}
-            style={{ clipPath: fillClip }}
-          />
+          {/* Fill — the single bar's is a whole rounded box whose edge is the value (see
+              `faderFillX`); otherwise a clip that rounds past a thumb it holds (circle, a
+              range bar) or ends at the thumb's centre (knob). */}
+          {followFillPx > 0 ? (
+            <motion.div
+              aria-hidden
+              data-slot="slider-fill"
+              className={cn(
+                "absolute inset-0 rounded-md border border-foreground/10 bg-foreground/15",
+                BAR_FILL_IN_USE,
+              )}
+              style={{ x: faderFillX }}
+            />
+          ) : (
+            <motion.div
+              aria-hidden
+              data-slot="slider-fill"
+              className={cn("absolute inset-0 bg-foreground/15", isBar && BAR_FILL_IN_USE)}
+              style={{ clipPath: fillClip }}
+            />
+          )}
 
-          {/* Ticks inset by exactly half the thumb width, so each one lands where the
-              (edge-aligned) thumb's centre lands at that value — otherwise the ticks and
-              the thumb drift apart toward the ends.
+          {/* Ticks inset by the thumb's travel inset, so each one lands where the thumb's
+              centre lands at that value — otherwise the ticks and the thumb drift apart
+              toward the ends. The single bar's marks instead sit where its fill's edge lands
+              (see `FaderTick`).
 
               The shape follows the thumb: round thumbs get dots, and `bar` — whose thumb
               is a thin vertical handle — gets thin vertical lines, so the marks read as
@@ -711,12 +857,15 @@ export function Slider({
             data-slot="slider-ticks"
             className={cn(
               "pointer-events-none absolute inset-y-0",
-              dims.tickInset,
+              followFillPx > 0 ? "inset-x-0" : dims.tickInset,
               // The bar shows its marks only while it's in use; at rest it's a rail and a fill.
               isBar && BAR_TICKS_IN_USE,
             )}
           >
             {ticks.map((tp, i) => {
+              // A fader's marks sit where the fill's edge lands, across the full width; the
+              // end marks would sit on the rail's own edges, so they're left out.
+              if (followFillPx > 0 && (tp <= 0.5 || tp >= 99.5)) return null;
               const percent = isRtl ? 100 - tp : tp;
               // Snapped to whole pixels once the control has been measured. A hairline
               // placed at a percentage lands on a fractional device pixel and the browser
@@ -724,13 +873,15 @@ export function Slider({
               // crisp 1px lines and blurred 2px ones. The width is already measured here
               // for the thumb, so rounding costs nothing. Only the *centring* translate
               // stays, and only on the axis the tick has no odd half-pixel on.
-              const trackPx = Math.max(controlWidth - thumbTravelInsetPx * 2, 0);
+              const tickInsetPx = followFillPx > 0 ? 0 : thumbTravelInsetPx;
+              const trackPx = Math.max(controlWidth - tickInsetPx * 2, 0);
               // Snapped to the device pixel grid, not the CSS one. On a display scaled to
               // 125% or 150% — the common Windows case — a whole CSS pixel still lands
               // mid-device-pixel, so the browser spreads a hairline across two and the run
               // of ticks comes out as a mix of crisp and blurred. Rounding in device
               // pixels puts every tick on the same boundary, so they all render alike.
               const snap = (px: number) => Math.round(px * pixelRatio) / pixelRatio;
+              const hairlinePx = Math.max(1, Math.round(pixelRatio)) / pixelRatio;
               const left =
                 trackPx > 0 ? `${snap((percent / 100) * trackPx)}px` : `${percent}%`;
               // The width has to sit on the grid too. `1px` is 1.25 device pixels at 125%
@@ -738,18 +889,25 @@ export function Slider({
               // its neighbour and reads as thicker than one that doesn't. Rounding to a
               // whole number of device pixels — never fewer than one — gives every tick
               // the same true hairline.
-              const hairline = `${Math.max(1, Math.round(pixelRatio)) / pixelRatio}px`;
+              const hairline = `${hairlinePx}px`;
+              const tickClass = cn(
+                "absolute top-1/2 -translate-y-1/2 bg-foreground/25",
+                dims.tick,
+                dims.tickCenterX,
+              );
+              const tickStyle = { left, ...(dims.tickHairline && { width: hairline }) };
 
-              return (
-                <span
+              return followFillPx > 0 ? (
+                <FaderTick
                   key={i}
-                  className={cn(
-                    "absolute top-1/2 -translate-y-1/2 bg-foreground/25",
-                    dims.tick,
-                    dims.tickCenterX,
-                  )}
-                  style={{ left, ...(dims.tickHairline && { width: hairline }) }}
+                  percent={percent}
+                  position={pos0}
+                  width={controlWidth}
+                  className={tickClass}
+                  style={tickStyle}
                 />
+              ) : (
+                <span key={i} className={tickClass} style={tickStyle} />
               );
             })}
           </div>
@@ -773,7 +931,7 @@ export function Slider({
               aria-labelledby={customLabel == null && labelledBy
                 ? isRange ? `${labelledBy} ${boundId}` : labelledBy
                 : undefined}
-              className={cn("opacity-0", dims.thumb)}
+              className={cn("opacity-0", dims.thumb, isBar && BAR_HIT_WIDTH)}
               onPointerDown={() => handleThumbPointerDown(index)}
               onPointerEnter={() => setThumbHover(index, true)}
               onPointerLeave={() => setThumbHover(index, false)}
@@ -824,6 +982,15 @@ export function Slider({
               y: "-50%",
             }}
           >
+            {isBar ? (
+              <BarThumb
+                dodged={inline && dodged[index]}
+                stretched={!reduceMotion && draggingIndex === index && !(inline && dodged[index])}
+                heightPx={dims.thumbHeightPx}
+                widthPx={dims.thumbPx}
+                reduceMotion={reduceMotion ?? false}
+              />
+            ) : (
             <motion.div
               data-slot="slider-thumb"
               data-dodged={inline && dodged[index] ? "" : undefined}
@@ -833,30 +1000,22 @@ export function Slider({
                 dims.thumb,
                 "group-has-[:focus-visible]:ring-4 group-has-[:focus-visible]:ring-ring/40",
               )}
-              // The bar grabs by stretching taller; a round knob can't stretch one axis
-              // without going oval, so it grabs by growing evenly. Keep this on the inner
-              // shape so the Motion position wrapper never moves during the resize. Under
-              // inline text the dodge overrides the grab: ghosted, at resting height, held or not.
-              // Reduced motion keeps the fade, which is for legibility, and drops the scale.
+              // A round thumb can't stretch one axis without going oval, so it grabs by
+              // growing evenly (the bar stretches; see BarThumb). Keep this on the inner shape
+              // so the Motion position wrapper never moves during the resize. Reduced motion
+              // drops the scale.
               animate={
                 reduceMotion
-                  ? { opacity: inline && dodged[index] ? DODGE_OPACITY : 1 }
-                  : isBar
-                    ? {
-                        opacity: inline && dodged[index] ? DODGE_OPACITY : 1,
-                        scaleY: draggingIndex === index && !(inline && dodged[index]) ? 1.35 : 1,
-                      }
-                    : {
-                        scale:
-                          draggingIndex === index ? roundThumbGrabScale : 1,
-                      }
+                  ? { scale: 1 }
+                  : { scale: draggingIndex === index ? roundThumbGrabScale : 1 }
               }
               transition={
                 reduceMotion
                   ? { duration: 0 }
-                  : { ...SPRING_GRAB, opacity: { duration: duration.fast, ease: "easeOut" } }
+                  : SPRING_GRAB
               }
             />
+            )}
           </motion.div>
         ))}
 

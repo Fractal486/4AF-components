@@ -7,6 +7,31 @@ export function getSliderControlWidth(control: HTMLElement): number {
   return control.offsetWidth;
 }
 
+/**
+ * The centre of a thumb, in pixels from the control's left edge, for a physical
+ * left-to-right position.
+ *
+ * By default the thumb travels the control inset by `travelInsetPx` at each end. With
+ * `followFillPx`, the fill's edge is the value instead — it runs the full width — and the
+ * thumb rides that far inside it, never closer to either end. In RTL the fill grows from the
+ * right, so "inside" is to the edge's right.
+ */
+export function getSliderThumbCenter(
+  position: number,
+  width: number,
+  travelInsetPx: number,
+  followFillPx = 0,
+  rtl = false,
+): number {
+  if (followFillPx > 0) {
+    const edge = (position / 100) * width;
+    return rtl
+      ? Math.min(edge + followFillPx, width - followFillPx)
+      : Math.max(edge - followFillPx, followFillPx);
+  }
+  return (position / 100) * Math.max(width - travelInsetPx * 2, 0) + travelInsetPx;
+}
+
 export function getSliderFillOffset(
   position: number,
   isRtl: boolean,
@@ -139,9 +164,14 @@ export function getSliderThumbDodged(
   controlWidthPx: number,
   spans: readonly SliderSpan[],
   approachPx = 8,
+  travelInsetPx = thumbWidthPx / 2,
 ): boolean {
-  const atStart = thumbLeftPx <= 0.5;
-  const atEnd = controlWidthPx > 0 && thumbLeftPx + thumbWidthPx >= controlWidthPx - 0.5;
+  // Parked means at the end of the thumb's travel, which can sit inside the rail's edge (a
+  // thumb the fill holds travels inset by the fill's reach past it).
+  const endGapPx = Math.max(travelInsetPx - thumbWidthPx / 2, 0);
+  const atStart = thumbLeftPx <= endGapPx + 0.5;
+  const atEnd =
+    controlWidthPx > 0 && thumbLeftPx + thumbWidthPx >= controlWidthPx - endGapPx - 0.5;
   if (atStart || atEnd) return false;
   return getSliderInlineDim(thumbLeftPx, thumbWidthPx, spans, approachPx) > 0;
 }
