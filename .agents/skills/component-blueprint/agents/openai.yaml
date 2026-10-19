@@ -1,0 +1,4 @@
+interface:
+  display_name: "Component Blueprint"
+  short_description: "Draw animated SVG component spacing diagrams"
+  default_prompt: "Use $component-blueprint to draw a blueprint for the named component in this project."
