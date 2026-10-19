@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1800" viewBox="0 0 1400 1800" fill="none" role="img" aria-labelledby="sheet-bp-title sheet-bp-description">
   <title id="sheet-bp-title">Sheet spacing blueprint</title>
-  <desc id="sheet-bp-description">The default open right-side Sheet, showing the profile form, close control, and footer actions. The panel is 384 CSS pixels wide in a representative 768-pixel-high desktop viewport. Blue guides mark the 20-pixel content padding, 90-pixel header, 6-pixel title and field gaps, 34-pixel inputs, 12-pixel field spacing, 8-pixel body padding and footer action gap, and 74-pixel footer.</desc>
+  <desc id="sheet-bp-description">The panel slides in once from the right, settling before its dimension guides appear. The default open right-side Sheet, showing the profile form, close control, and footer actions. The panel is 384 CSS pixels wide in a representative 768-pixel-high desktop viewport. Blue guides mark the 20-pixel content padding, 90-pixel header, 6-pixel title and field gaps, 34-pixel inputs, 12-pixel field spacing, 8-pixel body padding and footer action gap, and 74-pixel footer.</desc>
 
   <!-- Hand-authored vector drawing at 2x; measurement labels are original CSS px.
        Sources:
@@ -39,6 +39,8 @@
   -->
 
   <defs>
+    <!-- The illustrated viewport ends at the panel's right edge; clip off-canvas content. -->
+    <clipPath id="sheet-bp-viewport"><rect x="315" y="131" width="770" height="1538"/></clipPath>
     <style>
       text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
       .sheet-bp-title-text { fill: #c7c7c2; font-size: 30px; font-weight: 600; }
@@ -52,7 +54,70 @@
       /* Static exports and reduced-motion viewers show the complete final drawing. */
       @keyframes sheet-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes sheet-bp-reveal { from { opacity: 0; } }
+      /* Default right-side sheet enters from beyond the viewport edge.
+         770-unit travel includes the outline allowance; final panel stays 768 units wide.
+         Slide 0..650ms, all annotations 700..900ms, static open under reduced motion. */
+      @keyframes sheet-bp-enter { from { transform: translateX(770px); } to { transform: translateX(0); } }
+      /* One press/release during reveal, matching Button's .95 press scale.
+         spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
+         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         compose with content/panel motion; static and reduced motion stay at 1. */
+      @keyframes sheet-bp-button-press {
+        0% { transform: scale(1.000000); }
+        2% { transform: scale(0.998236); }
+        4% { transform: scale(0.994025); }
+        6% { transform: scale(0.988604); }
+        8% { transform: scale(0.982802); }
+        10% { transform: scale(0.977146); }
+        12% { transform: scale(0.971948); }
+        14% { transform: scale(0.967366); }
+        16% { transform: scale(0.963455); }
+        18% { transform: scale(0.960207); }
+        20% { transform: scale(0.957573); }
+        22% { transform: scale(0.955481); }
+        24% { transform: scale(0.953856); }
+        26% { transform: scale(0.952619); }
+        28% { transform: scale(0.951698); }
+        30% { transform: scale(0.951029); }
+        32% { transform: scale(0.950556); }
+        34% { transform: scale(0.950233); }
+        36% { transform: scale(0.950022); }
+        38% { transform: scale(0.950000); }
+        40% { transform: scale(0.950000); }
+        42% { transform: scale(0.950000); }
+        44% { transform: scale(0.950000); }
+        46% { transform: scale(0.950000); }
+        48% { transform: scale(0.950000); }
+        50% { transform: scale(0.950000); }
+        52% { transform: scale(0.951764); }
+        54% { transform: scale(0.955975); }
+        56% { transform: scale(0.961396); }
+        58% { transform: scale(0.967198); }
+        60% { transform: scale(0.972854); }
+        62% { transform: scale(0.978052); }
+        64% { transform: scale(0.982634); }
+        66% { transform: scale(0.986545); }
+        68% { transform: scale(0.989793); }
+        70% { transform: scale(0.992427); }
+        72% { transform: scale(0.994519); }
+        74% { transform: scale(0.996144); }
+        76% { transform: scale(0.997381); }
+        78% { transform: scale(0.998302); }
+        80% { transform: scale(0.998971); }
+        82% { transform: scale(0.999444); }
+        84% { transform: scale(0.999767); }
+        86% { transform: scale(0.999978); }
+        88% { transform: scale(1.000000); }
+        90% { transform: scale(1.000000); }
+        92% { transform: scale(1.000000); }
+        94% { transform: scale(1.000000); }
+        96% { transform: scale(1.000000); }
+        98% { transform: scale(1.000000); }
+        100% { transform: scale(1.000000); }
+      }
       @media (prefers-reduced-motion: no-preference) {
+        .sheet-bp-button-press { animation: sheet-bp-button-press 500ms linear 150ms both; }
+        .sheet-bp-enter { animation: sheet-bp-enter 650ms cubic-bezier(.16,1,.3,1) both; }
         .sheet-bp-draw {
           stroke-dasharray: 1;
           animation: sheet-bp-draw 200ms ease-out var(--sheet-bp-delay, 0ms) both;
@@ -67,9 +132,13 @@
 
   <rect width="1400" height="1800" fill="#060606"/>
 
-  <!-- Square full-height panel. Component fills and text stay visible throughout. -->
+  <!-- Square full-height panel slides into its final right-anchored position. -->
+  <g clip-path="url(#sheet-bp-viewport)"><g class="sheet-bp-enter">
   <rect x="317" y="133" width="766" height="1534" class="sheet-bp-solid sheet-bp-draw sheet-bp-outline" pathLength="1"/>
-  <rect x="826" y="1560" width="218" height="68" rx="16" fill="#353632"/>
+  <g class="sheet-bp-button-press" style="transform-origin: 935px 1594px">
+    <rect x="826" y="1560" width="218" height="68" rx="16" fill="#353632"/>
+  </g>
+
 
   <!-- Eight 343 x 34px input border boxes. Stroke centers are inset by 1 SVG unit. -->
   <rect x="359" y="381" width="684" height="66" rx="15" class="sheet-bp-solid sheet-bp-draw" pathLength="1" style="--sheet-bp-delay:250ms"/>
@@ -91,8 +160,14 @@
   <!-- Close hit box and its centered SVG box: no visible production button outline. -->
   <rect x="992" y="164" width="60" height="60" rx="12" class="sheet-bp-spacing"/>
   <rect x="1008" y="180" width="28" height="28" class="sheet-bp-spacing"/>
-  <path d="M1015 187L1029 201" stroke="#a7a8a2" stroke-width="2.33" stroke-linecap="round" class="sheet-bp-draw" pathLength="1" style="--sheet-bp-delay:425ms"/>
-  <path d="M1029 187L1015 201" stroke="#a7a8a2" stroke-width="2.33" stroke-linecap="round" class="sheet-bp-draw" pathLength="1" style="--sheet-bp-delay:450ms"/>
+  <g class="sheet-bp-button-press" style="transform-origin: 1022px 194px">
+    <path d="M1015 187L1029 201" stroke="#a7a8a2" stroke-width="2.33" stroke-linecap="round" class="sheet-bp-draw" pathLength="1" style="--sheet-bp-delay:425ms"/>
+  </g>
+
+  <g class="sheet-bp-button-press" style="transform-origin: 1022px 194px">
+    <path d="M1029 187L1015 201" stroke="#a7a8a2" stroke-width="2.33" stroke-linecap="round" class="sheet-bp-draw" pathLength="1" style="--sheet-bp-delay:450ms"/>
+  </g>
+
 
   <!-- Footer action boxes and their 8px gap. -->
   <rect x="674" y="1560" width="136" height="68" rx="16" class="sheet-bp-spacing"/>
@@ -118,8 +193,16 @@
   <text x="384" y="1287" class="sheet-bp-value">Studio North</text>
   <text x="358" y="1366" class="sheet-bp-copy">Phone</text>
   <text x="384" y="1431" class="sheet-bp-value">+36 30 555 0100</text>
-  <text x="742" y="1603" text-anchor="middle" fill="#92948d" class="sheet-bp-action">Cancel</text>
-  <text x="935" y="1603" text-anchor="middle" fill="#c7c7c2" class="sheet-bp-action">Save changes</text>
+  <g class="sheet-bp-button-press" style="transform-origin: 742px 1594px">
+    <text x="742" y="1603" text-anchor="middle" fill="#92948d" class="sheet-bp-action">Cancel</text>
+  </g>
+
+  <g class="sheet-bp-button-press" style="transform-origin: 935px 1594px">
+    <text x="935" y="1603" text-anchor="middle" fill="#c7c7c2" class="sheet-bp-action">Save changes</text>
+  </g>
+
+
+  </g></g>
 
   <!-- Current width and chosen viewport height, measured at outer border-box edges. -->
   <path d="M316 64V88 M1084 64V88 M316 76H1084 M316 88V120 M1084 88V120" class="sheet-bp-measure"/>

@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1296" height="810" viewBox="0 0 1296 810" fill="none" role="img" aria-labelledby="empty-title empty-desc">
+  <title id="empty-title">Empty component spacing</title>
+  <desc id="empty-desc">A borderless empty state with an inbox icon, No messages yet title, description and Compose action. Blue guides show a representative 448 pixel width, desktop padding of 48 pixels, a 24 pixel header-to-action gap and the header's internal spacing.</desc>
+  <!-- Sources: registry/ui/empty/empty.tsx, empty.variants.ts;
+       inspector/entries/empty.tsx; registry/ui/button/button.variants.ts;
+       app/globals.css; lib/component-catalog.ts (Feedback and status).
+       Scale 2x. Default borderless Empty and default bare media; demo copy/action.
+       Desktop viewport >= md: p-12 = 48px (below md p-6 = 24px).
+       Representative width 448px, from demo max-w-md; not an intrinsic width.
+       Unconstrained natural height, no flex-parent extra space, no border.
+       Header: bare Lucide 24px + margin-bottom 8px + gap 8px +
+       title 18 * 1.4444 ~= 26px + gap 8px + description 13 * 1.625 = 21.125px.
+       Total height = 48 + 95.125 + 24 + 34 + 48 = 249.125px.
+       Title line box rounded by <.001px. Description stays one line.
+       Action is primary/md; its width is content-dependent and drawn approximately,
+       never dimensioned. Icon 16px, gap 10px, leading padding 12px, trailing 14px.
+       EmptyContent fills available 352px, below its 384px maximum.
+       Outer blue rectangle is a measurement guide, NOT a production border. -->
+  <defs><style>
+    text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+    .label { fill: #6889ff; font-size: 18px; }
+    .measure { stroke: #6889ff; stroke-width: 1.5; }
+    .spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+    .stroke { stroke: #a7a8a2; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    @keyframes empty-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+    @keyframes empty-reveal { from { opacity: 0; } }
+      /* One press/release during reveal, matching Button's .95 press scale.
+         spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
+         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         compose with content/panel motion; static and reduced motion stay at 1. */
+      @keyframes empty-bp-button-press {
+        0% { transform: scale(1.000000); }
+        2% { transform: scale(0.998236); }
+        4% { transform: scale(0.994025); }
+        6% { transform: scale(0.988604); }
+        8% { transform: scale(0.982802); }
+        10% { transform: scale(0.977146); }
+        12% { transform: scale(0.971948); }
+        14% { transform: scale(0.967366); }
+        16% { transform: scale(0.963455); }
+        18% { transform: scale(0.960207); }
+        20% { transform: scale(0.957573); }
+        22% { transform: scale(0.955481); }
+        24% { transform: scale(0.953856); }
+        26% { transform: scale(0.952619); }
+        28% { transform: scale(0.951698); }
+        30% { transform: scale(0.951029); }
+        32% { transform: scale(0.950556); }
+        34% { transform: scale(0.950233); }
+        36% { transform: scale(0.950022); }
+        38% { transform: scale(0.950000); }
+        40% { transform: scale(0.950000); }
+        42% { transform: scale(0.950000); }
+        44% { transform: scale(0.950000); }
+        46% { transform: scale(0.950000); }
+        48% { transform: scale(0.950000); }
+        50% { transform: scale(0.950000); }
+        52% { transform: scale(0.951764); }
+        54% { transform: scale(0.955975); }
+        56% { transform: scale(0.961396); }
+        58% { transform: scale(0.967198); }
+        60% { transform: scale(0.972854); }
+        62% { transform: scale(0.978052); }
+        64% { transform: scale(0.982634); }
+        66% { transform: scale(0.986545); }
+        68% { transform: scale(0.989793); }
+        70% { transform: scale(0.992427); }
+        72% { transform: scale(0.994519); }
+        74% { transform: scale(0.996144); }
+        76% { transform: scale(0.997381); }
+        78% { transform: scale(0.998302); }
+        80% { transform: scale(0.998971); }
+        82% { transform: scale(0.999444); }
+        84% { transform: scale(0.999767); }
+        86% { transform: scale(0.999978); }
+        88% { transform: scale(1.000000); }
+        90% { transform: scale(1.000000); }
+        92% { transform: scale(1.000000); }
+        94% { transform: scale(1.000000); }
+        96% { transform: scale(1.000000); }
+        98% { transform: scale(1.000000); }
+        100% { transform: scale(1.000000); }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .empty-bp-button-press { animation: empty-bp-button-press 500ms linear 150ms both; }
+      .draw { stroke-dasharray: 1; animation: empty-draw 200ms ease-out var(--delay, 250ms) both; }
+      .outline { animation-duration: 400ms; --delay: 0ms; }
+      .spacing, .measure, .label { animation: empty-reveal 200ms ease-out 700ms both; }
+    }
+  </style></defs>
+  <rect width="1296" height="810" fill="#060606"/>
+  <!-- Action fill remains visible throughout the stroke animation. -->
+  <g class="empty-bp-button-press" style="transform-origin: 648px 528.25px">
+    <rect x="537" y="494.25" width="222" height="68" rx="16" fill="#353632"/>
+  </g>
+
+  <g class="empty-bp-button-press" style="transform-origin: 648px 528.25px">
+    <rect x="537" y="494.25" width="222" height="68" rx="16" class="stroke draw outline" pathLength="1"/>
+  </g>
+
+  <!-- Borderless container, padding edges and actual line-box boundaries. -->
+  <rect x="200" y="160" width="896" height="498.25" rx="28" class="spacing"/>
+  <rect x="296" y="256" width="704" height="306.25" class="spacing"/>
+  <path d="M1000 388H1020 M1000 404H1020 M1000 446.25H1020 M1000 494.25H1020" class="spacing"/>
+  <rect x="624" y="256" width="48" height="48" class="spacing"/>
+  <!-- Lucide Inbox, 24px bare media, scaled 2x. -->
+  <path d="M628 280 634.9 262.7A4 4 0 0 1 638.6 260H657.4A4 4 0 0 1 661.1 262.7L668 280V296A4 4 0 0 1 664 300H632A4 4 0 0 1 628 296Z" class="stroke draw" pathLength="1" style="--delay:250ms"/>
+  <path d="M628 280H640L644 286H652L656 280H668" class="stroke draw" pathLength="1" style="--delay:275ms"/>
+  <text x="648" y="374" text-anchor="middle" fill="#c7c7c2" font-size="36" font-weight="500" letter-spacing="-.9">No messages yet</text>
+  <text x="648" y="434" text-anchor="middle" fill="#92948d" font-size="26">New messages will appear here.</text>
+  <g class="empty-bp-button-press" style="transform-origin: 648px 528.25px">
+    <path d="M577 518.25V538.25" class="stroke draw" pathLength="1" style="--delay:300ms"/>
+  </g>
+
+  <g class="empty-bp-button-press" style="transform-origin: 648px 528.25px">
+    <path d="M567 528.25H587" class="stroke draw" pathLength="1" style="--delay:325ms"/>
+  </g>
+
+  <g class="empty-bp-button-press" style="transform-origin: 648px 528.25px">
+    <text x="613" y="537.25" fill="#c7c7c2" font-size="26" font-weight="500">Compose</text>
+  </g>
+
+  <!-- Representative outer width. -->
+  <path d="M200 108V130 M1096 108V130 M200 119H1096" class="measure"/>
+  <text x="648" y="101" text-anchor="middle" class="label">448 px</text>
+  <!-- Desktop padding, both axes. -->
+  <path d="M139 160H161 M139 256H161 M150 160V256 M161 160H196 M161 256H292" class="measure"/>
+  <text x="131" y="214" text-anchor="end" class="label">48 px</text>
+  <path d="M200 699V721 M296 699V721 M200 710H296" class="measure"/>
+  <text x="248" y="746" text-anchor="middle" class="label">48 px</text>
+  <!-- Icon size and combined margin/gap, kept separate for accuracy. -->
+  <path d="M624 225V243 M672 225V243 M624 234H672" class="measure"/>
+  <text x="648" y="215" text-anchor="middle" class="label">24 px</text>
+  <!-- Title line box, title-description gap, description line box. -->
+  <path d="M1125 336H1147 M1125 388H1147 M1136 336V388" class="measure"/>
+  <text x="1160" y="368" class="label">26 px</text>
+  <path d="M1020 388H1038 M1020 404H1038 M1029 388V404 M1038 396H1064" class="measure"/>
+  <text x="1077" y="402" class="label">8 px</text>
+  <!-- Root gap and fixed action height. -->
+  <path d="M1020 446.25H1042 M1020 494.25H1042 M1031 446.25V494.25" class="measure"/>
+  <text x="1056" y="476.25" class="label">24 px</text>
+  <path d="M794 494.25H816 M794 562.25H816 M805 494.25V562.25" class="measure"/>
+  <text x="830" y="534.25" class="label">34 px</text>
+  <!-- Bottom padding. -->
+  <path d="M1130 562.25H1152 M1130 658.25H1152 M1141 562.25V658.25" class="measure"/>
+  <text x="1165" y="616.25" class="label">48 px</text>
+</svg>
+
+

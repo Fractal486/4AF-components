@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="2240" height="1248" viewBox="0 0 2240 1248" fill="none" role="img" aria-labelledby="sbl-title sbl-description">
   <title id="sbl-title">Sidebar Layout measured wireframe</title>
-  <desc id="sbl-description">An expanded default sidebar beside a page header and an independently scrolling content area. This representative desktop shell is 960 by 448 CSS pixels; its sidebar is 256 pixels wide and the remaining main column is 704 pixels wide. The single-line header is 48 pixels tall with 12-pixel horizontal padding. Demo content uses 16-pixel padding, 12-pixel gaps, a 96-pixel block and three 64-pixel blocks. Navigation rows are 32 pixels tall with no gap.</desc>
+  <desc id="sbl-description">The icon rail expands once from 48 to 256 pixels while the page header and content reflow into the remaining width. An expanded default sidebar beside a page header and an independently scrolling content area. This representative desktop shell is 960 by 448 CSS pixels; its sidebar is 256 pixels wide and the remaining main column is 704 pixels wide. The single-line header is 48 pixels tall with 12-pixel horizontal padding. Demo content uses 16-pixel padding, 12-pixel gaps, a 96-pixel block and three 64-pixel blocks. Navigation rows are 32 pixels tall with no gap.</desc>
   <!--
     Hand-authored vector wireframe. Scale: 2 SVG units per CSS pixel throughout.
     Sources:
@@ -21,7 +21,8 @@
       node_modules/tailwindcss/theme.css and preflight.css: spacing=4px, border-box.
       lib/component-catalog.ts: COMPONENT_CATEGORIES, Navigation and layout.
 
-    Chosen state: desktop, expanded, variant=sidebar, left side; Dashboard active.
+    Chosen state: desktop, expanded, variant=sidebar, collapsible="icon", left side;
+    Dashboard active. Icon collapse mode is explicitly chosen for this motion demo.
     Representative shell width=960px, height=448px (the demo's 28rem height).
     Width is fluid; 960px is a drawing choice, not a component default or maximum.
     Shell h-svh normally follows viewport height; 448px is this pictured viewport.
@@ -49,6 +50,7 @@
     Animation ends at 900ms: outline 0-400; details 250-650; annotations 700-900.
   -->
   <defs>
+    <clipPath id="sbl-expansion-clip"><rect x="160" y="176" width="512" height="896" class="sbl-clip-width"/></clipPath>
     <style>
       text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
       .sbl-text { fill: #92948d; font-size: 26px; }
@@ -61,7 +63,94 @@
       /* Static exports and reduced-motion viewers see the completed drawing. */
       @keyframes sbl-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes sbl-reveal { from { opacity: 0; } }
+      /* Icon rail=48px, expanded=256px: delta 208px=416 units.
+         Sidebar divider x255 -> 671. Main starts x256 -> 672; right edge stays 2080.
+         Content bounds x288..2048 -> x704..2048; width 1760 -> 1344.
+         Three columns keep their 24-unit gaps: width 570.6667 -> 432.
+         Only geometry changes; header text/icons and block radii do not scale.
+         Menu rows move down 64 units as the 32px group heading returns.
+         Geometry settles at 650ms, before all rulers appear at 700..900ms. */
+      @keyframes sbl-clip-width { from { width: 96px; } to { width: 512px; } }
+      @keyframes sbl-main-shift { from { transform: translateX(-416px); } to { transform: translateX(0); } }
+      @keyframes sbl-header-line { from { transform: scaleX(1.2954545455); } to { transform: scaleX(1); } }
+      @keyframes sbl-selection { from { width: 64px; y: 192px; } to { width: 478px; y: 256px; } }
+      @keyframes sbl-menu { from { transform: translateY(-64px); } to { transform: translateY(0); } }
+      @keyframes sbl-heading-in { from { opacity: 0; transform: translateY(-64px); } to { opacity: 1; transform: translateY(0); } }
+      @keyframes sbl-hero-reflow { from { x: 289px; width: 1758px; } to { x: 705px; width: 1342px; } }
+      @keyframes sbl-card-one { from { x: 289px; width: 568.6666667px; } to { x: 705px; width: 430px; } }
+      @keyframes sbl-card-two { from { x: 883.6666667px; width: 568.6666667px; } to { x: 1161px; width: 430px; } }
+      @keyframes sbl-card-three { from { x: 1478.3333333px; width: 568.6666667px; } to { x: 1617px; width: 430px; } }
+      .sbl-header-line { transform-origin: 2080px 271px; }
+      /* One press/release during reveal, matching Button's .95 press scale.
+         spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
+         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         compose with content/panel motion; static and reduced motion stay at 1. */
+      @keyframes sidebar-layout-bp-button-press {
+        0% { transform: scale(1.000000); }
+        2% { transform: scale(0.998236); }
+        4% { transform: scale(0.994025); }
+        6% { transform: scale(0.988604); }
+        8% { transform: scale(0.982802); }
+        10% { transform: scale(0.977146); }
+        12% { transform: scale(0.971948); }
+        14% { transform: scale(0.967366); }
+        16% { transform: scale(0.963455); }
+        18% { transform: scale(0.960207); }
+        20% { transform: scale(0.957573); }
+        22% { transform: scale(0.955481); }
+        24% { transform: scale(0.953856); }
+        26% { transform: scale(0.952619); }
+        28% { transform: scale(0.951698); }
+        30% { transform: scale(0.951029); }
+        32% { transform: scale(0.950556); }
+        34% { transform: scale(0.950233); }
+        36% { transform: scale(0.950022); }
+        38% { transform: scale(0.950000); }
+        40% { transform: scale(0.950000); }
+        42% { transform: scale(0.950000); }
+        44% { transform: scale(0.950000); }
+        46% { transform: scale(0.950000); }
+        48% { transform: scale(0.950000); }
+        50% { transform: scale(0.950000); }
+        52% { transform: scale(0.951764); }
+        54% { transform: scale(0.955975); }
+        56% { transform: scale(0.961396); }
+        58% { transform: scale(0.967198); }
+        60% { transform: scale(0.972854); }
+        62% { transform: scale(0.978052); }
+        64% { transform: scale(0.982634); }
+        66% { transform: scale(0.986545); }
+        68% { transform: scale(0.989793); }
+        70% { transform: scale(0.992427); }
+        72% { transform: scale(0.994519); }
+        74% { transform: scale(0.996144); }
+        76% { transform: scale(0.997381); }
+        78% { transform: scale(0.998302); }
+        80% { transform: scale(0.998971); }
+        82% { transform: scale(0.999444); }
+        84% { transform: scale(0.999767); }
+        86% { transform: scale(0.999978); }
+        88% { transform: scale(1.000000); }
+        90% { transform: scale(1.000000); }
+        92% { transform: scale(1.000000); }
+        94% { transform: scale(1.000000); }
+        96% { transform: scale(1.000000); }
+        98% { transform: scale(1.000000); }
+        100% { transform: scale(1.000000); }
+      }
       @media (prefers-reduced-motion: no-preference) {
+        .sidebar-layout-bp-button-press { animation: sidebar-layout-bp-button-press 500ms linear 150ms both; }
+        .sbl-clip-width { animation: sbl-clip-width 400ms ease-out 250ms both; }
+        .sbl-main-shift { animation: sbl-main-shift 400ms ease-out 250ms both; }
+        .sbl-header-line { animation: sbl-header-line 400ms ease-out 250ms both; }
+        .sbl-selection { animation: sbl-selection 400ms ease-out 250ms both; }
+        .sbl-menu { animation: sbl-menu 400ms ease-out 250ms both; }
+        .sbl-heading-in { animation: sbl-heading-in 400ms ease-out 250ms both; }
+        .sbl-content-in { animation: sbl-reveal 250ms ease-out 400ms both; }
+        .sbl-hero-reflow { stroke-dasharray: 1; animation: sbl-hero-reflow 400ms ease-out 250ms both, sbl-draw 200ms ease-out 325ms both; }
+        .sbl-card-one { stroke-dasharray: 1; animation: sbl-card-one 400ms ease-out 250ms both, sbl-draw 200ms ease-out 350ms both; }
+        .sbl-card-two { stroke-dasharray: 1; animation: sbl-card-two 400ms ease-out 250ms both, sbl-draw 200ms ease-out 375ms both; }
+        .sbl-card-three { stroke-dasharray: 1; animation: sbl-card-three 400ms ease-out 250ms both, sbl-draw 200ms ease-out 400ms both; }
         .sbl-draw, .sbl-icon > * {
           stroke-dasharray: 1;
           animation: sbl-draw 200ms ease-out var(--sbl-delay, 0ms) both;
@@ -105,38 +194,54 @@
 
   <!-- Shell boundary and the real 1px sidebar/header dividers. -->
   <rect x="161" y="177" width="1918" height="894" class="sbl-line sbl-draw sbl-outline" pathLength="1"/>
+  <g class="sbl-main-shift">
   <path d="M671 176V1072" class="sbl-line sbl-draw" style="--sbl-delay:250ms" pathLength="1"/>
-  <path d="M672 271H2080" class="sbl-line sbl-draw" style="--sbl-delay:275ms" pathLength="1"/>
+  </g>
+  <g class="sbl-header-line">
+  <path vector-effect="non-scaling-stroke" d="M672 271H2080" class="sbl-line sbl-draw" style="--sbl-delay:275ms" pathLength="1"/>
 
+  </g>
+
+  <g clip-path="url(#sbl-expansion-clip)">
   <!-- No invented sidebar header or footer divider. Menu rows touch. -->
-  <rect x="176" y="256" width="478" height="64" rx="16" fill="#353632"/>
+  <rect x="176" y="256" width="478" height="64" rx="16" fill="#353632" class="sbl-selection"/>
   <path d="M176 192V512H654V192 M176 256H654 M176 320H654 M176 384H654 M176 448H654" class="sbl-guide"/>
   <path d="M192 256V512 M224 256V512 M240 256V512" class="sbl-guide"/>
   <path d="M176 992H654V1056H176Z" class="sbl-guide"/>
 
-  <text x="192" y="232" class="sbl-group">Workspace</text>
-  <use href="#sbl-grid" x="192" y="272" style="--sbl-delay:300ms"/>
-  <text x="240" y="297" class="sbl-text" style="fill:#c7c7c2">Dashboard</text>
-  <use href="#sbl-folder" x="192" y="336" style="--sbl-delay:325ms"/>
-  <text x="240" y="361" class="sbl-text">Projects</text>
-  <use href="#sbl-team" x="192" y="400" style="--sbl-delay:350ms"/>
-  <text x="240" y="425" class="sbl-text">Team</text>
-  <use href="#sbl-activity" x="192" y="464" style="--sbl-delay:375ms"/>
-  <text x="240" y="489" class="sbl-text">Activity</text>
-  <use href="#sbl-settings" x="192" y="1008" style="--sbl-delay:400ms"/>
-  <text x="240" y="1033" class="sbl-text">Settings</text>
+  <text x="192" y="232" class="sbl-group sbl-heading-in">Workspace</text>
+  <g class="sbl-menu">
+  <use href="#sbl-grid" x="192" y="272" style="--sbl-delay:50ms"/>
+  <text x="240" y="297" class="sbl-text sbl-content-in" style="fill:#c7c7c2">Dashboard</text>
+  <use href="#sbl-folder" x="192" y="336" style="--sbl-delay:75ms"/>
+  <text x="240" y="361" class="sbl-text sbl-content-in">Projects</text>
+  <use href="#sbl-team" x="192" y="400" style="--sbl-delay:100ms"/>
+  <text x="240" y="425" class="sbl-text sbl-content-in">Team</text>
+  <use href="#sbl-activity" x="192" y="464" style="--sbl-delay:125ms"/>
+  <text x="240" y="489" class="sbl-text sbl-content-in">Activity</text>
+  </g>
+  <use href="#sbl-settings" x="192" y="1008" style="--sbl-delay:150ms"/>
+  <text x="240" y="1033" class="sbl-text sbl-content-in">Settings</text>
+
+  </g>
 
   <!-- Header: invisible 30px trigger box, 14px icon and 8px title gap. -->
   <rect x="696" y="193" width="60" height="60" rx="12" class="sbl-guide"/>
   <path d="M696 176V272 M2056 176V272" class="sbl-guide"/>
-  <use href="#sbl-collapse" x="712" y="209" style="--sbl-delay:300ms"/>
+  <g class="sbl-main-shift">
+  <g class="sidebar-layout-bp-button-press" style="transform-origin: 726px 223px">
+    <use href="#sbl-collapse" x="712" y="209" style="--sbl-delay:300ms"/>
+  </g>
+
   <text x="772" y="232" class="sbl-text">Dashboard</text>
 
+  </g>
+
   <!-- Caller-supplied demo content, kept as unfilled wireframe blocks. -->
-  <rect x="705" y="305" width="1342" height="190" rx="19" class="sbl-line sbl-draw" style="--sbl-delay:325ms" pathLength="1"/>
-  <rect x="705" y="521" width="430" height="126" rx="19" class="sbl-line sbl-draw" style="--sbl-delay:350ms" pathLength="1"/>
-  <rect x="1161" y="521" width="430" height="126" rx="19" class="sbl-line sbl-draw" style="--sbl-delay:375ms" pathLength="1"/>
-  <rect x="1617" y="521" width="430" height="126" rx="19" class="sbl-line sbl-draw" style="--sbl-delay:400ms" pathLength="1"/>
+  <rect x="705" y="305" width="1342" height="190" rx="19" class="sbl-line sbl-hero-reflow" pathLength="1"/>
+  <rect x="705" y="521" width="430" height="126" rx="19" class="sbl-line sbl-card-one" pathLength="1"/>
+  <rect x="1161" y="521" width="430" height="126" rx="19" class="sbl-line sbl-card-two" pathLength="1"/>
+  <rect x="1617" y="521" width="430" height="126" rx="19" class="sbl-line sbl-card-three" pathLength="1"/>
 
   <!-- Actual content padding bounds and the horizontal/vertical 12px gaps. -->
   <rect x="704" y="304" width="1344" height="736" class="sbl-guide"/>

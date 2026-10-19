@@ -1,0 +1,211 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="440" viewBox="0 0 760 440" fill="none" role="img" aria-labelledby="delete-button-blueprint-title delete-button-blueprint-description">
+  <title id="delete-button-blueprint-title">Delete Button spacing</title>
+  <desc id="delete-button-blueprint-description">Delete changes once to Confirm with its checkmark while the button width stays fixed. The default medium outline Delete Button in its armed Confirm state, drawn at three times actual size. The button is 34 pixels high with 14 pixels of padding on each side. Its 16-pixel check icon is separated from the label by 10 pixels. The text line box is 20 pixels high. The default labels reserve a content-dependent width of approximately 103.9 pixels, excluding the outside shadow outline.</desc>
+  <!-- Sources:
+       registry.json: delete-button, button, and morph file maps.
+       registry/ui/delete-button/delete-button.tsx
+       registry/ui/button/button.tsx and button.variants.ts
+       registry/ui/morph/morph.tsx
+       inspector/entries/delete-button.tsx
+       content/docs/delete-button.mdx
+       app/globals.css and app/layout.tsx
+       node_modules/tailwindcss/theme.css
+       node_modules/lucide-react/dist/esm/icons/check.js
+       Sidebar: lib/component-catalog.ts, COMPONENT_CATEGORIES -> Actions.
+
+       State: enabled, unfocused, armed; variant="outline", size="md",
+       shape="rectangular", sizing="widest". The default armed label is Confirm.
+       This is a settled state, without the button's transient press scale.
+       Drawing scale: 3 SVG units per CSS pixel; rulers label CSS pixels.
+       Dark base: background token = oklch(0.120 0 0), approximately #060606.
+
+       Dimensions, at the default 16px root:
+       Tailwind spacing token = .25rem = 4px.
+       Height is fixed by h-[34px], not a minimum or padding-derived height.
+       px-3.5 = 14px each side; gap-2.5 = 10px; size-4 = 16px.
+       Button receives a single Morph child. iconEdges therefore finds no edge
+       icon at this level: data-icon-start is absent, so ps-3 DOES NOT replace
+       the 14px leading padding with 12px.
+       text-sm = 13px, weight 500; line height 13 * 1.5385 = 20.0005px,
+       approximately 20px. Centered line-box inset = (34 - 20) / 2 = 7px.
+       Centered icon inset = (34 - 16) / 2 = 9px; radius = 8px.
+
+       Intrinsic width, not a fixed component width or maximum:
+       Morph's hidden sizers reserve max(Delete, Confirm). Local Pillow/FreeType
+       measured the project's cached Geist Latin variable font at weight 500,
+       size 1300px, then divided advances by 100 to obtain 13px advances:
+       .next/static/media/caa3a2e1cccd8315-s.p.0wgildi0cnwt9.woff2
+       Delete = 40.58px; Confirm = 49.90px.
+       Width = 14 + 16 + 10 + 49.90 + 14 = approximately 103.90px.
+       The illustration uses the approved sans-serif stack and textLength
+       to preserve this source-derived label advance. Different labels or
+       fonts change the intrinsic width; this is the default-label example.
+
+       Layout box: x=224.15..535.85, y=169..271; center=(380,220).
+       Content line box: x=266.15..493.85, y=190..250.
+       Icon box: x=266.15..314.15, y=196..244.
+       Label advance: x=344.15..493.85; icon-to-label gap = 30 SVG units.
+       Outline variant uses shadow-border, with no layout-consuming border.
+       Its 1px outside ring is represented by a 3-unit stroke centered 1.5
+       units outside the layout box. Rulers measure the layout box, excluding
+       that ring and the production drop shadows. Stroke-center radius = 25.5.
+       Illustration icon strokes use 3 SVG units for the approved drawing ink.
+  -->
+  <defs>
+    <style>
+      #delete-button-blueprint text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #delete-button-blueprint .db-label { fill: #6889ff; font-size: 18px; }
+      #delete-button-blueprint .db-content { fill: #c7c7c2; font-size: 39px; font-weight: 500; }
+      #delete-button-blueprint .db-measure { stroke: #6889ff; stroke-width: 1.5; }
+      #delete-button-blueprint .db-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+
+      /* Static exports and reduced motion show the completed drawing.
+         Outline: 0..400ms. Check: 400..600ms. Annotations: 700..900ms.
+         Delete swaps to Confirm at 350..650ms; the surface and reserved width stay fixed. No animation repeats. */
+      @keyframes delete-button-blueprint-draw {
+        from { stroke-dashoffset: 1; }
+        to { stroke-dashoffset: 0; }
+      }
+      @keyframes delete-button-blueprint-reveal {
+        from { opacity: 0; }
+      }
+      #delete-button-blueprint .db-swap-out { opacity: 0; }
+      #delete-button-blueprint .db-swap-out, #delete-button-blueprint .db-swap-in { transform-origin: 380px 220px; }
+      @keyframes db-swap-out { from { opacity: 1; transform: scale(1); filter: blur(0px); } to { opacity: 0; transform: scale(.25); filter: blur(12px); } }
+      @keyframes db-swap-in { from { opacity: 0; transform: scale(.25); filter: blur(12px); } to { opacity: 1; transform: scale(1); filter: blur(0px); } }
+      /* One press/release during reveal, matching Button's .95 press scale.
+         spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
+         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         compose with content/panel motion; static and reduced motion stay at 1. */
+      @keyframes delete-button-bp-button-press {
+        0% { transform: scale(1.000000); }
+        2% { transform: scale(0.998236); }
+        4% { transform: scale(0.994025); }
+        6% { transform: scale(0.988604); }
+        8% { transform: scale(0.982802); }
+        10% { transform: scale(0.977146); }
+        12% { transform: scale(0.971948); }
+        14% { transform: scale(0.967366); }
+        16% { transform: scale(0.963455); }
+        18% { transform: scale(0.960207); }
+        20% { transform: scale(0.957573); }
+        22% { transform: scale(0.955481); }
+        24% { transform: scale(0.953856); }
+        26% { transform: scale(0.952619); }
+        28% { transform: scale(0.951698); }
+        30% { transform: scale(0.951029); }
+        32% { transform: scale(0.950556); }
+        34% { transform: scale(0.950233); }
+        36% { transform: scale(0.950022); }
+        38% { transform: scale(0.950000); }
+        40% { transform: scale(0.950000); }
+        42% { transform: scale(0.950000); }
+        44% { transform: scale(0.950000); }
+        46% { transform: scale(0.950000); }
+        48% { transform: scale(0.950000); }
+        50% { transform: scale(0.950000); }
+        52% { transform: scale(0.951764); }
+        54% { transform: scale(0.955975); }
+        56% { transform: scale(0.961396); }
+        58% { transform: scale(0.967198); }
+        60% { transform: scale(0.972854); }
+        62% { transform: scale(0.978052); }
+        64% { transform: scale(0.982634); }
+        66% { transform: scale(0.986545); }
+        68% { transform: scale(0.989793); }
+        70% { transform: scale(0.992427); }
+        72% { transform: scale(0.994519); }
+        74% { transform: scale(0.996144); }
+        76% { transform: scale(0.997381); }
+        78% { transform: scale(0.998302); }
+        80% { transform: scale(0.998971); }
+        82% { transform: scale(0.999444); }
+        84% { transform: scale(0.999767); }
+        86% { transform: scale(0.999978); }
+        88% { transform: scale(1.000000); }
+        90% { transform: scale(1.000000); }
+        92% { transform: scale(1.000000); }
+        94% { transform: scale(1.000000); }
+        96% { transform: scale(1.000000); }
+        98% { transform: scale(1.000000); }
+        100% { transform: scale(1.000000); }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .delete-button-bp-button-press { animation: delete-button-bp-button-press 500ms linear 150ms both; }
+        #delete-button-blueprint .db-swap-out { animation: db-swap-out 250ms cubic-bezier(.16,1,.3,1) 350ms both; }
+        #delete-button-blueprint .db-swap-in { animation: db-swap-in 300ms cubic-bezier(.16,1,.3,1) 350ms both; }
+        #delete-button-blueprint .db-idle-stroke {
+          stroke-dasharray: 1;
+          animation: delete-button-blueprint-draw 200ms ease-out var(--db-idle-delay, 75ms) both;
+        }
+        #delete-button-blueprint .db-outline {
+          stroke-dasharray: 1;
+          animation: delete-button-blueprint-draw 400ms ease-out 0ms both;
+        }
+        #delete-button-blueprint .db-detail {
+          stroke-dasharray: 1;
+          animation: delete-button-blueprint-draw 200ms ease-out 400ms both;
+        }
+        #delete-button-blueprint .db-measure,
+        #delete-button-blueprint .db-spacing,
+        #delete-button-blueprint .db-label {
+          animation: delete-button-blueprint-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <g id="delete-button-blueprint">
+    <rect width="760" height="440" fill="#060606"/>
+
+    <!-- Surface stays visible; only its separate shadow outline draws in. -->
+    <g class="delete-button-bp-button-press" style="transform-origin: 380px 220px">
+      <rect x="224.15" y="169" width="311.7" height="102" rx="24" fill="#060606"/>
+      <rect x="222.65" y="167.5" width="314.7" height="105" rx="25.5" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="db-outline"/>
+
+      <!-- Padding, line box, icon box, and the exact icon-to-label edges. -->
+      <rect x="266.15" y="190" width="227.7" height="60" class="db-spacing"/>
+      <rect x="266.15" y="196" width="48" height="48" class="db-spacing"/>
+      <path d="M266.15 190V145 M314.15 196V145 M344.15 190V326 M314.15 244V326 M266.15 250V326 M493.85 250V326 M224.15 271V326 M535.85 271V326" class="db-spacing"/>
+      <path d="M493.85 190H605 M493.85 250H605" class="db-spacing"/>
+
+      <!-- Idle content is centered within the same reserved 227.7-unit cell.
+           Delete width=40.58*3=121.74; total=48+30+121.74=199.74.
+           Start=380-199.74/2=280.13. Trash2 source: lucide-react/dist/esm/icons/trash-2.js. -->
+      <g class="db-swap-out" aria-hidden="true">
+        <g transform="translate(280.13 196) scale(2)" stroke="#c7c7c2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18" vector-effect="non-scaling-stroke" pathLength="1" class="db-idle-stroke"/>
+          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" vector-effect="non-scaling-stroke" pathLength="1" class="db-idle-stroke" style="--db-idle-delay:100ms"/>
+          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" vector-effect="non-scaling-stroke" pathLength="1" class="db-idle-stroke" style="--db-idle-delay:125ms"/>
+          <path d="M10 11v6" vector-effect="non-scaling-stroke" pathLength="1" class="db-idle-stroke" style="--db-idle-delay:150ms"/>
+          <path d="M14 11v6" vector-effect="non-scaling-stroke" pathLength="1" class="db-idle-stroke" style="--db-idle-delay:175ms"/>
+        </g>
+        <text x="358.13" y="233.5" textLength="121.74" lengthAdjust="spacingAndGlyphs" class="db-content">Delete</text>
+      </g>
+      <g class="db-swap-in">
+      <!-- Lucide Check: M20 6 9 17l-5-5, mapped from 24 x 24 into 48 x 48. -->
+      <path d="M306.15 208 284.15 230l-10-10" stroke="#c7c7c2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" pathLength="1" class="db-detail"/>
+      <text x="344.15" y="233.5" textLength="149.7" lengthAdjust="spacingAndGlyphs" class="db-content">Confirm</text>
+
+      </g>
+    </g>
+    <!-- Intrinsic overall width and fixed layout height. -->
+    <path d="M224.15 90V150 M535.85 90V150 M224.15 102H535.85" class="db-measure"/>
+    <text x="380" y="85" text-anchor="middle" class="db-label">103.9 px</text>
+    <path d="M149 169H173 M149 271H173 M161 169V271 M173 169H210 M173 271H210" class="db-measure"/>
+    <text x="139" y="226" text-anchor="end" class="db-label">34 px</text>
+
+    <!-- Icon box width above the control, line-box height on the right. -->
+    <path d="M266.15 137V157 M314.15 137V157 M266.15 147H314.15" class="db-measure"/>
+    <text x="290.15" y="131" text-anchor="middle" class="db-label">16 px</text>
+    <path d="M594 190H614 M594 250H614 M604 190V250" class="db-measure"/>
+    <text x="626" y="226" class="db-label">20 px</text>
+
+    <!-- Horizontal padding and the gap: endpoints follow the true content boxes. -->
+    <path d="M224.15 311V331 M266.15 311V331 M224.15 321H266.15" class="db-measure"/>
+    <text x="245.15" y="354" text-anchor="middle" class="db-label">14 px</text>
+    <path d="M314.15 311V331 M344.15 311V331 M314.15 321H344.15" class="db-measure"/>
+    <text x="329.15" y="354" text-anchor="middle" class="db-label">10 px</text>
+    <path d="M493.85 311V331 M535.85 311V331 M493.85 321H535.85" class="db-measure"/>
+    <text x="514.85" y="354" text-anchor="middle" class="db-label">14 px</text>
+  </g>
+</svg>

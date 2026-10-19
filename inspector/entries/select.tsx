@@ -64,22 +64,23 @@ export const selectEntry = defineEntry({
     size: select(["xs", "sm", "md"] as const, "sm"),
     disabled: bool(false),
     multiple: bool(false),
+    selected: bool(true, "Selected"),
     searchable: bool(false, "Search in panel"),
     icons: bool(true),
     variant: select(["default", "ghost", "plain"] as const, "default", "Variant"),
     showLabel: bool(true, "Show label"),
     invalid: bool(false),
   },
-  render({ size, disabled, multiple, searchable, icons, variant, showLabel, invalid }) {
+  render({ size, disabled, multiple, selected, searchable, icons, variant, showLabel, invalid }) {
     return (
       <div className="w-full max-w-56">
         {multiple ? (
           <Select
-            key="multiple"
+            key={`multiple-${selected}`}
             multiple
             size={size}
             items={FRUITS}
-            defaultValue={["banana", "mango"]}
+            defaultValue={selected ? ["banana", "mango"] : []}
             disabled={disabled}
           >
             <SelectTrigger
@@ -89,7 +90,7 @@ export const selectEntry = defineEntry({
               aria-invalid={invalid ? true : undefined}
               aria-describedby={invalid ? "select-error" : undefined}
             >
-              <SelectValue placeholder="Pick fruits" />
+              <SelectValue placeholder="Select an option" />
             </SelectTrigger>
             <SelectContent
               searchable={searchable}
@@ -101,10 +102,10 @@ export const selectEntry = defineEntry({
           </Select>
         ) : (
           <Select
-            key="single"
+            key={`single-${selected}`}
             size={size}
             items={FRUITS}
-            defaultValue="banana"
+            defaultValue={selected ? "banana" : null}
             disabled={disabled}
             iconForValue={icons ? (value) => <FruitIcon value={String(value)} /> : undefined}
           >
@@ -115,7 +116,7 @@ export const selectEntry = defineEntry({
               aria-invalid={invalid ? true : undefined}
               aria-describedby={invalid ? "select-error" : undefined}
             >
-              <SelectValue placeholder="Pick a fruit" />
+              <SelectValue placeholder="Select an option" />
             </SelectTrigger>
             <SelectContent
               searchable={searchable}

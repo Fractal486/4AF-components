@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="560" viewBox="0 0 1320 560" fill="none" role="img" aria-labelledby="input-blueprint-title input-blueprint-description">
+  <title id="input-blueprint-title">Input spacing</title>
+  <desc id="input-blueprint-description">The default empty text input with a leading Search icon, drawn at three times actual size with the placeholder Type something. This example is 320 pixels wide and the field is 34 pixels high. The 16-pixel icon sits 12 pixels from the outer leading edge, with 9 pixels between its box and the text. Text has 36 pixels of leading padding inside the one-pixel border, 12 pixels of trailing padding, and 4 pixels of vertical padding, leaving a 24-pixel-high content box. The corners have an 8-pixel outer radius.</desc>
+  <!-- Sources:
+       registry/ui/input/input.tsx
+       registry/ui/input/input.variants.ts
+       inspector/entries/input.tsx
+       app/globals.css
+       node_modules/tailwindcss/theme.css and preflight.css
+       Search geometry: locally installed lucide-react Search (24 x 24 viewBox).
+       Sidebar: lib/component-catalog.ts, COMPONENT_CATEGORIES, Fields and selection.
+
+       State: variant="default", tone="neutral", type="text"; empty, unfocused,
+       enabled, valid, startIcon={<Search />}. Placeholder matches the default demo.
+       Width is caller-controlled (w-full). This drawing chooses 320 CSS px,
+       within the demo's max-w-sm = 24rem = 384px; 320px is not a fixed API size.
+       Drawing scale: 3 SVG units per CSS pixel; labels use original CSS pixels.
+       Base background: dark background token = oklch(0.120 0 0), approximately #060606.
+
+       Geometry, assuming the default 16px root:
+       Tailwind spacing token = .25rem = 4px; px-3 = 12px; py-1 = 4px.
+       With an icon, data-[icon-start]:ps-9 replaces leading padding with 36px.
+       Border-box: 320 x 34px (h-[34px], border = 1px).
+       Content: width = 320 - 2*1 - 36 - 12 = 270px;
+                height = 34 - 2*1 - 2*4 = 24px.
+       Icon wrapper is positioned against the unbordered outer wrapper: start-3 = 12px.
+       Icon box: size-4 = 16px, centered vertically at (34 - 16)/2 = 9px.
+       Text begins 1px border + 36px padding = 37px from the outer leading edge.
+       Actual icon-box-to-text gap: 37 - 12 - 16 = 9px. The 1px border adds to
+       the source comment's nominal 8px gap because the two insets have different origins.
+       text-sm = .8125rem = 13px; line height = 13 * 1.5385 = 20.0005px
+       (approximately 20px), centered in the 24px input content box.
+       rounded-[8px]: outer radius = 8px, stroke center radius = 7.5px.
+       Outer bounds: x=180..1140, y=230..332.
+       Inner border edges: x=183..1137, y=233..329.
+       Padded content box: x=291..1101, y=245..317.
+       Icon box: x=216..264, y=257..305.
+       The visible outline is inset by half its 3-unit stroke to keep these bounds exact.
+  -->
+  <defs>
+    <style>
+      #input-blueprint text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #input-blueprint .input-label { fill: #a1a29c; font-size: 18px; }
+      #input-blueprint .input-placeholder { fill: #92948d; font-size: 39px; }
+      #input-blueprint .input-measure { stroke: #6889ff; stroke-width: 1.5; }
+      #input-blueprint .input-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+
+      /* Fully visible by default, including static exports and reduced motion.
+         Outline: 0..400ms. Icon circle: 400..600ms; handle: 425..625ms.
+         All annotations: 700..900ms. One iteration. */
+      @keyframes input-blueprint-draw {
+        from { stroke-dashoffset: 1; }
+        to { stroke-dashoffset: 0; }
+      }
+      @keyframes input-blueprint-reveal {
+        from { opacity: 0; }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        #input-blueprint .input-outline {
+          stroke-dasharray: 1;
+          animation: input-blueprint-draw 400ms ease-out 0ms both;
+        }
+        #input-blueprint .input-detail {
+          stroke-dasharray: 1;
+          animation: input-blueprint-draw 200ms ease-out var(--input-line-delay, 400ms) both;
+        }
+        #input-blueprint .input-measure,
+        #input-blueprint .input-spacing,
+        #input-blueprint .input-label {
+          animation: input-blueprint-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <g id="input-blueprint">
+    <rect width="1320" height="560" fill="#060606"/>
+
+    <!-- One default field; no additional presentation surface. -->
+    <rect x="181.5" y="231.5" width="957" height="99" rx="22.5" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="input-outline"/>
+
+    <!-- Text content and the separate, absolutely positioned icon box. -->
+    <rect x="291" y="245" width="810" height="72" class="input-spacing"/>
+    <rect x="216" y="257" width="48" height="48" class="input-spacing"/>
+    <path d="M291 245H145 M291 317H145" class="input-spacing"/>
+    <path d="M180 344V402 M216 305V402 M264 305V402 M291 317V402 M1101 317V402 M1137 254V402" class="input-spacing"/>
+    <path d="M1005 233H1090" class="input-spacing"/>
+    <g transform="translate(216 257) scale(2)" stroke="#a7a8a2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8" pathLength="1" class="input-detail"/>
+      <path d="m21 21-4.3-4.3" pathLength="1" class="input-detail" style="--input-line-delay:425ms"/>
+    </g>
+    <text x="291" y="295" class="input-placeholder">Type something...</text>
+
+    <!-- Chosen width, measured between the actual outer border edges. -->
+    <path d="M180 218V139 M1140 218V139 M180 150H1140" class="input-measure"/>
+    <text x="660" y="130" text-anchor="middle" class="input-label">320 px</text>
+
+    <!-- Fixed height, including both borders. -->
+    <path d="M1152 230H1203 M1152 332H1203 M1192 230V332" class="input-measure"/>
+    <text x="1214" y="287" class="input-label">34 px</text>
+
+    <!-- Content-box height, excluding borders and vertical padding. -->
+    <path d="M122 245H142 M122 317H142 M132 245V317" class="input-measure"/>
+    <text x="110" y="287" text-anchor="end" class="input-label">24 px</text>
+
+    <!-- Vertical padding: from the inner top border to the content box. -->
+    <path d="M1035 233H1055 M1035 245H1055 M1045 233V245" class="input-measure"/>
+    <path d="M1045 239 1003 197H975" class="input-measure"/>
+    <text x="962" y="203" text-anchor="end" class="input-label">4 px</text>
+
+    <!-- Icon inset from the outer edge, icon-box width, and actual gap to text. -->
+    <path d="M180 382V402 M216 382V402 M264 382V402 M291 382V402 M180 392H291" class="input-measure"/>
+    <path d="M198 392V402L172 434H156" class="input-measure"/>
+    <text x="143" y="440" text-anchor="end" class="input-label">12 px</text>
+    <path d="M240 392V416" class="input-measure"/>
+    <text x="240" y="440" text-anchor="middle" class="input-label">16 px</text>
+    <path d="M277.5 392V402L309 434H331" class="input-measure"/>
+    <text x="344" y="440" class="input-label">9 px</text>
+
+    <!-- Trailing padding excludes the 1px border. -->
+    <path d="M1101 382V402 M1137 382V402 M1101 392H1137 M1119 392V416" class="input-measure"/>
+    <text x="1119" y="440" text-anchor="middle" class="input-label">12 px</text>
+  </g>
+</svg>

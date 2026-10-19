@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="360" viewBox="0 0 1080 360" fill="none" role="img" aria-labelledby="progress-bp-title progress-bp-desc">
+  <title id="progress-bp-title">Progress spacing blueprint</title>
+  <desc id="progress-bp-desc">The default upload progress demo at 60 percent, drawn at twice its CSS size. The chosen width is 384 pixels, the label line is approximately 20 pixels high, the label-to-track gap is 8 pixels, and the track is 8 pixels high.</desc>
+  <!-- Sources: registry/ui/progress/progress.tsx; inspector/entries/progress.tsx;
+       app/globals.css; node_modules/tailwindcss/theme.css; lib/component-catalog.ts.
+       No variants sibling: Progress has one default track treatment.
+       LTR, value=60, min=0, max=100; demo showValue=true, shimmer=false.
+       Representative caller width chosen at demo max-w-sm: 24rem = 384px.
+       Scale 2x. rem=16px; spacing=.25rem=4px; h-2=8px; space-y-2=8px.
+       text-sm=13px; line-height=1.5385 yields 20.0005px, rounded here to 20px.
+       Demo total height = 20 + 8 + 8 = 36px. No borders or padding.
+       Track x=156..924, y=206..222. Label line box y=150..190.
+       Indicator is full width, translated -40% and clipped by the track:
+       visible width = 384*.6 = 230.4px (460.8 drawing units).
+       Reveal: 0 to 60% in 700ms with cubic ease-out, then guides complete at 900ms.
+       Fill and leading edge share translateX(-460.8px) to zero.
+       Percentage frames use inverse cubic times: t=700*(1-cbrt(1-value/60)).
+       Static exports and reduced motion show only the completed 60% state.
+       Outlines are illustration strokes, not production borders.
+       Dark background token oklch(.120 0 0) resolves to #060606. -->
+  <defs>
+    <clipPath id="progress-bp-track-clip"><rect x="156" y="206" width="768" height="16" rx="8"/></clipPath>
+    <style>
+      text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      .progress-bp-text { fill: #92948d; font-size: 26px; }
+      .progress-bp-label { fill: #6889ff; font-size: 18px; }
+      .progress-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      .progress-bp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      @keyframes progress-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes progress-bp-reveal { from { opacity: 0; } }
+      .progress-bp-count-frame { opacity: 0; }
+      @keyframes progress-bp-fill { from { transform: translateX(-460.8px); } to { transform: translateX(0); } }
+      @keyframes progress-bp-count { from { opacity: 1; } to { opacity: 0; } }
+      @keyframes progress-bp-final { from { opacity: 0; } to { opacity: 1; } }
+      @media (prefers-reduced-motion: no-preference) {
+        .progress-bp-fill { animation: progress-bp-fill 700ms cubic-bezier(.333333,1,.666667,1) both; }
+        .progress-bp-count-frame { animation: progress-bp-count var(--frame-duration) steps(1, end) var(--frame-delay); }
+        .progress-bp-count-final { animation: progress-bp-final 700ms steps(1, end) both; }
+        .progress-bp-draw { stroke-dasharray: 1; animation: progress-bp-draw 400ms ease-out both; }
+        .progress-bp-detail { animation-duration: 200ms; animation-delay: 400ms; }
+        .progress-bp-measure, .progress-bp-spacing, .progress-bp-label { animation: progress-bp-reveal 200ms ease-out 700ms both; }
+      }
+    </style>
+  </defs>
+  <rect width="1080" height="360" fill="#060606"/>
+  <g clip-path="url(#progress-bp-track-clip)">
+    <rect x="-151.2" y="206" width="768" height="16" rx="8" fill="#353632" class="progress-bp-fill"/>
+  </g>
+  <rect x="156" y="206" width="768" height="16" rx="8" stroke="#a7a8a2" stroke-width="2" pathLength="1" class="progress-bp-draw"/>
+  <g clip-path="url(#progress-bp-track-clip)"><g class="progress-bp-fill"><path d="M608.8 206a8 8 0 0 1 0 16" stroke="#a7a8a2" stroke-width="2" pathLength="1" class="progress-bp-draw progress-bp-detail"/></g></g>
+  <!-- Line boxes and aligned content edges, over surfaces but behind text. -->
+  <path d="M156 150H924 M156 190H924 M156 126V239 M924 126V239 M616.8 222V278" class="progress-bp-spacing"/>
+  <text x="156" y="179" class="progress-bp-text">Uploading…</text>
+  <g text-anchor="end" class="progress-bp-text" style="fill:#c7c7c2;font-weight:500;font-variant-numeric:tabular-nums" aria-hidden="true">
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:0.0000ms;--frame-duration:3.9107ms">0%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:3.9107ms;--frame-duration:3.9551ms">1%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:7.8658ms;--frame-duration:4.0009ms">2%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:11.8667ms;--frame-duration:4.0479ms">3%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:15.9146ms;--frame-duration:4.0964ms">4%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:20.0111ms;--frame-duration:4.1464ms">5%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:24.1574ms;--frame-duration:4.1979ms">6%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:28.3553ms;--frame-duration:4.2510ms">7%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:32.6063ms;--frame-duration:4.3059ms">8%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:36.9122ms;--frame-duration:4.3625ms">9%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:41.2748ms;--frame-duration:4.4211ms">10%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:45.6959ms;--frame-duration:4.4817ms">11%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:50.1776ms;--frame-duration:4.5444ms">12%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:54.7219ms;--frame-duration:4.6093ms">13%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:59.3312ms;--frame-duration:4.6766ms">14%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:64.0078ms;--frame-duration:4.7464ms">15%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:68.7542ms;--frame-duration:4.8189ms">16%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:73.5730ms;--frame-duration:4.8942ms">17%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:78.4672ms;--frame-duration:4.9725ms">18%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:83.4397ms;--frame-duration:5.0540ms">19%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:88.4937ms;--frame-duration:5.1390ms">20%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:93.6326ms;--frame-duration:5.2276ms">21%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:98.8602ms;--frame-duration:5.3201ms">22%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:104.1803ms;--frame-duration:5.4168ms">23%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:109.5971ms;--frame-duration:5.5181ms">24%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:115.1152ms;--frame-duration:5.6242ms">25%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:120.7395ms;--frame-duration:5.7356ms">26%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:126.4751ms;--frame-duration:5.8527ms">27%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:132.3278ms;--frame-duration:5.9759ms">28%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:138.3038ms;--frame-duration:6.1059ms">29%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:144.4096ms;--frame-duration:6.2431ms">30%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:150.6527ms;--frame-duration:6.3883ms">31%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:157.0411ms;--frame-duration:6.5423ms">32%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:163.5834ms;--frame-duration:6.7059ms">33%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:170.2893ms;--frame-duration:6.8801ms">34%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:177.1694ms;--frame-duration:7.0661ms">35%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:184.2356ms;--frame-duration:7.2653ms">36%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:191.5008ms;--frame-duration:7.4790ms">37%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:198.9799ms;--frame-duration:7.7092ms">38%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:206.6891ms;--frame-duration:7.9580ms">39%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:214.6471ms;--frame-duration:8.2279ms">40%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:222.8750ms;--frame-duration:8.5219ms">41%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:231.3969ms;--frame-duration:8.8437ms">42%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:240.2406ms;--frame-duration:9.1977ms">43%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:249.4383ms;--frame-duration:9.5893ms">44%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:259.0276ms;--frame-duration:10.0256ms">45%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:269.0532ms;--frame-duration:10.5151ms">46%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:279.5683ms;--frame-duration:11.0692ms">47%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:290.6375ms;--frame-duration:11.7025ms">48%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:302.3401ms;--frame-duration:12.4351ms">49%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:314.7752ms;--frame-duration:13.2943ms">50%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:328.0695ms;--frame-duration:14.3194ms">51%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:342.3889ms;--frame-duration:15.5684ms">52%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:357.9573ms;--frame-duration:17.1315ms">53%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:375.0888ms;--frame-duration:19.1581ms">54%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:394.2468ms;--frame-duration:21.9171ms">55%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:416.1639ms;--frame-duration:25.9539ms">56%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:442.1178ms;--frame-duration:32.6013ms">57%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:474.7191ms;--frame-duration:46.4753ms">58%</text>
+    <text x="924" y="179" class="progress-bp-count-frame" style="--frame-delay:521.1945ms;--frame-duration:178.8055ms">59%</text>
+    <text x="924" y="179" class="progress-bp-count-final">60%</text>
+  </g>
+  <!-- Chosen rendered width. -->
+  <path d="M156 99V121 M924 99V121 M156 110H924" class="progress-bp-measure"/>
+  <text x="540" y="94" text-anchor="middle" class="progress-bp-label">384 px</text>
+  <!-- Label line height. -->
+  <path d="M116 150H138 M116 190H138 M127 150V190" class="progress-bp-measure"/>
+  <text x="105" y="176" text-anchor="end" class="progress-bp-label">20 px</text>
+  <!-- Gap and track height use separate rulers with exact endpoints. -->
+  <path d="M940 190H960 M940 206H960 M950 190V206 M960 198 979 184H997" class="progress-bp-measure"/>
+  <text x="1007" y="190" class="progress-bp-label">8 px</text>
+  <path d="M940 206H960 M940 222H960 M950 206V222 M960 214 979 241H997" class="progress-bp-measure"/>
+  <text x="1007" y="247" class="progress-bp-label">8 px</text>
+  <!-- Visible fill, not the translated indicator's underlying full width. -->
+  <path d="M156 246V278 M156 267H616.8 M616.8 256V278" class="progress-bp-measure"/>
+  <text x="386.4" y="300" text-anchor="middle" class="progress-bp-label">230.4 px</text>
+</svg>

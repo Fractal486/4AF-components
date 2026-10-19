@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="cbbp" width="780" height="380" viewBox="0 0 780 380" fill="none" role="img" aria-labelledby="cbbp-title cbbp-description">
+  <title id="cbbp-title">Checkbox spacing</title>
+  <desc id="cbbp-description">The checkbox presses, fills, and draws its tick once before settling checked. A checked Checkbox with the label Accept terms and conditions, drawn at twice CSS size. The box is 16 pixels square with a 1.5 pixel border and a 4 pixel corner radius. The label gap is 8 pixels and its line height is approximately 20 pixels. The centered indicator is 9.1 pixels square.</desc>
+  <!-- Sources:
+       registry.json: checkbox, both files in its install map.
+       registry/ui/checkbox/checkbox.tsx
+       registry/ui/checkbox/checkbox.variants.ts
+       inspector/entries/checkbox.tsx; content/docs/checkbox.mdx
+       app/globals.css; node_modules/tailwindcss/theme.css and preflight.css
+       Sidebar: COMPONENT_CATEGORIES in lib/component-catalog.ts, Fields and selection.
+
+       Default fixed size; checked, enabled, resting, with the demo's default label.
+       All component geometry and component text are drawn at 2x CSS size.
+       Root font: 16px. Tailwind spacing token: 0.25rem = 4px; border-box sizing.
+       size-4 = 16px square, border-[1.5px], rounded-[4px], no padding.
+       Content box = 16 - 2 * 1.5 = 13px per side.
+       Indicator size-[70%] = 13 * 0.7 = 9.1px, not 70% of the border box.
+       Indicator inset from the outer box = 1.5 + (13 - 9.1) / 2 = 3.45px.
+       Its 24-unit viewBox retains the source tick and strokeWidth 3.5.
+       At 2x, mark stroke = 3.5 / 24 * 9.1 * 2 = 2.6541667 drawing units.
+       gap-2 = 8px; text-sm = 0.8125rem = 13px.
+       Line height = 13 * 1.5385 = 20.0005px, shown rounded to 20px.
+       Row height follows that label line box; it is not a fixed control height.
+       Label width is intrinsic to the illustration font; there is no fixed row width.
+       Drawing bounds: box (190,174)-(222,206), row line box y170-210.
+       Inner border edges: x193-219, y177-203; indicator x196.9-215.1, y180.9-199.1.
+       Label starts at x238 = 222 + 8 * 2; its font size is 26 drawing units.
+       The outline's 3-unit stroke sits inside the exact 32-unit border box.
+       Native sequence from checkbox.tsx: .95 press on spring.press; the checked
+       fill takes duration-base=200ms, then the tick draws for 200ms after 80ms.
+       Press 100..600ms, fill 350..550ms, tick 430..630ms; static state stays checked.
+       Dark background oklch(0.120 0 0) resolves to #060606.
+  -->
+  <defs>
+    <style>
+      #cbbp text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #cbbp .cbbp-label { fill: #92948d; font-size: 16px; }
+      #cbbp .cbbp-content { fill: #c7c7c2; font-size: 26px; }
+      #cbbp .cbbp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      #cbbp .cbbp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      /* The complete static drawing is also the reduced-motion presentation. */
+      #cbbp { --cbbp-outline-duration: 400ms; --cbbp-detail-duration: 200ms; --cbbp-annotation-delay: 700ms; --cbbp-annotation-duration: 200ms; }
+      @keyframes cbbp-draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes cbbp-reveal { from { opacity: 0; } }
+      #cbbp .cbbp-press { transform-origin: 206px 190px; }
+      @keyframes cbbp-fill { from { fill: #060606; } to { fill: #353632; } }
+      @keyframes cbbp-press {
+        0% { transform: scale(1.000000); }
+        2% { transform: scale(0.998236); }
+        4% { transform: scale(0.994025); }
+        6% { transform: scale(0.988604); }
+        8% { transform: scale(0.982802); }
+        10% { transform: scale(0.977146); }
+        12% { transform: scale(0.971948); }
+        14% { transform: scale(0.967366); }
+        16% { transform: scale(0.963455); }
+        18% { transform: scale(0.960207); }
+        20% { transform: scale(0.957573); }
+        22% { transform: scale(0.955481); }
+        24% { transform: scale(0.953856); }
+        26% { transform: scale(0.952619); }
+        28% { transform: scale(0.951698); }
+        30% { transform: scale(0.951029); }
+        32% { transform: scale(0.950556); }
+        34% { transform: scale(0.950233); }
+        36% { transform: scale(0.950022); }
+        38% { transform: scale(0.950000); }
+        40% { transform: scale(0.950000); }
+        42% { transform: scale(0.950000); }
+        44% { transform: scale(0.950000); }
+        46% { transform: scale(0.950000); }
+        48% { transform: scale(0.950000); }
+        50% { transform: scale(0.950000); }
+        52% { transform: scale(0.951764); }
+        54% { transform: scale(0.955975); }
+        56% { transform: scale(0.961396); }
+        58% { transform: scale(0.967198); }
+        60% { transform: scale(0.972854); }
+        62% { transform: scale(0.978052); }
+        64% { transform: scale(0.982634); }
+        66% { transform: scale(0.986545); }
+        68% { transform: scale(0.989793); }
+        70% { transform: scale(0.992427); }
+        72% { transform: scale(0.994519); }
+        74% { transform: scale(0.996144); }
+        76% { transform: scale(0.997381); }
+        78% { transform: scale(0.998302); }
+        80% { transform: scale(0.998971); }
+        82% { transform: scale(0.999444); }
+        84% { transform: scale(0.999767); }
+        86% { transform: scale(0.999978); }
+        88% { transform: scale(1.000000); }
+        90% { transform: scale(1.000000); }
+        92% { transform: scale(1.000000); }
+        94% { transform: scale(1.000000); }
+        96% { transform: scale(1.000000); }
+        98% { transform: scale(1.000000); }
+        100% { transform: scale(1.000000); }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        #cbbp .cbbp-press { animation: cbbp-press 500ms linear 100ms both; }
+        #cbbp .cbbp-fill { animation: cbbp-fill 200ms cubic-bezier(.16,1,.3,1) 350ms both; }
+        #cbbp .cbbp-draw {
+          stroke-dasharray: 1;
+          animation: cbbp-draw-line var(--cbbp-detail-duration) ease-out var(--cbbp-line-delay, 0ms) both;
+        }
+        #cbbp .cbbp-check { animation-timing-function: cubic-bezier(.16,1,.3,1); }
+        #cbbp .cbbp-outline { animation-duration: var(--cbbp-outline-duration); }
+        #cbbp .cbbp-measure, #cbbp .cbbp-spacing, #cbbp .cbbp-label {
+          animation: cbbp-reveal var(--cbbp-annotation-duration) ease-out var(--cbbp-annotation-delay) both;
+        }
+      }
+    </style>
+  </defs>
+  <rect width="780" height="380" fill="#060606"/>
+
+  <g class="cbbp-press">
+    <!-- Separate fill keeps the selected surface visible while its border draws. -->
+    <rect x="190" y="174" width="32" height="32" rx="8" fill="#353632" class="cbbp-fill"/>
+    <rect x="191.5" y="175.5" width="29" height="29" rx="6.5" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="cbbp-draw cbbp-outline"/>
+  </g>
+
+  <!-- Exact line-box edges, label gap, and the centered indicator viewport.
+       Guides are above surfaces and below the actual label and tick. -->
+  <path d="M184 170H602 M184 210H602 M222 149V218 M238 149V218" class="cbbp-spacing"/>
+  <rect x="196.9" y="180.9" width="18.2" height="18.2" class="cbbp-spacing"/>
+  <text x="238" y="199.5" class="cbbp-content">Accept terms and conditions</text>
+  <g class="cbbp-press">
+  <svg x="196.9" y="180.9" width="18.2" height="18.2" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M4.5 12.75l6 6 9-13.5" stroke="#c7c7c2" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" pathLength="1" class="cbbp-draw cbbp-check" style="--cbbp-line-delay:430ms"/>
+  </svg>
+  </g>
+
+  <!-- Box width: (222 - 190) / 2 = 16px. -->
+  <path d="M190 164V106 M222 130V106 M190 116H222" class="cbbp-measure"/>
+  <text x="206" y="97" text-anchor="middle" class="cbbp-label">16 px</text>
+
+  <!-- Box height, independent of the label's taller line box. -->
+  <path d="M180 174H128 M180 206H128 M138 174V206" class="cbbp-measure"/>
+  <text x="117" y="196" text-anchor="end" class="cbbp-label">16 px</text>
+
+  <!-- Gap endpoints are the box's outer edge and the label's line-box start. -->
+  <path d="M222 129V149 M238 129V149 M222 139H238" class="cbbp-measure"/>
+  <path d="M230 139 260 116H284" class="cbbp-measure"/>
+  <text x="296" y="122" class="cbbp-label">8 px</text>
+
+  <!-- Label line height: 40 drawing units / 2, rounded from 20.0005px. -->
+  <path d="M602 170H628 M602 210H628 M618 170V210" class="cbbp-measure"/>
+  <text x="642" y="196" class="cbbp-label">20 px</text>
+
+  <!-- Border thickness at a straight edge: (193 - 190) / 2 = 1.5px. -->
+  <path d="M190 184V196 M193 184V196 M190 190H193" class="cbbp-measure"/>
+  <path d="M191.5 190 172 246H145" class="cbbp-measure"/>
+  <text x="132" y="252" text-anchor="end" class="cbbp-label">1.5 px</text>
+
+  <!-- Indicator viewport width, not tick ink: (215.1 - 196.9) / 2 = 9.1px. -->
+  <path d="M196.9 199.1V275 M215.1 199.1V275" class="cbbp-spacing"/>
+  <path d="M196.9 255V275 M215.1 255V275 M196.9 265H215.1" class="cbbp-measure"/>
+  <text x="206" y="298" text-anchor="middle" class="cbbp-label">9.1 px</text>
+</svg>

@@ -1,0 +1,239 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" fill="none" role="img" aria-labelledby="button-group-blueprint-title button-group-blueprint-description">
+  <title id="button-group-blueprint-title">Button Group spacing</title>
+  <desc id="button-group-blueprint-description">Three default primary buttons, Copy, Edit, and Share, joined horizontally and drawn at three times actual size. Buttons are 34 pixels high, with 16-pixel leading icons, a 10-pixel icon-to-label gap, 12 pixels of leading padding, and 14 pixels of trailing padding. The 20-pixel text line is vertically centered, leaving 7 pixels above and below. Each later button overlaps the previous one by 1 pixel and carries a 1-pixel separator. This illustration chooses a 240-pixel overall width; actual width depends on the labels and font.</desc>
+  <!-- Sources:
+       registry.json: button-group and its button dependency.
+       registry/ui/button-group/button-group.tsx
+       registry/ui/button-group/button-group.variants.ts
+       registry/ui/button/button.tsx
+       registry/ui/button/button.variants.ts
+       inspector/entries/button-group.tsx
+       app/globals.css
+       node_modules/tailwindcss/theme.css and preflight.css
+       Icon geometry: locally installed lucide-react Copy, SquarePen, Share2.
+       Sidebar: lib/component-catalog.ts, COMPONENT_CATEGORIES, Actions.
+
+       State: default primary, md, horizontal, rectangular; enabled and at rest.
+       Copy, Edit, Share and leading icons follow the demo's default content.
+       The demo explicitly chooses outline; this drawing uses Button's primary default.
+       These are independent actions, so no button is selected.
+       Scale: 3 SVG units per CSS pixel. Measurement labels use CSS pixels.
+       Dark background token: oklch(0.120 0 0), approximately #060606.
+
+       Geometry at a 16px root:
+       Tailwind spacing token = .25rem = 4px; all elements use border-box sizing.
+       md: fixed h-[34px], rounded-[8px], px-3.5 = 14px.
+       Leading icon data attribute replaces start padding: ps-3 = 12px.
+       size-4 icon = 16px; gap-2.5 = 10px; text-sm = 13px.
+       Line height: 13 * 1.5385 = 20.0005px, illustrated as 20px.
+       Vertical free space: (34 - 20) / 2 = 7px; this is centering, not padding.
+       Icon's vertical inset: (34 - 16) / 2 = 9px.
+       The group has no padding or flex gap. Later buttons use -ms-px and border-s.
+       For primary, the separator is border-current/20; it occupies 1px INSIDE
+       the later button, while the negative margin overlaps the previous box by 1px.
+       The group itself has no layout border. The gray outer stroke traces the
+       filled silhouette as illustration ink; it does not add a border to the API.
+
+       Width is intrinsic and depends on label/font, not a fixed group dimension.
+       Representative illustrated text advances are 30px, 22px, and 32px, close to
+       local Segoe UI's measured 13px advances (29.60, 21.79, 32.20px).
+       SVG textLength fixes those chosen illustrative advances across font fallbacks.
+       First button: 12 + 16 + 10 + 30 + 14 = 82px.
+       Second button: 1 border + 12 + 16 + 10 + 22 + 14 = 75px.
+       Third button: 1 border + 12 + 16 + 10 + 32 + 14 = 85px.
+       Chosen group width: 82 + 75 + 85 - 2 * 1 overlap = 240px.
+       This width is an example, not a default, minimum, or maximum.
+
+       SVG bounds: group x=240..960, y=230..332; outside corner radius=24.
+       Button boxes: x=240..486, 483..708, 705..960.
+       Separator boxes: x=483..486 and 705..708; centerlines=484.5 and 706.5.
+       Content line boxes: y=251..311; icon boxes: y=257..305.
+       First icon x=276..324; text x=354..444.
+       Second icon x=522..570; text x=600..666.
+       Third icon x=744..792; text x=822..918; trailing padding x=918..960.
+  -->
+  <defs>
+    <style>
+      #button-group-blueprint text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #button-group-blueprint .bg-label { fill: #a1a29c; font-size: 18px; }
+      #button-group-blueprint .bg-text { fill: #c7c7c2; font-size: 39px; font-weight: 500; }
+      #button-group-blueprint .bg-measure { stroke: #6889ff; stroke-width: 1.5; }
+      #button-group-blueprint .bg-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+
+      /* Static exports and reduced motion show the completed drawing.
+         Outline: 0..400ms. Details: 250..650ms. Annotations: 700..900ms.
+         Each button presses its icon and label together; joined surfaces stay fixed,
+         matching ButtonGroup pressTarget="content". */
+      @keyframes button-group-blueprint-draw {
+        from { stroke-dashoffset: 1; }
+        to { stroke-dashoffset: 0; }
+      }
+      @keyframes button-group-blueprint-reveal {
+        from { opacity: 0; }
+      }
+      /* One press/release during reveal, matching Button's .95 press scale.
+         spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
+         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         compose with content/panel motion; static and reduced motion stay at 1. */
+      @keyframes button-group-bp-button-press {
+        0% { transform: scale(1.000000); }
+        2% { transform: scale(0.998236); }
+        4% { transform: scale(0.994025); }
+        6% { transform: scale(0.988604); }
+        8% { transform: scale(0.982802); }
+        10% { transform: scale(0.977146); }
+        12% { transform: scale(0.971948); }
+        14% { transform: scale(0.967366); }
+        16% { transform: scale(0.963455); }
+        18% { transform: scale(0.960207); }
+        20% { transform: scale(0.957573); }
+        22% { transform: scale(0.955481); }
+        24% { transform: scale(0.953856); }
+        26% { transform: scale(0.952619); }
+        28% { transform: scale(0.951698); }
+        30% { transform: scale(0.951029); }
+        32% { transform: scale(0.950556); }
+        34% { transform: scale(0.950233); }
+        36% { transform: scale(0.950022); }
+        38% { transform: scale(0.950000); }
+        40% { transform: scale(0.950000); }
+        42% { transform: scale(0.950000); }
+        44% { transform: scale(0.950000); }
+        46% { transform: scale(0.950000); }
+        48% { transform: scale(0.950000); }
+        50% { transform: scale(0.950000); }
+        52% { transform: scale(0.951764); }
+        54% { transform: scale(0.955975); }
+        56% { transform: scale(0.961396); }
+        58% { transform: scale(0.967198); }
+        60% { transform: scale(0.972854); }
+        62% { transform: scale(0.978052); }
+        64% { transform: scale(0.982634); }
+        66% { transform: scale(0.986545); }
+        68% { transform: scale(0.989793); }
+        70% { transform: scale(0.992427); }
+        72% { transform: scale(0.994519); }
+        74% { transform: scale(0.996144); }
+        76% { transform: scale(0.997381); }
+        78% { transform: scale(0.998302); }
+        80% { transform: scale(0.998971); }
+        82% { transform: scale(0.999444); }
+        84% { transform: scale(0.999767); }
+        86% { transform: scale(0.999978); }
+        88% { transform: scale(1.000000); }
+        90% { transform: scale(1.000000); }
+        92% { transform: scale(1.000000); }
+        94% { transform: scale(1.000000); }
+        96% { transform: scale(1.000000); }
+        98% { transform: scale(1.000000); }
+        100% { transform: scale(1.000000); }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .button-group-bp-button-press { animation: button-group-bp-button-press 500ms linear 150ms both; }
+        #button-group-blueprint .bg-outline {
+          stroke-dasharray: 1;
+          animation: button-group-blueprint-draw 400ms ease-out 0ms both;
+        }
+        #button-group-blueprint .bg-detail {
+          stroke-dasharray: 1;
+          animation: button-group-blueprint-draw 200ms ease-out var(--bg-line-delay, 400ms) both;
+        }
+        #button-group-blueprint .bg-spacing,
+        #button-group-blueprint .bg-measure,
+        #button-group-blueprint .bg-label {
+          animation: button-group-blueprint-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <g id="button-group-blueprint">
+    <rect width="1200" height="560" fill="#060606"/>
+
+    <!-- One joined primary control. Its fill remains visible during the draw. -->
+    <rect x="240" y="230" width="720" height="102" rx="24" fill="#353632"/>
+    <rect x="241.2" y="231.2" width="717.6" height="99.6" rx="22.8" stroke="#a7a8a2" stroke-width="2.4" pathLength="1" class="bg-outline"/>
+    <path d="M484.5 230V332" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="bg-detail" style="--bg-line-delay:250ms"/>
+    <path d="M706.5 230V332" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="bg-detail" style="--bg-line-delay:275ms"/>
+
+    <!-- Actual line boxes and icon insets stay visible over the fill, behind text. -->
+    <rect x="276" y="251" width="168" height="60" class="bg-spacing"/>
+    <rect x="522" y="251" width="144" height="60" class="bg-spacing"/>
+    <rect x="744" y="251" width="174" height="60" class="bg-spacing"/>
+    <rect x="276" y="257" width="48" height="48" class="bg-spacing"/>
+    <rect x="522" y="257" width="48" height="48" class="bg-spacing"/>
+    <rect x="744" y="257" width="48" height="48" class="bg-spacing"/>
+    <path d="M354 251V311 M600 251V311 M822 251V311" class="bg-spacing"/>
+    <path d="M276 251H175 M276 311H175" class="bg-spacing"/>
+    <path d="M240 344V402 M276 311V402 M324 311V402 M354 311V402 M918 311V402 M960 344V402" class="bg-spacing"/>
+    <path d="M483 218V192 M486 218V192" class="bg-spacing"/>
+
+    <!-- Icons retain the source 24-unit geometry, at 16 CSS px = 48 SVG units. -->
+    <g class="button-group-bp-button-press" style="transform-origin: 360px 281px">
+      <g transform="translate(276 257) scale(2)" stroke="#c7c7c2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="8" y="8" width="14" height="14" rx="2" pathLength="1" class="bg-detail" style="--bg-line-delay:300ms"/>
+        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" pathLength="1" class="bg-detail" style="--bg-line-delay:325ms"/>
+      </g>
+    </g>
+
+    <g class="button-group-bp-button-press" style="transform-origin: 594px 281px">
+      <g transform="translate(522 257) scale(2)" stroke="#c7c7c2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" pathLength="1" class="bg-detail" style="--bg-line-delay:350ms"/>
+        <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z" pathLength="1" class="bg-detail" style="--bg-line-delay:375ms"/>
+      </g>
+    </g>
+
+    <g class="button-group-bp-button-press" style="transform-origin: 831px 281px">
+      <g transform="translate(744 257) scale(2)" stroke="#c7c7c2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="18" cy="5" r="3" pathLength="1" class="bg-detail" style="--bg-line-delay:350ms"/>
+        <circle cx="6" cy="12" r="3" pathLength="1" class="bg-detail" style="--bg-line-delay:375ms"/>
+        <circle cx="18" cy="19" r="3" pathLength="1" class="bg-detail" style="--bg-line-delay:400ms"/>
+        <path d="m8.59 13.51 6.83 3.98" pathLength="1" class="bg-detail" style="--bg-line-delay:425ms"/>
+        <path d="m15.41 6.51-6.82 3.98" pathLength="1" class="bg-detail" style="--bg-line-delay:450ms"/>
+      </g>
+    </g>
+
+    <g class="button-group-bp-button-press" style="transform-origin: 360px 281px">
+      <text x="354" y="295" textLength="90" lengthAdjust="spacingAndGlyphs" class="bg-text">Copy</text>
+    </g>
+
+    <g class="button-group-bp-button-press" style="transform-origin: 594px 281px">
+      <text x="600" y="295" textLength="66" lengthAdjust="spacingAndGlyphs" class="bg-text">Edit</text>
+    </g>
+
+    <g class="button-group-bp-button-press" style="transform-origin: 831px 281px">
+      <text x="822" y="295" textLength="96" lengthAdjust="spacingAndGlyphs" class="bg-text">Share</text>
+    </g>
+
+
+    <!-- Representative overall width; the comments record its intrinsic arithmetic. -->
+    <path d="M240 218V139 M960 218V139 M240 150H960 M240 140V160 M960 140V160" class="bg-measure"/>
+    <text x="600" y="130" text-anchor="middle" class="bg-label">240 px</text>
+
+    <!-- Fixed button height and the vertically centered text line. -->
+    <path d="M972 230H1027 M972 332H1027 M1016 230V332 M1006 230H1026 M1006 332H1026" class="bg-measure"/>
+    <text x="1038" y="287" class="bg-label">34 px</text>
+    <path d="M165 251H185 M165 311H185 M175 251V311" class="bg-measure"/>
+    <text x="153" y="287" text-anchor="end" class="bg-label">20 px</text>
+
+    <!-- Centering space above the first text line: (34 - 20) / 2 = 7px. -->
+    <path d="M398 230H418 M398 251H418 M408 230V251 M408 240.5 379 194H355" class="bg-measure"/>
+    <text x="343" y="200" text-anchor="end" class="bg-label">7 px</text>
+
+    <!-- Exact one-pixel overlap, between the later box's start and previous end. -->
+    <path d="M483 194V214 M486 194V214 M483 204H486 M484.5 204 523 181H550" class="bg-measure"/>
+    <text x="562" y="187" class="bg-label">1 px</text>
+
+    <!-- Leading padding, icon-box size, and icon-to-label gap. -->
+    <path d="M240 382V402 M276 382V402 M324 382V402 M354 382V402 M240 392H354" class="bg-measure"/>
+    <path d="M258 392V404L229 432H211" class="bg-measure"/>
+    <text x="198" y="438" text-anchor="end" class="bg-label">12 px</text>
+    <path d="M300 392V416" class="bg-measure"/>
+    <text x="300" y="440" text-anchor="middle" class="bg-label">16 px</text>
+    <path d="M339 392V404L369 432H389" class="bg-measure"/>
+    <text x="402" y="438" class="bg-label">10 px</text>
+
+    <!-- Trailing padding, measured to the button's actual outer edge. -->
+    <path d="M918 382V402 M960 382V402 M918 392H960 M939 392V416" class="bg-measure"/>
+    <text x="939" y="440" text-anchor="middle" class="bg-label">14 px</text>
+  </g>
+</svg>

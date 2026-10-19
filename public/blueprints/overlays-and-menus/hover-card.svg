@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1320" height="850" viewBox="0 0 1320 850" fill="none" role="img" aria-labelledby="hover-card-bp-title hover-card-bp-description">
   <title id="hover-card-bp-title">Hover Card spacing blueprint</title>
-  <desc id="hover-card-bp-description">Alex Morgan's profile preview, centered 6 pixels below its link and drawn at three times CSS size. The default card is 288 pixels wide with a 1 pixel border and 16 pixel padding. A 40 pixel avatar sits 12 pixels from the copy. Text uses 20 pixel line boxes separated by 4 pixels between paragraphs. With the pictured two-line biography, the content-dependent card height is 122 pixels.</desc>
+  <desc id="hover-card-bp-description">Alex Morgan's profile preview, centered 6 pixels below its link and drawn at three times CSS size. The card enters once with a fade, scale, blur, and slide from the link. The default card is 288 pixels wide with a 1 pixel border and 16 pixel padding. A 40 pixel avatar sits 12 pixels from the copy. Text uses 20 pixel line boxes separated by 4 pixels between paragraphs. With the pictured two-line biography, the content-dependent card height is 122 pixels.</desc>
   <!--
     Sources:
       registry.json: hover-card lists registry/ui/hover-card/hover-card.tsx only;
@@ -31,8 +31,12 @@
     Placement gap: (290 - 272) / 3 = 6px, between layout boxes.
     Panel outline occupies its real 1px border; the avatar perimeter is illustration
       ink inset into its filled box and does not add a CSS border to the avatar.
-    Animation: panel 0..400ms; avatar 250..450ms; underline 400..600ms;
-      annotations 700..900ms. Text and fills remain visible throughout.
+    Animation: panel stroke 0..400ms; avatar 250..450ms; underline 400..600ms;
+      annotations 700..900ms. Native popup enter runs 250..400ms, matching
+      hover-card.tsx's bottom-side starting pose: opacity 0, scale .95,
+      blur 4px, translateY -8px; at 3x these become blur 12 and translateY -24.
+      Origin is the top edge nearest the centered trigger, (660, 290).
+      app/globals.css: duration-fast=150ms, ease-out=cubic-bezier(.16,1,.3,1).
       Reduced-motion and static exports show all strokes and final guide opacities.
   -->
   <defs>
@@ -47,7 +51,15 @@
       #hover-card-bp-root { --hover-card-bp-detail-duration: 200ms; --hover-card-bp-annotation-delay: 700ms; }
       @keyframes hover-card-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes hover-card-bp-reveal { from { opacity: 0; } }
+      #hover-card-bp-root .hover-card-bp-enter { transform-origin: 660px 290px; }
+      @keyframes hover-card-bp-enter {
+        from { opacity: 0; transform: translateY(-24px) scale(.95); filter: blur(12px); }
+        to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); }
+      }
       @media (prefers-reduced-motion: no-preference) {
+        #hover-card-bp-root .hover-card-bp-enter {
+          animation: hover-card-bp-enter 150ms cubic-bezier(.16,1,.3,1) 250ms both;
+        }
         #hover-card-bp-root .hover-card-bp-draw {
           stroke-dasharray: 1;
           animation: hover-card-bp-draw var(--hover-card-bp-detail-duration) ease-out var(--hover-card-bp-line-delay, 0ms) both;
@@ -64,24 +76,27 @@
   <g id="hover-card-bp-root">
     <rect width="1320" height="850" fill="#060606"/>
 
-    <!-- Component fills remain visible while the separate solid strokes draw. -->
-    <rect x="228" y="290" width="864" height="366" rx="21" fill="#111111"/>
-    <rect x="229.5" y="291.5" width="861" height="363" rx="19.5" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="hover-card-bp-draw hover-card-bp-outline"/>
-    <circle cx="339" cy="401" r="60" fill="#353632"/>
-    <circle cx="339" cy="401" r="58.75" stroke="#a7a8a2" stroke-width="2.5" pathLength="1" class="hover-card-bp-draw" style="--hover-card-bp-line-delay:250ms"/>
+    <!-- The link stays fixed while the popup enters from its anchor edge. -->
     <path d="M540 266H780" stroke="#a7a8a2" stroke-width="2.5" opacity=".7" pathLength="1" class="hover-card-bp-draw" style="--hover-card-bp-line-delay:400ms"/>
-
-    <!-- Actual content inset and copy line boxes, over fills and behind text. -->
-    <rect x="279" y="341" width="762" height="264" class="hover-card-bp-spacing"/>
-    <path d="M399 341V605 M435 341V605" class="hover-card-bp-spacing"/>
-    <path d="M435 401H1041 M435 413H1041 M435 473H1041 M435 485H1041 M435 545H1041" class="hover-card-bp-spacing"/>
-
     <text x="660" y="254" text-anchor="middle" class="hover-card-bp-trigger">@alexmorgan</text>
-    <text x="339" y="415" text-anchor="middle" class="hover-card-bp-copy hover-card-bp-emphasis">AM</text>
-    <text x="435" y="383" class="hover-card-bp-copy hover-card-bp-emphasis">Alex Morgan</text>
-    <text x="435" y="455" class="hover-card-bp-copy">@alexmorgan</text>
-    <text x="435" y="527" class="hover-card-bp-copy">Product designer working on</text>
-    <text x="435" y="587" class="hover-card-bp-copy">thoughtful, accessible interfaces.</text>
+
+    <g class="hover-card-bp-enter">
+      <rect x="228" y="290" width="864" height="366" rx="21" fill="#111111"/>
+      <rect x="229.5" y="291.5" width="861" height="363" rx="19.5" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="hover-card-bp-draw hover-card-bp-outline"/>
+      <circle cx="339" cy="401" r="60" fill="#353632"/>
+      <circle cx="339" cy="401" r="58.75" stroke="#a7a8a2" stroke-width="2.5" pathLength="1" class="hover-card-bp-draw" style="--hover-card-bp-line-delay:250ms"/>
+
+      <!-- Actual content inset and copy line boxes, over fills and behind text. -->
+      <rect x="279" y="341" width="762" height="264" class="hover-card-bp-spacing"/>
+      <path d="M399 341V605 M435 341V605" class="hover-card-bp-spacing"/>
+      <path d="M435 401H1041 M435 413H1041 M435 473H1041 M435 485H1041 M435 545H1041" class="hover-card-bp-spacing"/>
+
+      <text x="339" y="415" text-anchor="middle" class="hover-card-bp-copy hover-card-bp-emphasis">AM</text>
+      <text x="435" y="383" class="hover-card-bp-copy hover-card-bp-emphasis">Alex Morgan</text>
+      <text x="435" y="455" class="hover-card-bp-copy">@alexmorgan</text>
+      <text x="435" y="527" class="hover-card-bp-copy">Product designer working on</text>
+      <text x="435" y="587" class="hover-card-bp-copy">thoughtful, accessible interfaces.</text>
+    </g>
 
     <!-- Overall default width; rulers touch the exact outer layout edges. -->
     <path d="M228 156V280 M1092 156V280" class="hover-card-bp-spacing"/>

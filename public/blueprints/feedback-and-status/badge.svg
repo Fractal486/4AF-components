@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="300" viewBox="0 0 520 300" fill="none" role="img" aria-labelledby="badge-title badge-desc">
+  <title id="badge-title">Badge spacing blueprint</title>
+  <desc id="badge-desc">Default small, solid badge with the Action Button radial spinner and Beta label, drawn at three times CSS size. Fixed height 16 pixels, horizontal padding 4 pixels, icon box 10 pixels, and icon-to-label gap 4 pixels.</desc>
+  <!-- Sources: registry/ui/badge/badge.tsx and badge.variants.ts;
+       inspector/entries/badge.tsx; app/globals.css; lib/component-catalog.ts.
+       State: solid / loading / sm / rounded, showIcon=true, dot=false; label Beta.
+       Scale: 3 SVG units per CSS pixel, assuming the ordinary 16px root size.
+       h-4 = 16px; px-1 = 4px; gap-1 = 4px; size-2.5 = 10px; radius = 4px.
+       text-2xs = 11px, line-height 1.0909 = approximately 12px, tracking .02em.
+       The 12px label line box is vertically centered: (16 - 12) / 2 = 2px.
+       The 10px icon box is vertically centered: (16 - 10) / 2 = 3px.
+       Width is content-dependent. Representative Beta advance chosen as 24px;
+       width = 4 + 10 + 4 + 24 + 4 = 46px, not a universal component width.
+       Text uses the prescribed illustration font stack; actual Geist advance may differ.
+       Solid has no CSS border: the stroke below is an illustration of its boundary.
+       Spinner: registry/lib/loader.tsx and registry/ui/classic-loader/classic-loader.tsx.
+       Twelve 24 x 8 bars in a 100-unit box, scaled .3 into the 10px badge slot.
+       Matches public/blueprints/actions/action-button.svg, including its single 900ms turn.
+       Dark background oklch(.120 0 0) resolves to #060606.
+       Category: COMPONENT_CATEGORIES / Feedback and status. -->
+  <defs>
+    <style>
+      text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      .badge-label { fill: #92948d; font-size: 33px; font-weight: 500; letter-spacing: .66px; }
+      .badge-measure { stroke: #6889ff; stroke-width: 1.5; }
+      .badge-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      .badge-dimension { fill: #6889ff; font-size: 16px; }
+      .badge-spinner { transform-box: fill-box; transform-origin: center; }
+      @keyframes badge-spin { from { transform: rotate(0turn); } to { transform: rotate(1turn); } }
+      @keyframes badge-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes badge-reveal { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        .badge-spinner { animation: badge-spin 900ms ease-out both; }
+        .badge-draw { stroke-dasharray: 1; animation: badge-draw 200ms ease-out 400ms both; }
+        .badge-outline { animation-duration: 400ms; animation-delay: 0ms; }
+        .badge-measure, .badge-spacing, .badge-dimension { animation: badge-reveal 200ms ease-out 700ms both; }
+      }
+    </style>
+  </defs>
+  <rect width="520" height="300" fill="#060606"/>
+  <!-- Boundary: x191..329, y126..174. Fill and text remain visible throughout. -->
+  <rect x="191" y="126" width="138" height="48" rx="12" fill="#353632"/>
+  <rect x="191" y="126" width="138" height="48" rx="12" stroke="#a7a8a2" stroke-width="2" pathLength="1" class="badge-draw badge-outline"/>
+  <!-- Icon bounds and label line box, above the fill but behind the ink. -->
+  <rect x="203" y="135" width="30" height="30" class="badge-spacing"/>
+  <path d="M203 126V174 M317 126V174 M245 132H317V168H245Z" class="badge-spacing"/>
+  <g transform="translate(203 135) scale(.3)" fill="#c7c7c2">
+    <g class="badge-spinner">
+      <rect x="73" y="46" width="24" height="8" rx="4" opacity="1"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(30 50 50)" opacity=".92"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(60 50 50)" opacity=".84"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(90 50 50)" opacity=".76"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(120 50 50)" opacity=".68"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(150 50 50)" opacity=".60"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(180 50 50)" opacity=".52"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(210 50 50)" opacity=".44"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(240 50 50)" opacity=".36"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(270 50 50)" opacity=".28"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(300 50 50)" opacity=".20"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(330 50 50)" opacity=".12"/>
+    </g>
+  </g>
+  <text x="245" y="161" textLength="72" lengthAdjust="spacingAndGlyphs" class="badge-label">Beta</text>
+  <!-- Fixed component height. -->
+  <path d="M145 126H185 M145 174H185" class="badge-spacing"/>
+  <path d="M140 126H156 M140 174H156 M148 126V174" class="badge-measure"/>
+  <text x="132" y="155" text-anchor="end" class="badge-dimension">16 px</text>
+  <!-- Left padding; compact ruler with an outward leader. -->
+  <path d="M191 120V89 M203 120V89" class="badge-spacing"/>
+  <path d="M191 87V101 M203 87V101 M191 94H203 M197 94V72H170" class="badge-measure"/>
+  <text x="161" y="77" text-anchor="end" class="badge-dimension">4 px</text>
+  <!-- Icon box width, not the circle's ink diameter. -->
+  <path d="M203 180V208 M233 170V208" class="badge-spacing"/>
+  <path d="M203 201V215 M233 201V215 M203 208H233 M218 208V235H191" class="badge-measure"/>
+  <text x="182" y="240" text-anchor="end" class="badge-dimension">10 px</text>
+  <!-- Gap between icon box and label box. -->
+  <path d="M233 130V101 M245 126V101" class="badge-spacing"/>
+  <path d="M233 94V108 M245 94V108 M233 101H245 M239 101V72H285" class="badge-measure"/>
+  <text x="294" y="77" class="badge-dimension">4 px</text>
+  <!-- Label line box height, resolved from the typography token. -->
+  <path d="M323 132H370 M323 168H370" class="badge-spacing"/>
+  <path d="M361 132H377 M361 168H377 M369 132V168" class="badge-measure"/>
+  <text x="386" y="155" class="badge-dimension">12 px</text>
+</svg>

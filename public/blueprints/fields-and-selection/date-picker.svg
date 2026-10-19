@@ -1,0 +1,437 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="date-picker-bp-root" width="1356" height="1362" viewBox="0 0 1356 1362" fill="none" role="img" aria-labelledby="date-picker-bp-title date-picker-bp-desc">
+  <title id="date-picker-bp-title">Date Picker spacing</title>
+  <desc id="date-picker-bp-desc">The popup enters, then September changes to October with the native caption and week-grid slide and fade. An open desktop date picker with October 19, 2026 selected. The trigger and panel are 252 pixels wide. The trigger is 34 pixels high and the panel is 304 pixels high for this five-week month, including the Today footer. Blue dashed guides show the 6 pixel calendar inset, 34 pixel day cells, 3 pixel week gaps, and the 30 pixel selection inset by 2 pixels.</desc>
+  <!-- Hand-authored vector drawing. Geometry and component type are drawn at 3×;
+       all ruler labels are original CSS pixels. Default variant, size md,
+       single date, en-US, Monday first, fine pointer, desktop viewport >639px.
+       State: open below the trigger, October 2026, selected/today October 19.
+       clearable=false and showToday=true are the component defaults.
+
+       Native sequence: Popover opacity/scale/blur/translate entrance 50..200ms;
+       3x pose is .95 scale, 12-unit blur, -24-unit y, origin at trigger bottom.
+       After opening, September changes to October at 350ms. calendar.tsx remounts
+       its caption (10 CSS px, 200ms) and weeks (24 CSS px, 300ms) from the right;
+       the outgoing month disappears immediately. Both months have five week rows,
+       so the measured final panel height is unchanged. Ease is (.16,1,.3,1).
+       Final October state is shown immediately in reduced motion and static exports.
+       Sources:
+       registry/ui/date-picker/date-picker.tsx (trigger, footer, single-date shell)
+       registry/ui/date-picker/date-picker.variants.ts (default/md field sizing)
+       registry/ui/date-picker/calendar.tsx (caption, grid, day marks, weekday text)
+       registry/ui/popover/popover.tsx (1px border, 7px radius, sideOffset=6)
+       registry/ui/button/button.variants.ts (30px nav and 24px footer buttons)
+       inspector/entries/date-picker.tsx (single/default/md preview)
+       app/globals.css (13px/20px UI type, 12px/16px small type, dark background)
+       node_modules/tailwindcss/theme.css (spacing=0.25rem=4px at 16px root)
+       lib/component-catalog.ts (COMPONENT_CATEGORIES: Fields and selection)
+
+       Border-box sizing. Width: 1 + 6 + 7×34 + 6 + 1 = 252px.
+       Trigger: h=34px; border=1px; horizontal padding=12px; icon=16px;
+       content gap=8px; text line=20px. Text inset=1+12=13px.
+       Panel placement: bottom/start; gap=6px; no collision adjustment pictured.
+       Calendar height: 6 + 34 + 12 + 16 + 5×(3+34) + 12 = 265px.
+       October needs five weeks; fixedWeeks=false. Calendar height is content-dependent.
+       Each week has a 3px top margin, including the first below the weekday header.
+       Selection: 34−2×2=30px square, radius=6−1=5px.
+       Footer: top border 1 + top padding 6 + button 24 + bottom padding 6 = 37px.
+       Panel height for this month: 1 + 265 + 37 + 1 = 304px.
+       Footer button: start padding 8px for leading icon, 14px icon, 8px gap,
+       text-xs (12px/16px), 10px end padding. Its text-dependent width is not labelled.
+       Complete drawing: 252×(34+6+304)=252×344px, or 756×1032 SVG units.
+       Displayed line heights are rounded to 16px and 20px from the theme's ratios.
+       Illustration inks follow the skill; the background is the actual dark token
+       oklch(0.120 0 0), approximately #060606. No production styling is changed. -->
+  <defs>
+    <style>
+      #date-picker-bp-root text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #date-picker-bp-root .dpb-label { fill: #a1a29c; font-size: 20px; }
+      #date-picker-bp-root .dpb-ui { fill: #92948d; font-size: 39px; }
+      #date-picker-bp-root .dpb-day { fill: #92948d; font-size: 36px; font-variant-numeric: tabular-nums; letter-spacing: .36px; text-anchor: middle; }
+      #date-picker-bp-root .dpb-outside { fill: #62645e; }
+      #date-picker-bp-root .dpb-selected { fill: #c7c7c2; }
+      #date-picker-bp-root .dpb-measure { stroke: #6889ff; stroke-width: 1.5; }
+      #date-picker-bp-root .dpb-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      #date-picker-bp-root .dpb-icon { stroke: #a7a8a2; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+      /* Final state is the default for PNG exports and reduced motion. */
+      #date-picker-bp-root { --dpb-outline-duration: 400ms; --dpb-detail-duration: 200ms; --dpb-annotation-delay: 700ms; --dpb-annotation-duration: 200ms; }
+      @keyframes date-picker-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes date-picker-bp-reveal { from { opacity: 0; } }
+      /* One press/release during reveal, matching Button's .95 press scale.
+         spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
+         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         compose with content/panel motion; static and reduced motion stay at 1. */
+      @keyframes date-picker-bp-button-press {
+        0% { transform: scale(1.000000); }
+        2% { transform: scale(0.998236); }
+        4% { transform: scale(0.994025); }
+        6% { transform: scale(0.988604); }
+        8% { transform: scale(0.982802); }
+        10% { transform: scale(0.977146); }
+        12% { transform: scale(0.971948); }
+        14% { transform: scale(0.967366); }
+        16% { transform: scale(0.963455); }
+        18% { transform: scale(0.960207); }
+        20% { transform: scale(0.957573); }
+        22% { transform: scale(0.955481); }
+        24% { transform: scale(0.953856); }
+        26% { transform: scale(0.952619); }
+        28% { transform: scale(0.951698); }
+        30% { transform: scale(0.951029); }
+        32% { transform: scale(0.950556); }
+        34% { transform: scale(0.950233); }
+        36% { transform: scale(0.950022); }
+        38% { transform: scale(0.950000); }
+        40% { transform: scale(0.950000); }
+        42% { transform: scale(0.950000); }
+        44% { transform: scale(0.950000); }
+        46% { transform: scale(0.950000); }
+        48% { transform: scale(0.950000); }
+        50% { transform: scale(0.950000); }
+        52% { transform: scale(0.951764); }
+        54% { transform: scale(0.955975); }
+        56% { transform: scale(0.961396); }
+        58% { transform: scale(0.967198); }
+        60% { transform: scale(0.972854); }
+        62% { transform: scale(0.978052); }
+        64% { transform: scale(0.982634); }
+        66% { transform: scale(0.986545); }
+        68% { transform: scale(0.989793); }
+        70% { transform: scale(0.992427); }
+        72% { transform: scale(0.994519); }
+        74% { transform: scale(0.996144); }
+        76% { transform: scale(0.997381); }
+        78% { transform: scale(0.998302); }
+        80% { transform: scale(0.998971); }
+        82% { transform: scale(0.999444); }
+        84% { transform: scale(0.999767); }
+        86% { transform: scale(0.999978); }
+        88% { transform: scale(1.000000); }
+        90% { transform: scale(1.000000); }
+        92% { transform: scale(1.000000); }
+        94% { transform: scale(1.000000); }
+        96% { transform: scale(1.000000); }
+        98% { transform: scale(1.000000); }
+        100% { transform: scale(1.000000); }
+      }
+      #date-picker-bp-root .dpb-panel-enter { transform-origin: 678px 267px; }
+      #date-picker-bp-root .dpb-previous-month { display: none; }
+      @keyframes dpb-panel-enter {
+        from { opacity: 0; transform: translateY(-24px) scale(.95); filter: blur(12px); }
+        to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); }
+      }
+      @keyframes dpb-caption-enter { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+      @keyframes dpb-weeks-enter { from { opacity: 0; transform: translateX(72px); } to { opacity: 1; transform: translateX(0); } }
+      @keyframes dpb-month-replaced { from { opacity: 1; } to { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        #date-picker-bp-root .dpb-panel-enter { animation: dpb-panel-enter 150ms cubic-bezier(.16,1,.3,1) 50ms both; }
+        #date-picker-bp-root .dpb-previous-month { display: inline; animation: dpb-month-replaced 350ms steps(1,end) both; }
+        #date-picker-bp-root .dpb-caption-enter { animation: dpb-caption-enter 200ms cubic-bezier(.16,1,.3,1) 350ms both; }
+        #date-picker-bp-root .dpb-weeks-enter { animation: dpb-weeks-enter 300ms cubic-bezier(.16,1,.3,1) 350ms both; }
+        .date-picker-bp-button-press { animation: date-picker-bp-button-press 500ms linear 150ms both; }
+        #date-picker-bp-root .dpb-draw {
+          stroke-dasharray: 1;
+          animation: date-picker-bp-draw var(--dpb-detail-duration) ease-out var(--dpb-line-delay, 0ms) both;
+        }
+        #date-picker-bp-root .dpb-outline { animation-duration: var(--dpb-outline-duration); }
+        #date-picker-bp-root .dpb-measure, #date-picker-bp-root .dpb-spacing, #date-picker-bp-root .dpb-label {
+          animation: date-picker-bp-reveal var(--dpb-annotation-duration) ease-out var(--dpb-annotation-delay) both;
+        }
+      }
+    </style>
+
+
+
+
+
+    <clipPath id="dpb-weeks-clip"><rect x="303" y="493" width="750" height="590"/></clipPath>
+  </defs>
+  <g>
+    <rect width="1356" height="1362" fill="#060606"/>
+
+    <!-- Outer border centre lines sit half a CSS border inside the measured box. -->
+    <g>
+      <rect x="301.5" y="166.5" width="753" height="99" rx="22.5" stroke="#a7a8a2" stroke-width="3" opacity=".7" pathLength="1" class="dpb-draw dpb-outline"/>
+    </g>
+
+    <!-- Trigger stays at rest; padding, line box, and trailing icon slot. -->
+    <path d="M339 168V264M1017 168V264" class="dpb-spacing"/>
+    <path d="M339 186H945M339 246H945" class="dpb-spacing"/>
+    <rect x="969" y="192" width="48" height="48" class="dpb-spacing"/>
+    <g>
+      <text x="339" y="230" class="dpb-ui dpb-selected">Oct 19, 2026</text>
+    </g>
+
+    <g>
+      <g class="dpb-icon" transform="translate(969 192)" style="--dpb-line-delay:275ms"><rect x="6" y="10" width="36" height="32" rx="4" pathLength="1" class="dpb-draw"/>
+      <path d="M16 6V14" pathLength="1" class="dpb-draw"/>
+      <path d="M32 6V14" pathLength="1" class="dpb-draw"/>
+      <path d="M6 22H42" pathLength="1" class="dpb-draw"/></g>
+    </g>
+
+
+    <g class="dpb-panel-enter">
+      <rect x="301.5" y="286.5" width="753" height="909" rx="19.5" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="dpb-draw dpb-outline"/>
+      <path d="M303 1084.5H1053" stroke="#a7a8a2" stroke-width="2.5" pathLength="1" class="dpb-draw" style="--dpb-line-delay:250ms"/>
+
+
+
+      <!-- Local guides only: one measured day, one selection cell, and short
+           extensions beside the gap rulers. Repeated week outlines are omitted. -->
+      <path d="M999 408H1035M999 444H1035M999 492H1035M999 612H1035" class="dpb-spacing"/>
+      <rect x="933" y="501" width="102" height="102" class="dpb-spacing"/>
+      <rect x="321" y="834" width="102" height="102" class="dpb-spacing"/>
+      <path d="M999 1047H1035M1035 1047V1083" class="dpb-spacing"/>
+
+      <!-- Caption and 16px navigation icons centered in the first/last columns. -->
+      <g class="date-picker-bp-button-press" style="transform-origin: 372px 357px">
+        <g class="dpb-icon" transform="translate(348 333)" style="--dpb-line-delay:300ms"><path d="M28 12 16 24 28 36" pathLength="1" class="dpb-draw"/></g>
+      </g>
+
+      <g class="dpb-previous-month" aria-hidden="true">
+        <text x="508" y="371" textLength="276" lengthAdjust="spacingAndGlyphs" class="dpb-ui" font-weight="500">September 2026</text>
+        <g class="dpb-icon" transform="translate(808 336)" style="--dpb-line-delay:125ms"><path d="M14 16 21 9 28 16" pathLength="1" class="dpb-draw"/>
+      <path d="M14 26 21 33 28 26" pathLength="1" class="dpb-draw"/></g>
+      </g>
+      <g class="dpb-caption-enter">
+        <g class="date-picker-bp-button-press" style="transform-origin: 678px 357px">
+        <text x="536" y="371" class="dpb-ui" font-weight="500">October 2026</text>
+      </g>
+
+      <g class="date-picker-bp-button-press" style="transform-origin: 678px 357px">
+        <g class="dpb-icon" transform="translate(784 336)" style="--dpb-line-delay:325ms"><path d="M14 16 21 9 28 16" pathLength="1" class="dpb-draw"/>
+      <path d="M14 26 21 33 28 26" pathLength="1" class="dpb-draw"/></g>
+      </g>
+      </g>
+
+      <g class="date-picker-bp-button-press" style="transform-origin: 984px 357px">
+        <g class="dpb-icon" transform="translate(960 333)" style="--dpb-line-delay:350ms"><path d="M20 12 32 24 20 36" pathLength="1" class="dpb-draw"/></g>
+      </g>
+
+
+      <!-- Narrow weekday labels: Monday first, 12px type on a 16px line. -->
+      <g class="dpb-day">
+        <text x="372" y="480">M</text><text x="474" y="480">T</text><text x="576" y="480">W</text><text x="678" y="480">T</text><text x="780" y="480">F</text><text x="882" y="480">S</text><text x="984" y="480">S</text>
+      </g>
+
+      <!-- Five 34px week rows, with a real 3px margin above every row. -->
+      <g clip-path="url(#dpb-weeks-clip)">
+      <g class="dpb-day dpb-previous-month" aria-hidden="true">
+        <text x="372" y="565" class="dpb-outside">31</text>
+        <text x="474" y="565">1</text>
+        <text x="576" y="565">2</text>
+        <text x="678" y="565">3</text>
+        <text x="780" y="565">4</text>
+        <text x="882" y="565">5</text>
+        <text x="984" y="565">6</text>
+        <text x="372" y="676">7</text>
+        <text x="474" y="676">8</text>
+        <text x="576" y="676">9</text>
+        <text x="678" y="676">10</text>
+        <text x="780" y="676">11</text>
+        <text x="882" y="676">12</text>
+        <text x="984" y="676">13</text>
+        <text x="372" y="787">14</text>
+        <text x="474" y="787">15</text>
+        <text x="576" y="787">16</text>
+        <text x="678" y="787">17</text>
+        <text x="780" y="787">18</text>
+        <text x="882" y="787">19</text>
+        <text x="984" y="787">20</text>
+        <text x="372" y="898">21</text>
+        <text x="474" y="898">22</text>
+        <text x="576" y="898">23</text>
+        <text x="678" y="898">24</text>
+        <text x="780" y="898">25</text>
+        <text x="882" y="898">26</text>
+        <text x="984" y="898">27</text>
+        <text x="372" y="1009">28</text>
+        <text x="474" y="1009">29</text>
+        <text x="576" y="1009">30</text>
+        <text x="678" y="1009" class="dpb-outside">1</text>
+        <text x="780" y="1009" class="dpb-outside">2</text>
+        <text x="882" y="1009" class="dpb-outside">3</text>
+        <text x="984" y="1009" class="dpb-outside">4</text>
+      </g>
+      <g class="dpb-day dpb-weeks-enter">
+        <g class="date-picker-bp-button-press" style="transform-origin: 372px 885px">
+        <rect x="327" y="840" width="90" height="90" rx="15" fill="#353632"/>
+      </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 372px 552px">
+          <text x="372" y="565" class="dpb-outside">28</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 474px 552px">
+          <text x="474" y="565" class="dpb-outside">29</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 576px 552px">
+          <text x="576" y="565" class="dpb-outside">30</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 678px 552px">
+          <text x="678" y="565">1</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 780px 552px">
+          <text x="780" y="565">2</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 882px 552px">
+          <text x="882" y="565">3</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 984px 552px">
+          <text x="984" y="565">4</text>
+        </g>
+
+        <g class="date-picker-bp-button-press" style="transform-origin: 372px 663px">
+          <text x="372" y="676">5</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 474px 663px">
+          <text x="474" y="676">6</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 576px 663px">
+          <text x="576" y="676">7</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 678px 663px">
+          <text x="678" y="676">8</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 780px 663px">
+          <text x="780" y="676">9</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 882px 663px">
+          <text x="882" y="676">10</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 984px 663px">
+          <text x="984" y="676">11</text>
+        </g>
+
+        <g class="date-picker-bp-button-press" style="transform-origin: 372px 774px">
+          <text x="372" y="787">12</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 474px 774px">
+          <text x="474" y="787">13</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 576px 774px">
+          <text x="576" y="787">14</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 678px 774px">
+          <text x="678" y="787">15</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 780px 774px">
+          <text x="780" y="787">16</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 882px 774px">
+          <text x="882" y="787">17</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 984px 774px">
+          <text x="984" y="787">18</text>
+        </g>
+
+        <g class="date-picker-bp-button-press" style="transform-origin: 372px 885px">
+          <text x="372" y="898" class="dpb-selected" font-weight="600">19</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 474px 885px">
+          <text x="474" y="898">20</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 576px 885px">
+          <text x="576" y="898">21</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 678px 885px">
+          <text x="678" y="898">22</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 780px 885px">
+          <text x="780" y="898">23</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 882px 885px">
+          <text x="882" y="898">24</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 984px 885px">
+          <text x="984" y="898">25</text>
+        </g>
+
+        <g class="date-picker-bp-button-press" style="transform-origin: 372px 996px">
+          <text x="372" y="1009">26</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 474px 996px">
+          <text x="474" y="1009">27</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 576px 996px">
+          <text x="576" y="1009">28</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 678px 996px">
+          <text x="678" y="1009">29</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 780px 996px">
+          <text x="780" y="1009">30</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 882px 996px">
+          <text x="882" y="1009">31</text>
+        </g>
+        <g class="date-picker-bp-button-press" style="transform-origin: 984px 996px">
+          <text x="984" y="1009" class="dpb-outside">1</text>
+        </g>
+
+      </g>
+      </g>
+
+      <!-- Short footer inset and icon-gap guides; no full-width footer overlay. -->
+      <path d="M321 1104V1176M999 1104H1035M999 1176H1035" class="dpb-spacing"/>
+      <path d="M387 1119V1161M411 1119V1161" class="dpb-spacing"/>
+      <g class="date-picker-bp-button-press" style="transform-origin: 426px 1140px">
+        <g class="dpb-icon" transform="translate(345 1119)" style="--dpb-line-delay:375ms"><path d="M5.25 19.25H28A10.5 10.5 0 0 1 28 40.25" transform="translate(0 -7)" pathLength="1" class="dpb-draw"/>
+      <path d="M15.75 1.75 5.25 12.25 15.75 22.75" pathLength="1" class="dpb-draw"/></g>
+      </g>
+
+      <g class="date-picker-bp-button-press" style="transform-origin: 426px 1140px">
+        <text x="411" y="1153" fill="#92948d" font-size="36" font-weight="500">Today</text>
+      </g>
+    </g>
+
+    <!-- Width of both aligned border boxes. -->
+    <path d="M300 79V101M1056 79V101M300 90H1056" class="dpb-measure"/>
+    <text x="678" y="74" text-anchor="middle" class="dpb-label">252 px</text>
+
+    <!-- Trigger horizontal padding starts inside its 1px border. -->
+    <path d="M303 128V150M339 128V150M303 139H339M321 128 351 112H377" class="dpb-measure"/>
+    <text x="389" y="118" class="dpb-label">12 px</text>
+    <path d="M224 165H246M224 267H246M235 165V267" class="dpb-measure"/>
+    <text x="213" y="223" text-anchor="end" class="dpb-label">34 px</text>
+
+    <!-- Gap between the trigger's bottom and the panel's outer top edge. -->
+    <path d="M1056 267H1124M1056 285H1124M1113 267V285M1124 276H1150" class="dpb-measure"/>
+    <text x="1162" y="282" class="dpb-label">6 px</text>
+
+    <!-- Content-dependent panel height: five week rows and the default footer. -->
+    <path d="M151 285H173M151 1197H173M162 285V1197" class="dpb-measure"/>
+    <text x="140" y="748" text-anchor="end" class="dpb-label">304 px</text>
+
+    <!-- The caption/grid gap and the weekday line height. -->
+    <path d="M1035 408H1120M1035 444H1120M1109 408V444" class="dpb-measure"/>
+    <text x="1138" y="433" class="dpb-label">12 px</text>
+    <path d="M1155 444H1177M1155 492H1177M1166 444V492" class="dpb-measure"/>
+    <text x="1188" y="475" class="dpb-label">16 px</text>
+
+    <!-- The 34px day hit area and the 3px gap between week rows. -->
+    <path d="M1035 501H1134M1035 603H1134M1123 501V603" class="dpb-measure"/>
+    <text x="1146" y="559" class="dpb-label">34 px</text>
+    <path d="M1035 603H1095M1035 612H1095M1084 603V612M1095 607.5 1118 641H1140" class="dpb-measure"/>
+    <text x="1152" y="648" class="dpb-label">3 px</text>
+
+    <!-- Visible selection width; ruler ends align to the fill, not the cell. -->
+    <path d="M327 816V840M417 816V840M327 825H417M372 825 287 802H249" class="dpb-measure"/>
+    <text x="237" y="809" text-anchor="end" class="dpb-label">30 px</text>
+    <!-- The selection's 2px inset from the left cell edge. -->
+    <path d="M321 874V896M327 874V896M321 885H327M324 896 282 923H249" class="dpb-measure"/>
+    <text x="237" y="930" text-anchor="end" class="dpb-label">2 px</text>
+
+    <!-- Bottom calendar padding, footer height, and its 24px button. -->
+    <path d="M1053 1047H1120M1053 1083H1120M1109 1047V1083" class="dpb-measure"/>
+    <text x="1138" y="1072" class="dpb-label">12 px</text>
+    <path d="M224 1083H246M224 1194H246M235 1083V1194" class="dpb-measure"/>
+    <text x="213" y="1146" text-anchor="end" class="dpb-label">37 px</text>
+    <path d="M1035 1104H1134M1035 1176H1134M1123 1104V1176" class="dpb-measure"/>
+    <text x="1146" y="1147" class="dpb-label">24 px</text>
+
+    <!-- Shared 6px panel inset and footer icon-to-text gap. -->
+    <path d="M303 1209V1246M321 1209V1246M303 1234H321M312 1246 285 1265H252" class="dpb-measure"/>
+    <text x="240" y="1272" text-anchor="end" class="dpb-label">6 px</text>
+    <path d="M387 1178V1246M411 1178V1246" class="dpb-spacing"/>
+    <path d="M387 1223V1245M411 1223V1245M387 1234H411M399 1246 432 1265H460" class="dpb-measure"/>
+    <text x="472" y="1272" class="dpb-label">8 px</text>
+  </g>
+</svg>

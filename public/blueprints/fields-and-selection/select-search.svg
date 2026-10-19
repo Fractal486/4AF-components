@@ -1,0 +1,224 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1000" viewBox="0 0 1280 1000" fill="none" role="img" aria-labelledby="ssb-title ssb-description" class="ssb-root">
+  <title id="ssb-title">Select Search spacing blueprint</title>
+  <desc id="ssb-description">A focused single-select whose popup fades, scales and clears its blur while its chevron turns upward, ending with Projects selected and five navigation options. Drawn at three times CSS size: a 224 pixel wide, 30 pixel high editable field, a 6 pixel offset, and a 160 pixel high panel. The panel has a 1 pixel border and 4 pixel list padding. Each single-line row is 30 pixels high, with 10 pixel horizontal padding, 14 pixel icons, an 8 pixel icon-to-label gap, and no gap between rows.</desc>
+  <!--
+    Sources:
+      registry.json: select-search installs registry/ui/select/select-search.tsx only.
+      registry/ui/select/select-search.tsx: SIZE.sm, SearchSelectInput,
+        SearchSelectContent, SearchSelectItem. No separate Search Select variants file;
+        select.variants.ts belongs to the sibling trigger-based selects.
+      inspector/entries/select-search.tsx: sm, neutral, single select, icons enabled;
+        wrapper w-full max-w-56. The labels/icons here use familiar navigation entries.
+      app/globals.css: text-xs = 12px / 1.3333 (approximately 16px line height),
+        radius-md = 7px, radius-xs = 3px, dark background = oklch(0.120 0 0).
+      node_modules/tailwindcss/theme.css and preflight.css: spacing = 4px at the
+        default 16px root size; border-box sizing.
+      lib/component-catalog.ts: COMPONENT_CATEGORIES, Fields and selection.
+
+    State: default sm, neutral focus tone, single selection, open below the input,
+      no query; the selected Projects placeholder dims and its icon becomes Search.
+      Projects is both selected and highlighted. Five unwrapped rows, no scrollbar.
+    Chosen width: 224 CSS px, using the demo wrapper's maximum as the actual width
+      for this drawing. The portable component's width is flexible, not fixed at 224.
+    Scale: 3 SVG units per CSS px, including component text and icon slots.
+    Field: fixed 30px border-box height, 1px border, 6px radius.
+      Source input pl-10 = 40px after its 1px border: text x = 304 + 3 + 120.
+      Requested blueprint alignment uses a 36px inset after the border instead:
+        input label x = 304 + 3 + 108 = 415, matching the row labels.
+      Leading icon is positioned 14px from the wrapper edge, not its inner border.
+      Toggle hit area w-9 = 36px; its centered glyph is 14px square.
+    Popup: same width as anchor; sideOffset = 6px, rounded-md = 7px, border = 1px.
+      List p-1 = 4px. Row min-height = 30px; 16px line box + 2*6px py-1.5 = 28px,
+      so min-height governs these rows. Centered line box leaves 7px above/below.
+      Rows px-2.5 = 10px; gap-2 = 8px; icon and check slots = 14px square.
+      Popup height = 2*1px border + 2*4px list padding + 5*30px rows = 160px.
+      Total field-plus-popup extent = 30 + 6 + 160 = 196px (588 drawing units).
+    Coordinates: field outer [304,180] to [976,270]; popup outer [304,288] to [976,768].
+      Popup inner edge x=307; rows x=319..961, y=303..753.
+      Row icon x=349..391, label x=415, right padding starts x=931.
+      Outline paths follow border centerlines; rulers measure outer bounds or the
+      exact inner spacing edges. Row boundaries coincide: there is no added gap.
+    Animation: outlines 0-400ms; popup 250-450ms; chevron stroke 50-250ms,
+      spring turn 250-650ms; remaining details 250-625ms; annotations 700-900ms.
+      Static exports and reduced-motion viewers show all final strokes and guides.
+  -->
+  <defs>
+    <style>
+      .ssb-root { --ssb-outline-duration: 400ms; --ssb-detail-duration: 200ms; --ssb-annotation-delay: 700ms; --ssb-annotation-duration: 200ms; }
+      .ssb-root text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      .ssb-label { fill: #a1a29c; font-size: 18px; }
+      .ssb-option { fill: #92948d; font-size: 36px; letter-spacing: .36px; }
+      .ssb-selected { fill: #c7c7c2; }
+      .ssb-measure { stroke: #6889ff; stroke-width: 1.5; }
+      .ssb-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      .ssb-glyph { stroke: #a7a8a2; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+      @keyframes ssb-draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes ssb-reveal { from { opacity: 0; } }
+      /* Native open poses from select.shared.tsx / select-search.tsx, scaled 3x.
+         The popup grows from the trigger's bottom center, including its 6px gap.
+         Panel: 250..450ms, .95 -> 1, 3 CSS px blur -> 0, expo ease-out.
+         Chevron: 250..650ms, spring duration .4s / bounce 0 sampled every 10ms.
+         The authored arrow points up; -180deg starts it down and 0deg finishes up.
+         Trigger dimensions stay fixed. Guides follow at 700..900ms. */
+      .ssb-panel { transform-origin: 640px 270px; }
+      .ssb-chevron { transform-origin: 922px 225px; }
+      @keyframes ssb-open {
+        from { opacity: 0; transform: scale(.95); filter: blur(9px); }
+        to { opacity: 1; transform: scale(1); filter: blur(0px); }
+      }
+      @keyframes ssb-turn {
+        0% { transform: rotate(-180.000000deg); }
+        2.5% { transform: rotate(-175.882224deg); }
+        5% { transform: rotate(-165.813930deg); }
+        7.5% { transform: rotate(-152.423239deg); }
+        10% { transform: rotate(-137.507638deg); }
+        12.5% { transform: rotate(-122.264749deg); }
+        15% { transform: rotate(-107.463257deg); }
+        17.5% { transform: rotate(-93.568854deg); }
+        20% { transform: rotate(-80.836493deg); }
+        22.5% { transform: rotate(-69.377476deg); }
+        25% { transform: rotate(-59.207847deg); }
+        27.5% { transform: rotate(-50.282931deg); }
+        30% { transform: rotate(-42.521685deg); }
+        32.5% { transform: rotate(-35.823591deg); }
+        35% { transform: rotate(-30.080126deg); }
+        37.5% { transform: rotate(-25.182333deg); }
+        40% { transform: rotate(-21.025613deg); }
+        42.5% { transform: rotate(-17.512556deg); }
+        45% { transform: rotate(-14.554423deg); }
+        47.5% { transform: rotate(-12.071708deg); }
+        50% { transform: rotate(-9.994107deg); }
+        52.5% { transform: rotate(-8.260096deg); }
+        55% { transform: rotate(-6.816303deg); }
+        57.5% { transform: rotate(-5.616760deg); }
+        60% { transform: rotate(-4.622119deg); }
+        62.5% { transform: rotate(-3.798875deg); }
+        65% { transform: rotate(-3.118630deg); }
+        67.5% { transform: rotate(-2.557410deg); }
+        70% { transform: rotate(-2.095049deg); }
+        72.5% { transform: rotate(-1.714638deg); }
+        75% { transform: rotate(-1.402038deg); }
+        77.5% { transform: rotate(-1.145456deg); }
+        80% { transform: rotate(-0.935080deg); }
+        82.5% { transform: rotate(-0.762764deg); }
+        85% { transform: rotate(-0.621756deg); }
+        87.5% { transform: rotate(-0.506470deg); }
+        90% { transform: rotate(-0.412294deg); }
+        92.5% { transform: rotate(-0.335423deg); }
+        95% { transform: rotate(-0.272725deg); }
+        97.5% { transform: rotate(-0.221623deg); }
+        100% { transform: rotate(0.000000deg); }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .ssb-panel { animation: ssb-open 200ms cubic-bezier(.16,1,.3,1) 250ms both; }
+        .ssb-chevron { animation: ssb-turn 400ms linear 250ms both; }
+        .ssb-draw, .ssb-glyph > * {
+          stroke-dasharray: 1;
+          animation: ssb-draw-line var(--ssb-detail-duration) ease-out var(--ssb-line-delay, 0ms) both;
+        }
+        .ssb-outline { animation-duration: var(--ssb-outline-duration); }
+        .ssb-measure, .ssb-spacing, .ssb-label {
+          animation: ssb-reveal var(--ssb-annotation-duration) ease-out var(--ssb-annotation-delay) both;
+        }
+      }
+    </style>
+    <!-- Every stroked icon child is normalized independently; delay inherits from use. -->
+    <g id="ssb-search" class="ssb-glyph">
+      <circle cx="18" cy="18" r="11" pathLength="1"/>
+      <path d="m26 26 10 10" pathLength="1"/>
+    </g>
+    <g id="ssb-chevron-up" class="ssb-glyph">
+      <path d="m11 25 10-10 10 10" pathLength="1"/>
+    </g>
+    <g id="ssb-dashboard" class="ssb-glyph">
+      <rect x="5" y="5" width="12" height="12" rx="1.5" pathLength="1"/>
+      <rect x="25" y="5" width="12" height="12" rx="1.5" pathLength="1"/>
+      <rect x="5" y="25" width="12" height="12" rx="1.5" pathLength="1"/>
+      <rect x="25" y="25" width="12" height="12" rx="1.5" pathLength="1"/>
+    </g>
+    <g id="ssb-projects" class="ssb-glyph">
+      <path d="M5 11h12l5 5h15v19H5Z" pathLength="1"/>
+    </g>
+    <g id="ssb-team" class="ssb-glyph">
+      <circle cx="16" cy="13" r="6" pathLength="1"/>
+      <path d="M5 36v-5a11 11 0 0 1 22 0v5" pathLength="1"/>
+      <path d="M29 7a6 6 0 0 1 0 12" pathLength="1"/>
+      <path d="M32 25q6 2 6 11" pathLength="1"/>
+    </g>
+    <g id="ssb-activity" class="ssb-glyph">
+      <path d="M3 22h9l6-16 8 30 5-14h8" pathLength="1"/>
+    </g>
+    <g id="ssb-settings" class="ssb-glyph">
+      <path d="M5 12h32" pathLength="1"/>
+      <path d="M5 30h32" pathLength="1"/>
+      <circle cx="15" cy="12" r="5" fill="#060606" pathLength="1"/>
+      <circle cx="28" cy="30" r="5" fill="#060606" pathLength="1"/>
+    </g>
+  </defs>
+  <rect width="1280" height="1000" fill="#060606"/>
+
+  <!-- Field and popup borders are inset by half the scaled 1px border. -->
+  <rect x="305.5" y="181.5" width="669" height="87" rx="16.5" fill="#060606" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="ssb-draw ssb-outline"/>
+  <!-- Field content and chevron stay outside the opening popup. -->
+  <rect x="346" y="204" width="42" height="42" class="ssb-spacing"/>
+  <rect x="901" y="204" width="42" height="42" class="ssb-spacing"/>
+  <path d="M346 204V151 M388 204V151 M415 192V258 M868 183V267" class="ssb-spacing"/>
+  <use href="#ssb-search" x="346" y="204" style="--ssb-line-delay:250ms"/>
+  <text x="415" y="237" class="ssb-option">Projects</text>
+  <g class="ssb-chevron">
+    <use href="#ssb-chevron-up" x="901" y="204" style="--ssb-line-delay:50ms"/>
+  </g>
+
+  <!-- Popup contents enter as one surface; measurements appear after it settles. -->
+  <g class="ssb-panel">
+    <rect x="305.5" y="289.5" width="669" height="477" rx="19.5" fill="#060606" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="ssb-draw ssb-outline"/>
+    <rect x="319" y="393" width="642" height="90" rx="9" fill="#353632"/>
+
+    <!-- Overlays remain above surfaces, beneath labels and glyphs. -->
+    <rect x="319" y="303" width="642" height="450" class="ssb-spacing"/>
+    <path d="M349 303V753 M391 303V753 M415 303V753 M931 303V753" class="ssb-spacing"/>
+    <path d="M319 393H961 M319 483H961 M319 573H961 M319 663H961" class="ssb-spacing"/>
+    <path d="M307 768V794 M319 753V794 M349 753V794 M391 753V780 M415 753V780" class="ssb-spacing"/>
+
+    <use href="#ssb-dashboard" x="349" y="327" style="--ssb-line-delay:300ms"/>
+    <text x="415" y="360" class="ssb-option">Dashboard</text>
+    <use href="#ssb-projects" x="349" y="417" style="--ssb-line-delay:325ms"/>
+    <text x="415" y="450" class="ssb-option ssb-selected">Projects</text>
+    <use href="#ssb-team" x="349" y="507" style="--ssb-line-delay:350ms"/>
+    <text x="415" y="540" class="ssb-option">Team</text>
+    <use href="#ssb-activity" x="349" y="597" style="--ssb-line-delay:375ms"/>
+    <text x="415" y="630" class="ssb-option">Activity</text>
+    <use href="#ssb-settings" x="349" y="687" style="--ssb-line-delay:400ms"/>
+    <text x="415" y="720" class="ssb-option">Settings</text>
+    <!-- Selected indicator occupies the 14px slot x=889..931, y=417..459. -->
+    <path d="m898 438 8 8 16-17" stroke="#c7c7c2" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" pathLength="1" class="ssb-draw" style="--ssb-line-delay:425ms"/>
+  </g>
+
+  <!-- Actual drawn width, fixed field height, and content-derived popup height. -->
+  <path d="M304 104V126 M976 104V126 M304 115H976" class="ssb-measure"/>
+  <text x="640" y="99" text-anchor="middle" class="ssb-label">224 px</text>
+  <path d="M241 180H263 M241 270H263 M252 180V270" class="ssb-measure"/>
+  <text x="234" y="231" text-anchor="end" class="ssb-label">30 px</text>
+  <path d="M241 288H263 M241 768H263 M252 288V768" class="ssb-measure"/>
+  <text x="234" y="534" text-anchor="end" class="ssb-label">160 px</text>
+
+  <!-- Icon slot, anchor-to-popup offset, row height, and the shared row boundary. -->
+  <path d="M346 148V170 M388 148V170 M346 159H388" class="ssb-measure"/>
+  <text x="367" y="143" text-anchor="middle" class="ssb-label">14 px</text>
+  <path d="M1007 270H1029 M1007 288H1029 M1018 270V288 M1029 279H1081" class="ssb-measure"/>
+  <text x="1095" y="285" class="ssb-label">6 px</text>
+  <path d="M1007 303H1029 M1007 393H1029 M1018 303V393" class="ssb-measure"/>
+  <text x="1043" y="354" class="ssb-label">30 px</text>
+  <path d="M951 573H1042" class="ssb-measure"/>
+  <text x="1056" y="579" class="ssb-label">0 px</text>
+
+  <!-- List padding from inside the border; then row padding from the row edge. -->
+  <path d="M307 797V817 M319 797V817 M349 797V817 M307 807H349" class="ssb-measure"/>
+  <path d="M313 819 282 852H250" class="ssb-measure"/>
+  <text x="236" y="858" text-anchor="end" class="ssb-label">4 px</text>
+  <path d="M334 819 365 852H405" class="ssb-measure"/>
+  <text x="419" y="858" class="ssb-label">10 px</text>
+  <!-- Single-select gap-2 is 8px; the multi-select uses a different 10px gap. -->
+  <path d="M391 781V801 M415 781V801 M391 791H415 M403 803 508 852H548" class="ssb-measure"/>
+  <text x="562" y="858" class="ssb-label">8 px</text>
+</svg>

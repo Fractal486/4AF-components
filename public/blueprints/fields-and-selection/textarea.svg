@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" fill="none" role="img" aria-labelledby="textarea-bp-title textarea-bp-description">
+  <title id="textarea-bp-title">Textarea spacing</title>
+  <desc id="textarea-bp-description">Default bordered textarea with its placeholder and resize grip, drawn at twice actual size. The chosen demo width is 384 pixels. Four 20-pixel text rows, 8 pixels of top padding, 16 pixels of bottom padding, and two 1-pixel borders produce a 106-pixel height. Side padding is 12 pixels. The corner grip is 16 pixels square and inset 4 pixels from the right and bottom edges. The field's separate minimum height is 64 pixels.</desc>
+  <!--
+    Sources:
+      registry.json: textarea's complete file map.
+      registry/ui/textarea/textarea.tsx: h-auto, min-h-16, py-2, pb-4;
+        grip size-4, right-1, bottom-1; centered size-3 SVG, viewBox 0 0 12 12.
+      registry/ui/input/input.variants.ts: default border 1px, px-3,
+        rounded-[8px], text-sm. Textarea shares this CVA file.
+      inspector/entries/textarea.tsx: rows={4}, placeholder="Type something...",
+        w-full max-w-sm. Default variant, neutral tone, resizable, enabled, at rest.
+      app/globals.css: text-sm = 0.8125rem = 13px; line-height 1.5385 ~= 20px;
+        dark background oklch(0.120 0 0) = #060606.
+      node_modules/tailwindcss/theme.css: spacing = 0.25rem = 4px;
+        max-w-sm = 24rem = 384px. Preflight uses border-box sizing.
+
+    Chosen width: 384px, the demo's maximum at a sufficiently wide viewport.
+    This is a flexible w-full field, not a universally fixed-width component.
+    Chosen height: four native textarea rows, before any drag resize.
+    Height = max(64px minimum, 4 * 20px + 8px + 16px + 2 * 1px) = 106px.
+    The token's rounded multiplier gives 20.0005px, shown as nominal 20px.
+    Content width = 384 - 2 * 1 - 2 * 12 = 358px.
+    Default HTML rows without the demo's rows prop would be two, not four.
+
+    Drawing scale: 2x. Outer border box: (216,214) to (984,426), 768 x 212.
+    Stroke centerline is inset 1 unit; outer corner radius 16 units = 8 CSS px.
+    Inner border edges: x=218/982, y=216/424.
+    Content edges: x=242/958, y=232/392. Row boundaries every 40 units.
+    Grip button: x=944..976, y=386..418; icon x=948..972, y=390..414.
+    Invisible grip hit-area guides are annotations, not a production border.
+    All visible dimensions are original CSS pixels, not drawing units.
+  -->
+  <defs>
+    <style>
+      #textarea-bp text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #textarea-bp .textarea-bp-copy { fill: #92948d; font-size: 26px; }
+      #textarea-bp .textarea-bp-label { fill: #a1a29c; font-size: 18px; }
+      #textarea-bp .textarea-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      #textarea-bp .textarea-bp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      /* Finished drawing is the default for static exports and reduced motion. */
+      @media (prefers-reduced-motion: no-preference) {
+        @keyframes textarea-bp-draw {
+          from { stroke-dashoffset: 1; }
+          to { stroke-dashoffset: 0; }
+        }
+        @keyframes textarea-bp-reveal { from { opacity: 0; } }
+        #textarea-bp .textarea-bp-draw {
+          stroke-dasharray: 1;
+          animation: textarea-bp-draw 200ms ease-out var(--textarea-bp-delay, 0ms) both;
+        }
+        #textarea-bp .textarea-bp-outline { animation-duration: 400ms; }
+        #textarea-bp .textarea-bp-measure,
+        #textarea-bp .textarea-bp-spacing,
+        #textarea-bp .textarea-bp-label {
+          animation: textarea-bp-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <g id="textarea-bp">
+    <rect width="1200" height="640" fill="#060606"/>
+
+    <!-- The one component: default outlined field; text remains visible throughout. -->
+    <rect x="217" y="215" width="766" height="210" rx="15" stroke="#a7a8a2" stroke-width="2" pathLength="1" class="textarea-bp-draw textarea-bp-outline"/>
+
+    <!-- True content insets, without guides across the individual text lines. -->
+    <rect x="242" y="232" width="716" height="160" class="textarea-bp-spacing"/>
+    <text x="242" y="262" class="textarea-bp-copy">Type something...</text>
+
+    <!-- Resize hit-area annotation and the two independent production grip strokes. -->
+    <rect x="944" y="386" width="32" height="32" rx="12" class="textarea-bp-spacing"/>
+    <path d="M970 398 956 412" stroke="#a7a8a2" stroke-width="3" stroke-linecap="round" pathLength="1" class="textarea-bp-draw" style="--textarea-bp-delay:400ms"/>
+    <path d="M970 406 964 412" stroke="#a7a8a2" stroke-width="3" stroke-linecap="round" pathLength="1" class="textarea-bp-draw" style="--textarea-bp-delay:425ms"/>
+
+    <!-- Overall width and current four-row height, not the minimum height. -->
+    <path d="M216 174V204 M984 174V204" class="textarea-bp-spacing"/>
+    <path d="M216 146V166 M984 146V166 M216 156H984" class="textarea-bp-measure"/>
+    <text x="600" y="138" text-anchor="middle" class="textarea-bp-label">384 px</text>
+    <path d="M180 214H206 M180 426H206" class="textarea-bp-spacing"/>
+    <path d="M150 214H170 M150 426H170 M160 214V426" class="textarea-bp-measure"/>
+    <text x="142" y="326" text-anchor="end" class="textarea-bp-label">106 px</text>
+
+    <!-- Top padding from inner border edge; one line-height; bottom padding. -->
+    <path d="M992 216H1024 M958 232H1024 M958 272H1024 M958 392H1024 M992 424H1024" class="textarea-bp-spacing"/>
+    <path d="M1032 216H1048 M1032 232H1048 M1040 216V232" class="textarea-bp-measure"/>
+    <text x="1064" y="230" class="textarea-bp-label">8 px</text>
+    <path d="M1032 272H1048 M1040 232V272" class="textarea-bp-measure"/>
+    <text x="1064" y="258" class="textarea-bp-label">20 px</text>
+    <path d="M1032 392H1048 M1032 424H1048 M1040 392V424" class="textarea-bp-measure"/>
+    <text x="1064" y="414" class="textarea-bp-label">16 px</text>
+
+    <!-- Horizontal padding begins inside the 1px border, not at its outside edge. -->
+    <path d="M218 424V464 M242 392V464" class="textarea-bp-spacing"/>
+    <path d="M218 468V488 M242 468V488 M218 478H242" class="textarea-bp-measure"/>
+    <path d="M230 490V508" class="textarea-bp-measure"/>
+    <text x="230" y="534" text-anchor="middle" class="textarea-bp-label">12 px</text>
+
+    <!-- Grip width and right inset measured from its actual button box. -->
+    <path d="M944 418V472 M976 418V472 M984 426V442" class="textarea-bp-spacing"/>
+    <path d="M944 474V494 M976 474V494 M944 484H976" class="textarea-bp-measure"/>
+    <text x="960" y="522" text-anchor="middle" class="textarea-bp-label">16 px</text>
+    <path d="M976 444V464 M984 444V464 M976 454H984" class="textarea-bp-measure"/>
+    <path d="M980 466 1000 490H1020" class="textarea-bp-measure"/>
+    <text x="1034" y="496" class="textarea-bp-label">4 px</text>
+  </g>
+</svg>

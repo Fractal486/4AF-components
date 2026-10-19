@@ -387,7 +387,7 @@ describe("Search Select", () => {
     const searchIcon = input.parentElement?.querySelector(".lucide-search");
     expect(searchIcon).toHaveClass("text-muted-foreground");
     expect(searchIcon?.parentElement).toHaveAttribute("aria-hidden", "true");
-    expect(input).toHaveClass("pl-10");
+    expect(input).toHaveClass("pl-9");
     await user.type(input, "man");
     expect(input.parentElement?.querySelector(".lucide-search")).toBeInTheDocument();
     await user.click(document.body);
@@ -402,7 +402,7 @@ describe("Search Select", () => {
     const input = screen.getByRole("combobox", { name: "Fruit" });
     await user.click(input);
     expect(input.parentElement?.querySelector(".lucide-search")).not.toBeInTheDocument();
-    expect(input).not.toHaveClass("pl-10");
+    expect(input).toHaveClass("pl-3.5");
   });
 
   it("unregisters icons when dynamic multi-select items unmount", async () => {

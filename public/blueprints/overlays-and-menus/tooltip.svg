@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1000" height="580" viewBox="0 0 1000 580" fill="none" role="img" aria-labelledby="tooltip-bp-title tooltip-bp-description">
   <title id="tooltip-bp-title">Tooltip spacing blueprint</title>
-  <desc id="tooltip-bp-description">An open tooltip reading Deploys to production, centered above a Hover me button, drawn at three times CSS size. The single-line tooltip is 24 pixels high, with a 16 pixel line box, 10 pixel horizontal padding, and 4 pixel vertical padding. Its gap above the 34 pixel high trigger is 8 pixels.</desc>
+  <desc id="tooltip-bp-description">The tooltip enters once with a fade, scale, blur, and upward slide from its trigger. An open tooltip reading Deploys to production, centered above a Hover me button, drawn at three times CSS size. The single-line tooltip is 24 pixels high, with a 16 pixel line box, 10 pixel horizontal padding, and 4 pixel vertical padding. Its gap above the 34 pixel high trigger is 8 pixels.</desc>
   <!--
     Sources:
       registry.json: tooltip has one portable source file; no sibling variants.
@@ -28,7 +28,12 @@
     Outline ink is inset by half its stroke width so its outside edge matches
       each box; it adds no fictitious CSS border to either component.
     Animation: outline 0..400ms, trigger 400..600ms; all annotations 700..900ms.
-      Text and fills remain visible. Reduced motion shows the completed drawing.
+      Native entrance from tooltip.tsx: opacity 0, scale .9, blur 5px, and
+      translateY 16px for top placement. At 3x: blur 15 units, translateY 48.
+      app/globals.css: duration-fast=150ms, ease-out=cubic-bezier(.16,1,.3,1).
+      Base UI useAnchorPositioning puts the transform origin across the 8px gap
+      at the trigger's top center, (500, 312). Entrance runs 250..400ms.
+      Reduced motion shows the completed drawing.
   -->
   <defs>
     <style>
@@ -41,7 +46,13 @@
       #tooltip-bp-root { --tooltip-bp-detail-duration: 200ms; --tooltip-bp-annotation-delay: 700ms; }
       @keyframes tooltip-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes tooltip-bp-reveal { from { opacity: 0; } }
+      #tooltip-bp-root .tooltip-bp-enter { transform-origin: 500px 312px; }
+      @keyframes tooltip-bp-enter {
+        from { opacity: 0; transform: translateY(48px) scale(.9); filter: blur(15px); }
+        to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); }
+      }
       @media (prefers-reduced-motion: no-preference) {
+        #tooltip-bp-root .tooltip-bp-enter { animation: tooltip-bp-enter 150ms cubic-bezier(.16,1,.3,1) 250ms both; }
         #tooltip-bp-root .tooltip-bp-draw {
           stroke-dasharray: 1;
           animation: tooltip-bp-draw var(--tooltip-bp-detail-duration) ease-out var(--tooltip-bp-line-delay, 0ms) both;
@@ -58,9 +69,14 @@
   <g id="tooltip-bp-root">
     <rect width="1000" height="580" fill="#060606"/>
 
-    <!-- Permanent fills; only the perimeter strokes draw in. -->
-    <rect x="284" y="216" width="432" height="72" rx="21" fill="#111111"/>
-    <rect x="285.25" y="217.25" width="429.5" height="69.5" rx="19.75" stroke="#a7a8a2" stroke-width="2.5" pathLength="1" class="tooltip-bp-draw tooltip-bp-outline"/>
+    <g class="tooltip-bp-enter">
+      <!-- Tooltip content enters together, independently of the supporting trigger. -->
+      <rect x="284" y="216" width="432" height="72" rx="21" fill="#111111"/>
+      <rect x="285.25" y="217.25" width="429.5" height="69.5" rx="19.75" stroke="#a7a8a2" stroke-width="2.5" pathLength="1" class="tooltip-bp-draw tooltip-bp-outline"/>
+      <rect x="314" y="228" width="372" height="48" class="tooltip-bp-spacing"/>
+      <text x="314" y="264" textLength="372" lengthAdjust="spacingAndGlyphs" class="tooltip-bp-copy">Deploys to production</text>
+    </g>
+
     <!-- Dim the supporting trigger to 40% of its original illustration opacity. -->
     <g opacity=".4">
       <rect x="374" y="312" width="252" height="102" rx="24" fill="#111111"/>
@@ -68,12 +84,9 @@
       <text x="500" y="378" text-anchor="middle" textLength="168" lengthAdjust="spacingAndGlyphs" class="tooltip-bp-trigger-copy">Hover me</text>
     </g>
 
-    <!-- The actual content box and its padding edges stay visible over the fill. -->
-    <rect x="314" y="228" width="372" height="48" class="tooltip-bp-spacing"/>
+    <!-- External padding leaders remain fixed while the tooltip enters. -->
     <path d="M284 216V164 M314 228V164" class="tooltip-bp-spacing"/>
     <path d="M686 228H824 M686 276H760 M716 216H824" class="tooltip-bp-spacing"/>
-
-    <text x="314" y="264" textLength="372" lengthAdjust="spacingAndGlyphs" class="tooltip-bp-copy">Deploys to production</text>
 
     <!-- Horizontal padding: x=284..314 is exactly 30 units / 3 = 10px. -->
     <path d="M284 168V180 M314 168V180 M284 174H314" class="tooltip-bp-measure"/>

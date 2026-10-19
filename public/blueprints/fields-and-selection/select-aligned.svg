@@ -1,70 +1,96 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" fill="none" role="img" aria-labelledby="title description">
-  <title id="title">Select Aligned spacing</title>
-  <desc id="description">Five options in a 192 by 160 pixel panel, drawn at three times actual size. Rows are 30 pixels high with no gap. Panel padding is 4 pixels and horizontal row padding is 10 pixels. The selected Projects row sits over the trigger.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" id="sap-bp" viewBox="0 0 1200 800" fill="none" role="img" aria-labelledby="sap-bp-title sap-bp-description">
+  <title id="sap-bp-title">Select Aligned spacing</title>
+  <desc id="sap-bp-description">The panel opens once over the trigger, scaling from the selected Projects row as the trigger and its fixed up/down chevrons disappear underneath. Five options in a 192 by 160 pixel panel, drawn at three times actual size. Rows are 30 pixels high with no gap. Panel padding is 4 pixels and horizontal row padding is 10 pixels. The selected Projects row sits over the trigger.</desc>
   <!-- Default variant, size sm. Example width set by the caller.
        All dimensions are CSS pixels, drawn at 3×.
        Panel height: 2px border + 8px padding + five 30px rows = 160px. -->
   <defs>
     <style>
-      text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
-      .label { fill: #a1a29c; font-size: 18px; }
-      .option { fill: #92948d; font-size: 36px; letter-spacing: -.7px; }
-      .measure { stroke: #6889ff; stroke-width: 1.5; }
-      .spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      #sap-bp text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      .sap-bp-label { fill: #a1a29c; font-size: 18px; }
+      .sap-bp-option { fill: #92948d; font-size: 36px; letter-spacing: -.7px; }
+      .sap-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      .sap-bp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
       /* Static is the default for exports and reduced-motion viewers. */
-      svg { --outline-duration: 400ms; --detail-duration: 200ms; --annotation-delay: 700ms; --annotation-duration: 200ms; }
-      @keyframes draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-      @keyframes reveal { from { opacity: 0; } }
+      #sap-bp { --outline-duration: 400ms; --detail-duration: 200ms; --annotation-delay: 700ms; --annotation-duration: 200ms; }
+      @keyframes sap-bp-draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes sap-bp-reveal { from { opacity: 0; } }
+      /* Source: registry/ui/select/select-aligned.tsx. Scale .95 -> 1 with
+         3 CSS px blur; transform origin is selected row center (588,300).
+         Trigger and its fixed ChevronsUpDown glyph fade at 250..450ms as the panel
+         covers them. Source --duration-base=200ms; panel settles at 450ms.
+         Guides appear at 700..900ms. No geometry is resized to another row. */
+      .sap-bp-panel { transform-origin: 588px 300px; }
+      .sap-bp-trigger { opacity: 0; }
+      @keyframes sap-bp-open { from { opacity: 0; transform: scale(.95); filter: blur(9px); } to { opacity: 1; transform: scale(1); filter: blur(0px); } }
+      @keyframes sap-bp-trigger-out { from { opacity: 1; } to { opacity: 0; } }
       @media (prefers-reduced-motion: no-preference) {
-        .draw {
+        .sap-bp-panel { animation: sap-bp-open 200ms cubic-bezier(.16,1,.3,1) 250ms both; }
+        .sap-bp-trigger { animation: sap-bp-trigger-out 200ms cubic-bezier(.16,1,.3,1) 250ms both; }
+        .sap-bp-draw {
           stroke-dasharray: 1;
-          animation: draw-line var(--detail-duration) ease-out var(--line-delay, 0ms) both;
+          animation: sap-bp-draw-line var(--detail-duration) ease-out var(--line-delay, 0ms) both;
         }
-        .outline { animation-duration: var(--outline-duration); }
-        .measure, .spacing, .label {
-          animation: reveal var(--annotation-duration) ease-out var(--annotation-delay) both;
+        .sap-bp-outline { animation-duration: var(--outline-duration); }
+        .sap-bp-measure, .sap-bp-spacing, .sap-bp-label {
+          animation: sap-bp-reveal var(--annotation-duration) ease-out var(--annotation-delay) both;
         }
       }
     </style>
   </defs>
   <rect width="1200" height="800" fill="#060606"/>
 
-  <!-- Panel and five contiguous rows. -->
-  <rect x="301.5" y="151.5" width="573" height="477" rx="19.5" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="draw outline"/>
+  <!-- Resting trigger shares the selected row's exact center and baseline. -->
+  <g class="sap-bp-trigger" aria-hidden="true">
+    <rect x="301.5" y="256.5" width="573" height="87" rx="16.5" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="sap-bp-draw"/>
+    <text x="345" y="312" class="sap-bp-option" style="fill:#c7c7c2">Projects</text>
+    <!-- Source ChevronsUpDown is fixed: the panel opens around this row.
+         14 CSS px viewport at x789..831, y279..321, Lucide geometry at 1.75x. -->
+    <g stroke="#a7a8a2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m801.25 305.25 8.75 8.75 8.75-8.75" pathLength="1" class="sap-bp-draw"/>
+      <path d="m801.25 294.75 8.75-8.75 8.75 8.75" pathLength="1" class="sap-bp-draw" style="--line-delay:25ms"/>
+    </g>
+  </g>
+
+  <!-- Panel and five contiguous rows, opening around the Projects row. -->
+  <g class="sap-bp-panel">
+  <rect x="301.5" y="151.5" width="573" height="477" rx="19.5" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="sap-bp-draw sap-bp-outline"/>
   <rect x="315" y="255" width="546" height="90" rx="9" fill="#353632"/>
   <!-- Dashed overlays expose the panel inset, row padding, and shared row edges. -->
-  <rect x="315" y="165" width="546" height="450" class="spacing"/>
-  <path d="M345 165V641 M831 165V615 M303 153V641 M315 615V641" class="spacing"/>
-  <path d="M315 255H861 M315 345H861 M315 435H861 M315 525H861" class="spacing"/>
-  <text x="345" y="222" class="option">Dashboard</text>
-  <text x="345" y="312" class="option" style="fill:#c7c7c2">Projects</text>
-  <text x="345" y="402" class="option">Team</text>
-  <text x="345" y="492" class="option">Activity</text>
-  <text x="345" y="582" class="option">Settings</text>
-  <path d="m798 300 8 8 16-17" stroke="#c7c7c2" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" pathLength="1" class="draw" style="--line-delay:400ms"/>
+  <rect x="315" y="165" width="546" height="450" class="sap-bp-spacing"/>
+  <path d="M345 165V641 M831 165V615 M303 153V641 M315 615V641" class="sap-bp-spacing"/>
+  <path d="M315 255H861 M315 345H861 M315 435H861 M315 525H861" class="sap-bp-spacing"/>
+  <text x="345" y="222" class="sap-bp-option">Dashboard</text>
+  <text x="345" y="312" class="sap-bp-option" style="fill:#c7c7c2">Projects</text>
+  <text x="345" y="402" class="sap-bp-option">Team</text>
+  <text x="345" y="492" class="sap-bp-option">Activity</text>
+  <text x="345" y="582" class="sap-bp-option">Settings</text>
+  <path d="m798 300 8 8 16-17" stroke="#c7c7c2" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" pathLength="1" class="sap-bp-draw" style="--line-delay:400ms"/>
+
+  </g>
 
   <!-- Overall size. -->
-  <path d="M300 89V111 M876 89V111 M300 100H876" class="measure"/>
-  <text x="588" y="84" text-anchor="middle" class="label">192 px</text>
-  <path d="M239 150H261 M239 630H261 M250 150V630" class="measure"/>
-  <text x="228" y="396" text-anchor="end" class="label">160 px</text>
+  <path d="M300 89V111 M876 89V111 M300 100H876" class="sap-bp-measure"/>
+  <text x="588" y="84" text-anchor="middle" class="sap-bp-label">192 px</text>
+  <path d="M239 150H261 M239 630H261 M250 150V630" class="sap-bp-measure"/>
+  <text x="228" y="396" text-anchor="end" class="sap-bp-label">160 px</text>
 
   <!-- Row height and the absence of space between rows. -->
-  <path d="M909 165H931 M909 255H931 M920 165V255" class="measure"/>
-  <text x="942" y="216" class="label">30 px</text>
-  <path d="M851 435H932" class="measure"/>
-  <text x="946" y="441" class="label">0 px</text>
+  <path d="M909 165H931 M909 255H931 M920 165V255" class="sap-bp-measure"/>
+  <text x="942" y="216" class="sap-bp-label">30 px</text>
+  <path d="M851 435H932" class="sap-bp-measure"/>
+  <text x="946" y="441" class="sap-bp-label">0 px</text>
 
   <!-- The old trigger position. -->
-  <rect x="300" y="255" width="576" height="90" rx="18" class="measure" stroke-dasharray="6 6" opacity=".7"/>
-  <path d="M300 300H231" class="measure"/>
-  <text x="214" y="293" text-anchor="end" class="label" style="fill:#9baee0">Panel opens</text>
-  <text x="214" y="318" text-anchor="end" class="label" style="fill:#9baee0">over the trigger</text>
+  <rect x="300" y="255" width="576" height="90" rx="18" class="sap-bp-measure" stroke-dasharray="6 6" opacity=".7"/>
+  <path d="M300 300H231" class="sap-bp-measure"/>
+  <text x="214" y="293" text-anchor="end" class="sap-bp-label" style="fill:#9baee0">Panel opens</text>
+  <text x="214" y="318" text-anchor="end" class="sap-bp-label" style="fill:#9baee0">over the trigger</text>
 
   <!-- Padding measured from inside the panel border and from the row edge. -->
-  <path d="M303 641V676 M315 641V676 M345 641V676 M303 665H345" class="measure"/>
-  <path d="M309 677 286 701H230" class="measure"/>
-  <text x="216" y="707" text-anchor="end" class="label">4 px</text>
-  <path d="M330 677 353 701H409" class="measure"/>
-  <text x="423" y="707" class="label">10 px</text>
+  <path d="M303 641V676 M315 641V676 M345 641V676 M303 665H345" class="sap-bp-measure"/>
+  <path d="M309 677 286 701H230" class="sap-bp-measure"/>
+  <text x="216" y="707" text-anchor="end" class="sap-bp-label">4 px</text>
+  <path d="M330 677 353 701H409" class="sap-bp-measure"/>
+  <text x="423" y="707" class="sap-bp-label">10 px</text>
 </svg>

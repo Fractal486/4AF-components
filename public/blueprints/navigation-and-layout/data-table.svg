@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" id="dtbp" width="1600" height="860" viewBox="0 0 1600 860" fill="none" role="img" aria-labelledby="dtbp-title dtbp-description">
   <title id="dtbp-title">Data Table spacing blueprint</title>
-  <desc id="dtbp-description">A compact data table with five projects, sortable column headings, a checkbox column, and row actions. Team is selected and hovered. The representative table is 576 pixels wide. Header and data rows are 36 pixels high; horizontal cell padding is 10 pixels, checkboxes are 16 pixels square, and body text has a 20 pixel line height. Blue dashed guides expose the actual column insets and control boxes.</desc>
+  <desc id="dtbp-description">The active sort chevron turns into its ascending state and the hovered row action fades in. A compact data table with five projects, sortable column headings, a checkbox column, and row actions. Team is selected and hovered. The representative table is 576 pixels wide. Header and data rows are 36 pixels high; horizontal cell padding is 10 pixels, checkboxes are 16 pixels square, and body text has a 20 pixel line height. Blue dashed guides expose the actual column insets and control boxes.</desc>
   <!--
     Hand-authored vector drawing. Sources:
       registry.json: data-table entry and its table, checkbox, and button dependencies.
@@ -45,6 +45,10 @@
       Header/body boundaries: 214, 286, 358, 430, 502, 574, 646.
       Selected row text line box: y=445..485. Checkbox: x=244..276, y=449..481.
       Action target: x=1308..1356, y=441..489, glyph x=1318..1346, y=451..479.
+    Native data-table.tsx sort spring: duration .4, bounce 0, sampled every 10ms.
+    Only the active single chevron rotates; unsorted double chevrons stay fixed.
+    Row-action opacity uses data-table.variants.ts duration-fast=150ms and ease-out.
+    All feedback settles by 650ms. Icons are inline paths for reliable stroke animation.
     No enclosing component outline exists in the default variant. The main header
       separator draws for the initial 400ms; smaller borders and icons finish by 650ms.
       All blue annotations reveal together at 700ms and finish at 900ms.
@@ -64,8 +68,113 @@
       /* Without motion support, and for reduced motion, the final state is visible. */
       @keyframes dtbp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes dtbp-reveal { from { opacity: 0; } }
+      /* One press/release during reveal, matching Button's .95 press scale.
+         spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
+         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         compose with content/panel motion; static and reduced motion stay at 1. */
+      @keyframes data-table-bp-button-press {
+        0% { transform: scale(1.000000); }
+        2% { transform: scale(0.998236); }
+        4% { transform: scale(0.994025); }
+        6% { transform: scale(0.988604); }
+        8% { transform: scale(0.982802); }
+        10% { transform: scale(0.977146); }
+        12% { transform: scale(0.971948); }
+        14% { transform: scale(0.967366); }
+        16% { transform: scale(0.963455); }
+        18% { transform: scale(0.960207); }
+        20% { transform: scale(0.957573); }
+        22% { transform: scale(0.955481); }
+        24% { transform: scale(0.953856); }
+        26% { transform: scale(0.952619); }
+        28% { transform: scale(0.951698); }
+        30% { transform: scale(0.951029); }
+        32% { transform: scale(0.950556); }
+        34% { transform: scale(0.950233); }
+        36% { transform: scale(0.950022); }
+        38% { transform: scale(0.950000); }
+        40% { transform: scale(0.950000); }
+        42% { transform: scale(0.950000); }
+        44% { transform: scale(0.950000); }
+        46% { transform: scale(0.950000); }
+        48% { transform: scale(0.950000); }
+        50% { transform: scale(0.950000); }
+        52% { transform: scale(0.951764); }
+        54% { transform: scale(0.955975); }
+        56% { transform: scale(0.961396); }
+        58% { transform: scale(0.967198); }
+        60% { transform: scale(0.972854); }
+        62% { transform: scale(0.978052); }
+        64% { transform: scale(0.982634); }
+        66% { transform: scale(0.986545); }
+        68% { transform: scale(0.989793); }
+        70% { transform: scale(0.992427); }
+        72% { transform: scale(0.994519); }
+        74% { transform: scale(0.996144); }
+        76% { transform: scale(0.997381); }
+        78% { transform: scale(0.998302); }
+        80% { transform: scale(0.998971); }
+        82% { transform: scale(0.999444); }
+        84% { transform: scale(0.999767); }
+        86% { transform: scale(0.999978); }
+        88% { transform: scale(1.000000); }
+        90% { transform: scale(1.000000); }
+        92% { transform: scale(1.000000); }
+        94% { transform: scale(1.000000); }
+        96% { transform: scale(1.000000); }
+        98% { transform: scale(1.000000); }
+        100% { transform: scale(1.000000); }
+      }
+      #dtbp .dtbp-sort-turn { transform-origin: 424px 249px; }
+      @keyframes dtbp-sort-turn {
+        0.0000% { transform: rotate(180.000000deg); }
+        2.5000% { transform: rotate(175.882224deg); }
+        5.0000% { transform: rotate(165.813930deg); }
+        7.5000% { transform: rotate(152.423239deg); }
+        10.0000% { transform: rotate(137.507638deg); }
+        12.5000% { transform: rotate(122.264749deg); }
+        15.0000% { transform: rotate(107.463257deg); }
+        17.5000% { transform: rotate(93.568854deg); }
+        20.0000% { transform: rotate(80.836493deg); }
+        22.5000% { transform: rotate(69.377476deg); }
+        25.0000% { transform: rotate(59.207847deg); }
+        27.5000% { transform: rotate(50.282931deg); }
+        30.0000% { transform: rotate(42.521685deg); }
+        32.5000% { transform: rotate(35.823591deg); }
+        35.0000% { transform: rotate(30.080126deg); }
+        37.5000% { transform: rotate(25.182333deg); }
+        40.0000% { transform: rotate(21.025613deg); }
+        42.5000% { transform: rotate(17.512556deg); }
+        45.0000% { transform: rotate(14.554423deg); }
+        47.5000% { transform: rotate(12.071708deg); }
+        50.0000% { transform: rotate(9.994107deg); }
+        52.5000% { transform: rotate(8.260096deg); }
+        55.0000% { transform: rotate(6.816303deg); }
+        57.5000% { transform: rotate(5.616760deg); }
+        60.0000% { transform: rotate(4.622119deg); }
+        62.5000% { transform: rotate(3.798875deg); }
+        65.0000% { transform: rotate(3.118630deg); }
+        67.5000% { transform: rotate(2.557410deg); }
+        70.0000% { transform: rotate(2.095049deg); }
+        72.5000% { transform: rotate(1.714638deg); }
+        75.0000% { transform: rotate(1.402038deg); }
+        77.5000% { transform: rotate(1.145456deg); }
+        80.0000% { transform: rotate(0.935080deg); }
+        82.5000% { transform: rotate(0.762764deg); }
+        85.0000% { transform: rotate(0.621756deg); }
+        87.5000% { transform: rotate(0.506470deg); }
+        90.0000% { transform: rotate(0.412294deg); }
+        92.5000% { transform: rotate(0.335423deg); }
+        95.0000% { transform: rotate(0.272725deg); }
+        97.5000% { transform: rotate(0.221623deg); }
+        100.0000% { transform: rotate(0deg); }
+      }
+      @keyframes dtbp-action-in { from { opacity: 0; } to { opacity: 1; } }
       @media (prefers-reduced-motion: no-preference) {
-        #dtbp .draw, #dtbp .icon > * {
+        #dtbp .dtbp-sort-turn { animation: dtbp-sort-turn 400ms linear 250ms both; }
+        #dtbp .dtbp-action-in { animation: dtbp-action-in 150ms cubic-bezier(.16,1,.3,1) 450ms both; }
+        .data-table-bp-button-press { animation: data-table-bp-button-press 500ms linear 150ms both; }
+        #dtbp .draw {
           stroke-dasharray: 1;
           animation: dtbp-draw 200ms ease-out var(--line-delay, 0ms) both;
         }
@@ -76,18 +185,9 @@
       }
     </style>
     <!-- Lucide-style 14px sort glyphs, drawn at 2x. Each disconnected stroke is normalized. -->
-    <g id="dtbp-sort" class="icon">
-      <path d="m9 10 5-5 5 5" pathLength="1"/>
-      <path d="m9 18 5 5 5-5" pathLength="1"/>
-    </g>
-    <g id="dtbp-ascending" class="icon">
-      <path d="m7 17 7-7 7 7" pathLength="1"/>
-    </g>
-    <g id="dtbp-ellipsis" class="icon">
-      <circle cx="4.67" cy="14" r="1.17" pathLength="1"/>
-      <circle cx="14" cy="14" r="1.17" pathLength="1"/>
-      <circle cx="23.33" cy="14" r="1.17" pathLength="1"/>
-    </g>
+
+
+
   </defs>
   <g>
     <rect width="1600" height="860" fill="#060606"/>
@@ -126,12 +226,34 @@
 
     <!-- Header labels and their 14px sort slots, with a true 6px label-to-icon gap.
          textLength fixes only these sample labels so the measured gap survives fallback fonts. -->
-    <text x="316" y="257" class="head selected" textLength="82" lengthAdjust="spacingAndGlyphs">Project</text>
-    <use href="#dtbp-ascending" x="410" y="235" style="--line-delay:350ms"/>
-    <text x="652" y="257" class="head" textLength="76" lengthAdjust="spacingAndGlyphs">Owner</text>
-    <use href="#dtbp-sort" x="740" y="235" style="--line-delay:375ms"/>
-    <text x="1130" y="257" class="head" textLength="98" lengthAdjust="spacingAndGlyphs">Updated</text>
-    <use href="#dtbp-sort" x="1240" y="235" style="--line-delay:400ms"/>
+    <g class="data-table-bp-button-press" style="transform-origin: 377px 249px">
+      <text x="316" y="257" class="head selected" textLength="82" lengthAdjust="spacingAndGlyphs">Project</text>
+    </g>
+
+    <g class="data-table-bp-button-press" style="transform-origin: 377px 249px">
+      <g class="dtbp-sort-turn">
+        <g class="icon" transform="translate(410 235)" style="--line-delay:50ms"><path d="m7 17 7-7 7 7" pathLength="1" class="draw"/></g>
+      </g>
+    </g>
+
+    <g class="data-table-bp-button-press" style="transform-origin: 710px 249px">
+      <text x="652" y="257" class="head" textLength="76" lengthAdjust="spacingAndGlyphs">Owner</text>
+    </g>
+
+    <g class="data-table-bp-button-press" style="transform-origin: 710px 249px">
+      <g class="icon" transform="translate(740 235)" style="--line-delay:375ms"><path d="m9 10 5-5 5 5" pathLength="1" class="draw"/>
+      <path d="m9 18 5 5 5-5" pathLength="1" class="draw"/></g>
+    </g>
+
+    <g class="data-table-bp-button-press" style="transform-origin: 1199px 249px">
+      <text x="1130" y="257" class="head" textLength="98" lengthAdjust="spacingAndGlyphs">Updated</text>
+    </g>
+
+    <g class="data-table-bp-button-press" style="transform-origin: 1199px 249px">
+      <g class="icon" transform="translate(1240 235)" style="--line-delay:400ms"><path d="m9 10 5-5 5 5" pathLength="1" class="draw"/>
+      <path d="m9 18 5 5 5-5" pathLength="1" class="draw"/></g>
+    </g>
+
 
     <!-- Body text, 13px on a 20px line, with middle alignment in each cell. -->
     <text x="316" y="330" class="body">Dashboard</text>
@@ -143,7 +265,14 @@
     <text x="316" y="474" class="body selected">Team</text>
     <text x="652" y="474" class="body selected">Jamie Chen</text>
     <text x="1268" y="474" text-anchor="end" class="body selected">8 Mar</text>
-    <use href="#dtbp-ellipsis" x="1318" y="451" style="--line-delay:425ms"/>
+    <g class="data-table-bp-button-press" style="transform-origin: 1332px 465px">
+      <g class="dtbp-action-in">
+        <g class="icon" transform="translate(1318 451)" style="--line-delay:300ms"><circle cx="4.67" cy="14" r="1.17" pathLength="1" class="draw"/>
+      <circle cx="14" cy="14" r="1.17" pathLength="1" class="draw"/>
+      <circle cx="23.33" cy="14" r="1.17" pathLength="1" class="draw"/></g>
+      </g>
+    </g>
+
     <text x="316" y="546" class="body">Activity</text>
     <text x="652" y="546" class="body">Taylor Reed</text>
     <text x="1268" y="546" text-anchor="end" class="body">6 Mar</text>

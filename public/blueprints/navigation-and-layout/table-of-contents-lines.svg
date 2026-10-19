@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="820" viewBox="0 0 1200 820" fill="none" role="img" aria-labelledby="toc-lines-bp-title toc-lines-bp-desc">
   <title id="toc-lines-bp-title">Table of Contents Lines spacing blueprint</title>
-  <desc id="toc-lines-bp-desc">A borderless table of contents with five headings, drawn at three times actual size. Usage is active and Configuration is nested one level. The chosen width is 176 CSS pixels; the content height is 143 pixels. Contiguous 28-pixel rows contain three equal line tracks. Main rules are 24 pixels long, the active rule is 30 pixels, and secondary rules are 16 pixels. Each depth adds 12 pixels of indentation. Labels sit after a 24-pixel rule column and a 10-pixel gap; the active label moves 4 pixels.</desc>
+  <desc id="toc-lines-bp-desc">Usage becomes active once: its rule extends from 24 to 30 pixels and its label shifts four pixels to the right. A borderless table of contents with five headings, drawn at three times actual size. Usage is active and Configuration is nested one level. The chosen width is 176 CSS pixels; the content height is 143 pixels. Contiguous 28-pixel rows contain three equal line tracks. Main rules are 24 pixels long, the active rule is 30 pixels, and secondary rules are 16 pixels. Each depth adds 12 pixels of indentation. Labels sit after a 24-pixel rule column and a 10-pixel gap; the active label moves 4 pixels.</desc>
   <!--
     Sources:
       registry/ui/table-of-contents-lines/table-of-contents-lines.tsx
@@ -48,6 +48,7 @@
     Text remains visible. Reduced motion and static rendering show the final state.
   -->
   <defs>
+    <clipPath id="toc-lines-bp-growth"><rect x="372" y="379" width="90" height="4" class="toc-lines-bp-growth"/></clipPath>
     <style>
       #toc-lines-bp-root text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
       #toc-lines-bp-root .toc-lines-bp-heading { fill: #92948d; font-size: 39px; }
@@ -60,7 +61,19 @@
       #toc-lines-bp-root .toc-lines-bp-label { fill: #a1a29c; font-size: 18px; }
       @keyframes toc-lines-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes toc-lines-bp-reveal { from { opacity: 0; } }
+      /* Animate the clip, not the hairline, to preserve its 3-unit thickness.
+         Idle visible width 24px*3=72; active 30px*3=90; mask scale .8 -> 1.
+         Usage label starts at x474, finishes at x486 (4 CSS px shift).
+         Primary stroke draws 100..300ms, activation 350..650ms. */
+      #toc-lines-bp-root .toc-lines-bp-activate { transform-origin: 372px 381px; }
+      .toc-lines-bp-growth { transform-origin: 372px 381px; }
+      @keyframes toc-lines-bp-growth { from { transform: scaleX(.8); } to { transform: scaleX(1); } }
+      @keyframes toc-lines-bp-shift { from { transform: translateX(-12px); fill: #92948d; } to { transform: translateX(0); fill: #c7c7c2; } }
+      @keyframes toc-lines-bp-brighten { from { stroke: #a7a8a2; } to { stroke: #c7c7c2; } }
       @media (prefers-reduced-motion: no-preference) {
+        .toc-lines-bp-growth { animation: toc-lines-bp-growth 300ms ease-out 350ms both; }
+        #toc-lines-bp-root .toc-lines-bp-activate { animation: toc-lines-bp-shift 300ms ease-out 350ms both; }
+        #toc-lines-bp-root .toc-lines-bp-brighten { animation: toc-lines-bp-brighten 300ms ease-out 350ms both; }
         #toc-lines-bp-root .toc-lines-bp-draw {
           stroke-dasharray: 1;
           animation: toc-lines-bp-draw 200ms ease-out var(--toc-lines-bp-delay, 0ms) both;
@@ -91,7 +104,9 @@
       <path d="M373.5 297H442.5" pathLength="1" class="toc-lines-bp-draw" style="--toc-lines-bp-delay:300ms"/>
       <path d="M373.5 325H418.5" pathLength="1" class="toc-lines-bp-draw toc-lines-bp-secondary" style="--toc-lines-bp-delay:325ms"/>
       <path d="M373.5 353H418.5" pathLength="1" class="toc-lines-bp-draw toc-lines-bp-secondary" style="--toc-lines-bp-delay:350ms"/>
-      <path d="M373.5 381H460.5" pathLength="1" class="toc-lines-bp-draw toc-lines-bp-active-rule" style="--toc-lines-bp-delay:375ms"/>
+      <g clip-path="url(#toc-lines-bp-growth)"><g class="toc-lines-bp-brighten" stroke="#c7c7c2">
+      <path d="M373.5 381H460.5" pathLength="1" class="toc-lines-bp-draw" style="--toc-lines-bp-delay:100ms"/>
+      </g></g>
       <path d="M409.5 409H454.5" pathLength="1" class="toc-lines-bp-draw toc-lines-bp-secondary" style="--toc-lines-bp-delay:400ms"/>
       <path d="M409.5 437H454.5" pathLength="1" class="toc-lines-bp-draw toc-lines-bp-secondary" style="--toc-lines-bp-delay:425ms"/>
       <path d="M409.5 465H478.5" pathLength="1" class="toc-lines-bp-draw" style="--toc-lines-bp-delay:450ms"/>
@@ -102,7 +117,7 @@
     <g class="toc-lines-bp-heading" dominant-baseline="central">
       <text x="474" y="213">Introduction</text>
       <text x="474" y="297">Installation</text>
-      <text x="486" y="381" class="toc-lines-bp-active">Usage</text>
+      <text x="486" y="381" class="toc-lines-bp-active toc-lines-bp-activate">Usage</text>
       <text x="510" y="465">Configuration</text>
       <text x="474" y="549">Accessibility</text>
     </g>

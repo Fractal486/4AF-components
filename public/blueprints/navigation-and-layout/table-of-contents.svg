@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" id="toc-bp" width="1200" height="840" viewBox="0 0 1200 840" fill="none" role="img" aria-labelledby="toc-bp-title toc-bp-desc">
   <title id="toc-bp-title">Table of Contents spacing blueprint</title>
-  <desc id="toc-bp-desc">Five headings with a straight dashed rail. Usage and its nested Configuration heading are active, joined by one continuous marker. Blue rulers show a representative 176 pixel width, 29.875 pixel rows, 6 pixel vertical padding, and 12 pixel indentation steps. The rail marker spans 52 pixels with a 4 pixel top inset. The drawing completes once in 900 milliseconds and is immediately visible with reduced motion.</desc>
+  <desc id="toc-bp-desc">The active marker moves from Introduction and lengthens to span Usage and Configuration, with matching heading tones. Five headings with a straight dashed rail. Usage and its nested Configuration heading are active, joined by one continuous marker. Blue rulers show a representative 176 pixel width, 29.875 pixel rows, 6 pixel vertical padding, and 12 pixel indentation steps. The rail marker spans 52 pixels with a 4 pixel top inset. The drawing completes once in 900 milliseconds and is immediately visible with reduced motion.</desc>
   <!--
     Hand-authored vector drawing at 3x. All ruler labels are original CSS pixels.
     Sources:
@@ -50,7 +50,22 @@
       /* Static rendering and reduced motion retain every intended final opacity/dash. */
       @keyframes toc-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes toc-bp-reveal { from { opacity: 0; } }
+      /* One dash travels along a 450-unit path, with unscaled round caps.
+         Introduction: start=12, length=66. Usage+Configuration: start=192, length=156.
+         pathLength=1 normalizes both lengths and offsets (divide by 450).
+         Move/extend 250..650ms; annotations remain at 700..900ms. */
+      /* Sharp does not normalize dash metrics with pathLength; preserve an exact
+         short static path for PNG/reduced-motion, and use the normalized moving
+         path only when CSS animation is enabled. Both finish at y388..544. */
+      #toc-bp .toc-bp-marker { opacity: 0; }
+      @keyframes toc-bp-marker { from { stroke-dasharray: .1466666667 1.0022222222; stroke-dashoffset: -.0266666667; } to { stroke-dasharray: .3466666667 1.0022222222; stroke-dashoffset: -.4266666667; } }
+      @keyframes toc-bp-select { from { fill: #92948d; } to { fill: #c7c7c2; } }
+      @keyframes toc-bp-deselect { from { fill: #c7c7c2; } to { fill: #92948d; } }
       @media (prefers-reduced-motion: no-preference) {
+        #toc-bp .toc-bp-marker-static { opacity: 0; }
+        #toc-bp .toc-bp-marker { opacity: 1; animation: toc-bp-marker 400ms cubic-bezier(.16,1,.3,1) 250ms both; }
+        #toc-bp .toc-bp-select { animation: toc-bp-select 400ms ease-out 250ms both; }
+        #toc-bp .toc-bp-deselect { animation: toc-bp-deselect 400ms ease-out 250ms both; }
         #toc-bp .toc-bp-draw {
           stroke-dasharray: 1;
           animation: toc-bp-draw 200ms ease-out var(--toc-bp-delay, 0ms) both;
@@ -62,7 +77,7 @@
       }
     </style>
     <!-- Reveal the dashed rail with a normalized solid mask, preserving its final dashes.
-         Rail 0..400ms; marker 400..600ms; every annotation 700..900ms. -->
+         Rail 0..400ms; marker moves/extends 250..650ms; every annotation 700..900ms. -->
     <mask id="toc-bp-rail-reveal" maskUnits="userSpaceOnUse" x="330" y="190" width="18" height="456">
       <path d="M339 208V634" stroke="white" stroke-width="9" stroke-linecap="round" pathLength="1" class="toc-bp-draw toc-bp-outline"/>
     </mask>
@@ -72,7 +87,8 @@
 
   <!-- The component has no enclosing surface: only its rail, marker, and headings. -->
   <path d="M339 208V634" stroke="#a7a8a2" stroke-width="3" stroke-dasharray="9 9" stroke-linecap="round" mask="url(#toc-bp-rail-reveal)"/>
-  <path d="M339 388V544" stroke="#c7c7c2" stroke-width="6" stroke-linecap="round" pathLength="1" class="toc-bp-draw" style="--toc-bp-delay:400ms"/>
+  <path d="M339 388V544" stroke="#c7c7c2" stroke-width="6" stroke-linecap="round" pathLength="1" class="toc-bp-marker-static"/>
+  <path d="M339 196V646" stroke="#c7c7c2" stroke-width="6" stroke-linecap="round" pathLength="1" stroke-dasharray=".3466666667 1.0022222222" stroke-dashoffset="-.4266666667" class="toc-bp-marker"/>
 
   <!-- Navigation rectangle with selected padding and row guides. -->
   <path d="M882 196H336V644.125" class="toc-bp-spacing"/>
@@ -81,10 +97,10 @@
   <path d="M342 285.625H882" class="toc-bp-spacing"/>
   <path d="M372 303.625H882 M372 357.25H882" class="toc-bp-spacing"/>
 
-  <text x="372" y="240.8125" class="toc-bp-entry">Introduction</text>
+  <text x="372" y="240.8125" class="toc-bp-entry toc-bp-deselect">Introduction</text>
   <text x="372" y="330.4375" class="toc-bp-entry">Installation</text>
-  <text x="372" y="420.0625" class="toc-bp-entry toc-bp-active">Usage</text>
-  <text x="408" y="509.6875" class="toc-bp-entry toc-bp-active">Configuration</text>
+  <text x="372" y="420.0625" class="toc-bp-entry toc-bp-active toc-bp-select">Usage</text>
+  <text x="408" y="509.6875" class="toc-bp-entry toc-bp-active toc-bp-select">Configuration</text>
   <text x="408" y="599.3125" class="toc-bp-entry">Styling</text>
 
   <!-- Representative full navigation width, including the 4px end inset. -->

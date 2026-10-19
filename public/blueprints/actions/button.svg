@@ -1,0 +1,172 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400" fill="none" role="img" aria-labelledby="button-blueprint-title button-blueprint-description">
+  <title id="button-blueprint-title">Button spacing</title>
+  <desc id="button-blueprint-description">The whole button presses to 95 percent scale and springs back once before the measurement guides appear. A default primary, medium, rectangular Button with the demo label Deploy, drawn at three times actual size. The button is 34 pixels high with 14 pixels of horizontal padding, a 20-pixel text line, 7 pixels above and below that line, and an 8-pixel corner radius. This content-dependent example uses a representative width of 69 pixels.</desc>
+  <!-- Sources:
+       registry.json: button files list.
+       registry/ui/button/button.tsx
+       registry/ui/button/button.variants.ts
+       inspector/entries/button.tsx
+       registry/lib/motion.ts: PRESS_SCALE=.95, spring.press stiffness=500, damping=30, mass=.6.
+       app/globals.css
+       node_modules/tailwindcss/theme.css and preflight.css
+       Sidebar: lib/component-catalog.ts, COMPONENT_CATEGORIES, Actions.
+
+       State: variant="primary", size="md", shape="rectangular";
+       enabled, unfocused, not pressed or loading, no icon. Label: Deploy.
+       Drawing scale: 3 SVG units per CSS pixel; annotations use CSS pixels.
+       Dark background token: oklch(0.120 0 0), approximately #060606.
+
+       Geometry at the default 16px root:
+       Tailwind spacing token = .25rem = 4px; px-3.5 = 14px on each side.
+       Fixed height: h-[34px] = 34px, not a minimum height.
+       Border: 0px. The gray outline is illustration ink, not a production border.
+       rounded-[8px] = 8px radius; scaled outer radius = 24 units.
+       text-sm = .8125rem = 13px; font-medium = 500.
+       Line height = 13 * 1.5385 = 20.0005px, rounded to 20px here.
+       Vertical free space per side = (34 - 20) / 2 = 7px.
+       There is no explicit vertical padding: items-center centers the text line.
+       No icon is present, so the md icon-edge padding overrides do not apply;
+       gap-2.5 has no visible gap with a single anonymous flex item.
+
+       Width is content-dependent, not a fixed size in the API. This drawing
+       chooses a valid representative 69px width for the illustration's font:
+       14px + 41px label allocation + 14px = 69px.
+       Local Segoe UI at 13px has a measured Deploy advance of 40.6123px;
+       the remaining .3877px is shared by centered alignment. Production Geist
+       and other font fallbacks may produce a slightly different intrinsic width.
+
+       Outer bounds: x=216.5..423.5, y=149..251; 207 x 102 SVG units.
+       Padding boundaries: x=258.5 and 381.5, 42 units from each outer edge.
+       Centered line box: x=258.5..381.5, y=170..230; 123 x 60 units.
+       Segoe UI fallback baseline is approximately y=216.15 within that line box.
+       The outline is inset by half its 2.5-unit stroke to preserve outer bounds.
+  -->
+  <defs>
+    <style>
+      #button-blueprint text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #button-blueprint .button-label { fill: #92948d; font-size: 18px; }
+      #button-blueprint .button-text { fill: #c7c7c2; font-size: 39px; font-weight: 500; }
+      #button-blueprint .button-measure { stroke: #6889ff; stroke-width: 1.5; }
+      #button-blueprint .button-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+
+      /* Static and reduced-motion views are fully visible.
+         Outline: 0..400ms. No icon or divider strokes in this default state.
+         Press/release: 150..650ms. All blue annotations: 700..900ms, once.
+         Fill, label and contour scale together around the control center (320,200).
+         Keyframes sample installed motion.spring at 10ms intervals, with a 250ms
+         press followed by a 250ms release; linear interpolation preserves the samples.
+         Static and reduced-motion output keeps the original unpressed dimensions. */
+      @keyframes button-blueprint-draw {
+        from { stroke-dashoffset: 1; }
+        to { stroke-dashoffset: 0; }
+      }
+      @keyframes button-blueprint-reveal {
+        from { opacity: 0; }
+      }
+      #button-blueprint .button-press { transform-origin: 320px 200px; }
+      @keyframes button-blueprint-press {
+        0% { transform: scale(1.000000); }
+        2% { transform: scale(0.998236); }
+        4% { transform: scale(0.994025); }
+        6% { transform: scale(0.988604); }
+        8% { transform: scale(0.982802); }
+        10% { transform: scale(0.977146); }
+        12% { transform: scale(0.971948); }
+        14% { transform: scale(0.967366); }
+        16% { transform: scale(0.963455); }
+        18% { transform: scale(0.960207); }
+        20% { transform: scale(0.957573); }
+        22% { transform: scale(0.955481); }
+        24% { transform: scale(0.953856); }
+        26% { transform: scale(0.952619); }
+        28% { transform: scale(0.951698); }
+        30% { transform: scale(0.951029); }
+        32% { transform: scale(0.950556); }
+        34% { transform: scale(0.950233); }
+        36% { transform: scale(0.950022); }
+        38% { transform: scale(0.950000); }
+        40% { transform: scale(0.950000); }
+        42% { transform: scale(0.950000); }
+        44% { transform: scale(0.950000); }
+        46% { transform: scale(0.950000); }
+        48% { transform: scale(0.950000); }
+        50% { transform: scale(0.950000); }
+        52% { transform: scale(0.951764); }
+        54% { transform: scale(0.955975); }
+        56% { transform: scale(0.961396); }
+        58% { transform: scale(0.967198); }
+        60% { transform: scale(0.972854); }
+        62% { transform: scale(0.978052); }
+        64% { transform: scale(0.982634); }
+        66% { transform: scale(0.986545); }
+        68% { transform: scale(0.989793); }
+        70% { transform: scale(0.992427); }
+        72% { transform: scale(0.994519); }
+        74% { transform: scale(0.996144); }
+        76% { transform: scale(0.997381); }
+        78% { transform: scale(0.998302); }
+        80% { transform: scale(0.998971); }
+        82% { transform: scale(0.999444); }
+        84% { transform: scale(0.999767); }
+        86% { transform: scale(0.999978); }
+        88% { transform: scale(1.000000); }
+        90% { transform: scale(1.000000); }
+        92% { transform: scale(1.000000); }
+        94% { transform: scale(1.000000); }
+        96% { transform: scale(1.000000); }
+        98% { transform: scale(1.000000); }
+        100% { transform: scale(1.000000); }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        #button-blueprint .button-press { animation: button-blueprint-press 500ms linear 150ms both; }
+        #button-blueprint .button-outline {
+          stroke-dasharray: 1;
+          animation: button-blueprint-draw 400ms ease-out 0ms both;
+        }
+        #button-blueprint .button-measure,
+        #button-blueprint .button-spacing,
+        #button-blueprint .button-label {
+          animation: button-blueprint-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <g id="button-blueprint">
+    <rect width="640" height="400" fill="#060606"/>
+
+    <!-- The whole control presses as one object; the outline draws independently. -->
+    <g class="button-press">
+    <rect x="216.5" y="149" width="207" height="102" rx="24" fill="#353632"/>
+    <rect x="217.75" y="150.25" width="204.5" height="99.5" rx="22.75" stroke="#a7a8a2" stroke-width="2.5" pathLength="1" class="button-outline"/>
+
+    <!-- Dashed overlays expose actual horizontal padding and the text line box. -->
+    <path d="M258.5 149V303 M381.5 149V303 M216.5 170H423.5 M216.5 230H423.5" class="button-spacing"/>
+    <path d="M216.5 263V303 M423.5 263V303" class="button-spacing"/>
+    <text x="320" y="216.15" text-anchor="middle" class="button-text">Deploy</text>
+
+    </g>
+
+    <!-- Fixed outer height. Endpoints coincide with the fill's outer edges. -->
+    <path d="M435.5 149H489 M435.5 251H489 M479 149V251" class="button-measure"/>
+    <text x="500" y="206" class="button-label">34 px</text>
+
+    <!-- Text line height, with extensions aligned to the line box. -->
+    <path d="M164 170H216.5 M164 230H216.5 M174 170V230" class="button-measure"/>
+    <text x="153" y="206" text-anchor="end" class="button-label">20 px</text>
+
+    <!-- Centering clearance, measured from the outer top to the text line top. -->
+    <path d="M310 149H330 M310 170H330 M320 149V170" class="button-measure"/>
+    <path d="M320 159.5 285 115H264" class="button-measure"/>
+    <text x="252" y="121" text-anchor="end" class="button-label">7 px</text>
+
+    <!-- Radius leader meets the top-right 8px arc at 45 degrees. -->
+    <path d="m416.47 156.03 45.53-46.03H479" class="button-measure"/>
+    <text x="492" y="116" class="button-label">8 px</text>
+
+    <!-- Horizontal padding, measured from each outer edge to its padding boundary. -->
+    <path d="M216.5 283V303 M258.5 283V303 M216.5 293H258.5" class="button-measure"/>
+    <text x="237.5" y="327" text-anchor="middle" class="button-label">14 px</text>
+    <path d="M381.5 283V303 M423.5 283V303 M381.5 293H423.5" class="button-measure"/>
+    <text x="402.5" y="327" text-anchor="middle" class="button-label">14 px</text>
+  </g>
+</svg>

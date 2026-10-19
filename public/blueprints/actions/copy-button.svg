@@ -1,0 +1,191 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="500" viewBox="0 0 600 500" fill="none" class="copybp-svg" role="img" aria-labelledby="copybp-title copybp-description">
+  <title id="copybp-title">Copy Button spacing blueprint</title>
+  <desc id="copybp-description">The copy icon swaps once to a success checkmark, settling before the rulers appear. The default Copy Button after a successful copy, without a label, drawn at six times its CSS size. The button is 34 by 34 pixels with an 8 pixel corner radius. Its centered 16 by 16 pixel check icon has 9 pixels of clearance on every side.</desc>
+  <!--
+    Sources:
+      registry.json: copy-button installs copy-button.tsx and depends on action-button.
+      registry/ui/copy-button/copy-button.tsx: variant="outline"; no children or size
+        resolves to Button size="icon". The resting icon is Lucide Copy.
+      registry/ui/action-button/action-button.tsx: centered, unlabelled glyph Morph.
+      registry/ui/button/button.variants.ts: icon = size-[34px], rounded-[8px],
+        descendant SVG size-4. No padding or layout border is added to this size.
+      node_modules/tailwindcss/theme.css: spacing token = .25rem = 4 CSS px at 16px root.
+      node_modules/lucide-react/dist/esm/icons/copy.js: 24-unit Copy icon geometry.
+      app/globals.css: dark background token = oklch(.120 0 0), approximately #060606;
+        dark surface token = #111111. shadow-border is cosmetic, not a layout border.
+      inspector/entries/copy-button.tsx: outline, md, rectangular, withLabel=false.
+      lib/component-catalog.ts: COMPONENT_CATEGORIES places copy-button in Actions.
+
+    Chosen final state: success, enabled, unfocused; default outline variant, rectangular shape,
+    icon size (equivalent to unlabelled size="md"). Fixed dimensions, no chosen width.
+    Drawing scale: 6x, to keep this single small icon control legible.
+    Button: 34 * 6 = 204 units, from (198,148) to (402,352).
+    Corner radius: 8 * 6 = 48 units; upper-left arc center is (246,196).
+    Icon viewport: 16 * 6 = 96 units, from (252,202) to (348,298).
+    Clearance: (34 - 16) / 2 = 9 CSS px = 54 units on each side.
+    These clearances come from flex/grid centering, not CSS padding declarations.
+    Lucide uses a 24x24 viewBox: 96 / 24 = 4 drawing units per icon coordinate.
+    The 16px ruler measures the SVG viewport, not the smaller visible glyph ink.
+    The illustration outline tracks the button's layout boundary; its stroke weight
+    is illustration ink, not a measured border or the exterior 1px shadow spread.
+    Animation: outline 0-400ms; Copy strokes 100-325ms; Copy to Check 350-650ms;
+    every blue annotation 700-900ms. Both glyphs share the same 16px viewport. Reduced motion shows the completed drawing.
+  -->
+  <defs>
+    <style>
+      .copybp-svg {
+        --copybp-outline-duration: 400ms;
+        --copybp-detail-duration: 200ms;
+        --copybp-annotation-delay: 700ms;
+        --copybp-annotation-duration: 200ms;
+      }
+      .copybp-label {
+        font-family: Inter, 'Segoe UI', Arial, sans-serif;
+        font-size: 18px;
+        fill: #6889ff;
+      }
+      .copybp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      .copybp-spacing {
+        stroke: #6889ff;
+        stroke-width: 1.5;
+        stroke-dasharray: 6 7;
+        opacity: .55;
+      }
+      .copybp-icon {
+        stroke: #a7a8a2;
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      /* Static rendering and reduced motion retain every intended final opacity. */
+      @keyframes copybp-draw-line {
+        from { stroke-dashoffset: 1; }
+        to { stroke-dashoffset: 0; }
+      }
+      @keyframes copybp-reveal { from { opacity: 0; } }
+      .copybp-svg .copybp-swap-out { opacity: 0; }
+      .copybp-svg .copybp-swap-out, .copybp-svg .copybp-swap-in { transform-origin: 300px 250px; }
+      @keyframes copybp-swap-out { from { opacity: 1; transform: scale(1); filter: blur(0px); } to { opacity: 0; transform: scale(.25); filter: blur(24px); } }
+      @keyframes copybp-swap-in { from { opacity: 0; transform: scale(.25); filter: blur(24px); } to { opacity: 1; transform: scale(1); filter: blur(0px); } }
+      /* One press/release during reveal, matching Button's .95 press scale.
+         spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
+         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         compose with content/panel motion; static and reduced motion stay at 1. */
+      @keyframes copy-button-bp-button-press {
+        0% { transform: scale(1.000000); }
+        2% { transform: scale(0.998236); }
+        4% { transform: scale(0.994025); }
+        6% { transform: scale(0.988604); }
+        8% { transform: scale(0.982802); }
+        10% { transform: scale(0.977146); }
+        12% { transform: scale(0.971948); }
+        14% { transform: scale(0.967366); }
+        16% { transform: scale(0.963455); }
+        18% { transform: scale(0.960207); }
+        20% { transform: scale(0.957573); }
+        22% { transform: scale(0.955481); }
+        24% { transform: scale(0.953856); }
+        26% { transform: scale(0.952619); }
+        28% { transform: scale(0.951698); }
+        30% { transform: scale(0.951029); }
+        32% { transform: scale(0.950556); }
+        34% { transform: scale(0.950233); }
+        36% { transform: scale(0.950022); }
+        38% { transform: scale(0.950000); }
+        40% { transform: scale(0.950000); }
+        42% { transform: scale(0.950000); }
+        44% { transform: scale(0.950000); }
+        46% { transform: scale(0.950000); }
+        48% { transform: scale(0.950000); }
+        50% { transform: scale(0.950000); }
+        52% { transform: scale(0.951764); }
+        54% { transform: scale(0.955975); }
+        56% { transform: scale(0.961396); }
+        58% { transform: scale(0.967198); }
+        60% { transform: scale(0.972854); }
+        62% { transform: scale(0.978052); }
+        64% { transform: scale(0.982634); }
+        66% { transform: scale(0.986545); }
+        68% { transform: scale(0.989793); }
+        70% { transform: scale(0.992427); }
+        72% { transform: scale(0.994519); }
+        74% { transform: scale(0.996144); }
+        76% { transform: scale(0.997381); }
+        78% { transform: scale(0.998302); }
+        80% { transform: scale(0.998971); }
+        82% { transform: scale(0.999444); }
+        84% { transform: scale(0.999767); }
+        86% { transform: scale(0.999978); }
+        88% { transform: scale(1.000000); }
+        90% { transform: scale(1.000000); }
+        92% { transform: scale(1.000000); }
+        94% { transform: scale(1.000000); }
+        96% { transform: scale(1.000000); }
+        98% { transform: scale(1.000000); }
+        100% { transform: scale(1.000000); }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .copy-button-bp-button-press { animation: copy-button-bp-button-press 500ms linear 150ms both; }
+        .copybp-svg .copybp-swap-out { animation: copybp-swap-out 250ms cubic-bezier(.16,1,.3,1) 350ms both; }
+        .copybp-svg .copybp-swap-in { animation: copybp-swap-in 300ms cubic-bezier(.16,1,.3,1) 350ms both; }
+        .copybp-draw {
+          stroke-dasharray: 1;
+          animation: copybp-draw-line var(--copybp-detail-duration) ease-out var(--copybp-line-delay, 0ms) both;
+        }
+        .copybp-outline { animation-duration: var(--copybp-outline-duration); }
+        .copybp-measure, .copybp-spacing, .copybp-label {
+          animation: copybp-reveal var(--copybp-annotation-duration) ease-out var(--copybp-annotation-delay) both;
+        }
+      }
+    </style>
+  </defs>
+
+  <rect width="600" height="500" fill="#060606"/>
+
+  <!-- The fill is present throughout; only its solid outline draws in. -->
+  <g class="copy-button-bp-button-press" style="transform-origin: 300px 250px">
+    <rect x="198" y="148" width="204" height="204" rx="48" fill="#111111"/>
+    <rect x="198" y="148" width="204" height="204" rx="48" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="copybp-draw copybp-outline"/>
+
+    <!-- Icon viewport and exact alignment edges; overlays remain above the surface. -->
+    <rect x="252" y="202" width="96" height="96" class="copybp-spacing"/>
+    <path d="M198 202H402 M198 298H402 M252 148V352 M348 148V352" class="copybp-spacing"/>
+
+    <!-- Lucide Copy exits and Check enters using Morph poses; no clipboard action occurs. -->
+    <g class="copybp-swap-out" aria-hidden="true">
+    <g transform="translate(252 202) scale(4)" class="copybp-icon">
+      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" vector-effect="non-scaling-stroke" pathLength="1" class="copybp-draw" style="--copybp-line-delay:100ms"/>
+      <rect x="8" y="8" width="14" height="14" rx="2" ry="2" vector-effect="non-scaling-stroke" pathLength="1" class="copybp-draw" style="--copybp-line-delay:125ms"/>
+    </g>
+
+    </g>
+    <g class="copybp-swap-in">
+      <path d="M332 226 288 270l-20-20" class="copybp-icon copybp-draw" pathLength="1" style="--copybp-line-delay:400ms"/>
+    </g>
+  </g>
+  <!-- Fixed layout width, measured on the layout boundary, excluding the shadow. -->
+  <path d="M198 136V74 M402 136V74" class="copybp-spacing"/>
+  <path d="M198 73V95 M402 73V95 M198 84H402" class="copybp-measure"/>
+  <text x="300" y="63" text-anchor="middle" class="copybp-label">34 px</text>
+
+  <!-- Fixed layout height. -->
+  <path d="M414 148H471 M414 352H471" class="copybp-spacing"/>
+  <path d="M449 148H471 M449 352H471 M460 148V352" class="copybp-measure"/>
+  <text x="481" y="256" class="copybp-label">34 px</text>
+
+  <!-- Radius leader lands exactly on the upper-left 48-unit quarter circle. -->
+  <path d="M212.059 162.059 166 116H129" class="copybp-measure"/>
+  <text x="115" y="122" text-anchor="end" class="copybp-label">8 px</text>
+
+  <!-- Top clearance: 202 - 148 = 54 units = 9 CSS px. -->
+  <path d="M188 148H133 M186 202H133" class="copybp-spacing"/>
+  <path d="M133 148H155 M133 202H155 M144 148V202" class="copybp-measure"/>
+  <text x="123" y="181" text-anchor="end" class="copybp-label">9 px</text>
+
+  <!-- Lower rulers expose the two equal clearances and the complete icon viewport. -->
+  <path d="M198 364V422 M252 352V422 M348 352V422 M402 364V422" class="copybp-spacing"/>
+  <path d="M198 400V422 M252 400V422 M348 400V422 M402 400V422 M198 411H402" class="copybp-measure"/>
+  <text x="225" y="446" text-anchor="middle" class="copybp-label">9 px</text>
+  <text x="300" y="446" text-anchor="middle" class="copybp-label">16 px</text>
+  <text x="375" y="446" text-anchor="middle" class="copybp-label">9 px</text>
+</svg>

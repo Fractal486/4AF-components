@@ -1,0 +1,194 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="960" viewBox="0 0 1280 960" fill="none" role="img" aria-labelledby="fouraf-select-bp-title fouraf-select-bp-desc">
+  <title id="fouraf-select-bp-title">Select spacing blueprint</title>
+  <desc id="fouraf-select-bp-desc">A default small Select whose panel fades, scales and clears its blur below the trigger while the chevron turns upward, ending with Projects selected. Drawn at three times actual size: the trigger is 30 pixels high, the popup is 160 pixels high, and both use an example width of 224 pixels. The popup sits 6 pixels below the trigger, has a 1 pixel border and 4 pixel padding, and contains contiguous 30 pixel rows with 10 pixel horizontal padding.</desc>
+  <!--
+    Sources:
+      registry.json: select's complete portable file map.
+      registry/ui/select/select.tsx: default size="sm", single selection.
+      registry/ui/select/select.variants.ts: default boxed trigger, border, px-3.5.
+      registry/ui/select/select.shared.tsx: sm field h-[30px], row min-h-[30px],
+        text-xs, size-3.5 glyphs, trigger radius 6px.
+      registry/ui/select/select.trigger.tsx: 180-degree chevron spring, .4s, bounce 0.
+      node_modules/@base-ui/react/utils/useAnchorPositioning.mjs: bottom popup origin.
+      registry/ui/select/select.content.tsx: bottom/start, sideOffset=6,
+        alignItemWithTrigger=false, trigger-width popup, rounded-md border,
+        list p-1; no search or footer in this state.
+      registry/ui/select/select.item.tsx: single rows px-2.5 py-1.5 gap-2,
+        rounded-xs; a reserved 14px trailing check slot; optional leading icons omitted.
+      inspector/entries/select.tsx: w-full max-w-56 demo container.
+      lib/component-catalog.ts / lib/site-nav.ts: Fields and selection.
+      app/globals.css: text-xs 12px, line-height 1.3333 (about 16px), tracking .01em;
+        radius-md 7px, radius-xs 3px; dark background oklch(0.120 0 0) = #060606.
+      node_modules/tailwindcss/theme.css / preflight.css: 4px spacing unit,
+        border-box sizing (at the default 16px root size).
+
+    Chosen state: default variant, size sm, open below its trigger, Projects selected
+    and active. Five short single-line labels; optional icons, search, and footer absent.
+    Width is caller-dependent: this drawing chooses 224px, the demo's max-w-56;
+    it is not a universal component width. There is enough room below for no collision flip.
+
+    All component geometry and type are drawn at 3x; rulers label original CSS pixels.
+    Trigger: 224 x 30px, border 1px, horizontal padding 14px; text starts 15px in.
+    Rows: max(30px minimum, approximately 16px line box + 2 * 6px padding) = 30px.
+    Thus the centered line box starts about 7px below each row's top. Rows have 0px gap.
+    Popup: 2 * 1px border + 2 * 4px list padding + 5 * 30px rows = 160px.
+    Row width: 224 - 2 * (1 + 4) = 214px; row text inset: 1 + 4 + 10 = 15px.
+    Check slot: 14px; its right edge is 1 + 4 + 10 = 15px inside the popup.
+    Trigger: x=304..976, y=186..276. Popup: x=304..976, y=294..774.
+    Row edges: x=319..961; y=309,399,489,579,669,759. Text starts at x=349.
+    Stroke centerlines are inset 1.5 units so 3-unit borders occupy the exact box edges.
+    Outer CSS radii: trigger 6px, popup 7px; selected-row radius 3px.
+  -->
+  <defs>
+    <style>
+      .fouraf-select-bp-text, .fouraf-select-bp-label {
+        font-family: Inter, 'Segoe UI', Arial, sans-serif;
+      }
+      .fouraf-select-bp-text { fill: #92948d; font-size: 36px; letter-spacing: .36px; }
+      .fouraf-select-bp-selected { fill: #c7c7c2; }
+      .fouraf-select-bp-label { fill: #a1a29c; font-size: 18px; }
+      .fouraf-select-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      .fouraf-select-bp-spacing {
+        stroke: #6889ff;
+        stroke-width: 1.5;
+        stroke-dasharray: 6 7;
+        opacity: .55;
+      }
+      /* Fully visible static defaults also serve reduced-motion viewers and PNG export. */
+      /* Native open poses from select.shared.tsx / select-search.tsx, scaled 3x.
+         The popup grows from the trigger's bottom center, including its 6px gap.
+         Panel: 250..450ms, .95 -> 1, 3 CSS px blur -> 0, expo ease-out.
+         Chevron: 250..650ms, spring duration .4s / bounce 0 sampled every 10ms.
+         The authored arrow points up; -180deg starts it down and 0deg finishes up.
+         Trigger dimensions stay fixed. Guides follow at 700..900ms. */
+      .fouraf-select-bp-panel { transform-origin: 640px 276px; }
+      .fouraf-select-bp-chevron { transform-origin: 910px 231px; }
+      @keyframes fouraf-select-bp-open {
+        from { opacity: 0; transform: scale(.95); filter: blur(9px); }
+        to { opacity: 1; transform: scale(1); filter: blur(0px); }
+      }
+      @keyframes fouraf-select-bp-turn {
+        0% { transform: rotate(-180.000000deg); }
+        2.5% { transform: rotate(-175.882224deg); }
+        5% { transform: rotate(-165.813930deg); }
+        7.5% { transform: rotate(-152.423239deg); }
+        10% { transform: rotate(-137.507638deg); }
+        12.5% { transform: rotate(-122.264749deg); }
+        15% { transform: rotate(-107.463257deg); }
+        17.5% { transform: rotate(-93.568854deg); }
+        20% { transform: rotate(-80.836493deg); }
+        22.5% { transform: rotate(-69.377476deg); }
+        25% { transform: rotate(-59.207847deg); }
+        27.5% { transform: rotate(-50.282931deg); }
+        30% { transform: rotate(-42.521685deg); }
+        32.5% { transform: rotate(-35.823591deg); }
+        35% { transform: rotate(-30.080126deg); }
+        37.5% { transform: rotate(-25.182333deg); }
+        40% { transform: rotate(-21.025613deg); }
+        42.5% { transform: rotate(-17.512556deg); }
+        45% { transform: rotate(-14.554423deg); }
+        47.5% { transform: rotate(-12.071708deg); }
+        50% { transform: rotate(-9.994107deg); }
+        52.5% { transform: rotate(-8.260096deg); }
+        55% { transform: rotate(-6.816303deg); }
+        57.5% { transform: rotate(-5.616760deg); }
+        60% { transform: rotate(-4.622119deg); }
+        62.5% { transform: rotate(-3.798875deg); }
+        65% { transform: rotate(-3.118630deg); }
+        67.5% { transform: rotate(-2.557410deg); }
+        70% { transform: rotate(-2.095049deg); }
+        72.5% { transform: rotate(-1.714638deg); }
+        75% { transform: rotate(-1.402038deg); }
+        77.5% { transform: rotate(-1.145456deg); }
+        80% { transform: rotate(-0.935080deg); }
+        82.5% { transform: rotate(-0.762764deg); }
+        85% { transform: rotate(-0.621756deg); }
+        87.5% { transform: rotate(-0.506470deg); }
+        90% { transform: rotate(-0.412294deg); }
+        92.5% { transform: rotate(-0.335423deg); }
+        95% { transform: rotate(-0.272725deg); }
+        97.5% { transform: rotate(-0.221623deg); }
+        100% { transform: rotate(0.000000deg); }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .fouraf-select-bp-panel { animation: fouraf-select-bp-open 200ms cubic-bezier(.16,1,.3,1) 250ms both; }
+        .fouraf-select-bp-chevron { animation: fouraf-select-bp-turn 400ms linear 250ms both; }
+        @keyframes fouraf-select-bp-draw {
+          from { stroke-dashoffset: 1; }
+          to { stroke-dashoffset: 0; }
+        }
+        @keyframes fouraf-select-bp-reveal { from { opacity: 0; } }
+        .fouraf-select-bp-draw {
+          stroke-dasharray: 1;
+          animation: fouraf-select-bp-draw 200ms ease-out var(--fouraf-select-bp-delay, 0ms) both;
+        }
+        .fouraf-select-bp-outline { animation-duration: 400ms; }
+        .fouraf-select-bp-measure, .fouraf-select-bp-spacing, .fouraf-select-bp-label {
+          animation: fouraf-select-bp-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <rect width="1280" height="960" fill="#060606"/>
+
+  <!-- The field stays in place while its popup enters during the drawing sequence. -->
+  <rect x="305.5" y="187.5" width="669" height="87" rx="16.5" stroke="#a7a8a2" stroke-width="3" opacity=".7" pathLength="1" class="fouraf-select-bp-draw fouraf-select-bp-outline"/>
+
+  <!-- Field content and chevron stay outside the opening popup. -->
+  <path d="M349 189V273 M931 189V273" class="fouraf-select-bp-spacing"/>
+  <text x="349" y="243" class="fouraf-select-bp-text fouraf-select-bp-selected">Projects</text>
+  <g class="fouraf-select-bp-chevron">
+    <path d="m899.5 236.25 10.5-10.5 10.5 10.5" stroke="#92948d" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" pathLength="1" class="fouraf-select-bp-draw" style="--fouraf-select-bp-delay:50ms"/>
+  </g>
+
+  <!-- Popup contents enter as one surface; measurements appear after it settles. -->
+  <g class="fouraf-select-bp-panel">
+    <rect x="305.5" y="295.5" width="669" height="477" rx="19.5" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="fouraf-select-bp-draw fouraf-select-bp-outline"/>
+    <rect x="319" y="399" width="642" height="90" rx="9" fill="#353632"/>
+
+    <!-- Persistent spacing overlays: actual row edges and text/check insets. -->
+    <rect x="319" y="309" width="642" height="450" class="fouraf-select-bp-spacing"/>
+    <path d="M319 399H961 M319 489H961 M319 579H961 M319 669H961" class="fouraf-select-bp-spacing"/>
+    <path d="M349 309V792 M931 309V759 M307 297V792 M319 759V792" class="fouraf-select-bp-spacing"/>
+
+    <text x="349" y="366" class="fouraf-select-bp-text">Dashboard</text>
+    <text x="349" y="456" class="fouraf-select-bp-text fouraf-select-bp-selected">Projects</text>
+    <text x="349" y="546" class="fouraf-select-bp-text">Team</text>
+    <text x="349" y="636" class="fouraf-select-bp-text">Activity</text>
+    <text x="349" y="726" class="fouraf-select-bp-text">Settings</text>
+
+    <!-- Lucide check in the selected row's 14px slot at 3x scale. -->
+    <path d="m924 433.5-19.25 19.25-8.75-8.75" stroke="#c7c7c2" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" pathLength="1" class="fouraf-select-bp-draw" style="--fouraf-select-bp-delay:400ms"/>
+  </g>
+
+  <!-- Overall chosen width: the exact outer trigger/popup edges are x=304 and x=976. -->
+  <path d="M304 102V124 M976 102V124 M304 113H976 M304 135V174 M976 135V174" class="fouraf-select-bp-measure"/>
+  <text x="640" y="96" text-anchor="middle" class="fouraf-select-bp-label">224 px</text>
+
+  <!-- Trigger horizontal padding starts at the inner border, x=307, not the outer edge. -->
+  <path d="M307 146V176 M349 146V176 M307 157H349" class="fouraf-select-bp-measure"/>
+  <text x="328" y="140" text-anchor="middle" class="fouraf-select-bp-label">14 px</text>
+
+  <!-- Fixed trigger height and content-dependent popup height for these five rows. -->
+  <path d="M239 186H261 M239 276H261 M250 186V276" class="fouraf-select-bp-measure"/>
+  <text x="230" y="237" text-anchor="end" class="fouraf-select-bp-label">30 px</text>
+  <path d="M239 294H261 M239 774H261 M250 294V774" class="fouraf-select-bp-measure"/>
+  <text x="230" y="540" text-anchor="end" class="fouraf-select-bp-label">160 px</text>
+
+  <!-- Six CSS pixels between outer boxes; first row measures its actual 30px height. -->
+  <path d="M988 276H1028 M988 294H1028 M1018 276V294" class="fouraf-select-bp-measure"/>
+  <text x="1040" y="291" class="fouraf-select-bp-label">6 px</text>
+  <path d="M1007 309H1037 M1007 399H1037 M1026 309V399" class="fouraf-select-bp-measure"/>
+  <text x="1048" y="360" class="fouraf-select-bp-label">30 px</text>
+
+  <!-- A single shared boundary, rather than an artificial space between adjacent rows. -->
+  <path d="M949 579H1038" class="fouraf-select-bp-measure"/>
+  <text x="1054" y="585" class="fouraf-select-bp-label">0 px</text>
+
+  <!-- Padding chain: inner border to row edge is 4px; row edge to text inset is 10px. -->
+  <path d="M307 792V817 M319 792V817 M349 792V817 M307 806H349" class="fouraf-select-bp-measure"/>
+  <path d="M313 819 288 844H243" class="fouraf-select-bp-measure"/>
+  <text x="229" y="850" text-anchor="end" class="fouraf-select-bp-label">4 px</text>
+  <path d="M334 819 359 844H409" class="fouraf-select-bp-measure"/>
+  <text x="423" y="850" class="fouraf-select-bp-label">10 px</text>
+</svg>

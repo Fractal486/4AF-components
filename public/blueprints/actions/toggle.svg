@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="360" viewBox="0 0 480 360" fill="none" role="img" aria-labelledby="toggle-bp-title toggle-bp-description">
+  <title id="toggle-bp-title">Toggle spacing blueprint</title>
+  <desc id="toggle-bp-description">The bookmark presses and releases once, changing from an outline to a filled icon. A pressed bookmark Toggle, drawn at three times its CSS size. The default icon control is 34 by 34 pixels with 8 pixel corners. A 16 pixel icon viewport is centered with 9 pixels on each side. The invisible hit area extends to 40 by 40 pixels.</desc>
+  <!--
+    Sources:
+      registry/ui/toggle/toggle.tsx
+      registry/ui/button/button.variants.ts (resolved through tsconfig.json)
+      inspector/entries/toggle.tsx
+      lib/component-catalog.ts: COMPONENT_CATEGORIES > Actions
+      app/globals.css; node_modules/tailwindcss/theme.css and preflight.css
+      Installed lucide-react Bookmark icon: 24 x 24 viewBox, path copied below.
+
+    State: variant="ghost", size="icon", shape="rectangular" (all defaults),
+    pressed, at rest; fillIcon=true as in the inspector demo. No hover fill.
+    The gray contour illustrates the control's bounds; ghost has no CSS border.
+    The dashed outer square represents the transparent ::after hit area.
+
+    Measurements in CSS pixels, geometry at 3x, assuming the project's 16px rem:
+      Fixed control: size-[34px] = 34 x 34; rounded-[8px] = 8px radius.
+      Icon viewport: size-4 = 4 x 0.25rem = 16 x 16.
+      Centered inset: (34 - 16) / 2 = 9px; no explicit padding or border.
+      Hit area: after:size-10 = 40 x 40, centered; (40 - 34) / 2 = 3px extension.
+      Control bounds: (189,129) to (291,231), radius 24.
+      Icon viewport: (216,156) to (264,204); Lucide viewBox scaled by 2.
+      Hit area: (180,120) to (300,240).
+    Background: dark background token oklch(0.120 0 0), rounded to sRGB #060606.
+    No flexible width is introduced. Illustration stroke weight is independent
+    of layout; the ghost contour does not consume space.
+  -->
+  <defs>
+    <style>
+      #toggle-bp-root text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #toggle-bp-root .toggle-bp-label { fill: #6889ff; font-size: 18px; }
+      #toggle-bp-root .toggle-bp-ruler { stroke: #6889ff; stroke-width: 1.5; }
+      #toggle-bp-root .toggle-bp-guide {
+        stroke: #6889ff;
+        stroke-width: 1.5;
+        stroke-dasharray: 6 7;
+        opacity: .55;
+      }
+      /* The static drawing is also the reduced-motion presentation. */
+      @keyframes toggle-bp-draw {
+        from { stroke-dashoffset: 1; }
+        to { stroke-dashoffset: 0; }
+      }
+      @keyframes toggle-bp-reveal { from { opacity: 0; } }
+      /* Press 150..650ms, sampled from Button spring.press; fill turns on at 350ms.
+         The source PRESS_SCALE=.95 and fillIcon treatment are represented once. */
+      #toggle-bp-root .toggle-bp-press { transform-origin: 240px 180px; }
+      @keyframes toggle-bp-press {
+        0% { transform: scale(1.000000); }
+        2% { transform: scale(0.998236); }
+        4% { transform: scale(0.994025); }
+        6% { transform: scale(0.988604); }
+        8% { transform: scale(0.982802); }
+        10% { transform: scale(0.977146); }
+        12% { transform: scale(0.971948); }
+        14% { transform: scale(0.967366); }
+        16% { transform: scale(0.963455); }
+        18% { transform: scale(0.960207); }
+        20% { transform: scale(0.957573); }
+        22% { transform: scale(0.955481); }
+        24% { transform: scale(0.953856); }
+        26% { transform: scale(0.952619); }
+        28% { transform: scale(0.951698); }
+        30% { transform: scale(0.951029); }
+        32% { transform: scale(0.950556); }
+        34% { transform: scale(0.950233); }
+        36% { transform: scale(0.950022); }
+        38% { transform: scale(0.950000); }
+        40% { transform: scale(0.950000); }
+        42% { transform: scale(0.950000); }
+        44% { transform: scale(0.950000); }
+        46% { transform: scale(0.950000); }
+        48% { transform: scale(0.950000); }
+        50% { transform: scale(0.950000); }
+        52% { transform: scale(0.951764); }
+        54% { transform: scale(0.955975); }
+        56% { transform: scale(0.961396); }
+        58% { transform: scale(0.967198); }
+        60% { transform: scale(0.972854); }
+        62% { transform: scale(0.978052); }
+        64% { transform: scale(0.982634); }
+        66% { transform: scale(0.986545); }
+        68% { transform: scale(0.989793); }
+        70% { transform: scale(0.992427); }
+        72% { transform: scale(0.994519); }
+        74% { transform: scale(0.996144); }
+        76% { transform: scale(0.997381); }
+        78% { transform: scale(0.998302); }
+        80% { transform: scale(0.998971); }
+        82% { transform: scale(0.999444); }
+        84% { transform: scale(0.999767); }
+        86% { transform: scale(0.999978); }
+        88% { transform: scale(1.000000); }
+        90% { transform: scale(1.000000); }
+        92% { transform: scale(1.000000); }
+        94% { transform: scale(1.000000); }
+        96% { transform: scale(1.000000); }
+        98% { transform: scale(1.000000); }
+        100% { transform: scale(1.000000); }
+      }
+      @keyframes toggle-bp-fill { from { fill-opacity: 0; } to { fill-opacity: 1; } }
+      @media (prefers-reduced-motion: no-preference) {
+        #toggle-bp-root .toggle-bp-press { animation: toggle-bp-press 500ms linear 150ms both; }
+        #toggle-bp-root .toggle-bp-fill { animation: toggle-bp-fill 250ms ease-out 350ms both; }
+        #toggle-bp-root .toggle-bp-draw {
+          stroke-dasharray: 1;
+          animation: toggle-bp-draw 200ms ease-out var(--toggle-bp-delay, 0ms) both;
+        }
+        #toggle-bp-root .toggle-bp-outline { animation-duration: 400ms; }
+        #toggle-bp-root .toggle-bp-ruler,
+        #toggle-bp-root .toggle-bp-guide,
+        #toggle-bp-root .toggle-bp-label {
+          animation: toggle-bp-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <g id="toggle-bp-root">
+    <rect width="480" height="360" fill="#060606"/>
+
+    <!-- The default ghost control stays transparent in its pressed state. -->
+    <g class="toggle-bp-press">
+    <rect x="189" y="129" width="102" height="102" rx="24" stroke="#a7a8a2" stroke-width="2.5" pathLength="1" class="toggle-bp-draw toggle-bp-outline"/>
+
+    </g>
+
+    <!-- Guides remain above surfaces and behind the icon. -->
+    <rect x="180" y="120" width="120" height="120" class="toggle-bp-guide"/>
+    <rect x="216" y="156" width="48" height="48" class="toggle-bp-guide"/>
+
+    <!-- Lucide Bookmark: the SVG viewport, rather than its ink, is centered. -->
+    <g class="toggle-bp-press"><g class="toggle-bp-fill" transform="translate(216 156) scale(2)">
+      <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" fill="#c7c7c2" stroke="#c7c7c2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" pathLength="1" class="toggle-bp-draw" style="--toggle-bp-delay:50ms"/>
+    </g>
+
+    </g>
+
+    <!-- Fixed control width, measured between the control's layout edges. -->
+    <path d="M189 80H291 M189 72V88 M291 72V88 M189 94V119 M291 94V119" class="toggle-bp-ruler"/>
+    <text x="240" y="60" text-anchor="middle" class="toggle-bp-label">34 px</text>
+
+    <!-- Centered 40px hit target, including the 3px extension on each side. -->
+    <path d="M126 120V240 M118 120H134 M118 240H134 M140 120H172 M140 240H172" class="toggle-bp-ruler"/>
+    <text x="106" y="186" text-anchor="end" class="toggle-bp-label">40 px</text>
+
+    <!-- Height of the 16px SVG viewport, not the smaller bookmark ink. -->
+    <path d="M352 156V204 M344 156H360 M344 204H360 M272 156H338 M272 204H338" class="toggle-bp-ruler"/>
+    <text x="372" y="186" class="toggle-bp-label">16 px</text>
+
+    <!-- 9px centering inset, from the control edge to the icon viewport. -->
+    <path d="M189 275H216 M189 267V283 M216 267V283 M189 247V261 M216 212V261" class="toggle-bp-ruler"/>
+    <text x="202.5" y="307" text-anchor="middle" class="toggle-bp-label">9 px</text>
+  </g>
+</svg>

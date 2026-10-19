@@ -62,12 +62,13 @@ export type SelectSize = "sm" | "md";
 
 const SIZE: Record<
   SelectSize,
-  { field: string; glyph: string; iconSlot: string; row: string; radius: string }
+  { field: string; glyph: string; iconSlot: string; iconPadding: string; row: string; radius: string }
 > = {
   sm: {
     field: "h-[30px] text-xs",
     glyph: "size-3.5",
     iconSlot: "size-3.5 [&>svg]:size-3.5 [&_[data-slot=loader]]:size-3.5",
+    iconPadding: "pl-9",
     row: "min-h-[30px] text-xs",
     radius: "rounded-[6px]",
   },
@@ -75,6 +76,7 @@ const SIZE: Record<
     field: "h-[34px] text-sm",
     glyph: "size-4",
     iconSlot: "size-4 [&>svg]:size-4 [&_[data-slot=loader]]:size-4",
+    iconPadding: "pl-9.5",
     row: "min-h-[34px] text-sm",
     radius: "rounded-[8px]",
   },
@@ -315,7 +317,8 @@ export function SearchSelectInput({
                   ? <Search className="text-muted-foreground" />
                   : selectedIcon}
                 size={size}
-                className="absolute top-1/2 left-3.5 -translate-y-1/2"
+                // Match the popup border + list padding + row padding.
+                className="absolute top-1/2 left-[calc(var(--spacing)*3.5+1px)] -translate-y-1/2"
               />
               <Combobox.Input
                 ref={mergedRef}
@@ -330,7 +333,7 @@ export function SearchSelectInput({
                   // Invalid mirrors the Input's treatment; `shadow-none` clears the neutral
                   // tone's grey focus shadow so only the red reads through. Pair with `Alert`.
                   "aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/25 aria-invalid:shadow-none",
-                  selectedIcon && "pl-10",
+                  selectedIcon && SIZE[size].iconPadding,
                   tone === "accent"
                     ? "focus:border-ring focus:ring-[3px] focus:ring-ring/25"
                     : "focus:border-[oklch(0.719_0_0)] focus:shadow-[0_0_0_3px_oklch(0.390_0_0_/_0.502)]",

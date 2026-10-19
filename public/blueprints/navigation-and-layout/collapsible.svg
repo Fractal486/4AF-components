@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="720" viewBox="0 0 1440 720" fill="none" role="img" aria-labelledby="collapsible-bp-title collapsible-bp-desc">
   <title id="collapsible-bp-title">Collapsible spacing blueprint</title>
-  <desc id="collapsible-bp-desc">An expanded plain disclosure with its default end chevron. The representative width is 360 CSS pixels. Its trigger is 32 pixels high, with 8 pixels of horizontal and 6 pixels of vertical padding. The label and body align because the trigger has an 8 pixel negative inline margin. The panel has 8 pixels of top padding, followed by three 20 pixel text lines. Blue dashed guides reveal the spacing.</desc>
+  <desc id="collapsible-bp-desc">The disclosure opens once: its chevron turns downward and the body text fades from a soft blur. An expanded plain disclosure with its default end chevron. The representative width is 360 CSS pixels. Its trigger is 32 pixels high, with 8 pixels of horizontal and 6 pixels of vertical padding. The label and body align because the trigger has an 8 pixel negative inline margin. The panel has 8 pixels of top padding, followed by three 20 pixel text lines. Blue dashed guides reveal the spacing.</desc>
   <!--
     Sources:
       registry.json: collapsible files list.
@@ -29,7 +29,8 @@
     Heights depend on this text/width; the panel is auto-sized after opening.
     Text baselines use a 41-unit offset inside each 60-unit line box.
 
-    Timing: outline 0..400ms, chevron 400..600ms, annotations 700..900ms.
+    Timing: outline 0..400ms, chevron draw 100..300ms; opening 300..650ms;
+    annotations 700..900ms.
     Static and reduced-motion viewers receive the completed drawing by default.
   -->
   <defs>
@@ -42,7 +43,15 @@
       #collapsible-bp .cbp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
       #collapsible-bp .cbp-outline { stroke: #a7a8a2; stroke-width: 2.5; opacity: .7; }
       #collapsible-bp .cbp-chevron { stroke: #a7a8a2; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+      /* Source content fades/blurs at its final position: no text wipe or vertical slide.
+         Chevron pivots around the center of its full 16px viewport, (1212,258).
+         Opening finishes at 650ms; final geometry is measured at 700..900ms. */
+      #collapsible-bp .cbp-turn { transform-origin: 1212px 258px; }
+      @keyframes cbp-turn { from { transform: rotate(-90deg); } to { transform: rotate(0deg); } }
+      @keyframes cbp-open { from { opacity: 0; filter: blur(9px); } to { opacity: 1; filter: blur(0px); } }
       @media (prefers-reduced-motion: no-preference) {
+        #collapsible-bp .cbp-turn { animation: cbp-turn 350ms cubic-bezier(.16,1,.3,1) 300ms both; }
+        #collapsible-bp .cbp-copy { animation: cbp-open 350ms ease-out 300ms both; }
         @keyframes collapsible-bp-draw {
           from { stroke-dashoffset: 1; }
           to { stroke-dashoffset: 0; }
@@ -72,14 +81,17 @@
     <path d="M1164 228V288 M1188 228V288" class="cbp-spacing"/>
     <rect x="1188" y="234" width="48" height="48" class="cbp-spacing"/>
 
-    <!-- Padding-free panel, inner top padding, and body line-box edges. -->
-    <rect x="204" y="306" width="1080" height="204" class="cbp-spacing"/>
-    <path d="M204 330H1284 M204 390H1284 M204 450H1284" class="cbp-spacing"/>
+    <!-- Bottom guide meets the continuation of the top width ruler's right extension. -->
+    <path d="M180 510H1260 M1260 198V510" class="cbp-spacing"/>
 
-    <!-- Component text and fills remain visible throughout the animation. -->
+    <!-- The trigger stays visible; the panel text dissolves into its final position. -->
     <text x="204" y="269" class="cbp-question">What counts as a change?</text>
+
     <!-- Lucide ChevronRight rotated 90 degrees, in its 16px box, drawn at 3x. -->
-    <path d="m1200 252 12 12 12-12" pathLength="1" class="cbp-draw cbp-chevron" style="--cbp-delay:400ms"/>
+    <g class="cbp-turn">
+    <path d="m1200 252 12 12 12-12" pathLength="1" class="cbp-draw cbp-chevron" style="--cbp-delay:100ms"/>
+    </g>
+
     <text class="cbp-copy">
       <tspan x="204" y="371">Anything that alters the rendered output — copy, styles, or the</tspan>
       <tspan x="204" y="431">data a page reads. Refactors that leave the output identical</tspan>
@@ -108,8 +120,8 @@
     <path d="M146 210H166 M146 228H166 M156 210V228" class="cbp-measure"/>
     <text x="136" y="225" text-anchor="end" class="cbp-label">6 px</text>
 
-    <!-- Trigger height, inner content top padding, and one body line height. -->
-    <path d="M1272 210H1330 M1260 306H1330 M1284 330H1360 M1284 390H1360" class="cbp-spacing"/>
+    <!-- Short leaders show top padding and one body line height without boxing the text. -->
+    <path d="M1272 210H1330 M1260 306H1330 M1254 330H1360 M1254 390H1360" class="cbp-spacing"/>
     <path d="M1310 210H1330 M1310 306H1330 M1320 210V306" class="cbp-measure"/>
     <text x="1338" y="264" class="cbp-label">32 px</text>
     <path d="M1310 330H1330 M1320 306V330" class="cbp-measure"/>

@@ -1,7 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" fill="none" role="img" aria-labelledby="title description">
   <title id="title">Command Palette spacing</title>
-  <desc id="description">A command palette with a search field, Navigation group, five commands, and keyboard hints. At its maximum width of 672 pixels, the header is 48 pixels high and plain command rows are 36 pixels high. The list has 6 pixels of padding, rows have 10 pixels of horizontal padding, and icons are separated from text by 10 pixels. Dashed blue lines reveal the spacing.</desc>
+  <desc id="description">A command palette that enters once with a spring scale, fade and blur, containing a search field, Navigation group, five commands, and keyboard hints. At its maximum width of 672 pixels, the header is 48 pixels high and plain command rows are 36 pixels high. The list has 6 pixels of padding, rows have 10 pixels of horizontal padding, and icons are separated from text by 10 pixels. Dashed blue lines reveal the spacing.</desc>
   <!-- Hand-authored SVG, drawn at 2×. Dimensions are CSS px.
+       Entrance sources: registry/ui/command-palette/command-palette.tsx
+       (popup initial/animate poses) and registry/lib/motion.ts (spring.smooth).
        Root palette, one heading, five plain rows without descriptions or badges.
        Width: max-w-2xl = 672px. Header: h-12 = 48px.
        Group heading: 8 + 16 + 4 = 28px. Rows: 8 + 20 + 8 = 36px.
@@ -21,7 +23,73 @@
       svg { --outline-duration: 400ms; --detail-duration: 200ms; --annotation-delay: 700ms; --annotation-duration: 200ms; }
       @keyframes draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes reveal { from { opacity: 0; } }
+      /* Native CommandPalette popup: .96 scale, opacity 0, 4 CSS px blur.
+         At 2x drawing scale the blur starts at 8 SVG units. spring.smooth uses
+         visualDuration .3s / bounce .1, sampled every 10ms until settled.
+         Center = (800,513), from outer bounds (128,210)..(1472,816).
+         Entrance 50..600ms; strokes finish by 650ms, guides appear 700..900ms.
+         Static and reduced-motion views retain the complete drawing. */
+      .cpbp-enter { transform-origin: 800px 513px; }
+      @keyframes cpbp-enter {
+        0.0000% { opacity: 0.000000; transform: scale(0.960000); filter: blur(8.000000px); }
+        1.8182% { opacity: 0.013720; transform: scale(0.960549); filter: blur(7.890244px); }
+        3.6364% { opacity: 0.049457; transform: scale(0.961978); filter: blur(7.604341px); }
+        5.4545% { opacity: 0.100345; transform: scale(0.964014); filter: blur(7.197237px); }
+        7.2727% { opacity: 0.160972; transform: scale(0.966439); filter: blur(6.712220px); }
+        9.0909% { opacity: 0.227132; transform: scale(0.969085); filter: blur(6.182944px); }
+        10.9091% { opacity: 0.295607; transform: scale(0.971824); filter: blur(5.635140px); }
+        12.7273% { opacity: 0.363989; transform: scale(0.974560); filter: blur(5.088089px); }
+        14.5455% { opacity: 0.430519; transform: scale(0.977221); filter: blur(4.555850px); }
+        16.3636% { opacity: 0.493961; transform: scale(0.979758); filter: blur(4.048309px); }
+        18.1818% { opacity: 0.553495; transform: scale(0.982140); filter: blur(3.572042px); }
+        20.0000% { opacity: 0.608621; transform: scale(0.984345); filter: blur(3.131034px); }
+        21.8182% { opacity: 0.659090; transform: scale(0.986364); filter: blur(2.727281px); }
+        23.6364% { opacity: 0.704842; transform: scale(0.988194); filter: blur(2.361265px); }
+        25.4545% { opacity: 0.745955; transform: scale(0.989838); filter: blur(2.032357px); }
+        27.2727% { opacity: 0.782609; transform: scale(0.991304); filter: blur(1.739128px); }
+        29.0909% { opacity: 0.815049; transform: scale(0.992602); filter: blur(1.479606px); }
+        30.9091% { opacity: 0.843566; transform: scale(0.993743); filter: blur(1.251470px); }
+        32.7273% { opacity: 0.868474; transform: scale(0.994739); filter: blur(1.052207px); }
+        34.5455% { opacity: 0.890096; transform: scale(0.995604); filter: blur(0.879229px); }
+        36.3636% { opacity: 0.908755; transform: scale(0.996350); filter: blur(0.729960px); }
+        38.1818% { opacity: 0.924763; transform: scale(0.996991); filter: blur(0.601899px); }
+        40.0000% { opacity: 0.938416; transform: scale(0.997537); filter: blur(0.492670px); }
+        41.8182% { opacity: 0.949995; transform: scale(0.998000); filter: blur(0.400042px); }
+        43.6364% { opacity: 0.959756; transform: scale(0.998390); filter: blur(0.321955px); }
+        45.4545% { opacity: 0.967934; transform: scale(0.998717); filter: blur(0.256525px); }
+        47.2727% { opacity: 0.974744; transform: scale(0.998990); filter: blur(0.202046px); }
+        49.0909% { opacity: 0.980377; transform: scale(0.999215); filter: blur(0.156987px); }
+        50.9091% { opacity: 0.985002; transform: scale(0.999400); filter: blur(0.119981px); }
+        52.7273% { opacity: 0.988772; transform: scale(0.999551); filter: blur(0.089824px); }
+        54.5455% { opacity: 0.991818; transform: scale(0.999673); filter: blur(0.065455px); }
+        56.3636% { opacity: 0.994256; transform: scale(0.999770); filter: blur(0.045949px); }
+        58.1818% { opacity: 0.996187; transform: scale(0.999847); filter: blur(0.030504px); }
+        60.0000% { opacity: 0.997697; transform: scale(0.999908); filter: blur(0.018427px); }
+        61.8182% { opacity: 0.998859; transform: scale(0.999954); filter: blur(0.009126px); }
+        63.6364% { opacity: 0.999738; transform: scale(0.999990); filter: blur(0.002094px); }
+        65.4545% { opacity: 1.000000; transform: scale(1.000015); filter: blur(0.000000px); }
+        67.2727% { opacity: 1.000000; transform: scale(1.000034); filter: blur(0.000000px); }
+        69.0909% { opacity: 1.000000; transform: scale(1.000047); filter: blur(0.000000px); }
+        70.9091% { opacity: 1.000000; transform: scale(1.000055); filter: blur(0.000000px); }
+        72.7273% { opacity: 1.000000; transform: scale(1.000000); filter: blur(0.000000px); }
+        74.5455% { opacity: 1.000000; transform: scale(1.000000); filter: blur(0.000000px); }
+        76.3636% { opacity: 1.000000; transform: scale(1.000000); filter: blur(0.000000px); }
+        78.1818% { opacity: 1.000000; transform: scale(1.000000); filter: blur(0.000000px); }
+        80.0000% { opacity: 1.000000; transform: scale(1.000000); filter: blur(0.000000px); }
+        81.8182% { opacity: 1.000000; transform: scale(1.000000); filter: blur(0.000000px); }
+        83.6364% { opacity: 1.000000; transform: scale(1.000000); filter: blur(0.000000px); }
+        85.4545% { opacity: 1.000000; transform: scale(1.000000); filter: blur(0.000000px); }
+        87.2727% { opacity: 1.000000; transform: scale(1.000000); filter: blur(0.000000px); }
+        89.0909% { opacity: 1.000000; transform: scale(1.000000); filter: blur(0.000000px); }
+        90.9091% { opacity: 1.000000; transform: scale(1.000000); filter: blur(0.000000px); }
+        92.7273% { opacity: 1.000000; transform: scale(1.000000); filter: blur(0.000000px); }
+        94.5455% { opacity: 1.000000; transform: scale(1.000000); filter: blur(0.000000px); }
+        96.3636% { opacity: 1.000000; transform: scale(1.000000); filter: blur(0.000000px); }
+        98.1818% { opacity: 1.000000; transform: scale(1.000000); filter: blur(0.000000px); }
+        100.0000% { opacity: 1.000000; transform: scale(1.000000); filter: blur(0.000000px); }
+      }
       @media (prefers-reduced-motion: no-preference) {
+        .cpbp-enter { animation: cpbp-enter 550ms linear 50ms both; }
         .draw, .icon > * {
           stroke-dasharray: 1;
           animation: draw-line var(--detail-duration) ease-out var(--line-delay, 0ms) both;
@@ -41,49 +109,51 @@
   </defs>
   <rect width="1600" height="1000" fill="#060606"/>
 
-  <!-- Palette, header, and first active row. -->
-  <rect x="129" y="211" width="1342" height="604" rx="13" stroke="#a7a8a2" stroke-width="2" pathLength="1" class="draw outline"/>
-  <path d="M130 307H1470" stroke="#656760" stroke-width="2" pathLength="1" class="draw" style="--line-delay:250ms"/>
-  <path d="M130 749H1470" stroke="#656760" stroke-width="2" pathLength="1" class="draw" style="--line-delay:275ms"/>
-  <rect x="142" y="376" width="1316" height="72" rx="10" fill="#353632"/>
+  <g class="cpbp-enter">
+    <!-- Palette, header, and first active row. -->
+    <rect x="129" y="211" width="1342" height="604" rx="13" stroke="#a7a8a2" stroke-width="2" pathLength="1" class="draw outline"/>
+    <path d="M130 307H1470" stroke="#656760" stroke-width="2" pathLength="1" class="draw" style="--line-delay:250ms"/>
+    <path d="M130 749H1470" stroke="#656760" stroke-width="2" pathLength="1" class="draw" style="--line-delay:275ms"/>
+    <rect x="142" y="376" width="1316" height="72" rx="10" fill="#353632"/>
 
-  <!-- Header inset, icon size, and icon-to-text gap. -->
-  <rect x="162" y="244" width="32" height="32" class="spacing"/>
-  <path d="M194 230V286 M214 230V286" class="spacing"/>
-  <use href="#search" x="162" y="244" style="--line-delay:300ms"/>
-  <text x="214" y="269" class="option">Search commands…</text>
-  <rect x="1382" y="244" width="64" height="32" rx="6" class="key"/>
-  <text x="1414" y="267" text-anchor="middle" class="hint">Esc</text>
+    <!-- Header inset, icon size, and icon-to-text gap. -->
+    <rect x="162" y="244" width="32" height="32" class="spacing"/>
+    <path d="M194 230V286 M214 230V286" class="spacing"/>
+    <use href="#search" x="162" y="244" style="--line-delay:300ms"/>
+    <text x="214" y="269" class="option">Search commands…</text>
+    <rect x="1382" y="244" width="64" height="32" rx="6" class="key"/>
+    <text x="1414" y="267" text-anchor="middle" class="hint">Esc</text>
 
-  <!-- Dashed list bounds, row edges, horizontal padding, and icon/text slots. -->
-  <rect x="142" y="320" width="1316" height="416" class="spacing"/>
-  <path d="M162 320V736 M194 376V736 M214 376V736 M1438 320V736" class="spacing"/>
-  <path d="M142 376H1458 M142 448H1458 M142 520H1458 M142 592H1458 M142 664H1458" class="spacing"/>
-  <text x="162" y="358" fill="#898b84" font-size="24">Navigation</text>
+    <!-- Dashed list bounds, row edges, horizontal padding, and icon/text slots. -->
+    <rect x="142" y="320" width="1316" height="416" class="spacing"/>
+    <path d="M162 320V736 M194 376V736 M214 376V736 M1438 320V736" class="spacing"/>
+    <path d="M142 376H1458 M142 448H1458 M142 520H1458 M142 592H1458 M142 664H1458" class="spacing"/>
+    <text x="162" y="358" fill="#898b84" font-size="24">Navigation</text>
 
-  <use href="#grid" x="162" y="396" style="--line-delay:325ms"/>
-  <text x="214" y="422" class="option" style="fill:#c7c7c2">Dashboard</text>
-  <use href="#folder" x="162" y="468" style="--line-delay:350ms"/>
-  <text x="214" y="494" class="option">Projects</text>
-  <use href="#team" x="162" y="540" style="--line-delay:375ms"/>
-  <text x="214" y="566" class="option">Team</text>
-  <use href="#activity" x="162" y="612" style="--line-delay:400ms"/>
-  <text x="214" y="638" class="option">Activity</text>
-  <use href="#settings" x="162" y="684" style="--line-delay:425ms"/>
-  <text x="214" y="710" class="option">Settings</text>
+    <use href="#grid" x="162" y="396" style="--line-delay:325ms"/>
+    <text x="214" y="422" class="option" style="fill:#c7c7c2">Dashboard</text>
+    <use href="#folder" x="162" y="468" style="--line-delay:350ms"/>
+    <text x="214" y="494" class="option">Projects</text>
+    <use href="#team" x="162" y="540" style="--line-delay:375ms"/>
+    <text x="214" y="566" class="option">Team</text>
+    <use href="#activity" x="162" y="612" style="--line-delay:400ms"/>
+    <text x="214" y="638" class="option">Activity</text>
+    <use href="#settings" x="162" y="684" style="--line-delay:425ms"/>
+    <text x="214" y="710" class="option">Settings</text>
 
-  <!-- Footer is part of the component. -->
-  <rect x="154" y="766" width="56" height="32" rx="6" class="key"/>
-  <text x="182" y="789" text-anchor="middle" class="hint">esc</text>
-  <text x="218" y="789" class="hint">Close</text>
-  <rect x="320" y="766" width="32" height="32" rx="6" class="key"/>
-  <rect x="356" y="766" width="32" height="32" rx="6" class="key"/>
-  <text x="336" y="789" text-anchor="middle" class="hint">↑</text>
-  <text x="372" y="789" text-anchor="middle" class="hint">↓</text>
-  <text x="396" y="789" class="hint">Navigate</text>
-  <text x="1346" y="789" class="hint">Select</text>
-  <rect x="1414" y="766" width="32" height="32" rx="6" class="key"/>
-  <path d="M1437 775v8h-15 m5-5-5 5 5 5" stroke="#92948d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" pathLength="1" class="draw" style="--line-delay:450ms"/>
+    <!-- Footer is part of the component. -->
+    <rect x="154" y="766" width="56" height="32" rx="6" class="key"/>
+    <text x="182" y="789" text-anchor="middle" class="hint">esc</text>
+    <text x="218" y="789" class="hint">Close</text>
+    <rect x="320" y="766" width="32" height="32" rx="6" class="key"/>
+    <rect x="356" y="766" width="32" height="32" rx="6" class="key"/>
+    <text x="336" y="789" text-anchor="middle" class="hint">↑</text>
+    <text x="372" y="789" text-anchor="middle" class="hint">↓</text>
+    <text x="396" y="789" class="hint">Navigate</text>
+    <text x="1346" y="789" class="hint">Select</text>
+    <rect x="1414" y="766" width="32" height="32" rx="6" class="key"/>
+    <path d="M1437 775v8h-15 m5-5-5 5 5 5" stroke="#92948d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" pathLength="1" class="draw" style="--line-delay:450ms"/>
+  </g>
 
   <!-- Overall width, header height, and row height. -->
   <path d="M128 133V155 M1472 133V155 M128 144H1472" class="measure"/>

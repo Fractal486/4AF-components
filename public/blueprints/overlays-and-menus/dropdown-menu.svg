@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" id="af-ddm-blueprint" width="1200" height="1080" viewBox="0 0 1200 1080" fill="none" role="img" aria-labelledby="af-ddm-title af-ddm-desc">
   <title id="af-ddm-title">Dropdown Menu row variants</title>
-  <desc id="af-ddm-desc">A three-dot parent trigger opens a menu with a highlighted Profile action and keyboard shortcut, disabled Billing action, checked Show toolbar checkbox, a loading action labeled Saving with a radial spinner, selected System theme radio, unselected Light theme radio, and Transfer submenu. The component uses neutral gray tones with blue measurement guides. Two dividers separate the row groups. The chosen panel width is 224 pixels, rows are 28 pixels high, and the menu opens 6 pixels below its trigger. Drawn at three times CSS size.</desc>
+  <desc id="af-ddm-desc">The menu enters once with a fade, scale, and blur anchored to its trigger. A three-dot parent trigger opens a menu with a highlighted Profile action and keyboard shortcut, disabled Billing action, checked Show toolbar checkbox, a loading action labeled Saving with a radial spinner, selected System theme radio, unselected Light theme radio, and Transfer submenu. The component uses neutral gray tones with blue measurement guides. Two dividers separate the row groups. The chosen panel width is 224 pixels, rows are 28 pixels high, and the menu opens 6 pixels below its trigger. Drawn at three times CSS size.</desc>
   <!--
     Hand-authored vector drawing. Sources:
       registry/ui/dropdown-menu/dropdown-menu.menu.tsx: popup, items, shortcut,
@@ -30,8 +30,8 @@
       Checked radio dot: 14 - 3px border - 4px inset = 7px diameter.
       Checkbox mark: 70% of the 11px inner box = 7.7px, using the source path.
       Loading action: the 14px slot contains ClassicLoader's 100-unit viewBox at .42x.
-      Its twelve 24 x 8 bars rotate in 30-degree steps about (50,50). A static trail
-      frame represents loading while preserving this blueprint's once-only animation.
+      Its twelve 24 x 8 bars rotate in 30-degree steps about (50,50). The opacity trail
+      turns once, easing to rest over the 900ms blueprint animation.
       Shortcut: 11px type, 12px line box, 2px vertical padding = 16px high.
       Separator: 4px margin + 1px border + 4px margin = 9px total.
       Panel: 2px border + 8px padding + 7 x 28px rows + 2 x 9px separators = 224px high.
@@ -42,6 +42,13 @@
       Separators: y445..448 and y808..811; content padding: x279..921.
       Icon slot: x309..351; text starts x375. Keycaps end at the right inset x891.
       Dark background oklch(.120 0 0) = #060606 after 8-bit rounding.
+    Native entrance: dropdown-menu.menu.tsx uses opacity 0, scale .95, blur 3px,
+    duration-base=200ms and ease-out=cubic-bezier(.16,1,.3,1) from app/globals.css.
+    At 3x, blur is 9 units. Base UI useAnchorPositioning places the transform origin
+    across the 6px gap at the trigger's bottom center, (315, 232).
+    Entrance runs 250..450ms; the trigger and external rulers stay outside it.
+    Icons use inline paths so stroke animations run directly on the visible geometry,
+    without depending on SVG use-instance animation and inherited styles.
     Measurements reduced to panel width, one row height, and parent/popup offset.
   -->
   <defs>
@@ -53,15 +60,86 @@
       #af-ddm-blueprint .af-ddm-key { fill: #92948d; font-size: 33px; }
       #af-ddm-blueprint .af-ddm-measure { stroke: #6889ff; stroke-width: 1.5; }
       #af-ddm-blueprint .af-ddm-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
-      #af-ddm-blueprint .af-ddm-icon { stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+      #af-ddm-blueprint .af-ddm-icon { stroke: #a7a8a2; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+      #af-ddm-blueprint .af-ddm-spinner { transform-box: fill-box; transform-origin: center; }
       /* Static final state is the default, including reduced-motion and PNG exports.
-         Outlines: 0-400ms. Details: 250-625ms. Annotations: 700-900ms, once.
-         Text, keycap fills, checkbox fill, and selected radio dot stay visible. */
+         Outlines: 0-400ms. Details: 250-625ms. Spinner: 0-900ms. Annotations: 700-900ms, once.
+         All menu contents enter together; final fills and indicators remain visible. */
       @keyframes af-ddm-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes af-ddm-reveal { from { opacity: 0; } }
+      @keyframes af-ddm-spin {
+        from { transform: rotate(0turn); }
+        to { transform: rotate(1turn); }
+      }
+      /* One press/release during reveal, matching Button's .95 press scale.
+         spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
+         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         compose with content/panel motion; static and reduced motion stay at 1. */
+      @keyframes dropdown-menu-bp-button-press {
+        0% { transform: scale(1.000000); }
+        2% { transform: scale(0.998236); }
+        4% { transform: scale(0.994025); }
+        6% { transform: scale(0.988604); }
+        8% { transform: scale(0.982802); }
+        10% { transform: scale(0.977146); }
+        12% { transform: scale(0.971948); }
+        14% { transform: scale(0.967366); }
+        16% { transform: scale(0.963455); }
+        18% { transform: scale(0.960207); }
+        20% { transform: scale(0.957573); }
+        22% { transform: scale(0.955481); }
+        24% { transform: scale(0.953856); }
+        26% { transform: scale(0.952619); }
+        28% { transform: scale(0.951698); }
+        30% { transform: scale(0.951029); }
+        32% { transform: scale(0.950556); }
+        34% { transform: scale(0.950233); }
+        36% { transform: scale(0.950022); }
+        38% { transform: scale(0.950000); }
+        40% { transform: scale(0.950000); }
+        42% { transform: scale(0.950000); }
+        44% { transform: scale(0.950000); }
+        46% { transform: scale(0.950000); }
+        48% { transform: scale(0.950000); }
+        50% { transform: scale(0.950000); }
+        52% { transform: scale(0.951764); }
+        54% { transform: scale(0.955975); }
+        56% { transform: scale(0.961396); }
+        58% { transform: scale(0.967198); }
+        60% { transform: scale(0.972854); }
+        62% { transform: scale(0.978052); }
+        64% { transform: scale(0.982634); }
+        66% { transform: scale(0.986545); }
+        68% { transform: scale(0.989793); }
+        70% { transform: scale(0.992427); }
+        72% { transform: scale(0.994519); }
+        74% { transform: scale(0.996144); }
+        76% { transform: scale(0.997381); }
+        78% { transform: scale(0.998302); }
+        80% { transform: scale(0.998971); }
+        82% { transform: scale(0.999444); }
+        84% { transform: scale(0.999767); }
+        86% { transform: scale(0.999978); }
+        88% { transform: scale(1.000000); }
+        90% { transform: scale(1.000000); }
+        92% { transform: scale(1.000000); }
+        94% { transform: scale(1.000000); }
+        96% { transform: scale(1.000000); }
+        98% { transform: scale(1.000000); }
+        100% { transform: scale(1.000000); }
+      }
+      #af-ddm-blueprint .af-ddm-enter { transform-origin: 315px 232px; }
+      @keyframes af-ddm-enter {
+        from { opacity: 0; transform: scale(.95); filter: blur(9px); }
+        to { opacity: 1; transform: scale(1); filter: blur(0px); }
+      }
       @media (prefers-reduced-motion: no-preference) {
-        #af-ddm-blueprint .af-ddm-draw,
-        #af-ddm-blueprint .af-ddm-icon > * {
+        #af-ddm-blueprint .af-ddm-enter { animation: af-ddm-enter 200ms cubic-bezier(.16,1,.3,1) 250ms both; }
+        .dropdown-menu-bp-button-press { animation: dropdown-menu-bp-button-press 500ms linear 150ms both; }
+        #af-ddm-blueprint .af-ddm-spinner {
+          animation: af-ddm-spin 900ms ease-out both;
+        }
+        #af-ddm-blueprint .af-ddm-draw {
           stroke-dasharray: 1;
           animation: af-ddm-draw 200ms ease-out var(--af-ddm-delay, 0ms) both;
         }
@@ -73,92 +151,92 @@
         }
       }
     </style>
-    <!-- Reusable icons occupy the 42-unit row slot. Each stroked child is
-         normalized individually and inherits the delay from its use instance. -->
-    <g id="af-ddm-user" class="af-ddm-icon">
-      <circle cx="21" cy="13" r="7" pathLength="1"/>
-      <path d="M7 37v-5a14 12 0 0 1 28 0v5" pathLength="1"/>
-    </g>
-    <g id="af-ddm-card" class="af-ddm-icon">
-      <rect x="4" y="8" width="34" height="26" rx="4" pathLength="1"/>
-      <path d="M4 17H38" pathLength="1"/>
-      <path d="M10 27H17" pathLength="1"/>
-    </g>
-    <g id="af-ddm-upload" class="af-ddm-icon">
-      <path d="M21 27V5" pathLength="1"/>
-      <path d="m12 14 9-9 9 9" pathLength="1"/>
-      <path d="M5 27v9h32v-9" pathLength="1"/>
-    </g>
   </defs>
 
   <rect width="1200" height="1080" fill="#060606"/>
 
   <!-- The parent control, aligned to the panel's start edge. -->
-  <rect x="265.5" y="131.5" width="99" height="99" rx="22.5" stroke="#a7a8a2" stroke-width="3" opacity=".7" pathLength="1" class="af-ddm-draw af-ddm-outline"/>
-  <circle cx="299" cy="181" r="2" stroke="#c7c7c2" stroke-width="3" pathLength="1" class="af-ddm-draw" style="--af-ddm-delay:250ms"/>
-  <circle cx="315" cy="181" r="2" stroke="#c7c7c2" stroke-width="3" pathLength="1" class="af-ddm-draw" style="--af-ddm-delay:275ms"/>
-  <circle cx="331" cy="181" r="2" stroke="#c7c7c2" stroke-width="3" pathLength="1" class="af-ddm-draw" style="--af-ddm-delay:300ms"/>
-
-  <!-- One active row; the rest show distinct supported menu item forms. -->
-  <rect x="279" y="265" width="642" height="84" rx="15" fill="#353632"/>
-  <rect x="265.5" y="251.5" width="669" height="669" rx="19.5" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="af-ddm-draw af-ddm-outline"/>
-
-  <!-- A small set of persistent guides: content padding, representative row edge,
-       leading icon inset, and aligned text. Kept beneath the text and glyphs. -->
-  <rect x="279" y="265" width="642" height="642" class="af-ddm-spacing"/>
-  <path d="M279 349H921 M309 265V907 M375 265V907" class="af-ddm-spacing"/>
-
-  <!-- Standard action with a shortcut. -->
-  <use href="#af-ddm-user" x="309" y="286" style="--af-ddm-delay:250ms"/>
-  <text x="375" y="319" class="af-ddm-option" style="fill:#c7c7c2">Profile</text>
-  <rect x="813" y="283" width="78" height="48" rx="9" fill="#454640"/>
-  <text x="852" y="319" text-anchor="middle" class="af-ddm-key" style="fill:#c7c7c2">⌘P</text>
-
-  <!-- Disabled action, including its shortcut, at the source's 50% opacity. -->
-  <g opacity=".5">
-    <use href="#af-ddm-card" x="309" y="370" style="--af-ddm-delay:275ms"/>
-    <text x="375" y="403" class="af-ddm-option">Billing</text>
-    <rect x="813" y="367" width="78" height="48" rx="9" fill="#22231f"/>
-    <text x="852" y="403" text-anchor="middle" class="af-ddm-key">⌘B</text>
+  <g class="dropdown-menu-bp-button-press" style="transform-origin: 315px 181px">
+    <rect x="265.5" y="131.5" width="99" height="99" rx="22.5" stroke="#a7a8a2" stroke-width="3" opacity=".7" pathLength="1" class="af-ddm-draw af-ddm-outline"/>
+    <circle cx="299" cy="181" r="2" stroke="#c7c7c2" stroke-width="3" pathLength="1" class="af-ddm-draw" style="--af-ddm-delay:250ms"/>
+    <circle cx="315" cy="181" r="2" stroke="#c7c7c2" stroke-width="3" pathLength="1" class="af-ddm-draw" style="--af-ddm-delay:275ms"/>
+    <circle cx="331" cy="181" r="2" stroke="#c7c7c2" stroke-width="3" pathLength="1" class="af-ddm-draw" style="--af-ddm-delay:300ms"/>
   </g>
+  <g class="af-ddm-enter">
+    <!-- One active row; the rest show distinct supported menu item forms. -->
+    <rect x="279" y="265" width="642" height="84" rx="15" fill="#353632"/>
+    <rect x="265.5" y="251.5" width="669" height="669" rx="19.5" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="af-ddm-draw af-ddm-outline"/>
 
-  <path d="M267 446.5H933" stroke="#a7a8a2" stroke-width="3" opacity=".55" pathLength="1" class="af-ddm-draw" style="--af-ddm-delay:300ms"/>
+    <!-- A small set of persistent guides: content padding, representative row edge,
+         leading icon inset, and aligned text. Kept beneath the text and glyphs. -->
+    <rect x="279" y="265" width="642" height="642" class="af-ddm-spacing"/>
+    <path d="M279 349H921 M309 265V907 M375 265V907" class="af-ddm-spacing"/>
 
-  <!-- Checked checkbox item; its box and mark share the ordinary leading icon slot. -->
-  <rect x="311.25" y="483.25" width="37.5" height="37.5" rx="9.75" fill="#353632" stroke="#a7a8a2" stroke-width="4.5" pathLength="1" class="af-ddm-draw" style="--af-ddm-delay:325ms"/>
-  <path d="M4.5 12.75l6 6 9-13.5" transform="translate(318.45 490.45) scale(.9625)" stroke="#c7c7c2" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" pathLength="1" class="af-ddm-draw" style="--af-ddm-delay:350ms"/>
-  <text x="375" y="514" class="af-ddm-option">Show toolbar</text>
+    <!-- Standard action with a shortcut. -->
+    <g class="af-ddm-icon" transform="translate(309 286)" style="--af-ddm-delay:250ms">
+      <circle cx="21" cy="13" r="7" pathLength="1" class="af-ddm-draw"/>
+      <path d="M7 37v-5a14 12 0 0 1 28 0v5" pathLength="1" class="af-ddm-draw"/>
+    </g>
+    <text x="375" y="319" class="af-ddm-option" style="fill:#c7c7c2">Profile</text>
+    <rect x="813" y="283" width="78" height="48" rx="9" fill="#454640"/>
+    <text x="852" y="319" text-anchor="middle" class="af-ddm-key" style="fill:#c7c7c2">⌘P</text>
 
-  <!-- Pending action row: the inherited ClassicLoader fills its 14px leading slot. -->
-  <g transform="translate(309 565) scale(.42)" fill="#92948d">
-    <rect x="73" y="46" width="24" height="8" rx="4" opacity="1"/>
-    <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(30 50 50)" opacity=".92"/>
-    <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(60 50 50)" opacity=".84"/>
-    <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(90 50 50)" opacity=".76"/>
-    <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(120 50 50)" opacity=".68"/>
-    <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(150 50 50)" opacity=".60"/>
-    <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(180 50 50)" opacity=".52"/>
-    <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(210 50 50)" opacity=".44"/>
-    <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(240 50 50)" opacity=".36"/>
-    <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(270 50 50)" opacity=".28"/>
-    <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(300 50 50)" opacity=".20"/>
-    <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(330 50 50)" opacity=".12"/>
+    <!-- Disabled action, including its shortcut, at the source's 50% opacity. -->
+    <g opacity=".5">
+      <g class="af-ddm-icon" transform="translate(309 370)" style="--af-ddm-delay:275ms">
+        <rect x="4" y="8" width="34" height="26" rx="4" pathLength="1" class="af-ddm-draw"/>
+        <path d="M4 17H38" pathLength="1" class="af-ddm-draw"/>
+        <path d="M10 27H17" pathLength="1" class="af-ddm-draw"/>
+      </g>
+      <text x="375" y="403" class="af-ddm-option">Billing</text>
+      <rect x="813" y="367" width="78" height="48" rx="9" fill="#22231f"/>
+      <text x="852" y="403" text-anchor="middle" class="af-ddm-key">⌘B</text>
+    </g>
+
+    <path d="M267 446.5H933" stroke="#a7a8a2" stroke-width="3" opacity=".55" pathLength="1" class="af-ddm-draw" style="--af-ddm-delay:300ms"/>
+
+    <!-- Checked checkbox item; its box and mark share the ordinary leading icon slot. -->
+    <rect x="311.25" y="483.25" width="37.5" height="37.5" rx="9.75" fill="#353632" stroke="#a7a8a2" stroke-width="4.5" pathLength="1" class="af-ddm-draw" style="--af-ddm-delay:325ms"/>
+    <path d="M4.5 12.75l6 6 9-13.5" transform="translate(318.45 490.45) scale(.9625)" stroke="#c7c7c2" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" pathLength="1" class="af-ddm-draw" style="--af-ddm-delay:350ms"/>
+    <text x="375" y="514" class="af-ddm-option">Show toolbar</text>
+
+    <!-- Pending action row: the inherited ClassicLoader fills its 14px leading slot. -->
+    <g transform="translate(309 565) scale(.42)" fill="#92948d">
+      <g class="af-ddm-spinner">
+        <rect x="73" y="46" width="24" height="8" rx="4" opacity="1"/>
+        <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(30 50 50)" opacity=".92"/>
+        <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(60 50 50)" opacity=".84"/>
+        <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(90 50 50)" opacity=".76"/>
+        <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(120 50 50)" opacity=".68"/>
+        <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(150 50 50)" opacity=".60"/>
+        <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(180 50 50)" opacity=".52"/>
+        <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(210 50 50)" opacity=".44"/>
+        <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(240 50 50)" opacity=".36"/>
+        <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(270 50 50)" opacity=".28"/>
+        <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(300 50 50)" opacity=".20"/>
+        <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(330 50 50)" opacity=".12"/>
+      </g>
+    </g>
+    <text x="375" y="598" class="af-ddm-option">Saving…</text>
+
+    <!-- A selected and an unselected radio item, in one group. -->
+    <circle cx="330" cy="670" r="18.75" fill="#060606" stroke="#a7a8a2" stroke-width="4.5" pathLength="1" class="af-ddm-draw" style="--af-ddm-delay:375ms"/>
+    <circle cx="330" cy="670" r="10.5" fill="#c7c7c2"/>
+    <text x="375" y="682" class="af-ddm-option">System theme</text>
+    <circle cx="330" cy="754" r="18.75" fill="#060606" stroke="#a7a8a2" stroke-width="4.5" pathLength="1" class="af-ddm-draw" style="--af-ddm-delay:400ms"/>
+    <text x="375" y="766" class="af-ddm-option">Light theme</text>
+
+    <path d="M267 809.5H933" stroke="#a7a8a2" stroke-width="3" opacity=".55" pathLength="1" class="af-ddm-draw" style="--af-ddm-delay:425ms"/>
+
+    <!-- Submenu trigger; the submenu stays closed in this pictured state. -->
+    <g class="af-ddm-icon" transform="translate(309 844)" style="--af-ddm-delay:425ms">
+      <path d="M21 27V5" pathLength="1" class="af-ddm-draw"/>
+      <path d="m12 14 9-9 9 9" pathLength="1" class="af-ddm-draw"/>
+      <path d="M5 27v9h32v-9" pathLength="1" class="af-ddm-draw"/>
+    </g>
+    <text x="375" y="877" class="af-ddm-option">Transfer</text>
+    <path d="m865 855 10 10-10 10" stroke="#a7a8a2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" pathLength="1" class="af-ddm-draw" style="--af-ddm-delay:425ms"/>
   </g>
-  <text x="375" y="598" class="af-ddm-option">Saving…</text>
-
-  <!-- A selected and an unselected radio item, in one group. -->
-  <circle cx="330" cy="670" r="18.75" fill="#060606" stroke="#a7a8a2" stroke-width="4.5" pathLength="1" class="af-ddm-draw" style="--af-ddm-delay:375ms"/>
-  <circle cx="330" cy="670" r="10.5" fill="#c7c7c2"/>
-  <text x="375" y="682" class="af-ddm-option">System theme</text>
-  <circle cx="330" cy="754" r="18.75" fill="#060606" stroke="#a7a8a2" stroke-width="4.5" pathLength="1" class="af-ddm-draw" style="--af-ddm-delay:400ms"/>
-  <text x="375" y="766" class="af-ddm-option">Light theme</text>
-
-  <path d="M267 809.5H933" stroke="#a7a8a2" stroke-width="3" opacity=".55" pathLength="1" class="af-ddm-draw" style="--af-ddm-delay:425ms"/>
-
-  <!-- Submenu trigger; the submenu stays closed in this pictured state. -->
-  <use href="#af-ddm-upload" x="309" y="844" style="--af-ddm-delay:425ms"/>
-  <text x="375" y="877" class="af-ddm-option">Transfer</text>
-  <path d="m865 855 10 10-10 10" stroke="#a7a8a2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" pathLength="1" class="af-ddm-draw" style="--af-ddm-delay:425ms"/>
 
   <!-- Only three measurements remain. -->
   <path d="M199 232H221 M199 250H221 M210 232V250" class="af-ddm-measure"/>

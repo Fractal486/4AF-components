@@ -1,0 +1,272 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" fill="none" role="img" aria-labelledby="action-toggle-bp-title action-toggle-bp-description" class="action-toggle-bp">
+  <title id="action-toggle-bp-title">Action Toggle spacing</title>
+  <desc id="action-toggle-bp-description">The Plus icon morphs into the pending spinner while Follow stays fixed. An outlined medium Action Toggle while its follow action is pending, drawn at three times actual size. A twelve-bar spinner replaces the icon while the Follow label remains. The control is 34 CSS pixels tall with 14 pixel horizontal padding, a 16 pixel loader slot, a 10 pixel loader-to-label gap, and a 20 pixel label line box inset 7 pixels vertically. Its content-dependent width still reserves the widest label.</desc>
+  <!--
+    Native icon swap: morph.tsx opacity 0, scale .25, blur 4 CSS px (12 units),
+    spring.clean (visualDuration .18, bounce 0), sampled every 10ms, 250..550ms.
+    Follow has no pending override, so only Plus swaps into the spinner.
+    Outgoing content is hidden for static and reduced-motion viewers.
+    Sources:
+      registry.json: action-toggle and its toggle / morph dependencies.
+      registry/ui/action-toggle/action-toggle.tsx: outline, md, widest defaults;
+        the wrapper inherits Toggle's gap; no data-icon-start is added, so there
+        is no Button-only optical padding adjustment.
+      registry/ui/toggle/toggle.tsx: shared buttonVariants, rectangular default.
+      registry/ui/button/button.variants.ts: h-[34px], px-3.5, gap-2.5,
+        rounded-[8px], text-sm, and SVG size-4. Outline uses a shadow, not a border.
+      registry/ui/morph/morph.tsx: each slot reserves its widest supplied state.
+      registry/lib/loader.tsx: LoadingIndicator falls back to ClassicLoader;
+        the loader's maximum dimensions are constrained to its 16px slot.
+      registry/ui/classic-loader/classic-loader.tsx and classic-loader.variants.ts:
+        twelve 24-by-8 capsules, rotated every 30 degrees around (50,50) in a
+        100-unit viewBox.
+      public/blueprints/overlays-and-menus/dropdown-menu.svg: reuse the existing
+        filled spinner geometry, illustration ink, and static opacity trail.
+      inspector/entries/action-toggle.tsx and action-toggle.demo.tsx:
+        Follow / Following / Try again labels; Plus / Check icons.
+      node_modules/tailwindcss/theme.css: 0.25rem spacing; 16px root assumed.
+      app/globals.css: text-sm = 13px, line-height 1.5385 (approximately 20px);
+        dark background oklch(0.120 0 0) = approximately #060606.
+      lib/component-catalog.ts COMPONENT_CATEGORIES: Actions.
+
+    State: pending, pressed=false; outline / md / rectangular / sizing="widest".
+      The default spinner replaces Plus. Without labels.pending, Follow remains.
+    Scale: 3 SVG units per CSS pixel, including text and icon geometry.
+    Button layout box: (315,219) to (645,321), 110 x 34 CSS pixels.
+      Width is content-dependent, NOT a component token or maximum. This drawing
+      uses a representative 56px widest label slot for the illustration font:
+      14 + 16 + 10 + 56 + 14 = 110px. Production Geist metrics may change width.
+      Follow uses a representative 37.33px advance, centered in the reserved
+      56px label slot. No width API is implied.
+    Content: (357,240) to (603,300), 82 x 20 CSS pixels.
+      Horizontal padding = 3.5 * 4 = 14px each; inherited gap = 2.5 * 4 = 10px.
+      Label line box = 13 * 1.5385, rounded to 20px; vertical inset = (34-20)/2 = 7px.
+      Icon = 4 * 4 = 16px square; vertical inset = (34-16)/2 = 9px.
+      Spinner uses the source's 100-unit geometry scaled by .48 to a 48-unit box.
+      Its capsules are x=73, y=46, width=24, height=8, rx=4, as in the dropdown.
+      The existing opacity trail rotates clockwise at the user's request.
+    The 1px shadow ring is outside the layout box: its SVG centerline is offset
+      outward by 1.5 units, with a 3-unit stroke. It consumes no padding or height.
+    Illustration inks simplify the surface; the spinner conveys pending work.
+
+    Animation: outline 0-400ms; annotations 700-900ms. Spinner fills stay visible.
+      Spinner rotates once from 0-900ms, easing down to rest, then holds its final orientation.
+      Static / reduced-motion rendering is fully visible with a stationary spinner.
+  -->
+  <defs>
+    <style>
+      .action-toggle-bp text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      .action-toggle-bp-label { fill: #92948d; font-size: 18px; }
+      .action-toggle-bp-content { fill: #c7c7c2; font-size: 39px; font-weight: 500; }
+      .action-toggle-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      .action-toggle-bp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      .action-toggle-bp-spinner { transform-box: fill-box; transform-origin: center; }
+      @keyframes action-toggle-bp-draw {
+        from { stroke-dashoffset: 1; }
+        to { stroke-dashoffset: 0; }
+      }
+      @keyframes action-toggle-bp-reveal {
+        from { opacity: 0; }
+      }
+      @keyframes action-toggle-bp-spin {
+        from { transform: rotate(0turn); }
+        to { transform: rotate(1turn); }
+      }
+      /* One press/release during reveal, matching Button's .95 press scale.
+         spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
+         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         compose with content/panel motion; static and reduced motion stay at 1. */
+      @keyframes action-toggle-bp-button-press {
+        0% { transform: scale(1.000000); }
+        2% { transform: scale(0.998236); }
+        4% { transform: scale(0.994025); }
+        6% { transform: scale(0.988604); }
+        8% { transform: scale(0.982802); }
+        10% { transform: scale(0.977146); }
+        12% { transform: scale(0.971948); }
+        14% { transform: scale(0.967366); }
+        16% { transform: scale(0.963455); }
+        18% { transform: scale(0.960207); }
+        20% { transform: scale(0.957573); }
+        22% { transform: scale(0.955481); }
+        24% { transform: scale(0.953856); }
+        26% { transform: scale(0.952619); }
+        28% { transform: scale(0.951698); }
+        30% { transform: scale(0.951029); }
+        32% { transform: scale(0.950556); }
+        34% { transform: scale(0.950233); }
+        36% { transform: scale(0.950022); }
+        38% { transform: scale(0.950000); }
+        40% { transform: scale(0.950000); }
+        42% { transform: scale(0.950000); }
+        44% { transform: scale(0.950000); }
+        46% { transform: scale(0.950000); }
+        48% { transform: scale(0.950000); }
+        50% { transform: scale(0.950000); }
+        52% { transform: scale(0.951764); }
+        54% { transform: scale(0.955975); }
+        56% { transform: scale(0.961396); }
+        58% { transform: scale(0.967198); }
+        60% { transform: scale(0.972854); }
+        62% { transform: scale(0.978052); }
+        64% { transform: scale(0.982634); }
+        66% { transform: scale(0.986545); }
+        68% { transform: scale(0.989793); }
+        70% { transform: scale(0.992427); }
+        72% { transform: scale(0.994519); }
+        74% { transform: scale(0.996144); }
+        76% { transform: scale(0.997381); }
+        78% { transform: scale(0.998302); }
+        80% { transform: scale(0.998971); }
+        82% { transform: scale(0.999444); }
+        84% { transform: scale(0.999767); }
+        86% { transform: scale(0.999978); }
+        88% { transform: scale(1.000000); }
+        90% { transform: scale(1.000000); }
+        92% { transform: scale(1.000000); }
+        94% { transform: scale(1.000000); }
+        96% { transform: scale(1.000000); }
+        98% { transform: scale(1.000000); }
+        100% { transform: scale(1.000000); }
+      }
+      .action-toggle-bp .at-old { opacity: 0; }
+      .action-toggle-bp .at-icon-morph { transform-origin: 381px 270px; }
+      @keyframes at-morph-in {
+        0.0000% { opacity: 0; transform: scale(0.250000); filter: blur(12.000000px); }
+        3.3333% { opacity: 0.034933; transform: scale(0.276200); filter: blur(11.580805px); }
+        6.6667% { opacity: 0.115938; transform: scale(0.336953); filter: blur(10.608746px); }
+        10.0000% { opacity: 0.217532; transform: scale(0.413149); filter: blur(9.389616px); }
+        13.3333% { opacity: 0.324161; transform: scale(0.493121); filter: blur(8.110062px); }
+        16.6667% { opacity: 0.426812; transform: scale(0.570109); filter: blur(6.878253px); }
+        20.0000% { opacity: 0.520700; transform: scale(0.640525); filter: blur(5.751602px); }
+        23.3333% { opacity: 0.603708; transform: scale(0.702781); filter: blur(4.755499px); }
+        26.6667% { opacity: 0.675348; transform: scale(0.756511); filter: blur(3.895818px); }
+        30.0000% { opacity: 0.736071; transform: scale(0.802053); filter: blur(3.167151px); }
+        33.3333% { opacity: 0.786823; transform: scale(0.840117); filter: blur(2.558129px); }
+        36.6667% { opacity: 0.828769; transform: scale(0.871577); filter: blur(2.054775px); }
+        40.0000% { opacity: 0.863121; transform: scale(0.897341); filter: blur(1.642546px); }
+        43.3333% { opacity: 0.891041; transform: scale(0.918281); filter: blur(1.307509px); }
+        46.6667% { opacity: 0.913587; transform: scale(0.935190); filter: blur(1.036959px); }
+        50.0000% { opacity: 0.931693; transform: scale(0.948770); filter: blur(0.819687px); }
+        53.3333% { opacity: 0.946164; transform: scale(0.959623); filter: blur(0.646033px); }
+        56.6667% { opacity: 0.957682; transform: scale(0.968261); filter: blur(0.507821px); }
+        60.0000% { opacity: 0.966815; transform: scale(0.975111); filter: blur(0.398223px); }
+        63.3333% { opacity: 0.974033; transform: scale(0.980525); filter: blur(0.311598px); }
+        66.6667% { opacity: 0.979722; transform: scale(0.984792); filter: blur(0.243333px); }
+        70.0000% { opacity: 0.984194; transform: scale(0.988145); filter: blur(0.189677px); }
+        73.3333% { opacity: 0.987700; transform: scale(0.990775); filter: blur(0.147605px); }
+        76.6667% { opacity: 0.990443; transform: scale(0.992832); filter: blur(0.114687px); }
+        80.0000% { opacity: 0.992585; transform: scale(0.994439); filter: blur(0.088983px); }
+        83.3333% { opacity: 0.994254; transform: scale(0.995691); filter: blur(0.068948px); }
+        86.6667% { opacity: 0.995553; transform: scale(0.996665); filter: blur(0.053358px); }
+        90.0000% { opacity: 0.996563; transform: scale(0.997422); filter: blur(0.041246px); }
+        93.3333% { opacity: 0.997346; transform: scale(0.998009); filter: blur(0.031848px); }
+        96.6667% { opacity: 0.997953; transform: scale(0.998465); filter: blur(0.024567px); }
+        100.0000% { opacity: 1.000000; transform: scale(1.000000); filter: blur(0px); }
+      }
+      @keyframes at-morph-out {
+        0.0000% { opacity: 1.000000; transform: scale(1.000000); filter: blur(0px); }
+        3.3333% { opacity: 0.965067; transform: scale(0.973800); filter: blur(0.419195px); }
+        6.6667% { opacity: 0.884062; transform: scale(0.913047); filter: blur(1.391254px); }
+        10.0000% { opacity: 0.782468; transform: scale(0.836851); filter: blur(2.610384px); }
+        13.3333% { opacity: 0.675839; transform: scale(0.756879); filter: blur(3.889938px); }
+        16.6667% { opacity: 0.573188; transform: scale(0.679891); filter: blur(5.121747px); }
+        20.0000% { opacity: 0.479300; transform: scale(0.609475); filter: blur(6.248398px); }
+        23.3333% { opacity: 0.396292; transform: scale(0.547219); filter: blur(7.244501px); }
+        26.6667% { opacity: 0.324652; transform: scale(0.493489); filter: blur(8.104182px); }
+        30.0000% { opacity: 0.263929; transform: scale(0.447947); filter: blur(8.832849px); }
+        33.3333% { opacity: 0.213177; transform: scale(0.409883); filter: blur(9.441871px); }
+        36.6667% { opacity: 0.171231; transform: scale(0.378423); filter: blur(9.945225px); }
+        40.0000% { opacity: 0.136879; transform: scale(0.352659); filter: blur(10.357454px); }
+        43.3333% { opacity: 0.108959; transform: scale(0.331719); filter: blur(10.692491px); }
+        46.6667% { opacity: 0.086413; transform: scale(0.314810); filter: blur(10.963041px); }
+        50.0000% { opacity: 0.068307; transform: scale(0.301230); filter: blur(11.180313px); }
+        53.3333% { opacity: 0.053836; transform: scale(0.290377); filter: blur(11.353967px); }
+        56.6667% { opacity: 0.042318; transform: scale(0.281739); filter: blur(11.492179px); }
+        60.0000% { opacity: 0.033185; transform: scale(0.274889); filter: blur(11.601777px); }
+        63.3333% { opacity: 0.025967; transform: scale(0.269475); filter: blur(11.688402px); }
+        66.6667% { opacity: 0.020278; transform: scale(0.265208); filter: blur(11.756667px); }
+        70.0000% { opacity: 0.015806; transform: scale(0.261855); filter: blur(11.810323px); }
+        73.3333% { opacity: 0.012300; transform: scale(0.259225); filter: blur(11.852395px); }
+        76.6667% { opacity: 0.009557; transform: scale(0.257168); filter: blur(11.885313px); }
+        80.0000% { opacity: 0.007415; transform: scale(0.255561); filter: blur(11.911017px); }
+        83.3333% { opacity: 0.005746; transform: scale(0.254309); filter: blur(11.931052px); }
+        86.6667% { opacity: 0.004447; transform: scale(0.253335); filter: blur(11.946642px); }
+        90.0000% { opacity: 0.003437; transform: scale(0.252578); filter: blur(11.958754px); }
+        93.3333% { opacity: 0.002654; transform: scale(0.251991); filter: blur(11.968152px); }
+        96.6667% { opacity: 0.002047; transform: scale(0.251535); filter: blur(11.975433px); }
+        100.0000% { opacity: 0; transform: scale(0.250000); filter: blur(12.000000px); }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .action-toggle-bp .at-old { animation: at-morph-out 300ms linear 250ms both; }
+        .action-toggle-bp .at-new { animation: at-morph-in 300ms linear 250ms both; }
+        .action-toggle-bp-button-press { animation: action-toggle-bp-button-press 500ms linear 150ms both; }
+        .action-toggle-bp-spinner {
+          animation: action-toggle-bp-spin 900ms ease-out both;
+        }
+        .action-toggle-bp-draw {
+          stroke-dasharray: 1;
+          animation: action-toggle-bp-draw 200ms ease-out var(--action-toggle-bp-delay, 0ms) both;
+        }
+        .action-toggle-bp-outline { animation-duration: 400ms; }
+        .action-toggle-bp-measure,
+        .action-toggle-bp-spacing,
+        .action-toggle-bp-label {
+          animation: action-toggle-bp-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <rect width="960" height="540" fill="#060606"/>
+
+  <!-- Fills remain visible while the solid outline draws. -->
+  <g class="action-toggle-bp-button-press" style="transform-origin: 480px 270px">
+    <rect x="315" y="219" width="330" height="102" rx="24" fill="#353632"/>
+    <rect x="313.5" y="217.5" width="333" height="105" rx="25.5" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="action-toggle-bp-draw action-toggle-bp-outline"/>
+
+    <!-- Actual padding boundaries, content line box, icon box, and gap edges.
+         Guides sit over the fill and behind the visible label and spinner. -->
+    <path d="M357 219V321 M603 219V321 M357 240H603 M357 300H603 M405 240V300 M435 240V300 M357 246H405 M357 294H405" class="action-toggle-bp-spacing"/>
+
+    <text x="519" y="283" text-anchor="middle" textLength="112" lengthAdjust="spacingAndGlyphs" class="action-toggle-bp-content">Follow</text>
+    <g class="at-old at-icon-morph" aria-hidden="true">
+      <path d="M367 270H395 M381 256V284" stroke="#92948d" stroke-width="4" stroke-linecap="round"/>
+    </g>
+    <g class="at-new at-icon-morph">
+      <g transform="translate(357 246) scale(.48)" fill="#92948d">
+      <g class="action-toggle-bp-spinner">
+      <rect x="73" y="46" width="24" height="8" rx="4" opacity="1"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(30 50 50)" opacity=".92"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(60 50 50)" opacity=".84"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(90 50 50)" opacity=".76"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(120 50 50)" opacity=".68"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(150 50 50)" opacity=".60"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(180 50 50)" opacity=".52"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(210 50 50)" opacity=".44"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(240 50 50)" opacity=".36"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(270 50 50)" opacity=".28"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(300 50 50)" opacity=".20"/>
+      <rect x="73" y="46" width="24" height="8" rx="4" transform="rotate(330 50 50)" opacity=".12"/>
+      </g>
+    </g>
+    </g>
+  </g>
+  <!-- Fixed 34px layout height; the shadow ring is deliberately excluded. -->
+  <path d="M260 219H303 M260 321H303 M250 219H270 M250 321H270 M260 219V321" class="action-toggle-bp-measure"/>
+  <text x="240" y="276" text-anchor="end" class="action-toggle-bp-label">34 px</text>
+
+  <!-- 16px loader slot, including its empty space around the spinner ink. -->
+  <path d="M357 183V246 M405 183V246" class="action-toggle-bp-spacing"/>
+  <path d="M357 164V182 M405 164V182 M357 173H405" class="action-toggle-bp-measure"/>
+  <text x="381" y="153" text-anchor="middle" class="action-toggle-bp-label">16 px</text>
+
+  <!-- Label line-height and its top inset, with exact shared endpoints. -->
+  <path d="M657 219H721 M615 240H721 M615 300H721 M700 219H720 M700 240H720 M700 300H720 M710 219V300" class="action-toggle-bp-measure"/>
+  <text x="737" y="235.5" class="action-toggle-bp-label">7 px</text>
+  <text x="737" y="276" class="action-toggle-bp-label">20 px</text>
+
+  <!-- Horizontal padding and inherited icon/label gap. -->
+  <path d="M315 333V383 M357 333V383 M405 312V383 M435 312V383 M315 365V383 M357 365V383 M405 365V383 M435 365V383 M315 374H357 M405 374H435 M336 374V390 M420 374V390" class="action-toggle-bp-measure"/>
+  <text x="336" y="414" text-anchor="middle" class="action-toggle-bp-label">14 px</text>
+  <text x="420" y="414" text-anchor="middle" class="action-toggle-bp-label">10 px</text>
+</svg>

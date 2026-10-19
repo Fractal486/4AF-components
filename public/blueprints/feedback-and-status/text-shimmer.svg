@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="360" viewBox="0 0 800 360" fill="none" role="img" aria-labelledby="text-shimmer-title text-shimmer-desc">
+  <title id="text-shimmer-title">Text Shimmer spacing</title>
+  <desc id="text-shimmer-desc">The default demo label, Syncing changes…, drawn at three times actual size. Its line box is approximately 26 CSS pixels high, with zero padding. A highlight sweeps once during the 900 millisecond blueprint animation, then leaves a static label. Reduced motion keeps the label static throughout.</desc>
+  <!-- Sources: registry/ui/text-shimmer/text-shimmer.tsx;
+       inspector/entries/text-shimmer.tsx; app/globals.css;
+       lib/component-catalog.ts (Feedback and status).
+       No variants file exists. Default span, duration 2.5s, default demo label,
+       text-lg font-medium. Typography is inherited by the component; this drawing
+       uses the demo's 18px size and 1.4444 line height, not a fixed component height.
+       Scale 3x: 18 * 1.4444 = 25.9992px, rounded to 26px; drawn height 78.
+       Padding and borders are 0. Inline-block width depends on font and content,
+       bounded by max-width:100%; no universal width is asserted or measured.
+       Representative text advance ~142.7px for local Segoe UI; display advance
+       normalized to 428 SVG units. Font size 54, weight 500, tracking -0.54.
+       Dark background: oklch(0.120 0 0), approximately #060606.
+       No solid frame, icons, or dividers exist, so the first animation phase
+       intentionally has no strokes to draw. Text remains visible; annotations
+       reveal from 700 to 900ms. The shimmer sweeps once over 900ms alongside the annotation reveal, then stays outside the glyph clip.
+       All guides measure the line box, not the glyph ink bounds. -->
+  <defs>
+    <clipPath id="text-shimmer-glyphs">
+      <text x="186" y="186" font-size="54" font-weight="500" letter-spacing="-.54" textLength="428" lengthAdjust="spacingAndGlyphs">Syncing changes…</text>
+    </clipPath>
+    <linearGradient id="text-shimmer-ink" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#c7c7c2" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#c7c7c2"/>
+      <stop offset="1" stop-color="#c7c7c2" stop-opacity="0"/>
+    </linearGradient>
+    <style>
+      text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      .text-shimmer-label { fill: #a1a29c; font-size: 18px; }
+      .text-shimmer-ruler { stroke: #6889ff; stroke-width: 1.5; }
+      .text-shimmer-guide { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      @keyframes text-shimmer-blueprint-sweep {
+        from { transform: translateX(-428px); }
+        to { transform: translateX(428px); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .text-shimmer-highlight { display: none; }
+      }
+      @keyframes text-shimmer-blueprint-reveal { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        .text-shimmer-highlight {
+          animation: text-shimmer-blueprint-sweep 900ms linear both;
+        }
+        .text-shimmer-label, .text-shimmer-ruler, .text-shimmer-guide {
+          animation: text-shimmer-blueprint-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <rect width="800" height="360" fill="#060606"/>
+  <!-- Coincident content and outer edges: no padding, border, or surface. -->
+  <rect x="186" y="130" width="428" height="78" class="text-shimmer-guide"/>
+  <text x="186" y="186" font-size="54" font-weight="500" letter-spacing="-.54" textLength="428" lengthAdjust="spacingAndGlyphs" fill="#92948d">Syncing changes…</text>
+  <!-- Fixed glyph clip with a moving highlight, matching the component overlay. -->
+  <g clip-path="url(#text-shimmer-glyphs)" aria-hidden="true">
+    <rect x="280" y="130" width="240" height="78" fill="url(#text-shimmer-ink)" class="text-shimmer-highlight"/>
+  </g>
+  <!-- Line-height ruler, exact endpoints aligned with the line box. -->
+  <path d="M622 130H658 M622 208H658" class="text-shimmer-guide"/>
+  <path d="M640 130H662 M651 130V208 M640 208H662" class="text-shimmer-ruler"/>
+  <text x="676" y="175" class="text-shimmer-label">26 px</text>
+  <!-- Connected leader at the coincident content/outer edge indicates zero padding. -->
+  <path d="M186 169H154V258H211" class="text-shimmer-ruler"/>
+  <text x="225" y="264" class="text-shimmer-label">0 px</text>
+</svg>
+

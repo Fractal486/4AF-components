@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" fill="none" role="img" aria-labelledby="radio-blueprint-title radio-blueprint-description">
+  <title id="radio-blueprint-title">Radio spacing</title>
+  <desc id="radio-blueprint-description">Selection changes once from Pro to Standard: the old dot shrinks away as the new dot appears. The default medium Radio group with Standard selected, followed by Pro and Enterprise, drawn at three times actual size. Circles are 20 pixels across with a 1.5 pixel border and an 8 pixel selected dot. Labels have an 8 pixel gap. Rows are 20 pixels tall with 10 pixel gaps, making the group 80 pixels tall.</desc>
+  <!-- Sources:
+       registry/ui/radio/radio.tsx: default md; DOT.md size-2; GROUP_GAP.md gap-2.5;
+         label inline-flex items-center gap-2, label text-sm, no row padding.
+       registry/ui/radio/radio.variants.ts: size-5, border-[1.5px], rounded-full.
+       inspector/entries/radio.tsx: Standard / Pro / Enterprise; Standard selected.
+       app/globals.css: text-sm token = .8125rem = 13px;
+         text-sm line-height token = 1.5385 (20.0005px, illustrated as 20px);
+         dark background token = oklch(.120 0 0), rounded to #060606 in sRGB.
+       node_modules/tailwindcss/theme.css: spacing token = .25rem = 4px at 16px root.
+       node_modules/tailwindcss/preflight.css: border-box sizing.
+       lib/component-catalog.ts / lib/site-nav.ts: Fields and selection.
+
+       Default size md, enabled, resting, no focus ring. Drawing scale: 3 SVG units / CSS px.
+       Circle border-box diameter 5 * 4 = 20px -> 60 units.
+       Border 1.5px -> 4.5 units; stroke centre radius (60 - 4.5) / 2 = 27.75.
+       The border stroke deliberately follows the source thickness at this scale.
+       Dot diameter 2 * 4 = 8px -> 24 units, centred by the source's translate.
+       Label gap 2 * 4 = 8px -> 24 units; label font 13px -> 39 units.
+       Row height max(20px circle, approximately 20px line box) = 20px -> 60 units.
+       Row gap 2.5 * 4 = 10px -> 30 units.
+       Group height 3 * 20 + 2 * 10 = 80px -> 240 units.
+       Group and labels are content-sized; no universal width is asserted or measured.
+       Label glyph widths follow the required local sans-serif illustration stack.
+       Row boxes: y=205..265, 295..355, 385..445; circle x=310..370; labels x=394.
+       No SVG is wired into the app. All IDs, classes, and keyframes are asset-specific.
+  -->
+  <defs>
+    <style>
+      .radio-bp-text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      .radio-bp-option { fill: #92948d; font-size: 39px; }
+      .radio-bp-label { fill: #a1a29c; font-size: 18px; }
+      .radio-bp-ring { stroke: #a7a8a2; stroke-width: 4.5; }
+      .radio-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      .radio-bp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+
+      /* Static and reduced-motion viewers see the complete drawing.
+         First outline 0..400ms, subsequent outlines 100..300ms and 125..325ms.
+         Every annotation fades together at 700..900ms. Text and fills stay visible. */
+      @keyframes radio-bp-draw-line {
+        from { stroke-dashoffset: 1; }
+        to { stroke-dashoffset: 0; }
+      }
+      @keyframes radio-bp-reveal { from { opacity: 0; } }
+      /* Selection moves Pro -> Standard, with independent dot scale/opacity.
+         Final Standard state is the measured and reduced-motion state. */
+      .radio-bp-dot-in { transform-origin: 340px 235px; }
+      .radio-bp-dot-out { transform-origin: 340px 325px; opacity: 0; }
+      @keyframes radio-bp-dot-in { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+      @keyframes radio-bp-dot-out { from { transform: scale(1); opacity: 1; } to { transform: scale(0); opacity: 0; } }
+      @keyframes radio-bp-well-in { from { fill: #060606; } to { fill: #353632; } }
+      @keyframes radio-bp-well-out { from { fill: #353632; } to { fill: #060606; } }
+      @keyframes radio-bp-text-in { from { fill: #92948d; } to { fill: #c7c7c2; } }
+      @keyframes radio-bp-text-out { from { fill: #c7c7c2; } to { fill: #92948d; } }
+      @media (prefers-reduced-motion: no-preference) {
+        .radio-bp-dot-in { animation: radio-bp-dot-in 250ms ease-out 350ms both; }
+        .radio-bp-dot-out { animation: radio-bp-dot-out 200ms ease-out 350ms both; }
+        .radio-bp-well-in { animation: radio-bp-well-in 250ms ease-out 350ms both; }
+        .radio-bp-well-out { animation: radio-bp-well-out 250ms ease-out 350ms both; }
+        .radio-bp-text-in { animation: radio-bp-text-in 250ms ease-out 350ms both; }
+        .radio-bp-text-out { animation: radio-bp-text-out 250ms ease-out 350ms both; }
+        .radio-bp-draw {
+          stroke-dasharray: 1;
+          animation: radio-bp-draw-line 200ms ease-out var(--radio-bp-line-delay, 0ms) both;
+        }
+        .radio-bp-outline { animation-duration: 400ms; }
+        .radio-bp-measure, .radio-bp-spacing, .radio-bp-label {
+          animation: radio-bp-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <rect width="900" height="600" fill="#060606"/>
+
+  <!-- Selection transfers from Pro to Standard; static rendering shows Standard. -->
+  <circle cx="340" cy="235" r="27.75" fill="#353632" class="radio-bp-well-in"/>
+  <circle cx="340" cy="325" r="27.75" fill="#060606" class="radio-bp-well-out"/>
+  <circle cx="340" cy="415" r="27.75" fill="#060606"/>
+  <circle cx="340" cy="235" r="12" fill="#c7c7c2" class="radio-bp-dot-in"/>
+  <circle cx="340" cy="325" r="12" fill="#c7c7c2" class="radio-bp-dot-out"/>
+
+  <!-- Actual control bounds, label inset, line-box edges and inter-row gaps.
+       Guides overlay the wells and remain behind the text. -->
+  <path d="M310 158V465 M370 185V497 M394 185V497" class="radio-bp-spacing"/>
+  <path d="M300 205H604 M300 265H604 M300 295H604 M300 355H604 M300 385H604 M300 445H604" class="radio-bp-spacing"/>
+  <path d="M328 184V223 M352 184V223" class="radio-bp-spacing"/>
+
+  <circle cx="340" cy="235" r="27.75" pathLength="1" class="radio-bp-ring radio-bp-draw radio-bp-outline"/>
+  <circle cx="340" cy="325" r="27.75" pathLength="1" class="radio-bp-ring radio-bp-draw" style="--radio-bp-line-delay:100ms"/>
+  <circle cx="340" cy="415" r="27.75" pathLength="1" class="radio-bp-ring radio-bp-draw" style="--radio-bp-line-delay:125ms"/>
+  <g class="radio-bp-text radio-bp-option">
+    <text x="394" y="248" fill="#c7c7c2" class="radio-bp-text-in">Standard</text>
+    <text x="394" y="338" class="radio-bp-text-out">Pro</text>
+    <text x="394" y="428">Enterprise</text>
+  </g>
+
+  <!-- Circle diameter: x=310..370, measured at the outer border-box edges. -->
+  <path d="M310 133V155 M370 133V155 M310 144H370" class="radio-bp-measure"/>
+  <text x="340" y="125" text-anchor="middle" class="radio-bp-text radio-bp-label">20 px</text>
+
+  <!-- Selected dot diameter: x=328..352. The leader connects to its ruler. -->
+  <path d="M328 170V184 M352 170V184 M328 177H352 M328 177H235" class="radio-bp-measure"/>
+  <text x="220" y="183" text-anchor="end" class="radio-bp-text radio-bp-label">8 px</text>
+
+  <!-- Group height excludes any outside padding: y=205..445. -->
+  <path d="M224 205H246 M224 445H246 M235 205V445" class="radio-bp-measure"/>
+  <path d="M247 205H299 M247 445H299" class="radio-bp-spacing"/>
+  <text x="214" y="331" text-anchor="end" class="radio-bp-text radio-bp-label">80 px</text>
+
+  <!-- Inter-row gap y=265..295, then one full line box y=295..355. -->
+  <path d="M619 265H641 M619 295H641 M630 265V295" class="radio-bp-measure"/>
+  <path d="M619 355H641 M630 295V355" class="radio-bp-measure"/>
+  <path d="M604 265H619 M604 295H619 M604 355H619" class="radio-bp-spacing"/>
+  <text x="655" y="286" class="radio-bp-text radio-bp-label">10 px</text>
+  <text x="655" y="331" class="radio-bp-text radio-bp-label">20 px</text>
+
+  <!-- Label gap: from the circle's outer right edge x=370 to label x=394. -->
+  <path d="M370 478V500 M394 478V500 M370 489H394" class="radio-bp-measure"/>
+  <text x="382" y="526" text-anchor="middle" class="radio-bp-text radio-bp-label">8 px</text>
+
+  <!-- Bottom border of the third circle: inner y=440.5, outer y=445.
+       This is a radial thickness measurement, not a diagonal chord. -->
+  <path d="M285 440.5H340 M285 445H340" class="radio-bp-spacing"/>
+  <path d="M279 440.5H291 M279 445H291 M285 440.5V445 M285 442.75 263 483H205" class="radio-bp-measure"/>
+  <text x="192" y="489" text-anchor="end" class="radio-bp-text radio-bp-label">1.5 px</text>
+</svg>

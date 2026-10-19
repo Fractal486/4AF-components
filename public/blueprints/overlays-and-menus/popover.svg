@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1160" viewBox="0 0 1200 1160" fill="none" role="img" aria-labelledby="popover-bp-title popover-bp-description">
   <title id="popover-bp-title">Popover spacing blueprint</title>
-  <desc id="popover-bp-description">An open Dimensions popover, centered 6 pixels below its trigger. The default panel is 288 pixels wide with a 1 pixel border and 16 pixel padding. Its title and description have a 4 pixel gap. Four 32 pixel inputs have 10 pixel gaps, 80 pixel label columns, and 12 pixel column gaps. A units select, enabled aspect-ratio switch, and Done button complete the form. This content produces a 389 pixel panel height. Blue rulers show CSS pixel dimensions at twice actual size.</desc>
+  <desc id="popover-bp-description">The panel enters once with a fade, scale, blur, and slide from its trigger. An open Dimensions popover, centered 6 pixels below its trigger. The default panel is 288 pixels wide with a 1 pixel border and 16 pixel padding. Its title and description have a 4 pixel gap. Four 32 pixel inputs have 10 pixel gaps, 80 pixel label columns, and 12 pixel column gaps. A units select, aspect-ratio switch that slides once into its enabled state, and Done button complete the form. This content produces a 389 pixel panel height. Blue rulers show CSS pixel dimensions at twice actual size.</desc>
   <!--
     Sources:
       registry.json: popover has one implementation file, no sibling variants.
@@ -39,6 +39,14 @@
       are representative widths for the illustration's sans-serif labels.
     The 1.5385 text-sm line-height is rounded to its intended 20px.
     Panel outer box: (312,246)-(888,1024). Content: (346,280)-(854,990).
+    Native entrance: popover.tsx uses opacity 0, scale .95, blur 4px, and
+    translateY -8px for bottom placement. At 2x: blur 8 units, translateY -16.
+    app/globals.css: duration-fast=150ms, ease-out=cubic-bezier(.16,1,.3,1).
+    Base UI useAnchorPositioning puts the transform origin across the 6px gap at
+    the trigger's bottom center, (600, 234). Entrance runs 250..400ms.
+    Embedded Switch: off-to-on thumb travel 16 CSS px (32 units), using switch.tsx
+    spring.snappy (visualDuration .2, bounce .05), 350..650ms. Track fill takes
+    duration-base=200ms. Existing simplified guides and final checked pose are retained.
     Animation: outline 0-400ms; details 250-650ms; annotations 700-900ms.
   -->
   <defs>
@@ -54,7 +62,107 @@
       /* Static is the complete drawing, also used by reduced-motion viewers. */
       @keyframes popover-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes popover-bp-reveal { from { opacity: 0; } }
+      /* One press/release during reveal, matching Button's .95 press scale.
+         spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
+         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         compose with content/panel motion; static and reduced motion stay at 1. */
+      @keyframes popover-bp-button-press {
+        0% { transform: scale(1.000000); }
+        2% { transform: scale(0.998236); }
+        4% { transform: scale(0.994025); }
+        6% { transform: scale(0.988604); }
+        8% { transform: scale(0.982802); }
+        10% { transform: scale(0.977146); }
+        12% { transform: scale(0.971948); }
+        14% { transform: scale(0.967366); }
+        16% { transform: scale(0.963455); }
+        18% { transform: scale(0.960207); }
+        20% { transform: scale(0.957573); }
+        22% { transform: scale(0.955481); }
+        24% { transform: scale(0.953856); }
+        26% { transform: scale(0.952619); }
+        28% { transform: scale(0.951698); }
+        30% { transform: scale(0.951029); }
+        32% { transform: scale(0.950556); }
+        34% { transform: scale(0.950233); }
+        36% { transform: scale(0.950022); }
+        38% { transform: scale(0.950000); }
+        40% { transform: scale(0.950000); }
+        42% { transform: scale(0.950000); }
+        44% { transform: scale(0.950000); }
+        46% { transform: scale(0.950000); }
+        48% { transform: scale(0.950000); }
+        50% { transform: scale(0.950000); }
+        52% { transform: scale(0.951764); }
+        54% { transform: scale(0.955975); }
+        56% { transform: scale(0.961396); }
+        58% { transform: scale(0.967198); }
+        60% { transform: scale(0.972854); }
+        62% { transform: scale(0.978052); }
+        64% { transform: scale(0.982634); }
+        66% { transform: scale(0.986545); }
+        68% { transform: scale(0.989793); }
+        70% { transform: scale(0.992427); }
+        72% { transform: scale(0.994519); }
+        74% { transform: scale(0.996144); }
+        76% { transform: scale(0.997381); }
+        78% { transform: scale(0.998302); }
+        80% { transform: scale(0.998971); }
+        82% { transform: scale(0.999444); }
+        84% { transform: scale(0.999767); }
+        86% { transform: scale(0.999978); }
+        88% { transform: scale(1.000000); }
+        90% { transform: scale(1.000000); }
+        92% { transform: scale(1.000000); }
+        94% { transform: scale(1.000000); }
+        96% { transform: scale(1.000000); }
+        98% { transform: scale(1.000000); }
+        100% { transform: scale(1.000000); }
+      }
+      #popover-bp-root .popover-bp-enter { transform-origin: 600px 234px; }
+      @keyframes popover-bp-enter {
+        from { opacity: 0; transform: translateY(-16px) scale(.95); filter: blur(8px); }
+        to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); }
+      }
+      @keyframes popover-bp-switch-slide {
+        0.0000% { transform: translateX(-32.000000px); }
+        3.3333% { transform: translateX(-31.069816px); }
+        6.6667% { transform: translateX(-28.835930px); }
+        10.0000% { transform: translateX(-25.929210px); }
+        13.3333% { transform: translateX(-22.769412px); }
+        16.6667% { transform: translateX(-19.625379px); }
+        20.0000% { transform: translateX(-16.659746px); }
+        23.3333% { transform: translateX(-13.961832px); }
+        26.6667% { transform: translateX(-11.571577px); }
+        30.0000% { transform: translateX(-9.496751px); }
+        33.3333% { transform: translateX(-7.725140px); }
+        36.6667% { transform: translateX(-6.233039px); }
+        40.0000% { transform: translateX(-4.991021px); }
+        43.3333% { transform: translateX(-3.967768px); }
+        46.6667% { transform: translateX(-3.132487px); }
+        50.0000% { transform: translateX(-2.456360px); }
+        53.3333% { transform: translateX(-1.913318px); }
+        56.6667% { transform: translateX(-1.480363px); }
+        60.0000% { transform: translateX(-1.137598px); }
+        63.3333% { transform: translateX(-0.868082px); }
+        66.6667% { transform: translateX(-0.657580px); }
+        70.0000% { transform: translateX(-0.494266px); }
+        73.3333% { transform: translateX(-0.368416px); }
+        76.6667% { transform: translateX(-0.272105px); }
+        80.0000% { transform: translateX(-0.198929px); }
+        83.3333% { transform: translateX(-0.143749px); }
+        86.6667% { transform: translateX(-0.102476px); }
+        90.0000% { transform: translateX(-0.071876px); }
+        93.3333% { transform: translateX(-0.049409px); }
+        96.6667% { transform: translateX(-0.033093px); }
+        100.0000% { transform: translateX(0px); }
+      }
+      @keyframes popover-bp-switch-tone { from { fill: #111210; } to { fill: #353632; } }
       @media (prefers-reduced-motion: no-preference) {
+        #popover-bp-root .popover-bp-switch-slide { animation: popover-bp-switch-slide 300ms linear 350ms both; }
+        #popover-bp-root .popover-bp-switch-tone { animation: popover-bp-switch-tone 200ms cubic-bezier(.16,1,.3,1) 350ms both; }
+        #popover-bp-root .popover-bp-enter { animation: popover-bp-enter 150ms cubic-bezier(.16,1,.3,1) 250ms both; }
+        .popover-bp-button-press { animation: popover-bp-button-press 500ms linear 150ms both; }
         #popover-bp-root .popover-bp-draw {
           stroke-dasharray: 1;
           animation: popover-bp-draw 200ms ease-out var(--popover-bp-delay, 0ms) both;
@@ -71,47 +179,66 @@
   <g id="popover-bp-root">
     <rect width="1200" height="1160" fill="#060606"/>
 
-    <!-- Solid structure draws first; text and fills are visible from the start. -->
-    <rect x="497" y="167" width="206" height="66" rx="15" fill="#060606"/>
-    <rect x="497" y="167" width="206" height="66" rx="15" class="popover-bp-stroke popover-bp-draw" pathLength="1" opacity=".7" style="--popover-bp-delay:250ms"/>
-    <rect x="313" y="247" width="574" height="776" rx="13" class="popover-bp-stroke popover-bp-draw popover-bp-outline" pathLength="1"/>
+    <!-- Trigger press remains independent from the anchored panel entrance. -->
+    <g class="popover-bp-button-press" style="transform-origin: 600px 200px">
+      <rect x="497" y="167" width="206" height="66" rx="15" fill="#060606"/>
+    </g>
 
-    <rect x="531" y="393" width="322" height="62" rx="15" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:275ms"/>
-    <rect x="531" y="477" width="322" height="62" rx="15" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:300ms"/>
-    <rect x="531" y="561" width="322" height="62" rx="15" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:325ms"/>
-    <rect x="531" y="645" width="322" height="62" rx="15" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:350ms"/>
-    <path d="M346 741H854" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:375ms"/>
-    <rect x="531" y="775" width="322" height="58" rx="11" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:400ms"/>
-    <rect x="782" y="858" width="72" height="40" rx="20" fill="#353632"/>
-    <rect x="783" y="859" width="70" height="38" rx="19" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:425ms"/>
-    <circle cx="834" cy="878" r="16" fill="#c7c7c2"/>
-    <rect x="746" y="930" width="108" height="60" rx="12" fill="#353632"/>
-    <rect x="747" y="931" width="106" height="58" rx="11" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:425ms"/>
+    <g class="popover-bp-button-press" style="transform-origin: 600px 200px">
+      <rect x="497" y="167" width="206" height="66" rx="15" class="popover-bp-stroke popover-bp-draw" pathLength="1" opacity=".7" style="--popover-bp-delay:250ms"/>
+    </g>
 
-    <!-- Persistent overlays sit above surfaces and behind the component text. -->
-    <rect x="346" y="280" width="508" height="710" class="popover-bp-spacing"/>
-    <path d="M346 320H854 M346 328H854 M346 368H854 M346 392H854" class="popover-bp-spacing"/>
-    <path d="M346 456H854 M346 476H854 M346 540H854 M346 560H854 M346 624H854 M346 644H854 M346 708H854" class="popover-bp-spacing"/>
-    <path d="M506 392V834 M530 392V834 M556 392V708 M828 392V708" class="popover-bp-spacing"/>
-    <path d="M346 774H854 M346 834H854 M346 858H854 M346 898H854 M746 930H854" class="popover-bp-spacing"/>
+    <g class="popover-bp-button-press" style="transform-origin: 600px 200px">
+      <text x="600" y="209" text-anchor="middle" class="popover-bp-value" font-weight="500">Dimensions</text>
+    </g>
 
-    <text x="600" y="209" text-anchor="middle" class="popover-bp-value" font-weight="500">Dimensions</text>
-    <text x="346" y="309" class="popover-bp-value" font-weight="600">Dimensions</text>
-    <text x="346" y="357" class="popover-bp-text">Set the dimensions for the layer.</text>
-    <text x="346" y="433" class="popover-bp-text">Width</text>
-    <text x="556" y="433" class="popover-bp-value">100%</text>
-    <text x="346" y="517" class="popover-bp-text">Max. width</text>
-    <text x="556" y="517" class="popover-bp-value">300px</text>
-    <text x="346" y="601" class="popover-bp-text">Height</text>
-    <text x="556" y="601" class="popover-bp-value">25px</text>
-    <text x="346" y="685" class="popover-bp-text">Max. height</text>
-    <text x="556" y="685" class="popover-bp-value">none</text>
-    <text x="346" y="813" class="popover-bp-text">Units</text>
-    <text x="560" y="812" class="popover-bp-small">Pixels</text>
-    <!-- Lucide ChevronDown: 14px box, scaled 2x; its single connected stroke. -->
-    <path d="m804 800.5 7 7 7-7" stroke="#a7a8a2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="popover-bp-draw" pathLength="1" style="--popover-bp-delay:450ms"/>
-    <text x="346" y="887" class="popover-bp-text">Lock aspect ratio</text>
-    <text x="800" y="968" text-anchor="middle" class="popover-bp-small" font-weight="500">Done</text>
+    <g class="popover-bp-enter">
+      <rect x="313" y="247" width="574" height="776" rx="13" class="popover-bp-stroke popover-bp-draw popover-bp-outline" pathLength="1"/>
+
+      <rect x="531" y="393" width="322" height="62" rx="15" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:275ms"/>
+      <rect x="531" y="477" width="322" height="62" rx="15" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:300ms"/>
+      <rect x="531" y="561" width="322" height="62" rx="15" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:325ms"/>
+      <rect x="531" y="645" width="322" height="62" rx="15" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:350ms"/>
+      <path d="M346 741H854" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:375ms"/>
+      <rect x="531" y="775" width="322" height="58" rx="11" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:400ms"/>
+
+      <rect x="782" y="858" width="72" height="40" rx="20" fill="#353632" class="popover-bp-switch-tone"/>
+      <rect x="783" y="859" width="70" height="38" rx="19" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:425ms"/>
+      <g class="popover-bp-switch-slide"><circle cx="834" cy="878" r="16" fill="#c7c7c2"/></g>
+      <g class="popover-bp-button-press" style="transform-origin: 800px 960px">
+        <rect x="746" y="930" width="108" height="60" rx="12" fill="#353632"/>
+      </g>
+
+      <g class="popover-bp-button-press" style="transform-origin: 800px 960px">
+        <rect x="747" y="931" width="106" height="58" rx="11" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:425ms"/>
+      </g>
+
+      <!-- Keep the shared padding boundary and one short column-gap guide.
+           Repeated row and text-inset lines are omitted for clarity. -->
+      <rect x="346" y="280" width="508" height="710" class="popover-bp-spacing"/>
+      <path d="M506 708V746 M530 708V746" class="popover-bp-spacing"/>
+
+      <text x="346" y="309" class="popover-bp-value" font-weight="600">Dimensions</text>
+      <text x="346" y="357" class="popover-bp-text">Set the dimensions for the layer.</text>
+      <text x="346" y="433" class="popover-bp-text">Width</text>
+      <text x="556" y="433" class="popover-bp-value">100%</text>
+      <text x="346" y="517" class="popover-bp-text">Max. width</text>
+      <text x="556" y="517" class="popover-bp-value">300px</text>
+      <text x="346" y="601" class="popover-bp-text">Height</text>
+      <text x="556" y="601" class="popover-bp-value">25px</text>
+      <text x="346" y="685" class="popover-bp-text">Max. height</text>
+      <text x="556" y="685" class="popover-bp-value">none</text>
+      <text x="346" y="813" class="popover-bp-text">Units</text>
+      <text x="560" y="812" class="popover-bp-small">Pixels</text>
+
+      <!-- Lucide ChevronDown: 14px box, scaled 2x; its single connected stroke. -->
+      <path d="m804 800.5 7 7 7-7" stroke="#a7a8a2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="popover-bp-draw" pathLength="1" style="--popover-bp-delay:450ms"/>
+
+      <text x="346" y="887" class="popover-bp-text">Lock aspect ratio</text>
+      <g class="popover-bp-button-press" style="transform-origin: 800px 960px">
+        <text x="800" y="968" text-anchor="middle" class="popover-bp-small" font-weight="500">Done</text>
+      </g>
+    </g>
 
     <!-- Default bottom placement: measured from trigger edge to panel edge. -->
     <path d="M704 234H918 M888 246H918" class="popover-bp-spacing"/>
@@ -142,7 +269,7 @@
     <path d="M930 456H950 M930 476H950 M940 456V476" class="popover-bp-measure"/>
     <text x="968" y="474" class="popover-bp-label">10 px</text>
 
-    <!-- The column ruler uses the same extended edges as all five form rows. -->
+    <!-- One representative column gap, led from the final input row. -->
     <path d="M506 746V766 M530 746V766 M506 756H530 M506 756H500" class="popover-bp-measure"/>
     <text x="488" y="762" text-anchor="end" class="popover-bp-label">12 px</text>
 

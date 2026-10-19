@@ -1,0 +1,350 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="swbp" width="900" height="420" viewBox="0 0 900 420" fill="none" role="img" aria-labelledby="swbp-title swbp-description">
+  <title id="swbp-title">Switch spacing</title>
+  <desc id="swbp-description">The thumb stretches on hover and press, then releases and slides once from off to on as the track and thumb change tone; the final checked state is static under reduced motion. A checked Switch with its Enable notifications label, drawn at three times CSS size. The track is 36 by 20 pixels, the circular thumb is 16 pixels across, the outer inset is 2 pixels, and the label gap is 8 pixels.</desc>
+  <!-- Sources:
+       registry/ui/switch/switch.tsx
+       registry/ui/switch/switch.variants.ts
+       inspector/entries/switch.tsx
+       app/globals.css; node_modules/tailwindcss/theme.css and preflight.css
+       Sidebar: COMPONENT_CATEGORIES in lib/component-catalog.ts, Fields and selection.
+
+       Native pointer sequence: switch.tsx HOVER_EXTENSION=1.5 CSS px and
+       PRESSED_EXTENSION=3.5 CSS px, or 4.5 and 10.5 drawing units. Rounded end
+       caps translate independently; a bridge fills the middle without oval scaling.
+       Hover 0..200ms, press 200..400ms, release/toggle 400..650ms. The outer
+       resting edge stays fixed until the slide. spring.snappy (.2, .05) is sampled
+       every 10ms; the original circular drawing takes over at rest for exact ink.
+       Default tone: adaptive. Demo state: checked, enabled, resting; no hover or press.
+       All component geometry and text are drawn at 3x CSS size, at a 16px root.
+       Tailwind spacing = 0.25rem = 4px; border-box; no structural border.
+       Track w-9 = 36px, h-5 = 20px, px-0.5 = 2px per side.
+       Thumb size-4 = 16px, rounded-full; checked justify-end.
+       Horizontal thumb travel = 36 - (2 * 2) - 16 = 16px.
+       Vertical centering inset = (20 - 16) / 2 = 2px, not vertical padding.
+       Checked thumb left = 36 - 2 - 16 = 18px from track left.
+       Demo label: gap-2 = 8px; text-sm = 13px, line-height 1.5385 (~20px).
+       Label width is intrinsic to the illustration font, not a component width contract.
+       Track bounds: (213,180)-(321,240); thumb bounds: (267,186)-(315,234).
+       Label line box starts at x345 = 321 + 8 * 3, vertically centered on the track.
+       Illustration outlines are inset into these bounds; their 2.5-unit stroke is ink,
+       not an added CSS border. Background oklch(0.120 0 0) resolves to #060606.
+  -->
+  <defs>
+    <style>
+      #swbp text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #swbp .swbp-label { fill: #a1a29c; font-size: 18px; }
+      #swbp .swbp-content { fill: #c7c7c2; font-size: 39px; }
+      #swbp .swbp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      #swbp .swbp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      /* Static exports and reduced-motion viewers show the completed drawing. */
+      #swbp { --swbp-outline-duration: 400ms; --swbp-detail-duration: 200ms; --swbp-annotation-delay: 700ms; --swbp-annotation-duration: 200ms; }
+      @keyframes swbp-draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes swbp-reveal { from { opacity: 0; } }
+      /* Checked thumb moves 16 CSS px * 3 = 48 units from its unchecked position. */
+      @keyframes swbp-slide {
+        0.0000% { transform: translateX(-48.000000px); }
+        4.0000% { transform: translateX(-46.604723px); }
+        8.0000% { transform: translateX(-43.253894px); }
+        12.0000% { transform: translateX(-38.893815px); }
+        16.0000% { transform: translateX(-34.154118px); }
+        20.0000% { transform: translateX(-29.438069px); }
+        24.0000% { transform: translateX(-24.989618px); }
+        28.0000% { transform: translateX(-20.942747px); }
+        32.0000% { transform: translateX(-17.357366px); }
+        36.0000% { transform: translateX(-14.245127px); }
+        40.0000% { transform: translateX(-11.587711px); }
+        44.0000% { transform: translateX(-9.349558px); }
+        48.0000% { transform: translateX(-7.486532px); }
+        52.0000% { transform: translateX(-5.951652px); }
+        56.0000% { transform: translateX(-4.698730px); }
+        60.0000% { transform: translateX(-3.684540px); }
+        64.0000% { transform: translateX(-2.869978px); }
+        68.0000% { transform: translateX(-2.220545px); }
+        72.0000% { transform: translateX(-1.706397px); }
+        76.0000% { transform: translateX(-1.302123px); }
+        80.0000% { transform: translateX(-0.986369px); }
+        84.0000% { transform: translateX(-0.741398px); }
+        88.0000% { transform: translateX(-0.552624px); }
+        92.0000% { transform: translateX(-0.408158px); }
+        96.0000% { transform: translateX(-0.298394px); }
+        100.0000% { transform: translateX(0px); }
+      }
+      @keyframes swbp-track-tone { from { fill: #111210; } to { fill: #353632; } }
+      @keyframes swbp-thumb-tone { from { fill: #c7c7c2; } to { fill: #060606; } }
+      #swbp .swbp-stretch { display: none; }
+      #swbp .swbp-bridge { transform-origin: 0 0; }
+      #swbp .swbp-bridge-edge { transform-origin: 0 0; }
+      @keyframes swbp-cap-stretch {
+        0.0000% { transform: translateX(0px); }
+        1.5385% { transform: translateX(0.130807px); }
+        3.0769% { transform: translateX(0.444947px); }
+        4.6154% { transform: translateX(0.853705px); }
+        6.1538% { transform: translateX(1.298051px); }
+        7.6923% { transform: translateX(1.740181px); }
+        9.2308% { transform: translateX(2.157223px); }
+        10.7692% { transform: translateX(2.536617px); }
+        12.3077% { transform: translateX(2.872747px); }
+        13.8462% { transform: translateX(3.164519px); }
+        15.3846% { transform: translateX(3.413652px); }
+        16.9231% { transform: translateX(3.623479px); }
+        18.4615% { transform: translateX(3.798138px); }
+        20.0000% { transform: translateX(3.942033px); }
+        21.5385% { transform: translateX(4.059494px); }
+        23.0769% { transform: translateX(4.154574px); }
+        24.6154% { transform: translateX(4.230940px); }
+        26.1538% { transform: translateX(4.291824px); }
+        27.6923% { transform: translateX(4.340025px); }
+        29.2308% { transform: translateX(4.377926px); }
+        30.7692% { transform: translateX(4.500000px); }
+        32.3077% { transform: translateX(4.674410px); }
+        33.8462% { transform: translateX(5.093263px); }
+        35.3846% { transform: translateX(5.638273px); }
+        36.9231% { transform: translateX(6.230735px); }
+        38.4615% { transform: translateX(6.820241px); }
+        40.0000% { transform: translateX(7.376298px); }
+        41.5385% { transform: translateX(7.882157px); }
+        43.0769% { transform: translateX(8.330329px); }
+        44.6154% { transform: translateX(8.719359px); }
+        46.1538% { transform: translateX(9.051536px); }
+        47.6923% { transform: translateX(9.331305px); }
+        49.2308% { transform: translateX(9.564184px); }
+        50.7692% { transform: translateX(9.756043px); }
+        52.3077% { transform: translateX(9.912659px); }
+        53.8462% { transform: translateX(10.039432px); }
+        55.3846% { transform: translateX(10.141253px); }
+        56.9231% { transform: translateX(10.222432px); }
+        58.4615% { transform: translateX(10.286700px); }
+        60.0000% { transform: translateX(10.337235px); }
+        61.5385% { transform: translateX(10.500000px); }
+        63.0769% { transform: translateX(10.194783px); }
+        64.6154% { transform: translateX(9.461789px); }
+        66.1538% { transform: translateX(8.508022px); }
+        67.6923% { transform: translateX(7.471213px); }
+        69.2308% { transform: translateX(6.439577px); }
+        70.7692% { transform: translateX(5.466479px); }
+        72.3077% { transform: translateX(4.581226px); }
+        73.8462% { transform: translateX(3.796924px); }
+        75.3846% { transform: translateX(3.116121px); }
+        76.9231% { transform: translateX(2.534812px); }
+        78.4615% { transform: translateX(2.045216px); }
+        80.0000% { transform: translateX(1.637679px); }
+        81.5385% { transform: translateX(1.301924px); }
+        83.0769% { transform: translateX(1.027847px); }
+        84.6154% { transform: translateX(0.805993px); }
+        86.1538% { transform: translateX(0.627808px); }
+        87.6923% { transform: translateX(0.485744px); }
+        89.2308% { transform: translateX(0.373274px); }
+        90.7692% { transform: translateX(0.284839px); }
+        92.3077% { transform: translateX(0.215768px); }
+        93.8462% { transform: translateX(0.162181px); }
+        95.3846% { transform: translateX(0.120886px); }
+        96.9231% { transform: translateX(0.089285px); }
+        98.4615% { transform: translateX(0.065274px); }
+        100.0000% { transform: translateX(0px); }
+      }
+      @keyframes swbp-bridge-stretch {
+        0.0000% { transform: scaleX(1.000000); }
+        1.5385% { transform: scaleX(1.087205); }
+        3.0769% { transform: scaleX(1.296632); }
+        4.6154% { transform: scaleX(1.569137); }
+        6.1538% { transform: scaleX(1.865368); }
+        7.6923% { transform: scaleX(2.160121); }
+        9.2308% { transform: scaleX(2.438149); }
+        10.7692% { transform: scaleX(2.691078); }
+        12.3077% { transform: scaleX(2.915165); }
+        13.8462% { transform: scaleX(3.109680); }
+        15.3846% { transform: scaleX(3.275768); }
+        16.9231% { transform: scaleX(3.415653); }
+        18.4615% { transform: scaleX(3.532092); }
+        20.0000% { transform: scaleX(3.628022); }
+        21.5385% { transform: scaleX(3.706329); }
+        23.0769% { transform: scaleX(3.769716); }
+        24.6154% { transform: scaleX(3.820626); }
+        26.1538% { transform: scaleX(3.861216); }
+        27.6923% { transform: scaleX(3.893350); }
+        29.2308% { transform: scaleX(3.918617); }
+        30.7692% { transform: scaleX(4.000000); }
+        32.3077% { transform: scaleX(4.116273); }
+        33.8462% { transform: scaleX(4.395509); }
+        35.3846% { transform: scaleX(4.758849); }
+        36.9231% { transform: scaleX(5.153823); }
+        38.4615% { transform: scaleX(5.546828); }
+        40.0000% { transform: scaleX(5.917532); }
+        41.5385% { transform: scaleX(6.254771); }
+        43.0769% { transform: scaleX(6.553553); }
+        44.6154% { transform: scaleX(6.812906); }
+        46.1538% { transform: scaleX(7.034357); }
+        47.6923% { transform: scaleX(7.220870); }
+        49.2308% { transform: scaleX(7.376122); }
+        50.7692% { transform: scaleX(7.504029); }
+        52.3077% { transform: scaleX(7.608439); }
+        53.8462% { transform: scaleX(7.692955); }
+        55.3846% { transform: scaleX(7.760835); }
+        56.9231% { transform: scaleX(7.814955); }
+        58.4615% { transform: scaleX(7.857800); }
+        60.0000% { transform: scaleX(7.891490); }
+        61.5385% { transform: scaleX(8.000000); }
+        63.0769% { transform: scaleX(7.796522); }
+        64.6154% { transform: scaleX(7.307860); }
+        66.1538% { transform: scaleX(6.672015); }
+        67.6923% { transform: scaleX(5.980809); }
+        69.2308% { transform: scaleX(5.293052); }
+        70.7692% { transform: scaleX(4.644319); }
+        72.3077% { transform: scaleX(4.054151); }
+        73.8462% { transform: scaleX(3.531283); }
+        75.3846% { transform: scaleX(3.077414); }
+        76.9231% { transform: scaleX(2.689874); }
+        78.4615% { transform: scaleX(2.363477); }
+        80.0000% { transform: scaleX(2.091786); }
+        81.5385% { transform: scaleX(1.867949); }
+        83.0769% { transform: scaleX(1.685232); }
+        84.6154% { transform: scaleX(1.537329); }
+        86.1538% { transform: scaleX(1.418538); }
+        87.6923% { transform: scaleX(1.323829); }
+        89.2308% { transform: scaleX(1.248850); }
+        90.7692% { transform: scaleX(1.189893); }
+        92.3077% { transform: scaleX(1.143846); }
+        93.8462% { transform: scaleX(1.108121); }
+        95.3846% { transform: scaleX(1.080591); }
+        96.9231% { transform: scaleX(1.059523); }
+        98.4615% { transform: scaleX(1.043516); }
+        100.0000% { transform: scaleX(1.000000); }
+      }
+      @keyframes swbp-edge-stretch {
+        0.0000% { transform: scaleX(0); }
+        1.5385% { transform: scaleX(0.130807); }
+        3.0769% { transform: scaleX(0.444947); }
+        4.6154% { transform: scaleX(0.853705); }
+        6.1538% { transform: scaleX(1.298051); }
+        7.6923% { transform: scaleX(1.740181); }
+        9.2308% { transform: scaleX(2.157223); }
+        10.7692% { transform: scaleX(2.536617); }
+        12.3077% { transform: scaleX(2.872747); }
+        13.8462% { transform: scaleX(3.164519); }
+        15.3846% { transform: scaleX(3.413652); }
+        16.9231% { transform: scaleX(3.623479); }
+        18.4615% { transform: scaleX(3.798138); }
+        20.0000% { transform: scaleX(3.942033); }
+        21.5385% { transform: scaleX(4.059494); }
+        23.0769% { transform: scaleX(4.154574); }
+        24.6154% { transform: scaleX(4.230940); }
+        26.1538% { transform: scaleX(4.291824); }
+        27.6923% { transform: scaleX(4.340025); }
+        29.2308% { transform: scaleX(4.377926); }
+        30.7692% { transform: scaleX(4.500000); }
+        32.3077% { transform: scaleX(4.674410); }
+        33.8462% { transform: scaleX(5.093263); }
+        35.3846% { transform: scaleX(5.638273); }
+        36.9231% { transform: scaleX(6.230735); }
+        38.4615% { transform: scaleX(6.820241); }
+        40.0000% { transform: scaleX(7.376298); }
+        41.5385% { transform: scaleX(7.882157); }
+        43.0769% { transform: scaleX(8.330329); }
+        44.6154% { transform: scaleX(8.719359); }
+        46.1538% { transform: scaleX(9.051536); }
+        47.6923% { transform: scaleX(9.331305); }
+        49.2308% { transform: scaleX(9.564184); }
+        50.7692% { transform: scaleX(9.756043); }
+        52.3077% { transform: scaleX(9.912659); }
+        53.8462% { transform: scaleX(10.039432); }
+        55.3846% { transform: scaleX(10.141253); }
+        56.9231% { transform: scaleX(10.222432); }
+        58.4615% { transform: scaleX(10.286700); }
+        60.0000% { transform: scaleX(10.337235); }
+        61.5385% { transform: scaleX(10.500000); }
+        63.0769% { transform: scaleX(10.194783); }
+        64.6154% { transform: scaleX(9.461789); }
+        66.1538% { transform: scaleX(8.508022); }
+        67.6923% { transform: scaleX(7.471213); }
+        69.2308% { transform: scaleX(6.439577); }
+        70.7692% { transform: scaleX(5.466479); }
+        72.3077% { transform: scaleX(4.581226); }
+        73.8462% { transform: scaleX(3.796924); }
+        75.3846% { transform: scaleX(3.116121); }
+        76.9231% { transform: scaleX(2.534812); }
+        78.4615% { transform: scaleX(2.045216); }
+        80.0000% { transform: scaleX(1.637679); }
+        81.5385% { transform: scaleX(1.301924); }
+        83.0769% { transform: scaleX(1.027847); }
+        84.6154% { transform: scaleX(0.805993); }
+        86.1538% { transform: scaleX(0.627808); }
+        87.6923% { transform: scaleX(0.485744); }
+        89.2308% { transform: scaleX(0.373274); }
+        90.7692% { transform: scaleX(0.284839); }
+        92.3077% { transform: scaleX(0.215768); }
+        93.8462% { transform: scaleX(0.162181); }
+        95.3846% { transform: scaleX(0.120886); }
+        96.9231% { transform: scaleX(0.089285); }
+        98.4615% { transform: scaleX(0.065274); }
+        100.0000% { transform: scaleX(0); }
+      }
+      @keyframes swbp-settle { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes swbp-stretch-done { from { opacity: 1; } to { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        #swbp .swbp-rest { animation: swbp-settle 650ms steps(1,end) both; }
+        #swbp .swbp-stretch { display: inline; animation: swbp-stretch-done 650ms steps(1,end) both; }
+        #swbp .swbp-cap-end { animation: swbp-cap-stretch 650ms linear both; }
+        #swbp .swbp-bridge { animation: swbp-bridge-stretch 650ms linear both; }
+        #swbp .swbp-bridge-edge { animation: swbp-edge-stretch 650ms linear both; }
+        #swbp .swbp-thumb-motion { animation: swbp-slide 250ms linear 400ms both; }
+        #swbp .swbp-track-tone { animation: swbp-track-tone 200ms cubic-bezier(.16,1,.3,1) 400ms both; }
+        #swbp .swbp-thumb-tone { animation: swbp-thumb-tone 200ms cubic-bezier(.16,1,.3,1) 400ms both; }
+        #swbp .swbp-draw {
+          stroke-dasharray: 1;
+          animation: swbp-draw-line var(--swbp-detail-duration) ease-out var(--swbp-line-delay, 0ms) both;
+        }
+        #swbp .swbp-outline { animation-duration: var(--swbp-outline-duration); }
+        #swbp .swbp-measure, #swbp .swbp-spacing, #swbp .swbp-label {
+          animation: swbp-reveal var(--swbp-annotation-duration) ease-out var(--swbp-annotation-delay) both;
+        }
+      }
+    </style>
+    <clipPath id="swbp-start-half"><rect x="267" y="186" width="24" height="48"/></clipPath>
+    <clipPath id="swbp-end-half"><rect x="291" y="186" width="24" height="48"/></clipPath>
+  </defs>
+  <rect width="900" height="420" fill="#060606"/>
+
+  <!-- Fills and label stay visible while the outlines draw. -->
+  <rect x="213" y="180" width="108" height="60" rx="30" fill="#353632" class="swbp-track-tone"/>
+  <rect x="214.25" y="181.25" width="105.5" height="57.5" rx="28.75" stroke="#a7a8a2" stroke-width="2.5" pathLength="1" class="swbp-draw swbp-outline"/>
+  <g class="swbp-thumb-motion">
+    <g class="swbp-rest">
+  <circle cx="291" cy="210" r="24" fill="#060606" class="swbp-thumb-tone"/>
+  <circle cx="291" cy="210" r="22.75" stroke="#a7a8a2" stroke-width="2.5" pathLength="1" class="swbp-draw" style="--swbp-line-delay:150ms"/>
+    </g>
+    <g class="swbp-stretch" aria-hidden="true">
+      <g clip-path="url(#swbp-start-half)"><circle cx="291" cy="210" r="24" fill="#060606" class="swbp-thumb-tone"/>
+        <circle cx="291" cy="210" r="22.75" stroke="#a7a8a2" stroke-width="2.5" pathLength="1" class="swbp-draw" style="--swbp-line-delay:150ms"/></g>
+      <g transform="translate(290.25 210)"><g class="swbp-bridge"><rect x="0" y="-24" width="1.5" height="48" fill="#060606" class="swbp-thumb-tone"/></g></g>
+      <g class="swbp-cap-end"><g clip-path="url(#swbp-end-half)"><circle cx="291" cy="210" r="24" fill="#060606" class="swbp-thumb-tone"/>
+        <circle cx="291" cy="210" r="22.75" stroke="#a7a8a2" stroke-width="2.5" pathLength="1" class="swbp-draw" style="--swbp-line-delay:150ms"/></g></g>
+      <g transform="translate(291 210)"><g class="swbp-bridge-edge"><path d="M0 -22.75h1 M0 22.75h1" stroke="#a7a8a2" stroke-width="2.5"/></g></g>
+    </g>
+
+  </g>
+
+  <!-- Actual horizontal padding edges, centered thumb edges, and label start. -->
+  <path d="M219 174V246 M315 174V260 M207 186H327 M207 234H327" class="swbp-spacing"/>
+  <path d="M321 159V251 M345 159V246" class="swbp-spacing"/>
+  <text x="345" y="224" class="swbp-content">Enable notifications</text>
+
+  <!-- Track width: 108 drawing units / 3 = 36 CSS px. -->
+  <path d="M213 171V115 M321 137V115 M213 126H321" class="swbp-measure"/>
+  <text x="267" y="108" text-anchor="middle" class="swbp-label">36 px</text>
+
+  <!-- Track height: endpoints coincide with the outer silhouette. -->
+  <path d="M202 180H148 M202 240H148 M159 180V240" class="swbp-measure"/>
+  <text x="140" y="216" text-anchor="end" class="swbp-label">20 px</text>
+
+  <!-- Label gap: track right x321 to line-box left x345 = 24 units / 3. -->
+  <path d="M321 137V157 M345 137V157 M321 147H345" class="swbp-measure"/>
+  <path d="M333 147 360 120H385" class="swbp-measure"/>
+  <text x="399" y="126" class="swbp-label">8 px</text>
+
+  <!-- Thumb diameter and right inset share a dimension chain.
+       Thumb: (315 - 267) / 3 = 16px. Inset: (321 - 315) / 3 = 2px. -->
+  <path d="M267 242V295 M315 260V295 M321 251V295 M267 284H321" class="swbp-measure"/>
+  <text x="291" y="316" text-anchor="middle" class="swbp-label">16 px</text>
+  <path d="M318 284 345 315H376" class="swbp-measure"/>
+  <text x="390" y="321" class="swbp-label">2 px</text>
+</svg>

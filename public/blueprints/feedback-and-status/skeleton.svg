@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="520" viewBox="0 0 1100 520" fill="none" role="img" aria-labelledby="sk-title sk-desc">
+  <title id="sk-title">Skeleton spacing blueprint</title>
+  <desc id="sk-desc">The default demo at a chosen width of 384 CSS pixels, drawn at twice actual size. A 48 pixel circular avatar sits 16 pixels from two square-cornered text placeholders. Each line is 16 pixels tall, with a 10 pixel vertical gap. The text column is 320 pixels wide.</desc>
+  <!-- Sources: registry/ui/skeleton/skeleton.tsx (no variants file),
+       inspector/entries/skeleton.tsx, registry.json, lib/component-catalog.ts,
+       app/globals.css, node_modules/tailwindcss/theme.css.
+       State: ordinary loading demo. Fills pulse once during the 900ms blueprint
+       reveal, then settle at full opacity. Tailwind pulse's 50% opacity midpoint
+       and cubic-bezier(.4,0,.6,1) easing are retained; its cycle is shortened to
+       the blueprint duration. Reduced motion leaves all fills static.
+       Skeleton itself has no intrinsic size, padding, border, or radius.
+       Demo width is flexible: choose its max-w-sm = 24rem = 384px at 16px/rem.
+       Spacing unit = .25rem = 4px. size-12 = 48px, gap-4 = 16px,
+       h-4 = 16px, space-y-2.5 = 10px. Text column = 384 - 48 - 16 = 320px.
+       First bar = 320 * 2/3 = 213.333px; second = 320px.
+       Text stack = 16 + 10 + 16 = 42px; items-center inset = (48 - 42)/2 = 3px.
+       Scale 2x. Composition bounds x166..934, y230..326.
+       Gray outlines are illustration strokes, not production borders.
+       Dark base background token: oklch(.120 0 0), approximately #060606.
+       Sidebar category: Feedback and status. -->
+  <defs>
+    <style>
+      #sk-blueprint text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #sk-blueprint .label { fill: #6889ff; font-size: 18px; }
+      #sk-blueprint .measure { stroke: #6889ff; stroke-width: 1.5; }
+      #sk-blueprint .spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      #sk-blueprint .outline, #sk-blueprint .detail { stroke: #a7a8a2; stroke-width: 2; }
+      @keyframes sk-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes sk-reveal { from { opacity: 0; } }
+      @keyframes sk-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+      @media (prefers-reduced-motion: no-preference) {
+        #sk-blueprint .loading-fill { animation: sk-pulse 900ms cubic-bezier(.4,0,.6,1) both; }
+        #sk-blueprint .draw { stroke-dasharray: 1; animation: sk-draw 200ms ease-out var(--sk-delay, 0ms) both; }
+        #sk-blueprint .outline { animation-duration: 400ms; }
+        #sk-blueprint .measure, #sk-blueprint .spacing, #sk-blueprint .label { animation: sk-reveal 200ms ease-out 700ms both; }
+      }
+    </style>
+  </defs>
+  <g id="sk-blueprint">
+    <rect width="1100" height="520" fill="#060606"/>
+    <!-- Fills remain visible throughout the outline reveal. -->
+    <circle cx="214" cy="278" r="48" fill="#353632" class="loading-fill"/>
+    <rect x="294" y="236" width="426.666667" height="32" fill="#353632" class="loading-fill"/>
+    <rect x="294" y="288" width="640" height="32" fill="#353632" class="loading-fill"/>
+    <circle cx="214" cy="278" r="48" pathLength="1" class="draw outline"/>
+    <rect x="294" y="236" width="426.666667" height="32" pathLength="1" class="draw detail" style="--sk-delay:400ms"/>
+    <rect x="294" y="288" width="640" height="32" pathLength="1" class="draw detail" style="--sk-delay:425ms"/>
+    <!-- Actual block bounds and edges of the inter-block gaps. -->
+    <path d="M166 230V143 M934 288V143 M262 230V389 M294 236V389 M166 326V389" class="spacing"/>
+    <path d="M294 236H995 M720.666667 268H995 M934 288H995 M294 236V320" class="spacing"/>
+    <!-- Chosen total width. -->
+    <path d="M166 143V163 M934 143V163 M166 153H934" class="measure"/>
+    <text x="550" y="134" text-anchor="middle" class="label">384 px</text>
+    <!-- Avatar diameter. -->
+    <path d="M166 369V389 M262 369V389 M166 379H262" class="measure"/>
+    <text x="214" y="411" text-anchor="middle" class="label">48 px</text>
+    <!-- Horizontal gap from avatar's bounding edge to the text column. -->
+    <path d="M294 369V389 M262 379H294 M278 389V435H320" class="measure"/>
+    <text x="333" y="441" class="label">16 px</text>
+    <!-- Full text-column width, equal to the lower bar. -->
+    <path d="M934 326V389" class="spacing"/>
+    <path d="M934 369V389 M294 379H934" class="measure"/>
+    <text x="614" y="411" text-anchor="middle" class="label">320 px</text>
+    <!-- Bar height and vertical gap, measured at their exact boundaries. -->
+    <path d="M960 236H980 M960 268H980 M970 236V268" class="measure"/>
+    <text x="992" y="258" class="label">16 px</text>
+    <path d="M960 288H980 M970 268V288 M970 278H987L1000 308" class="measure"/>
+    <text x="1000" y="333" class="label">10 px</text>
+  </g>
+</svg>

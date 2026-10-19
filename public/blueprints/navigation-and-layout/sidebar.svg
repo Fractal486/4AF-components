@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1152" height="1008" viewBox="0 0 1152 1008" fill="none" role="img" aria-labelledby="sidebar-bp-title sidebar-bp-desc">
   <title id="sidebar-bp-title">Sidebar spacing blueprint</title>
-  <desc id="sidebar-bp-desc">An expanded desktop sidebar with a workspace header, search input, four navigation rows, and Settings at the bottom. Dashboard is selected. The default sidebar is 256 pixels wide. Menu rows are fixed at 32 pixels high with no gap between them. Group padding and row insets are 8 pixels, icons are 16 pixels, and the icon-to-label gap is 8 pixels. Blue dashed guides reveal these boundaries.</desc>
+  <desc id="sidebar-bp-desc">The sidebar expands once from its 48 pixel icon rail to 256 pixels, revealing its labels and search field without stretching them. An expanded desktop sidebar with a workspace header, search input, four navigation rows, and Settings at the bottom. Dashboard is selected. The default sidebar is 256 pixels wide. Menu rows are fixed at 32 pixels high with no gap between them. Group padding and row insets are 8 pixels, icons are 16 pixels, and the icon-to-label gap is 8 pixels. Blue dashed guides reveal these boundaries.</desc>
   <!--
     Hand-authored vector drawing. Scale: 2 SVG units per CSS pixel.
     Sources:
@@ -25,7 +25,8 @@
       node_modules/tailwindcss/theme.css: spacing token = .25rem = 4px.
       lib/component-catalog.ts: COMPONENT_CATEGORIES -> Navigation and layout.
 
-    Chosen state: desktop, expanded, default variant, no hover; Dashboard active.
+    Chosen state: desktop, expanded, default sidebar variant, collapsible="icon";
+    no hover; Dashboard active. Icon mode is explicitly chosen for this motion demo.
     Height is viewport-dependent. A representative 352px viewport is drawn;
     it is not a fixed component height. Default width remains exactly 256px.
     CSS border-box shell: [0,256] x [0,352]. Right border occupies x=255..256;
@@ -47,6 +48,7 @@
     All ruler values refer to original CSS pixels. Dashed overlays are static.
   -->
   <defs>
+    <clipPath id="sidebar-bp-expansion-clip"><rect x="320" y="152" width="512" height="704" class="sidebar-bp-clip-width"/></clipPath>
     <style>
       #sidebar-bp-root text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
       #sidebar-bp-root .sidebar-bp-text { fill: #92948d; font-size: 26px; }
@@ -63,7 +65,82 @@
         to { stroke-dashoffset: 0; }
       }
       @keyframes sidebar-bp-reveal { from { opacity: 0; } }
+      /* Source icon width=3rem=48px (96 units), expanded=256px (512 units).
+         Border centerline width=94 -> 510. Menu width=32px -> 239px (64 -> 478).
+         Collapsed header hides search+gap (40px); group label removes 32px.
+         First four rows therefore move down (40+32)*2=144 units on expansion.
+         Header brand and footer stay fixed. Real geometry changes, no scaled text.
+         Expansion 250..650ms; rulers/spacing 700..900ms. */
+      @keyframes sidebar-bp-width { from { width: 94px; } to { width: 510px; } }
+      @keyframes sidebar-bp-clip-width { from { width: 96px; } to { width: 512px; } }
+      @keyframes sidebar-bp-selection { from { width: 64px; y: 264px; } to { width: 478px; y: 408px; } }
+      @keyframes sidebar-bp-menu { from { transform: translateY(-144px); } to { transform: translateY(0); } }
+      @keyframes sidebar-bp-heading-in { from { opacity: 0; transform: translateY(-144px); } to { opacity: 1; transform: translateY(0); } }
+      /* One press/release during reveal, matching Button's .95 press scale.
+         spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
+         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         compose with content/panel motion; static and reduced motion stay at 1. */
+      @keyframes sidebar-bp-button-press {
+        0% { transform: scale(1.000000); }
+        2% { transform: scale(0.998236); }
+        4% { transform: scale(0.994025); }
+        6% { transform: scale(0.988604); }
+        8% { transform: scale(0.982802); }
+        10% { transform: scale(0.977146); }
+        12% { transform: scale(0.971948); }
+        14% { transform: scale(0.967366); }
+        16% { transform: scale(0.963455); }
+        18% { transform: scale(0.960207); }
+        20% { transform: scale(0.957573); }
+        22% { transform: scale(0.955481); }
+        24% { transform: scale(0.953856); }
+        26% { transform: scale(0.952619); }
+        28% { transform: scale(0.951698); }
+        30% { transform: scale(0.951029); }
+        32% { transform: scale(0.950556); }
+        34% { transform: scale(0.950233); }
+        36% { transform: scale(0.950022); }
+        38% { transform: scale(0.950000); }
+        40% { transform: scale(0.950000); }
+        42% { transform: scale(0.950000); }
+        44% { transform: scale(0.950000); }
+        46% { transform: scale(0.950000); }
+        48% { transform: scale(0.950000); }
+        50% { transform: scale(0.950000); }
+        52% { transform: scale(0.951764); }
+        54% { transform: scale(0.955975); }
+        56% { transform: scale(0.961396); }
+        58% { transform: scale(0.967198); }
+        60% { transform: scale(0.972854); }
+        62% { transform: scale(0.978052); }
+        64% { transform: scale(0.982634); }
+        66% { transform: scale(0.986545); }
+        68% { transform: scale(0.989793); }
+        70% { transform: scale(0.992427); }
+        72% { transform: scale(0.994519); }
+        74% { transform: scale(0.996144); }
+        76% { transform: scale(0.997381); }
+        78% { transform: scale(0.998302); }
+        80% { transform: scale(0.998971); }
+        82% { transform: scale(0.999444); }
+        84% { transform: scale(0.999767); }
+        86% { transform: scale(0.999978); }
+        88% { transform: scale(1.000000); }
+        90% { transform: scale(1.000000); }
+        92% { transform: scale(1.000000); }
+        94% { transform: scale(1.000000); }
+        96% { transform: scale(1.000000); }
+        98% { transform: scale(1.000000); }
+        100% { transform: scale(1.000000); }
+      }
       @media (prefers-reduced-motion: no-preference) {
+        .sidebar-bp-button-press { animation: sidebar-bp-button-press 500ms linear 150ms both; }
+        #sidebar-bp-root .sidebar-bp-width { stroke-dasharray: 1; animation: sidebar-bp-width 400ms ease-out 250ms both, sidebar-bp-draw-line 400ms ease-out both; }
+        .sidebar-bp-clip-width { animation: sidebar-bp-clip-width 400ms ease-out 250ms both; }
+        #sidebar-bp-root .sidebar-bp-selection { animation: sidebar-bp-selection 400ms ease-out 250ms both; }
+        #sidebar-bp-root .sidebar-bp-menu { animation: sidebar-bp-menu 400ms ease-out 250ms both; }
+        #sidebar-bp-root .sidebar-bp-heading-in { animation: sidebar-bp-heading-in 400ms ease-out 250ms both; }
+        #sidebar-bp-root .sidebar-bp-content-in { animation: sidebar-bp-reveal 250ms ease-out 400ms both; }
         #sidebar-bp-root .sidebar-bp-draw,
         .sidebar-bp-icon > * {
           stroke-dasharray: 1;
@@ -107,15 +184,27 @@
   <g id="sidebar-bp-root">
     <rect width="1152" height="1008" fill="#060606"/>
 
-    <!-- Component silhouette, selected surface, and input. Fills never animate. -->
-    <path d="M831 153H321V855H831Z" stroke="#a7a8a2" stroke-width="2" pathLength="1" class="sidebar-bp-draw sidebar-bp-outline"/>
-    <rect x="336" y="408" width="478" height="64" rx="16" fill="#353632"/>
+    <!-- Width-changing silhouette, with independently drawn stroke. -->
+    <g clip-path="url(#sidebar-bp-expansion-clip)">
+    <g>
+      <rect x="321" y="153" width="510" height="702" stroke="#a7a8a2" stroke-width="2" pathLength="1" class="sidebar-bp-width"/>
+    </g>
+    <rect x="336" y="408" width="478" height="64" rx="16" fill="#353632" class="sidebar-bp-selection"/>
+    <g class="sidebar-bp-content-in">
     <rect x="337" y="249" width="476" height="62" rx="15" stroke="#a7a8a2" stroke-width="2" pathLength="1" class="sidebar-bp-draw" style="--sidebar-bp-delay:250ms"/>
 
+    </g>
+
     <!-- Header: the demo's 24px brand control and 32px search input. -->
-    <rect x="344" y="176" width="48" height="48" rx="16" fill="#353632"/>
-    <text x="368" y="208" text-anchor="middle" fill="#c7c7c2" font-size="22" font-weight="600">4</text>
-    <text x="408" y="210" class="sidebar-bp-text sidebar-bp-selected">Acme Inc</text>
+    <g class="sidebar-bp-button-press" style="transform-origin: 368px 200px">
+      <rect x="344" y="176" width="48" height="48" rx="16" fill="#353632"/>
+    </g>
+
+    <g class="sidebar-bp-button-press" style="transform-origin: 368px 200px">
+      <text x="368" y="208" text-anchor="middle" fill="#c7c7c2" font-size="22" font-weight="600">4</text>
+    </g>
+
+    <text x="408" y="210" class="sidebar-bp-text sidebar-bp-selected sidebar-bp-content-in">Acme Inc</text>
 
     <!-- Padding guides sit above fills and behind component text/icons. -->
     <path d="M336 168V840 M814 168V840" class="sidebar-bp-spacing"/>
@@ -126,22 +215,27 @@
     <path d="M362 250V310" class="sidebar-bp-spacing"/>
     <path d="M336 776H814 M336 840H814 M352 776V840 M384 776V840 M400 776V840" class="sidebar-bp-spacing"/>
 
-    <text x="362" y="290" class="sidebar-bp-text">Search…</text>
-    <text x="352" y="384" class="sidebar-bp-heading">Workspace</text>
+    <text x="362" y="290" class="sidebar-bp-text sidebar-bp-content-in">Search…</text>
+    <text x="352" y="384" class="sidebar-bp-heading sidebar-bp-heading-in">Workspace</text>
 
-    <!-- Four flush menu rows, all default size, first selected. -->
-    <use href="#sidebar-bp-grid" x="352" y="424" style="--sidebar-bp-delay:300ms"/>
-    <text x="400" y="450" class="sidebar-bp-text sidebar-bp-selected">Dashboard</text>
-    <use href="#sidebar-bp-folder" x="352" y="488" style="--sidebar-bp-delay:325ms"/>
-    <text x="400" y="514" class="sidebar-bp-text">Projects</text>
-    <use href="#sidebar-bp-team" x="352" y="552" style="--sidebar-bp-delay:350ms"/>
-    <text x="400" y="578" class="sidebar-bp-text">Team</text>
-    <use href="#sidebar-bp-activity" x="352" y="616" style="--sidebar-bp-delay:375ms"/>
-    <text x="400" y="642" class="sidebar-bp-text">Activity</text>
+    <!-- Four flush menu rows expand downward as header and group labels return. -->
+    <g class="sidebar-bp-menu">
+    <use href="#sidebar-bp-grid" x="352" y="424" style="--sidebar-bp-delay:50ms"/>
+    <text x="400" y="450" class="sidebar-bp-text sidebar-bp-selected sidebar-bp-content-in">Dashboard</text>
+    <use href="#sidebar-bp-folder" x="352" y="488" style="--sidebar-bp-delay:75ms"/>
+    <text x="400" y="514" class="sidebar-bp-text sidebar-bp-content-in">Projects</text>
+    <use href="#sidebar-bp-team" x="352" y="552" style="--sidebar-bp-delay:100ms"/>
+    <text x="400" y="578" class="sidebar-bp-text sidebar-bp-content-in">Team</text>
+    <use href="#sidebar-bp-activity" x="352" y="616" style="--sidebar-bp-delay:125ms"/>
+    <text x="400" y="642" class="sidebar-bp-text sidebar-bp-content-in">Activity</text>
+
+    </g>
 
     <!-- Footer remains at the bottom of the flexible-height sidebar. -->
-    <use href="#sidebar-bp-settings" x="352" y="792" style="--sidebar-bp-delay:400ms"/>
-    <text x="400" y="818" class="sidebar-bp-text">Settings</text>
+    <use href="#sidebar-bp-settings" x="352" y="792" style="--sidebar-bp-delay:150ms"/>
+    <text x="400" y="818" class="sidebar-bp-text sidebar-bp-content-in">Settings</text>
+
+    </g>
 
     <!-- Full border-box width: (832 - 320) / 2 = 256px. -->
     <path d="M320 90V140 M832 90V140" class="sidebar-bp-spacing"/>

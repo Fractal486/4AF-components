@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Alert } from "@/registry/ui/alert/alert";
 import {
   AlignedSelect,
   AlignedSelectContent,
@@ -43,21 +44,26 @@ export const selectAlignedEntry = defineEntry({
   name: "Select Aligned",
   controls: {
     size: select(SIZES, "sm"),
+    selected: bool(true, "Selected"),
     variant: select(["default", "ghost", "plain"] as const, "default", "Variant"),
     showLabel: bool(true, "Show label"),
     sections: bool(false, "Sections"),
     searchable: bool(false, "Search field"),
     disabled: bool(false, "Disabled"),
+    invalid: bool(false),
   },
-  render({ size, variant, showLabel, sections, searchable, disabled }) {
+  render({ size, selected, variant, showLabel, sections, searchable, disabled, invalid }) {
     return (
       <AlignedSelectDemo
+        key={String(selected)}
         size={size}
+        selected={selected}
         variant={variant}
         showLabel={showLabel}
         sections={sections}
         searchable={searchable}
         disabled={disabled}
+        invalid={invalid}
       />
     );
   },
@@ -65,20 +71,24 @@ export const selectAlignedEntry = defineEntry({
 
 function AlignedSelectDemo({
   size,
+  selected,
   variant,
   showLabel,
   sections,
   searchable,
   disabled,
+  invalid,
 }: {
   size: (typeof SIZES)[number];
+  selected: boolean;
   variant: "default" | "ghost" | "plain";
   showLabel: boolean;
   sections: boolean;
   searchable: boolean;
   disabled: boolean;
+  invalid: boolean;
 }) {
-  const [value, setValue] = useState<string | null>("Istanbul");
+  const [value, setValue] = useState<string | null>(selected ? "Istanbul" : null);
 
   return (
     <div className="w-full max-w-56">
@@ -92,7 +102,9 @@ function AlignedSelectDemo({
         <AlignedSelectTrigger
           variant={variant}
           label={showLabel ? "City" : undefined}
-          placeholder="Pick a city"
+          placeholder="Select an option"
+          aria-invalid={invalid ? true : undefined}
+          aria-describedby={invalid ? "select-aligned-error" : undefined}
         />
         <AlignedSelectContent searchable={searchable}>
           {sections
@@ -113,6 +125,7 @@ function AlignedSelectDemo({
               ))}
         </AlignedSelectContent>
       </AlignedSelect>
+      {invalid && <Alert id="select-aligned-error">Please choose an option.</Alert>}
     </div>
   );
 }

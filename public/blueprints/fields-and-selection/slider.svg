@@ -1,0 +1,188 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1380" height="600" viewBox="0 0 1380 600" fill="none" role="img" aria-labelledby="slbp-title slbp-description" class="slbp">
+  <title id="slbp-title">Slider spacing blueprint</title>
+  <desc id="slbp-description">The fill, handle, and value move together from 10 to 40, easing to a stop before the measurements appear. The default medium bar slider, labeled Volume and set to 40, drawn at three times its CSS size. The chosen width is 320 pixels, with a 40 pixel rail. The handle is 2 by 16 pixels, centered 8 pixels inside the fill edge. Hover reveals ticks at 32 pixel intervals.</desc>
+  <!--
+    Sources:
+      registry.json: slider file map (implementation plus slider-geometry.ts; no variants file).
+      registry/ui/slider/slider.tsx: DIMS.bar.md, BAR_TICK_HEIGHTS.md,
+        barTickLevel, BAR_TICKS_IN_USE, Slider header, rail, fill, ticks, and BarThumb.
+      registry/ui/slider/slider-geometry.ts: getSliderThumbCenter with followFillPx=8.
+      inspector/entries/slider.tsx: Volume, defaultValue=40, min=0, max=100, step=10.
+      app/globals.css: text-xs=12px / 1.3333 (~16px), radius-md=7px,
+        dark background token=oklch(0.120 0 0), rendered here as #060606.
+      node_modules/tailwindcss/theme.css: spacing=4px, container-sm=384px.
+      node_modules/tailwindcss/preflight.css: border-box sizing.
+      lib/component-catalog.ts / lib/site-nav.ts: Fields and selection.
+
+    State: default thumb="bar", size="md", range=false, inlineLabel=false,
+      showValue=true, showTicks=true, tooltip off. Hovered, not held or focused:
+      ticks visible, handle unstretched, no focus ring. LTR; devicePixelRatio=1.
+    Width is caller-controlled: 320px chosen for this drawing, within the demo's
+      max-w-sm=384px. This is not a fixed component width or a depicted maximum.
+    Scale: 3 SVG units per CSS pixel, including component text; ruler labels
+      report CSS pixels. Illustration strokes use the skill's drawing inks.
+
+    Root: x=210..1170, y=204..396; 320 x 64px at 3x.
+    Header: 12px text, 16px line box (12 * 1.3333, rounded); 8px margin below.
+      16 + 8 + 40 = 64px total. Labels align with rail edges, no horizontal inset.
+    Rail: h-10=40px, rounded-md=7px, border overlay=1px. Its overlay takes
+      no layout space; fill/tick coordinates use the full 320px control width.
+      Outer bounds (210,276)-(1170,396), outer radius 21 drawing units.
+      Border centerline inset 1.5, radius 19.5: 3-unit stroke stays inside bounds.
+    Fill: 40/100 * 320 = 128px, edge x=210 + 128*3 = 594.
+    Handle center: max(128 - 8, 8) = 120px, x=570.
+      Width 2px -> x=567..573; height 16px -> y=312..360.
+      (40 - 16)/2 = 12px vertical clearance on each side.
+      Center-to-fill edge is 8px; right-edge-to-fill edge would be 7px.
+    Ticks: 320 * 10/100 = 32px spacing, 1 CSS px wide at DPR 1.
+      Endpoint ticks omitted; tick at value 40 hidden by FaderTick.
+      Ordinary height 6px; midpoint height 14px, centered at y=336.
+    Blue dashed overlays extend the rail, handle, and tick edges to their rulers.
+      Label dimensions are intentionally omitted.
+    Animation: outline 0..400ms; handle draw 250..450ms; travel/count 200..650ms;
+      tick strokes 275..650ms, tick group reveal 650..700ms; annotations 700..900ms.
+      Static/reduced-motion: fully visible at value 40.
+  -->
+  <defs>
+    <clipPath id="slbp-rail-clip">
+      <rect x="210" y="276" width="960" height="120" rx="21"/>
+    </clipPath>
+    <style>
+      .slbp text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      .slbp-label { fill: #a1a29c; font-size: 18px; }
+      .slbp-content { fill: #92948d; font-size: 36px; letter-spacing: .36px; }
+      .slbp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      .slbp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      .slbp-tick { stroke: #a7a8a2; stroke-width: 3; opacity: .65; }
+      .slbp {
+        --slbp-outline-duration: 400ms;
+        --slbp-detail-duration: 200ms;
+        --slbp-annotation-delay: 700ms;
+        --slbp-annotation-duration: 200ms;
+      }
+      @keyframes slbp-draw-line {
+        from { stroke-dashoffset: 1; }
+        to { stroke-dashoffset: 0; }
+      }
+      @keyframes slbp-reveal { from { opacity: 0; } }
+      /* 10 to 40: edge moves 96..384 units; handle stays 24 units behind it.
+         Travel 200..650ms uses cubic ease-out. Counter intervals invert the same curve.
+         Hover ticks enter after travel so they never conflict with the moving fill edge. */
+      .slbp-count-frame { opacity: 0; }
+      @keyframes slbp-travel { from { transform: translateX(-288px); } to { transform: translateX(0); } }
+      @keyframes slbp-count { from { opacity: 1; } to { opacity: 0; } }
+      @keyframes slbp-final { from { opacity: 0; } to { opacity: 1; } }
+      @media (prefers-reduced-motion: no-preference) {
+        .slbp-travel { animation: slbp-travel 450ms cubic-bezier(.333333,1,.666667,1) 200ms both; }
+        .slbp-count-frame { animation: slbp-count var(--slbp-count-duration) steps(1,end) var(--slbp-count-delay); }
+        .slbp-count-final { animation: slbp-final 650ms steps(1,end) both; }
+        .slbp-tick-reveal { animation: slbp-reveal 50ms ease-out 650ms both; }
+        .slbp-draw {
+          stroke-dasharray: 1;
+          animation: slbp-draw-line var(--slbp-detail-duration) ease-out var(--slbp-line-delay, 0ms) both;
+        }
+        .slbp-outline { animation-duration: var(--slbp-outline-duration); }
+        .slbp-measure, .slbp-spacing, .slbp-label {
+          animation: slbp-reveal var(--slbp-annotation-duration) ease-out var(--slbp-annotation-delay) both;
+        }
+      }
+    </style>
+  </defs>
+  <rect width="1380" height="600" fill="#060606"/>
+
+  <!-- Component surfaces and content remain visible throughout the entrance. -->
+  <g clip-path="url(#slbp-rail-clip)">
+    <rect x="210" y="276" width="960" height="120" fill="#111210"/>
+    <rect x="210" y="276" width="384" height="120" fill="#353632" class="slbp-travel"/>
+  </g>
+  <rect x="211.5" y="277.5" width="957" height="117" rx="19.5" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="slbp-draw slbp-outline"/>
+
+  <!-- Component label and current value. -->
+  <text x="210" y="240" class="slbp-content">Volume</text>
+  <g text-anchor="end" class="slbp-content" style="fill:#c7c7c2;font-variant-numeric:tabular-nums" aria-hidden="true">
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:0.0000ms;--slbp-count-duration:205.0566ms">10</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:205.0566ms;--slbp-count-duration:5.1742ms">11</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:210.2308ms;--slbp-count-duration:5.2989ms">12</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:215.5298ms;--slbp-count-duration:5.4314ms">13</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:220.9612ms;--slbp-count-duration:5.5726ms">14</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:226.5338ms;--slbp-count-duration:5.7232ms">15</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:232.2570ms;--slbp-count-duration:5.8845ms">16</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:238.1415ms;--slbp-count-duration:6.0576ms">17</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:244.1991ms;--slbp-count-duration:6.2441ms">18</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:250.4432ms;--slbp-count-duration:6.4456ms">19</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:256.8888ms;--slbp-count-duration:6.6642ms">20</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:263.5530ms;--slbp-count-duration:6.9023ms">21</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:270.4553ms;--slbp-count-duration:7.1629ms">22</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:277.6182ms;--slbp-count-duration:7.4496ms">23</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:285.0679ms;--slbp-count-duration:7.7669ms">24</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:292.8348ms;--slbp-count-duration:8.1202ms">25</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:300.9550ms;--slbp-count-duration:8.5167ms">26</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:309.4717ms;--slbp-count-duration:8.9655ms">27</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:318.4372ms;--slbp-count-duration:9.4785ms">28</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:327.9156ms;--slbp-count-duration:10.0718ms">29</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:337.9874ms;--slbp-count-duration:10.7677ms">30</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:348.7552ms;--slbp-count-duration:11.5980ms">31</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:360.3532ms;--slbp-count-duration:12.6096ms">32</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:372.9628ms;--slbp-count-duration:13.8756ms">33</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:386.8384ms;--slbp-count-duration:15.5171ms">34</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:402.3555ms;--slbp-count-duration:17.7517ms">35</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:420.1072ms;--slbp-count-duration:21.0213ms">36</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:441.1285ms;--slbp-count-duration:26.4054ms">37</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:467.5339ms;--slbp-count-duration:37.6427ms">38</text>
+    <text x="1170" y="240" class="slbp-count-frame" style="--slbp-count-delay:505.1766ms;--slbp-count-duration:144.8234ms">39</text>
+    <text x="1170" y="240" class="slbp-count-final">40</text>
+  </g>
+
+  <!-- The handle and fill translate by the same distance, keeping the 8px offset. -->
+  <g class="slbp-travel">
+  <rect x="567" y="312" width="6" height="48" rx="3" fill="#c7c7c2"/>
+  <rect x="568" y="313" width="4" height="46" rx="2" stroke="#c7c7c2" stroke-width="2" pathLength="1" class="slbp-draw" style="--slbp-line-delay:250ms"/>
+
+  </g>
+
+  <g class="slbp-tick-reveal">
+  <!-- Tick left edges follow the implementation's DPR-1 snapping. The 40 tick is absent. -->
+  <path d="M307.5 327V345" pathLength="1" class="slbp-draw slbp-tick" style="--slbp-line-delay:275ms"/>
+  <path d="M403.5 327V345" pathLength="1" class="slbp-draw slbp-tick" style="--slbp-line-delay:300ms"/>
+  <path d="M499.5 327V345" pathLength="1" class="slbp-draw slbp-tick" style="--slbp-line-delay:325ms"/>
+  <path d="M691.5 315V357" pathLength="1" class="slbp-draw slbp-tick" style="--slbp-line-delay:350ms"/>
+  <path d="M787.5 327V345" pathLength="1" class="slbp-draw slbp-tick" style="--slbp-line-delay:375ms"/>
+  <path d="M883.5 327V345" pathLength="1" class="slbp-draw slbp-tick" style="--slbp-line-delay:400ms"/>
+  <path d="M979.5 327V345" pathLength="1" class="slbp-draw slbp-tick" style="--slbp-line-delay:425ms"/>
+  <path d="M1075.5 327V345" pathLength="1" class="slbp-draw slbp-tick" style="--slbp-line-delay:450ms"/>
+
+  </g>
+
+  <!-- Chosen width, measured to the rail's outer edges.
+       Guides reach the rounded rail's vertical sides at y=276+21=297. -->
+  <path d="M210 142V297 M1170 142V297" class="slbp-spacing"/>
+  <path d="M210 119V141 M1170 119V141 M210 130H1170" class="slbp-measure"/>
+  <text x="690" y="114" text-anchor="middle" class="slbp-label">320 px</text>
+
+  <!-- Control height. -->
+  <path d="M1182 276H1230 M1182 396H1230" class="slbp-spacing"/>
+  <path d="M1219 276H1241 M1219 396H1241 M1230 276V396" class="slbp-measure"/>
+  <text x="1252" y="342" class="slbp-label">40 px</text>
+
+  <!-- Handle height: both endpoints line up with the actual visible handle bounds. -->
+  <path d="M579 312H624 M579 360H624" class="slbp-spacing"/>
+  <path d="M601 312H623 M601 360H623 M612 312V360" class="slbp-measure"/>
+  <text x="630" y="342" class="slbp-label">16 px</text>
+
+  <!-- Handle width and its center's 8px offset from the fill edge. -->
+  <path d="M567 365V426 M573 365V426 M570 438V480 M594 399V480" class="slbp-spacing"/>
+  <path d="M567 418V434 M573 418V434 M567 426H573 M570 434 550 462H526" class="slbp-measure"/>
+  <text x="512" y="468" text-anchor="end" class="slbp-label">2 px</text>
+  <path d="M570 470V490 M594 470V490 M570 480H594 M582 492 606 518H635" class="slbp-measure"/>
+  <text x="649" y="524" class="slbp-label">8 px</text>
+
+  <!-- Neighboring tick left edges are one 10-value step apart. -->
+  <path d="M786 351V454 M882 351V454" class="slbp-spacing"/>
+  <path d="M786 443V465 M882 443V465 M786 454H882" class="slbp-measure"/>
+  <text x="834" y="488" text-anchor="middle" class="slbp-label">32 px</text>
+
+  <!-- Tick width, measured edge to edge rather than to its stroke center. -->
+  <path d="M1074 351V430 M1077 351V430" class="slbp-spacing"/>
+  <path d="M1074 422V438 M1077 422V438 M1074 430H1077 M1075.5 440 1107 465H1140" class="slbp-measure"/>
+  <text x="1154" y="471" class="slbp-label">1 px</text>
+</svg>

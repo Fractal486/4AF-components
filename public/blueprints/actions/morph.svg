@@ -1,0 +1,167 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="morph-bp" width="900" height="480" viewBox="0 0 900 480" fill="none" role="img" aria-labelledby="morph-bp-title morph-bp-description">
+  <title id="morph-bp-title">Morph spacing</title>
+  <desc id="morph-bp-description">The default widest Morph, swapping Follow to Following in the same centered grid cell, drawn at three times CSS size. The control is 34 pixels tall with 14 pixels of horizontal padding. Its 20 pixel line box reserves the 58.85 pixel width of Following throughout the swap. The control leaves 7 pixels above and below the line box.</desc>
+  <!-- Sources:
+       registry.json: morph installs registry/ui/morph/morph.tsx only; no sibling variants file.
+       registry/ui/morph/morph.tsx: default sizing="widest", one shared grid cell,
+         place-items-center, whitespace-nowrap; no intrinsic padding, border, or fixed size.
+       inspector/entries/morph.tsx and inspector/entries/morph.demo.tsx:
+         TextToggle with off="Follow", on="Following"; outline, rectangular, size md.
+       registry/ui/toggle/toggle.tsx; registry/ui/button/button.variants.ts.
+       app/globals.css; app/layout.tsx; node_modules/tailwindcss/theme.css and preflight.css.
+       Sidebar: COMPONENT_CATEGORIES in lib/component-catalog.ts, Actions.
+
+       Chosen state: enabled, default widest sizing; Following is the final state.
+       A CSS illustration of the source Morph opacity/scale/blur poses swaps labels
+       at 350..650ms; annotations appear at 700..900ms. No loops.
+       Static and reduced-motion output shows Following only.
+       This is one text-toggle example, not a fixed width contract for Morph.
+       Drawing scale: 3x. Root size: 16px; Tailwind spacing: 0.25rem = 4px.
+       Control: h-[34px], px-3.5 = 14px per side, rounded-[8px], font-medium = 500.
+       text-sm: 13px with line-height 1.5385 = 20.0005px, rounded here to 20px.
+       Centering clearance: (34 - 20) / 2 = 7px above and below; not Morph padding.
+       Border-box sizing; shadow-border adds no layout border. Outline ink is inset.
+
+       Intrinsic text widths measured from the locally generated Geist Latin font:
+       .next/static/media/caa3a2e1cccd8315-s.p.0wgildi0cnwt9.woff2 (unitsPerEm=1000).
+       Next's bundled fontkit: default layout with kern/calt, plus HVAR advance
+       adjustments at wght=500. Follow: (3013 + 75.2) * 13 / 1000 = 40.1466px.
+       Following: (4416 + 110.8) * 13 / 1000 = 58.8484px.
+       Widest grid: max(40.1466, 58.8484) = 58.8484px; height = 20px.
+       Control width: 14 + 58.8484 + 14 = 86.8484px, entirely content-dependent.
+       Outgoing Follow label is centered with (58.8484 - 40.1466) / 2 = 9.3509px on each side.
+       SVG uses the approved sans-serif illustration stack; textLength preserves the
+       measured source advance. Width label is rounded to two decimal places.
+
+       Control bounds: (319.7274,189)-(580.2726,291); radius 24 drawing units.
+       Reserved cell: (361.7274,210)-(538.2726,270).
+       Follow line box: (389.7801,210)-(510.2199,270).
+       Following line box: the full reserved cell, (361.7274,210)-(538.2726,270).
+       Dark background: oklch(0.120 0 0) resolves to #060606.
+  -->
+  <defs>
+    <style>
+      #morph-bp text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #morph-bp .morph-bp-content { fill: #c7c7c2; font-size: 39px; font-weight: 500; }
+      #morph-bp .morph-bp-label { fill: #a1a29c; font-size: 18px; }
+      #morph-bp .morph-bp-note { fill: #9baee0; font-size: 18px; }
+      #morph-bp .morph-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      #morph-bp .morph-bp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      /* Static exports and reduced-motion viewers show every final mark. */
+      #morph-bp { --morph-bp-outline-duration: 400ms; --morph-bp-detail-duration: 200ms; --morph-bp-annotation-delay: 700ms; --morph-bp-annotation-duration: 200ms; }
+      @keyframes morph-bp-draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes morph-bp-reveal { from { opacity: 0; } }
+      #morph-bp .morph-bp-swap-out { opacity: 0; }
+      #morph-bp .morph-bp-swap-out, #morph-bp .morph-bp-swap-in { transform-origin: 450px 240px; }
+      @keyframes morph-bp-swap-out { from { opacity: 1; transform: scale(1); filter: blur(0px); } to { opacity: 0; transform: scale(.25); filter: blur(12px); } }
+      @keyframes morph-bp-swap-in { from { opacity: 0; transform: scale(.25); filter: blur(12px); } to { opacity: 1; transform: scale(1); filter: blur(0px); } }
+      /* One press/release during reveal, matching Button's .95 press scale.
+         spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
+         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         compose with content/panel motion; static and reduced motion stay at 1. */
+      @keyframes morph-bp-button-press {
+        0% { transform: scale(1.000000); }
+        2% { transform: scale(0.998236); }
+        4% { transform: scale(0.994025); }
+        6% { transform: scale(0.988604); }
+        8% { transform: scale(0.982802); }
+        10% { transform: scale(0.977146); }
+        12% { transform: scale(0.971948); }
+        14% { transform: scale(0.967366); }
+        16% { transform: scale(0.963455); }
+        18% { transform: scale(0.960207); }
+        20% { transform: scale(0.957573); }
+        22% { transform: scale(0.955481); }
+        24% { transform: scale(0.953856); }
+        26% { transform: scale(0.952619); }
+        28% { transform: scale(0.951698); }
+        30% { transform: scale(0.951029); }
+        32% { transform: scale(0.950556); }
+        34% { transform: scale(0.950233); }
+        36% { transform: scale(0.950022); }
+        38% { transform: scale(0.950000); }
+        40% { transform: scale(0.950000); }
+        42% { transform: scale(0.950000); }
+        44% { transform: scale(0.950000); }
+        46% { transform: scale(0.950000); }
+        48% { transform: scale(0.950000); }
+        50% { transform: scale(0.950000); }
+        52% { transform: scale(0.951764); }
+        54% { transform: scale(0.955975); }
+        56% { transform: scale(0.961396); }
+        58% { transform: scale(0.967198); }
+        60% { transform: scale(0.972854); }
+        62% { transform: scale(0.978052); }
+        64% { transform: scale(0.982634); }
+        66% { transform: scale(0.986545); }
+        68% { transform: scale(0.989793); }
+        70% { transform: scale(0.992427); }
+        72% { transform: scale(0.994519); }
+        74% { transform: scale(0.996144); }
+        76% { transform: scale(0.997381); }
+        78% { transform: scale(0.998302); }
+        80% { transform: scale(0.998971); }
+        82% { transform: scale(0.999444); }
+        84% { transform: scale(0.999767); }
+        86% { transform: scale(0.999978); }
+        88% { transform: scale(1.000000); }
+        90% { transform: scale(1.000000); }
+        92% { transform: scale(1.000000); }
+        94% { transform: scale(1.000000); }
+        96% { transform: scale(1.000000); }
+        98% { transform: scale(1.000000); }
+        100% { transform: scale(1.000000); }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .morph-bp-button-press { animation: morph-bp-button-press 500ms linear 150ms both; }
+        #morph-bp .morph-bp-swap-out { animation: morph-bp-swap-out 250ms cubic-bezier(.16,1,.3,1) 350ms both; }
+        #morph-bp .morph-bp-swap-in { animation: morph-bp-swap-in 300ms cubic-bezier(.16,1,.3,1) 350ms both; }
+        #morph-bp .morph-bp-draw {
+          stroke-dasharray: 1;
+          animation: morph-bp-draw-line var(--morph-bp-detail-duration) ease-out var(--morph-bp-line-delay, 0ms) both;
+        }
+        #morph-bp .morph-bp-outline { animation-duration: var(--morph-bp-outline-duration); }
+        #morph-bp .morph-bp-measure, #morph-bp .morph-bp-spacing, #morph-bp .morph-bp-label, #morph-bp .morph-bp-note {
+          animation: morph-bp-reveal var(--morph-bp-annotation-duration) ease-out var(--morph-bp-annotation-delay) both;
+        }
+      }
+    </style>
+  </defs>
+  <rect width="900" height="480" fill="#060606"/>
+
+  <!-- One default demo control. The button presses while centered labels swap within a reserved width. -->
+  <g class="morph-bp-button-press" style="transform-origin: 450px 240px">
+    <rect x="319.7274" y="189" width="260.5452" height="102" rx="24" fill="#060606"/>
+    <rect x="320.9774" y="190.25" width="258.0452" height="99.5" rx="22.75" stroke="#a7a8a2" stroke-width="2.5" pathLength="1" class="morph-bp-draw morph-bp-outline"/>
+
+    <!-- Overlays show the reserved grid cell and the final label edges.
+         Guides sit above the surface and behind the text, and stay visible at rest. -->
+    <rect x="361.7274" y="210" width="176.5452" height="60" class="morph-bp-spacing"/>
+    <path d="M361.7274 181V299 M538.2726 181V299" class="morph-bp-spacing"/>
+    <!-- Shared center/baseline; the hidden outgoing label never changes the reserved width. -->
+    <text x="450" y="253" text-anchor="middle" textLength="176.5452" lengthAdjust="spacingAndGlyphs" class="morph-bp-content morph-bp-swap-in">Following</text>
+    <text x="450" y="253" text-anchor="middle" textLength="120.4398" lengthAdjust="spacingAndGlyphs" class="morph-bp-content morph-bp-swap-out" aria-hidden="true">Follow</text>
+  </g>
+  <!-- Reserved width: endpoints are the actual cell edges, not the control edges. -->
+  <path d="M361.7274 173V121 M538.2726 173V121 M361.7274 132H538.2726" class="morph-bp-measure"/>
+  <text x="450" y="113" text-anchor="middle" class="morph-bp-label">58.85 px</text>
+
+  <!-- Fixed control height: 102 drawing units / 3 = 34 CSS px. -->
+  <path d="M308.7274 189H239 M308.7274 291H239 M250 189V291" class="morph-bp-measure"/>
+  <text x="230" y="246" text-anchor="end" class="morph-bp-label">34 px</text>
+
+  <!-- Line-box height and top centering clearance, with a short leader for 7px. -->
+  <path d="M548.2726 210H651 M548.2726 270H651 M640 210V270" class="morph-bp-measure"/>
+  <text x="663" y="246" class="morph-bp-label">20 px</text>
+  <path d="M591.2726 189H621 M610 189V210 M600 210H621" class="morph-bp-measure"/>
+  <path d="M610 199.5 639 170H672" class="morph-bp-measure"/>
+  <text x="686" y="176" class="morph-bp-label">7 px</text>
+
+  <!-- Caller control padding, measured from the silhouette to the reserved cell. -->
+  <path d="M319.7274 302V350 M361.7274 307V350 M319.7274 339H361.7274" class="morph-bp-measure"/>
+  <text x="340.7274" y="375" text-anchor="middle" class="morph-bp-label">14 px</text>
+
+  <!-- The single connected note explains the default stable-width placement. -->
+  <path d="M450 270V385" class="morph-bp-measure"/>
+  <text x="450" y="416" text-anchor="middle" class="morph-bp-note">Space stays reserved for Following.</text>
+</svg>

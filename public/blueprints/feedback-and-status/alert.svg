@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="390" viewBox="0 0 1100 390" fill="none" role="img" aria-labelledby="alert-title alert-desc">
+  <title id="alert-title">Alert spacing blueprint</title>
+  <desc id="alert-desc">Default error Alert, shown at three times CSS size. A 14 pixel icon and message have a 6 pixel gap, a 20 pixel line box, and 6 pixels of top margin. There is no panel, border, or padding.</desc>
+  <!-- Sources: registry/ui/alert/alert.tsx, alert.variants.ts;
+       inspector/entries/alert.tsx; app/globals.css; Tailwind theme.css;
+       lucide-react/dist/esm/icons/octagon-alert.js.
+       Default error variant with demo message. Scale: 3 SVG units per CSS px.
+       Representative caller width: 260px, not a fixed component width.
+       Root rem = 16px; spacing = 4px. mt-1.5 = 6px; gap-1.5 = 6px;
+       size-3.5 = 14px. text-sm = 13px, line-height = 1.5385:
+       13 * 1.5385 = 20.0005px, rounded to 20px in this drawing.
+       Content-dependent single-line height = max(14,20) = 20px.
+       Icon centered vertically: (20-14)/2 = 3px. Border and padding = 0.
+       Alert bounds: x160..940, y180..240. Top margin: y162..180.
+       Icon slot: x160..202, y189..231. Text starts x220.
+       No invented panel outline: the icon perimeter is the outer drawn outline.
+       Dark background oklch(0.120 0 0) resolves to #060606. -->
+  <defs>
+    <style>
+      text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      .alert-text { fill: #92948d; font-size: 39px; }
+      .alert-label { fill: #6889ff; font-size: 18px; }
+      .alert-measure { stroke: #6889ff; stroke-width: 1.5; }
+      .alert-guide { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      @keyframes alert-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes alert-reveal { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        .alert-draw { stroke-dasharray: 1; animation: alert-draw 200ms ease-out var(--delay, 0ms) both; }
+        .alert-outline { animation-duration: 400ms; }
+        .alert-measure, .alert-guide, .alert-label { animation: alert-reveal 200ms ease-out 700ms both; }
+      }
+    </style>
+  </defs>
+  <rect width="1100" height="390" fill="#060606"/>
+  <!-- Blue bounds are spacing guides only, not a component surface. -->
+  <path d="M160 162H940 M160 180H940 M160 240H940 M160 162V252 M940 162V252 M220 180V252" class="alert-guide"/>
+  <rect x="160" y="189" width="42" height="42" class="alert-guide"/>
+  <!-- Lucide viewBox 24 scaled to the 42-unit slot. Native stroke = 2 * 1.75. -->
+  <g transform="translate(160 189) scale(1.75)" stroke="#a7a8a2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M15.312 2a2 2 0 0 1 1.414.586l4.688 4.688A2 2 0 0 1 22 8.688v6.624a2 2 0 0 1-.586 1.414l-4.688 4.688a2 2 0 0 1-1.414.586H8.688a2 2 0 0 1-1.414-.586l-4.688-4.688A2 2 0 0 1 2 15.312V8.688a2 2 0 0 1 .586-1.414l4.688-4.688A2 2 0 0 1 8.688 2z" pathLength="1" class="alert-draw alert-outline"/>
+    <path d="M12 8v4" pathLength="1" class="alert-draw" style="--delay:400ms"/>
+    <path d="M12 16h.01" pathLength="1" class="alert-draw" style="--delay:425ms"/>
+  </g>
+  <text x="220" y="224" class="alert-text">Please enter a valid email address.</text>
+  <!-- Top margin and actual line-box height. -->
+  <path d="M123 162H143 M123 180H143 M133 162V180 M133 171H105" class="alert-measure"/>
+  <text x="92" y="177" text-anchor="end" class="alert-label">6 px</text>
+  <path d="M963 180H985 M963 240H985 M974 180V240" class="alert-measure"/>
+  <text x="994" y="216" class="alert-label">20 px</text>
+  <!-- Slot width, followed by the true flex gap. -->
+  <path d="M160 244V289 M202 235V289 M220 252V289 M160 278H220" class="alert-measure"/>
+  <path d="M181 289 162 314H130" class="alert-measure"/>
+  <text x="117" y="320" text-anchor="end" class="alert-label">14 px</text>
+  <path d="M211 289 230 314H262" class="alert-measure"/>
+  <text x="275" y="320" class="alert-label">6 px</text>
+</svg>

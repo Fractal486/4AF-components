@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" fill="none" role="img" aria-labelledby="tabs-blueprint-title tabs-blueprint-description">
   <title id="tabs-blueprint-title">Tabs spacing blueprint</title>
-  <desc id="tabs-blueprint-description">Default medium segmented tabs with Account selected, followed by Notifications and Billing, drawn at three times CSS size. The track is 32 pixels high, with 2 pixels of padding and 2 pixel gaps. Tabs have 10 pixels of horizontal padding and 4 pixels of vertical padding around a 20 pixel text line, making each tab 28 pixels high.</desc>
+  <desc id="tabs-blueprint-description">The selected indicator travels from Billing to Account, resizing to the destination tab and updating the label tones. Default medium segmented tabs with Account selected, followed by Notifications and Billing, drawn at three times CSS size. The track is 32 pixels high, with 2 pixels of padding and 2 pixel gaps. Tabs have 10 pixels of horizontal padding and 4 pixels of vertical padding around a 20 pixel text line, making each tab 28 pixels high.</desc>
   <!--
     Sources:
       registry.json: tabs files list.
@@ -46,7 +46,16 @@
       /* Static exports and reduced-motion viewers see the complete drawing. */
       @keyframes tabs-blueprint-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes tabs-blueprint-reveal { from { opacity: 0; } }
+      /* Billing -> Account: left edge delta 504.75; width ratio 0.8289293849658315.
+         One transformed indicator keeps its height and final measured bounds. */
+      #tabs-blueprint .tabs-bp-travel { transform-origin: 262.3359375px 260px; }
+      @keyframes tabs-bp-travel { from { transform: translateX(504.75px) scaleX(0.8289293849658315); } to { transform: translateX(0) scaleX(1); } }
+      @keyframes tabs-bp-select { from { fill: #92948d; } to { fill: #c7c7c2; } }
+      @keyframes tabs-bp-deselect { from { fill: #c7c7c2; } to { fill: #92948d; } }
       @media (prefers-reduced-motion: no-preference) {
+        #tabs-blueprint .tabs-bp-travel { animation: tabs-bp-travel 400ms cubic-bezier(.16,1,.3,1) 250ms both; }
+        #tabs-blueprint .tabs-bp-select { animation: tabs-bp-select 400ms ease-out 250ms both; }
+        #tabs-blueprint .tabs-bp-deselect { animation: tabs-bp-deselect 400ms ease-out 250ms both; }
         #tabs-blueprint .draw {
           stroke-dasharray: 1;
           animation: tabs-blueprint-draw 200ms ease-out var(--line-delay, 0ms) both;
@@ -62,9 +71,14 @@
     <rect width="1200" height="520" fill="#060606"/>
 
     <!-- The selected fill and all text remain visible throughout the animation. -->
-    <rect x="262.3359375" y="218" width="205.78125" height="84" rx="18" fill="#353632"/>
+    <g class="tabs-bp-travel">
+      <rect x="262.3359375" y="218" width="205.78125" height="84" rx="18" fill="#353632"/>
+    </g>
     <rect x="257.8359375" y="213.5" width="684.328125" height="93" rx="22.5" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="draw outline"/>
+    <g class="tabs-bp-travel">
     <rect x="263.3359375" y="219" width="203.78125" height="82" rx="17" stroke="#a7a8a2" stroke-width="2" pathLength="1" class="draw" style="--line-delay:400ms"/>
+
+    </g>
 
     <!-- Blue overlays sit above the surfaces and below the text. The inset
          rectangle is the track's content box; dashed tab edges expose both gaps. -->
@@ -75,9 +89,9 @@
     <rect x="504.1171875" y="230" width="226.96875" height="60" class="spacing"/>
     <rect x="797.0859375" y="230" width="110.578125" height="60" class="spacing"/>
 
-    <text x="292.3359375" y="273.2" class="tab-text selected-text" textLength="145.78125" lengthAdjust="spacingAndGlyphs">Account</text>
+    <text x="292.3359375" y="273.2" class="tab-text selected-text tabs-bp-select" textLength="145.78125" lengthAdjust="spacingAndGlyphs">Account</text>
     <text x="504.1171875" y="273.2" class="tab-text" textLength="226.96875" lengthAdjust="spacingAndGlyphs">Notifications</text>
-    <text x="797.0859375" y="273.2" class="tab-text" textLength="110.578125" lengthAdjust="spacingAndGlyphs">Billing</text>
+    <text x="797.0859375" y="273.2" class="tab-text tabs-bp-deselect" textLength="110.578125" lengthAdjust="spacingAndGlyphs">Billing</text>
 
     <!-- Track height: exactly 32 * 3 SVG units. -->
     <path d="M256.3359375 212H209 M256.3359375 308H209 M198 212V308 M187 212H209 M187 308H209" class="measure"/>

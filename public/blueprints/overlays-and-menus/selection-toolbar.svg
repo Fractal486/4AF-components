@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="600" viewBox="0 0 1400 600" fill="none" role="img" aria-labelledby="stb-title stb-desc">
   <title id="stb-title">Selection Toolbar spacing blueprint</title>
-  <desc id="stb-desc">An open selection toolbar centered eight pixels above selected text. The bar is 32 pixels high, with four pixels of padding, 24 pixel actions, two pixel gaps, and 14 pixel icons. Copy, Highlight, three highlighter choices, and Clear reproduce the default demo composition. The first highlighter is selected and Clear is disabled. Drawn at three times CSS size.</desc>
+  <desc id="stb-desc">The text range becomes selected before the toolbar rises into place above it. An open selection toolbar centered eight pixels above selected text. The bar is 32 pixels high, with four pixels of padding, 24 pixel actions, two pixel gaps, and 14 pixel icons. Copy, Highlight, three highlighter choices, and Clear reproduce the default demo composition. The first highlighter is selected and Clear is disabled. Drawn at three times CSS size.</desc>
   <!--
     Sources:
       registry.json: selection-toolbar and its complete implementation file list.
@@ -51,7 +51,74 @@
       #stb-drawing .stb-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
       @keyframes stb-draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes stb-reveal { from { opacity: 0; } }
+      /* Selection sweeps across the existing range at 0..250ms.
+         Source entry pose: scale .95, translateY 6 CSS px, blur 4 CSS px.
+         At 3x those are 18 and 12 units; origin is the popup's bottom center.
+         Popup 250..650ms, guides 700..900ms; reduced motion shows the final state. */
+      #stb-drawing .stb-popup { transform-origin: 700px 364px; }
+      @keyframes stb-select { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+      @keyframes stb-popup { from { opacity: 0; transform: translateY(18px) scale(.95); filter: blur(12px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); } }
+      /* One press/release during reveal, matching Button's .95 press scale.
+         spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
+         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         compose with content/panel motion; static and reduced motion stay at 1. */
+      @keyframes selection-toolbar-bp-button-press {
+        0% { transform: scale(1.000000); }
+        2% { transform: scale(0.998236); }
+        4% { transform: scale(0.994025); }
+        6% { transform: scale(0.988604); }
+        8% { transform: scale(0.982802); }
+        10% { transform: scale(0.977146); }
+        12% { transform: scale(0.971948); }
+        14% { transform: scale(0.967366); }
+        16% { transform: scale(0.963455); }
+        18% { transform: scale(0.960207); }
+        20% { transform: scale(0.957573); }
+        22% { transform: scale(0.955481); }
+        24% { transform: scale(0.953856); }
+        26% { transform: scale(0.952619); }
+        28% { transform: scale(0.951698); }
+        30% { transform: scale(0.951029); }
+        32% { transform: scale(0.950556); }
+        34% { transform: scale(0.950233); }
+        36% { transform: scale(0.950022); }
+        38% { transform: scale(0.950000); }
+        40% { transform: scale(0.950000); }
+        42% { transform: scale(0.950000); }
+        44% { transform: scale(0.950000); }
+        46% { transform: scale(0.950000); }
+        48% { transform: scale(0.950000); }
+        50% { transform: scale(0.950000); }
+        52% { transform: scale(0.951764); }
+        54% { transform: scale(0.955975); }
+        56% { transform: scale(0.961396); }
+        58% { transform: scale(0.967198); }
+        60% { transform: scale(0.972854); }
+        62% { transform: scale(0.978052); }
+        64% { transform: scale(0.982634); }
+        66% { transform: scale(0.986545); }
+        68% { transform: scale(0.989793); }
+        70% { transform: scale(0.992427); }
+        72% { transform: scale(0.994519); }
+        74% { transform: scale(0.996144); }
+        76% { transform: scale(0.997381); }
+        78% { transform: scale(0.998302); }
+        80% { transform: scale(0.998971); }
+        82% { transform: scale(0.999444); }
+        84% { transform: scale(0.999767); }
+        86% { transform: scale(0.999978); }
+        88% { transform: scale(1.000000); }
+        90% { transform: scale(1.000000); }
+        92% { transform: scale(1.000000); }
+        94% { transform: scale(1.000000); }
+        96% { transform: scale(1.000000); }
+        98% { transform: scale(1.000000); }
+        100% { transform: scale(1.000000); }
+      }
       @media (prefers-reduced-motion: no-preference) {
+        .selection-toolbar-bp-button-press { animation: selection-toolbar-bp-button-press 500ms linear 150ms both; }
+        #stb-drawing .stb-selection { animation: stb-select 250ms ease-out both; }
+        #stb-drawing .stb-popup { animation: stb-popup 400ms cubic-bezier(.16,1,.3,1) 250ms both; }
         #stb-drawing .stb-draw {
           stroke-dasharray: 1;
           animation: stb-draw-line 200ms ease-out var(--stb-delay, 250ms) both;
@@ -67,9 +134,10 @@
     <rect width="1400" height="600" fill="#060606"/>
 
     <!-- Selection is context for the virtual anchor, not a second component. -->
-    <rect x="505" y="388" width="390" height="60" rx="3" fill="#353632"/>
+    <rect x="505" y="388" width="390" height="60" rx="3" fill="#353632" class="stb-selection"/>
     <text x="514" y="430" fill="#c7c7c2" font-size="39" textLength="372" lengthAdjust="spacingAndGlyphs">copy or highlight it.</text>
 
+    <g class="stb-popup">
     <!-- Popup outline: 334 x 32 CSS pixels, 8px outer corner radius. -->
     <rect x="200.5" y="269.5" width="999" height="93" rx="22.5" class="stb-ink stb-draw stb-outline" pathLength="1"/>
 
@@ -80,25 +148,46 @@
     <rect x="307" y="292" width="84" height="48" class="stb-spacing"/>
 
     <!-- Copy: Lucide's 24-unit geometry scaled into its real 14px icon box. -->
-    <g transform="translate(241 295) scale(1.75)" stroke="#a7a8a2" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="8" y="8" width="14" height="14" rx="2" class="stb-draw" pathLength="1" style="--stb-delay:250ms"/>
-      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" class="stb-draw" pathLength="1" style="--stb-delay:275ms"/>
+    <g class="selection-toolbar-bp-button-press" style="transform-origin: 316px 316px">
+      <g transform="translate(241 295) scale(1.75)" stroke="#a7a8a2" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="8" y="8" width="14" height="14" rx="2" class="stb-draw" pathLength="1" style="--stb-delay:250ms"/>
+        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" class="stb-draw" pathLength="1" style="--stb-delay:275ms"/>
+      </g>
     </g>
-    <text x="307" y="328" class="stb-action" textLength="84" lengthAdjust="spacingAndGlyphs">Copy</text>
+
+    <g class="selection-toolbar-bp-button-press" style="transform-origin: 316px 316px">
+      <text x="307" y="328" class="stb-action" textLength="84" lengthAdjust="spacingAndGlyphs">Copy</text>
+    </g>
+
 
     <!-- A 1px divider, 16px high, with 2px horizontal margins. -->
     <path d="M434.5 292V340" class="stb-ink stb-draw" pathLength="1" style="--stb-delay:300ms;stroke-linecap:butt"/>
 
-    <g transform="translate(478 295) scale(1.75)" stroke="#a7a8a2" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-      <path d="m9 11-6 6v3h9l3-3" class="stb-draw" pathLength="1" style="--stb-delay:325ms"/>
-      <path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4" class="stb-draw" pathLength="1" style="--stb-delay:350ms"/>
+    <g class="selection-toolbar-bp-button-press" style="transform-origin: 586px 316px">
+      <g transform="translate(478 295) scale(1.75)" stroke="#a7a8a2" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m9 11-6 6v3h9l3-3" class="stb-draw" pathLength="1" style="--stb-delay:325ms"/>
+        <path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4" class="stb-draw" pathLength="1" style="--stb-delay:350ms"/>
+      </g>
     </g>
-    <text x="544" y="328" class="stb-action" textLength="150" lengthAdjust="spacingAndGlyphs">Highlight</text>
+
+    <g class="selection-toolbar-bp-button-press" style="transform-origin: 586px 316px">
+      <text x="544" y="328" class="stb-action" textLength="150" lengthAdjust="spacingAndGlyphs">Highlight</text>
+    </g>
+
 
     <!-- Exclusive tone group. Selection fills the glyph, not the button background. -->
-    <circle cx="766" cy="316" r="17.5" fill="#c7c7c2" stroke="#c7c7c2" stroke-width="3" class="stb-draw" pathLength="1" style="--stb-delay:375ms"/>
-    <circle cx="844" cy="316" r="17.5" class="stb-ink stb-draw" pathLength="1" style="--stb-delay:400ms"/>
-    <circle cx="922" cy="316" r="17.5" class="stb-ink stb-draw" pathLength="1" style="--stb-delay:425ms"/>
+    <g class="selection-toolbar-bp-button-press" style="transform-origin: 766px 316px">
+      <circle cx="766" cy="316" r="17.5" fill="#c7c7c2" stroke="#c7c7c2" stroke-width="3" class="stb-draw" pathLength="1" style="--stb-delay:375ms"/>
+    </g>
+
+    <g class="selection-toolbar-bp-button-press" style="transform-origin: 844px 316px">
+      <circle cx="844" cy="316" r="17.5" class="stb-ink stb-draw" pathLength="1" style="--stb-delay:400ms"/>
+    </g>
+
+    <g class="selection-toolbar-bp-button-press" style="transform-origin: 922px 316px">
+      <circle cx="922" cy="316" r="17.5" class="stb-ink stb-draw" pathLength="1" style="--stb-delay:425ms"/>
+    </g>
+
     <path d="M971.5 292V340" class="stb-ink stb-draw" pathLength="1" style="--stb-delay:425ms;stroke-linecap:butt"/>
 
     <!-- Disabled Clear keeps the source's 50% opacity in every motion mode. -->
@@ -109,6 +198,8 @@
         <path d="m5 11 9 9" class="stb-draw" pathLength="1" style="--stb-delay:450ms"/>
       </g>
       <text x="1075" y="328" class="stb-action" textLength="84" lengthAdjust="spacingAndGlyphs">Clear</text>
+    </g>
+
     </g>
 
     <!-- Chosen content-dependent width: endpoints are the actual popup box. -->
