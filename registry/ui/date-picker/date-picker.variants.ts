@@ -5,7 +5,14 @@ import { cva, type VariantProps } from "class-variance-authority";
  * edges: a date picker beside a select or an input in a form row lines up with both.
  * `md` (34px) is the default here, matching Input, because a date is almost always
  * entered in a form rather than a toolbar.
+ *
+ * The boxed variants are exactly as wide as the panel: seven calendar cells, the grid's 6px
+ * side padding twice, and the panel's 1px border twice. Built from the Calendar's own numbers
+ * (34px cells, 44px under a coarse pointer), so the two stay flush.
  */
+const PANEL_WIDTH =
+  "w-[calc(var(--spacing)*8.5*7+var(--spacing)*1.5*2+2px)] pointer-coarse:w-[calc(var(--spacing)*11*7+var(--spacing)*1.5*2+2px)]";
+
 export const datePickerTriggerVariants = cva(
   [
     "group inline-flex max-w-full min-w-0 items-center gap-2 text-start text-foreground tabular-nums",
@@ -19,12 +26,14 @@ export const datePickerTriggerVariants = cva(
     variants: {
       variant: {
         default: [
-          "w-60 border border-border bg-surface",
+          PANEL_WIDTH,
+          "border border-border bg-surface",
           "hover:border-border-strong data-[popup-open]:border-border-strong",
           "aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",
         ],
         ghost: [
-          "w-60 border border-transparent bg-transparent text-muted-foreground",
+          PANEL_WIDTH,
+          "border border-transparent bg-transparent text-muted-foreground",
           "hover:bg-muted hover:text-foreground",
           "data-[popup-open]:bg-muted data-[popup-open]:text-foreground",
           "aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",

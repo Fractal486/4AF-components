@@ -238,9 +238,14 @@ import { Button } from "@/components/ui/button";
     usage: `import { DatePicker, DateRangePicker } from "@/components/ui/date-picker";
 
 <DatePicker value={date} onValueChange={setDate} name="due" clearable />
+{/* Today returns to the current month without selecting; Clear resets the value. */}
+{/* Use showToday={false} and clearable={false} to omit the footer. */}
+{/* The calendar shows only the weeks needed for each month. */}
+{/* dateFormat="numeric" shows 19 / 10 / 2026 in every locale. */}
 <DateRangePicker
   value={range}
   onValueChange={setRange}
+  dateFormat="numeric"
   calendarProps={{ disabled: { before: new Date() } }}
 />`,
   },

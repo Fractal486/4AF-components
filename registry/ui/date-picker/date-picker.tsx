@@ -1,6 +1,7 @@
 "use client";
 
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Undo2 } from "lucide-react";
+import { DateLib } from "react-day-picker";
 import {
   useMemo,
   useRef,
@@ -58,6 +59,25 @@ function useIsPhone() {
   return useSyncExternalStore(subscribePhone, getPhone, () => false);
 }
 
+/**
+ * Day / month / year in numbers, zero-padded, in that order in every locale: 19 / 10 / 2026.
+ * The separators are dimmed so the numbers carry the reading.
+ */
+function NumericDate({ date }: { date: Date }) {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const separator = <span className="text-muted-foreground"> / </span>;
+  return (
+    <>
+      {day}
+      {separator}
+      {month}
+      {separator}
+      {date.getFullYear()}
+    </>
+  );
+}
+
 function toIsoDate(date: Date) {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
@@ -102,22 +122,37 @@ interface DatePickerSharedProps
   placeholder?: string;
   /** The panel's accessible name, and the sheet's visible title on phones. */
   title?: string;
-  /** BCP 47 locale for the trigger's label. Pass `calendarProps.locale` to localise the grid. */
+  /**
+   * BCP 47 locale for the trigger's `medium` label. Pass `calendarProps.locale` to localise the
+   * grid and the month / year picker.
+   */
   locale?: string;
+  /**
+   * How the trigger shows the date. `medium` is the locale's medium date (Oct 19, 2026);
+   * `numeric` is day / month / year in numbers, zero-padded (19 / 10 / 2026), whatever the locale.
+   * @default "medium"
+   */
+  dateFormat?: "medium" | "numeric";
   /** Adds a Clear action to the panel once a value is set. */
   clearable?: boolean;
   clearLabel?: string;
+  /** Label for the action that returns to the current month without selecting a date. */
+  todayLabel?: string;
+  /** Show the current-month navigation action. Defaults to true. */
+  showToday?: boolean;
   /** Submits the value with a form, as `YYYY-MM-DD` (or `YYYY-MM-DD/YYYY-MM-DD` for a range). */
   name?: string;
   /** Forwarded to the Calendar: disabled days, `startMonth`/`endMonth`, `captionLayout`, … */
   calendarProps?: CalendarPassthrough;
 }
 
-interface DatePickerShellProps extends Omit<DatePickerSharedProps, "locale" | "calendarProps"> {
-  label: string | undefined;
+interface DatePickerShellProps
+  extends Omit<DatePickerSharedProps, "locale" | "calendarProps" | "dateFormat"> {
+  label: ReactNode | undefined;
   hiddenValue: string | undefined;
   onClear: () => void;
-  children: (close: () => void) => ReactNode;
+  calendarProps?: CalendarPassthrough;
+  children: (close: () => void, navigation: Pick<CalendarProps, "month" | "onMonthChange">) => ReactNode;
 }
 
 function DatePickerShell({
@@ -130,6 +165,9 @@ function DatePickerShell({
   hiddenValue,
   clearable = false,
   clearLabel = "Clear",
+  todayLabel = "Today",
+  showToday = true,
+  calendarProps,
   name,
   onClear,
   children,
@@ -142,14 +180,23 @@ function DatePickerShell({
   const phone = useIsPhone();
   const panelRef = useRef<HTMLDivElement>(null);
   const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
+  const [month, setMonth] = useState<Date>();
   const open = openProp ?? uncontrolledOpen;
   const hasValue = label !== undefined;
 
   const setOpen = (next: boolean) => {
+    if (!next) setMonth(undefined);
     if (openProp === undefined) setUncontrolledOpen(next);
     onOpenChange?.(next);
   };
   const close = () => setOpen(false);
+  const navigation = {
+    month: calendarProps?.month ?? month,
+    onMonthChange: (next: Date) => {
+      setMonth(next);
+      calendarProps?.onMonthChange?.(next);
+    },
+  };
 
   const triggerProps = {
     ...props,
@@ -161,16 +208,40 @@ function DatePickerShell({
     "data-empty": hasValue ? undefined : "",
     children: (
       <>
-        <CalendarIcon aria-hidden />
+        {/* The value takes the room, so the icon sits at the field's end. */}
         <span
           data-slot="date-picker-value"
-          className={cn("min-w-0 truncate", !hasValue && "text-muted-foreground")}
+          className={cn("min-w-0 flex-1 truncate", !hasValue && "text-muted-foreground")}
         >
           {label ?? placeholder}
         </span>
+        <CalendarIcon aria-hidden />
       </>
     ),
   };
+
+  const dateLib = new DateLib({ timeZone: calendarProps?.timeZone });
+  const today = dateLib.startOfDay(calendarProps?.today ?? dateLib.today());
+  const todayDisabled =
+    calendarProps?.disableNavigation ||
+    !!(calendarProps?.startMonth && today < dateLib.startOfMonth(calendarProps.startMonth)) ||
+    !!(calendarProps?.endMonth && today > dateLib.endOfMonth(calendarProps.endMonth));
+  const todayButton = showToday ? (
+    <Button
+      type="button"
+      variant="ghost"
+      size="xs"
+      data-slot="date-picker-today"
+      className="me-auto"
+      disabled={todayDisabled}
+      onClick={() => {
+        navigation.onMonthChange(dateLib.startOfMonth(today));
+      }}
+    >
+      <Undo2 aria-hidden data-icon-start />
+      {todayLabel}
+    </Button>
+  ) : null;
 
   const clearButton =
     clearable && hasValue ? (
@@ -205,9 +276,11 @@ function DatePickerShell({
             <SheetTitle>{title}</SheetTitle>
           </SheetHeader>
           <SheetBody data-slot="date-picker-content" className="flex justify-center pb-5">
-            {children(close)}
+            {children(close, navigation)}
           </SheetBody>
-          {clearButton ? <SheetFooter className="pt-0">{clearButton}</SheetFooter> : null}
+          {todayButton || clearButton ? (
+            <SheetFooter className="flex-row pt-0">{todayButton}{clearButton}</SheetFooter>
+          ) : null}
         </SheetContent>
       </Sheet>
     );
@@ -224,9 +297,11 @@ function DatePickerShell({
         initialFocus={() => focusActiveDay(panelRef.current)}
         className="w-auto max-w-[calc(100vw-2rem)] p-0"
       >
-        <div data-slot="date-picker-content">{children(close)}</div>
-        {clearButton ? (
-          <div className="flex justify-end border-t border-border p-1.5">{clearButton}</div>
+        <div data-slot="date-picker-content">{children(close, navigation)}</div>
+        {todayButton || clearButton ? (
+          <div className="flex justify-end border-t border-border p-1.5">
+            {todayButton}{clearButton}
+          </div>
         ) : null}
       </PopoverContent>
     </Popover>
@@ -248,12 +323,15 @@ export function DatePicker({
   placeholder = "Pick a date",
   title = "Select a date",
   locale = "en-US",
+  dateFormat = "medium",
   calendarProps,
   ...props
 }: DatePickerProps) {
   const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue);
   const value = valueProp !== undefined ? valueProp : uncontrolledValue;
   const formatter = useMemo(() => new Intl.DateTimeFormat(locale, { dateStyle: "medium" }), [locale]);
+  const format = (date: Date) =>
+    dateFormat === "numeric" ? <NumericDate date={date} /> : normalizeSpaces(formatter.format(date));
 
   const setValue = (next: Date | null) => {
     if (valueProp === undefined) setUncontrolledValue(next);
@@ -265,13 +343,15 @@ export function DatePicker({
       {...props}
       placeholder={placeholder}
       title={title}
-      label={value ? normalizeSpaces(formatter.format(value)) : undefined}
+      label={value ? format(value) : undefined}
       hiddenValue={value ? toIsoDate(value) : undefined}
       onClear={() => setValue(null)}
+      calendarProps={calendarProps}
     >
-      {(close) => (
+      {(close, navigation) => (
         <Calendar
           {...calendarProps}
+          {...navigation}
           mode="single"
           required
           selected={value ?? undefined}
@@ -338,6 +418,7 @@ export function DateRangePicker({
   placeholder = "Pick a date range",
   title = "Select dates",
   locale = "en-US",
+  dateFormat = "medium",
   calendarProps,
   ...props
 }: DateRangePickerProps) {
@@ -352,10 +433,19 @@ export function DateRangePicker({
 
   const from = value?.from;
   const to = value?.to ?? value?.from;
-  const label =
-    from && to
-      ? normalizeSpaces(isSameDay(from, to) ? formatter.format(from) : formatter.formatRange(from, to))
-      : undefined;
+  const label = !(from && to)
+    ? undefined
+    : dateFormat === "numeric"
+      ? isSameDay(from, to)
+        ? <NumericDate date={from} />
+        : (
+            <>
+              <NumericDate date={from} />
+              <span className="text-muted-foreground"> – </span>
+              <NumericDate date={to} />
+            </>
+          )
+      : normalizeSpaces(isSameDay(from, to) ? formatter.format(from) : formatter.formatRange(from, to));
 
   return (
     <DatePickerShell
@@ -365,11 +455,12 @@ export function DateRangePicker({
       label={label}
       hiddenValue={from && to ? `${toIsoDate(from)}/${toIsoDate(to)}` : undefined}
       onClear={() => setValue(null)}
+      calendarProps={calendarProps}
     >
-      {(close) => (
+      {(close, navigation) => (
         <DateRangeCalendar
           value={value}
-          calendarProps={calendarProps}
+          calendarProps={{ ...calendarProps, ...navigation }}
           onComplete={(range) => {
             setValue(range);
             close();

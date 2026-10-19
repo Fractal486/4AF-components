@@ -8,13 +8,28 @@ export const datePickerEntry = defineEntry({
     mode: select(["single", "range"], "single"),
     variant: select(["default", "ghost", "plain"], "default"),
     size: select(["xs", "sm", "md"], "md"),
-    clearable: bool(true, "Clearable"),
+    dateFormat: select(["medium", "numeric"], "medium", "Format"),
+    footer: bool(true, "Footer"),
   },
-  render({ mode, variant, size, clearable }) {
+  render({ mode, variant, size, dateFormat, footer }) {
     return mode === "range" ? (
-      <DateRangePicker key="range" variant={variant} size={size} clearable={clearable} />
+      <DateRangePicker
+        key="range"
+        variant={variant}
+        size={size}
+        dateFormat={dateFormat}
+        clearable={footer}
+        showToday={footer}
+      />
     ) : (
-      <DatePicker key="single" variant={variant} size={size} clearable={clearable} />
+      <DatePicker
+        key="single"
+        variant={variant}
+        size={size}
+        dateFormat={dateFormat}
+        clearable={footer}
+        showToday={footer}
+      />
     );
   },
 });

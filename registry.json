@@ -659,7 +659,7 @@
     {
       "name": "switch",
       "type": "registry:ui",
-      "description": "A switch that slides and grows a rounded center pill toward the track center when pressed. Adaptive or fixed thumb tone.",
+      "description": "A switch whose thumb stretches toward the track center on hover and further when pressed, then returns to a circle as it slides. Adaptive or fixed thumb tone.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/switch (Markdown: https://4af.selfsimilar.dev/docs/switch.md)",
       "dependencies": [
         "@base-ui/react",
@@ -743,7 +743,7 @@
     {
       "name": "slider",
       "type": "registry:ui",
-      "description": "A slider whose thumb tracks the pointer while dragged, glides on track clicks and keyboard steps, and grabs while held, with optional range mode, ticks, labels, and a live value tooltip. Base UI behaviour.",
+      "description": "A slider as a bordered fader bar with a thin thumb and ruler ticks, or a knob on a thin rail. Tracks the pointer while dragged and glides on track clicks and keyboard steps, with optional range mode, labels, editable values, a live value tooltip, and a custom fill colour. Base UI behaviour.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/slider (Markdown: https://4af.selfsimilar.dev/docs/slider.md)",
       "dependencies": [
         "@base-ui/react",
@@ -867,7 +867,7 @@
     {
       "name": "table",
       "type": "registry:ui",
-      "description": "A presentational semantic table with a composable caption, two densities, optional grid lines, a pinned header, and a loading skeleton state. It has no controls and no state; install data-table for selection, sorting and row actions.",
+      "description": "A presentational semantic table with a composable caption, two densities, an optional outline and row / column lines, a pinned header, and a loading skeleton state. It has no controls and no state; install data-table for selection, sorting and row actions.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/table (Markdown: https://4af.selfsimilar.dev/docs/table.md)",
       "dependencies": [
         "class-variance-authority"
@@ -1463,7 +1463,7 @@
     {
       "name": "date-picker",
       "type": "registry:ui",
-      "description": "Date and date-range fields with a desktop popover, mobile sheet, and standalone Calendar.",
+      "description": "Date and date-range fields with a desktop popover, mobile sheet, medium or numeric date labels, and a standalone Calendar with a month / year picker.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/date-picker (Markdown: https://4af.selfsimilar.dev/docs/date-picker.md)",
       "dependencies": [
         "@base-ui/react",

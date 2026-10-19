@@ -1,20 +1,27 @@
 "use client";
 
 import { useDirection } from "@base-ui/react/direction-provider";
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
+import { Radio as BaseRadio } from "@base-ui/react/radio";
+import { RadioGroup as BaseRadioGroup } from "@base-ui/react/radio-group";
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronsUpDown, ChevronUp } from "lucide-react";
 import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
   type ComponentProps,
+  type ReactNode,
   type SyntheticEvent,
 } from "react";
 import {
   addToRange,
   DayPicker,
+  DateLib,
   useDayPicker,
   type ChevronProps,
   type DateRange,
@@ -22,6 +29,7 @@ import {
   type DayEventHandler,
   type DayProps,
   type MonthCaptionProps,
+  type MonthGridProps,
   type MonthProps,
   type MonthsProps,
   type RootProps,
@@ -37,15 +45,15 @@ import { Button } from "@/registry/ui/button/button";
  * Behaviour is react-day-picker's. Base UI has no calendar, and a date grid is exactly the
  * kind of thing the contract forbids hand-rolling: roving tabindex across 42 cells, arrow /
  * Page / Home / End keys that cross month boundaries, `aria-selected` on gridcells, disabled
- * and hidden days, locale-aware week starts. This file only skins it and adds two things
- * the primitive doesn't do: a hover preview while a range is half-picked, and the month
- * transition.
+ * and hidden days, locale-aware week starts. This file only skins it and adds three things
+ * the primitive doesn't do: a hover preview while a range is half-picked, the month
+ * transition, and a month / year picker behind the caption.
  *
  * The month transition is CSS, not script. When the visible month changes, the weeks and
  * caption are remounted under a new key, and `@starting-style` lets them enter from the
  * side the user travelled toward — a slide and fade on `translate`/`opacity` only.
- * `fixedWeeks` defaults on so every month is six rows: the grid never changes height, so
- * there's no layout to animate and the popover around it never jumps. Navigating by
+ * Only the weeks needed for the month are shown. A measured wrapper transitions height
+ * as the number of weeks changes, so the surrounding panel resizes smoothly. Navigating by
  * keyboard fades rather than slides, because a keyboard user holding PageDown wants the
  * grid to settle, not to sweep past on every press.
  */
@@ -59,6 +67,19 @@ interface CalendarContextValue {
   hovered: Date | undefined;
   navSource: NavSource;
   setNavSource: (source: NavSource) => void;
+  /** Whether the month / year picker is showing in place of the day grid. */
+  pickerOpen: boolean;
+  /** The grid's height when the picker opened, held while it is open. */
+  pickerHeight: number | undefined;
+  setPickerOpen: (open: boolean, options?: { returnFocus?: boolean }) => void;
+  /** The month shown, for the picker to mark and change. */
+  month: Date;
+  goToMonth: (month: Date) => void;
+  monthNames: string[];
+  years: number[];
+  startMonth: Date | undefined;
+  endMonth: Date | undefined;
+  toggleRef: (node: HTMLButtonElement | null) => void;
 }
 
 const CalendarContext = createContext<CalendarContextValue | null>(null);
@@ -79,6 +100,10 @@ function omit<T extends object, K extends keyof T>(value: T, ...keys: K[]): Omit
   const result = { ...value };
   for (const key of keys) delete result[key];
   return result;
+}
+
+function startOfMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
 }
 
 function isSameDay(a: Date, b: Date) {
@@ -153,25 +178,29 @@ function composeDayHandler<E extends SyntheticEvent>(
   };
 }
 
-// The month buttons are ghost Buttons squared to the grid: a cell's size and corner, so
-// they sit exactly over the first and last columns.
-const navButtonClassName = "size-(--cell-size) rounded-(--cell-radius)";
+// Small icon buttons centered over the first and last calendar columns.
+const navButtonClassName = "m-[calc((var(--cell-size)-30px)/2)]";
 
 export function Calendar({
   className,
   classNames,
   showOutsideDays = true,
-  fixedWeeks = true,
+  fixedWeeks = false,
+  weekStartsOn = 1,
   captionLayout = "label",
   navLayout = "around",
   animate = true,
   components,
+  formatters,
   dir,
   today,
   onDayMouseEnter,
   onDayMouseLeave,
   onDayFocus,
   onDayBlur,
+  month: monthProp,
+  defaultMonth,
+  onMonthChange,
   ...props
 }: CalendarProps) {
   const direction = useDirection();
@@ -186,9 +215,108 @@ export function Calendar({
   );
   const isRange = props.mode === "range";
 
+  // The shown month is held here (or by the caller, through `month`) so the month / year
+  // picker can move it; react-day-picker's own navigation reports through `onMonthChange`.
+  const { startMonth, endMonth, numberOfMonths = 1 } = props;
+  const [innerMonth, setInnerMonth] = useState(() => {
+    // Where react-day-picker would open: inside `startMonth` / `endMonth`, with every month of
+    // a multi-month view in range.
+    let initial = startOfMonth(monthProp ?? defaultMonth ?? today ?? new Date());
+    const lastFirst =
+      endMonth && new Date(endMonth.getFullYear(), endMonth.getMonth() - (numberOfMonths - 1), 1);
+    if (lastFirst && initial > lastFirst) initial = lastFirst;
+    if (startMonth && initial < startOfMonth(startMonth)) initial = startOfMonth(startMonth);
+    return initial;
+  });
+  const shownMonth = monthProp ?? innerMonth;
+  const goToMonth = useCallback(
+    (next: Date) => {
+      let target = startOfMonth(next);
+      if (startMonth && target < startOfMonth(startMonth)) target = startOfMonth(startMonth);
+      if (endMonth && target > startOfMonth(endMonth)) target = startOfMonth(endMonth);
+      setInnerMonth(target);
+      onMonthChange?.(target);
+    },
+    [startMonth, endMonth, onMonthChange],
+  );
+
+  const [picker, setPicker] = useState<{ open: boolean; height: number | undefined }>({
+    open: false,
+    height: undefined,
+  });
+  const pickerOpen = picker.open;
+  const toggleNode = useRef<HTMLButtonElement | null>(null);
+  const returnFocus = useRef(false);
+  const setPickerOpen = useCallback((open: boolean, options?: { returnFocus?: boolean }) => {
+    returnFocus.current = !open && (options?.returnFocus ?? false);
+    // The panel follows the number of weeks only in the day view. Measured as the picker
+    // opens, the grid's height is held while it is open, so moving between months there
+    // doesn't resize the panel; closing it lets the grid take the new month's height.
+    // `offsetHeight`, not a rect: the popover may still be scaling in.
+    const grid = toggleNode.current
+      ?.closest('[data-slot="calendar-month"]')
+      ?.querySelector<HTMLElement>('[data-slot="calendar-month-grid"]');
+    setPicker({ open, height: open ? grid?.offsetHeight : undefined });
+  }, []);
+  const toggleRef = useCallback((node: HTMLButtonElement | null) => {
+    toggleNode.current = node;
+  }, []);
+  // A month picked in the list unmounts the list, focus included, so focus goes back to
+  // the toggle that opened it rather than being dropped on the page.
+  useEffect(() => {
+    if (pickerOpen || !returnFocus.current) return;
+    returnFocus.current = false;
+    toggleNode.current?.focus();
+  }, [pickerOpen]);
+
+  const localeCode = props.locale?.code;
+  const monthNames = useMemo(() => {
+    const format = new Intl.DateTimeFormat(localeCode, { month: "short" });
+    return Array.from({ length: 12 }, (_, index) => format.format(new Date(2000, index, 1)));
+  }, [localeCode]);
+  const shownYear = shownMonth.getFullYear();
+  const thisYear = (today ?? new Date()).getFullYear();
+  const years = useMemo(() => {
+    const first = Math.min(startMonth?.getFullYear() ?? thisYear - 100, shownYear);
+    const last = Math.max(endMonth?.getFullYear() ?? thisYear + 20, shownYear);
+    return Array.from({ length: last - first + 1 }, (_, index) => first + index);
+  }, [startMonth, endMonth, shownYear, thisYear]);
+
   const context = useMemo<CalendarContextValue>(
-    () => ({ todayKey: managesToday ? todayKey : undefined, animate, hovered, navSource, setNavSource }),
-    [managesToday, todayKey, animate, hovered, navSource],
+    () => ({
+      todayKey: managesToday ? todayKey : undefined,
+      animate,
+      hovered,
+      navSource,
+      setNavSource,
+      pickerOpen,
+      pickerHeight: picker.height,
+      setPickerOpen,
+      month: shownMonth,
+      goToMonth,
+      monthNames,
+      years,
+      startMonth,
+      endMonth,
+      toggleRef,
+    }),
+    [
+      managesToday,
+      todayKey,
+      animate,
+      hovered,
+      navSource,
+      pickerOpen,
+      picker.height,
+      setPickerOpen,
+      shownMonth,
+      goToMonth,
+      monthNames,
+      years,
+      startMonth,
+      endMonth,
+      toggleRef,
+    ],
   );
 
   const track = useCallback<DayEventHandler<SyntheticEvent>>((date, modifiers) => {
@@ -203,8 +331,11 @@ export function Calendar({
         today={today ?? (managesToday && todayKey ? fromDateKey(todayKey) : undefined)}
         showOutsideDays={showOutsideDays}
         fixedWeeks={fixedWeeks}
+        weekStartsOn={weekStartsOn}
         captionLayout={captionLayout}
         navLayout={navLayout}
+        month={shownMonth}
+        onMonthChange={goToMonth}
         // react-day-picker's own `animate` is off: the transition below replaces it.
         animate={false}
         onDayMouseEnter={composeDayHandler(onDayMouseEnter, isRange ? track : undefined)}
@@ -212,16 +343,22 @@ export function Calendar({
         onDayFocus={composeDayHandler(onDayFocus, isRange ? track : undefined)}
         onDayBlur={composeDayHandler(onDayBlur, isRange ? clear : undefined)}
         className={cn(
-          "group/calendar w-fit max-w-full p-3 text-sm text-foreground",
-          // 36px cells; 44px under a coarse pointer, the minimum comfortable touch target.
-          "[--cell-radius:6px] [--cell-size:--spacing(9)] pointer-coarse:[--cell-size:--spacing(11)]",
+          // 6px at the sides and top, 12px below the last week.
+          "group/calendar w-fit max-w-full px-1.5 pt-1.5 pb-3 text-sm text-foreground",
+          // 34px cells; 44px under a coarse pointer, the minimum comfortable touch target. The
+          // date picker's trigger is sized from these same numbers, so keep the two in step.
+          "[--cell-radius:6px] [--cell-size:--spacing(8.5)] pointer-coarse:[--cell-size:--spacing(11)]",
           className,
         )}
         classNames={{
           months: "relative flex flex-col gap-4 sm:flex-row",
           month:
             "relative flex w-[calc(var(--cell-size)*7)] max-w-full min-w-0 flex-col gap-3 group-data-[week-numbers]/calendar:w-[calc(var(--cell-size)*8)]",
-          nav: "pointer-events-none absolute inset-x-0 top-0 z-10 flex h-(--cell-size) items-center justify-between gap-1 *:pointer-events-auto",
+          // Hidden while the month / year picker is open: it moves by month and year itself.
+          nav: cn(
+            "pointer-events-none absolute inset-x-0 top-0 z-10 flex h-(--cell-size) items-center justify-between gap-1 *:pointer-events-auto",
+            pickerOpen && "invisible",
+          ),
           button_previous: cn(navButtonClassName, navLayout === "around" && "absolute start-0 top-0 z-10"),
           button_next: cn(navButtonClassName, navLayout === "around" && "absolute end-0 top-0 z-10"),
           month_caption: "flex h-(--cell-size) w-full items-center justify-center px-(--cell-size)",
@@ -243,7 +380,7 @@ export function Calendar({
           month_grid: "w-full table-fixed border-collapse",
           weekdays: "flex",
           weekday: "w-(--cell-size) min-w-0 text-xs font-normal text-muted-foreground select-none",
-          week: "mt-1 flex w-full",
+          week: "mt-[3px] flex w-full",
           week_number_header: "w-(--cell-size) shrink-0 select-none",
           week_number: "text-xs font-normal text-muted-foreground select-none",
           day: cn(
@@ -266,6 +403,11 @@ export function Calendar({
           footer: "pt-3 text-sm text-pretty text-muted-foreground",
           ...classNames,
         }}
+        formatters={{
+          formatWeekdayName: (day, options, dateLib) =>
+            (dateLib ?? new DateLib(options)).format(day, "ccccc"),
+          ...formatters,
+        }}
         components={{
           Root: CalendarRoot,
           Chevron: CalendarChevron,
@@ -274,6 +416,7 @@ export function Calendar({
           Months: CalendarMonths,
           Month: CalendarMonth,
           MonthCaption: CalendarMonthCaption,
+          MonthGrid: CalendarMonthGrid,
           Weeks: CalendarWeeks,
           Day: CalendarDay,
           DayButton: CalendarDayButton,
@@ -325,7 +468,7 @@ function CalendarNavButton({
     <Button
       {...props}
       variant="ghost"
-      size="icon"
+      size="icon-sm"
       disabled={ariaDisabled === true || ariaDisabled === "true"}
     >
       {children}
@@ -380,6 +523,17 @@ function CalendarMonths({ className, ...props }: MonthsProps) {
 function CalendarMonth({ calendarMonth, className, ...rest }: MonthProps) {
   const props = omit(rest, "displayIndex");
   const { animate, navSource } = useCalendarContext("CalendarMonth");
+  const monthRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<number>();
+  useEffect(() => {
+    const element = monthRef.current;
+    if (!element) return;
+    const measure = () => setHeight(element.getBoundingClientRect().height);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
   const time = calendarMonth.date.getTime();
   // The previous month is kept in state and compared during render, so the direction is
   // known in the same render the new weeks mount in — no effect, no flash of the old pose.
@@ -399,7 +553,16 @@ function CalendarMonth({ calendarMonth, className, ...rest }: MonthProps) {
 
   return (
     <MonthMotionContext.Provider value={motion}>
-      <div className={className} {...props} data-slot="calendar-month" />
+      <div
+        data-slot="calendar-month-height"
+        className={cn(
+          "overflow-clip",
+          animate && "transition-[height] duration-(--duration-slow) ease-out",
+        )}
+        style={{ height }}
+      >
+        <div ref={monthRef} className={className} {...props} data-slot="calendar-month" />
+      </div>
     </MonthMotionContext.Provider>
   );
 }
@@ -416,9 +579,18 @@ const monthEnterClassName = cn(
   "data-[enter=fade]:duration-(--duration-fast)",
 );
 
-function CalendarMonthCaption({ className, ...rest }: MonthCaptionProps) {
-  const props = omit(rest, "calendarMonth", "displayIndex");
+function CalendarMonthCaption({ className, children, displayIndex, ...rest }: MonthCaptionProps) {
+  const props = omit(rest, "calendarMonth");
   const { key, enter } = useContext(MonthMotionContext);
+  const { pickerOpen, setPickerOpen, toggleRef } = useCalendarContext("CalendarMonthCaption");
+  const { dayPickerProps } = useDayPicker();
+  // The label caption of the first month toggles the month / year picker. The `dropdown`
+  // layouts already carry their own month and year selects, and `disableNavigation` pins the
+  // month, so neither gets one.
+  const toggles =
+    dayPickerProps.captionLayout === "label" &&
+    !dayPickerProps.disableNavigation &&
+    (displayIndex ?? 0) === 0;
 
   return (
     <div
@@ -434,7 +606,200 @@ function CalendarMonthCaption({ className, ...rest }: MonthCaptionProps) {
       {...props}
       data-slot="calendar-month-caption"
       data-enter={enter}
-    />
+    >
+      {toggles ? (
+        <button
+          ref={toggleRef}
+          type="button"
+          data-slot="calendar-picker-toggle"
+          aria-expanded={pickerOpen}
+          onClick={() => setPickerOpen(!pickerOpen)}
+          className={cn(
+            "inline-flex h-7 max-w-full min-w-0 items-center gap-1 rounded-(--cell-radius) ps-2 pe-1.5",
+            "outline-none transition-[background-color] duration-(--duration-fast) ease-out",
+            "hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring",
+          )}
+        >
+          {children}
+          <span className="sr-only">, choose month and year</span>
+          <ChevronsUpDown aria-hidden className="size-3.5 shrink-0 text-muted-foreground" />
+        </button>
+      ) : (
+        children
+      )}
+    </div>
+  );
+}
+
+/**
+ * The day grid, or — while the picker is open — the month / year picker laid over it. The
+ * grid stays rendered underneath, hidden, so it holds the panel at the same size.
+ */
+function CalendarMonthGrid({ className, ...props }: MonthGridProps) {
+  const { pickerOpen, pickerHeight } = useCalendarContext("CalendarMonthGrid");
+
+  return (
+    <div
+      data-slot="calendar-month-grid"
+      className={cn("relative w-full", pickerOpen && "overflow-hidden")}
+      style={pickerOpen && pickerHeight !== undefined ? { height: pickerHeight } : undefined}
+    >
+      <table
+        {...props}
+        className={cn(className, pickerOpen && "invisible")}
+        aria-hidden={pickerOpen || undefined}
+      />
+      {pickerOpen && <MonthYearPicker />}
+    </div>
+  );
+}
+
+// The chosen month and year sit on a light grey chip, the outlined tabs' selected fill, with
+// full-ink text; hover is a fainter wash so it never reads as a second selection.
+const pickerRowClassName = cn(
+  "flex h-7 w-full shrink-0 items-center justify-center rounded-[calc(var(--cell-radius)-1px)] text-xs tabular-nums text-muted-foreground",
+  "outline-none transition-[background-color,color] duration-(--duration-fast) ease-out",
+  "hover:bg-muted/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
+  "data-[checked]:bg-muted data-[checked]:font-medium data-[checked]:text-foreground data-[checked]:hover:bg-muted",
+  "data-[disabled]:cursor-not-allowed data-[disabled]:text-subtle-foreground data-[disabled]:hover:bg-transparent",
+);
+
+// No scrollbar; the top and bottom 28px fade out instead, to show there is more. The 28px of
+// padding at each end lets the first and last rows scroll clear of the fade.
+const pickerColumnClassName = cn(
+  "flex h-full min-h-0 flex-col gap-0.5 overflow-y-auto overscroll-contain px-0.5 py-7",
+  "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+  "[mask-image:linear-gradient(to_bottom,transparent,black_28px,black_calc(100%-28px),transparent)]",
+);
+
+// A thin blur over each faded edge, as on the scrollable tabs: the rows soften as well as fade
+// as they pass out of the column. The strip's own mask tapers the blur toward the middle.
+const pickerEdgeClassName = "pointer-events-none absolute inset-x-0 z-10 h-7 backdrop-blur-[1.5px]";
+
+/** A picker column with its blurred, faded top and bottom edges. */
+function PickerColumn({ children }: { children: ReactNode }) {
+  return (
+    <div className="relative min-h-0">
+      {children}
+      <span
+        aria-hidden
+        className={cn(pickerEdgeClassName, "top-0 [mask-image:linear-gradient(to_bottom,black,transparent)]")}
+      />
+      <span
+        aria-hidden
+        className={cn(pickerEdgeClassName, "bottom-0 [mask-image:linear-gradient(to_top,black,transparent)]")}
+      />
+    </div>
+  );
+}
+
+/** Scroll a picker column so its checked row sits in the middle. */
+function centerChecked(column: HTMLElement | null, behavior: ScrollBehavior) {
+  const checked = column?.querySelector<HTMLElement>("[data-checked]");
+  if (!column || !checked) return;
+  const top = checked.offsetTop - (column.clientHeight - checked.offsetHeight) / 2;
+  if (typeof column.scrollTo === "function") column.scrollTo({ top, behavior });
+  else column.scrollTop = top;
+}
+
+/**
+ * Months and years side by side, each a Base UI radio group: one tab stop per column, arrow
+ * keys to move through it. Picking a year moves the calendar and leaves the picker open;
+ * picking a month moves it and returns to that month's days, as does Escape. Months entirely
+ * outside `startMonth` / `endMonth` are disabled.
+ */
+function MonthYearPicker() {
+  const { month, goToMonth, setPickerOpen, monthNames, years, startMonth, endMonth } =
+    useCalendarContext("MonthYearPicker");
+  const monthsRef = useRef<HTMLDivElement>(null);
+  const yearsRef = useRef<HTMLDivElement>(null);
+  const year = month.getFullYear();
+
+  // Open on the shown month and year: centred in their columns, with focus on the month.
+  useLayoutEffect(() => {
+    centerChecked(monthsRef.current, "instant");
+    centerChecked(yearsRef.current, "instant");
+    monthsRef.current?.querySelector<HTMLElement>("[data-checked]")?.focus({ preventScroll: true });
+  }, []);
+
+  // Each column follows its pick — by click or by arrow key — scrolling it back to the
+  // middle. Smooth, unless motion is reduced; the first centring above is instant.
+  const monthIndex = month.getMonth();
+  const mounted = useRef(false);
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+    const reduced =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const behavior = reduced ? "instant" : "smooth";
+    centerChecked(monthsRef.current, behavior);
+    centerChecked(yearsRef.current, behavior);
+  }, [monthIndex, year]);
+
+  const unavailable = (index: number) => {
+    const first = new Date(year, index, 1);
+    const last = new Date(year, index + 1, 0);
+    return (
+      (startMonth !== undefined && last < startOfMonth(startMonth)) ||
+      (endMonth !== undefined && first > startOfMonth(endMonth))
+    );
+  };
+
+  return (
+    <div
+      data-slot="calendar-picker"
+      // One level at a time: Escape goes back to the days, and only the next one closes the
+      // popover or sheet around the calendar.
+      onKeyDown={(event) => {
+        if (event.key !== "Escape") return;
+        event.stopPropagation();
+        setPickerOpen(false, { returnFocus: true });
+      }}
+      className={cn(
+        "absolute inset-0 grid grid-cols-2 gap-1",
+        "transition-[opacity] duration-(--duration-fast) ease-out starting:opacity-0",
+      )}
+    >
+      <PickerColumn>
+        <BaseRadioGroup
+          ref={monthsRef}
+          aria-label="Month"
+          value={month.getMonth()}
+          onValueChange={(value) => goToMonth(new Date(year, value as number, 1))}
+          className={pickerColumnClassName}
+        >
+          {monthNames.map((name, index) => (
+            <BaseRadio.Root
+              key={name}
+              value={index}
+              disabled={unavailable(index)}
+              onClick={() => setPickerOpen(false, { returnFocus: true })}
+              className={pickerRowClassName}
+            >
+              {name}
+            </BaseRadio.Root>
+          ))}
+        </BaseRadioGroup>
+      </PickerColumn>
+      <PickerColumn>
+        <BaseRadioGroup
+          ref={yearsRef}
+          aria-label="Year"
+          value={year}
+          onValueChange={(value) => goToMonth(new Date(value as number, month.getMonth(), 1))}
+          className={pickerColumnClassName}
+        >
+          {years.map((option) => (
+            <BaseRadio.Root key={option} value={option} className={pickerRowClassName}>
+              {option}
+            </BaseRadio.Root>
+          ))}
+        </BaseRadioGroup>
+      </PickerColumn>
+    </div>
   );
 }
 
@@ -505,20 +870,27 @@ function CalendarDay({ day, modifiers, className, children, ...props }: DayProps
 }
 
 const dayButtonClassName = cn(
-  "relative inline-flex size-full items-center justify-center rounded-(--cell-radius) p-0",
-  "font-normal tabular-nums text-foreground outline-none",
-  "transition-[background-color,color] duration-(--duration-fast) ease-out",
-  "hover:bg-muted focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring",
-  "disabled:cursor-not-allowed disabled:text-subtle-foreground disabled:line-through disabled:hover:bg-transparent",
+  // The button fills the cell, so the whole cell is the hit area. What it draws — hover,
+  // selection, today's outline, the focus ring — is a box 2px inside it, on `::before`, so
+  // the marks are smaller than the cell. `isolate` keeps that layer behind the number.
+  "relative isolate inline-flex size-full items-center justify-center p-0",
+  // 12px, the same size as the weekday letters above them.
+  "text-xs font-normal tabular-nums text-foreground outline-none",
+  "transition-[color] duration-(--duration-fast) ease-out",
+  "before:absolute before:inset-[2px] pointer-coarse:before:inset-[3px] before:-z-10 before:rounded-[calc(var(--cell-radius)-1px)]",
+  "before:transition-[background-color,box-shadow] before:duration-(--duration-fast) before:ease-out",
+  "hover:before:bg-muted focus-visible:z-10 focus-visible:before:ring-2 focus-visible:before:ring-ring",
+  "disabled:cursor-not-allowed disabled:text-subtle-foreground disabled:line-through disabled:hover:before:bg-transparent",
   "group-data-[outside]/day:text-subtle-foreground",
-  // Today: a dot under the number. A fill would collide with hover and the range band.
+  // Today: an outline box the size of the selection, in the strong border colour. Selected,
+  // the fill says enough on its own.
   "data-[today]:font-semibold",
-  "data-[today]:after:absolute data-[today]:after:bottom-1 data-[today]:after:left-1/2 data-[today]:after:size-1 data-[today]:after:-translate-x-1/2 data-[today]:after:rounded-full data-[today]:after:bg-current",
+  "data-[today]:not-data-[selected-single]:not-data-[range-start]:not-data-[range-end]:before:shadow-[inset_0_0_0_1px_var(--color-border-strong)]",
   // Chosen ends are ink, like the primary button; the middle of a range sits on the band.
-  "data-[selected-single]:bg-primary data-[selected-single]:text-primary-foreground data-[selected-single]:hover:bg-primary-hover",
-  "data-[range-start]:bg-primary data-[range-start]:text-primary-foreground data-[range-start]:hover:bg-primary-hover",
-  "data-[range-end]:bg-primary data-[range-end]:text-primary-foreground data-[range-end]:hover:bg-primary-hover",
-  "data-[range-middle]:rounded-none data-[range-middle]:hover:rounded-(--cell-radius) data-[range-middle]:hover:bg-foreground/6",
+  "data-[selected-single]:text-primary-foreground data-[selected-single]:before:bg-primary data-[selected-single]:hover:before:bg-primary-hover",
+  "data-[range-start]:text-primary-foreground data-[range-start]:before:bg-primary data-[range-start]:hover:before:bg-primary-hover",
+  "data-[range-end]:text-primary-foreground data-[range-end]:before:bg-primary data-[range-end]:hover:before:bg-primary-hover",
+  "data-[range-middle]:hover:before:bg-foreground/6",
   "forced-colors:data-[selected-single]:outline-2 forced-colors:data-[range-start]:outline-2 forced-colors:data-[range-end]:outline-2",
 );
 

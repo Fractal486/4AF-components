@@ -105,7 +105,7 @@ export const tabVariants = cva(
       { variant: "pill", size: "sm", class: "px-2.5 py-1.5" },
       // Compact: the underline marks the label alone, so the tab needs only enough padding
       // to space the labels apart and give the focus ring room.
-      { variant: "underline", size: "md", class: "rounded-t-[6px] px-2 py-1" },
+      { variant: "underline", size: "md", class: "rounded-t-[6px] px-2.5 pt-1 pb-2" },
       { variant: "underline", size: "sm", class: "rounded-t-[5px] px-1.5 pt-0.5 pb-1" },
       // Outlined segment: with the 3px padding and 1px border, 34px and 30px, the md and
       // sm Input and Select heights.
@@ -133,7 +133,8 @@ export const tabIndicatorVariants = cva("pointer-events-none absolute z-0", {
       segment: "inset-y-0.5",
       pill: "rounded-full",
       // A pixel down, so it sits over the list's 1px separator instead of just above it.
-      underline: "-bottom-px h-[1.5px] bg-foreground",
+      // Its thickness is per size, below.
+      underline: "-bottom-px bg-foreground",
     },
     appearance: { default: "", solid: "", outline: "" },
     size: { sm: "", md: "" },
@@ -150,6 +151,9 @@ export const tabIndicatorVariants = cva("pointer-events-none absolute z-0", {
     { variant: "segment", appearance: "outline", size: "sm", class: "inset-y-[3px] rounded-[3px]" },
     { variant: "pill", size: "md", class: "inset-y-1" },
     { variant: "pill", size: "sm", class: "inset-y-0.5" },
+    // 1.5px at md; sm keeps a hairline, in step with its smaller label.
+    { variant: "underline", size: "md", class: "h-[1.5px]" },
+    { variant: "underline", size: "sm", class: "h-px" },
   ],
   defaultVariants: { variant: "segment", appearance: "default", size: "md" },
 });
