@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">Command Palette spacing</title>
+  <desc id="description">A command palette with a search field, Navigation group, five commands, and keyboard hints. At its maximum width of 672 pixels, the header is 48 pixels high and plain command rows are 36 pixels high. The list has 6 pixels of padding, rows have 10 pixels of horizontal padding, and icons are separated from text by 10 pixels. Dashed blue lines reveal the spacing.</desc>
+  <!-- Hand-authored SVG, drawn at 2×. Dimensions are CSS px.
+       Root palette, one heading, five plain rows without descriptions or badges.
+       Width: max-w-2xl = 672px. Header: h-12 = 48px.
+       Group heading: 8 + 16 + 4 = 28px. Rows: 8 + 20 + 8 = 36px.
+       Footer: 1px border + 16px padding + 16px keycaps = 33px.
+       Outer height: 2 + 48 + 12 + 28 + 180 + 33 = 303px. -->
+  <defs>
+    <style>
+      text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      .label { fill: #a1a29c; font-size: 18px; }
+      .option { fill: #92948d; font-size: 26px; }
+      .hint { fill: #92948d; font-size: 22px; }
+      .measure { stroke: #6889ff; stroke-width: 1.5; }
+      .spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      .icon { stroke: #a7a8a2; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+      .key { fill: #373833; }
+      /* Static is the default for exports and reduced-motion viewers. */
+      svg { --outline-duration: 400ms; --detail-duration: 200ms; --annotation-delay: 700ms; --annotation-duration: 200ms; }
+      @keyframes draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes reveal { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        .draw, .icon > * {
+          stroke-dasharray: 1;
+          animation: draw-line var(--detail-duration) ease-out var(--line-delay, 0ms) both;
+        }
+        .outline { animation-duration: var(--outline-duration); }
+        .measure, .spacing, .label {
+          animation: reveal var(--annotation-duration) ease-out var(--annotation-delay) both;
+        }
+      }
+    </style>
+    <g id="search" class="icon"><circle cx="13" cy="13" r="9" pathLength="1"/><path d="m20 20 9 9" pathLength="1"/></g>
+    <g id="grid" class="icon"><rect x="3" y="3" width="10" height="10" rx="1" pathLength="1"/><rect x="19" y="3" width="10" height="10" rx="1" pathLength="1"/><rect x="3" y="19" width="10" height="10" rx="1" pathLength="1"/><rect x="19" y="19" width="10" height="10" rx="1" pathLength="1"/></g>
+    <g id="folder" class="icon"><path d="M3 8h10l4 4h12v15H3Z" pathLength="1"/></g>
+    <g id="team" class="icon"><circle cx="12" cy="10" r="5" pathLength="1"/><path d="M3 28v-4a9 9 0 0 1 18 0v4 M23 6a5 5 0 0 1 0 10 M26 20q5 2 5 8" pathLength="1"/></g>
+    <g id="activity" class="icon"><path d="M2 17h7l5-13 6 25 5-12h5" pathLength="1"/></g>
+    <g id="settings" class="icon"><path d="M3 8h26 M3 24h26" pathLength="1"/><circle cx="11" cy="8" r="4" fill="#060606" pathLength="1"/><circle cx="22" cy="24" r="4" fill="#060606" pathLength="1"/></g>
+  </defs>
+  <rect width="1600" height="1000" fill="#060606"/>
+
+  <!-- Palette, header, and first active row. -->
+  <rect x="129" y="211" width="1342" height="604" rx="13" stroke="#a7a8a2" stroke-width="2" pathLength="1" class="draw outline"/>
+  <path d="M130 307H1470" stroke="#656760" stroke-width="2" pathLength="1" class="draw" style="--line-delay:250ms"/>
+  <path d="M130 749H1470" stroke="#656760" stroke-width="2" pathLength="1" class="draw" style="--line-delay:275ms"/>
+  <rect x="142" y="376" width="1316" height="72" rx="10" fill="#353632"/>
+
+  <!-- Header inset, icon size, and icon-to-text gap. -->
+  <rect x="162" y="244" width="32" height="32" class="spacing"/>
+  <path d="M194 230V286 M214 230V286" class="spacing"/>
+  <use href="#search" x="162" y="244" style="--line-delay:300ms"/>
+  <text x="214" y="269" class="option">Search commands…</text>
+  <rect x="1382" y="244" width="64" height="32" rx="6" class="key"/>
+  <text x="1414" y="267" text-anchor="middle" class="hint">Esc</text>
+
+  <!-- Dashed list bounds, row edges, horizontal padding, and icon/text slots. -->
+  <rect x="142" y="320" width="1316" height="416" class="spacing"/>
+  <path d="M162 320V736 M194 376V736 M214 376V736 M1438 320V736" class="spacing"/>
+  <path d="M142 376H1458 M142 448H1458 M142 520H1458 M142 592H1458 M142 664H1458" class="spacing"/>
+  <text x="162" y="358" fill="#898b84" font-size="24">Navigation</text>
+
+  <use href="#grid" x="162" y="396" style="--line-delay:325ms"/>
+  <text x="214" y="422" class="option" style="fill:#c7c7c2">Dashboard</text>
+  <use href="#folder" x="162" y="468" style="--line-delay:350ms"/>
+  <text x="214" y="494" class="option">Projects</text>
+  <use href="#team" x="162" y="540" style="--line-delay:375ms"/>
+  <text x="214" y="566" class="option">Team</text>
+  <use href="#activity" x="162" y="612" style="--line-delay:400ms"/>
+  <text x="214" y="638" class="option">Activity</text>
+  <use href="#settings" x="162" y="684" style="--line-delay:425ms"/>
+  <text x="214" y="710" class="option">Settings</text>
+
+  <!-- Footer is part of the component. -->
+  <rect x="154" y="766" width="56" height="32" rx="6" class="key"/>
+  <text x="182" y="789" text-anchor="middle" class="hint">esc</text>
+  <text x="218" y="789" class="hint">Close</text>
+  <rect x="320" y="766" width="32" height="32" rx="6" class="key"/>
+  <rect x="356" y="766" width="32" height="32" rx="6" class="key"/>
+  <text x="336" y="789" text-anchor="middle" class="hint">↑</text>
+  <text x="372" y="789" text-anchor="middle" class="hint">↓</text>
+  <text x="396" y="789" class="hint">Navigate</text>
+  <text x="1346" y="789" class="hint">Select</text>
+  <rect x="1414" y="766" width="32" height="32" rx="6" class="key"/>
+  <path d="M1437 775v8h-15 m5-5-5 5 5 5" stroke="#92948d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" pathLength="1" class="draw" style="--line-delay:450ms"/>
+
+  <!-- Overall width, header height, and row height. -->
+  <path d="M128 133V155 M1472 133V155 M128 144H1472" class="measure"/>
+  <text x="800" y="128" text-anchor="middle" class="label">672 px</text>
+  <path d="M77 212H99 M77 308H99 M88 212V308" class="measure"/>
+  <text x="67" y="266" text-anchor="end" class="label">48 px</text>
+  <path d="M1493 376H1515 M1493 448H1515 M1504 376V448" class="measure"/>
+  <text x="1522" y="418" class="label">36 px</text>
+
+  <!-- Search icon-to-text gap, also used by command rows. -->
+  <path d="M194 226V238 M214 226V238 M194 232H214 M204 225 230 184H270" class="measure"/>
+  <text x="283" y="190" class="label">10 px</text>
+
+  <!-- List and row padding. -->
+  <path d="M130 830V866 M142 830V866 M162 830V866 M130 854H162" class="measure"/>
+  <path d="M136 867 113 891H89" class="measure"/>
+  <text x="75" y="897" text-anchor="end" class="label">6 px</text>
+  <path d="M152 867 175 891H217" class="measure"/>
+  <text x="231" y="897" class="label">10 px</text>
+
+  <!-- The list's vertical padding and contiguous rows. -->
+  <path d="M1458 308H1510 M1458 320H1510 M1498 308V320 M1510 314H1530" class="measure"/>
+  <text x="1542" y="320" class="label">6 px</text>
+  <path d="M1448 592H1515" class="measure"/>
+  <text x="1529" y="598" class="label">0 px</text>
+</svg>

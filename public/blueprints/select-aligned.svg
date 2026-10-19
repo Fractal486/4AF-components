@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">Select Aligned spacing</title>
+  <desc id="description">Five options in a 192 by 160 pixel panel, drawn at three times actual size. Rows are 30 pixels high with no gap. Panel padding is 4 pixels and horizontal row padding is 10 pixels. The selected Projects row sits over the trigger.</desc>
+  <!-- Default variant, size sm. Example width set by the caller.
+       All dimensions are CSS pixels, drawn at 3×.
+       Panel height: 2px border + 8px padding + five 30px rows = 160px. -->
+  <defs>
+    <style>
+      text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      .label { fill: #a1a29c; font-size: 18px; }
+      .option { fill: #92948d; font-size: 36px; letter-spacing: -.7px; }
+      .measure { stroke: #6889ff; stroke-width: 1.5; }
+      .spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      /* Static is the default for exports and reduced-motion viewers. */
+      svg { --outline-duration: 400ms; --detail-duration: 200ms; --annotation-delay: 700ms; --annotation-duration: 200ms; }
+      @keyframes draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes reveal { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        .draw {
+          stroke-dasharray: 1;
+          animation: draw-line var(--detail-duration) ease-out var(--line-delay, 0ms) both;
+        }
+        .outline { animation-duration: var(--outline-duration); }
+        .measure, .spacing, .label {
+          animation: reveal var(--annotation-duration) ease-out var(--annotation-delay) both;
+        }
+      }
+    </style>
+  </defs>
+  <rect width="1200" height="800" fill="#060606"/>
+
+  <!-- Panel and five contiguous rows. -->
+  <rect x="301.5" y="151.5" width="573" height="477" rx="19.5" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="draw outline"/>
+  <rect x="315" y="255" width="546" height="90" rx="9" fill="#353632"/>
+  <!-- Dashed overlays expose the panel inset, row padding, and shared row edges. -->
+  <rect x="315" y="165" width="546" height="450" class="spacing"/>
+  <path d="M345 165V641 M831 165V615 M303 153V641 M315 615V641" class="spacing"/>
+  <path d="M315 255H861 M315 345H861 M315 435H861 M315 525H861" class="spacing"/>
+  <text x="345" y="222" class="option">Dashboard</text>
+  <text x="345" y="312" class="option" style="fill:#c7c7c2">Projects</text>
+  <text x="345" y="402" class="option">Team</text>
+  <text x="345" y="492" class="option">Activity</text>
+  <text x="345" y="582" class="option">Settings</text>
+  <path d="m798 300 8 8 16-17" stroke="#c7c7c2" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" pathLength="1" class="draw" style="--line-delay:400ms"/>
+
+  <!-- Overall size. -->
+  <path d="M300 89V111 M876 89V111 M300 100H876" class="measure"/>
+  <text x="588" y="84" text-anchor="middle" class="label">192 px</text>
+  <path d="M239 150H261 M239 630H261 M250 150V630" class="measure"/>
+  <text x="228" y="396" text-anchor="end" class="label">160 px</text>
+
+  <!-- Row height and the absence of space between rows. -->
+  <path d="M909 165H931 M909 255H931 M920 165V255" class="measure"/>
+  <text x="942" y="216" class="label">30 px</text>
+  <path d="M851 435H932" class="measure"/>
+  <text x="946" y="441" class="label">0 px</text>
+
+  <!-- The old trigger position. -->
+  <rect x="300" y="255" width="576" height="90" rx="18" class="measure" stroke-dasharray="6 6" opacity=".7"/>
+  <path d="M300 300H231" class="measure"/>
+  <text x="214" y="293" text-anchor="end" class="label" style="fill:#9baee0">Panel opens</text>
+  <text x="214" y="318" text-anchor="end" class="label" style="fill:#9baee0">over the trigger</text>
+
+  <!-- Padding measured from inside the panel border and from the row edge. -->
+  <path d="M303 641V676 M315 641V676 M345 641V676 M303 665H345" class="measure"/>
+  <path d="M309 677 286 701H230" class="measure"/>
+  <text x="216" y="707" text-anchor="end" class="label">4 px</text>
+  <path d="M330 677 353 701H409" class="measure"/>
+  <text x="423" y="707" class="label">10 px</text>
+</svg>
