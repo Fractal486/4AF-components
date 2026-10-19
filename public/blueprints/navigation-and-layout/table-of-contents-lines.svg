@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="820" viewBox="0 0 1200 820" fill="none" role="img" aria-labelledby="toc-lines-bp-title toc-lines-bp-desc">
+  <title id="toc-lines-bp-title">Table of Contents Lines spacing blueprint</title>
+  <desc id="toc-lines-bp-desc">A borderless table of contents with five headings, drawn at three times actual size. Usage is active and Configuration is nested one level. The chosen width is 176 CSS pixels; the content height is 143 pixels. Contiguous 28-pixel rows contain three equal line tracks. Main rules are 24 pixels long, the active rule is 30 pixels, and secondary rules are 16 pixels. Each depth adds 12 pixels of indentation. Labels sit after a 24-pixel rule column and a 10-pixel gap; the active label moves 4 pixels.</desc>
+  <!--
+    Sources:
+      registry/ui/table-of-contents-lines/table-of-contents-lines.tsx
+      registry/ui/table-of-contents-lines/table-of-contents-lines.variants.ts
+      registry/lib/table-of-contents-scroll.ts
+      inspector/entries/table-of-contents-lines.tsx
+      inspector/entries/toc-demo.tsx
+      app/globals.css; node_modules/tailwindcss/theme.css
+
+    Default labels="always". Five single-line labels, heading levels 2,2,2,3,2.
+    Usage is active; nothing is hovered. Borderless, with no active-row surface.
+    Caller-chosen width: 176px, borrowed from the demo's w-44; this is not a fixed
+    component width. Height is unconstrained for this compact five-heading drawing,
+    rather than the demo's h-40. No overflow means automatic edge padding is zero.
+    Height = FIRST_ROW_INSET_PX 3 + five h-7 rows (5 * 28) = 143px.
+    Nav padding-inline-end pe-1 = 4px. No border or row gap.
+
+    Root rem = 16px; Tailwind spacing = .25rem = 4px.
+    Each row: 28px / 3 equal grid tracks = 9 1/3px per track.
+    Main rule center = row top + 14/3px; secondary centers = +14px, +70/3px.
+    Every rule is 1px thick. Rule column = 1.5rem = 24px.
+    Main rule full box = 1.875rem = 30px; idle clip removes 20%, leaving 24px.
+    Active main rule = 30px; secondary rules = w-4 = 16px.
+    Base indent = .75rem = 12px; each level adds .75rem = 12px.
+    Secondary rules align with the NEXT heading's indent, including both the
+    deeper rules below Usage and the shallower rules below Configuration.
+    Horizontal column gap = gap-x-2.5 = 10px.
+    Base label x = 12 + 24 + 10 = 46px; nested label x = 58px.
+    Active label translation = translate-x-1 = 4px; active label x = 50px.
+    text-sm resolves to the app's 13px; leading-none overrides its normal line
+    height to 13px. Labels center on the FIRST track, not the whole 28px row.
+
+    Drawing scale: 3 SVG units per CSS pixel, including component type.
+    Nav bounds: x=336..864, y=190..619. First row top=199.
+    Row tops: 199,283,367,451,535; rule centers: 213,297,381,465,549.
+    Main rule starts: 372,372,372,408,372. Text starts: 474,474,486,510,474.
+    Rule paths are inset by 1.5 units at each rounded end so their visible bounds
+    equal the ruler endpoints. Only the first row has inset/boundary guides;
+    the component has no visible frame. Other repeated guides are omitted.
+    Background: app dark background token oklch(.120 0 0), encoded as #060606.
+
+    Animation: no outer border exists, so the first main rule is the initial
+    structural stroke (0..400ms). Other rules draw for 200ms at 250..450ms delays,
+    finishing by 650ms. All annotations reveal together at 700..900ms.
+    Text remains visible. Reduced motion and static rendering show the final state.
+  -->
+  <defs>
+    <style>
+      #toc-lines-bp-root text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #toc-lines-bp-root .toc-lines-bp-heading { fill: #92948d; font-size: 39px; }
+      #toc-lines-bp-root .toc-lines-bp-active { fill: #c7c7c2; }
+      #toc-lines-bp-root .toc-lines-bp-rule { stroke: #a7a8a2; stroke-width: 3; stroke-linecap: round; }
+      #toc-lines-bp-root .toc-lines-bp-secondary { stroke: #92948d; opacity: .7; }
+      #toc-lines-bp-root .toc-lines-bp-active-rule { stroke: #c7c7c2; }
+      #toc-lines-bp-root .toc-lines-bp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      #toc-lines-bp-root .toc-lines-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      #toc-lines-bp-root .toc-lines-bp-label { fill: #a1a29c; font-size: 18px; }
+      @keyframes toc-lines-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes toc-lines-bp-reveal { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        #toc-lines-bp-root .toc-lines-bp-draw {
+          stroke-dasharray: 1;
+          animation: toc-lines-bp-draw 200ms ease-out var(--toc-lines-bp-delay, 0ms) both;
+        }
+        #toc-lines-bp-root .toc-lines-bp-outline { animation-duration: 400ms; }
+        #toc-lines-bp-root .toc-lines-bp-spacing,
+        #toc-lines-bp-root .toc-lines-bp-measure,
+        #toc-lines-bp-root .toc-lines-bp-label {
+          animation: toc-lines-bp-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <g id="toc-lines-bp-root">
+    <rect width="1200" height="820" fill="#060606"/>
+
+    <!-- Show the first row's boundaries and insets without repeating the grid. -->
+    <g class="toc-lines-bp-spacing">
+      <path d="M336 199H852 M336 283H852"/>
+      <path d="M372 199V283 M474 199V283"/>
+    </g>
+
+    <!-- Primary and secondary rules: only the last heading omits its secondary pair. -->
+    <g class="toc-lines-bp-rule">
+      <path d="M373.5 213H442.5" pathLength="1" class="toc-lines-bp-draw toc-lines-bp-outline"/>
+      <path d="M373.5 241H418.5" pathLength="1" class="toc-lines-bp-draw toc-lines-bp-secondary" style="--toc-lines-bp-delay:250ms"/>
+      <path d="M373.5 269H418.5" pathLength="1" class="toc-lines-bp-draw toc-lines-bp-secondary" style="--toc-lines-bp-delay:275ms"/>
+      <path d="M373.5 297H442.5" pathLength="1" class="toc-lines-bp-draw" style="--toc-lines-bp-delay:300ms"/>
+      <path d="M373.5 325H418.5" pathLength="1" class="toc-lines-bp-draw toc-lines-bp-secondary" style="--toc-lines-bp-delay:325ms"/>
+      <path d="M373.5 353H418.5" pathLength="1" class="toc-lines-bp-draw toc-lines-bp-secondary" style="--toc-lines-bp-delay:350ms"/>
+      <path d="M373.5 381H460.5" pathLength="1" class="toc-lines-bp-draw toc-lines-bp-active-rule" style="--toc-lines-bp-delay:375ms"/>
+      <path d="M409.5 409H454.5" pathLength="1" class="toc-lines-bp-draw toc-lines-bp-secondary" style="--toc-lines-bp-delay:400ms"/>
+      <path d="M409.5 437H454.5" pathLength="1" class="toc-lines-bp-draw toc-lines-bp-secondary" style="--toc-lines-bp-delay:425ms"/>
+      <path d="M409.5 465H478.5" pathLength="1" class="toc-lines-bp-draw" style="--toc-lines-bp-delay:450ms"/>
+      <path d="M373.5 493H418.5" pathLength="1" class="toc-lines-bp-draw toc-lines-bp-secondary" style="--toc-lines-bp-delay:425ms"/>
+      <path d="M373.5 521H418.5" pathLength="1" class="toc-lines-bp-draw toc-lines-bp-secondary" style="--toc-lines-bp-delay:450ms"/>
+      <path d="M373.5 549H442.5" pathLength="1" class="toc-lines-bp-draw" style="--toc-lines-bp-delay:450ms"/>
+    </g>
+    <g class="toc-lines-bp-heading" dominant-baseline="central">
+      <text x="474" y="213">Introduction</text>
+      <text x="474" y="297">Installation</text>
+      <text x="486" y="381" class="toc-lines-bp-active">Usage</text>
+      <text x="510" y="465">Configuration</text>
+      <text x="474" y="549">Accessibility</text>
+    </g>
+
+    <!-- Chosen width; measurements are in CSS pixels. -->
+    <g class="toc-lines-bp-measure">
+      <path d="M336 96V118 M864 96V118 M336 107H864"/>
+      <path d="M336 128V179 M864 128V179"/>
+    </g>
+    <text x="600" y="90" text-anchor="middle" class="toc-lines-bp-label">176 px</text>
+
+    <!-- Idle rule length. -->
+    <g class="toc-lines-bp-measure">
+      <path d="M372 153V174 M444 153V174 M372 164H444"/>
+      <path d="M372 184V204 M444 184V204"/>
+    </g>
+    <text x="408" y="146" text-anchor="middle" class="toc-lines-bp-label">24 px</text>
+
+    <!-- One row, measured between its exact contiguous boundaries. -->
+    <g class="toc-lines-bp-measure">
+      <path d="M875 199H929 M875 283H929 M907 199H929 M907 283H929 M918 199V283"/>
+    </g>
+    <text x="940" y="247" class="toc-lines-bp-label">28 px</text>
+
+    <!-- Active primary rule length. -->
+    <g class="toc-lines-bp-measure">
+      <path d="M372 387V405 M462 387V405 M372 396H462"/>
+      <path d="M417 396 332 420H318"/>
+    </g>
+    <text x="303" y="426" text-anchor="end" class="toc-lines-bp-label">30 px</text>
+
+    <!-- One indentation step, adjacent to the nested heading. -->
+    <g class="toc-lines-bp-measure">
+      <path d="M372 440V462 M408 440V462 M372 451H408"/>
+      <path d="M390 451 332 478H318"/>
+    </g>
+    <text x="303" y="484" text-anchor="end" class="toc-lines-bp-label">12 px</text>
+  </g>
+</svg>

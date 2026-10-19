@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="720" viewBox="0 0 1440 720" fill="none" role="img" aria-labelledby="collapsible-bp-title collapsible-bp-desc">
+  <title id="collapsible-bp-title">Collapsible spacing blueprint</title>
+  <desc id="collapsible-bp-desc">An expanded plain disclosure with its default end chevron. The representative width is 360 CSS pixels. Its trigger is 32 pixels high, with 8 pixels of horizontal and 6 pixels of vertical padding. The label and body align because the trigger has an 8 pixel negative inline margin. The panel has 8 pixels of top padding, followed by three 20 pixel text lines. Blue dashed guides reveal the spacing.</desc>
+  <!--
+    Sources:
+      registry.json: collapsible files list.
+      registry/ui/collapsible/collapsible.tsx: plain default, end chevron, open state.
+      registry/ui/collapsible/collapsible.variants.ts: trigger and content geometry.
+      inspector/entries/collapsible.tsx: first question/body, initially expanded.
+      app/globals.css: text-sm = 13px / 1.5385, dark background = oklch(0.120 0 0).
+      node_modules/tailwindcss/theme.css: spacing = .25rem = 4px at a 16px root.
+      node_modules/tailwindcss/preflight.css: border-box sizing, zero default borders.
+
+    State: one expanded plain disclosure, default end chevron; no hover/focus surface.
+    Scale: 3 SVG units per CSS pixel, including component text and icon geometry.
+    Caller-chosen width: 360px, within the demo's max-w-md = 448px. Width is flexible.
+    Root/content bounds: x=204..1284. Trigger bounds: x=180..1260.
+    Important: w-full plus -mx-2 shifts the trigger left 8px; it does NOT add 16px
+    to its explicit width. Its px-2 puts the label back at the content's left edge.
+    The gray rounded trigger outline is an illustration of its hit area, not a
+    production border. The plain variant has no enclosing card or panel surface.
+
+    Trigger: 6px top + 20px line box + 6px bottom = 32px, content-dependent,
+    not a fixed/min height. Rounded corners = 6px. Icon box = 16px, gap = 8px.
+    Text-sm: 13 * 1.5385 = 20.0005px, illustrated as the intended 20px line height.
+    Panel: no outer padding or border; inner pt-2 = 8px; horizontal/bottom padding = 0.
+    Body uses the first demo's copy, shown on three lines at the chosen width.
+    Settled panel height: 8 + 3 * 20 = 68px; open disclosure height: 32 + 68 = 100px.
+    Heights depend on this text/width; the panel is auto-sized after opening.
+    Text baselines use a 41-unit offset inside each 60-unit line box.
+
+    Timing: outline 0..400ms, chevron 400..600ms, annotations 700..900ms.
+    Static and reduced-motion viewers receive the completed drawing by default.
+  -->
+  <defs>
+    <style>
+      #collapsible-bp text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #collapsible-bp .cbp-label { fill: #92948d; font-size: 18px; }
+      #collapsible-bp .cbp-copy { fill: #92948d; font-size: 39px; }
+      #collapsible-bp .cbp-question { fill: #c7c7c2; font-size: 39px; font-weight: 500; }
+      #collapsible-bp .cbp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      #collapsible-bp .cbp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      #collapsible-bp .cbp-outline { stroke: #a7a8a2; stroke-width: 2.5; opacity: .7; }
+      #collapsible-bp .cbp-chevron { stroke: #a7a8a2; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+      @media (prefers-reduced-motion: no-preference) {
+        @keyframes collapsible-bp-draw {
+          from { stroke-dashoffset: 1; }
+          to { stroke-dashoffset: 0; }
+        }
+        @keyframes collapsible-bp-reveal { from { opacity: 0; } }
+        #collapsible-bp .cbp-draw {
+          stroke-dasharray: 1;
+          animation: collapsible-bp-draw 200ms ease-out var(--cbp-delay, 0ms) both;
+        }
+        #collapsible-bp .cbp-outline { animation-duration: 400ms; }
+        #collapsible-bp .cbp-measure,
+        #collapsible-bp .cbp-spacing,
+        #collapsible-bp .cbp-label {
+          animation: collapsible-bp-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <g id="collapsible-bp">
+    <rect width="1440" height="720" fill="#060606"/>
+
+    <!-- Plain trigger's hit area; no panel card is invented. -->
+    <rect x="180" y="210" width="1080" height="96" rx="18" pathLength="1" class="cbp-draw cbp-outline"/>
+
+    <!-- Trigger padding, label flex box, gap, and centered 16px icon slot. -->
+    <path d="M204 210V510 M1236 210V306 M204 228H1236 M204 288H1236" class="cbp-spacing"/>
+    <path d="M1164 228V288 M1188 228V288" class="cbp-spacing"/>
+    <rect x="1188" y="234" width="48" height="48" class="cbp-spacing"/>
+
+    <!-- Padding-free panel, inner top padding, and body line-box edges. -->
+    <rect x="204" y="306" width="1080" height="204" class="cbp-spacing"/>
+    <path d="M204 330H1284 M204 390H1284 M204 450H1284" class="cbp-spacing"/>
+
+    <!-- Component text and fills remain visible throughout the animation. -->
+    <text x="204" y="269" class="cbp-question">What counts as a change?</text>
+    <!-- Lucide ChevronRight rotated 90 degrees, in its 16px box, drawn at 3x. -->
+    <path d="m1200 252 12 12 12-12" pathLength="1" class="cbp-draw cbp-chevron" style="--cbp-delay:400ms"/>
+    <text class="cbp-copy">
+      <tspan x="204" y="371">Anything that alters the rendered output — copy, styles, or the</tspan>
+      <tspan x="204" y="431">data a page reads. Refactors that leave the output identical</tspan>
+      <tspan x="204" y="491">don't need an entry.</tspan>
+    </text>
+
+    <!-- Current trigger width, exactly 360px, rather than the demo's maximum. -->
+    <path d="M180 198V154 M1260 198V154" class="cbp-spacing"/>
+    <path d="M180 122V142 M1260 122V142 M180 132H1260" class="cbp-measure"/>
+    <path d="M180 154V142 M1260 154V142" class="cbp-measure"/>
+    <text x="720" y="116" text-anchor="middle" class="cbp-label">360 px</text>
+
+    <!-- Icon width and the flex gap, with separate exact endpoints. -->
+    <path d="M1164 210V190 M1188 234V190 M1236 234V190" class="cbp-spacing"/>
+    <path d="M1164 172V188 M1188 172V188 M1236 172V188 M1164 180H1236" class="cbp-measure"/>
+    <text x="1212" y="164" text-anchor="middle" class="cbp-label">16 px</text>
+    <path d="M1176 180 1152 160H1128" class="cbp-measure"/>
+    <text x="1116" y="166" text-anchor="end" class="cbp-label">8 px</text>
+
+    <!-- This content-dependent open height is 100px for the pictured three lines. -->
+    <path d="M180 210H104 M204 510H104" class="cbp-spacing"/>
+    <path d="M80 210H100 M80 510H100 M90 210V510" class="cbp-measure"/>
+    <text x="72" y="366" text-anchor="end" class="cbp-label">100 px</text>
+
+    <!-- 6px trigger top padding, measured to the line box, not the text ink. -->
+    <path d="M146 210H166 M146 228H166 M156 210V228" class="cbp-measure"/>
+    <text x="136" y="225" text-anchor="end" class="cbp-label">6 px</text>
+
+    <!-- Trigger height, inner content top padding, and one body line height. -->
+    <path d="M1272 210H1330 M1260 306H1330 M1284 330H1360 M1284 390H1360" class="cbp-spacing"/>
+    <path d="M1310 210H1330 M1310 306H1330 M1320 210V306" class="cbp-measure"/>
+    <text x="1338" y="264" class="cbp-label">32 px</text>
+    <path d="M1310 330H1330 M1320 306V330" class="cbp-measure"/>
+    <text x="1338" y="324" class="cbp-label">8 px</text>
+    <path d="M1340 330H1360 M1340 390H1360 M1350 330V390" class="cbp-measure"/>
+    <text x="1368" y="366" class="cbp-label">20 px</text>
+
+    <!-- Trigger inset: its negative margin is precisely canceled by px-2. -->
+    <path d="M180 306V554 M204 510V554" class="cbp-spacing"/>
+    <path d="M180 558V580 M204 558V580 M180 568H204" class="cbp-measure"/>
+    <path d="M192 580 216 608H248" class="cbp-measure"/>
+    <text x="260" y="614" class="cbp-label">8 px</text>
+  </g>
+</svg>

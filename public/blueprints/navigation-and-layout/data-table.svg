@@ -1,0 +1,202 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="dtbp" width="1600" height="860" viewBox="0 0 1600 860" fill="none" role="img" aria-labelledby="dtbp-title dtbp-description">
+  <title id="dtbp-title">Data Table spacing blueprint</title>
+  <desc id="dtbp-description">A compact data table with five projects, sortable column headings, a checkbox column, and row actions. Team is selected and hovered. The representative table is 576 pixels wide. Header and data rows are 36 pixels high; horizontal cell padding is 10 pixels, checkboxes are 16 pixels square, and body text has a 20 pixel line height. Blue dashed guides expose the actual column insets and control boxes.</desc>
+  <!--
+    Hand-authored vector drawing. Sources:
+      registry.json: data-table entry and its table, checkbox, and button dependencies.
+      registry/ui/data-table/data-table.tsx + data-table.variants.ts:
+        selectable and actionColumn insert gutter cells; selectionBar defaults to false;
+        sort button gap-1.5 = 6px; sort glyph size-3.5 = 14px;
+        sm row actions use the plain icon-xs Button, 24px square.
+      registry/ui/table/table.tsx + table.variants.ts:
+        defaults sm, outline=false, verticalLines=false, horizontalLines=true;
+        border-separate / border-spacing-0; final body row has no bottom border;
+        header h-9 px-2.5 text-xs; body h-9 px-2.5 py-1.5 text-sm;
+        gutter w-px px-2.5, no vertical padding. All separators are 1px.
+      registry/ui/checkbox/checkbox.variants.ts: size-4, 4px radius, 1.5px border.
+      registry/ui/button/button.variants.ts: icon-xs size-6, child glyph size-3.5.
+      inspector/entries/data-table.tsx: demo uses sm density, checkboxes, sorting,
+        row actions, and a max-w-xl (576px) wrapper. This composition uses five
+        short project names, no caption/footer, and no bounded vertical scrolling.
+      app/globals.css: text-sm 13px / 1.5385 = approximately 20px line height;
+        text-xs 12px / 1.3333 = approximately 16px; dark base oklch(0.120 0 0) = #060606.
+      node_modules/tailwindcss/theme.css: spacing unit 0.25rem = 4px at a 16px root.
+
+    Pictured state: ordinary sm density; selectable=true; actionColumn=true;
+      selectionBar=false (the component default), allowing headings to remain visible
+      while Team is selected. Project is sorted ascending; Team is also hovered,
+      which reveals its action trigger. Other row actions remain hidden.
+
+    Scale: 2 SVG units per CSS pixel. Component type scales with geometry;
+      ruler strokes and annotation type remain in SVG units. All labels are CSS px.
+    Chosen width: 576px, flexible rather than a component-imposed width or maximum.
+      Chosen column allocations: 36 + 168 + 148 + 180 + 44 = 576px.
+      Gutter widths follow their controls: checkbox 10 + 16 + 10 = 36px;
+      actions 10 + 24 + 10 = 44px. The other allocations are illustrative.
+    Row sizing: h-9 on table cells is a minimum, not a cap on multiline content.
+      This single-line body needs 20 + 6 + 6 + 1 border = 33px, below its 36px minimum.
+      Therefore the illustrated rows are 36px. Remaining height is centered:
+      7.5px above and below the 20px line, plus the bottom 1px separator.
+      The last row has no border, so the line is centered with 8px above/below.
+      Gutter controls do not enlarge the row: 24px trigger + 1px border is below 36px.
+      Header 36px + five rows * 36px = 216px. No inter-row gap or outer border.
+    SVG bounds: x=224..1376 (1152 units), y=214..646 (432 units).
+      Column edges: 224, 296, 632, 928, 1288, 1376.
+      Header/body boundaries: 214, 286, 358, 430, 502, 574, 646.
+      Selected row text line box: y=445..485. Checkbox: x=244..276, y=449..481.
+      Action target: x=1308..1356, y=441..489, glyph x=1318..1346, y=451..479.
+    No enclosing component outline exists in the default variant. The main header
+      separator draws for the initial 400ms; smaller borders and icons finish by 650ms.
+      All blue annotations reveal together at 700ms and finish at 900ms.
+  -->
+  <defs>
+    <style>
+      #dtbp text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #dtbp .body { fill: #92948d; font-size: 26px; }
+      #dtbp .head { fill: #92948d; font-size: 24px; font-weight: 500; letter-spacing: .24px; }
+      #dtbp .selected { fill: #c7c7c2; }
+      #dtbp .label { fill: #6889ff; font-size: 18px; }
+      #dtbp .rule { stroke: #a7a8a2; stroke-width: 2; opacity: .6; }
+      #dtbp .control { stroke: #a7a8a2; stroke-width: 3; }
+      #dtbp .icon { stroke: #a7a8a2; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+      #dtbp .measure { stroke: #6889ff; stroke-width: 1.5; }
+      #dtbp .spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      /* Without motion support, and for reduced motion, the final state is visible. */
+      @keyframes dtbp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes dtbp-reveal { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        #dtbp .draw, #dtbp .icon > * {
+          stroke-dasharray: 1;
+          animation: dtbp-draw 200ms ease-out var(--line-delay, 0ms) both;
+        }
+        #dtbp .outline { animation-duration: 400ms; }
+        #dtbp .measure, #dtbp .spacing, #dtbp .label {
+          animation: dtbp-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+    <!-- Lucide-style 14px sort glyphs, drawn at 2x. Each disconnected stroke is normalized. -->
+    <g id="dtbp-sort" class="icon">
+      <path d="m9 10 5-5 5 5" pathLength="1"/>
+      <path d="m9 18 5 5 5-5" pathLength="1"/>
+    </g>
+    <g id="dtbp-ascending" class="icon">
+      <path d="m7 17 7-7 7 7" pathLength="1"/>
+    </g>
+    <g id="dtbp-ellipsis" class="icon">
+      <circle cx="4.67" cy="14" r="1.17" pathLength="1"/>
+      <circle cx="14" cy="14" r="1.17" pathLength="1"/>
+      <circle cx="23.33" cy="14" r="1.17" pathLength="1"/>
+    </g>
+  </defs>
+  <g>
+    <rect width="1600" height="860" fill="#060606"/>
+
+    <!-- Fills and text are present from the start. The selected row is also hovered. -->
+    <rect x="224" y="430" width="1152" height="72" fill="#353632"/>
+
+    <!-- Default table has separators only: no presentation card or invented frame. -->
+    <path d="M224 285H1376" class="rule draw outline" pathLength="1"/>
+    <path d="M224 357H1376" class="rule draw" pathLength="1" style="--line-delay:250ms"/>
+    <path d="M224 429H1376" class="rule draw" pathLength="1" style="--line-delay:275ms"/>
+    <path d="M224 501H1376" class="rule draw" pathLength="1" style="--line-delay:300ms"/>
+    <path d="M224 573H1376" class="rule draw" pathLength="1" style="--line-delay:325ms"/>
+
+    <!-- Actual column edges, first-column padding, and selected-row line/control boxes. -->
+    <path d="M224 214H1376 M224 646H1376 M224 214V646 M1376 214V646" class="spacing"/>
+    <path d="M296 214V646 M316 214V646 M612 214V646 M632 214V646 M652 214V646 M1268 214V646 M1288 214V646" class="spacing"/>
+    <rect x="316" y="445" width="296" height="40" class="spacing"/>
+    <rect x="652" y="445" width="256" height="40" class="spacing"/>
+    <rect x="948" y="445" width="320" height="40" class="spacing"/>
+    <rect x="1308" y="441" width="48" height="48" class="spacing"/>
+    <rect x="1318" y="451" width="28" height="28" class="spacing"/>
+
+    <!-- Checkbox borders are inset 1.5 units, preserving their 32-unit outer boxes. -->
+    <rect x="244" y="233" width="32" height="32" rx="8" fill="#c7c7c2"/>
+    <rect x="245.5" y="234.5" width="29" height="29" rx="6.5" class="control draw" pathLength="1" style="--line-delay:275ms"/>
+    <rect x="245.5" y="306.5" width="29" height="29" rx="6.5" class="control draw" pathLength="1" style="--line-delay:300ms"/>
+    <rect x="245.5" y="378.5" width="29" height="29" rx="6.5" class="control draw" pathLength="1" style="--line-delay:325ms"/>
+    <rect x="244" y="449" width="32" height="32" rx="8" fill="#c7c7c2"/>
+    <rect x="245.5" y="450.5" width="29" height="29" rx="6.5" class="control draw" pathLength="1" style="--line-delay:350ms"/>
+    <rect x="245.5" y="522.5" width="29" height="29" rx="6.5" class="control draw" pathLength="1" style="--line-delay:375ms"/>
+    <rect x="245.5" y="595.5" width="29" height="29" rx="6.5" class="control draw" pathLength="1" style="--line-delay:400ms"/>
+    <!-- Partial select-all mark and selected checkbox mark, in the page-ground ink. -->
+    <path d="M253.5 249H266.5" stroke="#060606" stroke-width="3" stroke-linecap="round" class="draw" pathLength="1" style="--line-delay:425ms"/>
+    <path d="m253 465 5.5 5.5 9-12.5" stroke="#060606" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="draw" pathLength="1" style="--line-delay:450ms"/>
+
+    <!-- Header labels and their 14px sort slots, with a true 6px label-to-icon gap.
+         textLength fixes only these sample labels so the measured gap survives fallback fonts. -->
+    <text x="316" y="257" class="head selected" textLength="82" lengthAdjust="spacingAndGlyphs">Project</text>
+    <use href="#dtbp-ascending" x="410" y="235" style="--line-delay:350ms"/>
+    <text x="652" y="257" class="head" textLength="76" lengthAdjust="spacingAndGlyphs">Owner</text>
+    <use href="#dtbp-sort" x="740" y="235" style="--line-delay:375ms"/>
+    <text x="1130" y="257" class="head" textLength="98" lengthAdjust="spacingAndGlyphs">Updated</text>
+    <use href="#dtbp-sort" x="1240" y="235" style="--line-delay:400ms"/>
+
+    <!-- Body text, 13px on a 20px line, with middle alignment in each cell. -->
+    <text x="316" y="330" class="body">Dashboard</text>
+    <text x="652" y="330" class="body">Alex Morgan</text>
+    <text x="1268" y="330" text-anchor="end" class="body">12 Mar</text>
+    <text x="316" y="402" class="body">Projects</text>
+    <text x="652" y="402" class="body">Sam Rivera</text>
+    <text x="1268" y="402" text-anchor="end" class="body">10 Mar</text>
+    <text x="316" y="474" class="body selected">Team</text>
+    <text x="652" y="474" class="body selected">Jamie Chen</text>
+    <text x="1268" y="474" text-anchor="end" class="body selected">8 Mar</text>
+    <use href="#dtbp-ellipsis" x="1318" y="451" style="--line-delay:425ms"/>
+    <text x="316" y="546" class="body">Activity</text>
+    <text x="652" y="546" class="body">Taylor Reed</text>
+    <text x="1268" y="546" text-anchor="end" class="body">6 Mar</text>
+    <text x="316" y="619" class="body">Settings</text>
+    <text x="652" y="619" class="body">Robin Park</text>
+    <text x="1268" y="619" text-anchor="end" class="body">4 Mar</text>
+
+    <!-- Representative width, precisely the 1152-unit drawing span. -->
+    <path d="M224 214V145 M1376 214V145" class="spacing"/>
+    <path d="M224 127V149 M1376 127V149 M224 138H1376" class="measure"/>
+    <text x="800" y="120" text-anchor="middle" class="label">576 px</text>
+
+    <!-- Header and body row heights. They are contiguous, with no gap. -->
+    <path d="M224 214H176 M224 286H176" class="spacing"/>
+    <path d="M165 214V286 M154 214H176 M154 286H176" class="measure"/>
+    <text x="140" y="256" text-anchor="end" class="label">36 px</text>
+    <path d="M1376 286H1424 M1376 358H1424" class="spacing"/>
+    <path d="M1435 286V358 M1424 286H1446 M1424 358H1446" class="measure"/>
+    <text x="1460" y="328" class="label">36 px</text>
+
+    <!-- Checkbox size, measured from the box's actual outer edges. -->
+    <path d="M244 233V188 M276 233V188" class="spacing"/>
+    <path d="M244 177V199 M276 177V199 M244 188H276 M260 188 231 170H184" class="measure"/>
+    <text x="170" y="176" text-anchor="end" class="label">16 px</text>
+
+    <!-- Header sort gap: text ends at x398 and the icon slot starts at x410. -->
+    <path d="M398 235V188 M410 235V188" class="spacing"/>
+    <path d="M398 177V199 M410 177V199 M398 188H410 M404 188 437 173H476" class="measure"/>
+    <text x="489" y="179" class="label">6 px</text>
+
+    <!-- Body line height: the full line box, rather than the visible glyph ink. -->
+    <path d="M1268 445H1483 M1268 485H1483" class="spacing"/>
+    <path d="M1494 445V485 M1483 445H1505 M1483 485H1505" class="measure"/>
+    <text x="1518" y="471" class="label">20 px</text>
+
+    <!-- Shared row boundary: a zero-length distance is a single connected leader. -->
+    <path d="M1376 502H1420L1445 528H1476" class="measure"/>
+    <text x="1490" y="534" class="label">0 px</text>
+
+    <!-- Horizontal cell padding, from the chosen column edge to the text inset. -->
+    <path d="M296 646V723 M316 646V723" class="spacing"/>
+    <path d="M296 712H316 M296 701V723 M316 701V723 M306 723 334 751H378" class="measure"/>
+    <text x="392" y="757" class="label">10 px</text>
+
+    <!-- Gutter allocation is content-derived: 10px + 16px + 10px. -->
+    <path d="M224 646V685 M296 646V685" class="spacing"/>
+    <path d="M224 674H296 M224 663V685 M296 663V685" class="measure"/>
+    <text x="260" y="706" text-anchor="middle" class="label">36 px</text>
+
+    <!-- The plain action trigger has no visible button frame; its real hit box
+         remains visible as a dashed 24px square in the selected row. -->
+    <path d="M1308 489V717 M1356 489V717" class="spacing"/>
+    <path d="M1308 706H1356 M1308 695V717 M1356 695V717" class="measure"/>
+    <text x="1332" y="748" text-anchor="middle" class="label">24 px</text>
+  </g>
+</svg>

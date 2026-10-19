@@ -1,0 +1,191 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1152" height="1008" viewBox="0 0 1152 1008" fill="none" role="img" aria-labelledby="sidebar-bp-title sidebar-bp-desc">
+  <title id="sidebar-bp-title">Sidebar spacing blueprint</title>
+  <desc id="sidebar-bp-desc">An expanded desktop sidebar with a workspace header, search input, four navigation rows, and Settings at the bottom. Dashboard is selected. The default sidebar is 256 pixels wide. Menu rows are fixed at 32 pixels high with no gap between them. Group padding and row insets are 8 pixels, icons are 16 pixels, and the icon-to-label gap is 8 pixels. Blue dashed guides reveal these boundaries.</desc>
+  <!--
+    Hand-authored vector drawing. Scale: 2 SVG units per CSS pixel.
+    Sources:
+      registry.json: sidebar's complete file map.
+      registry/ui/sidebar/sidebar.provider.tsx: sidebar-width token = 16rem = 256px;
+        defaultOpen = true; desktop breakpoint = 768px.
+      registry/ui/sidebar/sidebar.tsx: variant="sidebar", side="left";
+        desktop container border-r = 1px, inner flex column fills available height.
+      registry/ui/sidebar/sidebar.structure.tsx: header/footer p-2 gap-2;
+        content flex-1; group p-2; group label h-8 px-2 text-xs.
+      registry/ui/sidebar/sidebar.menu.tsx: menu flex column, NO row gap.
+      registry/ui/sidebar/sidebar.variants.ts: default menu row h-8, p-2,
+        gap-2, 16px icons, 8px radius, text-sm. No trailing actions here.
+      inspector/entries/sidebar.tsx and sidebar-demo.tsx: default single-column
+        shell, expanded state, header brand row, search input, bottom Settings.
+        Content simplified to four main links and one footer link. Every menu
+        button uses its ordinary default size (including Settings).
+      registry/ui/input/input.variants.ts: border 1px, px-3, 8px radius;
+        SidebarInput in sidebar.structure.tsx overrides its height to h-8 = 32px.
+      app/globals.css: text-sm = 13px with ~20px line height; text-xs = 12px
+        with ~16px line height; dark background = oklch(0.120 0 0) = #060606.
+      node_modules/tailwindcss/theme.css: spacing token = .25rem = 4px.
+      lib/component-catalog.ts: COMPONENT_CATEGORIES -> Navigation and layout.
+
+    Chosen state: desktop, expanded, default variant, no hover; Dashboard active.
+    Height is viewport-dependent. A representative 352px viewport is drawn;
+    it is not a fixed component height. Default width remains exactly 256px.
+    CSS border-box shell: [0,256] x [0,352]. Right border occupies x=255..256;
+    inner width = 255px; header/group/footer padding = 8px; menu width = 239px.
+    Header: top padding 8 + brand row (4+24+4) + gap 8 + input 32 + bottom 8
+      = 88px. Brand icon starts at (12,12); brand label x=12+24+8=44px.
+    Input: x=8..247, y=48..80; text inset = border 1 + padding 12 = 13px.
+    Content starts at y=88. Group: top padding 8 + label 32 + four rows 128
+      + bottom padding 8 = 176px. Label y=96..128; menu y=128..256.
+    Row border-box is FIXED at 32px, not 20+8+8: inner height=16px;
+      the centered 20px line box extends 2px beyond that inner box on each side.
+      Icons are 16px high, centered at row y+16; labels are 13px.
+      Row x=8..247, icon x=16..32, text x=40; radius 8px.
+    Content flex area ends at y=304; footer = 8+32+8 = 48px.
+      Footer row y=312..344; bottom inset = 8px.
+    Drawing origin (320,152); shell 512 x 704 SVG units.
+    The square outer silhouette makes the panel bounds readable in isolation;
+    only its right edge represents a production border. No enclosing app frame.
+    All ruler values refer to original CSS pixels. Dashed overlays are static.
+  -->
+  <defs>
+    <style>
+      #sidebar-bp-root text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #sidebar-bp-root .sidebar-bp-text { fill: #92948d; font-size: 26px; }
+      #sidebar-bp-root .sidebar-bp-selected { fill: #c7c7c2; font-weight: 500; }
+      #sidebar-bp-root .sidebar-bp-heading { fill: #92948d; font-size: 24px; font-weight: 500; }
+      #sidebar-bp-root .sidebar-bp-label { fill: #a1a29c; font-size: 18px; }
+      #sidebar-bp-root .sidebar-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      #sidebar-bp-root .sidebar-bp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      .sidebar-bp-icon { stroke: #a7a8a2; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+      #sidebar-bp-root .sidebar-bp-draw { stroke-linecap: round; stroke-linejoin: round; }
+      /* Static and reduced-motion viewers see the completed drawing immediately. */
+      @keyframes sidebar-bp-draw-line {
+        from { stroke-dashoffset: 1; }
+        to { stroke-dashoffset: 0; }
+      }
+      @keyframes sidebar-bp-reveal { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        #sidebar-bp-root .sidebar-bp-draw,
+        .sidebar-bp-icon > * {
+          stroke-dasharray: 1;
+          animation: sidebar-bp-draw-line 200ms ease-out var(--sidebar-bp-delay, 0ms) both;
+        }
+        #sidebar-bp-root .sidebar-bp-outline { animation-duration: 400ms; }
+        #sidebar-bp-root .sidebar-bp-measure,
+        #sidebar-bp-root .sidebar-bp-spacing,
+        #sidebar-bp-root .sidebar-bp-label {
+          animation: sidebar-bp-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+    <!-- 16px icon slots at 2x. Each disconnected stroked shape is normalized. -->
+    <g id="sidebar-bp-grid" class="sidebar-bp-icon">
+      <rect x="3" y="3" width="10" height="10" rx="1.5" pathLength="1"/>
+      <rect x="19" y="3" width="10" height="10" rx="1.5" pathLength="1"/>
+      <rect x="3" y="19" width="10" height="10" rx="1.5" pathLength="1"/>
+      <rect x="19" y="19" width="10" height="10" rx="1.5" pathLength="1"/>
+    </g>
+    <g id="sidebar-bp-folder" class="sidebar-bp-icon">
+      <path d="M3 8h10l4 4h12v15H3Z" pathLength="1"/>
+    </g>
+    <g id="sidebar-bp-team" class="sidebar-bp-icon">
+      <circle cx="12" cy="10" r="5" pathLength="1"/>
+      <path d="M3 28v-3a9 9 0 0 1 18 0v3" pathLength="1"/>
+      <path d="M23 6a5 5 0 0 1 0 10" pathLength="1"/>
+      <path d="M26 20q5 2 5 8" pathLength="1"/>
+    </g>
+    <g id="sidebar-bp-activity" class="sidebar-bp-icon">
+      <path d="M2 17h7l5-13 6 25 5-12h5" pathLength="1"/>
+    </g>
+    <g id="sidebar-bp-settings" class="sidebar-bp-icon">
+      <path d="M3 8h26" pathLength="1"/>
+      <path d="M3 24h26" pathLength="1"/>
+      <circle cx="11" cy="8" r="4" fill="#060606" pathLength="1"/>
+      <circle cx="22" cy="24" r="4" fill="#060606" pathLength="1"/>
+    </g>
+  </defs>
+
+  <g id="sidebar-bp-root">
+    <rect width="1152" height="1008" fill="#060606"/>
+
+    <!-- Component silhouette, selected surface, and input. Fills never animate. -->
+    <path d="M831 153H321V855H831Z" stroke="#a7a8a2" stroke-width="2" pathLength="1" class="sidebar-bp-draw sidebar-bp-outline"/>
+    <rect x="336" y="408" width="478" height="64" rx="16" fill="#353632"/>
+    <rect x="337" y="249" width="476" height="62" rx="15" stroke="#a7a8a2" stroke-width="2" pathLength="1" class="sidebar-bp-draw" style="--sidebar-bp-delay:250ms"/>
+
+    <!-- Header: the demo's 24px brand control and 32px search input. -->
+    <rect x="344" y="176" width="48" height="48" rx="16" fill="#353632"/>
+    <text x="368" y="208" text-anchor="middle" fill="#c7c7c2" font-size="22" font-weight="600">4</text>
+    <text x="408" y="210" class="sidebar-bp-text sidebar-bp-selected">Acme Inc</text>
+
+    <!-- Padding guides sit above fills and behind component text/icons. -->
+    <path d="M336 168V840 M814 168V840" class="sidebar-bp-spacing"/>
+    <path d="M336 168H814 M336 328H814 M336 344H814 M336 408H814" class="sidebar-bp-spacing"/>
+    <path d="M336 472H814 M336 536H814 M336 600H814 M336 664H814" class="sidebar-bp-spacing"/>
+    <path d="M352 344V664 M384 408V664 M400 408V664 M798 408V664" class="sidebar-bp-spacing"/>
+    <path d="M352 424H798 M352 456H798" class="sidebar-bp-spacing"/>
+    <path d="M362 250V310" class="sidebar-bp-spacing"/>
+    <path d="M336 776H814 M336 840H814 M352 776V840 M384 776V840 M400 776V840" class="sidebar-bp-spacing"/>
+
+    <text x="362" y="290" class="sidebar-bp-text">Search…</text>
+    <text x="352" y="384" class="sidebar-bp-heading">Workspace</text>
+
+    <!-- Four flush menu rows, all default size, first selected. -->
+    <use href="#sidebar-bp-grid" x="352" y="424" style="--sidebar-bp-delay:300ms"/>
+    <text x="400" y="450" class="sidebar-bp-text sidebar-bp-selected">Dashboard</text>
+    <use href="#sidebar-bp-folder" x="352" y="488" style="--sidebar-bp-delay:325ms"/>
+    <text x="400" y="514" class="sidebar-bp-text">Projects</text>
+    <use href="#sidebar-bp-team" x="352" y="552" style="--sidebar-bp-delay:350ms"/>
+    <text x="400" y="578" class="sidebar-bp-text">Team</text>
+    <use href="#sidebar-bp-activity" x="352" y="616" style="--sidebar-bp-delay:375ms"/>
+    <text x="400" y="642" class="sidebar-bp-text">Activity</text>
+
+    <!-- Footer remains at the bottom of the flexible-height sidebar. -->
+    <use href="#sidebar-bp-settings" x="352" y="792" style="--sidebar-bp-delay:400ms"/>
+    <text x="400" y="818" class="sidebar-bp-text">Settings</text>
+
+    <!-- Full border-box width: (832 - 320) / 2 = 256px. -->
+    <path d="M320 90V140 M832 90V140" class="sidebar-bp-spacing"/>
+    <path d="M320 82V102 M832 82V102 M320 92H832" class="sidebar-bp-measure"/>
+    <text x="576" y="74" text-anchor="middle" class="sidebar-bp-label">256 px</text>
+
+    <!-- Input height: (312 - 248) / 2 = 32px. Header's 8px internal gap. -->
+    <path d="M244 248H330 M244 312H330" class="sidebar-bp-spacing"/>
+    <path d="M234 248H254 M234 312H254 M244 248V312" class="sidebar-bp-measure"/>
+    <text x="224" y="286" text-anchor="end" class="sidebar-bp-label">32 px</text>
+    <path d="M814 232H884 M814 248H884" class="sidebar-bp-spacing"/>
+    <path d="M874 232H894 M874 248H894 M884 232V248 M894 240H918" class="sidebar-bp-measure"/>
+    <text x="930" y="246" class="sidebar-bp-label">8 px</text>
+
+    <!-- Input text inset: one border pixel plus 12px padding = 13px. -->
+    <path d="M336 312V346 M362 312V346" class="sidebar-bp-spacing"/>
+    <path d="M336 336V352 M362 336V352 M336 344H362 M349 352 286 374H246" class="sidebar-bp-measure"/>
+    <text x="234" y="380" text-anchor="end" class="sidebar-bp-label">13 px</text>
+
+    <!-- Group padding, then the row's own horizontal padding. -->
+    <path d="M320 392V410 M336 392V410 M320 400H336 M328 392 294 426H254" class="sidebar-bp-measure"/>
+    <text x="242" y="432" text-anchor="end" class="sidebar-bp-label">8 px</text>
+    <path d="M336 670V704 M352 670V704" class="sidebar-bp-spacing"/>
+    <path d="M336 688V708 M352 688V708 M336 698H352 M344 708 305 732H265" class="sidebar-bp-measure"/>
+    <text x="253" y="738" text-anchor="end" class="sidebar-bp-label">8 px</text>
+
+    <!-- Fixed row height, centered icon slot, and icon-to-text spacing. -->
+    <path d="M820 408H890 M820 472H890" class="sidebar-bp-spacing"/>
+    <path d="M880 408H900 M880 472H900 M890 408V472" class="sidebar-bp-measure"/>
+    <text x="910" y="446" class="sidebar-bp-label">32 px</text>
+    <path d="M798 424H996 M798 456H996" class="sidebar-bp-spacing"/>
+    <path d="M986 424H1006 M986 456H1006 M996 424V456" class="sidebar-bp-measure"/>
+    <text x="1016" y="446" class="sidebar-bp-label">16 px</text>
+    <path d="M384 664V710 M400 664V710" class="sidebar-bp-spacing"/>
+    <path d="M384 694V714 M400 694V714 M384 704H400 M392 714 430 738H470" class="sidebar-bp-measure"/>
+    <text x="482" y="744" class="sidebar-bp-label">8 px</text>
+
+    <!-- Adjacent rows share the y=536 boundary: no invented gap. -->
+    <path d="M814 536H926" class="sidebar-bp-measure"/>
+    <text x="938" y="542" class="sidebar-bp-label">0 px</text>
+
+    <!-- Footer bottom padding, 8px; neither viewport height nor flex space is fixed. -->
+    <path d="M814 840H890 M832 856H890" class="sidebar-bp-spacing"/>
+    <path d="M880 840H900 M880 856H900 M890 840V856 M900 848H924" class="sidebar-bp-measure"/>
+    <text x="936" y="854" class="sidebar-bp-label">8 px</text>
+  </g>
+</svg>

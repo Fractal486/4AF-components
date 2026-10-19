@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040" fill="none" role="img" aria-labelledby="dialog-bp-title dialog-bp-desc">
+  <title id="dialog-bp-title">Dialog spacing blueprint</title>
+  <desc id="dialog-bp-desc">An open Edit profile dialog with Name and Email fields, Cancel and Save changes actions, and a close button. The chosen desktop width is 512 pixels and this single-line composition is 298 pixels tall. Blue rulers show the 24-pixel padding, 16-pixel section gaps, 6-pixel header and field gaps, 12-pixel spacing between fields, 34-pixel input height, 8-pixel action gap, and 16-pixel close-button inset.</desc>
+  <!-- Hand-authored vectors at 2x; ruler labels are original CSS pixels.
+       Sources:
+         registry.json: dialog files = registry/ui/dialog/dialog.tsx (no sibling variants).
+         registry/ui/dialog/dialog.tsx: DialogContent, Header, Footer, Title, Description.
+         inspector/entries/dialog.tsx: default simple Edit profile composition, showClose=true.
+         registry/ui/input/input.variants.ts: default boxed Input, h-[34px], px-3, border.
+         registry/ui/button/button.variants.ts: md h-[34px], px-3.5; icon-sm 30px, icon 14px.
+         app/globals.css: text-base 15px/24px, text-sm 13px/20px, radius-md 7px.
+         node_modules/tailwindcss/theme.css: spacing=4px, container-lg=512px.
+       State: open, default simple composition, desktop footer, no hover/focus treatment.
+       Profile values are illustrative. Illustration font uses the prescribed local sans stack.
+       Chosen width = configured max-w-lg, 512px, at a viewport wide enough for it.
+       Width is responsive in production: min(512px, viewport width - 32px).
+       Height is content-dependent, not a fixed/minimum height. This drawing assumes no wrapping
+       or scrolling. Title and description each occupy one line; footer is a horizontal row.
+       Border-box arithmetic in CSS px:
+         outer width = 1 border + 24 padding + 462 content + 24 padding + 1 border = 512.
+         header = 24 title line + 6 gap + 20 description line = 50; right padding = 24.
+         each field = 20 label line + 6 gap + 34 fixed input = 60.
+         fields = 60 + 12 gap + 60 = 132.
+         outer height = 2 border + 48 padding + 50 header + 32 section gaps + 132 fields + 34 footer = 298.
+         Input text inset = 1 border + 12 horizontal padding = 13 from its outer edge.
+         Footer buttons = 34px high; widths are content-dependent (local sans approx. 66/105px).
+         Close control = 30px square, 14px icon box; top/right 16px from the inner border edge.
+       SVG bounds: outer [288,222]-[1312,818]; inner border [290,224]-[1310,816];
+       padded content [338,272]-[1262,768]; header right inset ends at x=1214.
+       Solid strokes use centerlines inset by half their width, so ruler endpoints measure
+       the exact outer/inner border edges rather than adding the illustration stroke twice.
+       App dark base: oklch(0.120 0 0) resolves to #060606.
+       Animation: outer 0-400ms; inputs 250-450 / 275-475ms; X 300-500 / 325-525ms;
+       all blue annotations 700-900ms. Static/reduced-motion view is fully visible.
+  -->
+  <defs>
+    <style>
+      #dialog-bp text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #dialog-bp .title { fill: #c7c7c2; font-size: 30px; font-weight: 600; }
+      #dialog-bp .copy { fill: #92948d; font-size: 26px; }
+      #dialog-bp .value { fill: #c7c7c2; font-size: 26px; }
+      #dialog-bp .action { font-size: 26px; font-weight: 500; }
+      #dialog-bp .label { fill: #6889ff; font-size: 18px; }
+      #dialog-bp .outline, #dialog-bp .detail { stroke: #a7a8a2; stroke-width: 2; }
+      #dialog-bp .icon { stroke: #a7a8a2; stroke-width: 2.3333; stroke-linecap: round; }
+      #dialog-bp .measure { stroke: #6889ff; stroke-width: 1.5; }
+      #dialog-bp .extension { stroke: #6889ff; stroke-width: 1.5; opacity: .35; }
+      #dialog-bp .spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      /* Keep text/fills visible. Only solid strokes draw; dashed guides only fade. */
+      @keyframes dialog-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes dialog-bp-reveal { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        #dialog-bp .draw {
+          stroke-dasharray: 1;
+          animation: dialog-bp-draw 200ms ease-out var(--dialog-bp-delay, 0ms) both;
+        }
+        #dialog-bp .outline { animation-duration: 400ms; }
+        #dialog-bp .spacing, #dialog-bp .measure, #dialog-bp .extension, #dialog-bp .label {
+          animation: dialog-bp-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <g id="dialog-bp">
+    <rect width="1600" height="1040" fill="#060606"/>
+
+    <!-- The modal itself. No presentation frame or surrounding page UI. -->
+    <rect x="289" y="223" width="1022" height="594" rx="13" class="draw outline" pathLength="1"/>
+    <rect x="1052" y="700" width="210" height="68" rx="16" fill="#353632"/>
+
+    <!-- Padding edges and the header's additional 24px right inset. -->
+    <rect x="338" y="272" width="924" height="496" class="spacing"/>
+    <path d="M1214 272V372" class="spacing"/>
+
+    <!-- Header title/description line-box gap and the first section gap. -->
+    <path d="M338 320H1214 M338 332H1214 M338 372H1262 M338 404H1262" class="spacing"/>
+
+    <!-- Field line boxes, 6px label gap, 12px group gap, and 16px footer gap. -->
+    <path d="M338 444H1262 M338 456H1262 M338 524H1262 M338 548H1262 M338 588H1262 M338 600H1262 M338 668H1262 M338 700H1262" class="spacing"/>
+
+    <!-- Actual field border boxes. Keep strokes separate for independent drawing. -->
+    <rect x="339" y="457" width="922" height="66" rx="15" class="draw detail" pathLength="1" style="--dialog-bp-delay:250ms"/>
+    <rect x="339" y="601" width="922" height="66" rx="15" class="draw detail" pathLength="1" style="--dialog-bp-delay:275ms"/>
+
+    <!-- Guides remain above surfaces and behind text. Input inset includes the border. -->
+    <path d="M364 456V524 M364 600V668" class="spacing"/>
+    <rect x="904" y="700" width="132" height="68" class="spacing"/>
+    <path d="M1052 700V768" class="spacing"/>
+    <rect x="1218" y="256" width="60" height="60" class="spacing"/>
+
+    <!-- Single-line content, sized together with the component geometry. -->
+    <text x="338" y="306" class="title">Edit profile</text>
+    <text x="338" y="360" class="copy">Update your profile details.</text>
+    <text x="338" y="432" class="copy">Name</text>
+    <text x="364" y="499" class="value">Alex Morgan</text>
+    <text x="338" y="576" class="copy">Email</text>
+    <text x="364" y="643" class="value">alex@example.com</text>
+    <text x="970" y="743" text-anchor="middle" class="action" fill="#92948d">Cancel</text>
+    <text x="1157" y="743" text-anchor="middle" class="action" fill="#c7c7c2">Save changes</text>
+
+    <!-- Lucide X: 14px icon box at [1234,272], 24-unit paths scaled to 28 units. -->
+    <path d="M1241 279L1255 293" class="draw icon" pathLength="1" style="--dialog-bp-delay:300ms"/>
+    <path d="M1255 279L1241 293" class="draw icon" pathLength="1" style="--dialog-bp-delay:325ms"/>
+
+    <!-- Overall chosen width and content-dependent height, outer edge to outer edge. -->
+    <path d="M288 146V212 M1312 146V212 M160 222H278 M160 818H278" class="extension"/>
+    <path d="M288 134V154 M1312 134V154 M288 144H1312" class="measure"/>
+    <text x="800" y="125" text-anchor="middle" class="label">512 px</text>
+    <path d="M140 222H160 M140 818H160 M150 222V818" class="measure"/>
+    <text x="128" y="526" text-anchor="end" class="label">298 px</text>
+
+    <!-- 24px top padding, measured from the inside edge of the 1px panel border. -->
+    <path d="M360 224H380 M360 272H380 M370 224V272 M380 248H397" class="measure"/>
+    <text x="407" y="254" class="label">24 px</text>
+
+    <!-- 24px left padding uses the same inner border edge, not the outer edge. -->
+    <path d="M290 828V884 M338 778V884" class="extension"/>
+    <path d="M290 864V884 M338 864V884 M290 874H338 M314 884V900" class="measure"/>
+    <text x="314" y="924" text-anchor="middle" class="label">24 px</text>
+
+    <!-- Close control's top inset is 16px from the inner border edge. -->
+    <path d="M1322 224H1376 M1288 256H1376" class="extension"/>
+    <path d="M1362 224H1382 M1362 256H1382 M1372 224V256 M1382 240H1400" class="measure"/>
+    <text x="1410" y="246" class="label">16 px</text>
+
+    <!-- Header gap: lower edge of the title line box to upper edge of description. -->
+    <path d="M1224 320H1392 M1272 332H1392" class="extension"/>
+    <path d="M1382 320H1402 M1382 332H1402 M1392 320V332 M1402 326H1420" class="measure"/>
+    <text x="1430" y="332" class="label">6 px</text>
+
+    <!-- A section gap and a label/input gap share the form's actual boundaries. -->
+    <path d="M256 372H328 M256 404H328 M256 444H328 M256 456H328" class="extension"/>
+    <path d="M246 372H266 M246 404H266 M256 372V404 M246 388H228" class="measure"/>
+    <text x="216" y="394" text-anchor="end" class="label">16 px</text>
+    <path d="M246 444H266 M246 456H266 M256 444V456 M246 450H228" class="measure"/>
+    <text x="216" y="456" text-anchor="end" class="label">6 px</text>
+
+    <!-- The input has a fixed 34px border-box height. -->
+    <path d="M1272 456H1372 M1272 524H1372" class="extension"/>
+    <path d="M1362 456H1382 M1362 524H1382 M1372 456V524" class="measure"/>
+    <text x="1394" y="496" class="label">34 px</text>
+
+    <!-- Two field groups are separated by 12px. -->
+    <path d="M1272 548H1372" class="extension"/>
+    <path d="M1362 548H1382 M1372 524V548 M1382 536H1400" class="measure"/>
+    <text x="1410" y="542" class="label">12 px</text>
+
+    <!-- The footer starts 16px after the final field. -->
+    <path d="M1272 668H1372 M1272 700H1372" class="extension"/>
+    <path d="M1362 668H1382 M1362 700H1382 M1372 668V700 M1382 684H1400" class="measure"/>
+    <text x="1410" y="690" class="label">16 px</text>
+
+    <!-- Footer's 8px action gap: ghost button edge to primary button edge. -->
+    <path d="M1036 778V878 M1052 778V878" class="extension"/>
+    <path d="M1036 864V884 M1052 864V884 M1036 874H1052 M1044 884L1070 912H1090" class="measure"/>
+    <text x="1102" y="918" class="label">8 px</text>
+  </g>
+</svg>

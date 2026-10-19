@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1800" viewBox="0 0 1400 1800" fill="none" role="img" aria-labelledby="sheet-bp-title sheet-bp-description">
+  <title id="sheet-bp-title">Sheet spacing blueprint</title>
+  <desc id="sheet-bp-description">The default open right-side Sheet, showing the profile form, close control, and footer actions. The panel is 384 CSS pixels wide in a representative 768-pixel-high desktop viewport. Blue guides mark the 20-pixel content padding, 90-pixel header, 6-pixel title and field gaps, 34-pixel inputs, 12-pixel field spacing, 8-pixel body padding and footer action gap, and 74-pixel footer.</desc>
+
+  <!-- Hand-authored vector drawing at 2x; measurement labels are original CSS px.
+       Sources:
+         registry.json: sheet files and default installation.
+         registry/ui/sheet/sheet.variants.ts: right side, w-96, max-w-[85vw], h-full,
+           border-l; no rounded corners. The remaining perimeter denotes the viewport
+           edges occupied by the panel, not additional production borders.
+         registry/ui/sheet/sheet.tsx: Header, Body, Footer, Title, Description, Close.
+         inspector/entries/sheet.tsx: profile form, eight fields, gap-3, py-2, actions.
+         registry/ui/input/input.variants.ts: h-[34px], 1px border, px-3, radius 8px.
+         registry/ui/button/button.variants.ts: md h-[34px], px-3.5, radius 8px;
+           icon-sm 30px square, 14px SVG; ghost Cancel, primary Save changes.
+         app/globals.css: text-base = 15px/24px, text-sm = 13px/~20px;
+           dark background oklch(0.120 0 0), rounded to sRGB #060606.
+         node_modules/tailwindcss/theme.css: spacing token = .25rem = 4px at 16px root.
+
+       State: open, default right side, showClose=true, un-focused form with sample values.
+       Chosen viewport: 1280 x 768 CSS px (desktop sm:flex-row footer).
+       Panel width = min(384, .85 * 1280) = 384px; height = chosen viewport's 768px.
+       Panel bounds in SVG units: x=316..1084, y=132..1668.
+       Inner width = 384 - 1 left border = 383px.
+       Header: 20 top + 24 title + 6 gap + 20 description + 20 bottom = 90px.
+       Body: flex-1 = 768 - 90 - 74 = 604px; px-5 = 20px; demo py-2 = 8px.
+       Content width = 383 - 20 - 20 = 343px (SVG x=358..1044).
+       Field: 20 label + 6 gap + 34 fixed-height Input = 60px.
+       Eight fields: 8 * 60 + 7 * 12 = 564px; body padded content capacity = 588px.
+       The remaining 24px is flexible body space, not another padding token.
+       Field tops = 98 + 72*n px from panel top; all eight fit without a scrollbar.
+       Input text inset = 1 border + 12 padding = 13px from its outer edge.
+       Footer: 20 top + 34 button + 20 bottom = 74px, anchored by flex-1 Body.
+       Footer buttons have content-dependent widths; no width ruler is asserted.
+       Close: top/right = 16px, box = 30px; 14px icon centered with 8px box inset.
+       A 1px border and inherited line-height arithmetic are rounded for vector geometry.
+       No extra solid header/footer dividers are invented: their boundaries are guides.
+       Animation: outline 0..400ms; details 250..650ms; annotations 700..900ms, once.
+  -->
+
+  <defs>
+    <style>
+      text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      .sheet-bp-title-text { fill: #c7c7c2; font-size: 30px; font-weight: 600; }
+      .sheet-bp-copy { fill: #92948d; font-size: 26px; }
+      .sheet-bp-value { fill: #c7c7c2; font-size: 26px; }
+      .sheet-bp-action { font-size: 26px; font-weight: 500; }
+      .sheet-bp-solid { stroke: #a7a8a2; stroke-width: 2; }
+      .sheet-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      .sheet-bp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      .sheet-bp-label { fill: #6889ff; font-size: 18px; }
+      /* Static exports and reduced-motion viewers show the complete final drawing. */
+      @keyframes sheet-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes sheet-bp-reveal { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        .sheet-bp-draw {
+          stroke-dasharray: 1;
+          animation: sheet-bp-draw 200ms ease-out var(--sheet-bp-delay, 0ms) both;
+        }
+        .sheet-bp-outline { animation-duration: 400ms; }
+        .sheet-bp-measure, .sheet-bp-spacing, .sheet-bp-label {
+          animation: sheet-bp-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+
+  <rect width="1400" height="1800" fill="#060606"/>
+
+  <!-- Square full-height panel. Component fills and text stay visible throughout. -->
+  <rect x="317" y="133" width="766" height="1534" class="sheet-bp-solid sheet-bp-draw sheet-bp-outline" pathLength="1"/>
+  <rect x="826" y="1560" width="218" height="68" rx="16" fill="#353632"/>
+
+  <!-- Eight 343 x 34px input border boxes. Stroke centers are inset by 1 SVG unit. -->
+  <rect x="359" y="381" width="684" height="66" rx="15" class="sheet-bp-solid sheet-bp-draw" pathLength="1" style="--sheet-bp-delay:250ms"/>
+  <rect x="359" y="525" width="684" height="66" rx="15" class="sheet-bp-solid sheet-bp-draw" pathLength="1" style="--sheet-bp-delay:275ms"/>
+  <rect x="359" y="669" width="684" height="66" rx="15" class="sheet-bp-solid sheet-bp-draw" pathLength="1" style="--sheet-bp-delay:300ms"/>
+  <rect x="359" y="813" width="684" height="66" rx="15" class="sheet-bp-solid sheet-bp-draw" pathLength="1" style="--sheet-bp-delay:325ms"/>
+  <rect x="359" y="957" width="684" height="66" rx="15" class="sheet-bp-solid sheet-bp-draw" pathLength="1" style="--sheet-bp-delay:350ms"/>
+  <rect x="359" y="1101" width="684" height="66" rx="15" class="sheet-bp-solid sheet-bp-draw" pathLength="1" style="--sheet-bp-delay:375ms"/>
+  <rect x="359" y="1245" width="684" height="66" rx="15" class="sheet-bp-solid sheet-bp-draw" pathLength="1" style="--sheet-bp-delay:400ms"/>
+  <rect x="359" y="1389" width="684" height="66" rx="15" class="sheet-bp-solid sheet-bp-draw" pathLength="1" style="--sheet-bp-delay:425ms"/>
+
+  <!-- Padding columns, title line boxes, and the true header/body/footer boundaries. -->
+  <path d="M358 172V1628 M1044 272V1628" class="sheet-bp-spacing"/>
+  <path d="M318 172H976 M358 220H704 M358 232H704 M358 272H1044" class="sheet-bp-spacing"/>
+  <path d="M318 312H1084 M318 1520H1084" class="sheet-bp-spacing"/>
+  <path d="M358 328H1044 M358 368H1044 M358 448H1044 M358 472H1044 M358 512H1044" class="sheet-bp-spacing"/>
+  <path d="M384 380V448 M384 524V592" class="sheet-bp-spacing"/>
+
+  <!-- Close hit box and its centered SVG box: no visible production button outline. -->
+  <rect x="992" y="164" width="60" height="60" rx="12" class="sheet-bp-spacing"/>
+  <rect x="1008" y="180" width="28" height="28" class="sheet-bp-spacing"/>
+  <path d="M1015 187L1029 201" stroke="#a7a8a2" stroke-width="2.33" stroke-linecap="round" class="sheet-bp-draw" pathLength="1" style="--sheet-bp-delay:425ms"/>
+  <path d="M1029 187L1015 201" stroke="#a7a8a2" stroke-width="2.33" stroke-linecap="round" class="sheet-bp-draw" pathLength="1" style="--sheet-bp-delay:450ms"/>
+
+  <!-- Footer action boxes and their 8px gap. -->
+  <rect x="674" y="1560" width="136" height="68" rx="16" class="sheet-bp-spacing"/>
+  <path d="M810 1552V1636 M826 1552V1636 M674 1560H1044 M674 1628H1044" class="sheet-bp-spacing"/>
+
+  <!-- Component text: title and description retain their source type scale. -->
+  <text x="358" y="208" class="sheet-bp-title-text">Edit profile</text>
+  <text x="358" y="261" class="sheet-bp-copy">Update your profile details.</text>
+
+  <text x="358" y="358" class="sheet-bp-copy">Name</text>
+  <text x="384" y="423" class="sheet-bp-value">Alex Morgan</text>
+  <text x="358" y="502" class="sheet-bp-copy">Username</text>
+  <text x="384" y="567" class="sheet-bp-value">@alexmorgan</text>
+  <text x="358" y="646" class="sheet-bp-copy">Email</text>
+  <text x="384" y="711" class="sheet-bp-value">alex@example.com</text>
+  <text x="358" y="790" class="sheet-bp-copy">Bio</text>
+  <text x="384" y="855" class="sheet-bp-value">Product designer</text>
+  <text x="358" y="934" class="sheet-bp-copy">Location</text>
+  <text x="384" y="999" class="sheet-bp-value">Budapest, Hungary</text>
+  <text x="358" y="1078" class="sheet-bp-copy">Website</text>
+  <text x="384" y="1143" class="sheet-bp-value">alexmorgan.dev</text>
+  <text x="358" y="1222" class="sheet-bp-copy">Company</text>
+  <text x="384" y="1287" class="sheet-bp-value">Studio North</text>
+  <text x="358" y="1366" class="sheet-bp-copy">Phone</text>
+  <text x="384" y="1431" class="sheet-bp-value">+36 30 555 0100</text>
+  <text x="742" y="1603" text-anchor="middle" fill="#92948d" class="sheet-bp-action">Cancel</text>
+  <text x="935" y="1603" text-anchor="middle" fill="#c7c7c2" class="sheet-bp-action">Save changes</text>
+
+  <!-- Current width and chosen viewport height, measured at outer border-box edges. -->
+  <path d="M316 64V88 M1084 64V88 M316 76H1084 M316 88V120 M1084 88V120" class="sheet-bp-measure"/>
+  <text x="700" y="57" text-anchor="middle" class="sheet-bp-label">384 px</text>
+  <path d="M1096 132H1308 M1096 1668H1308 M1296 132V1668 M1284 132H1308 M1284 1668H1308" class="sheet-bp-measure"/>
+  <text x="1320" y="906" class="sheet-bp-label">768 px</text>
+
+  <!-- Header height and its top padding. -->
+  <path d="M196 132H220 M196 312H220 M208 132V312 M220 132H304 M220 312H304" class="sheet-bp-measure"/>
+  <text x="188" y="228" text-anchor="end" class="sheet-bp-label">90 px</text>
+  <path d="M276 132H296 M276 172H304 M286 132V172" class="sheet-bp-measure"/>
+  <text x="268" y="158" text-anchor="end" class="sheet-bp-label">20 px</text>
+
+  <!-- Title-to-description gap. -->
+  <path d="M694 220H714 M694 232H714 M704 220V232 M714 226H750" class="sheet-bp-measure"/>
+  <text x="762" y="232" class="sheet-bp-label">6 px</text>
+
+  <!-- Close top/right offsets and its 30px button box. -->
+  <path d="M1104 132H1124 M1104 164H1124 M1114 132V164 M1052 164H1104" class="sheet-bp-measure"/>
+  <text x="1138" y="154" class="sheet-bp-label">16 px</text>
+  <path d="M1052 234V258 M1084 234V258 M1052 246H1084 M1068 258 1100 282H1120" class="sheet-bp-measure"/>
+  <text x="1134" y="288" class="sheet-bp-label">16 px</text>
+  <path d="M992 144V158 M1052 144V158 M992 151H1052 M1022 144V112" class="sheet-bp-measure"/>
+  <text x="1008" y="112" text-anchor="end" class="sheet-bp-label">30 px</text>
+
+  <!-- Body top padding, the label gap, input height, and field-to-field spacing. -->
+  <path d="M1044 328H1126 M1126 312H1146 M1126 328H1146 M1136 312V328" class="sheet-bp-measure"/>
+  <text x="1160" y="326" class="sheet-bp-label">8 px</text>
+  <path d="M1044 368H1126 M1044 380H1126 M1126 368H1146 M1126 380H1146 M1136 368V380" class="sheet-bp-measure"/>
+  <text x="1160" y="380" class="sheet-bp-label">6 px</text>
+  <path d="M1126 448H1146 M1136 380V448 M1044 448H1126" class="sheet-bp-measure"/>
+  <text x="1160" y="420" class="sheet-bp-label">34 px</text>
+  <path d="M1126 472H1146 M1136 448V472 M1044 472H1126" class="sheet-bp-measure"/>
+  <text x="1160" y="466" class="sheet-bp-label">12 px</text>
+
+  <!-- Input horizontal padding: border's inner edge x=360 to text start x=384. -->
+  <path d="M360 434V450 M384 434V450 M360 442H384 M372 450 330 480H272" class="sheet-bp-measure"/>
+  <text x="258" y="486" text-anchor="end" class="sheet-bp-label">12 px</text>
+
+  <!-- Shared 20px content inset measured from the panel's inner left border edge. -->
+  <path d="M318 738V758 M358 738V758 M318 748H358 M338 738 286 710H252" class="sheet-bp-measure"/>
+  <text x="238" y="716" text-anchor="end" class="sheet-bp-label">20 px</text>
+
+  <!-- Footer height, top/bottom padding, and action gap. -->
+  <path d="M196 1520H220 M196 1668H220 M208 1520V1668 M220 1520H304 M220 1668H304" class="sheet-bp-measure"/>
+  <text x="188" y="1600" text-anchor="end" class="sheet-bp-label">74 px</text>
+  <path d="M276 1520H296 M276 1560H304 M286 1520V1560" class="sheet-bp-measure"/>
+  <text x="268" y="1546" text-anchor="end" class="sheet-bp-label">20 px</text>
+  <path d="M1044 1628H1126 M1126 1628H1146 M1126 1668H1146 M1136 1628V1668" class="sheet-bp-measure"/>
+  <text x="1160" y="1654" class="sheet-bp-label">20 px</text>
+  <path d="M810 1640V1660 M826 1640V1660 M810 1650H826 M818 1660 856 1712H880" class="sheet-bp-measure"/>
+  <text x="894" y="1718" class="sheet-bp-label">8 px</text>
+</svg>

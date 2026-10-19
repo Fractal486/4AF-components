@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620" fill="none" role="img" aria-labelledby="breadcrumb-bp-title breadcrumb-bp-desc">
+  <title id="breadcrumb-bp-title">Breadcrumb spacing</title>
+  <desc id="breadcrumb-bp-desc">The default medium breadcrumb, Home, ellipsis, and current page Breadcrumb, drawn at three times CSS size. The list gap is 6 pixels. Text line boxes are 20 pixels high. Separator viewports are 14 pixels, the ellipsis control is 24 pixels with a 16 pixel icon and a 40 pixel hit area. Link padding is 4 pixels, offset by negative margins.</desc>
+  <!--
+    Sources:
+      registry.json: breadcrumb's complete two-file portable implementation.
+      registry/ui/breadcrumb/breadcrumb.tsx
+      registry/ui/breadcrumb/breadcrumb.variants.ts
+      inspector/entries/breadcrumb.tsx
+      content/docs/breadcrumb.mdx
+      app/globals.css: dark background, text-sm and its line-height.
+      node_modules/tailwindcss/theme.css: spacing token = .25rem = 4px.
+      node_modules/lucide-react/dist/esm/icons/{chevron-right,ellipsis}.js
+
+    State: size="md", default closed BreadcrumbCollapse, unfocused and unhovered.
+    The demo's hidden Docs / Components / Navigation run is not drawn.
+    No enclosing solid outline or active fill: this component has neither at rest.
+    The dashed boxes are measurements, not production borders.
+    Dark base: oklch(.120 0 0), rounded to #060606 in sRGB.
+
+    Drawing scale: 3 SVG units per CSS pixel, assuming a 16px root.
+    text-sm: .8125rem = 13px; line-height 1.5385 = 20.0005px,
+    drawn and labelled as 20px (60 units). No vertical padding.
+    gap-1.5 = 6px (18 units) between every adjacent visible list child.
+    Separators: size-3.5 = 14px (42 units), glyph within a 24-unit viewport.
+    Ellipsis: size-6 = 24px (72 units), rounded 6px (18 units).
+    Ellipsis icon: size-4 = 16px (48 units); centered inset = 4px (12 units).
+    Interactive ::after: size-10 = 40px (120 units), centered on the control;
+    it extends 8px (24 units) beyond each control edge, with no layout space.
+    List content height = max(20px text, 14px separators, 24px ellipsis) = 24px.
+    Link: px-1 = 4px, -mx-1 = -4px; its border box extends beyond its item,
+    while the item and its text retain the same horizontal layout position.
+
+    Width is content-dependent, not an API dimension. A representative single-line
+    intrinsic trail is used here: Home 104.53 units + Breadcrumb 209.28 units
+    + two 42-unit separator boxes + one 72-unit control + four 18-unit gaps
+    = 541.81 units (180.6033 CSS px). Text advances were measured locally in
+    Segoe UI at 39px; the app uses Geist, so no universal text width is claimed.
+    Segoe UI baseline: center + (2210 - 514) / 2048 * 39 / 2 = 326.15.
+    The artwork font stack intentionally follows the blueprint style.
+
+    The first structural chevron draws for 400ms; other icon strokes finish
+    by 650ms. All annotations fade together from 700ms to 900ms. CSS only.
+  -->
+  <defs>
+    <style>
+      .breadcrumb-bp-text, .breadcrumb-bp-label { font-family: Inter, 'Segoe UI', Arial, sans-serif; font-weight: 400; }
+      .breadcrumb-bp-text { fill: #92948d; font-size: 39px; }
+      .breadcrumb-bp-current { fill: #c7c7c2; }
+      .breadcrumb-bp-label { fill: #a1a29c; font-size: 18px; }
+      .breadcrumb-bp-stroke { stroke: #a7a8a2; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+      .breadcrumb-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      .breadcrumb-bp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      /* Fully visible static geometry is the default, including reduced motion. */
+      @keyframes breadcrumb-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes breadcrumb-bp-reveal { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        .breadcrumb-bp-draw {
+          stroke-dasharray: 1;
+          animation: breadcrumb-bp-draw 200ms ease-out var(--breadcrumb-bp-delay, 0ms) both;
+        }
+        .breadcrumb-bp-outline { animation-duration: 400ms; }
+        .breadcrumb-bp-measure, .breadcrumb-bp-spacing, .breadcrumb-bp-label {
+          animation: breadcrumb-bp-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <rect width="1200" height="620" fill="#060606"/>
+
+  <!-- Final-state spacing overlays, above the ground and behind the content. -->
+  <!-- Only the link's left padding bracket and text edges: px-1 and -mx-1. -->
+  <path d="M329.095 280H317.095V340H329.095" class="breadcrumb-bp-spacing"/>
+  <path d="M329.095 280V340 M433.625 280V340" class="breadcrumb-bp-spacing"/>
+  <!-- Measure one separator; omit the repeated viewport. -->
+  <rect x="451.625" y="289" width="42" height="42" class="breadcrumb-bp-spacing"/>
+  <!-- The hit target is centered; its overlap does not change the 6px list gap. -->
+  <rect x="487.625" y="250" width="120" height="120" class="breadcrumb-bp-spacing"/>
+  <rect x="511.625" y="274" width="72" height="72" rx="18" class="breadcrumb-bp-spacing"/>
+
+  <!-- Component text stays visible throughout the draw-on sequence. -->
+  <text x="329.095" y="326.15" class="breadcrumb-bp-text">Home</text>
+  <text x="661.625" y="326.15" class="breadcrumb-bp-text breadcrumb-bp-current">Breadcrumb</text>
+
+  <!-- Lucide chevrons: m9 18 6-6-6-6 in a 24-unit viewport. -->
+  <path d="m467.375 320.5 10.5-10.5-10.5-10.5" pathLength="1" class="breadcrumb-bp-stroke breadcrumb-bp-draw breadcrumb-bp-outline"/>
+  <path d="m617.375 320.5 10.5-10.5-10.5-10.5" pathLength="1" class="breadcrumb-bp-stroke breadcrumb-bp-draw" style="--breadcrumb-bp-delay:250ms"/>
+  <!-- Lucide ellipsis: radius-1 circles at x=5,12,19, scaled from 24 to 48. -->
+  <circle cx="533.625" cy="310" r="2" fill="#060606" pathLength="1" class="breadcrumb-bp-stroke breadcrumb-bp-draw" style="--breadcrumb-bp-delay:400ms"/>
+  <circle cx="547.625" cy="310" r="2" fill="#060606" pathLength="1" class="breadcrumb-bp-stroke breadcrumb-bp-draw" style="--breadcrumb-bp-delay:425ms"/>
+  <circle cx="561.625" cy="310" r="2" fill="#060606" pathLength="1" class="breadcrumb-bp-stroke breadcrumb-bp-draw" style="--breadcrumb-bp-delay:450ms"/>
+
+  <!-- 20px text line height, with extensions to the exact line-box edges. -->
+  <path d="M270 280H309 M270 340H309" class="breadcrumb-bp-spacing"/>
+  <path d="M259 280H281 M259 340H281 M270 280V340" class="breadcrumb-bp-measure"/>
+  <text x="248" y="316" text-anchor="end" class="breadcrumb-bp-label">20 px</text>
+
+  <!-- 14px separator viewport; do not mistake the chevron's ink for its box. -->
+  <path d="M451.625 289V177 M493.625 289V177" class="breadcrumb-bp-spacing"/>
+  <path d="M451.625 166V188 M493.625 166V188 M451.625 177H493.625" class="breadcrumb-bp-measure"/>
+  <text x="472.625" y="158" text-anchor="middle" class="breadcrumb-bp-label">14 px</text>
+
+  <!-- 24px ellipsis control width. -->
+  <path d="M511.625 274V221 M583.625 274V221" class="breadcrumb-bp-spacing"/>
+  <path d="M511.625 210V232 M583.625 210V232 M511.625 221H583.625" class="breadcrumb-bp-measure"/>
+  <text x="547.625" y="201" text-anchor="middle" class="breadcrumb-bp-label">24 px</text>
+
+  <!-- 6px actual flex gap: the first item's right edge to the separator box. -->
+  <path d="M433.625 280V250 M451.625 289V250" class="breadcrumb-bp-spacing"/>
+  <path d="M433.625 239V261 M451.625 239V261 M433.625 250H451.625 M442.625 239 420 216H395" class="breadcrumb-bp-measure"/>
+  <text x="383" y="222" text-anchor="end" class="breadcrumb-bp-label">6 px</text>
+
+  <!-- 4px link padding, offset by the negative margin rather than added to the gap. -->
+  <path d="M317.095 340V392 M329.095 340V392" class="breadcrumb-bp-spacing"/>
+  <path d="M317.095 381V403 M329.095 381V403 M317.095 392H329.095 M323.095 403 300 426H277" class="breadcrumb-bp-measure"/>
+  <text x="265" y="432" text-anchor="end" class="breadcrumb-bp-label">4 px</text>
+
+  <!-- 40px interactive hit area, not the visible control's width or a layout gap. -->
+  <path d="M487.625 370V452 M607.625 370V452" class="breadcrumb-bp-spacing"/>
+  <path d="M487.625 441V463 M607.625 441V463 M487.625 452H607.625" class="breadcrumb-bp-measure"/>
+  <text x="547.625" y="481" text-anchor="middle" class="breadcrumb-bp-label">40 px</text>
+</svg>

@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1160" viewBox="0 0 1200 1160" fill="none" role="img" aria-labelledby="popover-bp-title popover-bp-description">
+  <title id="popover-bp-title">Popover spacing blueprint</title>
+  <desc id="popover-bp-description">An open Dimensions popover, centered 6 pixels below its trigger. The default panel is 288 pixels wide with a 1 pixel border and 16 pixel padding. Its title and description have a 4 pixel gap. Four 32 pixel inputs have 10 pixel gaps, 80 pixel label columns, and 12 pixel column gaps. A units select, enabled aspect-ratio switch, and Done button complete the form. This content produces a 389 pixel panel height. Blue rulers show CSS pixel dimensions at twice actual size.</desc>
+  <!--
+    Sources:
+      registry.json: popover has one implementation file, no sibling variants.
+      registry/ui/popover/popover.tsx: w-72, p-4, border, rounded-md;
+        bottom / center / sideOffset=6; header gap-1 and mb-3.
+      inspector/entries/popover.tsx: Dimensions form, gap-2.5, 5rem label
+        column, gap-3, h-8 inputs, mt-4 / border-t / pt-4 footer, Done.
+      registry/ui/input/input.variants.ts: 1px border, px-3, radius 8px.
+      registry/ui/select/select.variants.ts and select.shared.tsx:
+        default boxed trigger, sm=30px, text-xs=12px/16px, radius 6px.
+      registry/ui/switch/switch.variants.ts: 36x20 track, 16px thumb,
+        2px horizontal inset, default adaptive tone; drawn checked.
+      registry/ui/button/button.variants.ts: md=34px/13px, sm=30px/12px.
+      app/globals.css: text-sm=13px/20px, radius-md=7px;
+        dark background oklch(0.120 0 0) = #060606.
+      node_modules/tailwindcss/theme.css: spacing unit=4px at 16px root.
+      node_modules/tailwindcss/preflight.css: border-box sizing.
+
+    State: open, bottom, centered, non-modal; no collision adjustment.
+    Drawing scale: 2 SVG units per CSS px, including component typography.
+    Full Dimensions demo body; trigger shown at nominal unpressed geometry
+    (the demo's optional held-button transform is not a layout measurement).
+    No extra popup variant or size is supplied by the implementation.
+    Width: default w-72 = 288px; viewport assumed >=320px so its
+      max-w-[calc(100vw-2rem)] constraint does not shrink the panel.
+    Inner width: 288 - 2x1 border - 2x16 padding = 254px.
+    Form columns: 80px label + 12px gap + 162px field = 254px.
+    Header: 20px title + 4px gap + 20px one-line description = 44px.
+    Inputs: 4x32px + 3x10px = 158px.
+    Settings: 1px divider + 16px top padding + 30px select
+      + 12px gap + 20px switch = 79px.
+    Content height: 44 + 12 + 158 + 16 + 79 + 16 + 30 = 355px.
+    Outer height: 2x1 border + 2x16 padding + 355 = 389px.
+    Height is content-dependent, not a fixed or minimum popover dimension.
+    Control widths are content-dependent: trigger 104px and Done 54px
+      are representative widths for the illustration's sans-serif labels.
+    The 1.5385 text-sm line-height is rounded to its intended 20px.
+    Panel outer box: (312,246)-(888,1024). Content: (346,280)-(854,990).
+    Animation: outline 0-400ms; details 250-650ms; annotations 700-900ms.
+  -->
+  <defs>
+    <style>
+      #popover-bp-root text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #popover-bp-root .popover-bp-text { fill: #92948d; font-size: 26px; }
+      #popover-bp-root .popover-bp-value { fill: #c7c7c2; font-size: 26px; }
+      #popover-bp-root .popover-bp-small { fill: #c7c7c2; font-size: 24px; }
+      #popover-bp-root .popover-bp-stroke { stroke: #a7a8a2; stroke-width: 2; }
+      #popover-bp-root .popover-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      #popover-bp-root .popover-bp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      #popover-bp-root .popover-bp-label { fill: #6889ff; font-size: 18px; }
+      /* Static is the complete drawing, also used by reduced-motion viewers. */
+      @keyframes popover-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes popover-bp-reveal { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        #popover-bp-root .popover-bp-draw {
+          stroke-dasharray: 1;
+          animation: popover-bp-draw 200ms ease-out var(--popover-bp-delay, 0ms) both;
+        }
+        #popover-bp-root .popover-bp-outline { animation-duration: 400ms; }
+        #popover-bp-root .popover-bp-measure,
+        #popover-bp-root .popover-bp-spacing,
+        #popover-bp-root .popover-bp-label {
+          animation: popover-bp-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <g id="popover-bp-root">
+    <rect width="1200" height="1160" fill="#060606"/>
+
+    <!-- Solid structure draws first; text and fills are visible from the start. -->
+    <rect x="497" y="167" width="206" height="66" rx="15" fill="#060606"/>
+    <rect x="497" y="167" width="206" height="66" rx="15" class="popover-bp-stroke popover-bp-draw" pathLength="1" opacity=".7" style="--popover-bp-delay:250ms"/>
+    <rect x="313" y="247" width="574" height="776" rx="13" class="popover-bp-stroke popover-bp-draw popover-bp-outline" pathLength="1"/>
+
+    <rect x="531" y="393" width="322" height="62" rx="15" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:275ms"/>
+    <rect x="531" y="477" width="322" height="62" rx="15" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:300ms"/>
+    <rect x="531" y="561" width="322" height="62" rx="15" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:325ms"/>
+    <rect x="531" y="645" width="322" height="62" rx="15" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:350ms"/>
+    <path d="M346 741H854" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:375ms"/>
+    <rect x="531" y="775" width="322" height="58" rx="11" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:400ms"/>
+    <rect x="782" y="858" width="72" height="40" rx="20" fill="#353632"/>
+    <rect x="783" y="859" width="70" height="38" rx="19" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:425ms"/>
+    <circle cx="834" cy="878" r="16" fill="#c7c7c2"/>
+    <rect x="746" y="930" width="108" height="60" rx="12" fill="#353632"/>
+    <rect x="747" y="931" width="106" height="58" rx="11" class="popover-bp-stroke popover-bp-draw" pathLength="1" style="--popover-bp-delay:425ms"/>
+
+    <!-- Persistent overlays sit above surfaces and behind the component text. -->
+    <rect x="346" y="280" width="508" height="710" class="popover-bp-spacing"/>
+    <path d="M346 320H854 M346 328H854 M346 368H854 M346 392H854" class="popover-bp-spacing"/>
+    <path d="M346 456H854 M346 476H854 M346 540H854 M346 560H854 M346 624H854 M346 644H854 M346 708H854" class="popover-bp-spacing"/>
+    <path d="M506 392V834 M530 392V834 M556 392V708 M828 392V708" class="popover-bp-spacing"/>
+    <path d="M346 774H854 M346 834H854 M346 858H854 M346 898H854 M746 930H854" class="popover-bp-spacing"/>
+
+    <text x="600" y="209" text-anchor="middle" class="popover-bp-value" font-weight="500">Dimensions</text>
+    <text x="346" y="309" class="popover-bp-value" font-weight="600">Dimensions</text>
+    <text x="346" y="357" class="popover-bp-text">Set the dimensions for the layer.</text>
+    <text x="346" y="433" class="popover-bp-text">Width</text>
+    <text x="556" y="433" class="popover-bp-value">100%</text>
+    <text x="346" y="517" class="popover-bp-text">Max. width</text>
+    <text x="556" y="517" class="popover-bp-value">300px</text>
+    <text x="346" y="601" class="popover-bp-text">Height</text>
+    <text x="556" y="601" class="popover-bp-value">25px</text>
+    <text x="346" y="685" class="popover-bp-text">Max. height</text>
+    <text x="556" y="685" class="popover-bp-value">none</text>
+    <text x="346" y="813" class="popover-bp-text">Units</text>
+    <text x="560" y="812" class="popover-bp-small">Pixels</text>
+    <!-- Lucide ChevronDown: 14px box, scaled 2x; its single connected stroke. -->
+    <path d="m804 800.5 7 7 7-7" stroke="#a7a8a2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="popover-bp-draw" pathLength="1" style="--popover-bp-delay:450ms"/>
+    <text x="346" y="887" class="popover-bp-text">Lock aspect ratio</text>
+    <text x="800" y="968" text-anchor="middle" class="popover-bp-small" font-weight="500">Done</text>
+
+    <!-- Default bottom placement: measured from trigger edge to panel edge. -->
+    <path d="M704 234H918 M888 246H918" class="popover-bp-spacing"/>
+    <path d="M908 234H928 M908 246H928 M918 234V246 M928 240 949 216H968" class="popover-bp-measure"/>
+    <text x="982" y="222" class="popover-bp-label">6 px</text>
+
+    <!-- Overall dimensions refer to the outside of the 1px CSS border. -->
+    <path d="M312 246H260 M312 1024H260" class="popover-bp-spacing"/>
+    <path d="M239 246H261 M239 1024H261 M250 246V1024" class="popover-bp-measure"/>
+    <text x="228" y="641" text-anchor="end" class="popover-bp-label">389 px</text>
+    <path d="M312 1024V1102 M888 1024V1102" class="popover-bp-spacing"/>
+    <path d="M312 1079V1101 M888 1079V1101 M312 1090H888" class="popover-bp-measure"/>
+    <text x="600" y="1122" text-anchor="middle" class="popover-bp-label">288 px</text>
+
+    <!-- Panel padding starts INSIDE the border: y248, not outer y246. -->
+    <path d="M888 248H940 M854 280H940" class="popover-bp-spacing"/>
+    <path d="M930 248H950 M930 280H950 M940 248V280" class="popover-bp-measure"/>
+    <text x="968" y="270" class="popover-bp-label">16 px</text>
+
+    <!-- Header line boxes, header margin, fixed field height, and row gap. -->
+    <path d="M854 320H940 M854 328H940 M854 368H940 M854 392H940 M854 456H940 M854 476H940" class="popover-bp-spacing"/>
+    <path d="M930 320H950 M930 328H950 M940 320V328 M950 324H958" class="popover-bp-measure"/>
+    <text x="972" y="330" class="popover-bp-label">4 px</text>
+    <path d="M930 368H950 M930 392H950 M940 368V392" class="popover-bp-measure"/>
+    <text x="968" y="386" class="popover-bp-label">12 px</text>
+    <path d="M930 392H950 M930 456H950 M940 392V456" class="popover-bp-measure"/>
+    <text x="968" y="430" class="popover-bp-label">32 px</text>
+    <path d="M930 456H950 M930 476H950 M940 456V476" class="popover-bp-measure"/>
+    <text x="968" y="474" class="popover-bp-label">10 px</text>
+
+    <!-- The column ruler uses the same extended edges as all five form rows. -->
+    <path d="M506 746V766 M530 746V766 M506 756H530 M506 756H500" class="popover-bp-measure"/>
+    <text x="488" y="762" text-anchor="end" class="popover-bp-label">12 px</text>
+
+    <!-- Settings top padding begins AFTER the 1px divider: y742. -->
+    <path d="M854 742H940 M854 774H940" class="popover-bp-spacing"/>
+    <path d="M930 742H950 M930 774H950 M940 742V774" class="popover-bp-measure"/>
+    <text x="968" y="764" class="popover-bp-label">16 px</text>
+    <path d="M854 834H940 M854 858H940" class="popover-bp-spacing"/>
+    <path d="M930 834H950 M930 858H950 M940 834V858" class="popover-bp-measure"/>
+    <text x="968" y="852" class="popover-bp-label">12 px</text>
+    <path d="M854 898H940 M854 930H940" class="popover-bp-spacing"/>
+    <path d="M930 898H950 M930 930H950 M940 898V930" class="popover-bp-measure"/>
+    <text x="968" y="920" class="popover-bp-label">16 px</text>
+  </g>
+</svg>

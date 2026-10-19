@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="580" viewBox="0 0 1000 580" fill="none" role="img" aria-labelledby="tooltip-bp-title tooltip-bp-description">
+  <title id="tooltip-bp-title">Tooltip spacing blueprint</title>
+  <desc id="tooltip-bp-description">An open tooltip reading Deploys to production, centered above a Hover me button, drawn at three times CSS size. The single-line tooltip is 24 pixels high, with a 16 pixel line box, 10 pixel horizontal padding, and 4 pixel vertical padding. Its gap above the 34 pixel high trigger is 8 pixels.</desc>
+  <!--
+    Sources:
+      registry.json: tooltip has one portable source file; no sibling variants.
+      registry/ui/tooltip/tooltip.tsx: default top / center, sideOffset=8;
+        w-fit max-w-xs rounded-md px-2.5 py-1 text-xs font-medium; no border or arrow.
+      inspector/entries/tooltip.tsx: "Deploys to production", outline Button "Hover me".
+      registry/ui/button/button.variants.ts: default size md, h-[34px], px-3.5,
+        text-sm, rounded-[8px]; outline uses a shadow, not a layout border.
+      app/globals.css: text-xs=12px, line-height=1.3333 (nominally 16px),
+        letter-spacing=.01em; text-sm=13px, line-height=1.5385 (nominally 20px);
+        radius-md=7px; dark background=oklch(.120 0 0), approximately #060606.
+      node_modules/tailwindcss/theme.css: spacing=.25rem=4px, container-xs=320px.
+
+    State: ordinary tooltip open above the demo's resting outline button.
+    Scale: 3 SVG units per CSS pixel for all component geometry and text.
+    Representative content-dependent tooltip width chosen as 144px, below the
+      320px maximum; this is not a fixed width or a maximum-width illustration.
+      Text is typeset into a representative 124px line box, using the required
+      portable illustration font stack instead of the app's downloaded Geist.
+    Tooltip: (10 + 124 + 10) x (4 + 16 + 4) = 144 x 24px; radius=7px.
+    Content box: x=314..686, y=228..276; outer box x=284..716, y=216..288.
+    Trigger: representative content-dependent width 84px = 14 + 56 + 14;
+      fixed height=34px; radius=8px. Box x=374..626, y=312..414.
+    Gap: (312 - 288) / 3 = 8px, measured between layout edges, not shadows.
+    Outline ink is inset by half its stroke width so its outside edge matches
+      each box; it adds no fictitious CSS border to either component.
+    Animation: outline 0..400ms, trigger 400..600ms; all annotations 700..900ms.
+      Text and fills remain visible. Reduced motion shows the completed drawing.
+  -->
+  <defs>
+    <style>
+      #tooltip-bp-root text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #tooltip-bp-root .tooltip-bp-copy { fill: #c7c7c2; font-size: 36px; font-weight: 500; letter-spacing: .36px; }
+      #tooltip-bp-root .tooltip-bp-trigger-copy { fill: #92948d; font-size: 39px; font-weight: 500; }
+      #tooltip-bp-root .tooltip-bp-label { fill: #a1a29c; font-size: 18px; }
+      #tooltip-bp-root .tooltip-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      #tooltip-bp-root .tooltip-bp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      #tooltip-bp-root { --tooltip-bp-detail-duration: 200ms; --tooltip-bp-annotation-delay: 700ms; }
+      @keyframes tooltip-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes tooltip-bp-reveal { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        #tooltip-bp-root .tooltip-bp-draw {
+          stroke-dasharray: 1;
+          animation: tooltip-bp-draw var(--tooltip-bp-detail-duration) ease-out var(--tooltip-bp-line-delay, 0ms) both;
+        }
+        #tooltip-bp-root .tooltip-bp-outline { animation-duration: 400ms; }
+        #tooltip-bp-root .tooltip-bp-measure,
+        #tooltip-bp-root .tooltip-bp-spacing,
+        #tooltip-bp-root .tooltip-bp-label {
+          animation: tooltip-bp-reveal 200ms ease-out var(--tooltip-bp-annotation-delay) both;
+        }
+      }
+    </style>
+  </defs>
+  <g id="tooltip-bp-root">
+    <rect width="1000" height="580" fill="#060606"/>
+
+    <!-- Permanent fills; only the perimeter strokes draw in. -->
+    <rect x="284" y="216" width="432" height="72" rx="21" fill="#111111"/>
+    <rect x="285.25" y="217.25" width="429.5" height="69.5" rx="19.75" stroke="#a7a8a2" stroke-width="2.5" pathLength="1" class="tooltip-bp-draw tooltip-bp-outline"/>
+    <!-- Dim the supporting trigger to 40% of its original illustration opacity. -->
+    <g opacity=".4">
+      <rect x="374" y="312" width="252" height="102" rx="24" fill="#111111"/>
+      <rect x="375.25" y="313.25" width="249.5" height="99.5" rx="22.75" stroke="#a7a8a2" stroke-width="2.5" opacity=".7" pathLength="1" class="tooltip-bp-draw" style="--tooltip-bp-line-delay:400ms"/>
+      <text x="500" y="378" text-anchor="middle" textLength="168" lengthAdjust="spacingAndGlyphs" class="tooltip-bp-trigger-copy">Hover me</text>
+    </g>
+
+    <!-- The actual content box and its padding edges stay visible over the fill. -->
+    <rect x="314" y="228" width="372" height="48" class="tooltip-bp-spacing"/>
+    <path d="M284 216V164 M314 228V164" class="tooltip-bp-spacing"/>
+    <path d="M686 228H824 M686 276H760 M716 216H824" class="tooltip-bp-spacing"/>
+
+    <text x="314" y="264" textLength="372" lengthAdjust="spacingAndGlyphs" class="tooltip-bp-copy">Deploys to production</text>
+
+    <!-- Horizontal padding: x=284..314 is exactly 30 units / 3 = 10px. -->
+    <path d="M284 168V180 M314 168V180 M284 174H314" class="tooltip-bp-measure"/>
+    <text x="299" y="150" text-anchor="middle" class="tooltip-bp-label">10 px</text>
+
+    <!-- Popup height: 72 units / 3 = 24px, including both 4px padding strips. -->
+    <path d="M236 216H276 M236 288H276 M224 216H236 M224 288H236 M230 216V288" class="tooltip-bp-measure"/>
+    <text x="208" y="258" text-anchor="end" class="tooltip-bp-label">24 px</text>
+
+    <!-- Line box: 48 units / 3 = 16px; not the glyph ink's height. -->
+    <path d="M748 228H760 M748 276H760 M754 228V276" class="tooltip-bp-measure"/>
+    <text x="778" y="258" class="tooltip-bp-label">16 px</text>
+
+    <!-- Top padding: 12 units / 3 = 4px. The leader meets the ruler midpoint. -->
+    <path d="M818 216H830 M818 228H830 M824 216V228 M824 222 850 192H870" class="tooltip-bp-measure"/>
+    <text x="884" y="198" class="tooltip-bp-label">4 px</text>
+
+    <!-- Default placement gap: popup bottom to trigger top, 24 units / 3 = 8px. -->
+    <path d="M626 312H690 M674 288H690 M682 288V312" class="tooltip-bp-measure"/>
+    <text x="708" y="307" class="tooltip-bp-label">8 px</text>
+
+  </g>
+</svg>

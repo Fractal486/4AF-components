@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="720" viewBox="0 0 1440 720" fill="none" role="img" aria-labelledby="adbp-title adbp-description">
+  <title id="adbp-title">Alert Dialog spacing blueprint</title>
+  <desc id="adbp-description">An open destructive confirmation dialog with a warning triangle before the title Delete this project?, a one-line deletion warning, Cancel, and Delete. The illustrated dialog is 512 pixels wide and 150 pixels tall, with 24 pixels of padding inside its 1 pixel border. The warning icon is 20 pixels wide with an 8 pixel gap before the title. The title and description have a 6 pixel gap; the header and footer have a 16 pixel gap. The default-sized buttons are 34 pixels high and 8 pixels apart. Blue dashed guides show the content bounds and line boxes.</desc>
+  <!--
+    Hand-authored vector drawing. Source measurements:
+      registry/ui/alert-dialog/alert-dialog.tsx
+      registry/ui/button/button.variants.ts (default md, outline Cancel, destructive Delete)
+      inspector/entries/alert-dialog.tsx (header/footer composition; destructive state)
+      app/globals.css (type, radii, and dark background tokens)
+      node_modules/tailwindcss/theme.css and preflight.css (spacing and border-box)
+    Alert Dialog has no sibling variants file; its styles are in its implementation.
+
+    State: open, desktop viewport at least 640px wide; no hover or press.
+    Uses the default button size and the demo's destructive action and copy.
+    User-requested composition: a 20px warning triangle and an 8px gap before
+    the title. These are illustration choices, not built-in component defaults.
+    The icon fits within the existing 24px title line without changing its height.
+    Width is flexible: min(viewport - 32px, 512px). This drawing CHOOSES the
+    configured maximum, 512px, on a sufficiently wide viewport; it is not fixed.
+    One description line is valid within the 462px content width.
+
+    Geometry in CSS px, drawn at a consistent 2x scale:
+      spacing token = 4px; max-w-lg = 32rem = 512px, assuming 16px root font.
+      border = 1px; p-6 = 24px; rounded-md = 7px.
+      content width = 512 - 2(1 + 24) = 462px.
+      title: text-base = 15px, line-height 1.6 = 24px, semibold.
+      description and buttons: text-sm = 13px, line-height 1.5385 ~= 20px.
+      header = 24 + 6 (gap-1.5) + 20 = 50px.
+      content gap-4 = 16px; desktop footer is right-aligned, gap-2 = 8px.
+      default md buttons: fixed 34px high, px-3.5 = 14px, radius 8px.
+      content-dependent height = 2(1 + 24) + 50 + 16 + 34 = 150px.
+      The tiny line-height token rounding is below displayed-pixel precision.
+
+    SVG outer bounds: x208..1232, y210..510. Stroke center is inset 1 unit,
+    so the 2-unit stroke represents the actual 1 CSS px border without adding size.
+    Inner border edges: x210/1230, y212/508. Padding edges: x258/1182, y260/460.
+    Title line box y260..308; description y320..360; footer y392..460.
+    Intrinsic button widths vary with the font. Representative label advances in
+    the illustration's Segoe UI fallback at 26 units: Cancel 75.94, Delete 74.13.
+    Each adds 56 units of horizontal padding; no fixed button width is implied.
+    Cancel x903.93..1035.87; 16-unit gap; Delete x1051.87..1182.
+    Warning icon slot x258..298, y264..304; title begins at x314 after a 16-unit gap.
+
+    Background: .dark background token oklch(0.120 0 0), rounded to #060606.
+    Illustration inks intentionally simplify the production surface colors.
+    Animation: outer 0..400ms; warning strokes 250..450ms, 275..475ms, 300..500ms;
+    button strokes 400..600ms and 425..625ms;
+    every blue annotation 700..900ms. Static and reduced-motion states are complete.
+  -->
+  <defs>
+    <style>
+      #adbp-root text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #adbp-root .adbp-title-text { fill: #c7c7c2; font-size: 30px; font-weight: 600; }
+      #adbp-root .adbp-description-text { fill: #92948d; font-size: 26px; }
+      #adbp-root .adbp-button-text { fill: #c7c7c2; font-size: 26px; font-weight: 500; }
+      #adbp-root .adbp-label { fill: #a1a29c; font-size: 18px; }
+      #adbp-root .adbp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      #adbp-root .adbp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      #adbp-root .adbp-outline { stroke: #a7a8a2; stroke-width: 2; }
+      #adbp-root .adbp-detail { stroke: #a7a8a2; stroke-width: 2.5; }
+      #adbp-root .adbp-warning { stroke: #a7a8a2; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+      @keyframes adbp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes adbp-reveal { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        #adbp-root .adbp-draw {
+          stroke-dasharray: 1;
+          animation: adbp-draw 200ms ease-out var(--adbp-delay, 0ms) both;
+        }
+        #adbp-root .adbp-outline { animation-duration: 400ms; }
+        #adbp-root .adbp-measure,
+        #adbp-root .adbp-spacing,
+        #adbp-root .adbp-label {
+          animation: adbp-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <g id="adbp-root">
+    <rect width="1440" height="720" fill="#060606"/>
+
+    <!-- Fills and text stay visible throughout the one-shot stroke animation. -->
+    <rect x="1051.87" y="392" width="130.13" height="68" rx="16" fill="#353632"/>
+    <rect x="209" y="211" width="1022" height="298" rx="13" pathLength="1" class="adbp-outline adbp-draw"/>
+    <rect x="903.93" y="392" width="131.94" height="68" rx="16" pathLength="1" class="adbp-detail adbp-draw" style="--adbp-delay:400ms"/>
+    <rect x="1051.87" y="392" width="130.13" height="68" rx="16" pathLength="1" class="adbp-detail adbp-draw" style="--adbp-delay:425ms"/>
+
+    <!-- Padding boundary and actual title/description line boxes; overlays sit above fills. -->
+    <rect x="258" y="260" width="924" height="200" class="adbp-spacing"/>
+    <path d="M258 308H1182 M258 320H1182 M258 360H1182 M258 392H1182" class="adbp-spacing"/>
+    <path d="M1035.87 392V460 M1051.87 392V460" class="adbp-spacing"/>
+    <rect x="258" y="264" width="40" height="40" class="adbp-spacing"/>
+    <path d="M298 260V308 M314 260V308" class="adbp-spacing"/>
+
+    <!-- Separate normalized strokes keep the triangle and exclamation readable as they draw. -->
+    <path d="M278 267 296 300H260Z" fill="#060606" pathLength="1" class="adbp-warning adbp-draw" style="--adbp-delay:250ms"/>
+    <path d="M278 279V287" pathLength="1" class="adbp-warning adbp-draw" style="--adbp-delay:275ms"/>
+    <circle cx="278" cy="294" r="1" pathLength="1" class="adbp-warning adbp-draw" style="--adbp-delay:300ms"/>
+    <text x="314" y="295" class="adbp-title-text">Delete this project?</text>
+    <text x="258" y="349" class="adbp-description-text">This permanently deletes the project and its contents.</text>
+    <text x="969.9" y="435" text-anchor="middle" class="adbp-button-text">Cancel</text>
+    <text x="1116.935" y="435" text-anchor="middle" class="adbp-button-text">Delete</text>
+
+    <!-- Current width, explicitly drawn at the chosen maximum. -->
+    <path d="M208 194V136 M1232 194V136 M208 146H1232 M208 136V156 M1232 136V156" class="adbp-measure"/>
+    <text x="720" y="126" text-anchor="middle" class="adbp-label">512 px</text>
+
+    <!-- Content-dependent total height, for the pictured single-line description. -->
+    <path d="M192 210H124 M192 510H124 M136 210V510 M126 210H146 M126 510H146" class="adbp-measure"/>
+    <text x="112" y="366" text-anchor="end" class="adbp-label">150 px</text>
+
+    <!-- Top padding measures from the INSIDE of the border to the first line box. -->
+    <path d="M800 212V260 M790 212H810 M790 260H810" class="adbp-measure"/>
+    <text x="824" y="242" class="adbp-label">24 px</text>
+
+    <!-- Caller-chosen warning-icon to title gap. -->
+    <path d="M298 244V256 M314 244V256 M298 250H314 M306 244 334 230H350" class="adbp-measure"/>
+    <text x="362" y="236" class="adbp-label">8 px</text>
+
+    <!-- Right column: title/description gap, header/footer gap, and button height. -->
+    <path d="M1196 308H1286 M1196 320H1286 M1276 308V320 M1266 308H1286 M1266 320H1286" class="adbp-measure"/>
+    <text x="1300" y="320" class="adbp-label">6 px</text>
+    <path d="M1196 360H1286 M1196 392H1286 M1276 360V392 M1266 360H1286 M1266 392H1286" class="adbp-measure"/>
+    <text x="1300" y="382" class="adbp-label">16 px</text>
+    <path d="M1276 392V460 M1196 460H1286 M1266 460H1286" class="adbp-measure"/>
+    <text x="1300" y="432" class="adbp-label">34 px</text>
+
+    <!-- Horizontal padding also excludes the 1px border. -->
+    <path d="M210 526V566 M258 476V566 M210 550H258 M210 540V560 M258 540V560 M234 560 208 590H178" class="adbp-measure"/>
+    <text x="166" y="596" text-anchor="end" class="adbp-label">24 px</text>
+
+    <!-- The 8px gap is between the button boxes, not between their text labels. -->
+    <path d="M1035.87 476V562 M1051.87 476V562 M1035.87 550H1051.87 M1035.87 540V560 M1051.87 540V560 M1043.87 562 1069.78 590H1080" class="adbp-measure"/>
+    <text x="1092" y="596" class="adbp-label">8 px</text>
+  </g>
+</svg>

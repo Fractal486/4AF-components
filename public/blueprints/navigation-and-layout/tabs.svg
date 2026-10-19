@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" fill="none" role="img" aria-labelledby="tabs-blueprint-title tabs-blueprint-description">
+  <title id="tabs-blueprint-title">Tabs spacing blueprint</title>
+  <desc id="tabs-blueprint-description">Default medium segmented tabs with Account selected, followed by Notifications and Billing, drawn at three times CSS size. The track is 32 pixels high, with 2 pixels of padding and 2 pixel gaps. Tabs have 10 pixels of horizontal padding and 4 pixels of vertical padding around a 20 pixel text line, making each tab 28 pixels high.</desc>
+  <!--
+    Sources:
+      registry.json: tabs files list.
+      registry/ui/tabs/tabs.tsx: defaults are segment / default / md.
+      registry/ui/tabs/tabs.variants.ts: track p-0.5, gap-0.5, radius 8px;
+        tabs px-2.5, py-1, text-sm, font-medium, radius 6px;
+        selected indicator inset-y-0.5, with the selected tab's measured width.
+      inspector/entries/tabs.tsx: Account / Notifications / Billing; Account selected;
+        counts and overflow disabled. Only the tab list is pictured, as in the demo.
+      app/globals.css: text-sm = 0.8125rem = 13px at the default 16px root;
+        line-height = 1.5385; dark background = oklch(0.120 0 0), or #060606.
+      node_modules/tailwindcss/theme.css: spacing unit = 0.25rem = 4px.
+
+    Drawing scale: 3 SVG units per CSS pixel. Annotation type and ruler strokes
+    remain at drawing size. All labels report unscaled CSS pixels.
+    Height: rendered line box 20px + 2 * 4px tab padding = 28px;
+      28px + 2 * 2px track padding = 32px. No structural border or fixed height.
+      13 * 1.5385 = 20.0005px; Chromium lays out the line box at 20px.
+    Radii: track 8px = tab 6px + track padding 2px.
+
+    Width is intrinsic, not a fixed size or maximum. This illustration uses
+    Segoe UI at weight 500, with the approved portable sans-serif stack below;
+    the app normally uses Geist. A local headless Chromium measurement gave
+    label widths 48.59375 / 75.65625 / 36.859375px. textLength preserves those
+    sample widths when another viewer resolves a different fallback font.
+    Tab widths = label width + 20px: 68.59375 / 95.65625 / 56.859375px.
+    Track width = sum(tab widths) + two 2px gaps + two 2px insets = 229.109375px.
+    Origin (256.3359375, 212); outer bounds (943.6640625, 308).
+    Tab x ranges in SVG units:
+      Account       262.3359375 .. 468.1171875
+      Notifications 474.1171875 .. 761.0859375
+      Billing       767.0859375 .. 937.6640625
+    Track/tab outlines are illustration ink, inset so they add no measured size.
+  -->
+  <defs>
+    <style>
+      #tabs-blueprint text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #tabs-blueprint .tab-text { fill: #92948d; font-size: 39px; font-weight: 500; }
+      #tabs-blueprint .selected-text { fill: #c7c7c2; }
+      #tabs-blueprint .label { fill: #a1a29c; font-size: 18px; }
+      #tabs-blueprint .measure { stroke: #6889ff; stroke-width: 1.5; }
+      #tabs-blueprint .spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      /* Static exports and reduced-motion viewers see the complete drawing. */
+      @keyframes tabs-blueprint-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes tabs-blueprint-reveal { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        #tabs-blueprint .draw {
+          stroke-dasharray: 1;
+          animation: tabs-blueprint-draw 200ms ease-out var(--line-delay, 0ms) both;
+        }
+        #tabs-blueprint .outline { animation-duration: 400ms; }
+        #tabs-blueprint .measure, #tabs-blueprint .spacing, #tabs-blueprint .label {
+          animation: tabs-blueprint-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <g id="tabs-blueprint">
+    <rect width="1200" height="520" fill="#060606"/>
+
+    <!-- The selected fill and all text remain visible throughout the animation. -->
+    <rect x="262.3359375" y="218" width="205.78125" height="84" rx="18" fill="#353632"/>
+    <rect x="257.8359375" y="213.5" width="684.328125" height="93" rx="22.5" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="draw outline"/>
+    <rect x="263.3359375" y="219" width="203.78125" height="82" rx="17" stroke="#a7a8a2" stroke-width="2" pathLength="1" class="draw" style="--line-delay:400ms"/>
+
+    <!-- Blue overlays sit above the surfaces and below the text. The inset
+         rectangle is the track's content box; dashed tab edges expose both gaps. -->
+    <rect x="262.3359375" y="218" width="675.328125" height="84" class="spacing"/>
+    <path d="M468.1171875 218V302 M474.1171875 218V302 M761.0859375 218V302 M767.0859375 218V302" class="spacing"/>
+    <!-- Text line boxes show the real 10px horizontal and 4px vertical insets. -->
+    <rect x="292.3359375" y="230" width="145.78125" height="60" class="spacing"/>
+    <rect x="504.1171875" y="230" width="226.96875" height="60" class="spacing"/>
+    <rect x="797.0859375" y="230" width="110.578125" height="60" class="spacing"/>
+
+    <text x="292.3359375" y="273.2" class="tab-text selected-text" textLength="145.78125" lengthAdjust="spacingAndGlyphs">Account</text>
+    <text x="504.1171875" y="273.2" class="tab-text" textLength="226.96875" lengthAdjust="spacingAndGlyphs">Notifications</text>
+    <text x="797.0859375" y="273.2" class="tab-text" textLength="110.578125" lengthAdjust="spacingAndGlyphs">Billing</text>
+
+    <!-- Track height: exactly 32 * 3 SVG units. -->
+    <path d="M256.3359375 212H209 M256.3359375 308H209 M198 212V308 M187 212H209 M187 308H209" class="measure"/>
+    <text x="170" y="266" text-anchor="end" class="label">32 px</text>
+
+    <!-- A single 2px gap, measured between the two adjacent tab boxes. -->
+    <path d="M468.1171875 212V166 M474.1171875 212V166" class="spacing"/>
+    <path d="M468.1171875 148V170 M474.1171875 148V170 M468.1171875 159H474.1171875" class="measure"/>
+    <text x="471.1171875" y="137" text-anchor="middle" class="label">2 px</text>
+
+    <!-- Vertical tab padding: top of tab y=218 to top of line box y=230. -->
+    <path d="M852 218V230 M841 218H863 M841 230H863 M852 224 886 177H923" class="measure"/>
+    <text x="935" y="183" class="label">4 px</text>
+
+    <!-- Text line height, measured against Billing's line box. -->
+    <path d="M907.6640625 230H1005 M907.6640625 290H1005" class="spacing"/>
+    <path d="M1016 230V290 M1005 230H1027 M1005 290H1027" class="measure"/>
+    <text x="1042" y="266" class="label">20 px</text>
+
+    <!-- Track padding and tab padding. Endpoints match the outer edge,
+         the first tab's edge, and the first label's line box exactly. -->
+    <path d="M256.3359375 308V390 M262.3359375 302V390 M292.3359375 290V390" class="spacing"/>
+    <path d="M256.3359375 379H292.3359375 M256.3359375 368V390 M262.3359375 368V390 M292.3359375 368V390" class="measure"/>
+    <path d="M259.3359375 391 234 422H200" class="measure"/>
+    <text x="187" y="428" text-anchor="end" class="label">2 px</text>
+    <path d="M277.3359375 391 303 422H345" class="measure"/>
+    <text x="358" y="428" class="label">10 px</text>
+  </g>
+</svg>

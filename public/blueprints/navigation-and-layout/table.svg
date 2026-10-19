@@ -1,0 +1,150 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="820" viewBox="0 0 1600 820" fill="none" role="img" aria-labelledby="table-bp-title table-bp-description">
+  <title id="table-bp-title">Table spacing blueprint</title>
+  <desc id="table-bp-description">A default small table with four columns, five releases, horizontal separators, and a Release history caption. The chosen width is 576 CSS pixels. Single-line header and body rows are 36 pixels high, cells have 10 pixels of horizontal padding, body text has a 20 pixel line height, and the caption has an 8 pixel top gap. Dashed blue guides mark cell boundaries and text insets. The table has no outer frame or vertical rules.</desc>
+  <!--
+    Hand-authored vector drawing at 2x. All labels report original CSS pixels.
+    Sources:
+      registry.json: table files list.
+      registry/ui/table/table.tsx: default size=sm, outline=false, verticalLines=false,
+        horizontalLines=true, stickyHeader=true, loading=false; final body border removed;
+        caption rendered below the scroll wrapper.
+      registry/ui/table/table.variants.ts: h-9, px-2.5, py-1.5, border-b,
+        border-separate, border-spacing-0; caption text-xs and mt-2.
+      inspector/entries/table.tsx: release labels, right-aligned numbers/dates,
+        max-w-xl container, caption. Five releases shown; plain caller-provided channel
+        text keeps this illustration focused on Table rather than the separate Badge API.
+      app/globals.css: text-sm = 13px / approximately 20px; text-xs = 12px /
+        approximately 16px; dark background = oklch(0.120 0 0), rounded to #060606.
+      node_modules/tailwindcss/theme.css: spacing = 0.25rem = 4px at a 16px root.
+      node_modules/tailwindcss/preflight.css: border-box sizing.
+
+    Representative flexible width: 576px (the demo's max-w-xl), not a Table default.
+    Representative caller column widths: 168 + 120 + 156 + 132 = 576px.
+    State: resting, single-line text, no footer, no selection, no scroll overflow.
+    No outer frame is drawn: the header separator is the first structural stroke.
+    The blue perimeter and column edges are measurement guides, not component borders.
+
+    Header: h-9 = 36px; 16px line box + 1px lower border + 19px free space.
+    Body cells: h-9 is a table-cell minimum, not a fixed content-independent row height.
+    With these plain labels: max(36, 20 + 6 + 6 + 1) = 36px.
+    The extra 3px becomes vertical alignment space; effective text top inset is 7.5px.
+    Last body row has no border: max(36, 20 + 6 + 6) = 36px; inset is 8px.
+    Horizontal padding: 2.5 * 4 = 10px on each cell side; column spacing is zero.
+    Table: (1 header + 5 body rows) * 36 = 216px, rendered 1152 x 432 SVG units.
+    Caption: mt-2 = 8px; line box = 16px. Combined height = 216 + 8 + 16 = 240px.
+    Table bounds: x=224..1376, y=178..610. Caption line box: y=626..658.
+    First body line box: y=265..305 (20px); first body border: y=320..322 (1px).
+
+    Animation: first separator 0..400ms; other separators 250..525ms;
+    all blue annotations 700..900ms. Text remains visible. No repetition.
+    Reduced motion and static renderers show the completed drawing immediately.
+  -->
+  <defs>
+    <style>
+      #table-bp-root text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #table-bp-root .table-bp-header { fill: #92948d; font-size: 24px; font-weight: 500; letter-spacing: .24px; }
+      #table-bp-root .table-bp-body { fill: #92948d; font-size: 26px; }
+      #table-bp-root .table-bp-version { font-weight: 500; }
+      #table-bp-root .table-bp-number { font-variant-numeric: tabular-nums; }
+      #table-bp-root .table-bp-caption { fill: #92948d; font-size: 24px; letter-spacing: .24px; }
+      #table-bp-root .table-bp-solid { stroke: #a7a8a2; stroke-width: 2; }
+      #table-bp-root .table-bp-guide { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      #table-bp-root .table-bp-ruler { stroke: #6889ff; stroke-width: 1.5; }
+      #table-bp-root .table-bp-label { fill: #6889ff; font-size: 18px; }
+      @keyframes table-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes table-bp-reveal { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        #table-bp-root .table-bp-solid {
+          stroke-dasharray: 1;
+          animation: table-bp-draw 200ms ease-out var(--table-bp-delay, 0ms) both;
+        }
+        #table-bp-root .table-bp-first { animation-duration: 400ms; }
+        #table-bp-root .table-bp-guide,
+        #table-bp-root .table-bp-ruler,
+        #table-bp-root .table-bp-label {
+          animation: table-bp-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <g id="table-bp-root">
+    <rect width="1600" height="820" fill="#060606"/>
+
+    <!-- Actual 1px cell separators. No final bottom border, frame, or vertical rules. -->
+    <path d="M224 249H1376" pathLength="1" class="table-bp-solid table-bp-first"/>
+    <path d="M224 321H1376" pathLength="1" class="table-bp-solid" style="--table-bp-delay:250ms"/>
+    <path d="M224 393H1376" pathLength="1" class="table-bp-solid" style="--table-bp-delay:275ms"/>
+    <path d="M224 465H1376" pathLength="1" class="table-bp-solid" style="--table-bp-delay:300ms"/>
+    <path d="M224 537H1376" pathLength="1" class="table-bp-solid" style="--table-bp-delay:325ms"/>
+
+    <!-- Measurement overlays stay above surfaces and below the text. -->
+    <rect x="224" y="178" width="1152" height="432" class="table-bp-guide"/>
+    <path d="M560 178V610 M800 178V610 M1112 178V610" class="table-bp-guide"/>
+    <path d="M244 178V610 M580 178V610 M1092 178V610 M1356 178V610" class="table-bp-guide"/>
+    <!-- Short edge guides identify contiguous rows without obscuring their solid rules. -->
+    <path d="M212 250H254 M1346 250H1388 M212 322H254 M1346 322H1388 M212 394H254 M1346 394H1388 M212 466H254 M1346 466H1388 M212 538H254 M1346 538H1388" class="table-bp-guide"/>
+    <!-- First body row's 20px line box and caption line-box edges. -->
+    <path d="M224 265H560 M224 305H560 M224 626H1376 M224 658H1376" class="table-bp-guide"/>
+
+    <text x="244" y="222" class="table-bp-header">Version</text>
+    <text x="580" y="222" class="table-bp-header">Channel</text>
+    <text x="1092" y="222" text-anchor="end" class="table-bp-header">Downloads</text>
+    <text x="1356" y="222" text-anchor="end" class="table-bp-header">Published</text>
+
+    <g class="table-bp-body">
+      <text x="244" y="294" class="table-bp-version">4.2.0</text>
+      <text x="580" y="294">stable</text>
+      <text x="1092" y="294" text-anchor="end" class="table-bp-number">18,204</text>
+      <text x="1356" y="294" text-anchor="end">12 Mar</text>
+
+      <text x="244" y="366" class="table-bp-version">4.2.0-rc.1</text>
+      <text x="580" y="366">preview</text>
+      <text x="1092" y="366" text-anchor="end" class="table-bp-number">942</text>
+      <text x="1356" y="366" text-anchor="end">5 Mar</text>
+
+      <text x="244" y="438" class="table-bp-version">4.1.3</text>
+      <text x="580" y="438">stable</text>
+      <text x="1092" y="438" text-anchor="end" class="table-bp-number">26,781</text>
+      <text x="1356" y="438" text-anchor="end">18 Feb</text>
+
+      <text x="244" y="510" class="table-bp-version">4.1.2</text>
+      <text x="580" y="510">stable</text>
+      <text x="1092" y="510" text-anchor="end" class="table-bp-number">9,310</text>
+      <text x="1356" y="510" text-anchor="end">2 Feb</text>
+
+      <text x="244" y="583" class="table-bp-version">4.1.1</text>
+      <text x="580" y="583">stable</text>
+      <text x="1092" y="583" text-anchor="end" class="table-bp-number">14,502</text>
+      <text x="1356" y="583" text-anchor="end">21 Jan</text>
+    </g>
+    <text x="800" y="650" text-anchor="middle" class="table-bp-caption">Release history</text>
+
+    <!-- Chosen current width, with extensions from the exact table edges. -->
+    <path d="M224 166V98 M1376 166V98 M224 110H1376 M224 100V120 M1376 100V120" class="table-bp-ruler"/>
+    <text x="800" y="92" text-anchor="middle" class="table-bp-label">576 px</text>
+
+    <!-- Header height and first body text line height. -->
+    <path d="M212 178H144 M212 250H144 M154 178V250 M144 178H164 M144 250H164" class="table-bp-ruler"/>
+    <text x="135" y="220" text-anchor="end" class="table-bp-label">36 px</text>
+    <path d="M212 265H144 M212 305H144 M154 265V305 M144 265H164 M144 305H164" class="table-bp-ruler"/>
+    <text x="135" y="291" text-anchor="end" class="table-bp-label">20 px</text>
+
+    <!-- Single-line body row height. -->
+    <path d="M1388 250H1442 M1388 322H1442 M1432 250V322 M1422 250H1442 M1422 322H1442" class="table-bp-ruler"/>
+    <text x="1450" y="292" class="table-bp-label">36 px</text>
+
+    <!-- True 1px separator thickness: two endpoints, enlarged label on a short leader. -->
+    <path d="M1376 392H1428 M1376 394H1428 M1418 392V394 M1418 393 1450 368H1472" class="table-bp-ruler"/>
+    <text x="1484" y="374" class="table-bp-label">1 px</text>
+
+    <!-- Horizontal padding, measured from cell edge to the actual content inset. -->
+    <path d="M224 622V724 M244 622V724 M224 712H244 M224 702V722 M244 702V722 M234 724 270 750H292" class="table-bp-ruler"/>
+    <text x="304" y="756" class="table-bp-label">10 px</text>
+    <path d="M1356 670V724 M1376 670V724 M1356 712H1376 M1356 702V722 M1376 702V722 M1366 724 1330 750H1308" class="table-bp-ruler"/>
+    <text x="1296" y="756" text-anchor="end" class="table-bp-label">10 px</text>
+
+    <!-- Caption margin, separate from its own 16px line box. -->
+    <path d="M1388 610H1430 M1388 626H1430 M1420 610V626 M1410 610H1430 M1410 626H1430 M1430 618 1462 648H1482" class="table-bp-ruler"/>
+    <text x="1494" y="654" class="table-bp-label">8 px</text>
+  </g>
+</svg>

@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="toc-bp" width="1200" height="840" viewBox="0 0 1200 840" fill="none" role="img" aria-labelledby="toc-bp-title toc-bp-desc">
+  <title id="toc-bp-title">Table of Contents spacing blueprint</title>
+  <desc id="toc-bp-desc">Five headings with a straight dashed rail. Usage and its nested Configuration heading are active, joined by one continuous marker. Blue rulers show a representative 176 pixel width, 29.875 pixel rows, 6 pixel vertical padding, and 12 pixel indentation steps. The rail marker spans 52 pixels with a 4 pixel top inset. The drawing completes once in 900 milliseconds and is immediately visible with reduced motion.</desc>
+  <!--
+    Hand-authored vector drawing at 3x. All ruler labels are original CSS pixels.
+    Sources:
+      registry.json: table-of-contents files and shared scroll dependency
+      registry/ui/table-of-contents/table-of-contents.tsx
+      registry/ui/table-of-contents/table-of-contents.variants.ts
+      registry/lib/table-of-contents-scroll.ts
+      inspector/entries/table-of-contents.tsx and toc-demo.tsx
+      app/globals.css: text-sm token = .8125rem; dark background = oklch(.120 0 0)
+      node_modules/tailwindcss/theme.css: spacing token = .25rem; leading-snug = 1.375
+
+    Chosen state: default variant="span", labels="always"; first five demo headings.
+    Usage (h2) and Configuration (h3) are visible in the associated article.
+    Width is caller-controlled, not a fixed component size or maximum. Use the demo's
+    w-44 = 176px at a 16px root. The demo's optional h-40 is omitted so all five entries
+    fit without overflow; the shared hook therefore adds zero vertical edge padding.
+    No production panel border, heading, active-row fill, or gap is added.
+
+    Geometry in CSS pixels:
+      nav width 176; pe-1 = 4; list width 172.
+      font size 13; leading-snug = 13 * 1.375 = 17.875.
+      py-1.5 = 6 each side; row height = 6 + 17.875 + 6 = 29.875.
+      five rows = 149.375 high; no row gap or border.
+      base text inset = .75rem = 12; each extra heading level adds 12.
+      pr-2 = 8, so right text edge = 172 - 8 = 164.
+      Native SVG rail x = 1, stroke width 1, dashes 3 / 3.
+      Source measures offsetTop/offsetHeight, which round to CSS integers:
+        row starts [0,30,60,90,120], row heights 30, measured total 150.
+        rail from 4 to 150 - 4 = 146; round caps extend .5px.
+        active marker from 60 + 4 = 64 to 90 + 30 - 4 = 116,
+        length 52; stroke width 2; round caps extend 1px.
+      Row guides retain the fractional CSS layout; rail retains its measured geometry.
+    Drawing origin (336,196); nav width 528; height 448.125.
+    Row boundaries y: 196,285.625,375.25,464.875,554.5,644.125.
+    Line boxes y: 214..267.625,303.625..357.25,393.25..446.875,
+                  482.875..536.5,572.5..626.125.
+    Text sizes and all component geometry scale by the same factor of three.
+  -->
+  <defs>
+    <style>
+      #toc-bp text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #toc-bp .toc-bp-entry { fill: #92948d; font-size: 39px; font-weight: 400; dominant-baseline: central; }
+      #toc-bp .toc-bp-active { fill: #c7c7c2; }
+      #toc-bp .toc-bp-label { fill: #a1a29c; font-size: 18px; }
+      #toc-bp .toc-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      #toc-bp .toc-bp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      /* Static rendering and reduced motion retain every intended final opacity/dash. */
+      @keyframes toc-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes toc-bp-reveal { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        #toc-bp .toc-bp-draw {
+          stroke-dasharray: 1;
+          animation: toc-bp-draw 200ms ease-out var(--toc-bp-delay, 0ms) both;
+        }
+        #toc-bp .toc-bp-outline { animation-duration: 400ms; }
+        #toc-bp .toc-bp-spacing, #toc-bp .toc-bp-measure, #toc-bp .toc-bp-label {
+          animation: toc-bp-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+    <!-- Reveal the dashed rail with a normalized solid mask, preserving its final dashes.
+         Rail 0..400ms; marker 400..600ms; every annotation 700..900ms. -->
+    <mask id="toc-bp-rail-reveal" maskUnits="userSpaceOnUse" x="330" y="190" width="18" height="456">
+      <path d="M339 208V634" stroke="white" stroke-width="9" stroke-linecap="round" pathLength="1" class="toc-bp-draw toc-bp-outline"/>
+    </mask>
+  </defs>
+
+  <rect width="1200" height="840" fill="#060606"/>
+
+  <!-- The component has no enclosing surface: only its rail, marker, and headings. -->
+  <path d="M339 208V634" stroke="#a7a8a2" stroke-width="3" stroke-dasharray="9 9" stroke-linecap="round" mask="url(#toc-bp-rail-reveal)"/>
+  <path d="M339 388V544" stroke="#c7c7c2" stroke-width="6" stroke-linecap="round" pathLength="1" class="toc-bp-draw" style="--toc-bp-delay:400ms"/>
+
+  <!-- Navigation rectangle with selected padding and row guides. -->
+  <path d="M882 196H336V644.125" class="toc-bp-spacing"/>
+  <path d="M864 196V644.125H336" class="toc-bp-spacing"/>
+  <path d="M372 196V644.125 M408 464.875V644.125" class="toc-bp-spacing"/>
+  <path d="M342 285.625H882" class="toc-bp-spacing"/>
+  <path d="M372 303.625H882 M372 357.25H882" class="toc-bp-spacing"/>
+
+  <text x="372" y="240.8125" class="toc-bp-entry">Introduction</text>
+  <text x="372" y="330.4375" class="toc-bp-entry">Installation</text>
+  <text x="372" y="420.0625" class="toc-bp-entry toc-bp-active">Usage</text>
+  <text x="408" y="509.6875" class="toc-bp-entry toc-bp-active">Configuration</text>
+  <text x="408" y="599.3125" class="toc-bp-entry">Styling</text>
+
+  <!-- Representative full navigation width, including the 4px end inset. -->
+  <path d="M336 103V125 M864 103V125 M336 114H864" class="toc-bp-measure"/>
+  <path d="M336 130V182 M864 130V182" class="toc-bp-spacing"/>
+  <text x="600" y="96" text-anchor="middle" class="toc-bp-label">176 px</text>
+
+  <!-- Rail's top endpoint is exactly MARKER_PAD = 4px below the first row top. -->
+  <path d="M280 196H329 M280 208H329 M286 196V208 M286 202 252 164H220" class="toc-bp-measure"/>
+  <text x="204" y="170" text-anchor="end" class="toc-bp-label">4 px</text>
+
+  <!-- Measured active marker centerline endpoints, excluding its round caps. -->
+  <path d="M260 388H282 M260 544H282 M271 388V544" class="toc-bp-measure"/>
+  <path d="M287 388H327 M287 544H327" class="toc-bp-spacing"/>
+  <text x="250" y="472" text-anchor="end" class="toc-bp-label">52 px</text>
+
+  <!-- First row's full box; second row's top padding and exact line-height. -->
+  <path d="M882 196H941 M882 285.625H941 M930 196V285.625" class="toc-bp-measure"/>
+  <text x="953" y="246.8125" class="toc-bp-label">29.875 px</text>
+  <path d="M882 285.625H915 M882 303.625H915 M903 285.625V303.625 M903 294.625 961 288H977" class="toc-bp-measure"/>
+  <text x="991" y="294" class="toc-bp-label">6 px</text>
+  <path d="M882 303.625H926 M882 357.25H926 M915 303.625V357.25" class="toc-bp-measure"/>
+  <text x="940" y="336.4375" class="toc-bp-label">17.875 px</text>
+
+  <!-- Base 12px text inset and the additional 12px for h3 headings. -->
+  <path d="M336 658V692 M372 658V692 M408 658V692" class="toc-bp-spacing"/>
+  <path d="M336 694V714 M372 694V714 M408 694V714 M336 704H408" class="toc-bp-measure"/>
+  <path d="M354 716 326 755H304" class="toc-bp-measure"/>
+  <text x="290" y="761" text-anchor="end" class="toc-bp-label">12 px</text>
+  <path d="M390 716 422 755H445" class="toc-bp-measure"/>
+  <text x="459" y="761" class="toc-bp-label">12 px</text>
+
+</svg>

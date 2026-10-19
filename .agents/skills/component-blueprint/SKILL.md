@@ -51,7 +51,7 @@ Put animation rules inside `@media (prefers-reduced-motion: no-preference)`. Out
 
 ## Save and inspect
 
-Save `<component-name>.svg` under `public/blueprints/` when the project has a public-assets directory; otherwise use `artifacts/blueprints/`. Honor an explicitly supplied output directory. Do not wire the asset into the app, edit the component, run a full build, or publish anything as part of this task.
+Save `<component-name>.svg` under `public/blueprints/<sidebar-section>/` when the project has a public-assets directory; otherwise use `artifacts/blueprints/<sidebar-section>/`. Match the actual sidebar section and use its lowercase hyphenated name for the folder. In 4AF, `lib/site-nav.ts` uses `COMPONENT_CATEGORIES` from `lib/component-catalog.ts` (not `COMPONENT_FAMILIES`); examples are `fields-and-selection`, `navigation-and-layout`, and `overlays-and-menus`. Keep each PNG beside its SVG. If the project has no sidebar grouping, omit the section folder. Honor an explicitly supplied output directory. Do not wire the asset into the app, edit the component, run a full build, or publish anything as part of this task.
 
 Also produce a static PNG of the completed drawing when a local renderer is available:
 
@@ -61,6 +61,6 @@ node <skill-directory>/scripts/render-preview.mjs <path-to-svg>
 
 Run from the project root. The helper uses the project's existing Sharp dependency (including Next's copy), writes alongside the SVG, and replaces outputs via a temporary file to avoid Windows renderer overwrite issues. It installs nothing. If unavailable, use an existing local SVG renderer; the SVG is still the required deliverable.
 
-Inspect the PNG for clipping, label collisions, ruler accuracy, and balanced margins. For a new animation structure, use an existing headless browser/CDP setup to check the drawing phase, the fade phase, and reduced motion. No interactive browsing is required. Avoid adding project tests for the illustration or downloading a browser just for it.
+Inspect the rendered PNG directly with the image-viewing tool for clipping, label collisions, ruler accuracy, and balanced margins. Do not use a browser, headless browser, Playwright, or CDP for this workflow. Review animation timing and reduced-motion handling in the SVG source; the PNG shows only the finished static drawing. Do not add project tests for the illustration.
 
 Return concise links to the SVG and PNG, if produced. Mention missing verification only if it materially limits confidence; do not substitute a long explanation for the assets.

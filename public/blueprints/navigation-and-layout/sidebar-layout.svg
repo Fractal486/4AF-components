@@ -1,0 +1,188 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2240" height="1248" viewBox="0 0 2240 1248" fill="none" role="img" aria-labelledby="sbl-title sbl-description">
+  <title id="sbl-title">Sidebar Layout measured wireframe</title>
+  <desc id="sbl-description">An expanded default sidebar beside a page header and an independently scrolling content area. This representative desktop shell is 960 by 448 CSS pixels; its sidebar is 256 pixels wide and the remaining main column is 704 pixels wide. The single-line header is 48 pixels tall with 12-pixel horizontal padding. Demo content uses 16-pixel padding, 12-pixel gaps, a 96-pixel block and three 64-pixel blocks. Navigation rows are 32 pixels tall with no gap.</desc>
+  <!--
+    Hand-authored vector wireframe. Scale: 2 SVG units per CSS pixel throughout.
+    Sources:
+      registry.json: sidebar-layout and sidebar complete file maps.
+      registry/ui/sidebar-layout/sidebar-layout.tsx: shell, header, scroll region, empty rail.
+      registry/ui/sidebar/sidebar.provider.tsx: defaultOpen=true; sidebar width=16rem.
+      registry/ui/sidebar/sidebar.tsx: default left sidebar variant, 1px right border.
+      registry/ui/sidebar/sidebar.structure.tsx: group/footer p-2, group label h-8.
+      registry/ui/sidebar/sidebar.menu.tsx: menu rows have NO gap.
+      registry/ui/sidebar/sidebar.variants.ts: default menu row h-8, p-2, gap-2, 16px icons.
+      registry/ui/sidebar/sidebar.controls.tsx and registry/ui/button/button.variants.ts:
+        default collapse trigger icon-sm=30px with 14px icon.
+      inspector/entries/sidebar.tsx and inspector/entries/sidebar-demo.tsx:
+        ordinary expanded sidebar; demo height 28rem; content p-4 gap-3;
+        first block h-24; three-column grid gap-3 with h-16 blocks.
+      app/globals.css: dark background oklch(0.120 0 0)=#060606;
+        text-sm=13px/20px, text-xs=12px/16px, rounded-lg=10px.
+      node_modules/tailwindcss/theme.css and preflight.css: spacing=4px, border-box.
+      lib/component-catalog.ts: COMPONENT_CATEGORIES, Navigation and layout.
+
+    Chosen state: desktop, expanded, variant=sidebar, left side; Dashboard active.
+    Representative shell width=960px, height=448px (the demo's 28rem height).
+    Width is fluid; 960px is a drawing choice, not a component default or maximum.
+    Shell h-svh normally follows viewport height; 448px is this pictured viewport.
+    Caller-owned sidebar content is deliberately simplified to one Workspace group,
+    four default navigation rows and a default-size Settings row in the footer.
+    No sidebar header, header actions, custom header or populated detail rail.
+    The outer wireframe denotes the shell bounds, not an added production border.
+
+    Geometry in CSS px, assuming root font size 16px:
+      shell=960x448; sidebar=16*16=256; main=960-256=704.
+      sidebar inner=256-1 border=255; menu width=255-8-8=239.
+      group top padding=8; label=32; first row y=8+32=40.
+      rows fixed h-8=32 (do not derive height from padding+line-height); gap=0.
+      footer height=8+32+8=48; footer row y=448-48+8=408.
+      header min-h-12=48; pictured one line=48 including 1px bottom border.
+      header content height=47; trigger top=(47-30)/2=8.5.
+      header inset=12; trigger x=256+12=268; title x=268+30+8=306.
+      main scrolling region=448-48=400 high; component adds no content padding.
+      demo content padding=16; usable width=704-32=672; usable height=400-32=368.
+      demo hero=672x96; grid=(672-2*12)/3=216px per column, height=64.
+      hero y=48+16=64; grid y=64+96+12=172.
+    Origin=(160,176). Shell bounds=(160,176)-(2080,1072).
+    Filled demo blocks are rendered as wireframe outlines only. Their 2-unit strokes
+    are inset 1 unit so the visible bounds match the measured box edges exactly.
+    Animation ends at 900ms: outline 0-400; details 250-650; annotations 700-900.
+  -->
+  <defs>
+    <style>
+      text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      .sbl-text { fill: #92948d; font-size: 26px; }
+      .sbl-group { fill: #92948d; font-size: 24px; }
+      .sbl-label { fill: #92948d; font-size: 22px; }
+      .sbl-line { stroke: #a7a8a2; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+      .sbl-icon { stroke: #a7a8a2; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+      .sbl-guide { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      .sbl-ruler { stroke: #6889ff; stroke-width: 1.5; stroke-linecap: butt; stroke-linejoin: miter; }
+      /* Static exports and reduced-motion viewers see the completed drawing. */
+      @keyframes sbl-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes sbl-reveal { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        .sbl-draw, .sbl-icon > * {
+          stroke-dasharray: 1;
+          animation: sbl-draw 200ms ease-out var(--sbl-delay, 0ms) both;
+        }
+        .sbl-outline { animation-duration: 400ms; }
+        .sbl-guide, .sbl-ruler, .sbl-label {
+          animation: sbl-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+    <g id="sbl-grid" class="sbl-icon">
+      <rect x="3" y="3" width="10" height="10" rx="1" pathLength="1"/>
+      <rect x="19" y="3" width="10" height="10" rx="1" pathLength="1"/>
+      <rect x="3" y="19" width="10" height="10" rx="1" pathLength="1"/>
+      <rect x="19" y="19" width="10" height="10" rx="1" pathLength="1"/>
+    </g>
+    <g id="sbl-folder" class="sbl-icon">
+      <path d="M3 8h10l4 4h12v15H3Z" pathLength="1"/>
+    </g>
+    <g id="sbl-team" class="sbl-icon">
+      <circle cx="12" cy="10" r="5" pathLength="1"/>
+      <path d="M3 28v-4a9 9 0 0 1 18 0v4" pathLength="1"/>
+      <path d="M23 6a5 5 0 0 1 0 10" pathLength="1"/>
+      <path d="M26 20q5 2 5 8" pathLength="1"/>
+    </g>
+    <g id="sbl-activity" class="sbl-icon">
+      <path d="M2 17h7l5-13 6 25 5-12h5" pathLength="1"/>
+    </g>
+    <g id="sbl-settings" class="sbl-icon">
+      <path d="M3 8h26" pathLength="1"/>
+      <path d="M3 24h26" pathLength="1"/>
+      <circle cx="11" cy="8" r="4" fill="#060606" pathLength="1"/>
+      <circle cx="22" cy="24" r="4" fill="#060606" pathLength="1"/>
+    </g>
+    <g id="sbl-collapse" class="sbl-icon">
+      <rect x="3.5" y="3.5" width="21" height="21" rx="2.5" pathLength="1"/>
+      <path d="M11 3.5v21" pathLength="1"/>
+    </g>
+  </defs>
+  <rect width="2240" height="1248" fill="#060606"/>
+
+  <!-- Shell boundary and the real 1px sidebar/header dividers. -->
+  <rect x="161" y="177" width="1918" height="894" class="sbl-line sbl-draw sbl-outline" pathLength="1"/>
+  <path d="M671 176V1072" class="sbl-line sbl-draw" style="--sbl-delay:250ms" pathLength="1"/>
+  <path d="M672 271H2080" class="sbl-line sbl-draw" style="--sbl-delay:275ms" pathLength="1"/>
+
+  <!-- No invented sidebar header or footer divider. Menu rows touch. -->
+  <rect x="176" y="256" width="478" height="64" rx="16" fill="#353632"/>
+  <path d="M176 192V512H654V192 M176 256H654 M176 320H654 M176 384H654 M176 448H654" class="sbl-guide"/>
+  <path d="M192 256V512 M224 256V512 M240 256V512" class="sbl-guide"/>
+  <path d="M176 992H654V1056H176Z" class="sbl-guide"/>
+
+  <text x="192" y="232" class="sbl-group">Workspace</text>
+  <use href="#sbl-grid" x="192" y="272" style="--sbl-delay:300ms"/>
+  <text x="240" y="297" class="sbl-text" style="fill:#c7c7c2">Dashboard</text>
+  <use href="#sbl-folder" x="192" y="336" style="--sbl-delay:325ms"/>
+  <text x="240" y="361" class="sbl-text">Projects</text>
+  <use href="#sbl-team" x="192" y="400" style="--sbl-delay:350ms"/>
+  <text x="240" y="425" class="sbl-text">Team</text>
+  <use href="#sbl-activity" x="192" y="464" style="--sbl-delay:375ms"/>
+  <text x="240" y="489" class="sbl-text">Activity</text>
+  <use href="#sbl-settings" x="192" y="1008" style="--sbl-delay:400ms"/>
+  <text x="240" y="1033" class="sbl-text">Settings</text>
+
+  <!-- Header: invisible 30px trigger box, 14px icon and 8px title gap. -->
+  <rect x="696" y="193" width="60" height="60" rx="12" class="sbl-guide"/>
+  <path d="M696 176V272 M2056 176V272" class="sbl-guide"/>
+  <use href="#sbl-collapse" x="712" y="209" style="--sbl-delay:300ms"/>
+  <text x="772" y="232" class="sbl-text">Dashboard</text>
+
+  <!-- Caller-supplied demo content, kept as unfilled wireframe blocks. -->
+  <rect x="705" y="305" width="1342" height="190" rx="19" class="sbl-line sbl-draw" style="--sbl-delay:325ms" pathLength="1"/>
+  <rect x="705" y="521" width="430" height="126" rx="19" class="sbl-line sbl-draw" style="--sbl-delay:350ms" pathLength="1"/>
+  <rect x="1161" y="521" width="430" height="126" rx="19" class="sbl-line sbl-draw" style="--sbl-delay:375ms" pathLength="1"/>
+  <rect x="1617" y="521" width="430" height="126" rx="19" class="sbl-line sbl-draw" style="--sbl-delay:400ms" pathLength="1"/>
+
+  <!-- Actual content padding bounds and the horizontal/vertical 12px gaps. -->
+  <rect x="704" y="304" width="1344" height="736" class="sbl-guide"/>
+  <path d="M672 304H2080 M672 1040H2080 M704 496H2048 M704 520H2048" class="sbl-guide"/>
+  <path d="M1136 520V704 M1160 520V704" class="sbl-guide"/>
+
+  <!-- Representative overall shell dimensions. -->
+  <path d="M160 84V108 M2080 84V108 M160 96H2080" class="sbl-ruler"/>
+  <text x="1120" y="78" text-anchor="middle" class="sbl-label">960 px</text>
+  <path d="M52 176H76 M52 1072H76 M64 176V1072" class="sbl-ruler"/>
+  <text x="43" y="624" text-anchor="middle" transform="rotate(-90 43 624)" class="sbl-label">448 px</text>
+
+  <!-- Default sidebar width and resulting main-column width. -->
+  <path d="M160 1092V1156 M672 1092V1156 M2080 1092V1156 M160 1144H2080" class="sbl-ruler"/>
+  <text x="416" y="1182" text-anchor="middle" class="sbl-label">256 px</text>
+  <text x="1376" y="1182" text-anchor="middle" class="sbl-label">704 px</text>
+
+  <!-- Header horizontal padding and single-line header height. -->
+  <path d="M672 136V160 M696 136V160 M672 148H696 M684 148 714 126H750" class="sbl-ruler"/>
+  <text x="762" y="133" class="sbl-label">12 px</text>
+  <path d="M2104 176H2156 M2104 272H2156 M2144 176V272" class="sbl-ruler"/>
+  <text x="2162" y="232" class="sbl-label">48 px</text>
+
+  <!-- Fixed navigation-row height and 8px group inset. -->
+  <path d="M608 256H632 M608 320H632 M620 256V320" class="sbl-ruler"/>
+  <text x="594" y="296" text-anchor="end" class="sbl-label">32 px</text>
+  <path d="M160 544V568 M176 544V568 M160 556H176 M168 556 196 594H230" class="sbl-ruler"/>
+  <text x="242" y="602" class="sbl-label">8 px</text>
+
+  <!-- Demo content padding, measured against the actual header/content edges. -->
+  <path d="M2016 272V304 M2006 272H2026 M2006 304H2026 M2016 288 2050 326H2134" class="sbl-ruler"/>
+  <text x="2146" y="334" class="sbl-label">16 px</text>
+  <path d="M672 962V986 M704 962V986 M672 974H704 M688 974 730 930H772" class="sbl-ruler"/>
+  <text x="784" y="938" class="sbl-label">16 px</text>
+
+  <!-- Demo block heights and gap between the content rows. -->
+  <path d="M2098 304H2126 M2098 496H2126 M2112 304V496" class="sbl-ruler"/>
+  <text x="2138" y="408" class="sbl-label">96 px</text>
+  <path d="M2098 496H2126 M2098 520H2126 M2112 496V520" class="sbl-ruler"/>
+  <text x="2138" y="516" class="sbl-label">12 px</text>
+  <path d="M2098 520H2126 M2098 648H2126 M2112 520V648" class="sbl-ruler"/>
+  <text x="2138" y="592" class="sbl-label">64 px</text>
+
+  <!-- The same 12px gap between columns, and the actual 216px column width. -->
+  <path d="M1136 684V708 M1160 684V708 M1136 696H1160 M1148 696V732" class="sbl-ruler"/>
+  <text x="1148" y="760" text-anchor="middle" class="sbl-label">12 px</text>
+  <path d="M1616 684V708 M2048 684V708 M1616 696H2048" class="sbl-ruler"/>
+  <text x="1832" y="732" text-anchor="middle" class="sbl-label">216 px</text>
+</svg>

@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="400" viewBox="0 0 1000 400" fill="none" role="img" aria-labelledby="separator-bp-title separator-bp-desc">
+  <title id="separator-bp-title">Separator dimensions</title>
+  <desc id="separator-bp-desc">The default horizontal separator between Above the line and Below the line, drawn at twice CSS size. The divider's chosen width is 320 pixels, its thickness is 1 pixel, and the spacing above and below it is 12 pixels each.</desc>
+  <!--
+    Sources:
+      registry.json: separator has one portable file and no sibling variants.
+      registry/ui/separator/separator.tsx
+      inspector/entries/separator.tsx
+      content/docs/separator.mdx
+      app/globals.css: dark background, text-sm, and text-sm line-height.
+      node_modules/tailwindcss/theme.css: spacing and container-xs tokens.
+      node_modules/tailwindcss/preflight.css: border-box sizing and zero borders.
+
+    State: default orientation="horizontal", unmodified className.
+    Representative caller width: 320px, chosen to equal this demo's max-w-xs.
+    w-full follows the available width; 320px is not a fixed component width.
+    No production outline, padding, radius, or active fill is added.
+    The divider's width, thickness, and surrounding spacing are annotated.
+    The 12px spaces come from the demo caller's flex gap, not intrinsic padding.
+    No text line heights are measured. Dashed guides mark the outer spacing
+    boundaries and connect both width-ruler endpoints to the divider's ends.
+    Dark base: oklch(.120 0 0), rounded to #060606 in sRGB.
+
+    Scale: 2 SVG units per CSS pixel, assuming a 16px root.
+    max-w-xs: 20rem = 320px = 640 units, from x=180 to x=820.
+    text-sm: .8125rem = 13px = 26 units.
+    Line-height: 13 * 1.5385 = 20.0005px, rounded to 20px = 40 units.
+    gap-3: 3 * .25rem = 12px = 24 units, above and below the separator.
+    h-px: 1px = 2 units. Butt-capped centerline y=200 has edges y=199,201.
+    Top line box: y=135..175; upper gap: y=175..199.
+    Bottom gap: y=201..225; bottom line box: y=225..265.
+    Context height: 20 + 12 + 1 + 12 + 20 = 65px = 130 units.
+    No borders or padding increase the divider's 1px border box.
+    Segoe UI baselines at line-box center + (2210 - 514) / 2048 * 26 / 2:
+    165.77 and 255.77. Illustration uses the approved sans-serif stack.
+
+    The single structural divider draws from 0 to 400ms. There are no smaller
+    component strokes. All annotations fade together from 700 to 900ms.
+    Reduced-motion and static renderers show the complete drawing immediately.
+  -->
+  <defs>
+    <style>
+      .separator-bp-text, .separator-bp-label { font-family: Inter, 'Segoe UI', Arial, sans-serif; font-weight: 400; }
+      .separator-bp-text { fill: #92948d; font-size: 26px; }
+      .separator-bp-label { fill: #a1a29c; font-size: 18px; }
+      .separator-bp-divider { stroke: #a7a8a2; stroke-width: 2; stroke-linecap: butt; }
+      .separator-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      .separator-bp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      @keyframes separator-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes separator-bp-reveal { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        .separator-bp-divider {
+          stroke-dasharray: 1;
+          animation: separator-bp-draw 400ms ease-out both;
+        }
+        .separator-bp-measure, .separator-bp-spacing, .separator-bp-label {
+          animation: separator-bp-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <rect width="1000" height="400" fill="#060606"/>
+
+  <!-- Spacing boundaries and vertical extensions from the width ruler's two ends. -->
+  <path d="M148 175H820 M148 225H820 M180 90V225 M820 90V225" class="separator-bp-spacing"/>
+
+  <!-- Unmeasured neighboring demo text stays visible throughout. -->
+  <text x="180" y="165.77" class="separator-bp-text">Above the line</text>
+  <text x="180" y="255.77" class="separator-bp-text">Below the line</text>
+
+  <!-- A 1px filled hairline represented by an exactly 2-unit, butt-capped stroke. -->
+  <path d="M180 200H820" pathLength="1" class="separator-bp-divider"/>
+
+  <!-- Chosen current width: the line's exact horizontal endpoints. -->
+  <path d="M180 80V100 M820 80V100 M180 90H820" class="separator-bp-measure"/>
+  <text x="500" y="73" text-anchor="middle" class="separator-bp-label">320 px</text>
+
+  <!-- Above: from the neighboring line-box edge y=175 to the divider edge y=199. -->
+  <path d="M138 175H158 M138 199H180 M148 175V199" class="separator-bp-measure"/>
+  <text x="124" y="193" text-anchor="end" class="separator-bp-label">12 px</text>
+
+  <!-- Below: from the divider edge y=201 to the neighboring line-box edge y=225. -->
+  <path d="M138 201H180 M138 225H158 M148 201V225" class="separator-bp-measure"/>
+  <text x="124" y="220" text-anchor="end" class="separator-bp-label">12 px</text>
+
+  <!-- Thickness label uses one uniform-weight leader from the divider's end. -->
+  <path d="M820 200H874L916 246H930" class="separator-bp-measure"/>
+  <text x="942" y="252" class="separator-bp-label">1 px</text>
+</svg>
