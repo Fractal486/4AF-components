@@ -8,8 +8,8 @@ import { REPOSITORY, siteNav } from "@/lib/site-nav";
  */
 export default function SiteLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="mx-auto w-full max-w-310 lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:items-start">
-      <div className="sticky top-0 z-30 border-b bg-background lg:h-dvh lg:border-r lg:border-b-0">
+    <div className="mx-auto w-full max-w-310 lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start">
+      <div className="sticky top-0 z-30 border-b bg-background lg:h-dvh lg:border-b-0">
         <SiteRail
           nav={siteNav()}
           repository={REPOSITORY}

@@ -345,9 +345,8 @@ export function Calendar({
         className={cn(
           // 6px at the sides and top, 12px below the last week.
           "group/calendar w-fit max-w-full px-1.5 pt-1.5 pb-3 text-sm text-foreground",
-          // 34px cells; 44px under a coarse pointer, the minimum comfortable touch target. The
-          // date picker's trigger is sized from these same numbers, so keep the two in step.
-          "[--cell-radius:6px] [--cell-size:--spacing(8.5)] pointer-coarse:[--cell-size:--spacing(11)]",
+          // 34px cells on every device. The date picker's trigger uses the same size.
+          "[--cell-radius:6px] [--cell-size:--spacing(8.5)]",
           className,
         )}
         classNames={{
@@ -752,7 +751,7 @@ function MonthYearPicker() {
     <div
       data-slot="calendar-picker"
       // One level at a time: Escape goes back to the days, and only the next one closes the
-      // popover or sheet around the calendar.
+      // popover around the calendar.
       onKeyDown={(event) => {
         if (event.key !== "Escape") return;
         event.stopPropagation();
@@ -877,7 +876,7 @@ const dayButtonClassName = cn(
   // 12px, the same size as the weekday letters above them.
   "text-xs font-normal tabular-nums text-foreground outline-none",
   "transition-[color] duration-(--duration-fast) ease-out",
-  "before:absolute before:inset-[2px] pointer-coarse:before:inset-[3px] before:-z-10 before:rounded-[calc(var(--cell-radius)-1px)]",
+  "before:absolute before:inset-[2px] before:-z-10 before:rounded-[calc(var(--cell-radius)-1px)]",
   "before:transition-[background-color,box-shadow] before:duration-(--duration-fast) before:ease-out",
   "hover:before:bg-muted focus-visible:z-10 focus-visible:before:ring-2 focus-visible:before:ring-ring",
   "disabled:cursor-not-allowed disabled:text-subtle-foreground disabled:line-through disabled:hover:before:bg-transparent",

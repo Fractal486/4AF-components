@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { componentCategories } from "./component-catalog";
 import { source } from "./source";
 import referenceMeta from "../content/docs/reference/meta.json";
@@ -7,6 +9,17 @@ export const REPOSITORY = "https://github.com/Fractal486/4AF-components";
 export interface NavItem {
   title: string;
   href: string;
+  /** The component's animated spacing blueprint, when one has been drawn. */
+  blueprint?: string;
+}
+
+/**
+ * Blueprints live at `public/blueprints/<category>/<component>.svg`, the category being its
+ * catalog name in kebab case. Not every component has one yet, so check the file exists.
+ */
+function blueprintUrl(category: string, component: string) {
+  const url = `/blueprints/${category.toLowerCase().replaceAll(" ", "-")}/${component}.svg`;
+  return existsSync(join(process.cwd(), "public", url)) ? url : undefined;
 }
 
 export interface NavGroup {
@@ -35,6 +48,7 @@ export function siteNav(): NavGroup[] {
       items: category.components.map((component) => ({
         title: component.title,
         href: `/docs/${component.name}`,
+        blueprint: blueprintUrl(category.name, component.name),
       })),
     })),
   ];

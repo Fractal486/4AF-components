@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="classic-loader-bp" width="1024" height="768" viewBox="-192 -144 1024 768" fill="none" role="img" aria-labelledby="classic-loader-bp-title classic-loader-bp-desc">
+  <title id="classic-loader-bp-title">Classic Loader spacing</title>
+  <desc id="classic-loader-bp-desc">The default medium Classic Loader spinner, enlarged twelve times. Its 20 by 20 pixel box contains twelve rounded radial bars, each 4.8 pixels long and 1.6 pixels thick. The bars stop 0.6 pixels short of the box edge. An opacity-only fading trail advances clockwise, gradually slows to a stop, and settles smoothly with the top bar bright. Reduced motion and the PNG show that same final pose immediately.</desc>
+  <!-- Sources: registry/ui/classic-loader/classic-loader.tsx;
+       registry/ui/classic-loader/classic-loader.variants.ts;
+       inspector/entries/classic-loader.tsx; content/docs/classic-loader.mdx;
+       app/globals.css; lib/component-catalog.ts (Feedback and status).
+       registry.json installs both component files, with slot, cn, and theme dependencies.
+
+       Default size="md", speed=1, foreground color; demo label="Loading".
+       size-5 = 20px. The inner SVG fills the root, with viewBox 0 0 100 100.
+       Source bars: rect(73,46,24,8), rx=4, rotated i*30 degrees about (50,50).
+       At 20px, bar length=4.8px, thickness=1.6px, corner radius=.8px.
+       Inner radius=23*.2=4.6px; outer radius=47*.2=9.4px.
+       Cardinal edge clearance=(100-97)*.2=.6px. This is an ink inset,
+       not CSS padding. The root itself has no padding or border.
+       Drawing scale 12x, matching the other small-loader blueprints.
+       Root bounds (200,120)-(440,360); center (320,240); SVG-unit scale=2.4.
+       Unrotated bar: (375.2,230.4), width=57.6, height=19.2, rx=9.6.
+       The component has filled bars only; no solid outlines are invented.
+       The dashed box is the actual root boundary, not an extra surface.
+       Dark background oklch(0.120 0 0) resolves to #060606.
+
+       Source motion is opacity-only, fading linearly from 1 to .15 over 1200ms.
+       Negative delays (i-12)*100ms give the initial complete trail.
+       At the user's request, this one-shot illustration eases the trail to a stop.
+       Over 900ms, phase q(u)=9*(2u-u*u), u=t/900, moves from the right bar (i=0)
+       to the top bar (i=9). Phase velocity decreases continuously to zero.
+       Peak times are 900*(1-sqrt(1-i/9)): 0,51.472,106.275,165.153,229.180,
+       300,380.385,475.736,600,900ms. Increasing intervals slow the whole trail,
+       rather than independently easing fades with unchanged peak times.
+       Adjacent source trail poses are interpolated in phase, smoothing each
+       peak handoff instead of resetting a bar from .15 to 1 at the last instant.
+       Initial opacity: i=0 -> 1; otherwise .15+.85*i/12.
+       Final opacity at 900ms: i=0..9 -> .3625+.85*i/12;
+       i=10,11 -> .220833333,.291666667. These are the previous final pose.
+       Bars 1..9 dim to .220833333 at q=i-1, rise smoothly to 1 at q=i,
+       then fade with the advancing trail. The top bar's final rise spans 600..900ms.
+       Bars 0,10,11 simply fade along the shared quadratic phase curve.
+       Each CSS segment is an exact restriction of q(u). For interval [a,b],
+       A=2*(1-a)*(b-a), B=(b-a)^2; cubic controls are x=(1/3,2/3),
+       y=(A/(3*(A-B)),(2*A-B)/(3*(A-B))). Values are rounded to nine decimals.
+       This keeps the same phase speed across keyframes. All final derivatives
+       are zero, and every final opacity matches its static SVG attribute.
+       Only opacity animates; the bar geometry never rotates.
+       Resting opacity is also an SVG attribute so local PNG renderers do not need
+       CSS custom-property support to reproduce the complete fading trail.
+       Guides, rulers, and labels fade in at 700..900ms.
+       CSS-only, no loop. Reduced motion shows the final trail immediately,
+       following the blueprint convention rather than the live spinner's loop.
+  -->
+  <defs>
+    <style>
+      #classic-loader-bp text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #classic-loader-bp .classic-loader-bp-bar { fill: #c7c7c2; }
+      #classic-loader-bp .classic-loader-bp-label { fill: #a1a29c; font-size: 18px; }
+      #classic-loader-bp .classic-loader-bp-ruler { stroke: #6889ff; stroke-width: 1.5; }
+      #classic-loader-bp .classic-loader-bp-guide { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      @keyframes classic-loader-bp-partial {
+        from { opacity: var(--classic-loader-bp-initial); }
+        to { opacity: var(--classic-loader-bp-rest); }
+      }
+      @keyframes classic-loader-bp-phase-1 {
+        0% { opacity: .220833333; animation-timing-function: cubic-bezier(.333333333, .343145751, .666666667, .676479084); }
+        5.719095842% { opacity: 1; animation-timing-function: cubic-bezier(.333333333, .666666667, .666666667, 1); }
+        100% { opacity: .433333333; }
+      }
+      @keyframes classic-loader-bp-phase-2 {
+        0% { opacity: .291666667; animation-timing-function: cubic-bezier(.333333333, .343145751, .666666667, .676479084); }
+        5.719095842% { opacity: .220833333; animation-timing-function: cubic-bezier(.333333333, .344456818, .666666667, .677790151); }
+        11.808289631% { opacity: 1; animation-timing-function: cubic-bezier(.333333333, .666666667, .666666667, 1); }
+        100% { opacity: .504166667; }
+      }
+      @keyframes classic-loader-bp-phase-3 {
+        0% { opacity: .3625; animation-timing-function: cubic-bezier(.333333333, .354248689, .666666667, .687582022); }
+        11.808289631% { opacity: .220833333; animation-timing-function: cubic-bezier(.333333333, .346172868, .666666667, .679506201); }
+        18.350341907% { opacity: 1; animation-timing-function: cubic-bezier(.333333333, .666666667, .666666667, 1); }
+        100% { opacity: .575; }
+      }
+      @keyframes classic-loader-bp-phase-4 {
+        0% { opacity: .433333333; animation-timing-function: cubic-bezier(.333333333, .367006838, .666666667, .700340171); }
+        18.350341907% { opacity: .220833333; animation-timing-function: cubic-bezier(.333333333, .348516283, .666666667, .681849617); }
+        25.46440075% { opacity: 1; animation-timing-function: cubic-bezier(.333333333, .666666667, .666666667, 1); }
+        100% { opacity: .645833333; }
+      }
+      @keyframes classic-loader-bp-phase-5 {
+        0% { opacity: .504166667; animation-timing-function: cubic-bezier(.333333333, .381966011, .666666667, .715299345); }
+        25.46440075% { opacity: .220833333; animation-timing-function: cubic-bezier(.333333333, .351909363, .666666667, .685242697); }
+        33.333333333% { opacity: 1; animation-timing-function: cubic-bezier(.333333333, .666666667, .666666667, 1); }
+        100% { opacity: .716666667; }
+      }
+      @keyframes classic-loader-bp-phase-6 {
+        0% { opacity: .575; animation-timing-function: cubic-bezier(.333333333, .4, .666666667, .733333333); }
+        33.333333333% { opacity: .220833333; animation-timing-function: cubic-bezier(.333333333, .35726559, .666666667, .690598923); }
+        42.264973081% { opacity: 1; animation-timing-function: cubic-bezier(.333333333, .666666667, .666666667, 1); }
+        100% { opacity: .7875; }
+      }
+      @keyframes classic-loader-bp-phase-7 {
+        0% { opacity: .645833333; animation-timing-function: cubic-bezier(.333333333, .422649731, .666666667, .755983064); }
+        42.264973081% { opacity: .220833333; animation-timing-function: cubic-bezier(.333333333, .367006838, .666666667, .700340171); }
+        52.859547921% { opacity: 1; animation-timing-function: cubic-bezier(.333333333, .666666667, .666666667, 1); }
+        100% { opacity: .858333333; }
+      }
+      @keyframes classic-loader-bp-phase-8 {
+        0% { opacity: .716666667; animation-timing-function: cubic-bezier(.333333333, .453081839, .666666667, .786415173); }
+        52.859547921% { opacity: .220833333; animation-timing-function: cubic-bezier(.333333333, .390524292, .666666667, .723857625); }
+        66.666666667% { opacity: 1; animation-timing-function: cubic-bezier(.333333333, .666666667, .666666667, 1); }
+        100% { opacity: .929166667; }
+      }
+      @keyframes classic-loader-bp-phase-9 {
+        0% { opacity: .7875; animation-timing-function: cubic-bezier(.333333333, .5, .666666667, .833333333); }
+        66.666666667% { opacity: .220833333; animation-timing-function: cubic-bezier(.333333333, .666666667, .666666667, 1); }
+        100% { opacity: 1; }
+      }
+      @keyframes classic-loader-bp-annotate { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        #classic-loader-bp .classic-loader-bp-bar {
+          animation: var(--classic-loader-bp-animation, classic-loader-bp-partial) 900ms cubic-bezier(.333333333, .666666667, .666666667, 1) backwards;
+        }
+        #classic-loader-bp .classic-loader-bp-ruler,
+        #classic-loader-bp .classic-loader-bp-guide,
+        #classic-loader-bp .classic-loader-bp-label {
+          animation: classic-loader-bp-annotate 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <rect x="-192" y="-144" width="1024" height="768" fill="#060606"/>
+
+  <!-- One shared bar geometry, rotated around the exact root center. -->
+  <g aria-hidden="true">
+    <rect x="375.2" y="230.4" width="57.6" height="19.2" rx="9.6" opacity=".3625" class="classic-loader-bp-bar" style="--classic-loader-bp-initial:1;--classic-loader-bp-rest:.3625"/>
+    <rect x="375.2" y="230.4" width="57.6" height="19.2" rx="9.6" opacity=".433333333" transform="rotate(30 320 240)" class="classic-loader-bp-bar" style="--classic-loader-bp-animation:classic-loader-bp-phase-1"/>
+    <rect x="375.2" y="230.4" width="57.6" height="19.2" rx="9.6" opacity=".504166667" transform="rotate(60 320 240)" class="classic-loader-bp-bar" style="--classic-loader-bp-animation:classic-loader-bp-phase-2"/>
+    <rect x="375.2" y="230.4" width="57.6" height="19.2" rx="9.6" opacity=".575" transform="rotate(90 320 240)" class="classic-loader-bp-bar" style="--classic-loader-bp-animation:classic-loader-bp-phase-3"/>
+    <rect x="375.2" y="230.4" width="57.6" height="19.2" rx="9.6" opacity=".645833333" transform="rotate(120 320 240)" class="classic-loader-bp-bar" style="--classic-loader-bp-animation:classic-loader-bp-phase-4"/>
+    <rect x="375.2" y="230.4" width="57.6" height="19.2" rx="9.6" opacity=".716666667" transform="rotate(150 320 240)" class="classic-loader-bp-bar" style="--classic-loader-bp-animation:classic-loader-bp-phase-5"/>
+    <rect x="375.2" y="230.4" width="57.6" height="19.2" rx="9.6" opacity=".7875" transform="rotate(180 320 240)" class="classic-loader-bp-bar" style="--classic-loader-bp-animation:classic-loader-bp-phase-6"/>
+    <rect x="375.2" y="230.4" width="57.6" height="19.2" rx="9.6" opacity=".858333333" transform="rotate(210 320 240)" class="classic-loader-bp-bar" style="--classic-loader-bp-animation:classic-loader-bp-phase-7"/>
+    <rect x="375.2" y="230.4" width="57.6" height="19.2" rx="9.6" opacity=".929166667" transform="rotate(240 320 240)" class="classic-loader-bp-bar" style="--classic-loader-bp-animation:classic-loader-bp-phase-8"/>
+    <rect x="375.2" y="230.4" width="57.6" height="19.2" rx="9.6" opacity="1" transform="rotate(270 320 240)" class="classic-loader-bp-bar" style="--classic-loader-bp-animation:classic-loader-bp-phase-9"/>
+    <rect x="375.2" y="230.4" width="57.6" height="19.2" rx="9.6" opacity=".220833333" transform="rotate(300 320 240)" class="classic-loader-bp-bar" style="--classic-loader-bp-initial:.858333333;--classic-loader-bp-rest:.220833333"/>
+    <rect x="375.2" y="230.4" width="57.6" height="19.2" rx="9.6" opacity=".291666667" transform="rotate(330 320 240)" class="classic-loader-bp-bar" style="--classic-loader-bp-initial:.929166667;--classic-loader-bp-rest:.291666667"/>
+  </g>
+
+  <!-- Root boundary; the bars are inset rather than clipped at the box edges. -->
+  <rect x="200" y="120" width="240" height="240" class="classic-loader-bp-guide"/>
+
+  <!-- Default medium width and height: 240 / 12 = 20 CSS px. -->
+  <path d="M200 110V83 M440 110V83" class="classic-loader-bp-guide"/>
+  <path d="M200 79V101 M200 90H440 M440 79V101" class="classic-loader-bp-ruler"/>
+  <text x="320" y="70" text-anchor="middle" class="classic-loader-bp-label">20 px</text>
+  <path d="M190 120H141 M190 360H141" class="classic-loader-bp-guide"/>
+  <path d="M139 120H161 M150 120V360 M139 360H161" class="classic-loader-bp-ruler"/>
+  <text x="126" y="246" text-anchor="end" class="classic-loader-bp-label">20 px</text>
+
+  <!-- The horizontal bar's thickness: 19.2 drawing units / 12 = 1.6px. -->
+  <path d="M423.2 230.4H495 M423.2 249.6H495" class="classic-loader-bp-guide"/>
+  <path d="M473 230.4H495 M484 230.4V249.6 M473 249.6H495" class="classic-loader-bp-ruler"/>
+  <text x="509" y="246" class="classic-loader-bp-label">1.6 px</text>
+
+  <!-- Cardinal ink-to-box clearance: (440-432.8)/12 = .6px, not padding. -->
+  <path d="M432.8 259.6V409 M440 370V409" class="classic-loader-bp-guide"/>
+  <path d="M432.8 389V411 M432.8 400H440 M440 389V411 M436.4 412 458 434H481" class="classic-loader-bp-ruler"/>
+  <text x="495" y="440" class="classic-loader-bp-label">0.6 px</text>
+</svg>

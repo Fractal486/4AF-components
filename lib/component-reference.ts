@@ -237,6 +237,7 @@ import { Button } from "@/components/ui/button";
   "date-picker": {
     usage: `import { DatePicker, DateRangePicker } from "@/components/ui/date-picker";
 
+{/* Both pickers use a popover with 34px calendar cells on every device. */}
 <DatePicker value={date} onValueChange={setDate} name="due" clearable />
 {/* Today returns to the current month without selecting; Clear resets the value. */}
 {/* Use showToday={false} and clearable={false} to omit the footer. */}

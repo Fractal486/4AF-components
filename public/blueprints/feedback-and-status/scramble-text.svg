@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="scramble-text-bp" width="900" height="360" viewBox="0 0 900 360" fill="none" role="img" aria-labelledby="scramble-text-bp-title scramble-text-bp-desc">
+  <title id="scramble-text-bp-title">Scramble Text spacing</title>
+  <desc id="scramble-text-bp-desc">Deploying changes… The default Scramble Text demo, drawn at three times CSS size. Its inherited line height is approximately 26 pixels, with zero padding. Symbols change every 32 milliseconds as the text resolves from left to right, preserving the space. The one-shot scramble finishes after 576 milliseconds; the measurement guides then appear. Reduced motion shows the completed label immediately.</desc>
+  <!-- Sources: registry/ui/scramble-text/scramble-text.tsx;
+       inspector/entries/scramble-text.tsx; content/docs/scramble-text.mdx;
+       app/globals.css; lib/component-catalog.ts (Feedback and status).
+       registry.json installs only scramble-text.tsx; no sibling variants file.
+
+       Default label "Deploying changes…", intervalMs=32, inline-block span.
+       Typography is inherited from the demo's text-lg font-medium paragraph:
+       font size 1.125rem = 18px, weight 500, letter spacing -0.01em = -0.18px.
+       Line height 18 * 1.4444 = 25.9992px, rounded to 26px. Scale 3x:
+       font size 54, tracking -0.54, line box height 78. Padding and borders: 0.
+       Content-dependent width: not a fixed size or a width reserved by the component.
+       Representative final text advance measured with local Segoe UI at 18px,
+       System.Drawing GenericTypographic, minus 18 * 0.18px tracking: 161.75707px.
+       The dashed box uses this representative advance; actual text width follows
+       the available font in the approved sans-serif stack. Every animation frame
+       and the final label use the same inherited typography and natural advances.
+       No textLength or lengthAdjust is applied: constraining only the final label
+       would squeeze its glyphs and spacing when the scramble settles.
+       Reference line box: (207.364,130)-(692.635,208).
+       Segoe UI baseline from em=2048, ascent=2210, descent=514:
+       (26 - (2210+514)*18/2048)/2 + 2210*18/2048 = 20.453125px;
+       drawing baseline 130 + 3 * 20.453125 = 191.359375.
+       Guides measure the line box, not the glyph ink. Background #060606
+       is the app's dark oklch(0.120 0 0).
+
+       Signature animation: 18 graphemes including the space, reveal step
+       max(1,ceil(18/48)) = 1; one additional grapheme resolves every 32ms.
+       The space at index 9 is preserved in every frame and consumes a reveal step.
+       Frame 0 reproduces the source's stable hash; later frames are a pre-drawn
+       sample of the source punctuation alphabet. CSS switches complete text
+       frames without fading or sliding, so the unresolved suffix keeps scrambling.
+       Frames 0..17 each occupy exactly 32ms; the final label appears at 576ms.
+       No solid outlines, icons, or dividers exist to draw in the first phase.
+       All blue guides, rulers, and labels fade in together from 700 to 900ms.
+       CSS-only, once, no scripts or loop. Each transient frame has no fill mode:
+       it is visible only during its own interval, never during its delay.
+       Static exports and reduced-motion viewers show only the final label.
+  -->
+  <defs>
+    <style>
+      #scramble-text-bp text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #scramble-text-bp .scramble-text-bp-content {
+        fill: #92948d;
+        font-size: 54px;
+        font-weight: 500;
+        letter-spacing: -.54px;
+      }
+      #scramble-text-bp .scramble-text-bp-label { fill: #a1a29c; font-size: 18px; }
+      #scramble-text-bp .scramble-text-bp-ruler { stroke: #6889ff; stroke-width: 1.5; }
+      #scramble-text-bp .scramble-text-bp-guide { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      #scramble-text-bp .scramble-text-bp-frames { display: none; }
+      @keyframes scramble-text-bp-frame {
+        from, to { opacity: 1; }
+      }
+      @keyframes scramble-text-bp-resolve {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes scramble-text-bp-annotate { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        #scramble-text-bp .scramble-text-bp-frames { display: inline; }
+        #scramble-text-bp .scramble-text-bp-frames text {
+          opacity: 0;
+          animation: scramble-text-bp-frame 32ms steps(1, end) var(--scramble-text-bp-delay, 0ms);
+        }
+        #scramble-text-bp .scramble-text-bp-final {
+          animation: scramble-text-bp-resolve 576ms steps(1, end) both;
+        }
+        #scramble-text-bp .scramble-text-bp-ruler,
+        #scramble-text-bp .scramble-text-bp-guide,
+        #scramble-text-bp .scramble-text-bp-label {
+          animation: scramble-text-bp-annotate 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <rect width="900" height="360" fill="#060606"/>
+
+  <!-- Coincident content and outer edges: no border, surface, or padding. -->
+  <rect x="207.364" y="130" width="485.271" height="78" class="scramble-text-bp-guide"/>
+
+  <!-- Every frame contains one complete, readable line; the prefix stays resolved. -->
+  <g class="scramble-text-bp-content" aria-hidden="true">
+  <g class="scramble-text-bp-frames">
+    <text x="207.364" y="191.359" style="--scramble-text-bp-delay:0ms">=,^%+?+:{ |-.(%^&gt;.</text>
+    <text x="207.364" y="191.359" style="--scramble-text-bp-delay:32ms">D^#+((&gt;&gt;&amp; $)?($=&gt;^</text>
+    <text x="207.364" y="191.359" style="--scramble-text-bp-delay:64ms">De$`&lt;-$!] %.}_}][.</text>
+    <text x="207.364" y="191.359" style="--scramble-text-bp-delay:96ms">Dep`!&amp;}+? |&amp;`?~+[^</text>
+    <text x="207.364" y="191.359" style="--scramble-text-bp-delay:128ms">Depl:.]{) %#`((.-#</text>
+    <text x="207.364" y="191.359" style="--scramble-text-bp-delay:160ms">Deplo[{|? ,-_]+?$?</text>
+    <text x="207.364" y="191.359" style="--scramble-text-bp-delay:192ms">Deploy^$&lt; &lt;+)`*&lt;*`</text>
+    <text x="207.364" y="191.359" style="--scramble-text-bp-delay:224ms">Deployi-, %!&lt;[.{-^</text>
+    <text x="207.364" y="191.359" style="--scramble-text-bp-delay:256ms">Deployin# [)%[)+._</text>
+    <text x="207.364" y="191.359" style="--scramble-text-bp-delay:288ms">Deploying {-&lt;*~_([</text>
+    <text x="207.364" y="191.359" style="--scramble-text-bp-delay:320ms">Deploying .&amp;&amp;@+&amp;&lt;%</text>
+    <text x="207.364" y="191.359" style="--scramble-text-bp-delay:352ms">Deploying c():&gt;;@?</text>
+    <text x="207.364" y="191.359" style="--scramble-text-bp-delay:384ms">Deploying ch.@$?`!</text>
+    <text x="207.364" y="191.359" style="--scramble-text-bp-delay:416ms">Deploying cha-=`[]</text>
+    <text x="207.364" y="191.359" style="--scramble-text-bp-delay:448ms">Deploying chan!&gt;~.</text>
+    <text x="207.364" y="191.359" style="--scramble-text-bp-delay:480ms">Deploying chang({!</text>
+    <text x="207.364" y="191.359" style="--scramble-text-bp-delay:512ms">Deploying change#^</text>
+    <text x="207.364" y="191.359" style="--scramble-text-bp-delay:544ms">Deploying changes;</text>
+  </g>
+  <text x="207.364" y="191.359" class="scramble-text-bp-final">Deploying changes…</text>
+  </g>
+
+  <!-- Line-height ruler: 78 drawing units / 3 = 26 CSS px. -->
+  <path d="M702.635 130H752 M702.635 208H752" class="scramble-text-bp-guide"/>
+  <path d="M730 130H752 M741 130V208 M730 208H752" class="scramble-text-bp-ruler"/>
+  <text x="766" y="175" class="scramble-text-bp-label">26 px</text>
+
+  <!-- Connected leader at the shared content/outer edge measures zero padding. -->
+  <path d="M207.364 169H172V258H229" class="scramble-text-bp-ruler"/>
+  <text x="243" y="264" class="scramble-text-bp-label">0 px</text>
+</svg>

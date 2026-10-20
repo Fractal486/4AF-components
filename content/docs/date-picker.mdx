@@ -1,6 +1,6 @@
 ---
 title: Date Picker
-description: A date or date-range field that opens a calendar in a popover, or a bottom sheet on phones.
+description: A date or date-range field that opens a calendar in a popover on every device.
 ---
 
 <ComponentDemo name="date-picker" />
@@ -21,7 +21,7 @@ description: A date or date-range field that opens a calendar in a popover, or a
 | `variant` | `"default"` | `"default"` boxed field, `"ghost"`, or `"plain"` (no surface, border, or horizontal padding). `default` and `ghost` are as wide as the panel; `plain` fits its text. The calendar icon sits at the end of the field. |
 | `size` | `"md"` | `"xs"` (24px), `"sm"` (30px), or `"md"` (34px). |
 | `placeholder` | `"Pick a date"` / `"Pick a date range"` | Trigger text while empty. |
-| `title` | `"Select a date"` / `"Select dates"` | Panel accessible name; visible sheet title on phones. |
+| `title` | `"Select a date"` / `"Select dates"` | Popover accessible name. |
 | `locale` | `"en-US"` | BCP 47 locale for the `medium` trigger label (`Intl.DateTimeFormat`, `dateStyle: "medium"`). The grid and the month / year picker follow `calendarProps.locale`. |
 | `dateFormat` | `"medium"` | `"medium"` shows the locale's medium date (Oct 19, 2026); `"numeric"` shows day / month / year in zero-padded numbers with dimmed separators (19 / 10 / 2026), in that order in every locale. A range shows both ends. |
 | `clearable` | `false` | Adds a Clear action to the panel once a value is set. |
@@ -52,8 +52,8 @@ Day buttons expose `data-today`, `data-selected-single`, `data-range-start`, `da
 `data-range-end`. Weeks and caption expose `data-enter="next" | "prev" | "fade"` after a month change.
 
 Each day button fills its cell, so the whole cell is clickable, but draws its marks as a box 2px
-inside it (3px on touch devices): hover, selection, the focus ring, and today's 1px outline.
-The visible box is 30px square on desktop and 38px on touch devices.
+inside it: hover, selection, the focus ring, and today's 1px outline.
+Cells are 34px square with a 30px visible box on every device.
 
 ## Month and year picker
 
@@ -75,7 +75,7 @@ is open).
 
 ## Behavior
 
-- Viewports up to 639px wide use a bottom `Sheet`; wider viewports use a `Popover`.
+- Both pickers use a trigger-anchored `Popover` with the same calendar sizing on every device.
 - On open, focus goes to the selected day, else today, else the first enabled day.
 - A single date commits and closes on click.
 - Today returns to the current month without changing the selection or closing the panel. A draft range is preserved. It respects `today`, `timeZone`, month bounds, and `disableNavigation`; controlled calendars receive `onMonthChange`.
@@ -92,12 +92,12 @@ is open).
   fade. Keyboard navigation: fade only.
 - CSS only (`@starting-style` on `translate` and `opacity`), using the duration tokens; collapses
   under reduced motion.
-- The panel enters and exits with the Popover or Sheet motion.
+- The panel enters and exits with the Popover motion.
 - Month height changes animate over the slow duration token as the number of week rows changes. The measured height transition follows reduced-motion tokens and is disabled by `animate={false}`.
 
 ## Dependencies
 
-Installs `react-day-picker` and the `popover`, `sheet`, and `button` components.
+Installs `react-day-picker` and the `popover` and `button` components.
 
 ## Source
 

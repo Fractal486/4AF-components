@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { Moon, Sun, ScanEye } from "lucide-react";
+import { House, Moon, Sun, ScanEye } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { setDemoRevealsEnabled, useDemoRevealsEnabled } from "@/lib/demo-reveal-preference";
 import { useDocsSearch } from "fumadocs-core/search/client";
 import { staticClient } from "fumadocs-core/search/client/orama-static";
@@ -21,12 +22,26 @@ import {
 } from "fumadocs-ui/components/dialog/search";
 
 export default function SiteSearchDialog(props: SharedProps) {
+  const router = useRouter();
   const { locale } = useI18n();
   const { resolvedTheme, setTheme } = useTheme();
   const revealsEnabled = useDemoRevealsEnabled();
   const search = useDocsSearch({ client: staticClient({ locale }) });
   const items = useMemo(() => {
     const words = search.search.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    // The overview isn't an MDX page, so the docs index never returns it, and the rail no
+    // longer lists it. Offer it here as an action, alongside the others.
+    const home = words.every((word) => "go home overview start introduction".includes(word))
+      ? [{
+        id: "go-home",
+        type: "action" as const,
+        node: <span className="flex items-center gap-2"><House className="size-4" aria-hidden />Go home</span>,
+        // Fumadocs closes the dialog right after this returns. Navigating in the same tick
+        // starts the route transition before the close, and when the transition commits it
+        // briefly shows the dialog open again; let the close land first.
+        onSelect: () => setTimeout(() => router.push("/")),
+      }]
+      : [];
     const actions = [
       { theme: "light", label: "Switch to light mode", Icon: Sun },
       { theme: "dark", label: "Switch to dark mode", Icon: Moon },
@@ -47,8 +62,8 @@ export default function SiteSearchDialog(props: SharedProps) {
         onSelect: () => setDemoRevealsEnabled(!revealsEnabled),
       }]
       : [];
-    return [...actions, ...revealActions, ...(search.data?.items ?? [])];
-  }, [search.search, search.data, resolvedTheme, setTheme, revealsEnabled]);
+    return [...home, ...actions, ...revealActions, ...(search.data?.items ?? [])];
+  }, [search.search, search.data, resolvedTheme, setTheme, revealsEnabled, router]);
 
   return (
     <SearchDialog {...search} {...props}>

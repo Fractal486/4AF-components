@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="blur-text-bp" width="1000" height="560" viewBox="0 0 1000 560" fill="none" role="img" aria-labelledby="blur-text-bp-title blur-text-bp-desc">
+  <title id="blur-text-bp-title">Blur Text spacing</title>
+  <desc id="blur-text-bp-desc">Minimal React components built on Base UI. The default character reveal, drawn at twice CSS size in a representative 320 pixel wide paragraph. Three 40 pixel lines make a 120 pixel tall text block, with zero padding. Letters sharpen and rise into place in sequence, followed by the measurement guides. Reduced motion shows the completed drawing immediately.</desc>
+  <!-- Sources: registry/ui/blur-text/blur-text.tsx (the only registry item file);
+       inspector/entries/blur-text.tsx; content/docs/blur-text.mdx;
+       app/globals.css; node_modules/tailwindcss/theme.css;
+       lib/component-catalog.ts: COMPONENT_CATEGORIES, Feedback and status.
+       No sibling variants file exists.
+
+       Default by="character", delay=0, automatic stagger; full default demo label.
+       The caller supplies as="p", text-3xl, font-semibold, tracking-[-0.03em],
+       text-center, text-balance, max-w-md. The component has no intrinsic size,
+       padding, surface, border, or solid strokes to draw.
+       Chosen paragraph width: 320 CSS px, within max-w-md = 28rem = 448px.
+       This is a representative three-line wrap, not a fixed component width.
+       Text size: 2.25rem = 36px; line-height: 36 * 1.1111 = 39.9996px,
+       rounded to 40px. Block height: 3 * 40 = 120px. Padding and line gap: 0.
+       Scale 2x: block (180,160)-(820,400), width 640, height 240, line height 80.
+       Guides measure line boxes, not glyph ink or the empty space from centering.
+       Illustration font: approved sans-serif stack, local Segoe UI Semibold fallback.
+       Individual advances measured at 36px via System.Drawing GenericTypographic;
+       textLength preserves those advances across local sans-serif fallbacks.
+       Each segment advance includes -0.03em = -1.08px tracking, as in the demo.
+       Baseline from font metrics (em=2048, ascent=2210, descent=514):
+       (40 - (2210+514)*36/2048)/2 + 2210*36/2048 = 34.90625px.
+       Paragraph line breaks are drawn explicitly; words remain intact.
+       Dark background: oklch(0.120 0 0) resolves to #060606.
+
+       Signature motion: 36 non-space characters, 300/(36-1) = 8.571429ms
+       stagger, first start 0ms, last start 300ms; each takes duration-slow=300ms.
+       Source blur 0.22em = 7.92px, rise 0.45em = 16.2px; at 2x, 15.84 and 32.4.
+       The blueprint retains 25% initial opacity to keep text visible throughout.
+       Blur and rise otherwise follow the source's CSS ease-out entrance.
+       All letters settle by 600ms; guides and labels fade together at 700..900ms.
+       CSS-only, one pass. Backwards fill holds each starting pose through its
+       delay, then drops the filter at rest. Static/reduced-motion is fully visible.
+  -->
+  <defs>
+    <style>
+      #blur-text-bp text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #blur-text-bp .blur-text-bp-letter { fill: #c7c7c2; font-size: 72px; font-weight: 600; }
+      #blur-text-bp .blur-text-bp-label { fill: #a1a29c; font-size: 18px; }
+      #blur-text-bp .blur-text-bp-ruler { stroke: #6889ff; stroke-width: 1.5; }
+      #blur-text-bp .blur-text-bp-guide { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      @keyframes blur-text-bp-enter {
+        from { opacity: .25; filter: blur(15.84px); transform: translateY(32.4px); }
+        to { opacity: 1; filter: blur(0px); transform: translateY(0px); }
+      }
+      @keyframes blur-text-bp-annotate { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        #blur-text-bp .blur-text-bp-letter {
+          animation: blur-text-bp-enter 300ms ease-out var(--blur-text-bp-delay, 0ms) backwards;
+        }
+        #blur-text-bp .blur-text-bp-ruler,
+        #blur-text-bp .blur-text-bp-guide,
+        #blur-text-bp .blur-text-bp-label {
+          animation: blur-text-bp-annotate 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <rect width="1000" height="560" fill="#060606"/>
+
+  <!-- The paragraph has no frame: only its actual line-box edges are dashed. -->
+  <rect x="180" y="160" width="640" height="240" class="blur-text-bp-guide"/>
+  <path d="M180 240H820 M180 320H820" class="blur-text-bp-guide"/>
+
+  <!-- Minimal React: 219.29204 CSS px; centered within 320px. -->
+  <g aria-hidden="true">
+    <text x="280.708" y="229.8125" textLength="66.551" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:0.000ms">M</text>
+    <text x="345.099" y="229.8125" textLength="18.809" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:8.571ms">i</text>
+    <text x="361.747" y="229.8125" textLength="42.012" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:17.143ms">n</text>
+    <text x="401.599" y="229.8125" textLength="18.809" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:25.714ms">i</text>
+    <text x="418.248" y="229.8125" textLength="63.773" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:34.286ms">m</text>
+    <text x="479.861" y="229.8125" textLength="37.582" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:42.857ms">a</text>
+    <text x="515.283" y="229.8125" textLength="18.809" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:51.429ms">l</text>
+    <text x="549.565" y="229.8125" textLength="44.824" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:60.000ms">R</text>
+    <text x="592.229" y="229.8125" textLength="38.250" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:68.571ms">e</text>
+    <text x="628.319" y="229.8125" textLength="37.582" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:77.143ms">a</text>
+    <text x="663.741" y="229.8125" textLength="33.855" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:85.714ms">c</text>
+    <text x="695.436" y="229.8125" textLength="26.016" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:94.286ms">t</text>
+  </g>
+  <!-- components built: 270.29813 CSS px; centered within 320px. -->
+  <g aria-hidden="true">
+    <text x="229.702" y="309.8125" textLength="33.855" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:102.857ms">c</text>
+    <text x="261.397" y="309.8125" textLength="42.996" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:111.429ms">o</text>
+    <text x="302.233" y="309.8125" textLength="63.773" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:120.000ms">m</text>
+    <text x="363.847" y="309.8125" textLength="43.383" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:128.571ms">p</text>
+    <text x="405.070" y="309.8125" textLength="42.996" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:137.143ms">o</text>
+    <text x="445.906" y="309.8125" textLength="42.012" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:145.714ms">n</text>
+    <text x="485.758" y="309.8125" textLength="38.250" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:154.286ms">e</text>
+    <text x="521.848" y="309.8125" textLength="42.012" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:162.857ms">n</text>
+    <text x="561.699" y="309.8125" textLength="26.016" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:171.429ms">t</text>
+    <text x="585.555" y="309.8125" textLength="31.043" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:180.000ms">s</text>
+    <text x="632.071" y="309.8125" textLength="43.383" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:188.571ms">b</text>
+    <text x="673.294" y="309.8125" textLength="42.012" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:197.143ms">u</text>
+    <text x="713.145" y="309.8125" textLength="18.809" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:205.714ms">i</text>
+    <text x="729.794" y="309.8125" textLength="18.809" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:214.286ms">l</text>
+    <text x="746.443" y="309.8125" textLength="26.016" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:222.857ms">t</text>
+  </g>
+  <!-- on Base UI.: 170.08874 CSS px; centered within 320px. -->
+  <g aria-hidden="true">
+    <text x="329.911" y="389.8125" textLength="42.996" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:231.429ms">o</text>
+    <text x="370.747" y="389.8125" textLength="42.012" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:240.000ms">n</text>
+    <text x="428.232" y="389.8125" textLength="43.488" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:248.571ms">B</text>
+    <text x="469.560" y="389.8125" textLength="37.582" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:257.143ms">a</text>
+    <text x="504.982" y="389.8125" textLength="31.043" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:265.714ms">s</text>
+    <text x="533.865" y="389.8125" textLength="38.250" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:274.286ms">e</text>
+    <text x="587.588" y="389.8125" textLength="50.625" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:282.857ms">U</text>
+    <text x="636.053" y="389.8125" textLength="20.988" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:291.429ms">I</text>
+    <text x="654.882" y="389.8125" textLength="17.367" lengthAdjust="spacingAndGlyphs" class="blur-text-bp-letter" style="--blur-text-bp-delay:300.000ms">.</text>
+  </g>
+
+  <!-- Chosen paragraph width, not the max-width token or the text advance. -->
+  <path d="M180 150V93 M820 150V93" class="blur-text-bp-guide"/>
+  <path d="M180 89V111 M180 100H820 M820 89V111" class="blur-text-bp-ruler"/>
+  <text x="500" y="80" text-anchor="middle" class="blur-text-bp-label">320 px</text>
+
+  <!-- Total height: three adjacent 40px line boxes. -->
+  <path d="M170 160H111 M170 400H111" class="blur-text-bp-guide"/>
+  <path d="M109 160H131 M120 160V400 M109 400H131" class="blur-text-bp-ruler"/>
+  <text x="98" y="286" text-anchor="end" class="blur-text-bp-label">120 px</text>
+
+  <!-- One line height; the ruler's endpoints coincide with its boundaries. -->
+  <path d="M830 160H881 M830 240H881" class="blur-text-bp-guide"/>
+  <path d="M859 160H881 M870 160V240 M859 240H881" class="blur-text-bp-ruler"/>
+  <text x="894" y="206" class="blur-text-bp-label">40 px</text>
+
+  <!-- Zero padding: leader touches the coincident paragraph/content boundary. -->
+  <path d="M500 400V459 M489 400H511" class="blur-text-bp-ruler"/>
+  <text x="500" y="486" text-anchor="middle" class="blur-text-bp-label">0 px</text>
+</svg>

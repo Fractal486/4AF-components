@@ -446,6 +446,14 @@
     scrollbar-gutter: stable;
   }
 
+  /* Fumadocs' search dialog is Radix, whose scroll lock (react-remove-scroll-bar) adds the
+     scrollbar's width to body as `margin-right: …px !important`. The stable gutter above
+     already keeps that space, so the margin doubled it and shifted the page left. One more
+     element in the selector outranks the injected rule, which loads after this sheet. */
+  html body[data-scroll-locked] {
+    margin-right: 0 !important;
+  }
+
   * {
     border-color: var(--color-border);
   }

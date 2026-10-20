@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="ascii-loader-bp" width="1024" height="768" viewBox="-192 -144 1024 768" fill="none" role="img" aria-labelledby="ascii-loader-bp-title ascii-loader-bp-desc">
+  <title id="ascii-loader-bp-title">ASCII Loader spacing</title>
+  <desc id="ascii-loader-bp-desc">The ASCII Loader demo, enlarged twelve times. A Braille character cycles through ten poses at 60 milliseconds per frame, returning to its first pose after one 600 millisecond cycle. Inactive dots stay hidden during the cycle, then fade in over 200 milliseconds to show all six positions. The demo inherits a 13 pixel font and a 20 pixel line box, with zero padding. Measurement guides appear after the glyph animation. Reduced motion shows the first pose, dimmed inactive dots, and all measurements immediately.</desc>
+  <!-- Sources: registry/ui/ascii-loader/ascii-loader.tsx;
+       stories/component-demo.tsx, demos["ascii-loader"]; registry/lib/cn.ts;
+       content/docs/ascii-loader.mdx; app/globals.css;
+       lib/component-catalog.ts (Feedback and status).
+       registry.json installs ascii-loader.tsx only; no variants sibling.
+
+       Source default speed=0.8 seconds. At the user's request, this illustration
+       uses speed=0.6 seconds; ten Braille frames, each held for 60ms.
+       The public demo sets text-sm text-muted-foreground, with label="Loading".
+       text-sm is 13px and line-height 1.5385: 20.0005px, rounded to 20px.
+       Important: cn/tailwind-merge removes the component's leading-none when the
+       caller's text-sm follows it. Thus this demo has a 20px line box; a bare
+       loader without a font-size utility retains leading-none.
+       The spinner is font-mono, inline-block, tabular-nums, with no padding,
+       border, or fixed width. Braille comes from a fallback symbol font.
+       Representative fallback: local Segoe UI Symbol, 13px regular.
+       System.Drawing GenericTypographic measures the same 9.794434px advance
+       for all ten characters. No per-frame textLength or glyph scaling is used.
+       The symbol font is shared by every frame, including the static pose.
+       A dim U+283F full six-dot glyph sits behind the active frame so the PNG
+       shows every position used by this spinner. Dots 7 and 8 are never used.
+       During animation it stays hidden until 600ms, then fades in by 800ms.
+       This dim backdrop is an illustration aid, not part of the live component.
+
+       Scale 12x, deliberately larger than other components because this is a
+       single small character. Font 156; line box 240 high; advance ~117.533.
+       Unshifted layout cell x=261.233..378.766, y=120..360.
+       Source translate-x-[0.3px] shifts the whole painted cell 3.6 drawing units:
+       illustrated cell x=264.833..382.366. The width is font-dependent.
+       Segoe UI Symbol metrics: em=2048, ascent=2210, descent=514.
+       Baseline offset: (20-(2210+514)*13/2048)/2+2210*13/2048 = 15.3828125px;
+       drawing baseline = 120+12*15.3828125 = 304.59375.
+       Guides measure the full line box, not the changing dots' ink.
+       Dark background oklch(0.120 0 0) resolves to #060606.
+
+       One CSS-only demonstration of the source glyph swaps; no rotation or morph.
+       Frames occupy contiguous 60ms windows, then the first pose returns at 600ms.
+       Component text is always present. There are no solid outlines to trace.
+       Blue guides and labels appear at 700..900ms. No loop or replay control.
+       Unlike the live loader's slower reduced-motion cycle, this blueprint follows
+       the static reduced-motion convention of the illustration collection.
+  -->
+  <defs>
+    <style>
+      #ascii-loader-bp text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #ascii-loader-bp .ascii-loader-bp-glyphs text {
+        font-family: 'Segoe UI Symbol', 'DejaVu Sans', sans-serif;
+        font-size: 156px;
+        font-weight: 400;
+        letter-spacing: 0;
+        fill: #c7c7c2;
+      }
+      #ascii-loader-bp .ascii-loader-bp-glyphs .ascii-loader-bp-inactive { fill: #353632; }
+      #ascii-loader-bp .ascii-loader-bp-label { fill: #a1a29c; font-size: 18px; }
+      #ascii-loader-bp .ascii-loader-bp-ruler { stroke: #6889ff; stroke-width: 1.5; }
+      #ascii-loader-bp .ascii-loader-bp-guide { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      #ascii-loader-bp .ascii-loader-bp-frames { display: none; }
+      @keyframes ascii-loader-bp-frame { from, to { opacity: 1; } }
+      @keyframes ascii-loader-bp-rest { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes ascii-loader-bp-annotate { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        #ascii-loader-bp .ascii-loader-bp-frames { display: inline; }
+        #ascii-loader-bp .ascii-loader-bp-frames text {
+          opacity: 0;
+          animation: ascii-loader-bp-frame 60ms steps(1, end) var(--ascii-loader-bp-delay, 0ms);
+        }
+        #ascii-loader-bp .ascii-loader-bp-static {
+          animation: ascii-loader-bp-rest 600ms steps(1, end) both;
+        }
+        #ascii-loader-bp .ascii-loader-bp-inactive {
+          animation: ascii-loader-bp-annotate 200ms ease-out 600ms both;
+        }
+        #ascii-loader-bp .ascii-loader-bp-ruler,
+        #ascii-loader-bp .ascii-loader-bp-guide,
+        #ascii-loader-bp .ascii-loader-bp-label {
+          animation: ascii-loader-bp-annotate 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <rect x="-192" y="-144" width="1024" height="768" fill="#060606"/>
+
+  <!-- Painted cell after the source's 0.3px optical translation. -->
+  <rect x="264.833" y="120" width="117.533" height="240" class="ascii-loader-bp-guide"/>
+  <g class="ascii-loader-bp-glyphs" aria-hidden="true">
+    <text x="264.833" y="304.594" class="ascii-loader-bp-inactive">⠿</text>
+    <g class="ascii-loader-bp-frames">
+      <text x="264.833" y="304.594" style="--ascii-loader-bp-delay:0ms">⠋</text>
+      <text x="264.833" y="304.594" style="--ascii-loader-bp-delay:60ms">⠙</text>
+      <text x="264.833" y="304.594" style="--ascii-loader-bp-delay:120ms">⠹</text>
+      <text x="264.833" y="304.594" style="--ascii-loader-bp-delay:180ms">⠸</text>
+      <text x="264.833" y="304.594" style="--ascii-loader-bp-delay:240ms">⠼</text>
+      <text x="264.833" y="304.594" style="--ascii-loader-bp-delay:300ms">⠴</text>
+      <text x="264.833" y="304.594" style="--ascii-loader-bp-delay:360ms">⠦</text>
+      <text x="264.833" y="304.594" style="--ascii-loader-bp-delay:420ms">⠧</text>
+      <text x="264.833" y="304.594" style="--ascii-loader-bp-delay:480ms">⠇</text>
+      <text x="264.833" y="304.594" style="--ascii-loader-bp-delay:540ms">⠏</text>
+    </g>
+    <text x="264.833" y="304.594" class="ascii-loader-bp-static">⠋</text>
+  </g>
+
+  <!-- Demo line box: 240 drawing units / 12 = 20 CSS px. -->
+  <path d="M254.833 120H204 M254.833 360H204" class="ascii-loader-bp-guide"/>
+  <path d="M203 120H225 M214 120V360 M203 360H225" class="ascii-loader-bp-ruler"/>
+  <text x="190" y="246" text-anchor="end" class="ascii-loader-bp-label">20 px</text>
+
+  <!-- Zero padding at the coincident outer and content edge. -->
+  <path d="M382.366 240H425V393H467" class="ascii-loader-bp-ruler"/>
+  <text x="481" y="399" class="ascii-loader-bp-label">0 px</text>
+</svg>

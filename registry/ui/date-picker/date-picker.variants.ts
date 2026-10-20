@@ -8,10 +8,10 @@ import { cva, type VariantProps } from "class-variance-authority";
  *
  * The boxed variants are exactly as wide as the panel: seven calendar cells, the grid's 6px
  * side padding twice, and the panel's 1px border twice. Built from the Calendar's own numbers
- * (34px cells, 44px under a coarse pointer), so the two stay flush.
+ * (34px cells on every device), so the two stay flush.
  */
 const PANEL_WIDTH =
-  "w-[calc(var(--spacing)*8.5*7+var(--spacing)*1.5*2+2px)] pointer-coarse:w-[calc(var(--spacing)*11*7+var(--spacing)*1.5*2+2px)]";
+  "w-[calc(var(--spacing)*8.5*7+var(--spacing)*1.5*2+2px)]";
 
 export const datePickerTriggerVariants = cva(
   [

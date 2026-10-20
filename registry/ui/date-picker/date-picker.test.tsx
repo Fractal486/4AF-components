@@ -15,6 +15,39 @@ function dayButton(iso: string) {
 }
 
 describe("DatePicker", () => {
+  it.each([
+    ["single", DatePicker, "Pick a date", "Select a date"],
+    ["range", DateRangePicker, "Pick a date range", "Select dates"],
+  ] as const)("uses an anchored popover for %s selection on phones", async (_mode, Picker, placeholder, title) => {
+    const matchMedia = window.matchMedia;
+    const media = vi.spyOn(window, "matchMedia").mockImplementation((query) => ({
+      ...matchMedia(query),
+      matches: query === "(max-width: 639px)" || query.includes("pointer: coarse"),
+    }));
+
+    try {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(<Picker calendarProps={{ defaultMonth: may14 }} onValueChange={onValueChange} />);
+
+      await user.click(screen.getByRole("button", { name: placeholder }));
+      const popup = screen.getByRole("dialog", { name: title });
+      expect(popup).toHaveAttribute("data-side");
+      expect(popup).not.toHaveAttribute("aria-modal", "true");
+      expect(screen.queryByRole("heading", { name: title })).not.toBeInTheDocument();
+
+      await user.click(dayButton("2026-05-20"));
+      if (_mode === "range") {
+        expect(onValueChange).not.toHaveBeenCalled();
+        await user.click(dayButton("2026-05-21"));
+      }
+      expect(onValueChange).toHaveBeenCalledTimes(1);
+      await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    } finally {
+      media.mockRestore();
+    }
+  });
+
   it("returns to the current month without selecting or closing", async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();

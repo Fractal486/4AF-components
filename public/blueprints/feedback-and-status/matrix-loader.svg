@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="matrix-loader-bp" width="1024" height="768" viewBox="-192 -144 1024 768" fill="none" role="img" aria-labelledby="matrix-loader-bp-title matrix-loader-bp-desc">
+  <title id="matrix-loader-bp-title">Matrix Loader spacing</title>
+  <desc id="matrix-loader-bp-desc">The default small Matrix Loader in its scan pattern, enlarged twelve times. Four rows and four columns of 2 pixel square dots, separated by 2 pixel gaps, make a 14 by 14 pixel grid. The four columns pulse from left to right, then settle with the first column highlighted. Measurement guides appear during the final pulse. Reduced motion shows the highlighted first column and all measurements immediately.</desc>
+  <!-- Sources: registry/ui/matrix-loader/matrix-loader.tsx;
+       registry/ui/matrix-loader/matrix-loader.variants.ts;
+       inspector/entries/matrix-loader.tsx; content/docs/matrix-loader.mdx;
+       app/globals.css; lib/component-catalog.ts (Feedback and status).
+       Both portable source files are listed in registry.json.
+
+       Ordinary defaults: size="sm", variant="scan", duration=1.2 seconds.
+       Four columns and four rows; dot-size=2px, gap=2px.
+       Width and height: 4*2 + 3*2 = 14px. Padding, border, and radius are zero.
+       These dots are squares in the source, not circles.
+       Scale 12x, chosen to make the tiny dot/gap contract legible:
+       dot=24, gap=24, pitch=48, grid=168 drawing units.
+       Bounds (236,156)-(404,324). Dot starts x=236,284,332,380
+       and y=156,204,252,300. Guides show actual first-row and first-column edges.
+       Dark background oklch(0.120 0 0) resolves to #060606.
+
+       Scan delay = (index % 4)/10 * 1200ms: columns start at 0,120,240,360ms.
+       Source opacity: .45 at 0%, 1 at 15%, .45 at 45% and 100%;
+       easing cubic-bezier(.65,0,.35,1) between keyframes.
+       Only the active first 45% of each cycle is needed for this one-pass drawing:
+       .45 to 1 in 180ms, then back to .45 in 360ms, total 540ms.
+       Remapping the peak to 100/3 percent retains the original timing and easing.
+       Last column settles at 360+540=900ms; the dormant tail is omitted.
+       At the user's request, the final illustration highlights the first column.
+       Its initial pulse retains the source timing, then it returns to full opacity
+       over 720..900ms as the scan settles. PNG/reduced-motion uses this same pose.
+       Its 900ms animation starts immediately: peak at 20%, dim at 60%,
+       and final rise from 80% to 100%, completing at 900ms overall.
+       Dots are visible at rest through every delay, using both fill mode.
+       Blue guides, rulers, and labels fade together at 700..900ms.
+       No outlines are invented around the filled squares; no strokes need tracing.
+       CSS-only and one pass. Static/reduced-motion output highlights column one,
+       following the blueprint convention rather than the live loader's ongoing loop.
+  -->
+  <defs>
+    <style>
+      #matrix-loader-bp text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #matrix-loader-bp .matrix-loader-bp-dots { fill: #c7c7c2; opacity: .45; }
+      #matrix-loader-bp .matrix-loader-bp-highlight { opacity: 1; }
+      #matrix-loader-bp .matrix-loader-bp-label { fill: #a1a29c; font-size: 18px; }
+      #matrix-loader-bp .matrix-loader-bp-ruler { stroke: #6889ff; stroke-width: 1.5; }
+      #matrix-loader-bp .matrix-loader-bp-guide { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      @keyframes matrix-loader-bp-pulse {
+        0%, 100% { opacity: .45; }
+        33.333333% { opacity: 1; }
+      }
+      @keyframes matrix-loader-bp-highlight-pulse {
+        0%, 60%, 80% { opacity: .45; }
+        20%, 100% { opacity: 1; }
+      }
+      @keyframes matrix-loader-bp-annotate { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        #matrix-loader-bp .matrix-loader-bp-dots {
+          animation: matrix-loader-bp-pulse 540ms cubic-bezier(.65, 0, .35, 1) var(--matrix-loader-bp-delay, 0ms) both;
+        }
+        #matrix-loader-bp .matrix-loader-bp-highlight {
+          animation-name: matrix-loader-bp-highlight-pulse;
+          animation-duration: 900ms;
+        }
+        #matrix-loader-bp .matrix-loader-bp-ruler,
+        #matrix-loader-bp .matrix-loader-bp-guide,
+        #matrix-loader-bp .matrix-loader-bp-label {
+          animation: matrix-loader-bp-annotate 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <rect x="-192" y="-144" width="1024" height="768" fill="#060606"/>
+
+  <!-- One opacity group per column reproduces the source's scan delay table. -->
+  <g class="matrix-loader-bp-dots matrix-loader-bp-highlight" style="--matrix-loader-bp-delay:0ms">
+    <rect x="236" y="156" width="24" height="24"/>
+    <rect x="236" y="204" width="24" height="24"/>
+    <rect x="236" y="252" width="24" height="24"/>
+    <rect x="236" y="300" width="24" height="24"/>
+  </g>
+  <g class="matrix-loader-bp-dots" style="--matrix-loader-bp-delay:120ms">
+    <rect x="284" y="156" width="24" height="24"/>
+    <rect x="284" y="204" width="24" height="24"/>
+    <rect x="284" y="252" width="24" height="24"/>
+    <rect x="284" y="300" width="24" height="24"/>
+  </g>
+  <g class="matrix-loader-bp-dots" style="--matrix-loader-bp-delay:240ms">
+    <rect x="332" y="156" width="24" height="24"/>
+    <rect x="332" y="204" width="24" height="24"/>
+    <rect x="332" y="252" width="24" height="24"/>
+    <rect x="332" y="300" width="24" height="24"/>
+  </g>
+  <g class="matrix-loader-bp-dots" style="--matrix-loader-bp-delay:360ms">
+    <rect x="380" y="156" width="24" height="24"/>
+    <rect x="380" y="204" width="24" height="24"/>
+    <rect x="380" y="252" width="24" height="24"/>
+    <rect x="380" y="300" width="24" height="24"/>
+  </g>
+
+  <!-- Full bounds and the first dot/gap boundaries; all guides remain visible. -->
+  <rect x="236" y="156" width="168" height="168" class="matrix-loader-bp-guide"/>
+  <path d="M260 148V332 M284 148V332 M228 180H414 M228 204H414" class="matrix-loader-bp-guide"/>
+
+  <!-- Grid width and height: 168 drawing units / 12 = 14 CSS px. -->
+  <path d="M236 146V93 M404 146V93" class="matrix-loader-bp-guide"/>
+  <path d="M236 89V111 M236 100H404 M404 89V111" class="matrix-loader-bp-ruler"/>
+  <text x="320" y="80" text-anchor="middle" class="matrix-loader-bp-label">14 px</text>
+  <path d="M226 156H171 M226 324H171" class="matrix-loader-bp-guide"/>
+  <path d="M169 156H191 M180 156V324 M169 324H191" class="matrix-loader-bp-ruler"/>
+  <text x="156" y="246" text-anchor="end" class="matrix-loader-bp-label">14 px</text>
+
+  <!-- First dot height and following vertical gap, with distinct leaders. -->
+  <path d="M414 156H467 M414 180H467 M414 204H467" class="matrix-loader-bp-guide"/>
+  <path d="M445 156H467 M456 156V180 M445 180H467" class="matrix-loader-bp-ruler"/>
+  <text x="480" y="174" class="matrix-loader-bp-label">2 px</text>
+  <path d="M456 180V204 M445 204H467 M467 192 495 224H509" class="matrix-loader-bp-ruler"/>
+  <text x="522" y="230" class="matrix-loader-bp-label">2 px</text>
+</svg>

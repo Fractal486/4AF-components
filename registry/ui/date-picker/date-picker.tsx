@@ -6,7 +6,6 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
   type ComponentProps,
   type ReactNode,
   type Ref,
@@ -14,15 +13,6 @@ import {
 import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/registry/ui/popover/popover";
-import {
-  Sheet,
-  SheetBody,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/registry/ui/sheet/sheet";
 import { Calendar, type CalendarProps, type DateRange } from "./calendar";
 import {
   datePickerTriggerVariants,
@@ -30,34 +20,16 @@ import {
 } from "./date-picker.variants";
 
 /**
- * A field that opens a calendar: a popover on desktop, a bottom sheet on phones.
+ * A field that opens a calendar in a popover on every device.
  *
- * Every piece of behaviour is borrowed. The popover is Base UI's Popover and the phone
- * sheet is Base UI's Dialog (both through this library's own components, so they open and
- * close exactly like every other overlay here); the grid is react-day-picker. This file
- * only decides which surface to use, owns the value, and closes once a choice is complete.
+ * The popover uses Base UI through this library's Popover; the grid uses
+ * react-day-picker. This file owns the value and closes once a choice is complete.
  *
  * The panel never opens with nothing ready: focus lands on the selected day, or on today
  * when nothing is chosen, so the arrow keys start somewhere visible and Enter has an answer.
  * Base UI owns that initial focus (via `initialFocus`) rather than react-day-picker's
  * `autoFocus`, so there's one owner and no race between the two.
  */
-
-const phoneQuery = "(max-width: 639px)";
-
-function subscribePhone(onChange: () => void) {
-  if (typeof window.matchMedia !== "function") return () => {};
-  const media = window.matchMedia(phoneQuery);
-  media.addEventListener("change", onChange);
-  return () => media.removeEventListener("change", onChange);
-}
-
-const getPhone = () =>
-  typeof window.matchMedia === "function" ? window.matchMedia(phoneQuery).matches : false;
-
-function useIsPhone() {
-  return useSyncExternalStore(subscribePhone, getPhone, () => false);
-}
 
 /**
  * Day / month / year in numbers, zero-padded, in that order in every locale: 19 / 10 / 2026.
@@ -120,7 +92,7 @@ interface DatePickerSharedProps
   onOpenChange?: (open: boolean) => void;
   /** Shown in the trigger while nothing is chosen. */
   placeholder?: string;
-  /** The panel's accessible name, and the sheet's visible title on phones. */
+  /** The popover's accessible name. */
   title?: string;
   /**
    * BCP 47 locale for the trigger's `medium` label. Pass `calendarProps.locale` to localise the
@@ -177,7 +149,6 @@ function DatePickerShell({
   disabled,
   ...props
 }: DatePickerShellProps) {
-  const phone = useIsPhone();
   const panelRef = useRef<HTMLDivElement>(null);
   const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
   const [month, setMonth] = useState<Date>();
@@ -260,31 +231,6 @@ function DatePickerShell({
     ) : null;
 
   const hidden = name !== undefined ? <input type="hidden" name={name} value={hiddenValue ?? ""} /> : null;
-
-  if (phone) {
-    return (
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger {...triggerProps} />
-        {hidden}
-        <SheetContent
-          side="bottom"
-          ref={panelRef}
-          initialFocus={() => focusActiveDay(panelRef.current)}
-          className="h-auto"
-        >
-          <SheetHeader>
-            <SheetTitle>{title}</SheetTitle>
-          </SheetHeader>
-          <SheetBody data-slot="date-picker-content" className="flex justify-center pb-5">
-            {children(close, navigation)}
-          </SheetBody>
-          {todayButton || clearButton ? (
-            <SheetFooter className="flex-row pt-0">{todayButton}{clearButton}</SheetFooter>
-          ) : null}
-        </SheetContent>
-      </Sheet>
-    );
-  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

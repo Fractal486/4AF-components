@@ -253,7 +253,7 @@ export default async function IndexPage() {
             </dl>
           </Section>
 
-          <Section id="install" title="Install">
+          <Section id="install" title="Install" className="border-t-0">
             <p className={PROSE}>
               Install any component with the shadcn CLI. The theme, the shared utilities, and the
               components it builds on come with it.

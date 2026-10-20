@@ -1463,7 +1463,7 @@
     {
       "name": "date-picker",
       "type": "registry:ui",
-      "description": "Date and date-range fields with a desktop popover, mobile sheet, medium or numeric date labels, and a standalone Calendar with a month / year picker.",
+      "description": "Date and date-range fields with a popover and consistent sizing on every device, medium or numeric date labels, and a standalone Calendar with a month / year picker.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/date-picker (Markdown: https://4af.selfsimilar.dev/docs/date-picker.md)",
       "dependencies": [
         "@base-ui/react",
@@ -1475,8 +1475,7 @@
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/button.json",
-        "https://4af.selfsimilar.dev/r/popover.json",
-        "https://4af.selfsimilar.dev/r/sheet.json"
+        "https://4af.selfsimilar.dev/r/popover.json"
       ],
       "files": [
         {
