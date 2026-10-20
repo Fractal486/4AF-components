@@ -1,9 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { House, Moon, Sun, ScanEye } from "lucide-react";
+import { House, Moon, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { setDemoRevealsEnabled, useDemoRevealsEnabled } from "@/lib/demo-reveal-preference";
 import { useDocsSearch } from "fumadocs-core/search/client";
 import { staticClient } from "fumadocs-core/search/client/orama-static";
 import { useI18n } from "fumadocs-ui/contexts/i18n";
@@ -25,7 +24,6 @@ export default function SiteSearchDialog(props: SharedProps) {
   const router = useRouter();
   const { locale } = useI18n();
   const { resolvedTheme, setTheme } = useTheme();
-  const revealsEnabled = useDemoRevealsEnabled();
   const search = useDocsSearch({ client: staticClient({ locale }) });
   const items = useMemo(() => {
     const words = search.search.trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -53,17 +51,8 @@ export default function SiteSearchDialog(props: SharedProps) {
         node: <span className="flex items-center gap-2"><Icon className="size-4" aria-hidden />{label}</span>,
         onSelect: () => setTheme(theme),
       }));
-    const revealLabel = `${revealsEnabled ? "Disable" : "Enable"} demo reveal animations`;
-    const revealActions = words.every((word) => `${revealLabel} motion effects`.toLowerCase().includes(word))
-      ? [{
-        id: "toggle-demo-reveals",
-        type: "action" as const,
-        node: <span className="flex items-center gap-2"><ScanEye className="size-4" aria-hidden />{revealLabel}</span>,
-        onSelect: () => setDemoRevealsEnabled(!revealsEnabled),
-      }]
-      : [];
-    return [...home, ...actions, ...revealActions, ...(search.data?.items ?? [])];
-  }, [search.search, search.data, resolvedTheme, setTheme, revealsEnabled, router]);
+    return [...home, ...actions, ...(search.data?.items ?? [])];
+  }, [search.search, search.data, resolvedTheme, setTheme, router]);
 
   return (
     <SearchDialog {...search} {...props}>

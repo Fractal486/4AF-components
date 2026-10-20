@@ -3,7 +3,6 @@
 import { RotateCcw } from "lucide-react";
 import { Fragment, useEffect, useState } from "react";
 import { Controls } from "@/inspector/controls";
-import { GenerationDemo } from "@/inspector/entries/generation-demo";
 import {
   defineEntry,
   initialValues,
@@ -72,7 +71,7 @@ const LOADER_DEMOS = new Set([
   "button", "action-button", "action-toggle", "copy-button", "delete-button",
   "alert", "badge", "dropdown-menu", "command-palette", "selection-toolbar",
 ]);
-// Sizing belongs to the demo shell; every entry uses the same reveal.
+// Sizing belongs to the demo shell.
 const DEMO_WIDTHS: Partial<Record<ComponentDemoName, string>> = {
   input: "max-w-sm", textarea: "max-w-sm", slider: "max-w-sm",
   progress: "max-w-sm", skeleton: "max-w-sm",
@@ -94,9 +93,7 @@ function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
   const hasLoaderSetting = LOADER_DEMOS.has(entry.slug);
   const hasControls = Object.keys(entry.controls).length > 0;
   const isAppShell = entry.slug === "sidebar";
-  const isScrambleText = entry.slug === "scramble-text";
-  const isBlurText = entry.slug === "blur-text";
-  const replayable = isScrambleText || isBlurText;
+  const replayable = entry.slug === "scramble-text" || entry.slug === "blur-text";
   const demoWidth = DEMO_WIDTHS[entry.slug as ComponentDemoName];
   const settingsKey = JSON.stringify([values, loader]);
 
@@ -107,8 +104,6 @@ function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
         className={cn(
           "relative isolate grid h-[42rem] min-w-0 grid-rows-[minmax(0,1fr)_auto] items-center justify-items-center gap-8 overflow-hidden rounded-xl bg-background p-6 shadow-border",
           isAppShell && "min-h-0 items-stretch justify-items-stretch gap-3 p-3",
-          // Reserve the bottom row for the replay control.
-          "pb-14",
         )}
       >
         <div
@@ -132,11 +127,7 @@ function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
             </Tooltip>
           )}
           <LoaderProvider loader={loader === "ascii" ? <AsciiLoader /> : undefined}>
-            <GenerationDemo
-              key={entry.slug}
-              name={entry.name}
-              contentKey={settingsKey}
-              loading={entry.slug === "table" && values.loading === true}
+            <div
               className={cn(
                 "flex min-w-0 max-w-full flex-col items-center",
                 demoWidth && "w-full",
@@ -144,20 +135,17 @@ function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
                 (entry.slug === "table" || entry.slug === "data-table" || entry.slug === "collapsible") && "self-start",
                 isAppShell && "h-full min-h-0 items-stretch",
               )}
-              targetClassName={cn(
-                "flex min-w-0 w-fit max-w-full items-center justify-center",
-                demoWidth && "w-full",
-                isAppShell && "h-full min-h-0 items-stretch",
-              )}
             >
-              {(revealed) => (
-                // Blur Text plays on mount, so it remounts once the demo is revealed to play
-                // where it can be seen; Scramble Text waits on its interval instead.
-                <Fragment key={`${settingsKey}-${replayKey}-${isBlurText && revealed}`}>
-                  {entry.render(isScrambleText && !revealed ? { ...values, intervalMs: 0 } : values)}
-                </Fragment>
-              )}
-            </GenerationDemo>
+              <div
+                className={cn(
+                  "flex min-w-0 w-fit max-w-full items-center justify-center",
+                  demoWidth && "w-full",
+                  isAppShell && "h-full min-h-0 items-stretch",
+                )}
+              >
+                <Fragment key={`${settingsKey}-${replayKey}`}>{entry.render(values)}</Fragment>
+              </div>
+            </div>
           </LoaderProvider>
         </div>
         {hasControls || hasLoaderSetting ? (

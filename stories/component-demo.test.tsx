@@ -1,11 +1,7 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
-import type { ReactNode } from "react";
 import { vi } from "vitest";
 import { ComponentDemo } from "./component-demo";
 
-vi.mock("@/inspector/entries/generation-demo", () => ({
-  GenerationDemo: ({ children }: { children: (revealed: boolean) => ReactNode }) => children(true),
-}));
 vi.mock("@/inspector/entries/input", () => { throw new Error("Download failed"); });
 vi.mock("@/inspector/entries/action-button", () => { throw new Error("Background download failed"); });
 vi.mock("@/inspector/entries/action-toggle", () => ({

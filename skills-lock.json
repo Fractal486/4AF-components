@@ -120,12 +120,6 @@
       "sourceType": "github",
       "skillPath": ".agents/skills/skill-doctor/SKILL.md",
       "computedHash": "ad386c03191e593232308eafc8127a52acabb5f51f669430a3b3b4b83b1ed934"
-    },
-    "transitions-ui-generation": {
-      "source": "Jakubantalik/transitions.dev",
-      "sourceType": "github",
-      "skillPath": "skills/transitions-ui-generation/SKILL.md",
-      "computedHash": "b91545f12db241c2712f0b3f8edbb5d228c89ad4eb593a74a12dc6f3e8bfc4a7"
     }
   }
 }

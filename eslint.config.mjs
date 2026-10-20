@@ -12,8 +12,6 @@ const config = defineConfig([
   globalIgnores([
     ".next/**", "out/**", ".wrangler/**", "node_modules/**", "_incoming/**", "next-env.d.ts",
     ".agents/skills/**/assets/**", ".claude/skills/**/assets/**",
-    // Third-party runtimes, kept as published.
-    "inspector/vendor/**", ".agents/skills/transitions-ui-generation/**",
   ]),
   {
     // The firewall: the library must never reach into the site that displays it.
