@@ -28,6 +28,13 @@ export function publicInstallCommand(name: string) {
   return `npx shadcn@latest add ${registryItemUrl(name)}`;
 }
 
+/**
+ * Installs the 4AF agent skill with the skills.sh CLI, from the library's own repository.
+ * `--skill` picks it out: the repository also holds the blueprint-drawing skill used to
+ * build the site.
+ */
+export const SKILL_INSTALL_COMMAND = "npx skills add Fractal486/4AF-components --skill 4af-components";
+
 /** A prompt for a coding agent, copied from the landing page. */
 export const AGENT_PROMPT = [
   `Use the 4AF React component library (${SITE_URL}).`,
@@ -36,4 +43,5 @@ export const AGENT_PROMPT = [
   `Before using a component, read its page at ${SITE_URL}/docs/<name>.md.`,
   `Install components with the shadcn CLI: npx shadcn@latest add ${SITE_URL}/r/<name>.json`,
   "(run it with --dry-run first to preview the changes).",
+  `Optionally, install the 4AF agent skill, which packages this workflow and a component chooser: ${SKILL_INSTALL_COMMAND}`,
 ].join(" ");

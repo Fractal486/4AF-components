@@ -1,5 +1,5 @@
 import { siteNav } from "@/lib/site-nav";
-import { SITE_URL } from "@/lib/site";
+import { SITE_URL, SKILL_INSTALL_COMMAND } from "@/lib/site";
 import { source } from "@/lib/source";
 
 export const revalidate = false;
@@ -29,8 +29,9 @@ export function GET() {
     `npx shadcn@latest add ${SITE_URL}/r/<name>.json`,
     "```",
     "",
-    "Optional: a 4AF agent skill packages this workflow and a component chooser. Download",
-    `it from \`${SITE_URL}/api/agent-skill/download\` (a zip of the skill folder) or read`,
+    "Optional: a 4AF agent skill packages this workflow and a component chooser. Install it",
+    `with \`${SKILL_INSTALL_COMMAND}\`, download it from`,
+    `\`${SITE_URL}/api/agent-skill/download\` (a zip of the skill folder), or read`,
     `\`${SITE_URL}/docs/reference/agent-skill/skill.md\`.`,
     "",
     `Each component's documentation, including its install command and a usage example, is at`,

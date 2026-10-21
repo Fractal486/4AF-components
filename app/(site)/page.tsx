@@ -1,20 +1,18 @@
 import Image from "next/image";
 import type { Metadata } from "next";
 import Link from "next/link";
-import type { ComponentProps, ReactNode } from "react";
-import { highlightSource } from "@/components/landing/highlight-source";
+import type { ReactNode } from "react";
 import { Github } from "lucide-react";
 import { InlineLink } from "@/components/inline-link";
 import { AsciiFooter } from "@/components/landing/ascii-footer";
-import { FileBrowser } from "@/components/landing/file-browser";
 import { InstallCommand } from "@/components/landing/install-command";
 import { RevealGate } from "@/components/landing/reveal";
-import { installedFiles } from "@/components/landing/install-files";
 import { MobileToc } from "@/components/site/mobile-toc";
 import { PageFrame } from "@/components/site/page-frame";
 import { componentCount, registryComponents } from "@/lib/component-catalog";
 import { REPOSITORY } from "@/lib/site-nav";
-import { AGENT_PROMPT, pageAlternates } from "@/lib/site";
+import { AGENT_PROMPT, SKILL_INSTALL_COMMAND, pageAlternates } from "@/lib/site";
+import { DocsCodeBlock } from "@/components/docs-code-block";
 import { cn } from "@/registry/lib/cn";
 import { BlurText } from "@/registry/ui/blur-text/blur-text";
 import { Button } from "@/registry/ui/button/button";
@@ -48,7 +46,7 @@ const PRINCIPLES = [
   },
 ] as const;
 
-// Every installable component, starting with the button whose files are shown below.
+// Every installable component, starting with the button.
 const INSTALL_NAMES = [
   "button",
   ...registryComponents.map(({ name }) => name).filter((name) => name !== "button"),
@@ -82,26 +80,7 @@ function Section({
   );
 }
 
-/** A figure allowed to run wider than the reading column. */
-function Wide({ className, ...props }: ComponentProps<"div">) {
-  return <div className={cn("mt-3 max-w-225", className)} {...props} />;
-}
-
-async function installFiles() {
-  const files = await installedFiles("button");
-  return Promise.all(
-    files.map(async ({ path, code, lang }) => ({
-      path,
-      lines: code.trimEnd().split("\n").length,
-      // Highlight once at build time and keep the inert tokens out of React hydration.
-      code: <div dangerouslySetInnerHTML={{ __html: await highlightSource(code, lang) }} />,
-    })),
-  );
-}
-
-export default async function IndexPage() {
-  const files = await installFiles();
-
+export default function IndexPage() {
   const toc = SECTIONS.map(({ id, title }, index) => ({
         id,
         title: (
@@ -259,10 +238,24 @@ export default async function IndexPage() {
               components it builds on come with it.
             </p>
             <InstallCommand names={INSTALL_NAMES} />
-            <p className={cn(PROSE, "mt-4")}>Installing the button writes these files:</p>
-            <Wide className="mt-0">
-              <FileBrowser files={files} />
-            </Wide>
+            <p className={cn(PROSE, "mt-4")}>
+              Coding agents can start at{" "}
+              <InlineLink href="/llms.txt">
+                /llms.txt
+              </InlineLink>
+              , which has these commands and links every page as Markdown. The{" "}
+              <InlineLink href="/docs/reference/agent-skill">
+                agent skill
+              </InlineLink>{" "}
+              packages the same workflow for them:
+            </p>
+            <div className="mt-3 max-w-180">
+              <DocsCodeBlock className="my-0">
+                <pre className="min-w-full w-max px-4 pr-14 font-mono text-xs leading-6">
+                  <code>{SKILL_INSTALL_COMMAND}</code>
+                </pre>
+              </DocsCodeBlock>
+            </div>
             <p className={cn(PROSE, "mt-4")}>
               Add <code className="font-mono text-sm">--dry-run</code> to see every change before
               anything is written. Short names, browsing the catalog, and updating are covered in{" "}
@@ -270,13 +263,6 @@ export default async function IndexPage() {
                 Installation
               </InlineLink>
               .
-            </p>
-            <p className={cn(PROSE, "mt-4")}>
-              Coding agents can start at{" "}
-              <InlineLink href="/llms.txt">
-                /llms.txt
-              </InlineLink>
-              , which has these commands and links every page as Markdown.
             </p>
           </Section>
 

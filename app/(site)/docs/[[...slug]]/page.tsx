@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, ArrowRight, Maximize2 } from "lucide-react";
 import { getMDXComponents } from "@/components/mdx";
-import { DownloadSkillButton } from "@/components/download-skill-button";
 import { InlineLink } from "@/components/inline-link";
 import { PageFrame } from "@/components/site/page-frame";
 import { siblings, siteNav } from "@/lib/site-nav";
@@ -83,7 +82,6 @@ export default async function Page({ params }: DocsPageProps) {
                 </a>
               </Button>
             ) : null}
-            {page.url === "/docs/reference/agent-skill" ? <DownloadSkillButton /> : null}
           </div>
         </header>
 
