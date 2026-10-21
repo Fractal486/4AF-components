@@ -39,9 +39,13 @@ on the selection, so the chip names a filter only once one is set:
 `SelectTrigger` also accepts an optional `label`, rendered as a dimmed prefix before the value.
 For example, `label="Fruit"` displays `Fruit: Banana`.
 
-When `SelectContent` has no explicit `width`, it follows the trigger: default and ghost triggers
-keep a trigger-width panel, while plain triggers use content width — the longest option label plus
-the reserved checkmark slot. Set `width="trigger"` or `width="content"` to override that default.
+When `SelectContent` has no explicit `width`, it follows the trigger: default and ghost
+`SelectTrigger`s keep a trigger-width panel, while plain triggers and every `SelectSortTrigger`
+use content width: the longest option label plus the reserved checkmark slot, at least 200px.
+Nested `SelectSubContent` panels size the same way. Set `width="trigger"` or `width="content"` to override that default.
+
+When `SelectContent` has no explicit `align`, it uses `end` for a trigger pushed to the end of its
+row and `start` otherwise, measured each time the panel opens.
 
 `SelectContent` opens with a row already active: the current selection (the most recent enabled
 one in a multi-select), or the first enabled row when nothing is selected. Typing moves the

@@ -156,6 +156,7 @@ describe("AlignedSelect", () => {
     // Plain panels use their longest row plus the reserved check slot; Base UI still owns the
     // selected-row alignment inside that content-sized positioner.
     expect(positioner.className).toContain("w-max");
+    expect(positioner.className).toContain("min-w-50");
     expect(positioner.className).not.toContain("w-[var(--anchor-width)]");
   });
 

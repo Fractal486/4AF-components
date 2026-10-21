@@ -53,7 +53,7 @@ export function SelectContent({
   children,
   sideOffset = 6,
   side = "bottom",
-  align = "start",
+  align: alignProp,
   width: widthProp,
   searchable = false,
   searchPosition = "top",
@@ -71,11 +71,17 @@ export function SelectContent({
   sideOffset?: number;
   /** Which side of the trigger to open on. Base UI still collision-flips from here. */
   side?: ComponentProps<typeof BaseSelect.Positioner>["side"];
+  /**
+   * Which trigger edge the panel lines up with. By default, the edge that holds still as the
+   * trigger's text changes: `end` for a trigger pushed to the end of its row, `start`
+   * otherwise. Read when the panel opens.
+   */
   align?: ComponentProps<typeof BaseSelect.Positioner>["align"];
   /**
    * `trigger` keeps the panel the trigger's width (a default or ghost field select); `content`
-   * sizes it to its own rows — the longest label plus the reserved check slot. When omitted,
-   * this follows the trigger: `plain` uses `content`, while `default` and `ghost` use `trigger`.
+   * sizes it to its own rows — the longest label plus the reserved check slot — and at least
+   * 200px. When omitted, this follows the trigger: `plain` and `SelectSortTrigger` use
+   * `content`, `default` and `ghost` use `trigger`.
    */
   width?: "trigger" | "content";
   /** Adds a plain filter field beside the list, separated from the options by a hairline. */
@@ -124,9 +130,11 @@ export function SelectContent({
     setPanelSearch,
     searchQuery,
     setSearchQuery,
-    triggerVariant,
+    triggerSizing,
+    panelEdge,
   } = useContext(SelectContext);
-  const width = widthProp ?? (triggerVariant === "plain" ? "content" : "trigger");
+  const width = widthProp ?? (triggerSizing === "content" ? "content" : "trigger");
+  const align = alignProp ?? panelEdge;
   const listRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   // Whether real focus on a row is something the reader asked for. In a searchable panel
@@ -330,8 +338,8 @@ export function SelectContent({
           "z-50 outline-none",
           // `trigger` keeps the panel the button's width (the default field select);
           // `content` sizes it to its own rows — the longest label plus the reserved check
-          // slot — for a narrow, borderless trigger.
-          width === "trigger" ? "w-[var(--anchor-width)]" : "w-max",
+          // slot — for a trigger sized to its own text, and never narrower than 200px.
+          width === "trigger" ? "w-[var(--anchor-width)]" : "w-max min-w-50",
         )}
       >
         {/* The animation is driven off the `open` state, not Motion's mount: Base UI keeps

@@ -1,6 +1,5 @@
 import { createContext, useContext, type MouseEvent, type ReactNode } from "react";
 import type { SelectSize } from "./select.shared";
-import type { SelectTriggerVariant } from "./select.variants";
 
 interface SelectContextValue {
   open: boolean;
@@ -12,8 +11,22 @@ interface SelectContextValue {
   registerNestedPanel: (node: HTMLElement | null) => void;
   isNestedPanelTarget: (target: EventTarget | null) => boolean;
   size: SelectSize;
-  triggerVariant: SelectTriggerVariant;
-  setTriggerVariant: (variant: SelectTriggerVariant) => void;
+  /**
+   * How the trigger is sized, registered by the trigger: `content` when its width follows
+   * its own text (a `plain` trigger, the sort/filter chip), `field` when the layout sets it.
+   * A content-sized trigger changes width as the selection does, so its panel sizes to its
+   * own rows rather than following it.
+   */
+  triggerSizing: "field" | "content";
+  setTriggerSizing: (sizing: "field" | "content") => void;
+  /** Registers the trigger element; `SelectTrigger` and `SelectSortTrigger` call it. */
+  setTriggerNode: (node: HTMLElement | null) => void;
+  /**
+   * The trigger edge the panel lines up with unless `SelectContent` sets `align`: the one
+   * that holds still as the trigger's text changes, measured each time the panel opens.
+   */
+  panelEdge: "start" | "end";
+
   /** The current selection, always as an array (one entry for single-select). */
   values: unknown[];
   registerIcon: (value: unknown, icon: ReactNode | undefined) => void;
@@ -53,8 +66,11 @@ export const SelectContext = createContext<SelectContextValue>({
   registerNestedPanel: () => {},
   isNestedPanelTarget: () => false,
   size: "sm",
-  triggerVariant: "default",
-  setTriggerVariant: () => {},
+  triggerSizing: "field",
+  setTriggerSizing: () => {},
+  setTriggerNode: () => {},
+  panelEdge: "start",
+
   values: [],
   registerIcon: () => {},
   unregisterIcon: () => {},

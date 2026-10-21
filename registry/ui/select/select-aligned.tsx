@@ -26,7 +26,8 @@ import {
  * The default and ghost panels take the trigger's width and are positioned so the selected row lands
  * exactly where the trigger's value was — press it and the current choice doesn't move, the
  * other options simply appear around it. A plain trigger instead lets the panel shrink-wrap to
- * its longest row plus the reserved check slot while keeping that same selected-row alignment.
+ * its longest row plus the reserved check slot, at least 200px, while keeping that same
+ * selected-row alignment.
  * It's the macOS pop-up button, and the reason to reach for it over the plain Select is that it
  * keeps the eye where it already is: nothing travels, so there's nothing to re-find.
  *
@@ -343,7 +344,7 @@ export function AlignedSelectTrigger({
 export interface AlignedSelectContentProps extends ComponentProps<typeof BaseSelect.Popup> {
   /**
    * `trigger` keeps the panel the trigger's width; `content` sizes it to the longest row plus
-   * the reserved check slot. When omitted, this follows the trigger variant: `plain` uses
+   * the reserved check slot, at least 200px. When omitted, this follows the trigger variant: `plain` uses
    * `content`, while `default` and `ghost` use `trigger`.
    */
   width?: "trigger" | "content";
@@ -439,7 +440,7 @@ export function AlignedSelectContent({
         alignItemWithTrigger
         className={cn(
           "z-50 outline-none",
-          width === "trigger" ? "w-[var(--anchor-width)]" : "w-max",
+          width === "trigger" ? "w-[var(--anchor-width)]" : "w-max min-w-50",
         )}
         {...positionerProps}
       >

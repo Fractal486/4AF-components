@@ -8,6 +8,13 @@ import {
   AlignedSelectItem,
   AlignedSelectTrigger,
 } from "@/registry/ui/select/select-aligned";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/registry/ui/select/select";
 import { Slider } from "@/registry/ui/slider/slider";
 import { Tabs, TabsList, TabsTab } from "@/registry/ui/tabs/tabs";
 import { cn } from "@/registry/lib/cn";
@@ -181,6 +188,56 @@ function Control({
             ))}
           </AlignedSelectContent>
         </AlignedSelect>
+      </div>
+    );
+  }
+
+  if (def.kind === "multiselect") {
+    const labelId = `${id}-label`;
+    const selected = value as readonly string[];
+
+    // The library's own multi-select. Its trigger names the picks rather than counting them:
+    // with three options at most, "Horizontal, Outline" says more than "2 selected".
+    return (
+      <div className={CONTROL_ROW}>
+        <span id={labelId} className="min-w-0 text-sm text-muted-foreground">
+          {label}
+        </span>
+        <Select<string, true>
+          multiple
+          value={[...selected]}
+          onValueChange={(next) =>
+            // Kept in the schema's order, whatever order they were picked in.
+            onChange(def.options.filter((option) => next.includes(option)))
+          }
+        >
+          <SelectTrigger
+            aria-labelledby={labelId}
+            variant="plain"
+            className="ml-auto max-w-full shrink-0"
+          >
+            <SelectValue>
+              {(picked: unknown) => {
+                const options = Array.isArray(picked) ? (picked as string[]) : [];
+                return options.length === 0 ? (
+                  <span className="text-muted-foreground">None</span>
+                ) : (
+                  def.options
+                    .filter((option) => options.includes(option))
+                    .map(humanizeLabel)
+                    .join(", ")
+                );
+              }}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {def.options.map((option) => (
+              <SelectItem key={option} value={option}>
+                {humanizeLabel(option)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     );
   }

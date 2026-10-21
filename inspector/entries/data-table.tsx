@@ -21,7 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/registry/ui/dropdown-menu/dropdown-menu";
-import { bool, defineEntry, select } from "../schema";
+import { bool, defineEntry, multi, select } from "../schema";
 
 const SIZES = ["sm", "md"] as const;
 
@@ -75,18 +75,24 @@ export const dataTableEntry = defineEntry({
   controls: {
     size: select(SIZES, "sm"),
     selectable: bool(true, "Checkbox column"),
-    selectionBar: bool(true, "Selection action row"),
+    // The action row only appears over a checkbox column, so it greys out without one.
+    selectionBar: bool(true, "Selection action row", (values) => !values.selectable),
     actionColumn: bool(true, "Row actions column"),
-    outline: bool(false, "Outline"),
-    verticalLines: bool(false, "Vertical lines"),
-    horizontalLines: bool(true, "Horizontal lines"),
+    lines: multi(["horizontal", "vertical", "outline"], ["horizontal"], "Lines"),
     scroll: bool(true, "Bounded height"),
     loading: bool(false, "Loading"),
     footer: bool(false, "Footer"),
     caption: bool(true, "Caption"),
   },
-  render(values) {
-    return <DataTableDemo {...values} />;
+  render({ lines, ...values }) {
+    return (
+      <DataTableDemo
+        {...values}
+        outline={lines.includes("outline")}
+        verticalLines={lines.includes("vertical")}
+        horizontalLines={lines.includes("horizontal")}
+      />
+    );
   },
 });
 

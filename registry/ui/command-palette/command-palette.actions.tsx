@@ -30,8 +30,8 @@ import type { CommandGroup, CommandItem, CommandPanelActionsProps } from "./comm
  * A palette *inside* the palette — the contextual action menu for a panel page.
  *
  * It's the Select with its in-panel search field, not a bespoke popup: `searchable` gives
- * the filter field, `width="content"` sizes the panel to its rows rather than the tiny
- * trigger, and `autoFocusFirstItem={false}` is the documented switch for menu-like uses.
+ * the filter field, `width="content"` sizes the panel to its rows (at least 200px) rather
+ * than the tiny trigger, and `autoFocusFirstItem={false}` is the documented switch for menu-like uses.
  * Base UI owns the anchoring, the dismiss, and the collision flip — the menu hangs off a
  * trigger sitting in the footer, so `side="top"` opens it upward into the panel.
  *
@@ -214,7 +214,6 @@ export function CommandPanelActions({
         autoFocusFirstItem
         searchPlaceholder={searchPlaceholder}
         emptyMessage={emptyMessage}
-        className="min-w-56"
       >
         <ActionRowContext.Provider value={rowScope}>
           <CommandActionSections groups={actionGroups} />

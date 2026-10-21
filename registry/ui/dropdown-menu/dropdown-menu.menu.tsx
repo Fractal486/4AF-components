@@ -33,7 +33,7 @@ export function DropdownMenuSub({
 
 const popupClassName = cn(
   // Same floating-panel material as the Select/Popover panels.
-  "z-50 max-h-[var(--available-height)] min-w-[9rem] overflow-y-auto rounded-md border border-border bg-surface p-1 text-foreground shadow-overlay-drop outline-none",
+  "z-50 max-h-[var(--available-height)] min-w-50 overflow-y-auto rounded-md border border-border bg-surface p-1 text-foreground shadow-overlay-drop outline-none",
   "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent]",
   "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent",
   "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong",

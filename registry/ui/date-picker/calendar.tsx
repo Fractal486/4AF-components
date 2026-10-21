@@ -654,9 +654,11 @@ function CalendarMonthGrid({ className, ...props }: MonthGridProps) {
 }
 
 // The chosen month and year sit on a light grey chip, the outlined tabs' selected fill, with
-// full-ink text; hover is a fainter wash so it never reads as a second selection.
+// full-ink text; hover is a fainter wash so it never reads as a second selection. Base UI
+// renders each row as a span, so it would take the text cursor and selectable text; the
+// rows are controls, like the day buttons, and get their default arrow instead.
 const pickerRowClassName = cn(
-  "flex h-7 w-full shrink-0 items-center justify-center rounded-[calc(var(--cell-radius)-1px)] text-xs tabular-nums text-muted-foreground",
+  "flex h-7 w-full shrink-0 cursor-default items-center justify-center rounded-[calc(var(--cell-radius)-1px)] text-xs tabular-nums text-muted-foreground select-none",
   "outline-none transition-[background-color,color] duration-(--duration-fast) ease-out",
   "hover:bg-muted/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
   "data-[checked]:bg-muted data-[checked]:font-medium data-[checked]:text-foreground data-[checked]:hover:bg-muted",

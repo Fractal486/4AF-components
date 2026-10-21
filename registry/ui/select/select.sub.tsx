@@ -703,7 +703,7 @@ export function SelectSubContent({
             onPointerEnter={handlePointerEnter}
             onPointerLeave={handlePointerLeave}
             className={cn(
-              "max-h-[min(var(--available-height),18rem)] w-max overflow-y-auto rounded-md border border-border bg-surface p-1 text-foreground shadow-overlay-drop outline-none",
+              "max-h-[min(var(--available-height),18rem)] w-max min-w-50 overflow-y-auto rounded-md border border-border bg-surface p-1 text-foreground shadow-overlay-drop outline-none",
               SCROLLBAR,
               "origin-[var(--transform-origin)] blur-0 transition-[opacity,scale,filter] duration-(--duration-base) ease-out",
               "data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[starting-style]:blur-[3px]",

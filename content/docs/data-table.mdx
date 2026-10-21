@@ -32,7 +32,7 @@ Takes every [`Table`](/docs/table) prop and adds:
 | `defaultValue` | `readonly string[]` | `[]` | Selected row values, uncontrolled. |
 | `onValueChange` | `(value: string[]) => void` | — | Fired with the next selection. |
 | `selectAllLabel` | `string` | `"Select all rows"` | Names the select-all checkbox. |
-| `selectionBar` | `boolean` | `false` | Turn the header into an action row while anything is selected. |
+| `selectionBar` | `boolean` | `false` | Turn the header into an action row while anything is selected. Needs `selectable`; ignored without it. |
 | `selectionActions` | `ReactNode` | — | Buttons for the right end of that row. |
 | `actionColumn` | `boolean` | `false` | Adds the per-row actions column on the right. |
 | `actionColumnLabel` | `string` | `"Actions"` | Names that column for assistive technology. |

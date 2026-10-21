@@ -5,8 +5,7 @@ import { createChangeEventDetails } from "@base-ui/react/internals/createBaseUIE
 import { useCallback, useMemo, useRef, useState, type ComponentProps, type MouseEvent, type ReactNode } from "react";
 import { SelectContext } from "./select.context";
 import type { SelectSize } from "./select.shared";
-import { isEquivalentNode } from "./select.utils";
-import type { SelectTriggerVariant } from "./select.variants";
+import { isEquivalentNode, stillEdge } from "./select.utils";
 
 // Keep the installable component's public API at this entry point.
 export { SelectContent, type SelectFooterAction } from "./select.content";
@@ -124,7 +123,9 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : uncontrolled;
   const [searchQuery, setSearchQuery] = useState("");
-  const [triggerVariant, setTriggerVariant] = useState<SelectTriggerVariant>("default");
+  const [triggerSizing, setTriggerSizing] = useState<"field" | "content">("field");
+  const [triggerNode, setTriggerNode] = useState<HTMLElement | null>(null);
+  const [panelEdge, setPanelEdge] = useState<"start" | "end">("start");
   const nestedPanelNodesRef = useRef<Set<HTMLElement>>(new Set());
   const registerNestedPanel = useCallback((node: HTMLElement | null) => {
     if (node) {
@@ -428,9 +429,13 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
         details.cancel();
       }
       onOpenChange?.(next, details);
-      if (!isControlled && !details.isCanceled) setUncontrolled(next);
+      if (details.isCanceled) return;
+      // Measured as it opens and held until it closes, so the panel stays put while a
+      // multi-select's trigger grows and shrinks with each pick.
+      if (next && triggerNode) setPanelEdge(stillEdge(triggerNode));
+      if (!isControlled) setUncontrolled(next);
     },
-    [isControlled, isNestedPanelTarget, onOpenChange],
+    [isControlled, isNestedPanelTarget, onOpenChange, triggerNode],
   );
   const setOpen = useCallback(
     (nextOpen: boolean, details?: unknown) => {
@@ -463,8 +468,10 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
         registerNestedPanel,
         isNestedPanelTarget,
         size,
-        triggerVariant,
-        setTriggerVariant,
+        triggerSizing,
+        setTriggerSizing,
+        setTriggerNode,
+        panelEdge,
         values,
         registerIcon,
         unregisterIcon,

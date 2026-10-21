@@ -2,6 +2,7 @@
 
 import { Tooltip as BaseTooltip } from "@base-ui/react/tooltip";
 import { useEffect, useState } from "react";
+import { useBlueprintPreviewsEnabled } from "@/lib/blueprint-preview-preference";
 import { cn } from "@/registry/lib/cn";
 
 /** Shared by every rail link, so one card follows the pointer from label to label. */
@@ -90,10 +91,13 @@ function BlueprintPlayer({ url, play }: { url: string; play: number }) {
  */
 export function BlueprintCard({ handle }: { handle: BlueprintHandle }) {
   const [plays, setPlays] = useState(0);
+  // Switched in the search palette; disabled, the triggers stay plain links.
+  const enabled = useBlueprintPreviewsEnabled();
 
   return (
     <BaseTooltip.Root
       handle={handle}
+      disabled={!enabled}
       trackCursorAxis="both"
       disableHoverablePopup
       onOpenChange={(open) => {

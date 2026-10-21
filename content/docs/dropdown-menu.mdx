@@ -14,6 +14,9 @@ nested-select parts
 A Base UI menu with keyboard navigation, safe submenu pointer travel, keyboard shortcut hints,
 destructive rows, navigation submenus, and searchable single and multi-select subpanels.
 
+`DropdownMenuContent` and `DropdownMenuSubContent` are at least 200px wide and grow to fit
+longer rows; pass a `min-w-*` class in `className` to change the minimum.
+
 `DropdownMenu loader={<MySpinner />}` supplies the menu's loading indicator, including portalled
 rows. Omit it to inherit [LoaderProvider](/docs/reference/engineering#shared-loading-indicators),
 with `ClassicLoader` as the fallback. `DropdownMenuActionItem` and `DropdownMenuCheckboxItem` accept

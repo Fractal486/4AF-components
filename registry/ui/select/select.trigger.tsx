@@ -1,4 +1,5 @@
 import { cn } from "@/registry/lib/cn";
+import { useMergedRefs } from "@/registry/lib/refs";
 import { Select as BaseSelect } from "@base-ui/react/select";
 import { ChevronDown } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
@@ -82,18 +83,22 @@ export function SelectTrigger({
   outline,
   label,
   chevron = true,
+  ref,
   ...props
 }: SelectTriggerProps) {
-  const { open, size, setTriggerVariant } = useContext(SelectContext);
+  const { open, size, setTriggerSizing, setTriggerNode } = useContext(SelectContext);
+  const triggerRef = useMergedRefs<HTMLButtonElement>(setTriggerNode, ref);
   const reduceMotion = useReducedMotion();
   const resolvedVariant = variant ?? (outline === false ? "plain" : "default");
 
   useEffect(() => {
-    setTriggerVariant(resolvedVariant);
-  }, [resolvedVariant, setTriggerVariant]);
+    // `default` and `ghost` fill their row; `plain` is as wide as its text.
+    setTriggerSizing(resolvedVariant === "plain" ? "content" : "field");
+  }, [resolvedVariant, setTriggerSizing]);
 
   return (
     <BaseSelect.Trigger
+      ref={triggerRef}
       data-variant={resolvedVariant}
       className={cn(
         // `md` (34px) matches Button's default and the Input — a select beside either in a
@@ -167,15 +172,19 @@ export function SelectSortTrigger({
   outline = true,
   showValue = true,
   placeholder = "Any",
+  ref,
   ...props
 }: SelectSortTriggerProps) {
-  const { open, values, labelFor, size, setTriggerVariant } = useContext(SelectContext);
+  const { open, values, labelFor, size, setTriggerSizing, setTriggerNode } =
+    useContext(SelectContext);
+  const triggerRef = useMergedRefs<HTMLButtonElement>(setTriggerNode, ref);
   const reduceMotion = useReducedMotion();
   const resolvedVariant = variant ?? (outline === false ? "plain" : "default");
 
   useEffect(() => {
-    setTriggerVariant(resolvedVariant);
-  }, [resolvedVariant, setTriggerVariant]);
+    // The chip sizes to its label and picks in every variant, so it is always content-sized.
+    setTriggerSizing("content");
+  }, [setTriggerSizing]);
   const selected = values.map((v) => labelFor(v) ?? (typeof v === "string" ? v : String(v)));
   const isUnset = selected.length === 0;
   // With no label and no value shown, the chip is a bare icon button — the chevron would
@@ -185,6 +194,7 @@ export function SelectSortTrigger({
 
   return (
     <BaseSelect.Trigger
+      ref={triggerRef}
       data-variant={resolvedVariant}
       data-unset={isUnset || undefined}
       className={cn(

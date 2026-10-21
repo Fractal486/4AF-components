@@ -18,6 +18,12 @@ export type ControlDef =
       label?: string;
       disabledWhen?: DisabledWhen;
     }
+  | {
+      kind: "multiselect";
+      options: readonly string[];
+      defaultValue: readonly string[];
+      label?: string;
+    }
   | { kind: "boolean"; defaultValue: boolean; label?: string; disabledWhen?: DisabledWhen }
   | { kind: "text"; defaultValue: string; label?: string; placeholder?: string }
   | {
@@ -37,6 +43,8 @@ type ValueOf<C extends ControlDef> = C extends {
   options: readonly (infer O)[];
 }
   ? O
+  : C extends { kind: "multiselect"; options: readonly (infer O)[] }
+    ? readonly O[]
   : C extends { kind: "boolean" }
     ? boolean
     : C extends { kind: "text" }
@@ -65,6 +73,15 @@ export function select<const O extends readonly string[]>(
   disabledWhen?: DisabledWhen;
 } {
   return { kind: "select", options, defaultValue, label, disabledWhen };
+}
+
+/** Any number of the options, including none: related on/off settings in one row. */
+export function multi<const O extends readonly string[]>(
+  options: O,
+  defaultValue: readonly O[number][],
+  label?: string,
+): { kind: "multiselect"; options: O; defaultValue: readonly O[number][]; label?: string } {
+  return { kind: "multiselect", options, defaultValue, label };
 }
 
 export function bool(

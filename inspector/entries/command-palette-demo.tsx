@@ -80,7 +80,7 @@ function PaletteHeaderActions() {
           showValue={false}
           aria-label="Filter by status"
         />
-        <SelectContent width="content" clearable autoFocusFirstItem={false} className="min-w-36">
+        <SelectContent width="content" clearable autoFocusFirstItem={false}>
           <SelectItem value="active">Active</SelectItem>
           <SelectItem value="paused">Paused</SelectItem>
           <SelectItem value="archived">Archived</SelectItem>
@@ -92,7 +92,7 @@ function PaletteHeaderActions() {
           icon={<ArrowUpDown />}
           aria-label="Sort projects"
         />
-        <SelectContent width="content" autoFocusFirstItem={false} className="min-w-40">
+        <SelectContent width="content" autoFocusFirstItem={false}>
           {Object.entries(SORT_OPTIONS).map(([value, label]) => (
             <SelectItem key={value} value={value}>
               {label}

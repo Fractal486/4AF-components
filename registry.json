@@ -747,6 +747,7 @@
       "docs": "Docs: https://4af.selfsimilar.dev/docs/slider (Markdown: https://4af.selfsimilar.dev/docs/slider.md)",
       "dependencies": [
         "@base-ui/react",
+        "class-variance-authority",
         "lucide-react",
         "motion"
       ],
@@ -766,6 +767,11 @@
           "path": "registry/ui/slider/slider-geometry.ts",
           "type": "registry:ui",
           "target": "@ui/slider-geometry.ts"
+        },
+        {
+          "path": "registry/ui/slider/slider.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/slider.variants.ts"
         }
       ]
     },
@@ -1071,6 +1077,7 @@
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/refs.json",
         "https://4af.selfsimilar.dev/r/checkbox.json",
         "https://4af.selfsimilar.dev/r/button.json",
         "https://4af.selfsimilar.dev/r/input.json"

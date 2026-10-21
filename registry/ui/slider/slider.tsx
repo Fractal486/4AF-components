@@ -33,6 +33,14 @@ import {
   getSliderThumbDodged,
   type SliderSpan,
 } from "./slider-geometry";
+import {
+  sliderControlVariants,
+  sliderInlineVariants,
+  sliderRailVariants,
+  sliderThumbVariants,
+  sliderTickVariants,
+  sliderTicksVariants,
+} from "./slider.variants";
 
 /**
  * A slider.
@@ -81,13 +89,6 @@ const BAR_HIT_WIDTH = "w-6";
 const BAR_GRAB_STRETCH = 1.35;
 /** How much wider it grows: 2px to 3px, enough to read as taken hold of. */
 const BAR_GRAB_WIDEN = 1.5;
-
-// The bar's ticks read like a ruler: short marks, a taller one every few steps, and the
-// tallest at the midpoint. Heights per size, short to tall.
-const BAR_TICK_HEIGHTS = {
-  md: ["h-1.5", "h-2.5", "h-3.5"],
-  sm: ["h-1", "h-2", "h-3"],
-} as const;
 
 /**
  * A tick's ruler level: 2 at the midpoint, 1 every fifth step (or at the quarters when there
@@ -377,26 +378,24 @@ export interface SliderProps
   size?: "sm" | "md";
 }
 
-// Every size-dependent value in one place, keyed by shape then size, so the rail height
-// and rounding, the thumb, the pixel width the fill/tick maths needs, and the tick inset
-// (the thumb's travel inset) never drift out of step. `fillCapRadiusPx` is how far the fill
-// reaches past the thumb's centre — which is also the thumb's travel inset, so at either
-// end the fill still holds it — and `fillRadiusPx` rounds the fill's leading end. `rail`
-// positions the track within the control — `inset-0` fills a thick circle rail; a fixed height centres a thin rail so the
-// round thumb overhangs. `knob` rides a thin rail (4px for md, 2px for sm), so its rail reads as
-// a line the dot travels along rather than a track it sits in.
+// Every size-dependent pixel value in one place, keyed by shape then size: the numbers the
+// fill, tick and thumb maths needs. They describe the shapes drawn by `slider.variants.ts`
+// (a `bar` thumb 2px wide, `circle` 20px and 16px, `knob` 10px and 8px) and change with them.
+// `fillCapRadiusPx` is how far the fill reaches past the thumb's centre — which is also the
+// thumb's travel inset, so at either end the fill still holds it — and `fillRadiusPx` rounds
+// the fill's leading end. `tickHairline` gives the bar's ticks a device-pixel width.
 const DIMS = {
   circle: {
-    md: { control: "h-7", rail: "inset-0", thumb: "size-5 rounded-full", thumbPx: 20, thumbHeightPx: 20, fillCapRadiusPx: 14, fillRadiusPx: 14, tooltipSideOffset: 8, tickInset: "inset-x-3.5", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
-    sm: { control: "h-6", rail: "inset-0", thumb: "size-4 rounded-full", thumbPx: 16, thumbHeightPx: 16, fillCapRadiusPx: 12, fillRadiusPx: 12, tooltipSideOffset: 8, tickInset: "inset-x-3", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    md: { thumbPx: 20, thumbHeightPx: 20, fillCapRadiusPx: 14, fillRadiusPx: 14, tooltipSideOffset: 8, tickHairline: false },
+    sm: { thumbPx: 16, thumbHeightPx: 16, fillCapRadiusPx: 12, fillRadiusPx: 12, tooltipSideOffset: 8, tickHairline: false },
   },
   knob: {
-    md: { control: "h-5", rail: "inset-x-0 top-1/2 h-1 -translate-y-1/2", thumb: "size-2.5 rounded-full", thumbPx: 10, thumbHeightPx: 10, fillCapRadiusPx: 0, fillRadiusPx: 0, tooltipSideOffset: 8, tickInset: "inset-x-[5px]", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
-    sm: { control: "h-4", rail: "inset-x-0 top-1/2 h-0.5 -translate-y-1/2", thumb: "size-2 rounded-full", thumbPx: 8, thumbHeightPx: 8, fillCapRadiusPx: 0, fillRadiusPx: 0, tooltipSideOffset: 8, tickInset: "inset-x-1", tick: "size-1 rounded-full", tickCenterX: "-translate-x-1/2", tickHairline: false },
+    md: { thumbPx: 10, thumbHeightPx: 10, fillCapRadiusPx: 0, fillRadiusPx: 0, tooltipSideOffset: 8, tickHairline: false },
+    sm: { thumbPx: 8, thumbHeightPx: 8, fillCapRadiusPx: 0, fillRadiusPx: 0, tooltipSideOffset: 8, tickHairline: false },
   },
   bar: {
-    md: { control: "h-10", rail: "inset-0", thumb: "h-4 w-0.5 rounded-full", thumbPx: 2, thumbHeightPx: 16, fillCapRadiusPx: 8, fillRadiusPx: 0, tooltipSideOffset: -2, tickInset: "inset-x-2", tick: "rounded-none", tickCenterX: "", tickHairline: true },
-    sm: { control: "h-8", rail: "inset-0", thumb: "h-3 w-0.5 rounded-full", thumbPx: 2, thumbHeightPx: 12, fillCapRadiusPx: 8, fillRadiusPx: 0, tooltipSideOffset: 0, tickInset: "inset-x-2", tick: "rounded-none", tickCenterX: "", tickHairline: true },
+    md: { thumbPx: 2, thumbHeightPx: 16, fillCapRadiusPx: 8, fillRadiusPx: 0, tooltipSideOffset: -2, tickHairline: true },
+    sm: { thumbPx: 2, thumbHeightPx: 12, fillCapRadiusPx: 8, fillRadiusPx: 0, tooltipSideOffset: 0, tickHairline: true },
   },
 } as const;
 
@@ -416,25 +415,23 @@ const KNOB_GRAB_SCALE = {
 const DODGE_APPROACH_PX = 8;
 const DODGE_OPACITY = 0.15;
 
-// "In use" for the bar: hovered, dragged, or keyboard-focused. Focus means the slider's own
-// range input, not anything focused inside the control, so typing into the editable value
-// doesn't light up the thumb's ring or the ticks. The ticks fade in, the fill
-// steps up and the inline value comes to full ink; at rest the bar is just a rail and a fill.
-// The slow token, not the base one: these are ambient changes the hand didn't ask for, so they
-// ease in rather than snap with the cursor.
-const BAR_TICKS_IN_USE =
-  "opacity-0 transition-[opacity] duration-(--duration-slow) ease-out group-hover:opacity-100 group-data-[dragging-index]:opacity-100 group-has-[[type=range]:focus-visible]:opacity-100";
 // The fill colour. `--slider-fill` sets it from outside; by default it is the foreground at
 // 15%. The bar's in-use step mixes in 8% foreground, so a custom colour deepens (or, in the
 // dark theme, lightens) the same way the default grey steps up to about 20%.
 const FILL_COLOR =
   "[--slider-fill-rest:var(--slider-fill,color-mix(in_oklab,var(--color-foreground)_15%,transparent))] [--slider-fill-active:color-mix(in_oklab,var(--slider-fill-rest),var(--color-foreground)_8%)] bg-(color:--slider-fill-rest)";
+
+// "In use" for the bar: hovered, dragged, or keyboard-focused. Focus means the slider's own
+// range input, not anything focused inside the control, so typing into the editable value
+// doesn't light up the thumb's ring or the ticks. The ticks fade in (`sliderTicksVariants`),
+// the fill steps up and the inline value comes to full ink; at rest the bar is just a rail and
+// a fill. The slow token, not the base one: these are ambient changes the hand didn't ask
+// for, so they ease in rather than snap with the cursor.
 const BAR_FILL_IN_USE =
   "transition-[background-color] duration-(--duration-slow) ease-out group-hover:bg-(color:--slider-fill-active) group-data-[dragging-index]:bg-(color:--slider-fill-active) group-has-[[type=range]:focus-visible]:bg-(color:--slider-fill-active)";
 const INLINE_VALUE_IN_USE =
   "text-muted-foreground transition-[color] duration-(--duration-slow) ease-out group-hover:text-foreground group-data-[dragging-index]:text-foreground group-has-[[type=range]:focus-visible]:text-foreground";
 
-const INLINE_GUTTER = { md: "px-3", sm: "px-2.5" } as const;
 const NO_SPANS: readonly SliderSpan[] = [];
 
 export function Slider({
@@ -971,28 +968,15 @@ export function Slider({
             />
           );
         }}
-        className={cn(
-          "group relative flex w-full touch-none items-center select-none",
-          // Circle uses a thick rounded rail; bar uses a thin vertical handle.
-          dims.control,
-          disabled
-            ? "cursor-not-allowed opacity-50"
-            : isBar
-              ? "cursor-grab active:cursor-grabbing"
-              : isRtl
-                ? "cursor-w-resize"
-                : "cursor-e-resize",
-        )}
+        className={sliderControlVariants({
+          thumb,
+          size,
+          cursor: disabled ? "disabled" : isBar ? "grab" : isRtl ? "resize-rtl" : "resize-ltr",
+        })}
       >
         {/* The rail — clipped to its own shape so the fill rounds with it. The visual thumb
             sits above this clip, while the knob can still overhang its thin rail. */}
-        <div
-          className={cn(
-            "absolute overflow-hidden bg-muted",
-            dims.rail,
-            isBar ? "rounded-md" : "rounded-full",
-          )}
-        >
+        <div className={sliderRailVariants({ thumb, size })}>
           {/* Fill — the single bar's is a whole box slid along the rail, its straight edge
               the value (see `faderFillX`); otherwise a clip that reaches past a thumb it
               holds, rounded for the circle, or ends at the thumb's centre (knob). */}
@@ -1023,12 +1007,7 @@ export function Slider({
           <div
             aria-hidden
             data-slot="slider-ticks"
-            className={cn(
-              "pointer-events-none absolute inset-y-0",
-              followFillPx > 0 ? "inset-x-0" : dims.tickInset,
-              // The bar shows its marks only while it's in use; at rest it's a rail and a fill.
-              isBar && BAR_TICKS_IN_USE,
-            )}
+            className={sliderTicksVariants({ thumb, size, fader: followFillPx > 0 })}
           >
             {ticks.map((tp, i) => {
               // A fader's marks sit where the fill's edge lands, across the full width; the
@@ -1058,14 +1037,11 @@ export function Slider({
               // whole number of device pixels — never fewer than one — gives every tick
               // the same true hairline.
               const hairline = `${hairlinePx}px`;
-              const tickClass = cn(
-                // The bar's marks sit quieter: the rail already has an outline and a fill.
-                "absolute top-1/2 -translate-y-1/2",
-                isBar ? "bg-foreground/10" : "bg-foreground/25",
-                dims.tick,
-                isBar && BAR_TICK_HEIGHTS[size][barTickLevel(i, stepCount)],
-                dims.tickCenterX,
-              );
+              const tickClass = sliderTickVariants({
+                thumb,
+                size,
+                level: isBar ? barTickLevel(i, stepCount) : 0,
+              });
               const tickStyle = { left, ...(dims.tickHairline && { width: hairline }) };
 
               return followFillPx > 0 ? (
@@ -1113,7 +1089,7 @@ export function Slider({
               aria-labelledby={customLabel == null && labelledBy
                 ? isRange ? `${labelledBy} ${boundId}` : labelledBy
                 : undefined}
-              className={cn("opacity-0", dims.thumb, isBar && BAR_HIT_WIDTH)}
+              className={cn("opacity-0", sliderThumbVariants({ thumb, size }), isBar && BAR_HIT_WIDTH)}
               onPointerDown={() => handleThumbPointerDown(index)}
               onPointerEnter={() => setThumbHover(index, true)}
               onPointerLeave={() => setThumbHover(index, false)}
@@ -1154,10 +1130,7 @@ export function Slider({
             key={`visual-slider-thumb-${index}`}
             aria-hidden
             data-slot="slider-thumb-positioner"
-            className={cn(
-              "pointer-events-none absolute top-1/2",
-              dims.thumb,
-            )}
+            className={cn("pointer-events-none absolute top-1/2", sliderThumbVariants({ thumb, size }))}
             style={{
               left: 0,
               x: index === 0 ? thumbX0 : thumbX1,
@@ -1178,8 +1151,8 @@ export function Slider({
               data-dodged={inline && dodged[index] ? "" : undefined}
               className={cn(
                 "absolute inset-0 origin-center bg-foreground shadow-sm",
-                // A thin vertical handle, or a round knob the height of the rail.
-                dims.thumb,
+                // A round knob: the circle the height of the rail, or the dot on its line.
+                sliderThumbVariants({ thumb, size }),
                 "group-has-[[type=range]:focus-visible]:ring-4 group-has-[[type=range]:focus-visible]:ring-ring/40",
               )}
               // A round thumb can't stretch one axis without going oval, so it grabs by
@@ -1216,9 +1189,8 @@ export function Slider({
         {inline && (showValue || label != null) && (
           <div
             className={cn(
-              "pointer-events-none absolute inset-0 flex items-center gap-2 text-xs",
+              sliderInlineVariants({ size }),
               label != null ? "justify-between" : "justify-end",
-              INLINE_GUTTER[size],
             )}
           >
             {label != null && (

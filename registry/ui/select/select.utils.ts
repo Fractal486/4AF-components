@@ -63,3 +63,26 @@ export function focusPanelOption(
         : options.at(-1);
   option?.focus();
 }
+
+/**
+ * The trigger edge that holds still while the trigger's text changes width: its end when the
+ * trigger is pushed to the end of its row (a settings row's control, a toolbar's trailing
+ * filter), its start otherwise, including a trigger that fills the row. A multi-select's
+ * trigger grows and shrinks with each pick while the panel is open; a panel hung from the
+ * other edge would slide sideways every time.
+ */
+export function stillEdge(trigger: HTMLElement): "start" | "end" {
+  const row = trigger.parentElement;
+  if (!row) return "start";
+  const rowStyle = getComputedStyle(row);
+  const rowBox = row.getBoundingClientRect();
+  const box = trigger.getBoundingClientRect();
+  const contentLeft = rowBox.left + parseFloat(rowStyle.borderLeftWidth) + parseFloat(rowStyle.paddingLeft);
+  const contentRight = rowBox.right - parseFloat(rowStyle.borderRightWidth) - parseFloat(rowStyle.paddingRight);
+  const atLeft = Math.abs(box.left - contentLeft) < 1;
+  const atRight = Math.abs(box.right - contentRight) < 1;
+  // Flush with both edges, it fills the row; with neither, nothing says which edge holds.
+  if (atLeft === atRight) return "start";
+  const rtl = getComputedStyle(trigger).direction === "rtl";
+  return (rtl ? atLeft : atRight) ? "end" : "start";
+}

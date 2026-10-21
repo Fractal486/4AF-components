@@ -124,6 +124,7 @@ include the component name: for example, `.context.ts` means `select.context.ts`
 | `sidebar` | `sidebar.tsx`: responsive shell | `.context.ts`, `.provider.tsx`, `.controls.tsx`, `.structure.tsx`, `.menu.tsx`, `.variants.ts` |
 | `selection-toolbar` | `selection-toolbar.tsx`: selection tracking and positioning | `.context.ts`, `.controls.tsx`, `.variants.ts` |
 | `date-picker` | `date-picker.tsx`: `DatePicker`, `DateRangePicker`, re-exported `Calendar` | `calendar.tsx`, `.variants.ts` |
+| `slider` | `slider.tsx`: `Slider` | `slider-geometry.ts`: thumb and fill positioning; `.variants.ts` |
 
 These siblings are part of the same registry item, not separate install names; installing the
 component writes all of them. `select-aligned` and `select-search` are separate installable

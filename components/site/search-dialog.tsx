@@ -1,8 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import { House, Moon, Sun } from "lucide-react";
+import { House, Image as ImageIcon, ImageOff, Moon, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
+import {
+  setBlueprintPreviewsEnabled,
+  useBlueprintPreviewsEnabled,
+} from "@/lib/blueprint-preview-preference";
 import { useDocsSearch } from "fumadocs-core/search/client";
 import { staticClient } from "fumadocs-core/search/client/orama-static";
 import { useI18n } from "fumadocs-ui/contexts/i18n";
@@ -24,6 +28,7 @@ export default function SiteSearchDialog(props: SharedProps) {
   const router = useRouter();
   const { locale } = useI18n();
   const { resolvedTheme, setTheme } = useTheme();
+  const previewsEnabled = useBlueprintPreviewsEnabled();
   const search = useDocsSearch({ client: staticClient({ locale }) });
   const items = useMemo(() => {
     const words = search.search.trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -51,8 +56,19 @@ export default function SiteSearchDialog(props: SharedProps) {
         node: <span className="flex items-center gap-2"><Icon className="size-4" aria-hidden />{label}</span>,
         onSelect: () => setTheme(theme),
       }));
-    return [...home, ...actions, ...(search.data?.items ?? [])];
-  }, [search.search, search.data, resolvedTheme, setTheme, router]);
+    const PreviewIcon = previewsEnabled ? ImageOff : ImageIcon;
+    const previewLabel = `${previewsEnabled ? "Hide" : "Show"} component previews in the sidebar`;
+    const previewActions = words.every((word) =>
+      `${previewLabel} blueprint hover card`.toLowerCase().includes(word))
+      ? [{
+        id: "toggle-blueprint-previews",
+        type: "action" as const,
+        node: <span className="flex items-center gap-2"><PreviewIcon className="size-4" aria-hidden />{previewLabel}</span>,
+        onSelect: () => setBlueprintPreviewsEnabled(!previewsEnabled),
+      }]
+      : [];
+    return [...home, ...actions, ...previewActions, ...(search.data?.items ?? [])];
+  }, [search.search, search.data, resolvedTheme, setTheme, router, previewsEnabled]);
 
   return (
     <SearchDialog {...search} {...props}>

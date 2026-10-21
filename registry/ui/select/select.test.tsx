@@ -316,9 +316,10 @@ describe("Base UI Select", () => {
     await screen.findByRole("option", { name: "Mango" });
 
     // `w-max` lets the rows establish the panel width. Each row reserves its trailing check
-    // slot, so the widest label determines the visible box without the trigger's width floor.
+    // slot, so the widest label determines the visible box, never narrower than 200px.
     expect(container.ownerDocument.querySelector('[data-slot="select-content-positioner"]')).toHaveClass(
       "w-max",
+      "min-w-50",
     );
   });
 
