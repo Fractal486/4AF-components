@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, Search } from "lucide-react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useSearchContext } from "fumadocs-ui/contexts/search";
 import { ThemeSwitch } from "fumadocs-ui/layouts/shared/slots/theme-switch";
 import type { Dialog as BaseDialog } from "@base-ui/react/dialog";
@@ -311,6 +311,10 @@ function RailNav({
   /** The row the pointer or keyboard is on; `null` leaves only the current page marked. */
   const lensTarget = useRef<Element | null>(null);
   const [blueprints] = useState(createBlueprintHandle);
+  const blueprintUrls = useMemo(
+    () => nav.flatMap((group) => group.items.flatMap((item) => item.blueprint ?? [])),
+    [nav],
+  );
 
   const aimLens = (row: Element | null) => {
     if (row === lensTarget.current) return;
@@ -466,7 +470,7 @@ function RailNav({
         )}
         </div>
       </nav>
-      <BlueprintCard handle={blueprints} />
+      <BlueprintCard handle={blueprints} urls={blueprintUrls} />
       {/* Overlay the content without taking pointer input. The blur is masked to the same
           gradient as the colour, so rows soften progressively as they reach the edge. */}
       <div

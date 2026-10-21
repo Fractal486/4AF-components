@@ -12,10 +12,10 @@ export const createBlueprintHandle = () => BaseTooltip.createHandle<string>();
 /** Blueprint SVG text by URL, fetched once per page load. */
 const sources = new Map<string, Promise<string>>();
 
-function loadBlueprint(url: string) {
+function loadBlueprint(url: string, priority: RequestPriority = "auto") {
   let source = sources.get(url);
   if (!source) {
-    source = fetch(url).then((response) => {
+    source = fetch(url, { priority }).then((response) => {
       if (!response.ok) throw new Error(`Blueprint ${url} failed with ${response.status}`);
       return response.text();
     });
@@ -24,6 +24,46 @@ function loadBlueprint(url: string) {
     sources.set(url, source);
   }
   return source;
+}
+
+/** Blueprints fetched together in each idle period. */
+const PRELOAD_BATCH = 4;
+
+/**
+ * Fetches every blueprint once the browser is idle, so a hover plays at once instead of
+ * waiting on the network. Low priority, a few at a time between idle periods, so it never
+ * competes with the page itself. Skipped where nothing hovers: the card never opens there.
+ */
+function usePreloadedBlueprints(urls: readonly string[], enabled: boolean) {
+  useEffect(() => {
+    if (!enabled || urls.length === 0) return;
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+
+    const idle = (callback: () => void) =>
+      typeof window.requestIdleCallback === "function"
+        ? window.requestIdleCallback(callback, { timeout: 2000 })
+        : window.setTimeout(callback, 200);
+    const cancelIdle = (id: number) =>
+      typeof window.cancelIdleCallback === "function"
+        ? window.cancelIdleCallback(id)
+        : window.clearTimeout(id);
+
+    const queue = urls.filter((url) => !sources.has(url));
+    let pending: number | undefined;
+    let cancelled = false;
+    const next = () => {
+      const batch = queue.splice(0, PRELOAD_BATCH);
+      if (cancelled || batch.length === 0) return;
+      void Promise.allSettled(batch.map((url) => loadBlueprint(url, "low"))).then(() => {
+        if (!cancelled) pending = idle(next);
+      });
+    };
+    pending = idle(next);
+    return () => {
+      cancelled = true;
+      if (pending !== undefined) cancelIdle(pending);
+    };
+  }, [urls, enabled]);
 }
 
 
@@ -89,10 +129,18 @@ function BlueprintPlayer({ url, play }: { url: string; play: number }) {
  * pointer while it is over a label, and closes as soon as the pointer is anywhere else. The
  * drawing restarts on every label, and on every return to the same one.
  */
-export function BlueprintCard({ handle }: { handle: BlueprintHandle }) {
+export function BlueprintCard({
+  handle,
+  urls,
+}: {
+  handle: BlueprintHandle;
+  /** Every blueprint the rail links to, fetched ahead of the first hover. */
+  urls: readonly string[];
+}) {
   const [plays, setPlays] = useState(0);
   // Switched in the search palette; disabled, the triggers stay plain links.
   const enabled = useBlueprintPreviewsEnabled();
+  usePreloadedBlueprints(urls, enabled);
 
   return (
     <BaseTooltip.Root
