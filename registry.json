@@ -279,7 +279,7 @@
     {
       "name": "motion",
       "type": "registry:lib",
-      "description": "Spring and easing presets, mirroring the CSS motion tokens.",
+      "description": "Duration, easing, spring, and overlay presets, mirroring the CSS motion tokens.",
       "files": [
         {
           "path": "registry/lib/motion.ts",
@@ -1491,6 +1491,11 @@
           "target": "@ui/date-picker.tsx"
         },
         {
+          "path": "registry/ui/date-picker/date-picker.utils.ts",
+          "type": "registry:ui",
+          "target": "@ui/date-picker.utils.ts"
+        },
+        {
           "path": "registry/ui/date-picker/calendar.tsx",
           "type": "registry:ui",
           "target": "@ui/calendar.tsx"
@@ -1573,7 +1578,7 @@
     {
       "name": "dropdown-menu",
       "type": "registry:ui",
-      "description": "A dropdown menu on Base UI Menu (keyboard nav, submenus, checkbox/radio items, searchable selection panels, and immediate disabled-reason tooltips). Instant row highlight; CSS scale-and-blur panel enter.",
+      "description": "A dropdown menu on Base UI Menu (keyboard nav, submenus, checkbox/radio items, searchable selection panels with selected-row activation, and immediate disabled-reason tooltips). Instant row highlight; CSS scale-and-blur panel enter.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/dropdown-menu (Markdown: https://4af.selfsimilar.dev/docs/dropdown-menu.md)",
       "dependencies": [
         "@base-ui/react",

@@ -8,6 +8,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -41,7 +42,11 @@ interface DropdownMenuSelectContextValue {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   matchesQuery: (text: string) => boolean;
-  registerOptionText: (value: unknown, text: string) => void;
+  registerOptionText: (value: unknown, text: string, node: HTMLElement | null) => void;
+  options: Map<unknown, { text: string; node: HTMLElement | null }>;
+  activeValue: { value: unknown } | null;
+  activate: (value: unknown) => void;
+  clearActive: () => void;
   unregisterOptionText: (value: unknown) => void;
   visibleOptionCount: number;
 }
@@ -172,11 +177,16 @@ export function DropdownMenuSelect<Value, Multiple extends boolean | undefined =
   }, []);
   const labelFor = useCallback((valueToRead: unknown) => labels.get(valueToRead), [labels]);
 
-  const [optionTexts, setOptionTexts] = useState<Map<unknown, string>>(() => new Map());
-  const registerOptionText = useCallback((valueToRegister: unknown, text: string) => {
+  const [optionTexts, setOptionTexts] = useState<Map<unknown, { text: string; node: HTMLElement | null }>>(() => new Map());
+  const [activeValue, setActiveValue] = useState<{ value: unknown } | null>(null);
+  const activate = useCallback((value: unknown) => {
+    setActiveValue((current) => current && Object.is(current.value, value) ? current : { value });
+  }, []);
+  const clearActive = useCallback(() => setActiveValue(null), []);
+  const registerOptionText = useCallback((valueToRegister: unknown, text: string, node: HTMLElement | null) => {
     setOptionTexts((current) => {
-      if (current.get(valueToRegister) === text) return current;
-      return new Map(current).set(valueToRegister, text);
+      if (current.get(valueToRegister)?.text === text && current.get(valueToRegister)?.node === node) return current;
+      return new Map(current).set(valueToRegister, { text, node });
     });
   }, []);
   const unregisterOptionText = useCallback((valueToUnregister: unknown) => {
@@ -195,7 +205,7 @@ export function DropdownMenuSelect<Value, Multiple extends boolean | undefined =
     [searchQuery],
   );
   const visibleOptionCount = useMemo(
-    () => Array.from(optionTexts.values()).filter(matchesQuery).length,
+    () => Array.from(optionTexts.values()).filter(({ text }) => matchesQuery(text)).length,
     [matchesQuery, optionTexts],
   );
 
@@ -217,6 +227,10 @@ export function DropdownMenuSelect<Value, Multiple extends boolean | undefined =
       registerOptionText,
       unregisterOptionText,
       visibleOptionCount,
+      options: optionTexts,
+      activeValue,
+      activate,
+      clearActive,
     }),
     [
       currentOpen,
@@ -235,12 +249,16 @@ export function DropdownMenuSelect<Value, Multiple extends boolean | undefined =
       unregisterOptionText,
       visibleOptionCount,
       values,
+      optionTexts,
+      activeValue,
+      activate,
+      clearActive,
     ],
   );
 
   return (
     <DropdownMenuSelectContext.Provider value={context}>
-      <DropdownMenuSub open={currentOpen} onOpenChange={setOpen} disabled={disabled}>
+      <DropdownMenuSub highlightItemOnHover open={currentOpen} onOpenChange={setOpen} disabled={disabled}>
         {children}
       </DropdownMenuSub>
     </DropdownMenuSelectContext.Provider>
@@ -249,7 +267,7 @@ export function DropdownMenuSelect<Value, Multiple extends boolean | undefined =
 
 const selectItemBase = cn(
   "relative flex items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-xs outline-none select-none",
-  "text-muted-foreground data-[highlighted]:bg-muted data-[highlighted]:text-foreground hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground",
+  "text-muted-foreground data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
   "data-[checked]:text-foreground",
   "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
 );
@@ -257,22 +275,10 @@ const selectItemBase = cn(
 const selectItemIcon =
   "pointer-events-none flex size-3.5 shrink-0 items-center justify-center text-muted-foreground [&>svg]:size-3.5 [&>svg]:shrink-0 [&>svg]:text-muted-foreground";
 
-function focusDropdownMenuSelectItem(
-  list: HTMLElement | null,
-  direction: "next" | "previous",
-) {
-  if (!list) return;
-
-  const items = Array.from(
-    list.querySelectorAll<HTMLElement>('[role="menuitemradio"], [role="menuitemcheckbox"]'),
-  ).filter(
-    (item) =>
-      !item.hidden &&
-      !item.closest("[hidden]") &&
-      item.getAttribute("aria-disabled") !== "true",
-  );
-  const item = direction === "next" ? items[0] : items.at(-1);
-  item?.focus();
+function enabledSelectItems(list: HTMLElement | null) {
+  return Array.from(
+    list?.querySelectorAll<HTMLElement>('[role="menuitemradio"], [role="menuitemcheckbox"]') ?? [],
+  ).filter((item) => !item.closest("[hidden]") && item.getAttribute("aria-disabled") !== "true");
 }
 
 export interface DropdownMenuSelectTriggerProps
@@ -344,7 +350,7 @@ export interface DropdownMenuSelectContentProps extends DropdownMenuContentProps
   searchPlaceholder?: string;
   /** Message shown when the filter has no matching options. */
   emptyMessage?: ReactNode;
-  /** Focus the search field when the panel opens. */
+  /** Activate the selected or first enabled row on open; focus search when present. */
   autoFocusFirstItem?: boolean;
 }
 
@@ -369,12 +375,46 @@ export function DropdownMenuSelectContent({
   const noResults =
     searchable && context.searchQuery.trim() !== "" && context.visibleOptionCount === 0;
 
+  const { open, searchQuery, options, values, activate, clearActive } = context;
+  const previous = useRef({ open: false, query: "" });
   useEffect(() => {
-    if (!searchable || !autoFocusFirstItem || !context.open) return;
+    const opening = open && !previous.current.open;
+    const queryChanged = searchQuery !== previous.current.query;
+    if (!open) {
+      previous.current = { open: false, query: "" };
+      clearActive();
+      return;
+    }
+    if (!autoFocusFirstItem) {
+      previous.current = { open, query: searchQuery };
+      return;
+    }
 
-    const frame = requestAnimationFrame(() => searchInputRef.current?.focus());
+    const prime = () => {
+      // Portal visibility settles after the submenu opens. Read rows then, in DOM order.
+      const rows = enabledSelectItems(listRef.current);
+      const selected = [...values].reverse().map((value) => options.get(value)?.node)
+        .find((node) => node != null && rows.includes(node));
+      const current = rows.find((row) => row.hasAttribute("data-panel-active"));
+      const row = queryChanged ? rows[0] : opening ? selected ?? rows[0] : current ?? selected ?? rows[0];
+      const entry = [...options].find(([, option]) => option.node === row);
+      if (entry) activate(entry[0]);
+      else clearActive();
+      // Mark opening as handled only after the registered rows are available.
+      // A registration rerender can cancel an earlier scheduled frame.
+      previous.current = { open, query: searchQuery };
+      if (opening) {
+        if (searchable) searchInputRef.current?.focus();
+        else row?.focus();
+      }
+    };
+    if (!opening) {
+      prime();
+      return;
+    }
+    const frame = requestAnimationFrame(prime);
     return () => cancelAnimationFrame(frame);
-  }, [autoFocusFirstItem, context.open, searchable]);
+  }, [open, searchQuery, options, values, autoFocusFirstItem, searchable, activate, clearActive]);
 
   const items = context.multiple ? (
     children
@@ -409,10 +449,16 @@ export function DropdownMenuSelectContent({
           if (event.key === "ArrowDown" || event.key === "ArrowUp") {
             event.preventDefault();
             event.stopPropagation();
-            focusDropdownMenuSelectItem(
-              listRef.current,
-              event.key === "ArrowDown" ? "next" : "previous",
-            );
+            const rows = enabledSelectItems(listRef.current);
+            const active = rows.find((row) => row.hasAttribute("data-panel-active"));
+            (active ?? (event.key === "ArrowDown" ? rows[0] : rows.at(-1)))?.focus();
+            return;
+          }
+
+          if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+            event.preventDefault();
+            event.stopPropagation();
+            enabledSelectItems(listRef.current).find((row) => row.hasAttribute("data-panel-active"))?.click();
             return;
           }
 
@@ -434,7 +480,7 @@ export function DropdownMenuSelectContent({
       className={cn(searchable && "overflow-hidden", className)}
       onFocus={(event) => {
         onFocus?.(event);
-        if (searchable && event.target === event.currentTarget) {
+        if (searchable && autoFocusFirstItem && event.target === event.currentTarget) {
           searchInputRef.current?.focus();
         }
       }}
@@ -489,6 +535,7 @@ export function DropdownMenuSelectItem({
   searchValue,
 }: DropdownMenuSelectItemProps) {
   const context = useDropdownMenuSelectContext();
+  const itemRef = useRef<HTMLElement>(null);
   const itemLabel = label ?? (typeof children === "string" ? children : String(value));
   const optionText = searchValue ?? (typeof children === "string" ? children : itemLabel);
   const hiddenBySearch = !context.matchesQuery(optionText);
@@ -506,14 +553,21 @@ export function DropdownMenuSelectItem({
     registerLabel(value, itemLabel);
     return () => unregisterLabel(value);
   }, [itemLabel, registerLabel, unregisterLabel, value]);
-  useEffect(() => {
-    registerOptionText(value, optionText);
+  useLayoutEffect(() => {
+    registerOptionText(value, optionText, itemRef.current);
     return () => unregisterOptionText(value);
-  }, [optionText, registerOptionText, unregisterOptionText, value]);
+  }, [optionText, registerOptionText, unregisterOptionText, value, isDisabled]);
+
+  const activationProps = {
+    ref: itemRef,
+    "data-panel-active": context.activeValue && Object.is(context.activeValue.value, value) ? "" : undefined,
+    onFocus: () => { if (!isDisabled && !hiddenBySearch) context.activate(value); },
+  };
 
   if (context.multiple) {
     return (
       <BaseMenu.CheckboxItem
+        {...activationProps}
         checked={checked}
         onCheckedChange={(nextChecked) => context.toggleValue(value, nextChecked)}
         disabled={isDisabled || hiddenBySearch}
@@ -544,6 +598,7 @@ export function DropdownMenuSelectItem({
 
   const item = (
     <BaseMenu.RadioItem
+      {...activationProps}
       value={value}
       disabled={isDisabled || hiddenBySearch}
       hidden={hiddenBySearch}

@@ -165,7 +165,8 @@ describe("Tabs", () => {
       ),
     );
     expect(screen.getByText("First panel")).toBeInTheDocument();
-    await waitFor(() => expect(screen.getByText("Second panel")).toBeVisible());
+    expect(screen.getByRole("tabpanel", { name: "Two" })).toHaveTextContent("Second panel");
+    expect(screen.getByText("First panel").closest('[role="tabpanel"]')).toHaveAttribute("hidden");
   });
 });
 

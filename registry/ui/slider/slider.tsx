@@ -23,7 +23,7 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
-import { duration, spring } from "@/registry/lib/motion";
+import { duration, ease, spring } from "@/registry/lib/motion";
 import { Tooltip } from "@/registry/ui/tooltip/tooltip";
 import {
   getSliderThumbCenter,
@@ -72,7 +72,7 @@ function notchSpring(notchShare: number) {
 const FINE_STEP_COUNT = 50;
 // Grab stretch — quick, and no overshoot (bounce 0), so it settles cleanly rather than
 // wobbling.
-const SPRING_GRAB = { type: "spring", visualDuration: 0.2, bounce: 0 } as const;
+const SPRING_GRAB = { type: "spring", visualDuration: duration.base, bounce: 0 } as const;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
@@ -129,10 +129,11 @@ function BarThumb({
   return (
     <motion.div
       data-slot="slider-thumb"
+      data-grabbed={stretched ? "" : undefined}
       data-dodged={dodged ? "" : undefined}
       className="absolute inset-0 rounded-full drop-shadow-sm group-has-[[type=range]:focus-visible]:ring-4 group-has-[[type=range]:focus-visible]:ring-ring/40"
       animate={{ opacity: dodged ? DODGE_OPACITY : 1 }}
-      transition={reduceMotion ? { duration: 0 } : { duration: duration.fast, ease: "easeOut" }}
+      transition={reduceMotion ? { duration: 0 } : { duration: duration.fast, ease: ease.out }}
     >
       <motion.span
         className="absolute inset-x-0 top-0 aspect-square rounded-full bg-foreground"

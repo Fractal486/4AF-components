@@ -38,6 +38,7 @@ import {
 } from "react-day-picker";
 import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
+import { inTimeZone } from "./date-picker.utils";
 
 /**
  * A month grid for picking a date or a range.
@@ -62,6 +63,7 @@ type NavSource = "pointer" | "keyboard";
 type MonthEnter = "next" | "prev" | "fade";
 
 interface CalendarContextValue {
+  dateLib: DateLib;
   todayKey: string | undefined;
   animate: boolean;
   hovered: Date | undefined;
@@ -100,10 +102,6 @@ function omit<T extends object, K extends keyof T>(value: T, ...keys: K[]): Omit
   const result = { ...value };
   for (const key of keys) delete result[key];
   return result;
-}
-
-function startOfMonth(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), 1);
 }
 
 function isSameDay(a: Date, b: Date) {
@@ -193,17 +191,26 @@ export function Calendar({
   components,
   formatters,
   dir,
-  today,
+  today: todayInput,
   onDayMouseEnter,
   onDayMouseLeave,
   onDayFocus,
   onDayBlur,
-  month: monthProp,
-  defaultMonth,
+  month: monthInput,
+  defaultMonth: defaultMonthInput,
   onMonthChange,
   ...props
 }: CalendarProps) {
   const direction = useDirection();
+  const timeZone = props.timeZone;
+  const dateLib = useMemo(() => new DateLib({ timeZone }), [timeZone]);
+  const { today, monthProp, defaultMonth, startMonth, endMonth } = useMemo(() => {
+    const convert = (date: Date | undefined) => date && inTimeZone(date, timeZone);
+    return {
+      today: convert(todayInput), monthProp: convert(monthInput), defaultMonth: convert(defaultMonthInput),
+      startMonth: convert(props.startMonth), endMonth: convert(props.endMonth),
+    };
+  }, [todayInput, monthInput, defaultMonthInput, props.startMonth, props.endMonth, timeZone]);
   const [hovered, setHovered] = useState<Date>();
   const [navSource, setNavSource] = useState<NavSource>("pointer");
   // An explicit `today` or `timeZone` means the caller owns "today"; don't fight it.
@@ -217,27 +224,27 @@ export function Calendar({
 
   // The shown month is held here (or by the caller, through `month`) so the month / year
   // picker can move it; react-day-picker's own navigation reports through `onMonthChange`.
-  const { startMonth, endMonth, numberOfMonths = 1 } = props;
+  const { numberOfMonths = 1 } = props;
   const [innerMonth, setInnerMonth] = useState(() => {
     // Where react-day-picker would open: inside `startMonth` / `endMonth`, with every month of
     // a multi-month view in range.
-    let initial = startOfMonth(monthProp ?? defaultMonth ?? today ?? new Date());
+    let initial = dateLib.startOfMonth(monthProp ?? defaultMonth ?? today ?? dateLib.today());
     const lastFirst =
-      endMonth && new Date(endMonth.getFullYear(), endMonth.getMonth() - (numberOfMonths - 1), 1);
+      endMonth && dateLib.addMonths(dateLib.startOfMonth(endMonth), -(numberOfMonths - 1));
     if (lastFirst && initial > lastFirst) initial = lastFirst;
-    if (startMonth && initial < startOfMonth(startMonth)) initial = startOfMonth(startMonth);
+    if (startMonth && initial < dateLib.startOfMonth(startMonth)) initial = dateLib.startOfMonth(startMonth);
     return initial;
   });
-  const shownMonth = monthProp ?? innerMonth;
+  const shownMonth = inTimeZone(monthProp ?? innerMonth, timeZone);
   const goToMonth = useCallback(
     (next: Date) => {
-      let target = startOfMonth(next);
-      if (startMonth && target < startOfMonth(startMonth)) target = startOfMonth(startMonth);
-      if (endMonth && target > startOfMonth(endMonth)) target = startOfMonth(endMonth);
+      let target = dateLib.startOfMonth(inTimeZone(next, timeZone));
+      if (startMonth && target < dateLib.startOfMonth(startMonth)) target = dateLib.startOfMonth(startMonth);
+      if (endMonth && target > dateLib.startOfMonth(endMonth)) target = dateLib.startOfMonth(endMonth);
       setInnerMonth(target);
       onMonthChange?.(target);
     },
-    [startMonth, endMonth, onMonthChange],
+    [startMonth, endMonth, onMonthChange, dateLib, timeZone],
   );
 
   const [picker, setPicker] = useState<{ open: boolean; height: number | undefined }>({
@@ -271,11 +278,11 @@ export function Calendar({
 
   const localeCode = props.locale?.code;
   const monthNames = useMemo(() => {
-    const format = new Intl.DateTimeFormat(localeCode, { month: "short" });
-    return Array.from({ length: 12 }, (_, index) => format.format(new Date(2000, index, 1)));
-  }, [localeCode]);
+    const format = new Intl.DateTimeFormat(localeCode, { month: "short", timeZone });
+    return Array.from({ length: 12 }, (_, index) => format.format(dateLib.newDate(2000, index, 1)));
+  }, [localeCode, timeZone, dateLib]);
   const shownYear = shownMonth.getFullYear();
-  const thisYear = (today ?? new Date()).getFullYear();
+  const thisYear = (today ?? dateLib.today()).getFullYear();
   const years = useMemo(() => {
     const first = Math.min(startMonth?.getFullYear() ?? thisYear - 100, shownYear);
     const last = Math.max(endMonth?.getFullYear() ?? thisYear + 20, shownYear);
@@ -284,6 +291,7 @@ export function Calendar({
 
   const context = useMemo<CalendarContextValue>(
     () => ({
+      dateLib,
       todayKey: managesToday ? todayKey : undefined,
       animate,
       hovered,
@@ -301,6 +309,7 @@ export function Calendar({
       toggleRef,
     }),
     [
+      dateLib,
       managesToday,
       todayKey,
       animate,
@@ -497,7 +506,7 @@ function CalendarChevron({ className, orientation, style }: ChevronProps) {
 }
 
 function CalendarMonths({ className, ...props }: MonthsProps) {
-  const { hovered } = useCalendarContext("CalendarMonths");
+  const { hovered, dateLib } = useCalendarContext("CalendarMonths");
   const { selected, dayPickerProps } = useDayPicker();
 
   // While exactly one end of a range is chosen, show what the range would become if the
@@ -507,10 +516,10 @@ function CalendarMonths({ className, ...props }: MonthsProps) {
     const range = selected as DateRange | undefined;
     if (!range?.from || (range.to && !isSameDay(range.from, range.to))) return undefined;
 
-    const next = addToRange(hovered, range, dayPickerProps.min, dayPickerProps.max, dayPickerProps.required);
+    const next = addToRange(hovered, range, dayPickerProps.min, dayPickerProps.max, dayPickerProps.required, dateLib);
     if (!next?.from || !next.to || isSameDay(next.from, next.to)) return undefined;
     return next;
-  }, [dayPickerProps, hovered, selected]);
+  }, [dayPickerProps, hovered, selected, dateLib]);
 
   return (
     <CalendarPreviewContext.Provider value={preview}>
@@ -710,7 +719,7 @@ function centerChecked(column: HTMLElement | null, behavior: ScrollBehavior) {
  * outside `startMonth` / `endMonth` are disabled.
  */
 function MonthYearPicker() {
-  const { month, goToMonth, setPickerOpen, monthNames, years, startMonth, endMonth } =
+  const { month, goToMonth, setPickerOpen, monthNames, years, startMonth, endMonth, dateLib } =
     useCalendarContext("MonthYearPicker");
   const monthsRef = useRef<HTMLDivElement>(null);
   const yearsRef = useRef<HTMLDivElement>(null);
@@ -741,11 +750,11 @@ function MonthYearPicker() {
   }, [monthIndex, year]);
 
   const unavailable = (index: number) => {
-    const first = new Date(year, index, 1);
-    const last = new Date(year, index + 1, 0);
+    const first = dateLib.newDate(year, index, 1);
+    const last = dateLib.endOfMonth(first);
     return (
-      (startMonth !== undefined && last < startOfMonth(startMonth)) ||
-      (endMonth !== undefined && first > startOfMonth(endMonth))
+      (startMonth !== undefined && last < dateLib.startOfMonth(startMonth)) ||
+      (endMonth !== undefined && first > dateLib.startOfMonth(endMonth))
     );
   };
 
@@ -769,7 +778,7 @@ function MonthYearPicker() {
           ref={monthsRef}
           aria-label="Month"
           value={month.getMonth()}
-          onValueChange={(value) => goToMonth(new Date(year, value as number, 1))}
+          onValueChange={(value) => goToMonth(dateLib.newDate(year, value as number, 1))}
           className={pickerColumnClassName}
         >
           {monthNames.map((name, index) => (
@@ -790,7 +799,7 @@ function MonthYearPicker() {
           ref={yearsRef}
           aria-label="Year"
           value={year}
-          onValueChange={(value) => goToMonth(new Date(value as number, month.getMonth(), 1))}
+          onValueChange={(value) => goToMonth(dateLib.newDate(value as number, month.getMonth(), 1))}
           className={pickerColumnClassName}
         >
           {years.map((option) => (

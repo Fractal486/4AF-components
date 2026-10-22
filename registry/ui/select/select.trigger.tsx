@@ -1,4 +1,5 @@
 import { cn } from "@/registry/lib/cn";
+import { spring } from "@/registry/lib/motion";
 import { useMergedRefs } from "@/registry/lib/refs";
 import { Select as BaseSelect } from "@base-ui/react/select";
 import { ChevronDown } from "lucide-react";
@@ -127,7 +128,7 @@ export function SelectTrigger({
           className="shrink-0 text-muted-foreground"
           animate={{ rotate: open ? 180 : 0 }}
           transition={
-            reduceMotion ? { duration: 0 } : { type: "spring", duration: 0.4, bounce: 0 }
+            reduceMotion ? { duration: 0 } : spring.chevron
           }
         >
           <ChevronDown className={SIZE[size].glyph} />
@@ -262,7 +263,7 @@ export function SelectSortTrigger({
           )}
           animate={{ rotate: open ? 180 : 0 }}
           transition={
-            reduceMotion ? { duration: 0 } : { type: "spring", duration: 0.4, bounce: 0 }
+            reduceMotion ? { duration: 0 } : spring.chevron
           }
         >
           <ChevronDown className={SIZE[size].glyph} />

@@ -4,7 +4,7 @@ import { Checkbox as BaseCheckbox } from "@base-ui/react/checkbox";
 import { motion, useReducedMotion, type SVGMotionProps } from "motion/react";
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
-import { ease, PRESS_SCALE, spring } from "@/registry/lib/motion";
+import { duration, ease, PRESS_SCALE, spring } from "@/registry/lib/motion";
 import { checkboxVariants } from "./checkbox.variants";
 
 /**
@@ -54,8 +54,8 @@ export function CheckboxMark({ checked, indeterminate = false, ...props }: Check
   // draws. Under reduced motion it's simply present or absent — a zero-length stroke.
   const drawIn = reduceMotion
     ? { duration: 0 }
-    : { duration: 0.2, ease: ease.out, delay: 0.08 };
-  const drawOut = reduceMotion ? { duration: 0 } : { duration: 0.15, ease: ease.in };
+    : { duration: duration.base, ease: ease.out, delay: 0.08 };
+  const drawOut = reduceMotion ? { duration: 0 } : { duration: duration.fast, ease: ease.in };
 
   return (
     <motion.svg

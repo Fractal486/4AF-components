@@ -110,6 +110,9 @@ Use these panel tab parts instead of nesting the standalone `Tabs` component.
 root list, for a shortcut that opens one page, such as `?` for a help panel. It is read each time
 the palette opens. Back closes the palette instead of showing the root list. Escape still clears
 a nonempty search query first, then closes it; pages opened from the root still step back as usual.
+A root Escape requests closing once. Open sub-lists resolve their items by id from the latest
+`groups`, so changed labels, disabled states, and callbacks take effect immediately. Sub-lists
+found only in async search retain the results they opened with.
 
 ```tsx
 <CommandPalette groups={groups} open={open} onOpenChange={setOpen} initialItemId={entry} />
@@ -118,8 +121,8 @@ a nonempty search query first, then closes it; pages opened from the root still 
 ## Selection and hover
 
 The root list opens with its first enabled row active, before anything is typed, and activates
-the first match as the query changes. `CommandPanelList` initializes its first row when no row
-is active; filtering that preserves the active row can keep that highlight. Enter runs the
+the first match as the query changes. `CommandPanelList` initializes the last enabled row marked `selected`, or the first
+enabled row when nothing is selected; filtering that preserves the active row can keep that highlight. Enter runs the
 active row without an arrow press first.
 
 Selection and hover are separate states. The selected row carries `data-highlighted` and moves
@@ -136,8 +139,8 @@ When the selection reaches the first row, the list scrolls to its top, so the se
 that row is visible. This applies to the root list and to `CommandPanelList`.
 
 The root list primes its first row from the `items` collection through `autoHighlight`.
-Custom panels have no such collection, so `CommandPanelList` activates its first row after
-mount. Preserve that initialization when changing panel composition; root highlighting does
+Custom panels have no such collection, so `CommandPanelList` activates the last enabled
+selected row (otherwise the first enabled row) after mount. Preserve that initialization when changing panel composition; root highlighting does
 not initialize custom panels.
 
 The no-results state is the height of one section label plus one row with a description.

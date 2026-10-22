@@ -14,7 +14,7 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
-import { duration, ease, spring } from "@/registry/lib/motion";
+import { duration, ease, overlayEnter, overlayExit, overlayVisible, spring } from "@/registry/lib/motion";
 import { Button } from "@/registry/ui/button/button";
 
 /**
@@ -101,8 +101,8 @@ export function DialogContent({
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                exit={{ opacity: 0, transition: { duration: reduceMotion ? 0 : 0.18 } }}
-                transition={{ duration: reduceMotion ? 0 : 0.25, ease: ease.out }}
+                exit={{ opacity: 0, transition: { duration: reduceMotion ? 0 : duration.fast } }}
+                transition={{ duration: reduceMotion ? 0 : duration.slow, ease: ease.out }}
                 className={cn(backdropClassName, customBackdropClassName)}
               />
             }
@@ -126,13 +126,13 @@ export function DialogContent({
                 initial={
                   reduceMotion
                     ? { opacity: 0 }
-                    : { opacity: 0, scale: 0.96, filter: "blur(4px)" }
+                    : overlayEnter
                 }
-                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                animate={overlayVisible}
                 exit={
                   reduceMotion
                     ? { opacity: 0, transition: { duration: 0 } }
-                    : { opacity: 0, filter: "blur(8px)", transition: { duration: 0.2, ease: ease.out } }
+                    : overlayExit
                 }
                 transition={reduceMotion ? { duration: 0 } : spring.smooth}
               />

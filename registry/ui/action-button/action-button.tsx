@@ -4,7 +4,7 @@ import { TriangleAlert } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
-import { spring } from "@/registry/lib/motion";
+import { duration, ease, spring } from "@/registry/lib/motion";
 import { useAction, type ActionStatus } from "@/registry/lib/use-action";
 import { LoadingIndicator } from "@/registry/lib/loader";
 import { Button, type ButtonProps } from "@/registry/ui/button/button";
@@ -33,7 +33,8 @@ function AnimatedCheck() {
         transition={
           reduceMotion
             ? { duration: 0 }
-            : { duration: 0.2, ease: "easeOut", delay: 0.05 }
+            // Let the success icon appear before drawing its stroke.
+            : { duration: duration.base, ease: ease.out, delay: 0.05 }
         }
       />
     </motion.svg>

@@ -29,7 +29,7 @@ description: A date or date-range field that opens a calendar in a popover on ev
 | `todayLabel` | `"Today"` | Current-month navigation action text. Shown on the left with an Undo2 icon; Clear stays on the right. |
 | `showToday` | `true` | Shows the Today action. Set `false` to hide it; the footer disappears when neither Today nor Clear is visible. |
 | `name` | — | Renders a hidden input: `YYYY-MM-DD`, or `YYYY-MM-DD/YYYY-MM-DD` for a range. |
-| `calendarProps` | — | Calendar options such as `disabled`, `startMonth`, `endMonth`, `captionLayout`, `weekStartsOn`, and `locale` (a react-day-picker locale). The picker owns `mode`, `selected`, `onSelect`, `required`, `numberOfMonths`, and initial focus; those are not exposed through this prop. |
+| `calendarProps` | — | Calendar options such as `disabled`, `startMonth`, `endMonth`, `captionLayout`, `weekStartsOn`, `timeZone`, range constraints (`min`, `max`, `excludeDisabled`), and `locale` (a react-day-picker locale). The picker owns `mode`, `selected`, `onSelect`, `required`, `numberOfMonths`, and initial focus; those are not exposed through this prop. |
 
 Other button props (`id`, `disabled`, `aria-*`, `className`, `ref`) go to the trigger. The trigger
 exposes `data-slot="date-picker-trigger"`, `data-variant`, `data-size`, `data-empty` while no value is
@@ -81,8 +81,14 @@ is open).
 - A single date commits and closes on click.
 - Today returns to the current month without changing the selection or closing the panel. A draft range is preserved. It respects `today`, `timeZone`, month bounds, and `disableNavigation`; controlled calendars receive `onMonthChange`.
 - A range commits and closes on the second click, in either order. The first click of a new pick
-  starts a fresh range. Dismissing mid-pick keeps the previous value.
+  starts a fresh range. Dismissing mid-pick keeps the previous value. `calendarProps.min` and
+  `max` constrain the number of nights; `excludeDisabled` rejects spans containing disabled
+  days. An invalid second pick keeps the panel open and restarts the draft at that day.
+  With `min={0}` (the default), clicking the same day twice commits a single-day range.
 - While one end of a range is chosen, hovering or focusing a day previews the band.
+- `calendarProps.timeZone` applies to both label formats, hidden form values, day selection,
+  and month/year navigation. Dates represent instants; use a `TZDate` from `react-day-picker`
+  when constructing a calendar date in a specific zone. Without `timeZone`, local time is used.
 - Both pickers show one month. A range keeps its first pick while navigating to another month.
 - The today marker is drawn after hydration and rolls over at midnight. Passing `today` or
   `timeZone` turns this off.

@@ -1,12 +1,10 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MotionGlobalConfig } from "motion/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, vi } from "vitest";
 import { ActionButton } from "./action-button";
 
 afterEach(() => {
   vi.useRealTimers();
-  MotionGlobalConfig.skipAnimations = false;
 });
 
 describe("ActionButton", () => {
@@ -209,7 +207,6 @@ describe("ActionButton", () => {
   });
 
   it("centres an icon-only pending state over the reserved labelled content", async () => {
-    MotionGlobalConfig.skipAnimations = true;
     let resolveAction: () => void;
     const action = vi.fn(
       () =>

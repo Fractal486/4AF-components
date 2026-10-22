@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import { CopyButton, writeToClipboard } from "./copy-button";
@@ -18,6 +18,7 @@ function trackStatus(button: HTMLElement) {
 }
 
 describe("CopyButton", () => {
+  afterEach(() => vi.useRealTimers());
   it("keeps keyboard focus while copying and blocks repeat activation", async () => {
     const user = userEvent.setup();
     const value = vi.fn(() => new Promise<string>(() => {}));
@@ -194,6 +195,7 @@ describe("CopyButton", () => {
   });
 
   it("shows pending promptly when the value actually has to wait", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
@@ -213,14 +215,15 @@ describe("CopyButton", () => {
     const button = screen.getByRole("button", { name: "Copy" });
     const seen = trackStatus(button);
 
-    await userEvent.click(button);
+    await act(async () => { fireEvent.click(button); });
 
     // Well before the value resolves — the press has to be answered, not deferred until
     // after the press animation has settled.
-    await waitFor(() => expect(button).toHaveAttribute("data-status", "pending"), {
-      timeout: 100,
-    });
-    await waitFor(() => expect(button).toHaveAttribute("data-status", "success"));
+    await act(() => vi.advanceTimersByTimeAsync(50));
+    expect(button).toHaveAttribute("data-status", "pending");
+    expect(writeText).not.toHaveBeenCalled();
+    await act(() => vi.advanceTimersByTimeAsync(100));
+    expect(button).toHaveAttribute("data-status", "success");
     expect(seen()).toEqual(["idle", "pending", "success"]);
   });
 

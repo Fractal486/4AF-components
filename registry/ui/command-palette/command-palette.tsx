@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/registry/lib/cn";
-import { ease, spring } from "@/registry/lib/motion";
+import { duration, ease, overlayEnter, overlayExit, overlayVisible, spring } from "@/registry/lib/motion";
 import { LoadingIndicator, LoaderProvider } from "@/registry/lib/loader";
 import { Autocomplete } from "@base-ui/react/autocomplete";
 import { Dialog as BaseDialog } from "@base-ui/react/dialog";
@@ -392,15 +392,15 @@ export function CommandPalette({
   }, []);
 
   const activePage = pages.length > 0 ? pages[pages.length - 1]! : null;
-  const activePanelItem = activePage?.itemId
+  const activeItem = activePage?.itemId
     ? findCommandItemInGroups(groups, activePage.itemId)
     : undefined;
-  const activePanel = activePanelItem?.panel ?? activePage?.panel;
-  const panelInput = activePanelItem
-    ? activePanelItem.panelInput
+  const activePanel = activeItem?.panel ?? activePage?.panel;
+  const panelInput = activeItem
+    ? activeItem.panelInput
     : activePage?.panelInput;
-  const activeHeaderActions = activePanelItem
-    ? activePanelItem.headerActions
+  const activeHeaderActions = activeItem
+    ? activeItem.headerActions
     : activePage?.headerActions;
   const panelInputValue = panelInput?.value ?? query;
   const setPanelInputValue = useCallback(
@@ -441,6 +441,11 @@ export function CommandPalette({
         {activeHeaderActions}
       </div>
     ) : null;
+  // Pages keep their snapshot for async-only items; known items stay live as groups change.
+  const pageGroups = useMemo(() => {
+    if (!activePage) return groups;
+    return activeItem?.items ? [{ items: activeItem.items }] : activePage.groups ?? [];
+  }, [activePage, activeItem, groups]);
   // Filter + rank ourselves, drop groups that empty out, and append the create row on the
   // root page while typing. Base UI then renders this list as-is (`filter={null}`).
   const visibleGroups = useMemo(() => {
@@ -450,7 +455,7 @@ export function CommandPalette({
       ? (asyncResults ?? [])
           .map((group) => ({ heading: group.heading, items: group.items }))
           .filter((group) => group.items.length > 0)
-      : (activePage ? (activePage.groups ?? []) : groups)
+      : pageGroups
           .map((group) => ({
             heading: group.heading,
             items: group.items
@@ -476,7 +481,7 @@ export function CommandPalette({
       });
     }
     return result;
-  }, [asyncActive, asyncResults, activePage, groups, query, onCreate, pages.length]);
+  }, [asyncActive, asyncResults, pageGroups, query, onCreate, pages.length]);
 
   // `searching` (from the engine) drives a moving indicator: whenever there's a list to
   // show it rides quietly in the input row ("refreshing"); with nothing to show it stands
@@ -519,8 +524,8 @@ export function CommandPalette({
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  exit={{ opacity: 0, transition: { duration: reduceMotion ? 0 : 0.18 } }}
-                  transition={{ duration: reduceMotion ? 0 : 0.25, ease: ease.out }}
+                  exit={{ opacity: 0, transition: { duration: reduceMotion ? 0 : duration.fast } }}
+                  transition={{ duration: reduceMotion ? 0 : duration.slow, ease: ease.out }}
                   className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
                 />
               }
@@ -566,17 +571,13 @@ export function CommandPalette({
                   initial={
                     reduceMotion
                       ? { opacity: 0 }
-                      : { opacity: 0, scale: 0.96, filter: "blur(4px)" }
+                      : overlayEnter
                   }
-                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                  animate={overlayVisible}
                   exit={
                     reduceMotion
                       ? { opacity: 0, transition: { duration: 0 } }
-                      : {
-                          opacity: 0,
-                          filter: "blur(8px)",
-                          transition: { duration: 0.2, ease: ease.out },
-                        }
+                      : overlayExit
                   }
                   transition={reduceMotion ? { duration: 0 } : spring.smooth}
                 />
@@ -762,6 +763,7 @@ export function CommandPalette({
                       goToDepth(pages.length - 1);
                       return;
                     }
+                    consumeHeaderEscape(event);
                     setOpen(false);
                     return;
                   }

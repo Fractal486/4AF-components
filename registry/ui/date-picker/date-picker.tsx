@@ -14,6 +14,7 @@ import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/registry/ui/popover/popover";
 import { Calendar, type CalendarProps, type DateRange } from "./calendar";
+import { inTimeZone } from "./date-picker.utils";
 import {
   datePickerTriggerVariants,
   type DatePickerTriggerVariants,
@@ -35,7 +36,8 @@ import {
  * Day / month / year in numbers, zero-padded, in that order in every locale: 19 / 10 / 2026.
  * The separators are dimmed so the numbers carry the reading.
  */
-function NumericDate({ date }: { date: Date }) {
+function NumericDate({ date: input, timeZone }: { date: Date; timeZone?: string }) {
+  const date = inTimeZone(input, timeZone);
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const separator = <span className="text-muted-foreground"> / </span>;
@@ -50,7 +52,8 @@ function NumericDate({ date }: { date: Date }) {
   );
 }
 
-function toIsoDate(date: Date) {
+function toIsoDate(input: Date, timeZone?: string) {
+  const date = inTimeZone(input, timeZone);
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${date.getFullYear()}-${month}-${day}`;
@@ -61,12 +64,8 @@ function normalizeSpaces(text: string) {
   return text.replace(/[   ]/g, " ");
 }
 
-function isSameDay(a: Date, b: Date) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
+function isSameDay(a: Date, b: Date, timeZone?: string) {
+  return toIsoDate(a, timeZone) === toIsoDate(b, timeZone);
 }
 
 function focusActiveDay(panel: HTMLElement | null) {
@@ -192,11 +191,11 @@ function DatePickerShell({
   };
 
   const dateLib = new DateLib({ timeZone: calendarProps?.timeZone });
-  const today = dateLib.startOfDay(calendarProps?.today ?? dateLib.today());
+  const today = dateLib.startOfDay(inTimeZone(calendarProps?.today ?? dateLib.today(), calendarProps?.timeZone));
   const todayDisabled =
     calendarProps?.disableNavigation ||
-    !!(calendarProps?.startMonth && today < dateLib.startOfMonth(calendarProps.startMonth)) ||
-    !!(calendarProps?.endMonth && today > dateLib.endOfMonth(calendarProps.endMonth));
+    !!(calendarProps?.startMonth && today < dateLib.startOfMonth(inTimeZone(calendarProps.startMonth, calendarProps.timeZone))) ||
+    !!(calendarProps?.endMonth && today > dateLib.endOfMonth(inTimeZone(calendarProps.endMonth, calendarProps.timeZone)));
   const todayButton = showToday ? (
     <Button
       type="button"
@@ -275,9 +274,10 @@ export function DatePicker({
 }: DatePickerProps) {
   const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue);
   const value = valueProp !== undefined ? valueProp : uncontrolledValue;
-  const formatter = useMemo(() => new Intl.DateTimeFormat(locale, { dateStyle: "medium" }), [locale]);
+  const timeZone = calendarProps?.timeZone;
+  const formatter = useMemo(() => new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone }), [locale, timeZone]);
   const format = (date: Date) =>
-    dateFormat === "numeric" ? <NumericDate date={date} /> : normalizeSpaces(formatter.format(date));
+    dateFormat === "numeric" ? <NumericDate date={date} timeZone={timeZone} /> : normalizeSpaces(formatter.format(date));
 
   const setValue = (next: Date | null) => {
     if (valueProp === undefined) setUncontrolledValue(next);
@@ -290,7 +290,7 @@ export function DatePicker({
       placeholder={placeholder}
       title={title}
       label={value ? format(value) : undefined}
-      hiddenValue={value ? toIsoDate(value) : undefined}
+      hiddenValue={value ? toIsoDate(value, timeZone) : undefined}
       onClear={() => setValue(null)}
       calendarProps={calendarProps}
     >
@@ -314,7 +314,13 @@ export function DatePicker({
 
 /* -- Range --------------------------------------------------------------------------- */
 
+type RangeCalendarPassthrough = CalendarPassthrough & Pick<
+  Extract<CalendarProps, { mode: "range" }>,
+  "min" | "max" | "excludeDisabled" | "resetOnSelect"
+>;
+
 export interface DateRangePickerProps extends DatePickerSharedProps {
+  calendarProps?: RangeCalendarPassthrough;
   value?: DateRange | null;
   defaultValue?: DateRange | null;
   onValueChange?: (value: DateRange | null) => void;
@@ -333,7 +339,7 @@ function DateRangeCalendar({
   onComplete,
 }: {
   value: DateRange | null;
-  calendarProps?: CalendarPassthrough;
+  calendarProps?: RangeCalendarPassthrough;
   onComplete: (range: DateRange) => void;
 }) {
   const [draft, setDraft] = useState<DateRange | undefined>(undefined);
@@ -342,16 +348,22 @@ function DateRangeCalendar({
     <Calendar
       {...calendarProps}
       mode="range"
+      required
       defaultMonth={value?.from ?? calendarProps?.defaultMonth}
       selected={draft ?? value ?? undefined}
-      onSelect={(_, day) => {
+      onSelect={(range, day) => {
         if (!draft) {
-          setDraft({ from: day, to: day });
+          setDraft({ from: day, to: undefined });
           return;
         }
-        const start = draft.from ?? day;
-        setDraft(undefined);
-        onComplete(day < start ? { from: day, to: start } : { from: start, to: day });
+        // DayPicker applies min/max and excludeDisabled to the incomplete draft.
+        // Invalid spans restart the draft; only a complete, valid range commits.
+        if (range?.from && range.to) {
+          setDraft(undefined);
+          onComplete(range);
+        } else {
+          setDraft(range ?? { from: day, to: undefined });
+        }
       }}
     />
   );
@@ -370,7 +382,8 @@ export function DateRangePicker({
 }: DateRangePickerProps) {
   const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue);
   const value = valueProp !== undefined ? valueProp : uncontrolledValue;
-  const formatter = useMemo(() => new Intl.DateTimeFormat(locale, { dateStyle: "medium" }), [locale]);
+  const timeZone = calendarProps?.timeZone;
+  const formatter = useMemo(() => new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone }), [locale, timeZone]);
 
   const setValue = (next: DateRange | null) => {
     if (valueProp === undefined) setUncontrolledValue(next);
@@ -382,16 +395,16 @@ export function DateRangePicker({
   const label = !(from && to)
     ? undefined
     : dateFormat === "numeric"
-      ? isSameDay(from, to)
-        ? <NumericDate date={from} />
+      ? isSameDay(from, to, timeZone)
+        ? <NumericDate date={from} timeZone={timeZone} />
         : (
             <>
-              <NumericDate date={from} />
+              <NumericDate date={from} timeZone={timeZone} />
               <span className="text-muted-foreground"> – </span>
-              <NumericDate date={to} />
+              <NumericDate date={to} timeZone={timeZone} />
             </>
           )
-      : normalizeSpaces(isSameDay(from, to) ? formatter.format(from) : formatter.formatRange(from, to));
+      : normalizeSpaces(isSameDay(from, to, timeZone) ? formatter.format(from) : formatter.formatRange(from, to));
 
   return (
     <DatePickerShell
@@ -399,7 +412,7 @@ export function DateRangePicker({
       title={title}
       {...props}
       label={label}
-      hiddenValue={from && to ? `${toIsoDate(from)}/${toIsoDate(to)}` : undefined}
+      hiddenValue={from && to ? `${toIsoDate(from, timeZone)}/${toIsoDate(to, timeZone)}` : undefined}
       onClear={() => setValue(null)}
       calendarProps={calendarProps}
     >

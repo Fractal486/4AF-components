@@ -254,11 +254,12 @@ import { Morph } from "@/components/ui/morph";
 {/* Use showToday={false} and clearable={false} to omit the footer. */}
 {/* The calendar shows only the weeks needed for each month. */}
 {/* dateFormat="numeric" shows 19 / 10 / 2026 in every locale. */}
+{/* calendarProps.timeZone keeps labels, submitted dates, and the grid in the same zone. */}
 <DateRangePicker
   value={range}
   onValueChange={setRange}
   dateFormat="numeric"
-  calendarProps={{ disabled: { before: new Date() } }}
+  calendarProps={{ disabled: { before: new Date() }, min: 1, max: 7, excludeDisabled: true }}
 />`,
   },
   popover: {

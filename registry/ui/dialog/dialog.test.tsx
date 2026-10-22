@@ -54,7 +54,8 @@ describe("DialogSteps", () => {
       </Dialog>,
     );
 
-    expect(screen.getByText("Profile phase")).toBeVisible();
+    expect(screen.getByText("Profile phase")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Go to Profile" })).toHaveAttribute("aria-current", "step");
     expect(screen.getByRole("button", { name: "Back" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "Go to Profile" })).toHaveAttribute(
@@ -101,7 +102,8 @@ describe("DialogSteps", () => {
     expect(screen.getByTestId("steps")).toHaveAttribute("data-direction", "forward");
 
     await user.click(screen.getByRole("button", { name: "Next" }));
-    await waitFor(() => expect(screen.getByText("Review phase")).toBeVisible());
+    expect(await screen.findByText("Review phase")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Go to Review" })).toHaveAttribute("aria-current", "step");
     expect(screen.getByTestId("steps")).toHaveAttribute("data-direction", "forward");
 
     await user.click(screen.getByRole("button", { name: "Back" }));

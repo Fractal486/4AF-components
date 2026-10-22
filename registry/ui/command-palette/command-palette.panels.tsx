@@ -93,15 +93,19 @@ export function CommandPanelList({
   // The panel root runs `mode="none"` with no `items` collection, so Base UI's
   // `autoHighlight` has nothing to pick a first row from — a panel opened with the header
   // field focused sat with no row ready, and the first arrow press was spent lighting one up
-  // rather than moving. Rows register in the DOM, so prime off that instead, using the same
+  // rather than moving. Prime the last enabled selection (otherwise the first enabled row)
+  // from the DOM, using the same
   // channel a press uses. No dependency array: rows come and go as a panel's query filters
   // them, and the guard means this only acts when the panel has no highlight at all.
   useEffect(() => {
     const list = listRef.current;
     if (!list || list.querySelector("[data-highlighted]")) return;
 
-    const first = list.querySelector<HTMLElement>('[role="option"]');
-    if (first) dispatchSelectionMove(first);
+    const rows = Array.from(list.querySelectorAll<HTMLElement>('[role="option"]'))
+      .filter((row) => row.getAttribute("aria-disabled") !== "true" &&
+        !row.hasAttribute("data-disabled") && !row.closest("[hidden]"));
+    const opening = rows.filter((row) => row.getAttribute("aria-selected") === "true").at(-1) ?? rows[0];
+    if (opening) dispatchSelectionMove(opening);
   });
 
   return (

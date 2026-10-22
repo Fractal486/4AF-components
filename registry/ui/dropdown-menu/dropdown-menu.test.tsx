@@ -9,6 +9,10 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSelect,
+  DropdownMenuSelectContent,
+  DropdownMenuSelectItem,
+  DropdownMenuSelectTrigger,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -439,5 +443,123 @@ describe("DropdownMenu", () => {
     // A menu item's name is built from its contents, so the live region has to live
     // outside the row or the row renames itself to "Mute thread Working" mid-flight.
     expect(screen.getByRole("menuitemcheckbox", { name: "Mute thread" })).toBeInTheDocument();
+  });
+});
+
+
+describe("DropdownMenuSelect", () => {
+  function Example({ multiple = false, value, searchable = true, keepMounted = true, autoFocusFirstItem = true, onValueChange = () => {} }: {
+    multiple?: boolean;
+    searchable?: boolean;
+    keepMounted?: boolean;
+    value?: string | string[];
+    autoFocusFirstItem?: boolean;
+    onValueChange?: (value: string | string[] | null) => void;
+  }) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger>Options</DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuSelect<string, boolean> multiple={multiple} defaultValue={value} onValueChange={onValueChange}>
+            <DropdownMenuSelectTrigger placeholder="Fruit" />
+            <DropdownMenuSelectContent keepMounted={keepMounted} searchable={searchable} autoFocusFirstItem={autoFocusFirstItem}>
+              <DropdownMenuSelectItem value="apple" disabled>Apple</DropdownMenuSelectItem>
+              <DropdownMenuSelectItem value="banana">Banana</DropdownMenuSelectItem>
+              <DropdownMenuSelectItem value="berry">Berry</DropdownMenuSelectItem>
+              <DropdownMenuSelectItem value="mango">Mango</DropdownMenuSelectItem>
+            </DropdownMenuSelectContent>
+          </DropdownMenuSelect>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
+  async function openSelect(user: ReturnType<typeof userEvent.setup>) {
+    screen.getByRole("button", { name: "Options" }).focus();
+    await user.keyboard("{ArrowDown}");
+    await user.hover(screen.getByRole("menuitem", { name: /Fruit/ }));
+    const input = await screen.findByRole("textbox", { name: "Search options" });
+    return input;
+  }
+
+  it.each([
+    { value: "mango", multiple: false, active: "Mango" },
+    { value: ["mango", "banana"], multiple: true, active: "Banana" },
+    { value: undefined, multiple: false, active: "Banana" },
+  ])("opens on $active for selection $value", async ({ value, multiple, active }) => {
+    const user = userEvent.setup();
+    render(<Example value={value} multiple={multiple} />);
+    const input = await openSelect(user);
+    const row = screen.getByRole(multiple ? "menuitemcheckbox" : "menuitemradio", { name: active });
+    await waitFor(() => expect(row).toHaveAttribute("data-panel-active"));
+    await waitFor(() => expect(input).toHaveFocus());
+    await user.keyboard("{ArrowDown}");
+    expect(row).toHaveFocus();
+    fireEvent.pointerLeave(row);
+    expect(row).toHaveAttribute("data-panel-active");
+  });
+
+  it("activates the first matching enabled row and selects it with Enter", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(<Example value="mango" onValueChange={onValueChange} />);
+    const input = await openSelect(user);
+    await waitFor(() => expect(input).toHaveFocus());
+    await user.keyboard("b");
+    const banana = screen.getByRole("menuitemradio", { name: "Banana" });
+    expect(banana).toHaveAttribute("data-panel-active");
+    expect(screen.getByRole("menuitemradio", { name: "Berry" })).not.toHaveAttribute("data-panel-active");
+    await user.keyboard("{Enter}");
+    expect(onValueChange).toHaveBeenCalledExactlyOnceWith("banana");
+    await waitFor(() => expect(input).not.toBeVisible());
+  });
+
+  it("clears the active row when no enabled match exists and ignores Enter", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(<Example onValueChange={onValueChange} />);
+    const input = await openSelect(user);
+    await waitFor(() => expect(input).toHaveFocus());
+    await user.keyboard("apple");
+    expect(document.querySelector('[data-panel-active]')).toBeNull();
+    await user.keyboard("{Enter}");
+    expect(onValueChange).not.toHaveBeenCalled();
+    await user.clear(input);
+    expect(screen.getByRole("menuitemradio", { name: "Banana" })).toHaveAttribute("data-panel-active");
+  });
+
+  it.each([true, false])("focuses the selected row without search (keepMounted=%s)", async (keepMounted) => {
+    const user = userEvent.setup();
+    render(<Example value="mango" searchable={false} keepMounted={keepMounted} />);
+    screen.getByRole("button", { name: "Options" }).focus();
+    await user.keyboard("{ArrowDown}");
+    await user.hover(screen.getByRole("menuitem", { name: /Fruit/ }));
+    const mango = await screen.findByRole("menuitemradio", { name: "Mango" });
+    await waitFor(() => expect(mango).toHaveFocus());
+    expect(mango).toHaveAttribute("data-panel-active");
+  });
+
+  it("keeps pointer activation and Enter on the same row", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(<Example value="mango" onValueChange={onValueChange} />);
+    const input = await openSelect(user);
+    await waitFor(() => expect(input).toHaveFocus());
+    const berry = screen.getByRole("menuitemradio", { name: "Berry" });
+    fireEvent.mouseMove(berry);
+    await waitFor(() => expect(berry).toHaveFocus());
+    expect(berry).toHaveAttribute("data-panel-active");
+    fireEvent.mouseLeave(berry);
+    expect(berry).toHaveAttribute("data-panel-active");
+    await user.keyboard("{Enter}");
+    expect(onValueChange).toHaveBeenCalledExactlyOnceWith("berry");
+  });
+
+  it("can opt out of opening activation and search focus", async () => {
+    const user = userEvent.setup();
+    render(<Example autoFocusFirstItem={false} />);
+    const input = await openSelect(user);
+    expect(input).not.toHaveFocus();
+    expect(document.querySelector('[data-panel-active]')).toBeNull();
   });
 });

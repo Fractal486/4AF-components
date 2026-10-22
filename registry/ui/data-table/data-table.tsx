@@ -13,7 +13,7 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
-import { duration, ease } from "@/registry/lib/motion";
+import { duration, ease, spring } from "@/registry/lib/motion";
 import { Button } from "@/registry/ui/button/button";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import {
@@ -520,7 +520,7 @@ export function DataTableHead({ className, sortKey, children, ...props }: DataTa
               transition={
                 reduceMotion || !active
                   ? { duration: 0 }
-                  : { type: "spring", duration: 0.4, bounce: 0 }
+                  : spring.chevron
               }
             >
               {active ? (

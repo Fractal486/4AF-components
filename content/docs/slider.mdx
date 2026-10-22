@@ -71,3 +71,6 @@ ignore `inlineLabel`.
 `showValueTooltip` (off by default) shows the live value above the thumb while it is hovered or
 keyboard-focused. It stays open while dragging, follows the thumb, and closes after release once
 the pointer has left the thumb.
+
+The bar thumb exposes `data-grabbed` while stretched by a drag, and `data-dodged` when it
+moves out of the way of an inline label. Reduced motion skips the grab stretch.

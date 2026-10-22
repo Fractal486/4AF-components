@@ -23,6 +23,10 @@ export const duration = {
   base: 0.2,
   /** Larger surfaces travelling further: dialogs, popovers. */
   slow: 0.3,
+  /** Deliberate, larger transitions. */
+  slower: 0.45,
+  /** Chevron rotation settles without overshoot. */
+  chevron: 0.4,
 } as const;
 
 /**
@@ -64,7 +68,17 @@ export const spring = {
    */
   clean: { type: "spring", visualDuration: 0.18, bounce: 0 },
   /** Snappy, barely any overshoot. Toggles, checkboxes, small state flips. */
-  snappy: { type: "spring", visualDuration: 0.2, bounce: 0.05 },
+  snappy: { type: "spring", visualDuration: duration.base, bounce: 0.05 },
   /** The default surface spring. Dialogs, popovers, menus. */
-  smooth: { type: "spring", visualDuration: 0.3, bounce: 0.1 },
+  smooth: { type: "spring", visualDuration: duration.slow, bounce: 0.1 },
+  chevron: { type: "spring", duration: duration.chevron, bounce: 0 },
+} as const;
+
+/** Shared retained-overlay poses. Directional sheets reuse the exit timing. */
+export const overlayEnter = { opacity: 0, scale: 0.96, filter: "blur(4px)" } as const;
+export const overlayVisible = { opacity: 1, scale: 1, filter: "blur(0px)" } as const;
+export const overlayExit = {
+  opacity: 0,
+  filter: "blur(8px)",
+  transition: { duration: duration.base, ease: ease.out },
 } as const;

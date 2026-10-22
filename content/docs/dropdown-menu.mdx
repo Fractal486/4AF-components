@@ -50,9 +50,13 @@ Nested panels open immediately when their parent row is hovered by default; set 
 the panel. Hover-opening a navigation submenu does not activate its first child; hovering a row
 paints its hover fill, and keyboard navigation moves the active highlight.
 
-Searchable select subpanels focus their search field on opening by default. Their
-`autoFocusFirstItem={false}` prop opts out of that automatic search-field focus; Arrow Down or
-Arrow Up in the field moves focus to the first or last enabled matching option.
+Select subpanels open with the selected row active, the most recent enabled selection for
+multi-select, or the first enabled row in document order. They mark it with `data-panel-active`
+and retain it when the pointer leaves a row. A query activates the first enabled match.
+Searchable panels keep focus in the search field; Enter selects the active row, and Arrow Down
+or Arrow Up moves focus to that row for Base UI keyboard navigation. With no active row, the
+arrows start at the first or last enabled match. `autoFocusFirstItem={false}` opts out of
+automatic activation and search-field focus.
 
 Select-style triggers keep their label or placeholder on the left and show the selected value or
 selection count, dimmed, immediately before the chevron. Searchable panels use a plain text field

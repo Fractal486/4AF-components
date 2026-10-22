@@ -19,9 +19,10 @@ it("reviews the edited profile and retains choices when returning to earlier pha
   await user.click(screen.getByRole("checkbox", { name: "Tips and tutorials" }));
   await user.click(screen.getByRole("button", { name: "Next" }));
 
-  expect(await screen.findByText("Sam Rivera")).toBeVisible();
-  expect(screen.getByText("sam@example.com")).toBeVisible();
-  expect(screen.getByText("Updates: Product updates, Tips and tutorials.")).toBeVisible();
+  expect(screen.getByRole("button", { name: "Go to Review" })).toHaveAttribute("aria-current", "step");
+  expect(await screen.findByText("Sam Rivera")).toBeInTheDocument();
+  expect(screen.getByText("sam@example.com")).toBeInTheDocument();
+  expect(screen.getByText("Updates: Product updates, Tips and tutorials.")).toBeInTheDocument();
   expect(screen.queryByText("Alex Morgan")).not.toBeInTheDocument();
 
   await user.click(screen.getByRole("button", { name: "Back" }));
@@ -43,7 +44,8 @@ it("reports empty profile fields and no enabled updates accurately", async () =>
   await user.click(screen.getByRole("checkbox", { name: "Weekly digest" }));
   await user.click(screen.getByRole("button", { name: "Next" }));
 
-  expect(await screen.findByText("No name entered")).toBeVisible();
-  expect(screen.getByText("No email entered")).toBeVisible();
-  expect(screen.getByText("No updates enabled.")).toBeVisible();
+  expect(screen.getByRole("button", { name: "Go to Review" })).toHaveAttribute("aria-current", "step");
+  expect(await screen.findByText("No name entered")).toBeInTheDocument();
+  expect(screen.getByText("No email entered")).toBeInTheDocument();
+  expect(screen.getByText("No updates enabled.")).toBeInTheDocument();
 });

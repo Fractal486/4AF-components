@@ -20,6 +20,63 @@ import {
 } from "./command-palette";
 
 describe("CommandPalette", () => {
+  it("requests a root Escape close exactly once", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(<CommandPalette open onOpenChange={onOpenChange} groups={[{ items: [{ id: "one", label: "One" }] }]} />);
+    await user.click(screen.getByPlaceholderText("Type a command or search…"));
+    await user.keyboard("{Escape}");
+    expect(onOpenChange).toHaveBeenCalledExactlyOnceWith(false);
+  });
+
+  it("reads updated sub-list labels, disabled state and callbacks while open", async () => {
+    const user = userEvent.setup();
+    const oldAction = vi.fn();
+    const newAction = vi.fn();
+    const group = (updated: boolean) => [{ items: [{ id: "settings", label: "Settings", items: [
+      { id: "save", label: updated ? "Save changes" : "Save", onSelect: updated ? newAction : oldAction },
+      { id: "unavailable", label: "Unavailable", disabled: updated },
+    ] }] }];
+    const { rerender } = render(<CommandPalette open groups={group(false)} />);
+    await user.click(await screen.findByRole("option", { name: "Settings" }));
+    expect(await screen.findByRole("option", { name: "Save" })).toBeInTheDocument();
+    rerender(<CommandPalette open groups={group(true)} />);
+    expect(screen.getByRole("option", { name: "Unavailable" })).toHaveAttribute("aria-disabled", "true");
+    await user.click(screen.getByRole("option", { name: "Save changes" }));
+    expect(newAction).toHaveBeenCalledOnce();
+    expect(oldAction).not.toHaveBeenCalled();
+  });
+
+  it("keeps async-only sub-lists available after their query clears", async () => {
+    const user = userEvent.setup();
+    const action = vi.fn();
+    render(<CommandPalette open groups={[]} searchDebounce={0} onSearch={async () => [{ items: [
+      { id: "remote", label: "Remote", items: [{ id: "child", label: "Remote child", onSelect: action }] },
+    ] }]} />);
+    await user.type(screen.getByPlaceholderText("Type a command or search…"), "remote");
+    await user.click(await screen.findByRole("option", { name: "Remote" }));
+    await user.click(await screen.findByRole("option", { name: "Remote child" }));
+    expect(action).toHaveBeenCalledOnce();
+  });
+
+  it.each([true, false])("primes the last enabled selection, else the first enabled row (selected=%s)", async (selected) => {
+    const user = userEvent.setup();
+    const activate = vi.fn();
+    render(<CommandPalette open initialItemId="panel" groups={[{ items: [{
+      id: "panel", label: "Projects", panelInput: { label: "Search projects" },
+      panel: () => <CommandPanelList autoFocus={false}>
+        <CommandPanelRow value="disabled" aria-disabled="true" selected onSelect={() => {}}>Unavailable</CommandPanelRow>
+        <CommandPanelRow value="first" selected={selected} onSelect={() => activate("first")}>First</CommandPanelRow>
+        <CommandPanelRow value="last" selected={selected} onSelect={() => activate("last")}>Last</CommandPanelRow>
+        <CommandPanelRow value="disabled-last" data-disabled="" selected onSelect={() => {}}>Also unavailable</CommandPanelRow>
+      </CommandPanelList>,
+    }] }]} />);
+    const row = await screen.findByRole("option", { name: selected ? "Last" : "First" });
+    await waitFor(() => expect(row).toHaveAttribute("data-highlighted"));
+    await user.keyboard("{Enter}");
+    expect(activate).toHaveBeenCalledExactlyOnceWith(selected ? "last" : "first");
+  });
+
   it("shows a useful state when async search rejects", async () => {
     const user = userEvent.setup();
     render(

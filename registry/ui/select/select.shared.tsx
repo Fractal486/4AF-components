@@ -42,7 +42,6 @@ export const SIZE: Record<
   },
 };
 
-export const EASE_OUT = [0.16, 1, 0.3, 1] as const;
 
 // The panel blurs and scales in from `--transform-origin`, and every select in the family
 // uses these same numbers: 0.95 and a 3px blur entering, a shorter 0.97 and 2px leaving, over

@@ -18,7 +18,7 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
-import { ease, spring } from "@/registry/lib/motion";
+import { duration, ease, overlayExit, spring } from "@/registry/lib/motion";
 import { Button } from "@/registry/ui/button/button";
 import { sheetContentVariants, type SheetContentVariants } from "./sheet.variants";
 
@@ -147,8 +147,8 @@ export function SheetContent({
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                exit={{ opacity: 0, transition: { duration: reduceMotion ? 0 : 0.18 } }}
-                transition={{ duration: reduceMotion ? 0 : 0.25, ease: ease.out }}
+                exit={{ opacity: 0, transition: { duration: reduceMotion ? 0 : duration.fast } }}
+                transition={{ duration: reduceMotion ? 0 : duration.slow, ease: ease.out }}
                 className={backdropClassName}
               />
             }
@@ -164,7 +164,7 @@ export function SheetContent({
                 exit={
                   reduceMotion
                     ? { opacity: 0, transition: { duration: 0 } }
-                    : { ...exitTo[resolvedSide], transition: { duration: 0.28, ease: ease.out } }
+                    : { ...exitTo[resolvedSide], transition: overlayExit.transition }
                 }
                 transition={reduceMotion ? { duration: 0 } : spring.smooth}
               />

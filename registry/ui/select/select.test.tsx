@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
@@ -1016,11 +1016,13 @@ describe("Base UI Select", () => {
   });
 
   describe("safe triangle", () => {
-    const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+    beforeEach(() => vi.useFakeTimers({ shouldAdvanceTime: true }));
+    afterEach(() => vi.useRealTimers());
+    const advance = (ms: number) => act(() => vi.advanceTimersByTimeAsync(ms));
 
     // The trigger is left at (95, 50); the panel occupies x 100–200, y 0–100 beside it.
     async function openTowardPanel() {
-      const user = userEvent.setup();
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTimeAsync });
       render(
         <Select items={FRUITS}>
           <SelectTrigger aria-label="Fruit">
@@ -1051,9 +1053,9 @@ describe("Base UI Select", () => {
       // Diagonally up toward the panel, over whatever lies between — longer than the plain
       // close delay, which is what used to drop it.
       await user.pointer({ target: document.body, coords: { clientX: 97, clientY: 35 } });
-      await pause(150);
+      await advance(150);
       await user.pointer({ target: document.body, coords: { clientX: 99, clientY: 20 } });
-      await pause(150);
+      await advance(150);
       expect(trigger).toHaveAttribute("aria-expanded", "true");
     });
 
@@ -1066,9 +1068,10 @@ describe("Base UI Select", () => {
     it("closes once the pointer rests on the way instead of arriving", async () => {
       const { user, trigger } = await openTowardPanel();
       await user.pointer({ target: document.body, coords: { clientX: 97, clientY: 45 } });
-      await pause(150);
+      await advance(150);
       expect(trigger).toHaveAttribute("aria-expanded", "true");
-      await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "false"), { timeout: 1000 });
+      await advance(151);
+      expect(trigger).toHaveAttribute("aria-expanded", "false");
     });
   });
 

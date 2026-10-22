@@ -50,6 +50,12 @@ mirror the corresponding tokens and must be updated together. Component-specific
 exit timings are documented separately. CSS overrides do not change JavaScript
 animations, so reduced motion is handled separately in both.
 
+`registry/lib/motion.ts` mirrors all five duration tokens, including `slower` and `chevron`,
+and exports `spring.chevron` plus shared overlay poses. Dialog, Alert Dialog, and Command
+Palette share those poses; Sheet keeps its directional travel with the same base exit
+duration. Overlay backdrops enter with `duration.slow` and leave with `duration.fast`.
+A test checks the JavaScript defaults against the CSS tokens.
+
 ## Shared loading indicators
 
 Loading indicators are caller-supplied React nodes. `LoaderProvider` installs automatically

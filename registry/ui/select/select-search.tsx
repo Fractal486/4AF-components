@@ -16,6 +16,7 @@ import {
 } from "react";
 import { useMergedRefs } from "@/registry/lib/refs";
 import { cn } from "@/registry/lib/cn";
+import { duration, ease, spring } from "@/registry/lib/motion";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 
 /**
@@ -37,7 +38,6 @@ import { Checkbox } from "@/registry/ui/checkbox/checkbox";
  * nothing is chosen, and highlights the top match while searching.
  */
 
-const EASE_OUT = [0.16, 1, 0.3, 1] as const;
 // The panel blurs and scales in from `--transform-origin`, and every select in the family
 // uses these same numbers: 0.95 and a 3px blur entering, a shorter 0.97 and 2px leaving, over
 // `--duration-base` on the expo curve. Three selects sat in one form that scale by different
@@ -370,7 +370,7 @@ export function SearchSelectInput({
           aria-hidden
           animate={{ rotate: open ? 180 : 0 }}
           transition={
-            reduceMotion ? { duration: 0 } : { type: "spring", duration: 0.4, bounce: 0 }
+            reduceMotion ? { duration: 0 } : spring.chevron
           }
         >
           <ChevronDown className={SIZE[size].glyph} />
@@ -422,7 +422,7 @@ export function SearchSelectContent({
                     ? FADE_SHOW
                     : FADE_EXIT
               }
-              transition={reduceMotion ? { duration: 0 } : { duration: 0.2, ease: EASE_OUT }}
+              transition={reduceMotion ? { duration: 0 } : { duration: duration.base, ease: ease.out }}
             />
           }
           {...props}

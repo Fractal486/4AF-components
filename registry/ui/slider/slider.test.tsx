@@ -481,6 +481,7 @@ describe("Slider", () => {
     [20, true],
     [0, false],
   ] as const)("at value %s, dodges the thumb under inline text: %s", async (value, expected) => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     // jsdom has no layout: give every element a 200px width so the thumb has a rail to travel.
     const width = vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockReturnValue(200);
     try {
@@ -521,11 +522,12 @@ describe("Slider", () => {
         await waitFor(() => expect(thumb).toHaveAttribute("data-dodged", ""));
       } else {
         // Parked at the minimum, under the label or not, the thumb stays as it is.
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await act(() => vi.advanceTimersByTimeAsync(50));
         expect(thumb).not.toHaveAttribute("data-dodged");
       }
     } finally {
       width.mockRestore();
+      vi.useRealTimers();
     }
   });
 
@@ -642,6 +644,7 @@ describe("Slider", () => {
 
   it("draws the dragged thumb and fill at the value while still held, all the way to the end", async () => {
     // jsdom has no layout: a 200px control, and pointer capture as a no-op.
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     const width = vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockReturnValue(200);
     const rect = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
       left: 0, right: 200, width: 200, top: 0, bottom: 40, height: 40, x: 0, y: 0, toJSON() {},
@@ -666,7 +669,7 @@ describe("Slider", () => {
       for (const clientX of [120, 160, 199, 240]) {
         await act(async () => {
           fireEvent.pointerMove(document, { ...pointer, clientX });
-          await new Promise((resolve) => setTimeout(resolve, 40));
+          await vi.advanceTimersByTimeAsync(40);
         });
       }
 
@@ -677,6 +680,7 @@ describe("Slider", () => {
       Object.assign(Element.prototype, capture);
       rect.mockRestore();
       width.mockRestore();
+      vi.useRealTimers();
     }
   });
 
@@ -705,21 +709,16 @@ describe("Slider", () => {
       for (const clientX of [110, 130, 150]) {
         await act(async () => {
           fireEvent.pointerMove(document, { ...pointer, clientX });
-          await new Promise((resolve) => setTimeout(resolve, 40));
         });
       }
 
-      // The right thumb moved, so it holds the grab's widened middle; the stationary left one
-      // (picked at the press, both being equally close) eases back to its resting width.
-      const middles = Array.from(
-        container.querySelectorAll<HTMLElement>('[data-slot="slider-thumb"] > span:nth-child(2)'),
-      );
-      const widthScale = (element: HTMLElement) =>
-        Number(/scaleX\(([\d.]+)\)/.exec(element.style.transform)?.[1] ?? 1);
-      await waitFor(() => {
-        expect(widthScale(middles[1]!)).toBeGreaterThan(1.4);
-        expect(widthScale(middles[0]!)).toBeLessThan(1.05);
-      });
+      // The moving thumb receives the grab state; assert that state rather than waiting
+      // for a spring's intermediate scale under a second (fake) frame clock.
+      const thumbs = container.querySelectorAll('[data-slot="slider-thumb"]');
+      expect(thumbs[1]).toHaveAttribute("data-grabbed");
+      expect(thumbs[0]).not.toHaveAttribute("data-grabbed");
+      expect(screen.getAllByRole("slider").map((input) => input.getAttribute("aria-valuenow")))
+        .toEqual(["50", "75"]);
     } finally {
       Object.assign(Element.prototype, capture);
       rect.mockRestore();
