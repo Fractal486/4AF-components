@@ -1,9 +1,13 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { MotionGlobalConfig } from "motion/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, vi } from "vitest";
 import { ActionButton } from "./action-button";
 
-afterEach(() => vi.useRealTimers());
+afterEach(() => {
+  vi.useRealTimers();
+  MotionGlobalConfig.skipAnimations = false;
+});
 
 describe("ActionButton", () => {
   it("keeps keyboard focus while pending and blocks repeat activation", async () => {
@@ -205,6 +209,7 @@ describe("ActionButton", () => {
   });
 
   it("centres an icon-only pending state over the reserved labelled content", async () => {
+    MotionGlobalConfig.skipAnimations = true;
     let resolveAction: () => void;
     const action = vi.fn(
       () =>
@@ -226,16 +231,16 @@ describe("ActionButton", () => {
     const button = screen.getByRole("button", { name: "Deploy" });
     const content = button.querySelector('[data-slot="action-button-content"]');
     const group = content?.firstElementChild;
-    const pendingIcon = content?.querySelector('[data-slot="action-button-pending-icon"]');
 
     expect(button).toHaveAttribute("data-pending-mode", "icon");
     expect(content).toHaveClass("inline-grid");
     expect(group).not.toBeNull();
-    expect(pendingIcon).toHaveClass("absolute", "inset-0", "place-items-center");
     expect(group).toHaveAttribute("data-state", "visible");
-    expect(pendingIcon).toHaveAttribute("data-state", "hidden");
+    expect(content?.querySelector('[data-slot="action-button-pending-icon"]')).toBeNull();
 
     fireEvent.click(button);
+    const pendingIcon = content?.querySelector('[data-slot="action-button-pending-icon"]');
+    expect(pendingIcon).toHaveClass("absolute", "inset-0", "place-items-center");
 
     expect(button).toHaveAttribute("data-status", "pending");
     // The label morphs out as the loader morphs in; neither is cut.
@@ -248,7 +253,7 @@ describe("ActionButton", () => {
 
     expect(button).toHaveAttribute("data-status", "success");
     expect(group).toHaveAttribute("data-state", "visible");
-    expect(pendingIcon).toHaveAttribute("data-state", "hidden");
+    await waitFor(() => expect(pendingIcon).not.toBeInTheDocument());
   });
 
   it("passes the button gap through the pending centering wrapper", () => {

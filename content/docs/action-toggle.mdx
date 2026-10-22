@@ -27,6 +27,9 @@ showing state and animates the width as it changes. The control carries `data-si
 [LoaderProvider](/docs/reference/engineering#shared-loading-indicators), defaulting to `ClassicLoader`.
 A supplied `icons.pending` takes precedence.
 
+Hidden sizing copies reserve the loader's space without mounting it. An idle toggle does not
+run the supplied loader's timers or animations.
+
 ## Persistent state
 
 [Action Button](/docs/action-button) shows a temporary outcome, then returns to idle.

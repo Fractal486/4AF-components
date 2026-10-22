@@ -123,8 +123,8 @@ export function SelectContent({
     values,
     clear,
     size,
-    firstVisibleItem,
-    openingItem,
+    hasVisibleItems,
+    getOpeningItem,
     activeItem,
     setActiveItem,
     setPanelSearch,
@@ -149,8 +149,8 @@ export function SelectContent({
   const [positionerNode, setPositionerNode] = useState<HTMLDivElement | null>(null);
   const [lockedWidth, setLockedWidth] = useState<number | null>(null);
 
-  // Derived during render, not from a post-render DOM query: `firstVisibleItem` is the same
-  // predicate the items themselves hide on, so it's `undefined` exactly when nothing matches.
+  // Derived during render, not from a post-render DOM query: `hasVisibleItems` is the same
+  // predicate the items themselves hide on, so it's false exactly when nothing matches.
   // Computing it here means the list-hidden + empty-message swap happens in the *same* frame
   // as the filtering — an effect-set flag would flip a render late, giving one frame with an
   // empty (but not-yet-hidden) list. That extra frame is a second height change, and on the
@@ -188,11 +188,11 @@ export function SelectContent({
   // flipping about under the caret. Holding the previous answer costs nothing, because a
   // row that registers late can only *add* a match, and that makes the question moot.
   const [settled, setSettled] = useState<{ query: string; empty: boolean } | null>(null);
-  const nothingMatches = searchable && firstVisibleItem === undefined;
+  const nothingMatches = searchable && !hasVisibleItems;
   useLayoutEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- see above
-    setSettled({ query: searchQuery, empty: firstVisibleItem === undefined });
-  }, [firstVisibleItem, searchQuery]);
+    setSettled({ query: searchQuery, empty: !hasVisibleItems });
+  }, [hasVisibleItems, searchQuery]);
 
   // Nothing to show covers both ways of having nothing: a query that ruled everything out,
   // and a panel with no options to begin with. They read the same to someone looking at it,
@@ -233,6 +233,14 @@ export function SelectContent({
     observer.observe(positionerNode);
     return () => observer.disconnect();
   }, [positionerNode, open, searchable, width, searchQuery]);
+
+  const [openingItem, setOpeningItem] = useState<unknown>(undefined);
+  useLayoutEffect(() => {
+    if (!open) return;
+    // Resolve after React has committed row insertion/reordering and item refs. Registration
+    // order can change when labels or disabled props update; only DOM order is authoritative.
+    setOpeningItem(getOpeningItem(listRef.current));
+  }, [children, getOpeningItem, open]);
 
   // A panel never opens with nothing ready. It opens on the current selection, and on its
   // first row when there is none — see `openingItem`, which also moves to the new top row as
@@ -289,6 +297,7 @@ export function SelectContent({
         onKeyDown={(event) => {
           if (event.key === "ArrowDown" || event.key === "ArrowUp") {
             event.preventDefault();
+            event.stopPropagation();
             rowFocusIntentRef.current = true;
             focusPanelOption(listRef.current, event.key === "ArrowDown" ? "next" : "previous");
             return;

@@ -280,9 +280,6 @@
       "name": "motion",
       "type": "registry:lib",
       "description": "Spring and easing presets, mirroring the CSS motion tokens.",
-      "dependencies": [
-        "motion"
-      ],
       "files": [
         {
           "path": "registry/lib/motion.ts",
@@ -330,7 +327,7 @@
     {
       "name": "loader",
       "type": "registry:lib",
-      "description": "Small context and loading slot for caller-supplied indicators, with ClassicLoader as the fallback.",
+      "description": "Small context and loading slot for caller-supplied indicators, with ClassicLoader as the fallback. Hidden Morph sizing copies reserve the indicator footprint without mounting a loader.",
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/classic-loader.json"
@@ -526,14 +523,15 @@
     {
       "name": "morph",
       "type": "registry:ui",
-      "description": "Animated content swap — icons or text. Copy to check, Follow to Following.",
+      "description": "Animated content swap — icons or text. Copy to check, Follow to Following. Hidden sizing copies reserve loader space without mounting animated indicators.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/morph (Markdown: https://4af.selfsimilar.dev/docs/morph.md)",
       "dependencies": [
         "motion"
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/cn.json",
-        "https://4af.selfsimilar.dev/r/motion.json"
+        "https://4af.selfsimilar.dev/r/motion.json",
+        "https://4af.selfsimilar.dev/r/loader.json"
       ],
       "files": [
         {
@@ -587,7 +585,7 @@
     {
       "name": "action-button",
       "type": "registry:ui",
-      "description": "Runs an async action, shows pending/success/error, and resets after feedback. Preserves focus while pending and reserves its widest state; pending can keep its label or show a centered loader only.",
+      "description": "Runs an async action, shows pending/success/error, and resets after feedback. Preserves focus while pending and reserves its widest state; pending can keep its label or show a centered loader only. Loaders mount only while visible, including their exit animation.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/action-button (Markdown: https://4af.selfsimilar.dev/docs/action-button.md)",
       "dependencies": [
         "lucide-react",
@@ -750,7 +748,6 @@
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
-        "lucide-react",
         "motion"
       ],
       "registryDependencies": [
@@ -1068,7 +1065,7 @@
     {
       "name": "select",
       "type": "registry:ui",
-      "description": "Single or multiple selection with optional search, nested options, and footer actions.",
+      "description": "Single or multiple selection with optional search, nested options, and footer actions. Opening and search highlights follow rendered row order, including dynamically updated options.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/select (Markdown: https://4af.selfsimilar.dev/docs/select.md)",
       "dependencies": [
         "@base-ui/react",
@@ -1281,7 +1278,7 @@
     {
       "name": "select-aligned",
       "type": "registry:ui",
-      "description": "A single-select menu that aligns the selected option with its trigger when space and input method allow.",
+      "description": "A single-select menu that aligns the selected option with its trigger when space and input method allow. Opening and search highlights follow rendered row order, including dynamically updated options.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/select-aligned (Markdown: https://4af.selfsimilar.dev/docs/select-aligned.md)",
       "dependencies": [
         "@base-ui/react",
@@ -1291,7 +1288,8 @@
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
-        "https://4af.selfsimilar.dev/r/input.json"
+        "https://4af.selfsimilar.dev/r/input.json",
+        "https://4af.selfsimilar.dev/r/refs.json"
       ],
       "files": [
         {
@@ -1579,13 +1577,11 @@
       "docs": "Docs: https://4af.selfsimilar.dev/docs/dropdown-menu (Markdown: https://4af.selfsimilar.dev/docs/dropdown-menu.md)",
       "dependencies": [
         "@base-ui/react",
-        "lucide-react",
-        "motion"
+        "lucide-react"
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
-        "https://4af.selfsimilar.dev/r/motion.json",
         "https://4af.selfsimilar.dev/r/morph.json",
         "https://4af.selfsimilar.dev/r/checkbox.json",
         "https://4af.selfsimilar.dev/r/radio.json",

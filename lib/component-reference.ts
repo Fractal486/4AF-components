@@ -9,6 +9,7 @@ export const componentReferences = {
     usage: `import { ActionButton } from "@/components/ui/action-button";
 
 // Pending keeps keyboard focus; completion callbacks also run after unmount.
+// Idle sizing copies reserve the loader's space without mounting its animation.
 <ActionButton
   action={() => saveChanges()}
   labels={{ success: "Saved" }}
@@ -238,6 +239,7 @@ import { Button } from "@/components/ui/button";
     usage: `import { Check, Copy } from "lucide-react";
 import { Morph } from "@/components/ui/morph";
 
+// LoadingIndicator slots keep their size in hidden copies without mounting a loader.
 <Morph
   activeKey={copied ? "done" : "idle"}
   items={{ idle: <Copy />, done: <Check /> }}
@@ -305,6 +307,7 @@ import { Morph } from "@/components/ui/morph";
   SelectValue,
 } from "@/components/ui/select";
 
+// The opening row is the selection, then the first enabled option in rendered order.
 <Select size="xs" defaultValue="apple">
   <SelectTrigger variant="ghost" label="Fruit">
     <SelectValue />
@@ -331,6 +334,7 @@ import { Morph } from "@/components/ui/morph";
   AlignedSelectTrigger,
 } from "@/components/ui/select-aligned";
 
+// Dynamic option updates preserve rendered order for opening and search highlights.
 <AlignedSelect size="xs" value={city} onValueChange={setCity}>
   <AlignedSelectTrigger variant="ghost" label="City" placeholder="Pick a city" />
   <AlignedSelectContent>

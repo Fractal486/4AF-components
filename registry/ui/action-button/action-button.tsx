@@ -1,7 +1,7 @@
 "use client";
 
 import { TriangleAlert } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
 import { spring } from "@/registry/lib/motion";
@@ -246,20 +246,23 @@ export function ActionButton({
             {iconPosition === "end" && glyph}
           </motion.span>
 
-          {pendingMode === "icon" && (
-            <motion.span
-              data-slot="action-button-pending-icon"
-              data-state={pendingIconOnly ? "visible" : "hidden"}
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 inline-grid place-items-center"
-              variants={morphVariants}
-              initial={false}
-              animate={pendingIconOnly ? "animate" : "exit"}
-              transition={swap}
-            >
-              <LoadingIndicator loader={loader} />
-            </motion.span>
-          )}
+          <AnimatePresence initial={false}>
+            {pendingIconOnly && (
+              <motion.span
+                data-slot="action-button-pending-icon"
+                data-state="visible"
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 inline-grid place-items-center"
+                variants={morphVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={swap}
+              >
+                <LoadingIndicator loader={loader} />
+              </motion.span>
+            )}
+          </AnimatePresence>
         </span>
       </Button>
 

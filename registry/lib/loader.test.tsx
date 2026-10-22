@@ -5,11 +5,44 @@ import { ActionButton } from "@/registry/ui/action-button/action-button";
 import { ActionToggle } from "@/registry/ui/action-toggle/action-toggle";
 import { Alert } from "@/registry/ui/alert/alert";
 import { Badge } from "@/registry/ui/badge/badge";
+import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
+import { Morph } from "@/registry/ui/morph/morph";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuActionItem } from "@/registry/ui/dropdown-menu/dropdown-menu";
 import { CommandPalette, CommandPanelLoading } from "@/registry/ui/command-palette/command-palette";
 import { LoaderProvider, LoadingIndicator } from "./loader";
 
 const pending = () => new Promise<void>(() => {});
+
+it.each(["badge", "button", "button-icon", "toggle"])("mounts a supplied loader only for the visible pending %s", (kind) => {
+  const control = (loading: boolean) => kind === "badge"
+    ? <Badge status={loading ? "loading" : "neutral"}>Status</Badge>
+    : kind.startsWith("button")
+      ? <ActionButton action={pending} pendingMode={kind === "button-icon" ? "icon" : "label"}>Run</ActionButton>
+      : <ActionToggle action={pending}>Run</ActionToggle>;
+  const loader = <AsciiLoader className="test-loader" />;
+  const { container, rerender } = render(<LoaderProvider loader={loader}>{control(false)}</LoaderProvider>);
+  expect(container.querySelectorAll(".test-loader")).toHaveLength(0);
+  // The hidden copy keeps the control's indicator footprint without mounting its animation.
+  const sizer = container.querySelector('[aria-hidden="true"] [data-slot="loader"]');
+  expect(sizer).toHaveClass(kind === "badge" ? "size-2.5" : "size-[1em]");
+  expect(sizer).toBeEmptyDOMElement();
+  if (kind === "badge") rerender(<LoaderProvider loader={loader}>{control(true)}</LoaderProvider>);
+  else fireEvent.click(screen.getByRole("button", { name: "Run" }));
+  expect(container.querySelectorAll(".test-loader")).toHaveLength(1);
+});
+
+it.each(["widest", "current"] as const)("suppresses local and fallback loaders in %s sizers, including nested Morphs", (sizing) => {
+  const { container } = render(<Morph<"idle" | "pending"> sizing={sizing} activeKey="idle" items={{
+    idle: "Ready",
+    pending: <Morph<"pending" | "other"> activeKey="pending" items={{
+      pending: <LoadingIndicator loader={<AsciiLoader className="local-loader" />} />,
+      other: <LoadingIndicator />,
+    }} />,
+  }} />);
+  expect(container.querySelector(".local-loader")).toBeNull();
+  expect(container.querySelector('[data-slot="classic-loader"]')).toBeNull();
+  expect(container.querySelectorAll('[data-slot="loader"]').length).toBeGreaterThan(0);
+});
 
 it("inherits supplied nodes through nested providers and portals, with local overrides", () => {
   const { rerender } = render(<LoaderProvider loader={<span>Global</span>}>

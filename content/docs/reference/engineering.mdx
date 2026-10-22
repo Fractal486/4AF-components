@@ -61,6 +61,11 @@ The loader slot is a square the size of the icons around it: 14px or 16px in but
 14px in menu rows, the Select icon size in Select rows, and 16px in the command palette. A
 supplied loader is constrained to that square.
 
+Morph's hidden sizing copies reserve that same square without mounting the loader. Idle
+Badges, Action Buttons, and Action Toggles therefore do not run a supplied loader's timers or
+animations; the indicator mounts in their visible loading state. Custom icons rendered outside
+`LoadingIndicator` still mount normally in sizing copies.
+
 ```tsx
 import { LoaderProvider } from "@/lib/loader";
 import { Button } from "@/components/ui/button";

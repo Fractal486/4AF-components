@@ -67,9 +67,13 @@ index; the skill ZIP, Markdown documents, and registry files are produced during
 Workers serves the exported files directly; no Worker script is needed. `public/_headers` preserves the search and download
 content types, and `public/_redirects` sends `/docs` to the homepage.
 
+Hashed `/_next/static/*` assets are cached for one year with `immutable`. HTML, registry JSON,
+Markdown, and `/llms.txt` retain revalidation. All static responses disable MIME sniffing,
+use a strict-origin referrer policy, and prevent framing through `frame-ancestors 'none'`.
+
 For local production checks, stop `pnpm dev`, run `pnpm build`, then `pnpm start`.
 With that preview running, `pnpm test:export http://127.0.0.1:8787` also checks HTTP routing,
-content types, the download, and search against the Workers server.
+content types, caching and security headers, the download, and search against the Workers server.
 
 When connecting this repository to Workers, use `pnpm build` as the build command,
 `pnpm run deploy` as the deploy command, and `pnpm exec wrangler preview` as the preview command.

@@ -6,6 +6,9 @@ import { cn } from "./cn";
 
 const LoaderContext = createContext<ReactNode>(<ClassicLoader />);
 
+/** Internal: measurement copies reserve space without mounting an animated indicator. */
+export const LoaderSizerContext = createContext(false);
+
 /** Supply any loader for a subtree, including its portals. Omitted values inherit. */
 export function LoaderProvider({ loader, children }: { loader?: ReactNode; children?: ReactNode }) {
   const inherited = useContext(LoaderContext);
@@ -19,13 +22,14 @@ export function LoaderProvider({ loader, children }: { loader?: ReactNode; child
 /** Internal decorative slot. Busy announcements remain on the consuming component. */
 export function LoadingIndicator({ loader, className }: { loader?: ReactNode; className?: string }) {
   const inherited = useContext(LoaderContext);
+  const sizing = useContext(LoaderSizerContext);
   return (
     <span
       data-slot="loader"
       aria-hidden="true"
       className={cn("inline-flex size-[1em] shrink-0 items-center justify-center align-middle leading-none [&>*]:max-h-full [&>*]:max-w-full", className)}
     >
-      {loader === undefined ? inherited : loader}
+      {sizing ? null : loader === undefined ? inherited : loader}
     </span>
   );
 }

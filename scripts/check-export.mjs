@@ -79,8 +79,13 @@ for (const file of skillFiles) {
   assert.deepEqual(archived.get(name), await readFile(file), `Archive differs: ${name}`);
 }
 
-// Optionally check the actual Workers preview, including host routing and MIME headers.
+// Optionally check the actual Workers preview, including routing, caching and security headers.
 if (preview) {
+  const assertSecurityHeaders = (response, url) => {
+    assert.equal(response.headers.get("x-content-type-options"), "nosniff", url);
+    assert.equal(response.headers.get("referrer-policy"), "strict-origin-when-cross-origin", url);
+    assert.equal(response.headers.get("content-security-policy"), "frame-ancestors 'none'", url);
+  };
   for (const [url, type] of [
     ["/", "text/html"], ["/docs/button", "text/html"],
     ["/docs.md", "text/markdown"], ["/docs/button.md", "text/markdown"],
@@ -91,10 +96,23 @@ if (preview) {
     const response = await fetch(new URL(url, preview));
     assert.equal(response.status, 200, url);
     assert.ok(response.headers.get("content-type")?.startsWith(type), `Wrong MIME type: ${url}`);
+    assertSecurityHeaders(response, url);
+    assert.doesNotMatch(response.headers.get("cache-control") ?? "", /immutable/i, `Mutable URL cached forever: ${url}`);
     if (url === "/api/agent-skill/download") {
       assert.match(response.headers.get("content-disposition") ?? "", /4af-components-skill\.zip/);
       assert.deepEqual(Buffer.from(await response.arrayBuffer()), archive);
     }
+  }
+  // Check real exported JS, CSS and font assets, not a guessed chunk name or a 404.
+  const staticFiles = await filesIn(path.join(output, "_next", "static"));
+  for (const extension of [".js", ".css", ".woff2"]) {
+    const file = staticFiles.find((candidate) => candidate.endsWith(extension));
+    assert.ok(file, `Missing static asset: ${extension}`);
+    const url = `/${path.relative(output, file).replaceAll(path.sep, "/")}`;
+    const response = await fetch(new URL(url, preview));
+    assert.equal(response.status, 200, url);
+    assert.equal(response.headers.get("cache-control"), "public, max-age=31536000, immutable", url);
+    assertSecurityHeaders(response, url);
   }
   const redirect = await fetch(new URL("/docs", preview), { redirect: "manual" });
   assert.equal(redirect.status, 302);

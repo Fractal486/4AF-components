@@ -34,6 +34,37 @@ function FruitOptions() {
 }
 
 describe("Base UI Select", () => {
+  it.each(["enable", "label", "insert", "reorder"])("offers the first DOM row after an option %s", async (change) => {
+    const user = userEvent.setup();
+    function Example({ updated = false, open = true }: { updated?: boolean; open?: boolean }) {
+      const rows = change === "insert" && !updated ? ["b"]
+        : change === "reorder" && !updated ? ["b", "a"] : ["a", "b"];
+      return (
+        <Select open={open}>
+          <SelectTrigger aria-label="Pick" />
+          <SelectContent searchable>
+            {rows.map((value) => (
+              <SelectItem key={value} value={value} disabled={value === "a" && change === "enable" && !updated}>
+                {value === "a" ? (change === "label" && updated ? "Alpha updated" : "Alpha") : "Beta"}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      );
+    }
+    const { rerender } = render(<Example />);
+    await screen.findByRole("option", { name: "Beta" });
+    rerender(<Example updated />);
+    const first = await screen.findByRole("option", { name: /^Alpha/ });
+    await user.type(screen.getByRole("textbox", { name: "Search options" }), "a");
+    await waitFor(() => expect(first).toHaveAttribute("data-panel-active"));
+    expect(screen.getByRole("option", { name: "Beta" })).not.toHaveAttribute("data-panel-active");
+    // Reopening without a query must use the same DOM order.
+    rerender(<Example updated open={false} />);
+    rerender(<Example updated />);
+    await waitFor(() => expect(screen.getByRole("option", { name: /^Alpha/ })).toHaveAttribute("data-panel-active"));
+  });
+
   it.each([false, true])("lets an uncontrolled selection reject Clear (multiple=%s)", async (multiple) => {
     const user = userEvent.setup();
     const onValueChange = vi.fn((_value, details) => details.cancel());
@@ -340,7 +371,7 @@ describe("Base UI Select", () => {
     );
   });
 
-  it("renders an accessible separator without adding a selectable option", async () => {
+  it("renders a presentational separator without adding a selectable option", async () => {
     const user = userEvent.setup();
 
     render(
@@ -358,9 +389,11 @@ describe("Base UI Select", () => {
 
     await user.click(screen.getByRole("combobox", { name: "Fruit" }));
 
-    const separator = await screen.findByRole("separator");
+    await screen.findByRole("option", { name: "Apple" });
+    const separator = document.querySelector<HTMLElement>('[data-slot="select-separator"]')!;
     expect(separator).toHaveAttribute("data-slot", "select-separator");
-    expect(separator).toHaveAttribute("aria-orientation", "horizontal");
+    expect(separator).toHaveAttribute("role", "presentation");
+    expect(separator).toHaveAttribute("data-orientation", "horizontal");
     expect(screen.getAllByRole("option")).toHaveLength(2);
 
     await user.click(screen.getByRole("option", { name: "Banana" }));
@@ -387,7 +420,7 @@ describe("Base UI Select", () => {
     await user.click(trigger);
 
     const clearButton = await screen.findByRole("button", { name: "Clear" });
-    const separator = screen.getByRole("separator");
+    const separator = document.querySelector<HTMLElement>('[data-slot="select-separator"]')!;
     const apple = screen.getByRole("option", { name: "Apple" });
     expect(clearButton).toHaveAttribute("data-variant", "ghost");
     expect(clearButton).toHaveAttribute("data-size", "xs");
@@ -1126,6 +1159,7 @@ describe("Base UI Select", () => {
 
     await user.click(screen.getByRole("combobox", { name: "Fruit" }));
     const banana = await screen.findByRole("option", { name: "Banana" });
+    await waitFor(() => expect(screen.getByRole("option", { name: "Apple" })).toHaveFocus());
     await user.keyboard("{ArrowDown}");
 
     await waitFor(() => expect(onFocusCapture).toHaveBeenCalled());
@@ -1280,6 +1314,8 @@ describe("Base UI Select", () => {
 
     await user.keyboard("{ArrowDown}");
     expect(screen.getByRole("option", { name: "Apple" })).toHaveFocus();
+    await user.keyboard("{ArrowDown}");
+    expect(screen.getByRole("option", { name: "Banana" })).toHaveFocus();
     await user.keyboard("{ArrowDown}");
     expect(screen.getByRole("option", { name: "Mango" })).toHaveFocus();
 

@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
 import { spring } from "@/registry/lib/motion";
+import { LoaderSizerContext } from "@/registry/lib/loader";
 
 /**
  * Swaps one piece of content for another, animating the change.
@@ -126,7 +127,9 @@ export function Morph<K extends string>({
             current ? "absolute top-0 left-0" : "[grid-area:1/1]",
           )}
         >
-          {items[key]}
+          <LoaderSizerContext.Provider value={true}>
+            {items[key]}
+          </LoaderSizerContext.Provider>
         </span>
       ))}
 

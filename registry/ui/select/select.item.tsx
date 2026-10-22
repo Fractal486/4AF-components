@@ -25,10 +25,10 @@ export type SelectSeparatorProps = Omit<
 };
 
 /**
- * An accessible, non-selectable divider between groups of options.
+ * A visual, non-selectable divider between groups of options.
  *
  * This is Base UI's own Select separator, so it remains a list part rather than pretending
- * to be an option. It carries `role="separator"` and is skipped by option highlighting and
+ * to be an option. It carries `role="presentation"` and is skipped by option highlighting and
  * keyboard selection. The default line reaches the panel edges inside the list's padding;
  * pass `className` to adjust the inset when a different grouping treatment is wanted.
  */
@@ -126,8 +126,10 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
   const clearActionActive = Object.is(activeItem, SELECT_CLEAR_ACTION);
   const pointerStartedRef = useRef(false);
   const bridgingPointerDownRef = useRef(false);
+  const itemNode = useRef<HTMLElement | null>(null);
   const itemRef = useCallback(
     (node: HTMLElement | null) => {
+      itemNode.current = node;
       setForwardedRef(forwardedRef, node);
       nestedPanelContext?.registerItem(value, node);
     },
@@ -141,7 +143,7 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
   // Once per character typed. The option set is what the panel lays itself out from, so
   // settling it belongs in the pass before the browser draws.
   useLayoutEffect(() => {
-    registerOptionText(value, optionText, parentValue, disabled);
+    registerOptionText(value, optionText, parentValue, disabled, itemNode.current);
     return () => unregisterOptionText(value);
   }, [disabled, optionText, parentValue, registerOptionText, unregisterOptionText, value]);
   const panelActive = open && Object.is(activeItem, value);

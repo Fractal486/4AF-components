@@ -55,6 +55,10 @@ active row to the top enabled match. Disabled rows stay visible but are never th
 row or the search field's Enter target; when every match is disabled, no row is active. Set
 `autoFocusFirstItem={false}` to opt out for menu-like controls such as a sort trigger.
 
+The first row follows the rendered order, including after labels change, disabled rows become
+enabled, or options are inserted or reordered. Registration timing does not change the opening
+row or the first search match.
+
 `onValueChange(value, details)` can reject a selection with `details.cancel()`. The trigger,
 checked rows, and the selection offered on reopening all retain the accepted value.
 
@@ -132,7 +136,8 @@ import {
 ## Separators
 
 Use `SelectSeparator` directly between option groups. It is backed by Base UI's select
-separator, carries the accessible `separator` role, and is not treated as a selectable row by
+separator, carries `role="presentation"` so the listbox contains only options and groups for
+assistive technology, and is not treated as a selectable row by
 keyboard navigation or selection.
 
 ```tsx

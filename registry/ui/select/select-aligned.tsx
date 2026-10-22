@@ -7,12 +7,14 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type ComponentProps,
   type ReactNode,
 } from "react";
+import { useMergedRefs } from "@/registry/lib/refs";
 import { cn } from "@/registry/lib/cn";
 import { Input } from "@/registry/ui/input/input";
 import {
@@ -84,7 +86,7 @@ interface AlignedSelectContextValue {
   query: string;
   setQuery: (query: string) => void;
   matches: (text: string) => boolean;
-  registerOption: (value: unknown, text: string, disabled: boolean) => void;
+  registerOption: (value: unknown, text: string, disabled: boolean, node: HTMLElement | null) => void;
   unregisterOption: (value: unknown) => void;
   /** Whether any option still passes the query. `false` is what puts up the empty message. */
   hasMatches: boolean;
@@ -94,7 +96,7 @@ interface AlignedSelectContextValue {
    * `undefined` can still be it, and `null` for "none" — which a query matching only disabled
    * rows can produce.
    */
-  openingItem: { value: unknown } | null;
+  getOpeningItem: (list: HTMLElement | null) => { value: unknown } | null;
 }
 
 const AlignedSelectContext = createContext<AlignedSelectContextValue>({
@@ -108,7 +110,7 @@ const AlignedSelectContext = createContext<AlignedSelectContextValue>({
   registerOption: () => {},
   unregisterOption: () => {},
   hasMatches: true,
-  openingItem: null,
+  getOpeningItem: () => null,
 });
 
 /**
@@ -142,6 +144,7 @@ export interface AlignedSelectProps<Value>
 }
 
 interface RegisteredOption {
+  node: HTMLElement | null;
   text: string;
   disabled: boolean;
 }
@@ -166,11 +169,11 @@ export function AlignedSelect<Value>({
 
   // The same shape the base Select uses: a Map in state whose setter bails out when nothing
   // changed, so an item re-registering its own unchanged text cannot loop.
-  const registerOption = useCallback((value: unknown, text: string, disabled: boolean) => {
+  const registerOption = useCallback((value: unknown, text: string, disabled: boolean, node: HTMLElement | null) => {
     setOptions((current) => {
       const existing = current.get(value);
-      if (existing?.text === text && existing.disabled === disabled) return current;
-      return new Map(current).set(value, { text, disabled });
+      if (existing?.text === text && existing.disabled === disabled && existing.node === node) return current;
+      return new Map(current).set(value, { text, disabled, node });
     });
   }, []);
 
@@ -195,28 +198,18 @@ export function AlignedSelect<Value>({
   const [uncontrolledValue, setUncontrolledValue] = useState<unknown>(() => defaultValue ?? null);
   const selected = value !== undefined ? value : uncontrolledValue;
 
-  // Registration order is mount order, so the first entry that survives the query is the top
-  // row of the panel. Disabled rows count towards "the list isn't empty" but can't be offered.
-  //
-  // A select opens on its own answer: the current selection, which is also the row the panel
-  // is physically sitting on. Only once a query narrows the list does the top match take over
-  // — by then the selection may not even be in the list, and what was typed is the better
-  // guess at what Enter should take.
-  const { hasMatches, openingItem } = useMemo(() => {
-    const searching = query.trim() !== "";
-    let found = false;
-    let first: { value: unknown } | null = null;
-    let chosen: { value: unknown } | null = null;
-    for (const [optionValue, option] of options) {
-      if (!matches(option.text)) continue;
-      found = true;
-      if (option.disabled) continue;
-      if (first === null) first = { value: optionValue };
-      if (chosen === null && !searching && Object.is(optionValue, selected)) {
-        chosen = { value: optionValue };
-      }
-    }
-    return { hasMatches: found, openingItem: chosen ?? first };
+  const hasMatches = useMemo(() => [...options.values()].some((option) => matches(option.text)), [matches, options]);
+  // Read after commit: labels and disabled states re-register, and rows can be inserted or
+  // moved independently of their mount order. Filtering may also remount an option's DOM.
+  const getOpeningItem = useCallback((list: HTMLElement | null) => {
+    if (!list) return null;
+    const byNode = new Map([...options].map(([value, option]) => [option.node, { value, ...option }]));
+    const candidates = Array.from(list.querySelectorAll<HTMLElement>('[role="option"]'))
+      .map((node) => byNode.get(node))
+      .filter((option) => option && !option.disabled && matches(option.text));
+    const chosen = query.trim() === "" ? candidates.find((option) => Object.is(option?.value, selected)) : undefined;
+    const first = chosen ?? candidates[0];
+    return first ? { value: first.value } : null;
   }, [matches, options, query, selected]);
 
   const context = useMemo<AlignedSelectContextValue>(
@@ -231,7 +224,7 @@ export function AlignedSelect<Value>({
       registerOption,
       unregisterOption,
       hasMatches,
-      openingItem,
+      getOpeningItem,
     }),
     [
       size,
@@ -242,7 +235,7 @@ export function AlignedSelect<Value>({
       registerOption,
       unregisterOption,
       hasMatches,
-      openingItem,
+      getOpeningItem,
     ],
   );
 
@@ -388,7 +381,7 @@ export function AlignedSelectContent({
   children,
   ...props
 }: AlignedSelectContentProps) {
-  const { size, open, query, setQuery, hasMatches, openingItem, triggerVariant } =
+  const { size, open, query, setQuery, hasMatches, getOpeningItem, triggerVariant } =
     useContext(AlignedSelectContext);
   const width = widthProp ?? (triggerVariant === "plain" ? "content" : "trigger");
   const listRef = useRef<HTMLDivElement>(null);
@@ -408,6 +401,15 @@ export function AlignedSelectContent({
   // can only ever coincide — ours simply outlives it.
   const [pointedItem, setPointedItem] = useState<{ value: unknown } | null>(null);
   const setActiveItem = useCallback((value: unknown) => setPointedItem({ value }), []);
+
+  const [openingItem, setOpeningItem] = useState<{ value: unknown } | null>(null);
+  useLayoutEffect(() => {
+    if (!open) return;
+    const next = getOpeningItem(listRef.current);
+    setOpeningItem((previous) =>
+      previous === next || (previous && next && Object.is(previous.value, next.value)) ? previous : next,
+    );
+  }, [children, getOpeningItem, open]);
 
   // A panel never sits with nothing ready: a row is active from the moment it opens, before
   // anything is typed, so Enter always has an answer and the arrows start somewhere visible.
@@ -634,6 +636,7 @@ export function AlignedSelectItem({
   searchValue,
   disabled = false,
   onFocusCapture,
+  ref,
   ...props
 }: AlignedSelectItemProps) {
   const { size, matches, registerOption, unregisterOption } = useContext(AlignedSelectContext);
@@ -643,10 +646,12 @@ export function AlignedSelectItem({
   const filteredOut = !matches(text);
   const panelActive = activeItem !== null && Object.is(activeItem.value, value);
 
-  useEffect(() => {
-    registerOption(value, text, disabled);
+  const itemNode = useRef<HTMLElement | null>(null);
+  const mergedRef = useMergedRefs(ref, itemNode);
+  useLayoutEffect(() => {
+    registerOption(value, text, disabled, itemNode.current);
     return () => unregisterOption(value);
-  }, [registerOption, unregisterOption, value, text, disabled]);
+  }, [registerOption, unregisterOption, value, text, disabled, filteredOut]);
 
   // Unmounted rather than hidden, and the difference is the panel's height. In aligned mode
   // Base UI measures the list and writes an inline height so the selected row can sit on the
@@ -660,6 +665,7 @@ export function AlignedSelectItem({
 
   return (
     <BaseSelect.Item
+      ref={mergedRef}
       data-slot="aligned-select-item"
       value={value}
       disabled={disabled}

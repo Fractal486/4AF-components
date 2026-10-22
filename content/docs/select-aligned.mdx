@@ -75,6 +75,9 @@ keys move focus into the list, where Base UI handles navigation and the componen
 active mark in sync. The query clears after the closing animation. `autoFocusFirstItem={false}`
 disables the automatic opening highlight; focusing a row can still activate it.
 
+The first enabled match follows the rendered row order, including after labels or disabled
+states change and when options are inserted or reordered.
+
 Filtered rows leave the list rather than hiding, so the panel resizes to what is left. Rows
 match on their text, which only works when the children are a plain string — give a row built
 from elements an explicit `searchValue`. `emptyMessage` replaces the list when a query

@@ -59,6 +59,9 @@ the icon and the status glyphs that replace it after the label; the button carri
 subtree. `ClassicLoader` is the fallback. Copy Button inherits the slot; Action Toggle also
 accepts a `loader` for its pending state.
 
+Hidden sizing copies reserve the indicator's space without mounting it, so an idle button does
+not run the supplied loader's timers or animations.
+
 A label only animates when it changes. Pass `labels={{ pending: "Saving" }}` when the word should
 change, and leave it out when only the glyph should move. With `pendingMode="icon"`,
 `labels.pending` is not shown.

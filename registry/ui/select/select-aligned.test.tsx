@@ -36,6 +36,37 @@ function Fruits({
 }
 
 describe("AlignedSelect", () => {
+  it.each(["enable", "label", "insert", "reorder"])("offers the first DOM row after an option %s", async (change) => {
+    const user = userEvent.setup();
+    function Example({ updated = false, open = true }: { updated?: boolean; open?: boolean }) {
+      const rows = change === "insert" && !updated ? ["b"]
+        : change === "reorder" && !updated ? ["b", "a"] : ["a", "b"];
+      return (
+        <AlignedSelect open={open}>
+          <AlignedSelectTrigger aria-label="Pick" />
+          <AlignedSelectContent searchable>
+            {rows.map((value) => (
+              <AlignedSelectItem key={value} value={value} disabled={value === "a" && change === "enable" && !updated}>
+                {value === "a" ? (change === "label" && updated ? "Alpha updated" : "Alpha") : "Beta"}
+              </AlignedSelectItem>
+            ))}
+          </AlignedSelectContent>
+        </AlignedSelect>
+      );
+    }
+    const { rerender } = render(<Example />);
+    await screen.findByRole("option", { name: "Beta" });
+    rerender(<Example updated />);
+    const first = await screen.findByRole("option", { name: /^Alpha/ });
+    await user.type(screen.getByRole("textbox", { name: "Search options" }), "a");
+    await waitFor(() => expect(first).toHaveAttribute("data-panel-active"));
+    expect(screen.getByRole("option", { name: "Beta" })).not.toHaveAttribute("data-panel-active");
+    // Reopening without a query must use the same DOM order.
+    rerender(<Example updated open={false} />);
+    rerender(<Example updated />);
+    await waitFor(() => expect(screen.getByRole("option", { name: /^Alpha/ })).toHaveAttribute("data-panel-active"));
+  });
+
   it("keeps the opening highlight on the accepted value after a canceled choice", async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn((_value, details) => details.cancel());

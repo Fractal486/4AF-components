@@ -65,6 +65,9 @@ before installing into it.
 
 ## Existing files and updates
 
+Registry package dependencies use unversioned names, allowing the package manager to resolve
+current releases. The library does not impose exact versions or major-version caps on installs.
+
 Unchanged source files are skipped. For differing existing files, the CLI asks whether to
 replace each one, defaulting to no. `--overwrite` replaces them without those prompts,
 including shared dependencies, and can discard local edits. Preview the same overwrite

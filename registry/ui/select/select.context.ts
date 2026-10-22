@@ -36,16 +36,16 @@ interface SelectContextValue {
   unregisterLabel: (value: unknown) => void;
   labelFor: (value: unknown) => ReactNode | undefined;
   firstItem: unknown;
-  registerOptionText: (value: unknown, text: string, parentValue?: unknown, disabled?: boolean) => void;
+  registerOptionText: (value: unknown, text: string, parentValue?: unknown, disabled?: boolean, node?: HTMLElement | null) => void;
   unregisterOptionText: (value: unknown) => void;
   /** True when the text passes the current panel-search query (or there is none). */
   matchesQuery: (text: string) => boolean;
-  /** The first top-level item still visible under the current query. */
-  firstVisibleItem: unknown;
+  /** Whether any top-level item remains visible under the current query. */
+  hasVisibleItems: boolean;
   /** Whether an item has a matching row anywhere in its nested panels. */
   hasMatchingDescendant: (value: unknown) => boolean;
   /** The row a panel opens on: the selection while the list is whole, else the first row. */
-  openingItem: unknown;
+  getOpeningItem: (list: HTMLElement | null) => unknown;
   activeItem: unknown;
   setActiveItem: (value: unknown) => void;
   panelSearch: boolean;
@@ -82,9 +82,9 @@ export const SelectContext = createContext<SelectContextValue>({
   registerOptionText: () => {},
   unregisterOptionText: () => {},
   matchesQuery: () => true,
-  firstVisibleItem: undefined,
+  hasVisibleItems: false,
   hasMatchingDescendant: () => false,
-  openingItem: undefined,
+  getOpeningItem: () => undefined,
   activeItem: undefined,
   setActiveItem: () => {},
   panelSearch: false,

@@ -62,6 +62,9 @@ Precedence, most specific first: `icon`, `icons`, `loader` (loading only), `Badg
 the default. A `null` entry in `icons` or the provider hides the icon for that status. Glyphs are
 sized to the badge (`size-2.5` / `size-3` / `size-3.5`) unless they set their own size.
 
+The shared loader mounts only in the visible loading state. Hidden sizing copies keep its
+square footprint without running the indicator's timers or animations.
+
 ```tsx
 <BadgeIconsProvider icons={{ danger: <CircleX />, success: <CircleCheck /> }}>
   <App />

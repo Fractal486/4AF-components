@@ -170,6 +170,44 @@ describe("registry", () => {
     expect(missing).toEqual([]);
   });
 
+  it("declares only packages and library utilities imported by the item's own files", () => {
+    const unused: string[] = [];
+    for (const item of registry.items) {
+      const importedFiles = new Set<string>();
+      const importedPackages = new Set<string>();
+      for (const file of item.files ?? []) {
+        const source = ts.createSourceFile(file.path, readFileSync(resolve(file.path), "utf8"), ts.ScriptTarget.Latest, true);
+        for (const statement of source.statements) {
+          if (!(ts.isImportDeclaration(statement) || ts.isExportDeclaration(statement))) continue;
+          const specifier = statement.moduleSpecifier;
+          if (!specifier || !ts.isStringLiteral(specifier)) continue;
+          const sourcePath = resolveSource(specifier.text, file.path);
+          if (sourcePath) importedFiles.add(sourcePath);
+          else if (!specifier.text.startsWith(".") && !specifier.text.startsWith("@/")) {
+            importedPackages.add(specifier.text.startsWith("@")
+              ? specifier.text.split("/").slice(0, 2).join("/")
+              : specifier.text.split("/")[0]!);
+          }
+        }
+      }
+      for (const dependency of item.dependencies ?? []) {
+        const version = dependency.lastIndexOf("@");
+        const name = version > 0 ? dependency.slice(0, version) : dependency;
+        if (!importedPackages.has(name)) unused.push(`${item.name}: unused package ${dependency}`);
+      }
+      for (const url of item.registryDependencies ?? []) {
+        const name = url.split("/").at(-1)!.replace(/\.json$/, "");
+        const dependency = items.get(name)!;
+        // Theme/CSS dependencies need no import. Components may also supply composition APIs.
+        if (dependency.type !== "registry:lib") continue;
+        if (!dependency.files?.some((file) => importedFiles.has(file.path))) {
+          unused.push(`${item.name}: unused library ${name}`);
+        }
+      }
+    }
+    expect(unused).toEqual([]);
+  });
+
   // A Server Component sees a "use client" module's exports as client references: it can
   // render a component from there, but calling a hook or function from there throws. So a
   // module that could render on the server may only take components (PascalCase) from one.

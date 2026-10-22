@@ -47,6 +47,7 @@ interface SelectOptionInfo {
 }
 
 interface SelectOptionRegistration extends SelectOptionInfo {
+  node: HTMLElement | null;
   count: number;
 }
 
@@ -214,7 +215,7 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
     Map<unknown, SelectOptionRegistration>
   >(() => new Map());
   const registerOptionText = useCallback(
-    (v: unknown, text: string, parentValue?: unknown, disabled = false) => {
+    (v: unknown, text: string, parentValue?: unknown, disabled = false, node: HTMLElement | null = null) => {
       if (parentValue !== undefined) {
         setNestedOptionTexts((current) => {
           const previous = current.get(v);
@@ -222,6 +223,7 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
             text,
             parentValue,
             disabled,
+            node,
             count: (previous?.count ?? 0) + 1,
           });
         });
@@ -234,6 +236,7 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
           text,
           parentValue,
           disabled,
+          node,
           count: (previous?.count ?? 0) + 1,
         });
       });
@@ -294,27 +297,10 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
     },
     [matchesQuery, nestedOptionTexts, optionTexts, searchQuery],
   );
-  const firstVisibleItem = useMemo(() => {
-    for (const [value, option] of optionTexts) {
-      if (
-        option.parentValue === undefined &&
-        (matchesQuery(option.text) || hasMatchingDescendant(value))
-      ) {
-        return value;
-      }
-    }
-    return undefined;
-  }, [hasMatchingDescendant, matchesQuery, optionTexts]);
-
-  // Disabled matches still keep the list visible, but cannot be offered to Enter.
-  const firstEnabledItem = useMemo(() => {
-    for (const [value, option] of optionTexts) {
-      if (!option.disabled && (matchesQuery(option.text) || hasMatchingDescendant(value))) {
-        return value;
-      }
-    }
-    return undefined;
-  }, [hasMatchingDescendant, matchesQuery, optionTexts]);
+  // Emptiness depends on text, even before a lazily mounted row has a DOM node.
+  const hasVisibleItems = useMemo(() => [...optionTexts].some(([value, option]) =>
+    option.parentValue === undefined && (matchesQuery(option.text) || hasMatchingDescendant(value)),
+  ), [hasMatchingDescendant, matchesQuery, optionTexts]);
 
   // The row a panel opens on. A select opens on its own answer: the current selection, which
   // is also the row the eye is already looking for. Only once a query narrows the list does
@@ -338,15 +324,22 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   // asked once, on the way in.
   const [openingValues, setOpeningValues] = useState<unknown[]>(values);
 
-  const openingItem = useMemo(() => {
+  const getOpeningItem = useCallback((list: HTMLElement | null) => {
+    if (!list) return undefined;
+    const byNode = new Map([...optionTexts].map(([value, option]) => [option.node, { value, ...option }]));
+    const candidates = Array.from(list.querySelectorAll<HTMLElement>('[role="option"]'))
+      .map((node) => byNode.get(node))
+      .filter((option) => option && !option.disabled &&
+        (matchesQuery(option.text) || hasMatchingDescendant(option.value)));
     if (searchQuery.trim() === "") {
       for (let index = openingValues.length - 1; index >= 0; index -= 1) {
-        const option = optionTexts.get(openingValues[index]);
-        if (option && !option.disabled) return openingValues[index];
+        if (candidates.some((option) => Object.is(option?.value, openingValues[index]))) {
+          return openingValues[index];
+        }
       }
     }
-    return firstEnabledItem;
-  }, [firstEnabledItem, openingValues, optionTexts, searchQuery]);
+    return candidates[0]?.value;
+  }, [hasMatchingDescendant, matchesQuery, openingValues, optionTexts, searchQuery]);
   const [activeItem, setActiveItem] = useState<unknown>(undefined);
   const [panelSearch, setPanelSearch] = useState(false);
 
@@ -483,9 +476,9 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
         registerOptionText,
         unregisterOptionText,
         matchesQuery,
-        firstVisibleItem,
+        hasVisibleItems,
         hasMatchingDescendant,
-        openingItem,
+        getOpeningItem,
         activeItem,
         setActiveItem,
         panelSearch,

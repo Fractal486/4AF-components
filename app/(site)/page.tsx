@@ -2,7 +2,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Github } from "lucide-react";
+import { GitHubMark } from "@/components/site/github-mark";
 import { InlineLink } from "@/components/inline-link";
 import { AsciiFooter } from "@/components/landing/ascii-footer";
 import { InstallCommand } from "@/components/landing/install-command";
@@ -160,7 +160,7 @@ export default function IndexPage() {
               </Button>
               <Button asChild size="lg" variant="outline" className="gap-2 px-3 text-xs min-[360px]:px-4 min-[360px]:text-sm sm:gap-3 sm:px-5 sm:text-base">
                 <a href={REPOSITORY} target="_blank" rel="noopener noreferrer">
-                  <Github aria-hidden="true" />
+                  <GitHubMark />
                   View on GitHub
                 </a>
               </Button>

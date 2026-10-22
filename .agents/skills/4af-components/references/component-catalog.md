@@ -94,6 +94,9 @@ The catalog contains 48 installable UI items.
 
 ## Bundled composition choices
 
+Loading controls accept a `loader` node or inherit `LoaderProvider`. Morph's hidden sizing
+copies reserve that slot without mounting its indicator, so idle controls do not run loader timers.
+
 Use the host component's parts instead of rebuilding their state handling:
 
 | Need | Bundled API and owning docs |
