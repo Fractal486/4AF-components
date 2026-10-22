@@ -18,13 +18,16 @@ export interface UseActionOptions {
    * the check mark and read as a glitch rather than as progress.
    */
   pendingDelay?: number;
+  /** Called after success, even if the initiating control has unmounted. */
   onSuccess?: () => void;
+  /** Called after failure, even if the initiating control has unmounted. */
   onError?: (error: unknown) => void;
 }
 
 /**
  * Runs an action with pending, success, and error states. Prevents concurrent runs,
- * ignores updates after unmount, and resets the outcome after `revertAfter`.
+ * skips local state updates after unmount while still delivering outcome callbacks,
+ * and resets the outcome after `revertAfter` while mounted.
  * Shared by ActionButton and asynchronous menu rows.
  */
 export function useAction({
@@ -99,25 +102,23 @@ export function useAction({
       // believes the work happened and moves on.
       running.current = false;
       clearTimeout(pendingTimer.current ?? undefined);
-      if (!alive.current) return;
-      setStatus("error");
+      if (alive.current) setStatus("error");
       try {
         onError?.(error);
       } finally {
         // Consumer notifications may throw, but must not strand the state machine.
-        scheduleRevert();
+        if (alive.current) scheduleRevert();
       }
       return;
     }
 
     running.current = false;
     clearTimeout(pendingTimer.current ?? undefined);
-    if (!alive.current) return;
-    setStatus("success");
+    if (alive.current) setStatus("success");
     try {
       onSuccess?.();
     } finally {
-      scheduleRevert();
+      if (alive.current) scheduleRevert();
     }
   }, [action, pendingDelay, onError, onSuccess, scheduleRevert]);
 

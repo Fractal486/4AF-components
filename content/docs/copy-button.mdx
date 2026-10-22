@@ -40,6 +40,11 @@ The loader appears if resolving the value and writing it to the clipboard takes 
 `pendingDelay` (50ms by default). A function that throws or rejects shows the error state and
 writes nothing, so `onCopy` only reports text that was copied.
 
+While pending, Copy Button keeps keyboard focus and exposes `aria-disabled="true"`, while
+blocking repeat activation. An explicit `disabled` prop still disables the native button
+unless you opt into `focusableWhenDisabled`. `onCopy`, `onSuccess`, and `onError` still report
+the outcome if the button unmounts before the copy finishes.
+
 `icon` replaces the resting glyph, for example to tell apart two copy buttons that copy
 different things. The success check is unchanged.
 

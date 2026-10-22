@@ -414,6 +414,7 @@ function DialogStepsNavigation({
           onClick={(event) => {
             if (validateStep && !validateStep(activeStep, "submit")) {
               event.preventDefault();
+              event.preventBaseUIHandler();
             }
           }}
           render={<Button size="sm" className="justify-self-end">Done</Button>}

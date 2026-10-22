@@ -192,6 +192,10 @@ result in place instead, keeping the menu open. They match Dropdown Menu's row t
 These stateful action fields apply to `CommandPanelActions` (including the footer's `actions`
 slot); main-list leaf commands use `onSelect` and close the palette.
 
+Closing the menu or palette does not cancel a pending toggle action. Its `onCheckedChange`
+callback still fires after success if the row has unmounted. Use controlled `checked` state
+in the parent to preserve the result across reopening.
+
 `labels` carries checked, pending, success, and error text, each falling back to the row's own
 label. `icons.checked` falls back to the resting icon; pending, success, and error default to
 the shared loader, checkmark, and warning triangle. `revertAfter` and `pendingDelay` behave as

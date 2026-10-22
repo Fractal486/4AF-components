@@ -1,10 +1,34 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, vi } from "vitest";
 import { ActionButton } from "./action-button";
 
 afterEach(() => vi.useRealTimers());
 
 describe("ActionButton", () => {
+  it("keeps keyboard focus while pending and blocks repeat activation", async () => {
+    const user = userEvent.setup();
+    const action = vi.fn(() => new Promise<void>(() => {}));
+    const onClick = vi.fn();
+    const { rerender } = render(<ActionButton action={action} onClick={onClick}>Save</ActionButton>);
+    const button = screen.getByRole("button", { name: "Save" });
+
+    await user.tab();
+    await user.keyboard("{Enter}");
+
+    expect(button).toHaveFocus();
+    expect(button).not.toBeDisabled();
+    expect(button).toHaveAttribute("data-status", "pending");
+    expect(button).toHaveAttribute("aria-disabled", "true");
+    expect(button).toHaveAttribute("aria-busy", "true");
+    await user.keyboard("{Enter} ");
+    expect(action).toHaveBeenCalledOnce();
+    expect(onClick).toHaveBeenCalledOnce();
+
+    rerender(<ActionButton action={action} disabled>Save</ActionButton>);
+    expect(button).toBeDisabled();
+  });
+
   it("prevents double submits and returns to idle after a successful async action", async () => {
     vi.useFakeTimers();
     let resolveAction: () => void;

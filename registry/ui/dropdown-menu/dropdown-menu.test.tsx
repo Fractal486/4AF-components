@@ -364,6 +364,36 @@ describe("DropdownMenu", () => {
     expect(onCheckedChange).not.toHaveBeenCalled();
   });
 
+  it("reports a deferred checkbox change after the menu closes", async () => {
+    const user = userEvent.setup();
+    let finish!: () => void;
+    const action = vi.fn(() => new Promise<void>((resolve) => { finish = resolve; }));
+    const onCheckedChange = vi.fn();
+
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger aria-label="More actions" />
+        <DropdownMenuContent>
+          <DropdownMenuCheckboxItem checked={false} action={action} onCheckedChange={onCheckedChange}>
+            Mute thread
+          </DropdownMenuCheckboxItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+    const row = await screen.findByRole("menuitemcheckbox");
+    await user.click(row);
+    expect(action).toHaveBeenCalledExactlyOnceWith(true);
+    expect(onCheckedChange).not.toHaveBeenCalled();
+
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(row).not.toBeInTheDocument());
+    await act(async () => finish());
+
+    expect(onCheckedChange).toHaveBeenCalledExactlyOnceWith(true);
+  });
+
   it("stays a plain synchronous checkbox without an action", async () => {
     const user = userEvent.setup();
     const onCheckedChange = vi.fn();

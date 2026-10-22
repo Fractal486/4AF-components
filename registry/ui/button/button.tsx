@@ -33,7 +33,7 @@ export interface ButtonProps
   className?: string;
   /** Render the styles onto the child element instead of a <button>. */
   asChild?: boolean;
-  /** Swaps in a spinner and blocks interaction, without changing the button's size. */
+  /** Swaps in a spinner and blocks interaction, preserving size and keyboard focus. */
   loading?: boolean;
   /** Overrides the nearest LoaderProvider for this button's loading indicator. */
   loader?: ReactNode;
@@ -106,6 +106,7 @@ export function Button({
   pressed = false,
   pressTarget = "button",
   disabled,
+  focusableWhenDisabled,
   children: childrenProp,
   ref,
   ...props
@@ -193,6 +194,7 @@ export function Button({
         className,
       )}
       disabled={isDisabled}
+      focusableWhenDisabled={(!disabled && loading) || focusableWhenDisabled}
       nativeButton={!asChild}
       // State on the element, not just in the closure. Anything downstream — a
       // parent's CSS, a test, a screenshot diff — can now see what this button is
@@ -204,7 +206,7 @@ export function Button({
       data-pressed={pressed || undefined}
       data-icon-start={icons.start || undefined}
       data-icon-end={icons.end || undefined}
-      aria-busy={loading || undefined}
+      aria-busy={loading || props["aria-busy"] || undefined}
       render={asChild ? child! : (buttonProps) => {
         // Base UI owns the button semantics and disabled behavior. Motion only owns
         // the native button's press spring. `asChild` uses CSS press feedback because

@@ -127,6 +127,9 @@ pages:
 
 Use the matching action component or menu row for standard async controls. For a custom control,
 `useAction` provides the shared pending, outcome, and reset behavior directly.
+Its `onSuccess` and `onError` callbacks fire when the action settles even if the initiating
+control has unmounted. Unmounting clears pending and reset timers and prevents local status
+updates; it does not cancel the work or discard its result.
 
 `cn` uses Tailwind Merge 3 for Tailwind 4 utilities, including custom-property forms such as
 `duration-(--duration-fast)` and `w-(--sidebar-width)`. The theme's `shadow-border`,

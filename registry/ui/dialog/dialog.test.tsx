@@ -135,16 +135,40 @@ describe("DialogSteps", () => {
 
     render(
       <Dialog defaultOpen>
-        <DialogSteps defaultStep={1} labels={["Profile", "Review"]} validateStep={validateStep}>
-          <DialogStep>Profile phase</DialogStep>
-          <DialogStep>Review phase</DialogStep>
-        </DialogSteps>
+        <DialogContent showClose={false}>
+          <DialogSteps defaultStep={1} labels={["Profile", "Review"]} validateStep={validateStep}>
+            <DialogStep>Profile phase</DialogStep>
+            <DialogStep>Review phase</DialogStep>
+          </DialogSteps>
+        </DialogContent>
       </Dialog>,
     );
 
     await user.click(screen.getByRole("button", { name: "Done" }));
 
-    expect(screen.getByRole("button", { name: "Done" })).toBeInTheDocument();
+    expect(screen.getByRole("dialog")).toHaveAttribute("data-open");
     expect(validateStep).toHaveBeenCalledWith(1, "submit");
+  });
+
+  it("closes the dialog when the final Done action passes validation", async () => {
+    const user = userEvent.setup();
+    const validateStep = vi.fn(() => true);
+    const onOpenChange = vi.fn();
+
+    render(
+      <Dialog defaultOpen onOpenChange={onOpenChange}>
+        <DialogContent showClose={false}>
+          <DialogSteps validateStep={validateStep}>
+            <DialogStep>Review phase</DialogStep>
+          </DialogSteps>
+        </DialogContent>
+      </Dialog>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Done" }));
+
+    expect(validateStep).toHaveBeenCalledWith(0, "submit");
+    expect(onOpenChange).toHaveBeenCalledExactlyOnceWith(false, expect.anything());
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
   });
 });

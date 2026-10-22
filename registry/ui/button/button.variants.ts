@@ -76,6 +76,7 @@ export const buttonVariants = cva(
     // dimming both to 50% collapses them into one. So the fade is scoped to
     // disabled-but-not-loading.
     "disabled:cursor-not-allowed disabled:not-data-[loading=true]:opacity-50",
+    "aria-disabled:cursor-not-allowed aria-disabled:not-data-[loading=true]:opacity-50",
     "data-[loading=true]:cursor-progress",
   ],
   {

@@ -18,6 +18,26 @@ function trackStatus(button: HTMLElement) {
 }
 
 describe("CopyButton", () => {
+  it("keeps keyboard focus while copying and blocks repeat activation", async () => {
+    const user = userEvent.setup();
+    const value = vi.fn(() => new Promise<string>(() => {}));
+    const { rerender } = render(<CopyButton value={value} pendingDelay={0}>Copy</CopyButton>);
+    const button = screen.getByRole("button", { name: "Copy" });
+
+    await user.tab();
+    await user.keyboard("{Enter}");
+
+    expect(button).toHaveFocus();
+    expect(button).not.toBeDisabled();
+    expect(button).toHaveAttribute("data-status", "pending");
+    expect(button).toHaveAttribute("aria-disabled", "true");
+    await user.keyboard("{Enter} ");
+    expect(value).toHaveBeenCalledOnce();
+
+    rerender(<CopyButton value={value} pendingDelay={0} disabled>Copy</CopyButton>);
+    expect(button).toBeDisabled();
+  });
+
   it("applies an explicit size to the labelled button", () => {
     render(
       <CopyButton value="hello" size="lg">

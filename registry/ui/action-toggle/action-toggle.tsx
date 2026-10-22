@@ -79,6 +79,8 @@ export function ActionToggle({
   pendingDelay,
   announce,
   disabled,
+  onClick,
+  pressScale,
   // A labelled toggle is the case this exists for, so it defaults to a control with room
   // for a label rather than to Toggle's icon-sized ghost. Pass `size="icon"` for a star.
   variant = "outline",
@@ -135,7 +137,19 @@ export function ActionToggle({
     <Toggle
       pressed={current}
       onPressedChange={run}
-      disabled={disabled || status === "pending"}
+      disabled={disabled}
+      // Base UI Toggle has no focusableWhenDisabled prop. Cancel its activation while
+      // pending instead of making the focused button natively disabled.
+      onClick={(event) => {
+        if (status === "pending") {
+          event.preventDefault();
+          event.preventBaseUIHandler();
+          return;
+        }
+        onClick?.(event);
+      }}
+      pressScale={status === "pending" ? false : pressScale}
+      aria-disabled={status === "pending" || undefined}
       aria-busy={status === "pending" || undefined}
       data-status={status}
       variant={variant}

@@ -24,7 +24,7 @@ export const TooltipProvider = BaseTooltip.Provider;
 const popupClassName = cn(
   // `bg-surface`: the same fill as an outline button at rest, so the tooltip reads as
   // the same material as the control it describes.
-  "z-50 w-fit max-w-xs rounded-md bg-surface px-2.5 py-1",
+  "w-fit max-w-xs rounded-md bg-surface px-2.5 py-1",
   "text-xs font-medium text-pretty text-foreground",
   // A single faint 1px ring instead of shadow-overlay's heavier one, plus a soft drop
   // shadow. rgba, not oklch, so the `/` alpha can't trip Tailwind's arbitrary parser.
@@ -99,6 +99,12 @@ export function Tooltip({
           align={align}
           sideOffset={sideOffset}
           {...positionerProps}
+          className={(state) => cn(
+            "z-50 outline-none",
+            typeof positionerProps?.className === "function"
+              ? positionerProps.className(state)
+              : positionerProps?.className,
+          )}
         >
           <BaseTooltip.Popup className={cn(popupClassName, className)}>
             {content}

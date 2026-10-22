@@ -1,10 +1,40 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, vi } from "vitest";
 import { ActionToggle } from "./action-toggle";
 
 afterEach(() => vi.useRealTimers());
 
 describe("ActionToggle", () => {
+  it("keeps keyboard focus while pending and blocks repeat activation", async () => {
+    const user = userEvent.setup();
+    const action = vi.fn(() => new Promise<void>(() => {}));
+    const onClick = vi.fn();
+    const onPressedChange = vi.fn();
+    const { rerender } = render(
+      <ActionToggle action={action} onClick={onClick} onPressedChange={onPressedChange}>
+        Follow
+      </ActionToggle>,
+    );
+    const toggle = screen.getByRole("button", { name: "Follow" });
+
+    await user.tab();
+    await user.keyboard("{Enter}");
+
+    expect(toggle).toHaveFocus();
+    expect(toggle).not.toBeDisabled();
+    expect(toggle).toHaveAttribute("aria-disabled", "true");
+    expect(toggle).toHaveAttribute("aria-busy", "true");
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await user.keyboard("{Enter} ");
+    expect(action).toHaveBeenCalledExactlyOnceWith(true);
+    expect(onClick).toHaveBeenCalledOnce();
+    expect(onPressedChange).not.toHaveBeenCalled();
+
+    rerender(<ActionToggle action={action} disabled>Follow</ActionToggle>);
+    expect(toggle).toBeDisabled();
+  });
+
   it("waits for the action before it lands, and only then reports the change", async () => {
     let finish: () => void;
     const action = vi.fn(() => new Promise<void>((resolve) => (finish = resolve)));

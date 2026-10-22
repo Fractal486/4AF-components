@@ -24,7 +24,12 @@ Group, Action Button, Action Toggle, Copy Button, and Delete Button accept `shap
 The gap between icon and label is 8px at `xs`/`sm`, 10px at `md`, and 12px at `lg`. Leading and
 trailing icons get a small optical edge adjustment; icon-only buttons have no gap.
 
-`loading` blocks interaction without changing the button's size. `loader={<MySpinner />}` sets
+`loading` blocks interaction without changing the button's size or dropping keyboard focus.
+The button stays focusable with `aria-disabled="true"` and `aria-busy="true"`; repeated clicks,
+Enter, and Space do not activate it. An explicit `disabled` prop still disables the native
+button unless you opt into Base UI's `focusableWhenDisabled` behavior.
+
+`loader={<MySpinner />}` sets
 its indicator; otherwise it inherits
 [LoaderProvider](/docs/reference/engineering#shared-loading-indicators), with `ClassicLoader` as the
 fallback. The slot is a square the size of the button's icons (14px at `xs`/`sm`, 16px at

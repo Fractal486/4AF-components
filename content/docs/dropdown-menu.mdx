@@ -115,3 +115,8 @@ status as a second argument for the caller to render.
 
 Both async rows announce their status from outside the row element, so the status text never
 becomes part of the row's accessible name.
+
+Closing the menu does not cancel an in-flight action. `onSuccess` / `onError` on an action
+row, and `onCheckedChange` / `onError` on an asynchronous checkbox row, still report the
+outcome after the row unmounts. Keep controlled checked state in the parent when it must
+survive closing and reopening the menu.

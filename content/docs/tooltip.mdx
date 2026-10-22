@@ -17,5 +17,9 @@ controlled visibility, and `disableHoverablePopup` when the tooltip should close
 pointer leaves the trigger instead of remaining open while the popup is hovered. Positioning
 options can be forwarded through `positionerProps`.
 
+The portalled positioner uses `z-50` so tooltips also appear above Dialog and Sheet content.
+`positionerProps.className` merges with that default; use it to adjust the stacking level
+for a custom overlay. `className` styles the popup itself.
+
 Within one `TooltipProvider`, moving between neighbouring triggers opens the next tooltip
 instantly, without the entrance transition.

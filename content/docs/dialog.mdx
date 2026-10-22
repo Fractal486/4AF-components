@@ -19,3 +19,7 @@ Base UI handles focus trapping, dismissal, scroll locking, and labelling. `Dialo
 accepts `portalContainer` for a mount point of your own and `backdropClassName` for extra
 backdrop styling. `DialogSteps` animates between steps of different sizes. Its final **Done**
 button closes the dialog after optional validation; it does not save data or submit a form.
+
+`validateStep(index, intent)` receives `"forward"` before advancing and `"submit"` when Done
+is pressed. Return `false` to block the operation. A failed submit validation keeps
+`DialogContent` open so the user can correct the current step.

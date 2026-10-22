@@ -103,6 +103,7 @@ export function ActionButton({
   pendingDelay = 0,
   announce,
   disabled,
+  focusableWhenDisabled,
   variant,
   size,
   onClick,
@@ -179,6 +180,7 @@ export function ActionButton({
           run();
         }}
         disabled={disabled || status === "pending"}
+        focusableWhenDisabled={(!disabled && status === "pending") || focusableWhenDisabled}
         aria-busy={status === "pending" || undefined}
         data-status={status}
         data-pending-mode={pendingMode}

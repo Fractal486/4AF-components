@@ -1,4 +1,5 @@
 import { createEvent, fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { act, Suspense, type ReactElement } from "react";
 import { vi } from "vitest";
 import { Button } from "./button";
@@ -13,6 +14,27 @@ function lazyChild(element: ReactElement) {
 }
 
 describe("Button", () => {
+  it("keeps keyboard focus while loading and blocks repeat activation", async () => {
+    const user = userEvent.setup();
+    const onClick = vi.fn();
+    const { rerender } = render(<Button onClick={onClick}>Save</Button>);
+    const button = screen.getByRole("button", { name: "Save" });
+
+    await user.tab();
+    await user.keyboard("{Enter}");
+    rerender(<Button loading onClick={onClick}>Save</Button>);
+
+    expect(button).toHaveFocus();
+    expect(button).not.toBeDisabled();
+    expect(button).toHaveAttribute("aria-disabled", "true");
+    expect(button).toHaveAttribute("aria-busy", "true");
+    await user.keyboard("{Enter} ");
+    expect(onClick).toHaveBeenCalledOnce();
+
+    rerender(<Button loading disabled onClick={onClick}>Save</Button>);
+    expect(button).toBeDisabled();
+  });
+
   it("uses Base UI's safe non-submit default", () => {
     render(<Button>Save</Button>);
 

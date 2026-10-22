@@ -8,6 +8,7 @@ export const componentReferences = {
   "action-button": {
     usage: `import { ActionButton } from "@/components/ui/action-button";
 
+// Pending keeps keyboard focus; completion callbacks also run after unmount.
 <ActionButton
   action={() => saveChanges()}
   labels={{ success: "Saved" }}
@@ -18,7 +19,12 @@ export const componentReferences = {
   "action-toggle": {
     usage: `import { ActionToggle } from "@/components/ui/action-toggle";
 
-<ActionToggle action={(following) => setFollowing(following)} labels={{ pressed: "Following" }}>
+<ActionToggle
+  pressed={following}
+  action={(next) => saveFollowing(next)}
+  onPressedChange={setFollowing}
+  labels={{ pressed: "Following" }}
+>
   Follow
 </ActionToggle>`,
   },
@@ -111,7 +117,7 @@ import { Badge } from "@/components/ui/badge";
     usage: `import { Button } from "@/components/ui/button";
 
 <Button variant="primary">Deploy</Button>
-// Uses LoaderProvider's indicator, or ClassicLoader by default.
+// Keeps keyboard focus and blocks activation; inherits LoaderProvider's indicator.
 <Button loading>Deploy</Button>`,
   },
   "button-group": {
@@ -162,6 +168,7 @@ import { Button } from "@/components/ui/button";
   "copy-button": {
     usage: `import { CopyButton } from "@/components/ui/copy-button";
 
+// Async values keep keyboard focus while copying and block repeat activation.
 <CopyButton value="Text to copy" size="md">Copy</CopyButton>`,
   },
   "delete-button": {

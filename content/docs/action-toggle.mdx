@@ -16,6 +16,10 @@ uncontrolled state, or `pressed` / `onPressedChange` for controlled state; a con
 must update `pressed` from `onPressedChange`. Use it for states such as Follow/Following
 or Subscribe/Subscribed. Its appearance defaults to `variant="outline"` and `size="md"`.
 
+While pending, the toggle keeps keyboard focus with `aria-disabled="true"` and
+`aria-busy="true"`, and blocks repeat activation. An explicit `disabled` prop still disables
+the native button.
+
 By default the control keeps the width of its widest state. `sizing="current"` fits it to the
 showing state and animates the width as it changes. The control carries `data-sizing`.
 
@@ -44,7 +48,8 @@ It sets `aria-pressed`, which is why it is a separate component, as Toggle is fr
 It is not optimistic. By default the label stays while the loader runs; `labels.pending` replaces
 the pending label, and `pendingDelay` can defer the indicator (default 0ms). On failure it
 shows the error for `revertAfter` milliseconds (default 2000) and keeps its previous state.
-`onPressedChange` fires only on success.
+`onPressedChange` fires only on success, even if the toggle has unmounted while waiting.
+`onError` also reports failures after unmount; unmounting does not cancel the action.
 
 With `fillIcon` and no `icons.pressed`, the same glyph fills when pressed instead of being
 replaced.

@@ -15,6 +15,13 @@ reverts to idle after `revertAfter` milliseconds (2000 by default). Throw or rej
 `action` to show an error. `pendingDelay` defaults to 0, and concurrent presses cannot start
 another run. By default the button keeps the width of its widest state throughout.
 
+While pending, the button keeps keyboard focus and exposes `aria-disabled="true"` and
+`aria-busy="true"`. Repeat activation is blocked. An explicit `disabled` prop still disables
+the native button unless you opt into `focusableWhenDisabled`.
+
+`onSuccess` and `onError` report the action's outcome even if the button unmounts before it
+settles. Unmounting stops local feedback and reset timers, but does not cancel the action.
+
 `sizing="current"` fits the button to the showing state and animates the width as it changes.
 A label-only button then reserves no glyph slot while idle and grows when the status glyph
 appears. The button carries `data-sizing`.

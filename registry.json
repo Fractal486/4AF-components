@@ -294,7 +294,7 @@
     {
       "name": "use-action",
       "type": "registry:lib",
-      "description": "The run/pending/outcome/revert state machine behind ActionButton and the menu's action row — double-submit guard, unmount safety, and a revert clock each run owns.",
+      "description": "Shared async action state with a double-submit guard and reset timer. Outcome callbacks still fire after unmount; local feedback and timers stop.",
       "files": [
         {
           "path": "registry/lib/use-action.ts",
@@ -346,7 +346,7 @@
     {
       "name": "button",
       "type": "registry:ui",
-      "description": "Six variants, eight sizes, optical icon alignment, and a loading state that doesn't resize.",
+      "description": "Six variants, eight sizes, optical icon alignment, and a loading state that preserves size and keyboard focus while blocking activation.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/button (Markdown: https://4af.selfsimilar.dev/docs/button.md)",
       "dependencies": [
         "@base-ui/react",
@@ -568,7 +568,7 @@
     {
       "name": "copy-button",
       "type": "registry:ui",
-      "description": "Copies to the clipboard and confirms it — visually, and to screen readers.",
+      "description": "Copies to the clipboard and confirms it visually and to screen readers, preserving keyboard focus while pending.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/copy-button (Markdown: https://4af.selfsimilar.dev/docs/copy-button.md)",
       "dependencies": [
         "lucide-react"
@@ -587,7 +587,7 @@
     {
       "name": "action-button",
       "type": "registry:ui",
-      "description": "Runs an async action, shows pending/success/error, and resets after feedback. Reserves its widest state by default; pending can keep its label or show a centered loader only.",
+      "description": "Runs an async action, shows pending/success/error, and resets after feedback. Preserves focus while pending and reserves its widest state; pending can keep its label or show a centered loader only.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/action-button (Markdown: https://4af.selfsimilar.dev/docs/action-button.md)",
       "dependencies": [
         "lucide-react",
@@ -610,7 +610,7 @@
     {
       "name": "action-toggle",
       "type": "registry:ui",
-      "description": "A toggle that changes state after its action succeeds and preserves its previous state on failure.",
+      "description": "A toggle that changes state after its action succeeds, preserves its previous state on failure, and keeps keyboard focus while pending.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/action-toggle (Markdown: https://4af.selfsimilar.dev/docs/action-toggle.md)",
       "dependencies": [
         "lucide-react"
@@ -1333,7 +1333,7 @@
     {
       "name": "tooltip",
       "type": "registry:ui",
-      "description": "Base UI positioning and timing with a CSS scale-and-blur enter. Opens on hover and focus, flips at the viewport edge.",
+      "description": "Base UI positioning and timing with a CSS scale-and-blur enter. Opens on hover and focus, flips at the viewport edge, and layers above modal content.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/tooltip (Markdown: https://4af.selfsimilar.dev/docs/tooltip.md)",
       "dependencies": [
         "@base-ui/react"
@@ -1425,7 +1425,7 @@
     {
       "name": "dialog",
       "type": "registry:ui",
-      "description": "A modal centred over the page. Base UI Dialog behaviour; scales in from a blur and fades out with Motion.",
+      "description": "A modal centred over the page with Base UI Dialog behaviour and Motion transitions. Optional steps keep the dialog open when completion validation fails.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/dialog (Markdown: https://4af.selfsimilar.dev/docs/dialog.md)",
       "dependencies": [
         "@base-ui/react",
