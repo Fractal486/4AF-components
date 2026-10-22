@@ -20,13 +20,20 @@ swap is instant. Morph supplies no button styling, padding, or fixed height of i
 | --- | --- |
 | `"widest"` (default) | The largest item, in every state. |
 | `"current"` | The showing item. The width transitions over `--duration-base` and is instant under reduced motion. Without `ResizeObserver` the box resizes without animating. |
+| `"fixed"` | The dimensions supplied through `className`. No hidden sizing copies or width measurement. |
 
-With multiple items the box carries `data-sizing`. With a single item, Morph skips the hidden
+The box carries `data-sizing`. With a single item, Morph skips the hidden
 sizing copy, so the content appears once in the DOM and to assistive technology.
+
+Use `sizing="fixed"` when every state fits a known slot, such as `className="size-4"`
+for 16px icons. Supply the dimensions yourself; this mode does not choose a size or clip
+oversized content. Only the active state mounts, with the outgoing state retained until its
+exit finishes. This avoids mounting hidden controls or running effects in inactive states.
+The normal swap animation and reduced-motion behavior still apply.
 
 Hidden sizing copies keep each `LoadingIndicator`'s fixed-size wrapper but leave its loader
 unmounted. This preserves the measured size without running hidden timers or spinner animations,
-for both sizing modes. Other custom content still mounts in each sizing copy.
+for `"widest"` and `"current"`. Other custom content still mounts in each sizing copy.
 
 `morphVariants` exports the `initial` / `animate` / `exit` poses for content that has to stay
 mounted while hidden, such as Action Button's icon-only pending label, which still names the

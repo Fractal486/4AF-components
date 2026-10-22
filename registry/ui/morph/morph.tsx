@@ -47,8 +47,11 @@ export interface MorphProps<K extends string> {
    * when the space a wide state would leave empty matters more than a still target.
    * Width is a layout property, so this is one of the library's accepted layout-motion
    * exceptions; it rides `--duration-base` and collapses under reduced motion.
+   * `"fixed"` uses the dimensions supplied by `className` and mounts only the current
+   * state. Use it when every state fits a known box, so hidden sizing copies would add
+   * controls, effects and DOM nodes without contributing any measurements.
    */
-  sizing?: "widest" | "current";
+  sizing?: "widest" | "current" | "fixed";
   className?: string;
 }
 
@@ -67,12 +70,12 @@ export function Morph<K extends string>({
   const keys = Object.keys(items) as K[];
   const { box, widths } = useItemWidths(keys, sizing === "current" && keys.length > 1);
 
-  // A single state has nothing to reserve against. Keeping a hidden copy in that case
-  // duplicates readable text in the DOM (and makes assistive/query consumers see the same
-  // label twice), while providing no layout stability or animation benefit.
-  if (keys.length === 1) {
+  // A known box needs no sizing copies. Neither does a single state, whose hidden copy
+  // would only duplicate readable text. Keep the same presence lifecycle for both so
+  // fixed-size icon swaps still retain their outgoing state through the animation.
+  if (sizing === "fixed" || keys.length === 1) {
     return (
-      <span data-slot="morph" className={cn("relative inline-grid place-items-center", className)}>
+      <span data-slot="morph" data-sizing={sizing} className={cn("relative inline-grid place-items-center", className)}>
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.span
             key={activeKey}

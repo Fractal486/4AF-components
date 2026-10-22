@@ -239,10 +239,12 @@ import { Button } from "@/components/ui/button";
     usage: `import { Check, Copy } from "lucide-react";
 import { Morph } from "@/components/ui/morph";
 
-// LoadingIndicator slots keep their size in hidden copies without mounting a loader.
+// A known icon slot needs no hidden sizing copies.
 <Morph
+  sizing="fixed"
+  className="size-4"
   activeKey={copied ? "done" : "idle"}
-  items={{ idle: <Copy />, done: <Check /> }}
+  items={{ idle: <Copy className="size-4" />, done: <Check className="size-4" /> }}
 />`,
   },
   "date-picker": {

@@ -528,7 +528,7 @@
     {
       "name": "morph",
       "type": "registry:ui",
-      "description": "Animated content swap — icons or text. Copy to check, Follow to Following. Hidden sizing copies reserve loader space without mounting animated indicators.",
+      "description": "Animated content swap — icons or text. Reserve the widest item, animate the current width, or use a fixed box without hidden sizing copies.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/morph (Markdown: https://4af.selfsimilar.dev/docs/morph.md)",
       "dependencies": [
         "motion"

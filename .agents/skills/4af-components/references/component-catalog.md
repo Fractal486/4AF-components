@@ -30,7 +30,7 @@ The catalog contains 48 installable UI items.
 | [`action-toggle`](https://4af.selfsimilar.dev/docs/action-toggle.md) | A pressed state that changes only after an async action succeeds. |
 | [`copy-button`](https://4af.selfsimilar.dev/docs/copy-button.md) | Clipboard actions with confirmation. |
 | [`delete-button`](https://4af.selfsimilar.dev/docs/delete-button.md) | A destructive action confirmed by a second press. |
-| [`morph`](https://4af.selfsimilar.dev/docs/morph.md) | Animated replacement of text or icons with reserved space. |
+| [`morph`](https://4af.selfsimilar.dev/docs/morph.md) | Animated replacement of text or icons, with reserved, measured, or fixed-size space. |
 
 ### Fields and selection
 

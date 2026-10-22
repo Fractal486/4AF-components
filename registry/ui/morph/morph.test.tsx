@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 import { Morph } from "./morph";
 
@@ -18,7 +18,9 @@ function stubResizeObserver() {
         this.targets.push(target);
       }
       unobserve() {}
-      disconnect() {}
+      disconnect() {
+        this.targets.length = 0;
+      }
     },
   );
   return (widthOf: (target: Element) => number) =>
@@ -34,6 +36,38 @@ function stubResizeObserver() {
 }
 
 describe("Morph", () => {
+  it("swaps fixed-size states without mounting hidden controls or measuring widths", async () => {
+    const observer = vi.fn();
+    vi.stubGlobal("ResizeObserver", observer);
+    const onSelect = vi.fn();
+    const items = {
+      icon: <span>Source</span>,
+      select: <button onClick={onSelect}>Select</button>,
+    };
+    const { container, rerender } = render(
+      <Morph sizing="fixed" className="size-4" activeKey="icon" items={items} />,
+    );
+
+    const box = container.querySelector<HTMLElement>('[data-slot="morph"]')!;
+    expect(box).toHaveAttribute("data-sizing", "fixed");
+    expect(box).toHaveClass("size-4");
+    expect(box.style.width).toBe("");
+    expect(screen.getAllByText("Source")).toHaveLength(1);
+    expect(screen.queryByRole("button", { hidden: true })).not.toBeInTheDocument();
+
+    rerender(<Morph sizing="fixed" className="size-4" activeKey="select" items={items} />);
+    const button = screen.getByRole("button", { name: "Select" });
+    expect(screen.getAllByRole("button", { hidden: true })).toHaveLength(1);
+    fireEvent.click(button);
+    expect(onSelect).toHaveBeenCalledOnce();
+    await waitFor(() => expect(screen.queryByText("Source")).not.toBeInTheDocument());
+
+    rerender(<Morph sizing="fixed" className="size-4" activeKey="icon" items={items} />);
+    await waitFor(() => expect(screen.queryByRole("button", { hidden: true })).not.toBeInTheDocument());
+    expect(screen.getAllByText("Source")).toHaveLength(1);
+    expect(observer).not.toHaveBeenCalled();
+  });
+
   it("does not render a duplicate sizer for a single state", () => {
     const { container } = render(
       <Morph activeKey="idle" items={{ idle: <span>Pending</span> }} />,
@@ -70,5 +104,23 @@ describe("Morph", () => {
 
     rerender(<Morph activeKey="on" items={items} sizing="current" />);
     expect(box.style.width).toBe("72.5px");
+  });
+
+  it("drops measured sizing in fixed mode and resumes measuring when switched back", () => {
+    const report = stubResizeObserver();
+    const items = { off: "Follow", on: "Following" };
+    const { container, rerender } = render(<Morph activeKey="off" items={items} sizing="current" />);
+    report(() => 48);
+    expect(container.querySelector<HTMLElement>('[data-slot="morph"]')!.style.width).toBe("48px");
+
+    rerender(<Morph activeKey="off" items={items} sizing="fixed" className="h-5 w-20" />);
+    const fixed = container.querySelector<HTMLElement>('[data-slot="morph"]')!;
+    expect(fixed.style.width).toBe("");
+    expect(fixed.querySelector("[data-morph-sizer]")).not.toBeInTheDocument();
+    expect(screen.queryByText("Following")).not.toBeInTheDocument();
+
+    rerender(<Morph activeKey="off" items={items} sizing="current" />);
+    report(() => 60);
+    expect(container.querySelector<HTMLElement>('[data-slot="morph"]')!.style.width).toBe("60px");
   });
 });

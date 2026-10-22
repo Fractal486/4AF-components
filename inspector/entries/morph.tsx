@@ -9,7 +9,7 @@ export const morphEntry = defineEntry({
   controls: {
     variant: select(CONTROL_VARIANTS, "outline"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
-    sizing: select(["widest", "current"], "widest", "Width"),
+    sizing: select(["widest", "current", "fixed"], "widest", "Sizing"),
   },
   render({ variant, shape, sizing }) {
     return (
@@ -18,18 +18,21 @@ export const morphEntry = defineEntry({
           <IconToggle
             variant={variant}
             shape={shape}
+            sizing={sizing}
             labels={["Play", "Pause"]}
             icons={[<Play key="play" />, <Pause key="pause" />]}
           />
           <IconToggle
             variant={variant}
             shape={shape}
+            sizing={sizing}
             labels={["Open menu", "Close menu"]}
             icons={[<Menu key="menu" />, <X key="x" />]}
           />
           <IconToggle
             variant={variant}
             shape={shape}
+            sizing={sizing}
             labels={["Dark theme", "Light theme"]}
             icons={[<Moon key="moon" />, <Sun key="sun" />]}
           />

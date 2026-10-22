@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { Button } from "@/registry/ui/button/button";
-import { Morph } from "@/registry/ui/morph/morph";
+import { Morph, type MorphProps } from "@/registry/ui/morph/morph";
 import { Toggle } from "@/registry/ui/toggle/toggle";
 import type { ControlVariant } from "../button-options";
 
@@ -14,11 +14,13 @@ export function IconToggle({
   icons,
   variant = "outline",
   shape,
+  sizing,
 }: {
   labels: [string, string];
   icons: [ReactNode, ReactNode];
   variant?: Variant;
   shape?: Shape;
+  sizing?: MorphProps<"on" | "off">["sizing"];
 }) {
   const [on, setOn] = useState(false);
 
@@ -31,7 +33,12 @@ export function IconToggle({
       aria-label={on ? labels[1] : labels[0]}
       aria-pressed={on}
     >
-      <Morph activeKey={on ? "on" : "off"} items={{ off: icons[0], on: icons[1] }} />
+      <Morph
+        activeKey={on ? "on" : "off"}
+        sizing={sizing}
+        className={sizing === "fixed" ? "size-4 [&_svg]:size-4" : undefined}
+        items={{ off: icons[0], on: icons[1] }}
+      />
     </Button>
   );
 }
@@ -45,7 +52,7 @@ export function TextToggle({
   labels: [string, string];
   variant?: Variant;
   shape?: Shape;
-  sizing?: "widest" | "current";
+  sizing?: MorphProps<"on" | "off">["sizing"];
 }) {
   const [on, setOn] = useState(false);
 
@@ -61,6 +68,7 @@ export function TextToggle({
       <Morph
         activeKey={on ? "on" : "off"}
         sizing={sizing}
+        className={sizing === "fixed" ? "h-5 w-20" : undefined}
         items={{ off: labels[0], on: labels[1] }}
       />
     </Toggle>

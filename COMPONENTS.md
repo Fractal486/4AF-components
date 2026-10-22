@@ -26,6 +26,8 @@ Loading components install the shared loader utility and `ClassicLoader` as thei
 indicator. See [shared loading indicators](content/docs/reference/engineering.mdx#shared-loading-indicators)
 for provider overrides and alternative loaders.
 Morph's hidden sizing copies reserve the loader slot without mounting its indicator.
+For a known icon or control slot, [Morph's fixed sizing](content/docs/morph.mdx#api)
+skips the hidden copies entirely.
 
 For custom application frames, see [Sidebar Layout's header slots](content/docs/sidebar-layout.mdx#api).
 For multiline input inside an existing editor surface, see [Textarea's plain variant](content/docs/textarea.mdx#api).
