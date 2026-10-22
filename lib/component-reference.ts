@@ -433,12 +433,20 @@ import { SidebarLayout } from "@/components/ui/sidebar-layout";
 
 <Slider label="Price" range defaultValue={[20, 80]} thumbLabels={["Lowest price", "Highest price"]} />
 
+// Typed values snap to the grid starting at 0.5, preserving its decimal precision.
+<Slider label="Amount" min={0.5} max={10.5} step={1} defaultValue={3.5} />
+
 <Slider label="Volume" defaultValue={60} inlineLabel />`,
   },
   switch: {
     usage: `import { Switch } from "@/components/ui/switch";
 
-<Switch aria-label="Enable notifications" />`,
+<Switch
+  aria-label="Enable notifications"
+  onCheckedChange={(next, details) => {
+    if (next && !canEnableNotifications) details.cancel();
+  }}
+/>`,
   },
   table: {
     usage: `import {
@@ -577,6 +585,7 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
     usage: `import { BlurText } from "@/components/ui/blur-text";
 
 <BlurText as="h1">Minimal React components</BlurText>
+<BlurText>Ready 👩‍💻</BlurText>
 <BlurText by="word" delay={200}>Built on Base UI.</BlurText>`,
   },
   textarea: {

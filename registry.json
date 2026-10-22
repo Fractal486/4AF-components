@@ -318,7 +318,7 @@
     {
       "name": "table-of-contents-tracking",
       "type": "registry:lib",
-      "description": "Shared heading tracking and click-to-scroll behavior for table-of-contents variants.",
+      "description": "Shared heading tracking and click-to-scroll behavior for table-of-contents variants, preserving native modified-click navigation.",
       "files": [
         {
           "path": "registry/lib/table-of-contents-tracking.ts",
@@ -449,7 +449,7 @@
     {
       "name": "textarea",
       "type": "registry:ui",
-      "description": "A multiline text field with bordered or plain variants, neutral or accent focus styling, and an optional resize handle.",
+      "description": "A multiline text field with bordered or plain variants, neutral or accent focus styling, and an optional resize handle with pointer cancellation and cleanup.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/textarea (Markdown: https://4af.selfsimilar.dev/docs/textarea.md)",
       "dependencies": [
         "class-variance-authority"
@@ -546,7 +546,7 @@
     {
       "name": "delete-button",
       "type": "registry:ui",
-      "description": "A destructive button that arms on the first press and confirms on the second, with Escape, blur, and timeout exits.",
+      "description": "A destructive button that arms on the first press and confirms on the second, with Escape, blur, and timeout exits. Parent updates preserve the armed timeout.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/delete-button (Markdown: https://4af.selfsimilar.dev/docs/delete-button.md)",
       "dependencies": [
         "lucide-react"
@@ -661,7 +661,7 @@
     {
       "name": "switch",
       "type": "registry:ui",
-      "description": "A switch whose thumb stretches toward the track center on hover and further when pressed, then returns to a circle as it slides. Adaptive or fixed thumb tone.",
+      "description": "A switch whose thumb stretches toward the track center on hover and further when pressed, then returns to a circle as it slides. Adaptive or fixed thumb tone; canceled changes preserve the checked state and thumb direction.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/switch (Markdown: https://4af.selfsimilar.dev/docs/switch.md)",
       "dependencies": [
         "@base-ui/react",
@@ -745,7 +745,7 @@
     {
       "name": "slider",
       "type": "registry:ui",
-      "description": "A slider with bar, knob, and circle variants. Tracks the pointer while dragged and glides on track clicks and keyboard steps, with optional range mode, labels, editable values, a live value tooltip, and a custom fill colour. Base UI behaviour.",
+      "description": "A slider with bar, knob, and circle variants. Tracks the pointer while dragged and glides on track clicks and keyboard steps, with optional range mode, labels, editable values that preserve decimal precision, a live value tooltip, and a custom fill colour. Base UI behaviour.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/slider (Markdown: https://4af.selfsimilar.dev/docs/slider.md)",
       "dependencies": [
         "@base-ui/react",
@@ -1050,7 +1050,7 @@
     {
       "name": "blur-text",
       "type": "registry:ui",
-      "description": "Text that blurs and rises into place letter by letter or word by word. A CSS entrance for headings and short lines, shown at once under reduced motion.",
+      "description": "Text that blurs and rises into place by whole Unicode characters or words. Uses Intl.Segmenter when available to preserve combined emoji and accents. CSS only, shown at once under reduced motion.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/blur-text (Markdown: https://4af.selfsimilar.dev/docs/blur-text.md)",
       "dependencies": [],
       "registryDependencies": [
@@ -1333,7 +1333,7 @@
     {
       "name": "tooltip",
       "type": "registry:ui",
-      "description": "Base UI positioning and timing with a CSS scale-and-blur enter. Opens on hover and focus, flips at the viewport edge, and layers above modal content.",
+      "description": "Base UI positioning and timing with a CSS scale-and-blur enter. Opens on hover and focus, flips at the viewport edge, and layers above modal content. Empty content preserves the trigger's focus and state.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/tooltip (Markdown: https://4af.selfsimilar.dev/docs/tooltip.md)",
       "dependencies": [
         "@base-ui/react"

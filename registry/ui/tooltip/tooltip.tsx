@@ -49,7 +49,7 @@ const popupClassName = cn(
 );
 
 export interface TooltipProps {
-  /** The tooltip text. When empty, the trigger renders on its own. */
+  /** The tooltip text. Empty content hides the popup without remounting the trigger. */
   content: ReactNode;
   /** The element the tooltip describes. Becomes the trigger. */
   children: ReactElement;
@@ -87,30 +87,31 @@ export function Tooltip({
   className,
   positionerProps,
 }: TooltipProps) {
-  // Nothing to describe → don't wire up a tooltip at all.
-  if (content == null || content === "") return children;
+  const empty = content == null || content === "";
 
   return (
-    <BaseTooltip.Root open={open} disableHoverablePopup={disableHoverablePopup}>
+    <BaseTooltip.Root open={open} disabled={empty} disableHoverablePopup={disableHoverablePopup}>
       <BaseTooltip.Trigger render={children} delay={delay} closeOnClick={closeOnClick} />
-      <BaseTooltip.Portal>
-        <BaseTooltip.Positioner
-          side={side}
-          align={align}
-          sideOffset={sideOffset}
-          {...positionerProps}
-          className={(state) => cn(
-            "z-50 outline-none",
-            typeof positionerProps?.className === "function"
-              ? positionerProps.className(state)
-              : positionerProps?.className,
-          )}
-        >
-          <BaseTooltip.Popup className={cn(popupClassName, className)}>
-            {content}
-          </BaseTooltip.Popup>
-        </BaseTooltip.Positioner>
-      </BaseTooltip.Portal>
+      {!empty && (
+        <BaseTooltip.Portal>
+          <BaseTooltip.Positioner
+            side={side}
+            align={align}
+            sideOffset={sideOffset}
+            {...positionerProps}
+            className={(state) => cn(
+              "z-50 outline-none",
+              typeof positionerProps?.className === "function"
+                ? positionerProps.className(state)
+                : positionerProps?.className,
+            )}
+          >
+            <BaseTooltip.Popup className={cn(popupClassName, className)}>
+              {content}
+            </BaseTooltip.Popup>
+          </BaseTooltip.Positioner>
+        </BaseTooltip.Portal>
+      )}
     </BaseTooltip.Root>
   );
 }

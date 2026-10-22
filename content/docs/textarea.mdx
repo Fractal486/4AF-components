@@ -26,3 +26,7 @@ props, refs, disabled handling, and the optional resize grip. The field exposes 
 
 The field uses the medium form-row treatment with an 8px radius. When `resizable` is enabled,
 the 16px corner grip uses the compact 6px radius.
+
+Start resizing with the primary mouse button, touch, or pen. Other mouse buttons are ignored.
+The drag ends on pointer release, cancellation, or lost capture, and is cleaned up if the
+field unmounts, becomes disabled, or has resizing turned off.

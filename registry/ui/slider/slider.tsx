@@ -188,15 +188,22 @@ function FaderTick({
   return <motion.span className={className} style={{ ...style, opacity }} />;
 }
 
+/** Decimal precision, including numbers printed in exponent notation. */
+function decimalPlaces(value: number): number {
+  const [coefficient, exponent = "0"] = String(value).split("e");
+  return Math.max(0, (coefficient!.split(".")[1] ?? "").length - Number(exponent));
+}
+
 /** A typed value clamped to the range and snapped to the nearest step, or null if unreadable. */
 function parseTypedValue(text: string, min: number, max: number, step: number): number | null {
   const typed = Number(text.trim().replace(",", "."));
   if (text.trim() === "" || !Number.isFinite(typed)) return null;
   const snapped = Math.round((clamp(typed, min, max) - min) / step) * step + min;
-  // Snapping in floating point leaves tails (0.30000000000000004); round them to the step's
-  // own precision.
-  const decimals = (String(step).split(".")[1] ?? "").length;
-  return clamp(Number(snapped.toFixed(decimals)), min, max);
+  // The step grid starts at min, so both values contribute decimal precision.
+  const decimals = Math.max(decimalPlaces(step), decimalPlaces(min));
+  // toFixed supports at most 100 digits; retain smaller numbers instead of rounding to zero.
+  const rounded = decimals <= 100 ? Number(snapped.toFixed(decimals)) : snapped;
+  return clamp(rounded, min, max);
 }
 
 /**
@@ -273,7 +280,10 @@ function EditableValue({
   return (
     <BaseSlider.Value
       onPointerDown={(event) => event.stopPropagation()}
-      onClick={() => setDraft(String(value))}
+      onClick={() => {
+        cancelledRef.current = false;
+        setDraft(String(value));
+      }}
       className={cn("pointer-events-auto cursor-text tabular", className)}
     >
       {(formatted) => formatted[index]}
@@ -689,7 +699,7 @@ export function Slider({
   // from the same spring-driven position as the thumb; using the raw target value or a
   // second spring lets the fill get ahead while the thumb is still settling.
   const valueRange = normalizedMax - normalizedMin;
-  const stepCount = Math.floor(valueRange / normalizedStep);
+  const stepCount = Math.floor(valueRange / normalizedStep + 1e-9);
   const firstFieldPercent = Math.min((normalizedStep / valueRange) * 100, 100);
   const remainder = valueRange - stepCount * normalizedStep;
   const lastFieldPercent =
@@ -753,7 +763,7 @@ export function Slider({
     showTicks && !isKnob && stepCount > 0 && stepCount <= 50
       ? Array.from(
           { length: stepCount + 1 },
-          (_, i) => ((i * normalizedStep) / (normalizedMax - normalizedMin)) * 100,
+          (_, i) => Math.min(((i * normalizedStep) / valueRange) * 100, 100),
         )
       : [];
 

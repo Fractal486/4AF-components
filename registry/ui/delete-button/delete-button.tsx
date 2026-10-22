@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
 import { Button, type ButtonProps } from "@/registry/ui/button/button";
 import { buttonContentGap } from "@/registry/ui/ui/button.variants";
@@ -93,22 +93,24 @@ export function DeleteButton({
   const armedAt = useRef(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const setArmed = useCallback(
-    (next: boolean) => {
-      if (!isControlled) setUncontrolled(next);
-      onArmedChange?.(next);
-    },
-    [isControlled, onArmedChange],
-  );
+  const setArmed = (next: boolean) => {
+    if (!isControlled) setUncontrolled(next);
+    onArmedChange?.(next);
+  };
+  const setArmedRef = useRef(setArmed);
+  useLayoutEffect(() => {
+    setArmedRef.current = setArmed;
+  });
 
   // Re-armed presses restart the clock, and the timer is dropped on unmount so a pending
-  // disarm can't land on a component that's gone.
+  // disarm can't land on a component that's gone. Parent renders update the callback
+  // without restarting the armed state's timeout.
   useEffect(() => {
     clearTimeout(timer.current ?? undefined);
     if (!isArmed || resetAfter <= 0) return;
-    timer.current = setTimeout(() => setArmed(false), resetAfter);
+    timer.current = setTimeout(() => setArmedRef.current(false), resetAfter);
     return () => clearTimeout(timer.current ?? undefined);
-  }, [isArmed, resetAfter, setArmed]);
+  }, [isArmed, resetAfter]);
 
   const handleClick = () => {
     if (!isArmed) {

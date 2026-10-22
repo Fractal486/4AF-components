@@ -13,6 +13,8 @@ description: A destructive action button with deliberate confirmation feedback.
 A destructive confirmation button: the first press arms it and a later press calls `onDelete`.
 Presses within 350ms of arming are ignored so a double-click cannot confirm. Escape, blur, and
 `resetAfter` disarm it; the timeout defaults to 3000ms, and `resetAfter={0}` disables the timeout.
+Parent renders and a new inline `onArmedChange` callback do not restart that timeout. When
+it expires, the latest callback receives `false`.
 
 `variant` accepts `outline` (default), `ghost`, or `plain`, all with destructive text.
 `armed` / `onArmedChange` control the armed state, or use `defaultArmed` for an uncontrolled

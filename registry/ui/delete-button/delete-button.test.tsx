@@ -7,6 +7,32 @@ afterEach(() => {
 });
 
 describe("DeleteButton", () => {
+  it("keeps its original timeout across parent renders and calls the latest callback", () => {
+    vi.useFakeTimers();
+    const onArmedChange = vi.fn();
+    function Parent({ revision }: { revision: number }) {
+      return (
+        <DeleteButton resetAfter={500} onArmedChange={(armed) => onArmedChange(revision, armed)}>
+          Remove
+        </DeleteButton>
+      );
+    }
+    const { rerender } = render(<Parent revision={0} />);
+    const button = screen.getByRole("button");
+
+    fireEvent.click(button);
+    expect(onArmedChange).toHaveBeenLastCalledWith(0, true);
+    act(() => vi.advanceTimersByTime(200));
+    rerender(<Parent revision={1} />);
+    act(() => vi.advanceTimersByTime(200));
+    rerender(<Parent revision={2} />);
+    act(() => vi.advanceTimersByTime(100));
+
+    expect(button).not.toHaveAttribute("data-armed");
+    expect(onArmedChange).toHaveBeenLastCalledWith(2, false);
+    expect(onArmedChange).toHaveBeenCalledTimes(2);
+  });
+
   it("requires a deliberate second press outside the double-click guard", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));

@@ -1,8 +1,33 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { ComponentProps } from "react";
 import { vi } from "vitest";
 import { Switch } from "./switch";
 
 describe("Switch", () => {
+  it.each([false, true])("keeps thumb direction and checked state together after a canceled toggle (checked=%s)", async (checked) => {
+    const onCheckedChange = vi.fn<NonNullable<ComponentProps<typeof Switch>["onCheckedChange"]>>(
+      (_, details) => details.cancel(),
+    );
+    const { container } = render(
+      <Switch aria-label="Notifications" defaultChecked={checked} onCheckedChange={onCheckedChange} />,
+    );
+    const control = screen.getByRole("switch", { name: "Notifications" });
+
+    fireEvent.click(control);
+    expect(onCheckedChange).toHaveBeenCalledExactlyOnceWith(!checked, expect.anything());
+    expect(control).toHaveAttribute("aria-checked", String(checked));
+
+    fireEvent.pointerDown(control, { pointerType: "mouse", button: 0 });
+    await waitFor(() => {
+      expect(container.querySelector('[data-slot="switch-thumb-cap-start"]')).toHaveStyle({
+        transform: checked ? "translateX(-3.5px)" : "none",
+      });
+      expect(container.querySelector('[data-slot="switch-thumb-cap-end"]')).toHaveStyle({
+        transform: checked ? "none" : "translateX(3.5px)",
+      });
+    });
+  });
+
   it("runs consumer pointer handlers and extends an off thumb toward the center", async () => {
     const onPointerDown = vi.fn();
     const { container } = render(<Switch aria-label="Notifications" onPointerDown={onPointerDown} />);

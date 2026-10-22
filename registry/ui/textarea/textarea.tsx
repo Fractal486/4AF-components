@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type ComponentProps, type PointerEvent, type Ref } from "react";
+import { useEffect, useRef, type ComponentProps, type PointerEvent, type Ref } from "react";
 import { cn } from "@/registry/lib/cn";
 import { useMergedRefs } from "@/registry/lib/refs";
 import { inputVariants, type InputVariants } from "@/registry/ui/ui/input.variants";
@@ -42,28 +42,43 @@ export function Textarea({
 }: TextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const mergedRef = useMergedRefs(textareaRef, ref);
+  const resizeCleanup = useRef<(() => void) | null>(null);
+
+  useEffect(() => () => resizeCleanup.current?.(), [disabled, resizable]);
 
   const startResize = (event: PointerEvent<HTMLButtonElement>) => {
     const textarea = textareaRef.current;
-    if (!textarea || disabled) return;
+    if (!textarea || disabled || event.button !== 0) return;
     event.preventDefault();
+    resizeCleanup.current?.();
 
     const grip = event.currentTarget;
     const startY = event.clientY;
     const startHeight = textarea.offsetHeight;
-    grip.setPointerCapture(event.pointerId);
+    const pointerId = event.pointerId;
+    grip.setPointerCapture(pointerId);
 
     const onMove = (moveEvent: globalThis.PointerEvent) => {
+      if (moveEvent.pointerId !== pointerId) return;
       textarea.style.height = `${Math.max(MIN_HEIGHT, startHeight + (moveEvent.clientY - startY))}px`;
     };
-    const onUp = () => {
-      grip.releasePointerCapture(event.pointerId);
+    const cleanup = () => {
       grip.removeEventListener("pointermove", onMove);
-      grip.removeEventListener("pointerup", onUp);
+      grip.removeEventListener("pointerup", onEnd);
+      grip.removeEventListener("pointercancel", onEnd);
+      grip.removeEventListener("lostpointercapture", onEnd);
+      resizeCleanup.current = null;
+      if (grip.hasPointerCapture(pointerId)) grip.releasePointerCapture(pointerId);
     };
-    // Pointer capture routes the move/up events here, so the drag tracks past the edge.
+    const onEnd = (endEvent: globalThis.PointerEvent) => {
+      if (endEvent.pointerId === pointerId) cleanup();
+    };
+    resizeCleanup.current = cleanup;
+    // Pointer capture routes events here until release, cancellation, or lost capture.
     grip.addEventListener("pointermove", onMove);
-    grip.addEventListener("pointerup", onUp);
+    grip.addEventListener("pointerup", onEnd);
+    grip.addEventListener("pointercancel", onEnd);
+    grip.addEventListener("lostpointercapture", onEnd);
   };
 
   return (

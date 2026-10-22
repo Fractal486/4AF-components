@@ -1,10 +1,30 @@
 import { render, screen } from "@testing-library/react";
+import { vi } from "vitest";
 import { BlurText } from "./blur-text";
 
 const segments = (container: HTMLElement) =>
   [...container.querySelectorAll<HTMLElement>('[aria-hidden="true"] .animate-blur-text-in')];
 
 describe("BlurText", () => {
+  it("falls back to code points when Intl.Segmenter is unavailable", () => {
+    vi.stubGlobal("Intl", Object.create(Intl, { Segmenter: { value: undefined } }));
+    try {
+      const { container } = render(<BlurText>😀a</BlurText>);
+      expect(segments(container).map((segment) => segment.textContent)).toEqual(["😀", "a"]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("animates combined emoji, flags, and accented letters as whole characters", () => {
+    const text = "👨‍👩‍👧‍👦🇭🇺e\u0301";
+    const { container } = render(<BlurText>{text}</BlurText>);
+
+    expect(segments(container).map((segment) => segment.textContent)).toEqual(["👨‍👩‍👧‍👦", "🇭🇺", "e\u0301"]);
+    expect(segments(container).map((segment) => segment.style.animationDelay)).toEqual(["0ms", "150ms", "300ms"]);
+    expect(container.querySelector(".sr-only")).toHaveTextContent(text);
+  });
+
   it("animates each letter in order, spreading the starts across 300ms by default", () => {
     const { container } = render(<BlurText>Hi you</BlurText>);
     const letters = segments(container);

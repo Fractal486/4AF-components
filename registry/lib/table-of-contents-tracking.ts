@@ -76,6 +76,7 @@ export function useTableOfContentsTracking({
   );
 
   const scrollTo = (event: MouseEvent, id: string) => {
+    if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
     const element = document.getElementById(id);
     if (!element) return;
     event.preventDefault();

@@ -99,8 +99,8 @@ export function Switch({
       className={cn(switchTrackVariants(), className)}
       {...props}
       onCheckedChange={(nextChecked, eventDetails) => {
-        if (checked === undefined) setUncontrolledChecked(nextChecked);
         onCheckedChange?.(nextChecked, eventDetails);
+        if (checked === undefined && !eventDetails.isCanceled) setUncontrolledChecked(nextChecked);
       }}
       onPointerDown={(event) => {
         onPointerDown?.(event);

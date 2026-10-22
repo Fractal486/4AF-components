@@ -16,3 +16,7 @@ returns to a circle as it slides, and stays a circle until the pointer leaves.
 
 `tone="adaptive"` (default) changes the thumb color with the checked state to contrast with the
 track. `tone="fixed"` keeps the thumb dark in both states.
+
+Use `checked` / `onCheckedChange` for controlled state or `defaultChecked` for uncontrolled
+state. Call `details.cancel()` in `onCheckedChange(nextChecked, details)` to reject a toggle;
+the checked state and thumb's motion direction both stay unchanged.

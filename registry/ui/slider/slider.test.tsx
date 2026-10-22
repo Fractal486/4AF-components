@@ -13,6 +13,54 @@ import {
 import { Slider } from "./slider";
 
 describe("Slider", () => {
+  it("keeps the final tick for an exact range of fractional steps", () => {
+    const { container } = render(
+      <Slider aria-label="Amount" thumb="circle" min={0} max={0.7} step={0.1} />,
+    );
+    const ticks = container.querySelectorAll<HTMLElement>('[data-slot="slider-ticks"] > span');
+
+    expect(ticks).toHaveLength(8);
+    expect(Number.parseFloat(ticks[7]!.style.left)).toBeCloseTo(100);
+  });
+
+  it.each([
+    { min: 0.5, max: 10.5, step: 1, typed: "3", expected: 3.5 },
+    { min: 0, max: 0.000001, step: 1e-7, typed: "0.0000003", expected: 3e-7 },
+    { min: 1e-7, max: 1, step: 0.1, typed: "0.3", expected: 0.3000001 },
+  ])("preserves step and minimum precision when editing $typed (min=$min, step=$step)", async ({ min, max, step, typed, expected }) => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    const { container } = render(
+      <Slider aria-label="Amount" min={min} max={max} step={step} onValueChange={onValueChange} />,
+    );
+
+    await user.click(container.querySelector("output")!);
+    const input = screen.getByRole("textbox", { name: "Edit Amount" });
+    await user.clear(input);
+    await user.type(input, `${typed}{Enter}`);
+
+    expect(onValueChange).toHaveBeenCalledExactlyOnceWith(expected);
+    expect(screen.getByRole("slider")).toHaveAttribute("aria-valuenow", String(expected));
+  });
+
+  it("commits a new edit after Escape canceled the previous one", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(<Slider aria-label="Amount" defaultValue={40} onValueChange={onValueChange} />);
+
+    await user.click(screen.getByText("40"));
+    await user.clear(screen.getByRole("textbox", { name: "Edit Amount" }));
+    await user.type(screen.getByRole("textbox", { name: "Edit Amount" }), "15{Escape}");
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+    expect(onValueChange).not.toHaveBeenCalled();
+
+    await user.click(screen.getByText("40"));
+    await user.clear(screen.getByRole("textbox", { name: "Edit Amount" }));
+    await user.type(screen.getByRole("textbox", { name: "Edit Amount" }), "65{Enter}");
+    expect(onValueChange).toHaveBeenCalledExactlyOnceWith(65);
+    expect(screen.getByRole("slider")).toHaveAttribute("aria-valuenow", "65");
+  });
+
   it.each([false, true])("names the input from its visible label (inline: %s)", (inlineLabel) => {
     render(<Slider label={<strong>Volume</strong>} inlineLabel={inlineLabel} />);
     expect(screen.getByRole("slider", { name: "Volume" })).toBeInTheDocument();

@@ -53,6 +53,9 @@ export function BlurText({
   // Each word with its segments and the position of its first segment in the whole run,
   // worked out up front so every segment's delay is a function of the text alone.
   const parts: ({ space: string } | { segments: string[]; first: number })[] = [];
+  const segmenter = by === "character" && typeof Intl !== "undefined" && typeof Intl.Segmenter === "function"
+    ? new Intl.Segmenter(undefined, { granularity: "grapheme" })
+    : null;
   let count = 0;
   for (const part of children.split(WHITESPACE)) {
     if (!part) continue;
@@ -60,7 +63,11 @@ export function BlurText({
       parts.push({ space: part });
       continue;
     }
-    const segments = by === "character" ? Array.from(part) : [part];
+    const segments = by === "word"
+      ? [part]
+      : segmenter
+        ? Array.from(segmenter.segment(part), ({ segment }) => segment)
+        : Array.from(part);
     parts.push({ segments, first: count });
     count += segments.length;
   }
