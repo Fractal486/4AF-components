@@ -3,7 +3,8 @@ title: Engineering
 description: The component contract, repository boundaries, motion rules, and documentation parity.
 ---
 
-Every component follows the contract below.
+Use this contract when adding or refining a component. Each component page documents its
+supported API; do not assume every export accepts a ref, `asChild`, or controlled state.
 
 ## Component contract
 
@@ -12,7 +13,9 @@ Every component follows the contract below.
   react-day-picker because Base UI has no calendar primitive.
 - Components forward props and refs, support controlled and uncontrolled state where relevant,
   and allow element replacement when the underlying element may reasonably change.
-- Variants live beside the component in a `.variants.ts` file and use CVA.
+- Variant definitions live beside the component in a `.variants.ts` file and use CVA.
+  Wrappers may reuse their underlying component's variants; parts without variants do not
+  need a separate definitions file.
 - State is exposed on the element through attributes such as `data-state`, `data-variant`, and
   `data-loading`, so styling and tests read the DOM.
 - Components use semantic theme tokens by default. Direct palette ramps are reserved for
@@ -21,11 +24,12 @@ Every component follows the contract below.
   client context even though its presentation parts have no interactive state.
 - A panel of rows (select, searchable menu, command palette) opens with a row already active:
   the current selection, or the most recent one when several are chosen, otherwise the first
-  row. Typing moves it to the top match. In the selects, hovering moves the active row; in the
+  enabled row. Typing moves it to the top match. In the selects, hovering moves the active row; in the
   command palette hover only highlights, and a press moves the selection. The pointer leaving
   the panel keeps the active row. It carries `data-panel-active`, or Base UI's
   `data-highlighted` where the primitive owns the highlight. `autoFocusFirstItem={false}` opts
-  out for menu-like uses.
+  out where that prop is supported. Ordinary Dropdown Menu submenus opened by pointer hover
+  start without a highlighted row; keyboard openings highlight the first enabled row.
 
 ## Motion contract
 
@@ -37,7 +41,8 @@ lifecycle.
 Transitions name their properties and prefer compositor-friendly motion. Collapsible's height
 transition, Sidebar's shell dimensions and offcanvas position, and Morph's opt-in
 `sizing="current"` width are accepted layout-motion exceptions. CSS durations use the shared motion tokens; JavaScript duration and easing defaults
-mirror those tokens and must be updated together. CSS overrides do not change JavaScript
+mirror the corresponding tokens and must be updated together. Component-specific springs and
+exit timings are documented separately. CSS overrides do not change JavaScript
 animations, so reduced motion is handled separately in both.
 
 ## Shared loading indicators
@@ -107,6 +112,7 @@ pages:
 | --- | --- |
 | `4af-theme` | Semantic colors, typography, radii, elevation, keyframes, and motion durations |
 | `cn` | Class-name composition with `clsx` and `tailwind-merge` |
+| `refs` | React 19 callback and object ref composition, including callback cleanup |
 | `slot` | Small local helper for `asChild` composition. `useSlotChild` lives in a separate server-compatible module, so components that render on the server can call it |
 | `motion` | Shared spring and easing presets |
 | `loader` | Caller-supplied loading slots and provider defaults, with `ClassicLoader` as the fallback |
@@ -131,7 +137,7 @@ and overview count read `registry.json` directly.
 Pages load their demo entries through the shared adapter and use the shared Install and Usage
 reference. Foundation items such as the theme, `cn`, `slot`, and motion presets install as
 dependencies and have no demos of their own. Append `.md` to any documentation URL to read it as
-Markdown.
+Markdown; the overview uses `/docs.md`.
 
 The demo layer also contains example helpers for Action Button, Badge cycling, Command Palette,
 Morph, Select fruit icons, Sidebar, and Table of Contents. They hold demo state, sample data, or

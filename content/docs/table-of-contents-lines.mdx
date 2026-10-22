@@ -10,15 +10,25 @@ description: A compact document outline visualized as interactive depth-aware li
 
 **Main export:** `TableOfContentsLines`
 
-Compact heading navigation drawn as lines. Each heading gets a line, indented by its level, with
-two shorter lines between consecutive headings. The active heading's line extends and darkens, as
-does a hovered one. When no heading is on screen, the last heading scrolled past stays active.
+Compact heading navigation drawn as lines. Pass `items` in document order as
+`{ id, title, level? }` objects: `id` must match a heading element, `title` is a React node, and
+`level` defaults to `2` and controls indentation. It does not discover headings for you.
+
+Each heading gets a line, with two shorter lines between consecutive headings. The active
+heading's line extends and darkens, as does a hovered or keyboard-focused one. During ordinary
+scrolling, the active entry is the last heading whose top has passed the scroll viewport's top
+edge, or the first item before any heading has passed it.
+
+Clicking scrolls smoothly, or without smooth motion under reduced motion, and keeps the clicked
+entry active until scrolling resumes. Clicking does not update the URL fragment or move focus
+to the target heading.
 
 Give it a height and it scrolls on its own, without a visible scrollbar, keeping the active entry
 centred.
 
 `labels="hover"` hides the headings until the list is hovered or keyboard-focused, leaving only
-the lines; `always` (default) shows them. On touch screens the headings always show.
+the lines; `always` (default) shows them. On devices with a coarse primary pointer the headings
+always show.
 
 `rootRef` is the document's scroll root. Pass it when the article scrolls inside a container
 rather than the page.

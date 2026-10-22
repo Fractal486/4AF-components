@@ -23,15 +23,16 @@ A responsive application sidebar.
 `SidebarRailButton tooltip="Projects"` labels a rail icon. Moving between rail icons opens their
 tooltips immediately, and the entrance transition still plays.
 
-With `collapsible="offcanvas"`, collapsed navigation leaves the tab order and accessibility
-tree once its exit finishes. If collapse happens while focus is inside, focus returns to the
+In a non-split desktop sidebar with `collapsible="offcanvas"`, collapsed navigation leaves the
+tab order and accessibility tree once its exit finishes. If collapse happens while focus is inside, focus returns to the
 external `SidebarTrigger` in the same provider, or the edge `SidebarRail` when present. Keep a
 trigger outside the panel so keyboard users can reopen it. Icon and noncollapsing sidebars keep
 their navigation available. `SidebarTrigger` sets `aria-expanded` to whether the panel it
 toggles is open: the drawer on mobile, the sidebar on desktop.
 
-On mobile the sidebar renders as a drawer. `className` styles the desktop sidebar only; style the
-drawer with `mobileClassName`.
+Below 768px, collapsible sidebars and split layouts render as a drawer. A non-split sidebar with
+`collapsible="none"` stays inline at every viewport size. For drawer layouts, `className` styles
+the desktop sidebar; style the drawer with `mobileClassName`.
 
 ## Menu control geometry
 
@@ -91,7 +92,8 @@ Dropdown Menu rather than embedding a separate menu implementation in Sidebar.
 
 ### Pinning the panel open
 
-`hideCollapseHandle` removes the edge strip that toggles the panel. Use it when the panel is
+In split layouts, `hideCollapseHandle` removes the automatically rendered edge strip that toggles
+the panel. In non-split layouts, omit your `SidebarRail` instead. Use this when the panel is
 pinned open (a controlled `open` that never changes), so there is no control that does
 nothing.
 

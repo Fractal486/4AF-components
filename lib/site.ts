@@ -1,6 +1,7 @@
 /**
  * Where the public site lives. The registry, the Markdown docs, and `llms.txt` are all served
- * from here, so this is the one value to change if the library moves.
+ * from here. If the library moves, update registry.json and the written guides' absolute
+ * URLs as well as this constant.
  *
  * Plain constants with relative imports only: `lib/component-reference.ts` imports this file,
  * and the docs tests read both outside Next.
@@ -23,7 +24,7 @@ export function registryItemUrl(name: string) {
   return `${SITE_URL}/r/${name}.json`;
 }
 
-/** The install command for one registry item. Works in any shadcn project, with no setup. */
+/** Install one registry item into a configured shadcn project without a namespace registration. */
 export function publicInstallCommand(name: string) {
   return `npx shadcn@latest add ${registryItemUrl(name)}`;
 }
@@ -40,6 +41,7 @@ export const AGENT_PROMPT = [
   `Use the 4AF React component library (${SITE_URL}).`,
   `Start by reading ${SITE_URL}/llms.txt: it has the install commands and links every`,
   "component's documentation as Markdown.",
+  "The target needs React 19, Tailwind CSS v4, and a shadcn components.json.",
   `Before using a component, read its page at ${SITE_URL}/docs/<name>.md.`,
   `Install components with the shadcn CLI: npx shadcn@latest add ${SITE_URL}/r/<name>.json`,
   "(run it with --dry-run first to preview the changes).",

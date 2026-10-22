@@ -129,9 +129,8 @@ export const tableInteractiveRowVariants = cva(
 
 /**
  * Every rule inside the table is a **separator**: 1px at 60% of the `border` token, there to be
- * followed along, not looked at. That includes the one under the header, which reads as part of
- * the same quiet grid rather than as a heavier boundary. Only the footer's top edge is lifted, to
- * 1.5px at the full token, to divide totals from data.
+ * followed along, not looked at. The rules under the header and above the footer use the same
+ * quiet treatment as the rules between data rows.
  *
  * Which rules are drawn is three independent switches: `horizontalLines` (between rows and under
  * the header), `verticalLines` (between columns), and `outline` (the frame, on the wrapper).

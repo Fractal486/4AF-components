@@ -6,7 +6,7 @@ export const revalidate = false;
 export const dynamic = "force-static";
 
 /**
- * The entry point for agents: every page's Markdown address, grouped as in the
+ * The entry point for agents: component and reference-section Markdown addresses, grouped as in the
  * site rail, plus the install pattern. Generated from the same sources as the rail, so a new
  * component appears here once it has a docs page and a catalog category.
  */
@@ -16,7 +16,7 @@ export function GET() {
     "",
     "> A personal library of React components built on Base UI and installed with the shadcn CLI.",
     "",
-    "Components install with the shadcn CLI, run in a project with a shadcn `components.json`",
+    "Components install with the shadcn CLI in a React 19 / Tailwind CSS v4 project with a shadcn `components.json`",
     "(`npx shadcn@latest init` creates one). The theme, shared utilities, and component",
     "dependencies install with each component.",
     "",
@@ -35,7 +35,7 @@ export function GET() {
     `\`${SITE_URL}/docs/reference/agent-skill/skill.md\`.`,
     "",
     `Each component's documentation, including its install command and a usage example, is at`,
-    `\`${SITE_URL}/docs/<name>.md\`. Every page is listed below.`,
+    `\`${SITE_URL}/docs/<name>.md\`. Component pages and reference sections are listed below.`,
     "",
     "## Overview",
     "",

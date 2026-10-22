@@ -1,6 +1,6 @@
 ---
 title: Input
-description: A styled text field with tones, a shared 34px default height, validation states, an optional leading icon, and composable adornments.
+description: A styled text field with tones, a shared 34px default height, validation states, an optional leading icon, and number steppers.
 ---
 
 <ComponentDemo name="input" />
@@ -12,6 +12,9 @@ description: A styled text field with tones, a shared 34px default height, valid
 
 A Base UI input with default, plain, and underline structures; neutral or accent focus; invalid
 and disabled states; an optional leading icon; and custom number steppers.
+
+`variant` defaults to `default` and `tone` to `neutral`. Native input props and Base UI's value
+APIs are forwarded. `autoComplete` defaults to `"off"`; pass another value to enable it.
 
 ## Leading icon
 
@@ -38,4 +41,6 @@ The default field is 34px high with the medium control's 8px radius, matching th
 and Select controls. The underline variant remains square. Use `className` when a field needs a
 deliberately different height.
 
-The optional number-stepper buttons use the compact 6px radius inside the field.
+`type="number"` adds the number-stepper buttons with the compact 6px radius inside the field.
+They follow the input's native `min`, `max`, and `step`, and are disabled when the field is
+`disabled` or `readOnly`.

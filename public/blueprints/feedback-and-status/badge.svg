@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="520" height="300" viewBox="0 0 520 300" fill="none" role="img" aria-labelledby="badge-title badge-desc">
   <title id="badge-title">Badge spacing blueprint</title>
-  <desc id="badge-desc">Default small, solid badge with the Action Button radial spinner and Beta label, drawn at three times CSS size. Fixed height 16 pixels, horizontal padding 4 pixels, icon box 10 pixels, and icon-to-label gap 4 pixels.</desc>
+  <desc id="badge-desc">A small, solid loading badge with the shared ClassicLoader spinner and Beta label, drawn at three times CSS size. Fixed height 16 pixels, horizontal padding 4 pixels, icon box 10 pixels, and icon-to-label gap 4 pixels. The blueprint's spinner animation settles to a static pose; the live loader continues looping, including under reduced motion.</desc>
   <!-- Sources: registry/ui/badge/badge.tsx and badge.variants.ts;
        inspector/entries/badge.tsx; app/globals.css; lib/component-catalog.ts.
        State: solid / loading / sm / rounded, showIcon=true, dot=false; label Beta.

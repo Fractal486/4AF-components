@@ -8,7 +8,7 @@ your project, so you own and can edit everything it writes.
 
 ## Requirements
 
-A React project with Tailwind CSS v4 and a shadcn `components.json`. If the project has none,
+A React 19 project with Tailwind CSS v4 and a shadcn `components.json`. If the project has none,
 create one:
 
 ```bash
@@ -24,6 +24,11 @@ npx shadcn@latest add https://4af.selfsimilar.dev/r/button.json
 Replace `button` with any name from the [component catalog](/docs/reference/components). The
 4AF theme, shared utilities, packages, and any components it builds on install with it. Files
 land where the `ui` and `lib` aliases in `components.json` point.
+
+The CLI merges theme CSS into the configured stylesheet. Installing a component preserves
+existing CSS variable values, so an existing shadcn theme may keep different colors, radii, or
+type sizes. Inspect the CSS diff when matching the 4AF demos. Font files are not bundled:
+configure your project's fonts separately to match the site's Geist Sans and Geist Mono.
 
 ## List the components
 
@@ -51,7 +56,7 @@ npx shadcn@latest registry add @4af=https://4af.selfsimilar.dev/r/{name}.json
 
 | Flag | What it does |
 | --- | --- |
-| `--dry-run` | Lists every file, package, and theme variable the install would add or change, without writing anything. |
+| `--dry-run` | Previews source files, package dependencies, and CSS updates without applying them. |
 | `--diff [path]` | Shows the changes to existing files. |
 | `--view [path]` | Shows the contents of the files it would write. |
 
@@ -60,11 +65,24 @@ before installing into it.
 
 ## Existing files and updates
 
-Files that already exist are skipped. To replace them, for example to update a component, add
-`--overwrite`. That discards local edits to those files, so run `--diff` first.
+Unchanged source files are skipped. For differing existing files, the CLI asks whether to
+replace each one, defaulting to no. `--overwrite` replaces them without those prompts,
+including shared dependencies, and can discard local edits. Preview the same overwrite
+operation before applying it:
+
+```bash
+npx shadcn@latest add https://4af.selfsimilar.dev/r/button.json --overwrite --diff
+npx shadcn@latest add https://4af.selfsimilar.dev/r/button.json --overwrite
+```
+
+Skipping an existing source file does not skip package or stylesheet updates. `--overwrite`
+controls source files; it does not force the component install to replace existing theme
+variables. Installing `4af-theme` directly is a separate theme operation that can replace
+matching variables, so preview its CSS diff before using it to reskin a project.
+After installing, inspect the resulting project diff and run its typecheck or build.
 
 ## Documentation for agents
 
-Every page on this site is available as Markdown by appending `.md` to its URL, for example
-`/docs/button.md`. [`/llms.txt`](/llms.txt) lists all of them. After an install, shadcn prints a
-link to the component's page.
+Documentation pages under `/docs/` are available as Markdown by appending `.md`, for example
+`/docs/button.md`. The overview is at `/docs.md`. [`/llms.txt`](/llms.txt) indexes the component
+pages and reference sections. After an install, shadcn prints a link to the component's page.

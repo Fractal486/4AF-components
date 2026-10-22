@@ -7,8 +7,8 @@ description: React components built on Base UI, with compact sizing, a warm-neut
 [Base UI](https://base-ui.com/) and distributed through a shadcn registry at
 `https://4af.selfsimilar.dev`.
 
-Every component uses the same tokens and motion settings, so components can be combined without
-style adjustments.
+Components share semantic tokens and motion defaults. The installed theme adds those tokens to
+your project; existing theme values and fonts can change the resulting appearance.
 
 The catalog currently contains **<ComponentCount /> installable components**. The generated
 [component catalog](/docs/reference/components) always matches the registry, while the
@@ -18,11 +18,14 @@ for coding agents.
 ## Design and behaviour
 
 - **Visual style.** Compact controls, warm-neutral greys, and a single blue accent used for
-  focus rings.
+  focus and selected emphasis.
 - **Motion.** Animations mark state changes, such as presses, content swaps, and panels opening
-  or closing. They last 150 to 450ms and follow the reduced-motion setting.
-- **Implementation.** Behaviour comes from Base UI and styling from semantic tokens. Every
-  component forwards props and refs and works controlled or uncontrolled. The full rules are in
+  or closing. Shared CSS duration defaults range from 150 to 450ms; springs, text effects, and
+  looping loaders have their own timing. Reduced motion shortens or disables transitions and
+  text effects, while loading spinners keep running.
+- **Implementation.** Interactive primitives use Base UI, with react-day-picker for Calendar.
+  Components share semantic styling tokens; their pages describe controlled state, refs, and
+  composition support where available. The engineering rules are in
   [Engineering](/docs/reference/engineering).
 
 ## Install a component
@@ -59,7 +62,7 @@ the most representative components:
   <Card title="Button" description="Actions, links, loading state, icons, and tactile press feedback." href="/docs/button" />
   <Card title="Dialog" description="A Base UI modal with animated entry, exit, and optional phased flows." href="/docs/dialog" />
   <Card title="Morph" description="A size-stable animated swap for icons or text." href="/docs/morph" />
-  <Card title="Select" description="Base UI selection, search, sorting, and animated variants." href="/docs/select" />
+  <Card title="Select" description="Single or multiple selection, search, nested options, and a compact sort trigger." href="/docs/select" />
   <Card title="Sidebar" description="Responsive application shells, rails, panels, and menus." href="/docs/sidebar" />
 </Cards>
 

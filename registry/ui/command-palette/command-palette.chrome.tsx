@@ -167,7 +167,8 @@ export function Hint({
  * The Enter slot's button. The palette is keyboard-first, so it reads as a hint with a key
  * chip ("Open" + return) rather than as a button: the label leads and the key trails,
  * mirroring the escape hint at the other end of the bar. Still a real `<button>`, so it
- * stays clickable and `type="submit"` submits the panel's form.
+ * stays clickable and `type="submit"` submits the panel's form. The hint does not add a
+ * global Enter binding; native button/form behavior or the caller's input handler owns that.
  *
  * Internal to the footer. The footer is the only thing that may put something in that corner, and the
  * chip it draws is fixed.

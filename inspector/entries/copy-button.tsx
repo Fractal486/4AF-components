@@ -20,7 +20,8 @@ export const copyButtonEntry = defineEntry({
       <CopyButton
         key={withLabel ? "labelled" : "icon"}
         // The function form defers the work to the press. Here it also waits, to show the
-        // pending state a real fetch would produce — a plain string never reaches it.
+        // pending state a real fetch would produce. A plain string can show the same
+        // pending state if the clipboard write itself takes longer than pendingDelay.
         value={
           lazy
             ? async () => {

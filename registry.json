@@ -374,7 +374,7 @@
     {
       "name": "button-group",
       "type": "registry:ui",
-      "description": "Two or more Buttons joined into one control: flattened inner corners, one hairline per seam, horizontal or vertical.",
+      "description": "Related Buttons joined horizontally or vertically, with flattened inner corners and variant-specific seams. Each button keeps its own tab stop.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/button-group (Markdown: https://4af.selfsimilar.dev/docs/button-group.md)",
       "dependencies": [
         "class-variance-authority"
@@ -585,7 +585,7 @@
     {
       "name": "action-button",
       "type": "registry:ui",
-      "description": "Runs an async action, shows pending/success/error, and reverts without resizing; pending can keep its label or show a centered loader only.",
+      "description": "Runs an async action, shows pending/success/error, and resets after feedback. Reserves its widest state by default; pending can keep its label or show a centered loader only.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/action-button (Markdown: https://4af.selfsimilar.dev/docs/action-button.md)",
       "dependencies": [
         "lucide-react",
@@ -743,7 +743,7 @@
     {
       "name": "slider",
       "type": "registry:ui",
-      "description": "A slider as a bordered fader bar with a thin thumb and ruler ticks, or a knob on a thin rail. Tracks the pointer while dragged and glides on track clicks and keyboard steps, with optional range mode, labels, editable values, a live value tooltip, and a custom fill colour. Base UI behaviour.",
+      "description": "A slider with bar, knob, and circle variants. Tracks the pointer while dragged and glides on track clicks and keyboard steps, with optional range mode, labels, editable values, a live value tooltip, and a custom fill colour. Base UI behaviour.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/slider (Markdown: https://4af.selfsimilar.dev/docs/slider.md)",
       "dependencies": [
         "@base-ui/react",
@@ -873,7 +873,7 @@
     {
       "name": "table",
       "type": "registry:ui",
-      "description": "A presentational semantic table with a composable caption, two densities, an optional outline and row / column lines, a pinned header, and a loading skeleton state. It has no controls and no state; install data-table for selection, sorting and row actions.",
+      "description": "A presentational semantic table with a composable caption, two densities, an optional outline and row / column lines, a pinned header, and loading skeletons. Install data-table for selection, sort controls, and row actions.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/table (Markdown: https://4af.selfsimilar.dev/docs/table.md)",
       "dependencies": [
         "class-variance-authority"
@@ -959,7 +959,7 @@
     {
       "name": "table-of-contents-lines",
       "type": "registry:ui",
-      "description": "A line-based table of contents where each heading has a longer rule and two shorter content rules, with a highlighted, expanding hover treatment.",
+      "description": "A line-based table of contents with a longer rule per heading, shorter content rules between headings, and a highlighted, expanding hover treatment.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/table-of-contents-lines (Markdown: https://4af.selfsimilar.dev/docs/table-of-contents-lines.md)",
       "dependencies": [
         "class-variance-authority"

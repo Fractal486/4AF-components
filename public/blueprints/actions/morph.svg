@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" id="morph-bp" width="900" height="480" viewBox="0 0 900 480" fill="none" role="img" aria-labelledby="morph-bp-title morph-bp-description">
   <title id="morph-bp-title">Morph spacing</title>
-  <desc id="morph-bp-description">The default widest Morph, swapping Follow to Following in the same centered grid cell, drawn at three times CSS size. The control is 34 pixels tall with 14 pixels of horizontal padding. Its 20 pixel line box reserves the 58.85 pixel width of Following throughout the swap. The control leaves 7 pixels above and below the line box.</desc>
+  <desc id="morph-bp-description">A Morph using the default widest sizing inside the demo's medium Toggle, swapping Follow to Following in the same centered grid cell, drawn at three times CSS size. The surrounding Toggle is 34 pixels tall with 14 pixels of horizontal padding; Morph supplies no fixed height or padding. Its 20 pixel line box reserves the 58.85 pixel width of Following throughout the swap. The Toggle leaves 7 pixels above and below the line box.</desc>
   <!-- Sources:
        registry.json: morph installs registry/ui/morph/morph.tsx only; no sibling variants file.
        registry/ui/morph/morph.tsx: default sizing="widest", one shared grid cell,

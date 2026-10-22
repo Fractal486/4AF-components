@@ -10,8 +10,9 @@ description: A restrained animated text treatment for transient loading states.
 
 **Main export:** `TextShimmer`
 
-A looping highlight across a label, for work in progress. `as` renders a different element, and
-`duration` sets the cycle length.
+A looping highlight across a label, for work in progress. `as` renders a different element
+(default `"span"`), and `duration` sets the cycle length in seconds (default `2.5`). The other
+supported props are `children` and `className`; native element props and refs are not forwarded.
 
 The label appears once in the DOM and truncates with an ellipsis at its container's width. Under
 reduced motion, and in browsers without text-mask support, the text is static. The overlay CSS

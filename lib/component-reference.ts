@@ -18,7 +18,7 @@ export const componentReferences = {
   "action-toggle": {
     usage: `import { ActionToggle } from "@/components/ui/action-toggle";
 
-<ActionToggle action={(following) => setFollowing(following)}>
+<ActionToggle action={(following) => setFollowing(following)} labels={{ pressed: "Following" }}>
   Follow
 </ActionToggle>`,
   },
@@ -83,7 +83,7 @@ export const componentReferences = {
 <Breadcrumb>
   <BreadcrumbList>
     <BreadcrumbItem>
-      <BreadcrumbLink asChild><Link href="/">Home</Link></BreadcrumbLink>
+      <BreadcrumbLink href="/">Home</BreadcrumbLink>
     </BreadcrumbItem>
     <BreadcrumbSeparator />
     <BreadcrumbCollapse>
@@ -99,7 +99,8 @@ export const componentReferences = {
 </Breadcrumb>`,
   },
   badge: {
-    usage: `import { Badge } from "@/components/ui/badge";
+    usage: `import { CircleX } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 <Badge variant="solid" shape="pill">Approved</Badge>
 <Badge status="loading">Syncing</Badge>
@@ -217,17 +218,18 @@ import { Button } from "@/components/ui/button";
 } from "@/components/ui/hover-card";
 
 <HoverCard>
-  <HoverCardTrigger>Hover me</HoverCardTrigger>
+  <HoverCardTrigger href="/people/alex">Alex Morgan</HoverCardTrigger>
   <HoverCardContent>Preview content</HoverCardContent>
 </HoverCard>`,
   },
   input: {
     usage: `import { Input } from "@/components/ui/input";
 
-<Input placeholder="Search…" />`,
+<Input aria-label="Search" placeholder="Search…" />`,
   },
   morph: {
-    usage: `import { Morph } from "@/components/ui/morph";
+    usage: `import { Check, Copy } from "lucide-react";
+import { Morph } from "@/components/ui/morph";
 
 <Morph
   activeKey={copied ? "done" : "idle"}
@@ -254,18 +256,22 @@ import { Button } from "@/components/ui/button";
     usage: `import {
   Popover,
   PopoverContent,
+  PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
 
 <Popover>
   <PopoverTrigger>Open</PopoverTrigger>
-  <PopoverContent>Popover content</PopoverContent>
+  <PopoverContent>
+    <PopoverTitle>Display options</PopoverTitle>
+    Popover content
+  </PopoverContent>
 </Popover>`,
   },
   progress: {
     usage: `import { Progress } from "@/components/ui/progress";
 
-<Progress value={60} />`,
+<Progress aria-label="Upload progress" value={60} />`,
   },
   radio: {
     usage: `import { Radio, RadioGroup } from "@/components/ui/radio";
@@ -333,9 +339,13 @@ import { Button } from "@/components/ui/button";
 </SearchSelect>`,
   },
   "selection-toolbar": {
-    usage: `import { SelectionToolbar } from "@/components/ui/selection-toolbar";
+    usage: `import { SelectionToolbar, SelectionToolbarButton } from "@/components/ui/selection-toolbar";
 
-<SelectionToolbar onOpenChange={setToolbarOpen} actions={<Button>Archive</Button>}>
+<SelectionToolbar actions={
+  <SelectionToolbarButton onAction={(text, range) => annotateSelection(text, range)}>
+    Annotate
+  </SelectionToolbarButton>
+}>
   Selectable content
 </SelectionToolbar>`,
   },
@@ -387,7 +397,8 @@ import { Button } from "@/components/ui/button";
 </SidebarProvider>`,
   },
   "sidebar-layout": {
-    usage: `import { SidebarLayout } from "@/components/ui/sidebar-layout";
+    usage: `import { Sidebar } from "@/components/ui/sidebar";
+import { SidebarLayout } from "@/components/ui/sidebar-layout";
 
 <SidebarLayout
   sidebar={<Sidebar />}
@@ -456,6 +467,8 @@ import { Button } from "@/components/ui/button";
   TableCell,
   TableHeader,
 } from "@/components/ui/data-table";
+import { Button } from "@/components/ui/button";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 <DataTable
   selectable
@@ -514,12 +527,13 @@ import { Button } from "@/components/ui/button";
 />`,
   },
   tabs: {
-    usage: `import { Tabs, TabsList, TabsTab } from "@/components/ui/tabs";
+    usage: `import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
 
 <Tabs defaultValue="account">
   <TabsList>
     <TabsTab value="account">Account</TabsTab>
   </TabsList>
+  <TabsPanel value="account">Account settings</TabsPanel>
 </Tabs>
 
 <Tabs variant="pill" size="sm" defaultValue="account">
@@ -530,6 +544,11 @@ import { Button } from "@/components/ui/button";
     <TabsTab value="team">Team members</TabsTab>
     <TabsTab value="security">Security</TabsTab>
   </TabsList>
+  <TabsPanel value="account">Account settings</TabsPanel>
+  <TabsPanel value="notifications">Notification settings</TabsPanel>
+  <TabsPanel value="billing">Billing settings</TabsPanel>
+  <TabsPanel value="team">Team members</TabsPanel>
+  <TabsPanel value="security">Security settings</TabsPanel>
 </Tabs>`,
   },
   "text-shimmer": {

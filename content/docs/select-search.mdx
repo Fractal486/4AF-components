@@ -8,7 +8,8 @@ description: A searchable Base UI select for larger option sets.
 
 ## API
 
-**Main exports:** `SearchSelect`, `SearchSelectInput`, `SearchSelectContent`, and item parts
+**Main exports:** `SearchSelect`, `SearchSelectInput`, `SearchSelectContent`, `SearchSelectItem`,
+`SearchMultiSelectItem`
 
 An editable Combobox-style trigger with live filtering, single or checkbox-based multi-selection,
 icons, and full keyboard and ARIA behaviour.
@@ -27,15 +28,16 @@ In single-select mode:
 - When the selection has an icon, focusing the field swaps it for a dimmed search icon until the
   field loses focus.
 
-In multi-select mode the panel stays open for more choices.
+In multi-select mode the panel stays open for more choices. Use `SearchMultiSelectItem` for
+checkbox rows; `SearchSelectItem` keeps its trailing checkmark presentation in either mode.
 
 `inputValue` / `defaultInputValue` and `onInputValueChange` hold the search query, separately
 from `value` / `defaultValue` and `onValueChange`. `itemToStringLabel` also supplies the selected
-label for custom item shapes. Multi-select shows a count summary and checkboxes.
+label for custom item shapes. Multi-select shows a count summary while the input is unfocused.
 
 ## Sizing
 
-`size="sm"` is the 30px compact control and `size="md"` is the 34px form-row control.
+`size="sm"` (default) is the 30px compact control and `size="md"` is the 34px form-row control.
 The input trigger and its option rows share the selected size, and the input uses the matching
 button radius: 6px for `sm` and 8px for `md`.
 Single-select input text and icons align with their option-row counterparts at both sizes.

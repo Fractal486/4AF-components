@@ -42,7 +42,9 @@ For example, `label="Fruit"` displays `Fruit: Banana`.
 When `SelectContent` has no explicit `width`, it follows the trigger: default and ghost
 `SelectTrigger`s keep a trigger-width panel, while plain triggers and every `SelectSortTrigger`
 use content width: the longest option label plus the reserved checkmark slot, at least 200px.
-Nested `SelectSubContent` panels size the same way. Set `width="trigger"` or `width="content"` to override that default.
+Set `width="trigger"` or `width="content"` on `SelectContent` to override that default.
+Nested `SelectSubContent` panels always use content width with a 200px minimum; adjust their
+`className` to change it.
 
 When `SelectContent` has no explicit `align`, it uses `end` for a trigger pushed to the end of its
 row and `start` otherwise, measured each time the panel opens.
@@ -71,7 +73,7 @@ checked rows, and the selection offered on reopening all retain the accepted val
 ## Sizing
 
 The Select family uses the shared control scale: `size="xs"` is 24px for dense controls,
-`size="sm"` is 30px with compact text and glyphs, and `size="md"` is 34px for form rows. The
+`size="sm"` (default) is 30px with compact text and glyphs, and `size="md"` is 34px for form rows. The
 selected trigger and every option row use the same size. The trigger uses a 6px button radius
 at `xs`/`sm` and 8px at `md`.
 
@@ -147,14 +149,17 @@ import { SelectContent, SelectItem, SelectSeparator } from "@/components/ui/sele
 
 <ComponentDemo name="select-sort" />
 
-`SelectSortTrigger` ships in `select`; there is no separate `select-sort` item. It:
+`SelectSortTrigger` ships in `select`; there is no separate `select-sort` item. In its default
+variant it:
 
 - has a dashed border while no value is selected;
-- becomes filled and solid once a value is selected, and while its panel is open;
+- becomes filled with a solid border once a value is selected;
+- gains the open-state fill while its panel is open, keeping the dashed border if unset;
 - shows the selected label or labels from Select context;
 - rotates its chevron like the normal Select trigger.
 
-It takes the same `variant="ghost"` and `variant="plain"` options as `SelectTrigger`.
+It takes the same `variant="ghost"` and `variant="plain"` options as `SelectTrigger`; those
+variants do not draw the dashed selection border.
 
 When `multiple` is enabled, the same trigger becomes a filter control and supports the nested
 `SelectSub` panels described above. Nested rows participate in the multi-selection and keep the

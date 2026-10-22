@@ -67,11 +67,13 @@ rows.
 ## Search
 
 Add `searchable` to `AlignedSelectContent` for a search field pinned above the list. It takes
-focus when the panel opens, with a row already active: the selected row, or the first row when
-nothing is chosen, so Enter takes it without an arrow press. Typing moves the active row to the
-top match. The active row carries `data-panel-active`. The arrow keys move focus into
-the list, and Base UI's own highlight takes over from there. The query clears when the panel
-closes. `autoFocusFirstItem={false}` opens the panel with no active row.
+focus when the panel opens, with an enabled row already active: the selected row, or the first
+enabled row when the selection is absent or disabled, so Enter takes it without an arrow press.
+Typing moves the active row to the first enabled match; no row is offered if every match is
+disabled. The active row carries `data-panel-active`, including after pointer exit. The arrow
+keys move focus into the list, where Base UI handles navigation and the component keeps its
+active mark in sync. The query clears after the closing animation. `autoFocusFirstItem={false}`
+disables the automatic opening highlight; focusing a row can still activate it.
 
 Filtered rows leave the list rather than hiding, so the panel resizes to what is left. Rows
 match on their text, which only works when the children are a plain string — give a row built
@@ -84,6 +86,6 @@ opens as an ordinary dropdown.
 
 ## Sizing
 
-Use `size="xs"` for a compact 24px trigger and popup rows, `size="sm"` for the 30px compact
+Use `size="xs"` for a compact 24px trigger and popup rows, `size="sm"` (default) for the 30px compact
 control, or `size="md"` for the 34px form-row control. The `xs` and `sm` trigger sizes use a 6px
 button radius; `md` uses 8px.

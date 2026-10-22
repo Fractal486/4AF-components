@@ -8,6 +8,12 @@ description: A composable empty-state layout for missing content and first-run a
 
 ## API
 
-**Main exports:** `Empty` and its header, media, title, description, and content parts
+**Main exports:** `Empty`, `EmptyHeader`, `EmptyMedia`, `EmptyTitle`, `EmptyDescription`,
+`EmptyContent`
 
 A composable empty state, borderless by default with an optional dashed placeholder treatment.
+Add `className="border"` to `Empty` for the dashed outline; there is no `bordered` prop.
+
+All parts accept native `div` props. `EmptyMedia` adds `variant="default"` for bare media or
+`variant="icon"` for a 40px muted tile with a 24px default SVG icon. `EmptyTitle` is a styled
+`div`, so add a semantic heading inside it when the empty state needs one in the page outline.

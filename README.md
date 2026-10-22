@@ -6,8 +6,8 @@
 
 A personal React component library with a self-hosted Fumadocs site for documentation and
 interactive component demos, published at https://4af.selfsimilar.dev. Components install
-through a public shadcn registry, which copies their source into your project instead of adding
-an npm dependency.
+through a public shadcn registry, which copies their source into your project and installs the
+packages they depend on. There is no 4AF runtime package.
 
 Documentation is split by purpose: start with the [overview](./content/docs/index.mdx), then
 use the generated [component catalog](./content/docs/reference/components.mdx),
@@ -35,13 +35,13 @@ Every installable component has a Fumadocs page with a shared Install & Usage pa
 Component pages load interactive demos from `inspector/entries` through the shared Fumadocs
 adapter.
 
-Every page is also available as Markdown by appending `.md` to its URL, for example
-`/docs/button.md` or `/docs.md` for the overview.
+Documentation pages under `/docs/` are also available as Markdown by appending `.md`, for example
+`/docs/button.md`. The overview is at `/docs.md`.
 
 ## Everyday commands
 
 ```bash
-pnpm dev                 # Open the Fumadocs component site
+pnpm dev                 # Start the Fumadocs development server
 pnpm typecheck           # Check TypeScript
 pnpm lint                # Check code conventions and portability
 pnpm test                # Run component and registry tests
@@ -73,7 +73,8 @@ The build environment needs Node 24.19.0 or newer and pnpm 12.11.2 or newer. The
 requirements with no upper version limit; the repository does not pin a package-manager version.
 `wrangler.jsonc` records the static assets directory (`out`), custom 404 behavior, and Worker
 name, `4af-components`. Add `4af.selfsimilar.dev` as a custom domain after the first successful
-deployment. Preparing or previewing the export does not publish it.
+deployment. `pnpm build` and `pnpm start` stay local; `wrangler preview` uploads a remote
+preview deployment, and `pnpm run deploy` publishes production.
 
 ## Install a component in another project
 
@@ -84,12 +85,12 @@ npx shadcn@latest add https://4af.selfsimilar.dev/r/button.json
 ```
 
 Replace `button` with any name from the catalog. Dependencies and the 4AF theme install with
-it. Add `--dry-run` to preview every change first; existing files are skipped unless
-`--overwrite` is passed. See the [installation guide](./content/docs/reference/installation.mdx)
+it. Add `--dry-run` to preview changes first. Unchanged source files are skipped; differing
+files prompt before replacement unless `--overwrite` is passed. See the [installation guide](./content/docs/reference/installation.mdx)
 for short names, browsing, and updating.
 
-Every documentation page is also served as Markdown at `/docs/<component>.md`, and `/llms.txt`
-lists them all.
+Component pages are also served as Markdown at `/docs/<component>.md`; reference pages retain
+their nested paths. `/llms.txt` indexes the component pages and reference sections.
 
 ## Component catalog
 

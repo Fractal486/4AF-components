@@ -11,3 +11,12 @@ description: Determinate progress feedback with accessible value semantics.
 **Main exports:** `Progress`, `ProgressLabel`, `ProgressValue`
 
 A determinate Base UI progress bar whose fill moves with transform rather than animated width.
+
+`value` is clamped to `min`/`max` (defaults: 0/100). Use `className` for the root,
+`trackClassName` for the rail, and `indicatorClassName` for the fill. Give the bar an accessible
+name with `aria-label` or `aria-labelledby` pointing to an external label.
+
+`Progress` renders its own track and indicator and does not render caller-supplied `children`.
+The exported `ProgressLabel` and `ProgressValue` are raw Base UI parts that need a Base UI
+Progress root context; they cannot be nested into this standalone wrapper to add a label or
+value. Use an external label/value when using `Progress`.

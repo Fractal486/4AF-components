@@ -38,8 +38,8 @@ import {
  * between them — looks right and animates wrong: the shared-element projection measures
  * both axes, and under the panel tree it picks up a spurious vertical delta, so the
  * indicator jumps down a frame and then slides in diagonally. Tabs sit in a row; the
- * indicator only ever moves sideways. Measuring the active tab and animating x/width
- * makes vertical movement structurally impossible rather than something to correct.
+ * indicator only ever moves sideways. Measuring its horizontal box and letting Motion
+ * project that change through transforms keeps the indicator on the same vertical track.
  */
 
 type Variant = NonNullable<TabsVariants["variant"]>;
@@ -65,7 +65,7 @@ export interface TabsProps
    * The track and chip treatment, `segment`/`pill` only (`underline` ignores it).
    * `default` is a raised surface chip on a muted track; `solid` a borderless background
    * chip on a border track; `outline` a bordered, unfilled track with a muted fill under the selected
-   * tab, at the same heights. @default "default"
+   * tab. Outlined pills keep their height; outlined segments are 2px taller. @default "default"
    */
   appearance?: TabsAppearance;
   /** @deprecated Use `appearance="solid"`. Ignored when `appearance` is set. */

@@ -12,7 +12,15 @@ description: A compact loading indicator using Unicode Braille characters, with 
 
 A looping braille spinner.
 [LoaderProvider](/docs/reference/engineering#shared-loading-indicators) and component `loader`
-slots accept any other indicator. `speed` is seconds per cycle.
+slots accept it as a custom indicator.
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `speed` | `0.8` | Seconds per cycle; a larger value makes the spinner slower. This differs from ClassicLoader's playback multiplier. |
+| `label` | — | An accessible status name. Without it, the spinner is decorative and hidden from assistive technology. |
+| `className` | — | Classes for the outer span. |
+
+Under reduced motion, the cycle takes 2.5 times as long; it continues to animate.
 
 The glyph follows the surrounding font size. Passed as a component's `loader`, it sits centred
 in the loader slot, which reserves the same box as the icons around it, so swapping between an

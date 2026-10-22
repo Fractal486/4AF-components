@@ -31,5 +31,7 @@ Other span props and `className` go to the rendered element, which carries
 - The rise and blur are sized in `em`, so the effect scales with the text.
 - A word's letters never wrap apart. A no-break space joins words into one unbreakable group, for
   example `"Base UI"`.
+- `by="character"` splits Unicode code points, so a combined emoji or a letter with combining
+  marks can span several animated segments. Use `by="word"` to keep those sequences together.
 - The full text is read once by assistive technology; the animated letters are hidden from it.
 - Under reduced motion the text is shown immediately.

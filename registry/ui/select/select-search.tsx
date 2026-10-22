@@ -174,8 +174,8 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
     });
   }, []);
   // A registered icon (from a mounted item) wins; then a computed one; then the icon the
-  // value carries — the only one of the three that can answer before the panel has ever
-  // been opened.
+  // value carries. The computed and value-carried paths work before the panel has ever
+  // been opened; registration requires a mounted item.
   const iconFor = useCallback(
     (value: unknown) =>
       icons.get(value) ??

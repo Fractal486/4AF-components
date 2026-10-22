@@ -10,4 +10,9 @@ description: A Base UI radio group with controlled and uncontrolled selection.
 
 **Main exports:** `RadioGroup`, `Radio`
 
-A single-choice Base UI radio group with the Checkbox family's geometry and an animated dot.
+A single-choice Base UI radio group with the Checkbox family's styling and an animated dot.
+`RadioGroup` defaults to `size="md"` (20px); `sm` is 16px and `lg` is 24px. A `Radio` can
+override the group's size. Each radio accepts a clickable `label`.
+
+Use `value` / `onValueChange` on the group for controlled selection or `defaultValue` for
+uncontrolled selection. Arrow keys move selection within the group.

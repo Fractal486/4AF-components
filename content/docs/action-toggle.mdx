@@ -10,8 +10,11 @@ description: An asynchronous toggle that commits its pressed state only after th
 
 **Main export:** `ActionToggle`
 
-A toggle that runs an async `action` and changes state only when it succeeds. Use it for states
-such as Follow/Following or Subscribe/Subscribed.
+A toggle that runs an `action` with the next pressed state and commits it after the action
+succeeds. The action may return a promise. Use `defaultPressed` (default `false`) for
+uncontrolled state, or `pressed` / `onPressedChange` for controlled state; a controlled caller
+must update `pressed` from `onPressedChange`. Use it for states such as Follow/Following
+or Subscribe/Subscribed. Its appearance defaults to `variant="outline"` and `size="md"`.
 
 By default the control keeps the width of its widest state. `sizing="current"` fits it to the
 showing state and animates the width as it changes. The control carries `data-sizing`.
@@ -38,8 +41,10 @@ Use Action Toggle when the new state should persist:
 
 It sets `aria-pressed`, which is why it is a separate component, as Toggle is from Button.
 
-It is not optimistic. The label stays and the loader runs until the action settles. On failure it
-shows the error briefly and keeps its previous state. `onPressedChange` fires only on success.
+It is not optimistic. By default the label stays while the loader runs; `labels.pending` replaces
+the pending label, and `pendingDelay` can defer the indicator (default 0ms). On failure it
+shows the error for `revertAfter` milliseconds (default 2000) and keeps its previous state.
+`onPressedChange` fires only on success.
 
 With `fillIcon` and no `icons.pressed`, the same glyph fills when pressed instead of being
 replaced.

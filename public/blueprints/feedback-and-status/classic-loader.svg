@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" id="classic-loader-bp" width="1024" height="768" viewBox="-192 -144 1024 768" fill="none" role="img" aria-labelledby="classic-loader-bp-title classic-loader-bp-desc">
   <title id="classic-loader-bp-title">Classic Loader spacing</title>
-  <desc id="classic-loader-bp-desc">The default medium Classic Loader spinner, enlarged twelve times. Its 20 by 20 pixel box contains twelve rounded radial bars, each 4.8 pixels long and 1.6 pixels thick. The bars stop 0.6 pixels short of the box edge. An opacity-only fading trail advances clockwise, gradually slows to a stop, and settles smoothly with the top bar bright. Reduced motion and the PNG show that same final pose immediately.</desc>
+  <desc id="classic-loader-bp-desc">The default medium Classic Loader spinner, enlarged twelve times. Its 20 by 20 pixel box contains twelve rounded radial bars, each 4.8 pixels long and 1.6 pixels thick. The bars stop 0.6 pixels short of the box edge. In this blueprint, an opacity-only fading trail advances clockwise, slows to a stop, and settles with the top bar bright. Reduced motion and the PNG show the blueprint's final pose immediately. The live loader continues looping at its configured speed under reduced motion; its default cycle is 1.2 seconds.</desc>
   <!-- Sources: registry/ui/classic-loader/classic-loader.tsx;
        registry/ui/classic-loader/classic-loader.variants.ts;
        inspector/entries/classic-loader.tsx; content/docs/classic-loader.mdx;

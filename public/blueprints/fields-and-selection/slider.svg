@@ -1,11 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1380" height="600" viewBox="0 0 1380 600" fill="none" role="img" aria-labelledby="slbp-title slbp-description" class="slbp">
   <title id="slbp-title">Slider spacing blueprint</title>
-  <desc id="slbp-description">The fill, handle, and value move together from 10 to 40, easing to a stop before the measurements appear. The default medium bar slider, labeled Volume and set to 40, drawn at three times its CSS size. The chosen width is 320 pixels, with a 40 pixel rail. The handle is 2 by 16 pixels, centered 8 pixels inside the fill edge. Hover reveals ticks at 32 pixel intervals.</desc>
+  <desc id="slbp-description">The fill, handle, and value move together from 10 to 40, easing to a stop before the measurements appear. A medium bar slider with the demo's step of 10, labeled Volume and set to 40, drawn at three times its CSS size. The chosen width is 320 pixels, with a 40 pixel rail. The handle is 2 by 16 pixels, centered 8 pixels inside the fill edge. Hover reveals ticks at 32 pixel intervals. The component's default step is 1, which hides ticks across the default 0 to 100 range.</desc>
   <!--
     Sources:
-      registry.json: slider file map (implementation plus slider-geometry.ts; no variants file).
-      registry/ui/slider/slider.tsx: DIMS.bar.md, BAR_TICK_HEIGHTS.md,
-        barTickLevel, BAR_TICKS_IN_USE, Slider header, rail, fill, ticks, and BarThumb.
+      registry.json: slider file map (implementation, variants, and slider-geometry.ts).
+      registry/ui/slider/slider.tsx: DIMS.bar.md, barTickLevel, BAR_FILL_IN_USE,
+        Slider header, rail, fill, ticks, and BarThumb.
+      registry/ui/slider/slider.variants.ts: control, rail, thumb, and tick geometry.
       registry/ui/slider/slider-geometry.ts: getSliderThumbCenter with followFillPx=8.
       inspector/entries/slider.tsx: Volume, defaultValue=40, min=0, max=100, step=10.
       app/globals.css: text-xs=12px / 1.3333 (~16px), radius-md=7px,

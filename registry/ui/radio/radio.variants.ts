@@ -3,7 +3,8 @@ import { cva, type VariantProps } from "class-variance-authority";
 /**
  * The circle, sharing the Checkbox's recessed-well look so the two controls read as a
  * set — but a radio is a single choice, so it keeps its outline (rather than filling) and
- * shows a dot. Sizes match the Checkbox exactly.
+ * shows a dot. The small size matches Checkbox's fixed 16px box; medium and large
+ * radios are 20px and 24px.
  */
 export const radioVariants = cva(
   [

@@ -13,7 +13,8 @@ the shadcn CLI. Do not copy component files by hand or guess registry URLs.
 - To choose or compare components, or answer feature/API questions, read [references/component-catalog.md](references/component-catalog.md).
 - To read one component's complete, agent-friendly reference, fetch
   `https://4af.selfsimilar.dev/docs/<component>.md`: the page's API and notes with separate
-  install and usage code blocks. `https://4af.selfsimilar.dev/llms.txt` lists every page.
+  install and usage code blocks. `https://4af.selfsimilar.dev/llms.txt` indexes component pages
+  and reference sections.
 - To install into another project, use the workflow below.
 - For the exact current component list, run
   `npx shadcn@latest search https://4af.selfsimilar.dev/r/registry.json -t ui`. It needs no
@@ -30,12 +31,20 @@ npx shadcn@latest add https://4af.selfsimilar.dev/r/<component>.json --dry-run
 npx shadcn@latest add https://4af.selfsimilar.dev/r/<component>.json
 ```
 
-The target needs a shadcn `components.json` with `ui` and `lib` aliases; run
+The target needs React 19, Tailwind CSS v4, and a shadcn `components.json` with `ui` and `lib` aliases; run
 `npx shadcn@latest init` first if it has none. `info` shows the project's setup and resolved
-paths. `--dry-run` lists every file, package, and theme variable the install adds or changes;
+paths. `--dry-run` previews source files, package dependencies, and CSS updates;
 `--diff` shows changes to existing files. The theme, shared utilities, and component
-dependencies install with the component. Existing files are skipped unless `--overwrite` is
-passed, which discards local edits, so check `--diff` first.
+dependencies install with the component. Unchanged source files are skipped; differing existing
+files prompt before replacement, defaulting to no. `--overwrite` skips those prompts and can
+replace local edits, including shared dependencies. Preview an
+update with `add <url> --overwrite --diff` before applying `add <url> --overwrite`.
+
+Skipping existing source files does not skip package or stylesheet updates. Component installs
+preserve existing CSS variable values, so the target's theme can differ from the demos.
+Installing `4af-theme` directly can replace matching variables; preview that operation separately.
+The registry does not install Geist fonts. See the
+[installation guide](https://4af.selfsimilar.dev/docs/reference/installation.md) for theme and font setup.
 
 To use short names, register the namespace once per project:
 

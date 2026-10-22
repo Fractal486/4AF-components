@@ -23,6 +23,7 @@ wide content scrolls inside it, and reaching the end of the content doesn't scro
 | `title` | Text or a node rendered in the default truncated title slot. |
 | `headerContent` | Custom content replacing the title slot, between the collapse control and actions. `null` or `undefined` falls back to `title`. |
 | `headerActions` | Controls on the right side of the header. |
+| `collapseControl` | Replaces the default `SidebarTrigger`; `null` omits it. |
 | `headerClassName` | Classes merged after the default header styling. |
 
 The header uses `bg-surface`, matching the sidebar. Override it through `headerClassName`
@@ -30,8 +31,10 @@ when the surrounding shell needs a different background. `headerContent` can hol
 tabs, or a custom heading without replacing the collapse control or action area.
 
 It is a separate item from `sidebar` so the navigation components can be used without this page
-frame. To fit it inside a box instead of the viewport, override the provider height with
-`className`, as the demo on this page does with `h-full`.
+frame. To fit it inside a box instead of the viewport, give the parent a definite height and use
+`className="h-full min-h-0"` on `SidebarLayout` to override both the height and the provider's
+viewport minimum. Fixed sidebar panels also need a containing block, such as `[contain:paint]`
+on the parent, and `className="h-full"` on `Sidebar`.
 
 ## The rail slot
 

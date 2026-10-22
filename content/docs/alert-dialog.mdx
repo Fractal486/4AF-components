@@ -11,5 +11,9 @@ description: A modal confirmation dialog for consequential actions, built on Bas
 **Main exports:** `AlertDialog` and its content, action, cancel, title, and description parts
 
 A modal for confirming consequential actions. Backdrop clicks do not dismiss it; Escape and
-close controls do. Place Cancel first, or set `initialFocus`, when cancellation should receive
-initial focus.
+close controls do. Place Cancel first, or set `initialFocus` on `AlertDialogContent`, when
+cancellation should receive initial focus.
+
+`AlertDialogAction` closes when pressed; it does not await an asynchronous `onClick` handler.
+For an action that must finish before dismissal, control `open` and close it after success, or
+cancel close requests through the root's `onOpenChange` details while work is pending.

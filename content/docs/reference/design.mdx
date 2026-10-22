@@ -32,15 +32,17 @@ The destructive fill deliberately favors a brighter red with white text. This pa
 below the 4.5:1 contrast target for normal text; OKLCH lightness alone is not a contrast check.
 
 A component's fill communicates its layer. `background` is the page and sunk wells such as
-Input, Checkbox, Radio, and Sidebar Inset. `surface` is chrome and anchored popups such as
+Input and Sidebar Inset. Checkbox and Radio use that layer in light mode and a fixed darker
+neutral ramp for their resting wells in dark mode. `surface` is chrome and anchored popups such as
 Sidebar, Dropdown Menu, Popover, and Hover Card. `surface-raised` belongs to elements floating
 over everything: Dialog, Alert Dialog, Sheet, and Command Palette. A consuming project
 decides what those semantic roles resolve to.
 
 ## Typography
 
-Geist Sans is the interface voice: compact, neutral, and highly legible. Geist Mono is reserved
-for code, command examples, keyboard hints, and small technical labels.
+The documentation site loads Geist Sans for the interface and Geist Mono for code, command
+examples, keyboard hints, and small technical labels. The registry theme supplies type sizes
+and spacing, but does not install those fonts or set the consumer's font families.
 
 The scale: 11px technical labels, 12px compact text, 13px default UI, 15px body copy, then
 18px, 22px, 28px, and 36px headings. Larger sizes tighten their leading and tracking; body copy
@@ -111,8 +113,10 @@ content, gestures, springs, and layout animation. Transitions name the exact pro
 change and prefer compositor-friendly motion; Collapsible, Sidebar, and Morph's opt-in
 `sizing="current"` have documented layout-motion exceptions.
 
-Four CSS durations, fast, base, slow, and slower, cover focus feedback through sheets. JavaScript
-duration and easing defaults mirror the CSS tokens and must be updated together; runtime CSS
-overrides do not change JavaScript animations. Under reduced motion, CSS transitions collapse to
-1ms so lifecycle events still fire, and Motion transitions run with zero duration. Looping loaders
-keep their own speed rather than collapsing into a strobe.
+Four shared CSS durations, fast (150ms), base (200ms), slow (300ms), and slower (450ms), cover
+short feedback through longer transitions. Some chevrons use separate 400ms timing. JavaScript
+presets mirror the corresponding CSS defaults; individual springs and exits also have their
+own timing. Runtime CSS overrides do not change JavaScript animations. Under reduced motion,
+token-based CSS transitions collapse to
+1ms so lifecycle events still fire, and Motion transitions run with zero duration. Classic and
+Matrix loaders keep their cycle timing; ASCII slows its cycle by 2.5×. None collapses into a strobe.

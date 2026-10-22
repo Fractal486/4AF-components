@@ -17,7 +17,7 @@ Base UI tabs with a travelling Motion indicator; `segment`, `pill`, and `underli
 | --- | --- |
 | `default` | Muted track; raised `surface` chip with a hairline. |
 | `solid` | `border` track with a borderless `background` chip. |
-| `outline` | Bordered, unfilled track; `bg-muted` fill under the selected tab. Same heights as `default`. |
+| `outline` | Bordered, unfilled track; `bg-muted` fill under the selected tab. Pill height matches `default`; segment tracks are 2px taller. |
 
 `underline` ignores `appearance`. The `solid` boolean is deprecated: `solid` maps to
 `appearance="solid"`, and an explicit `appearance` wins over it.
@@ -47,7 +47,7 @@ The bar never grows past its parent's width, so give it a parent with a definite
 
 An edge fades with a tapered blur while more tabs are hidden on that side, including the track
 and the underline variant's rule. Touch and trackpad scrolling work natively, with the scrollbar
-hidden. Clicking a tab in the half of the bar with more hidden content scrolls it toward the
-centre. Keyboard focus, the initial selection, and controlled selection changes also bring hidden
+hidden. Clicking a tab in either half of the bar scrolls it toward the centre when more content
+is hidden on that side. Keyboard focus, the initial selection, and controlled selection changes also bring hidden
 tabs into view. Under reduced motion the scrolling is instant. Focus rings sit inside the tabs so
 they aren't clipped. Scrolling applies to horizontal tab lists only.

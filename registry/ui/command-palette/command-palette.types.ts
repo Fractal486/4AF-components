@@ -227,9 +227,9 @@ export interface CommandPanelRowProps
 export interface CommandPanelFooterProps {
   className?: string;
   /**
-   * The panel's primary action — the one Enter runs. Its key chip is always the return
-   * glyph: the bar describes the keyboard rather than configuring it, and a footer claiming
-   * some other key would be describing a binding the panel does not have.
+   * The panel's primary native button, shown with a fixed Return hint. This slot does not
+   * register a global Enter handler. Use `type="submit"` inside a form for native submission,
+   * or supply the relevant input's keyboard handler when custom activation is needed.
    */
   enter?: {
     label: ReactNode;

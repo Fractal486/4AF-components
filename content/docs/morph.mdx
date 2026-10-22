@@ -10,18 +10,19 @@ description: A size-stable animated content swap for icons, labels, and status c
 
 **Main export:** `Morph`
 
-Swaps icons or text with an animation. Every item shares one grid cell sized to the largest, so
-the surrounding control never resizes during a swap. Under reduced motion the swap is instant.
+Swaps icons or text with an animation. By default every item shares one grid cell sized to the
+largest, so the surrounding control keeps its size during a swap. Under reduced motion the
+swap is instant. Morph supplies no button styling, padding, or fixed height of its own.
 
 `sizing` sets how the box is sized:
 
 | `sizing` | Box size |
 | --- | --- |
 | `"widest"` (default) | The largest item, in every state. |
-| `"current"` | The showing item. The width transitions over `--duration-base` and is instant under reduced motion. Without `ResizeObserver` the box resizes without animating. The box carries `data-sizing`. |
+| `"current"` | The showing item. The width transitions over `--duration-base` and is instant under reduced motion. Without `ResizeObserver` the box resizes without animating. |
 
-With a single item, Morph skips the hidden sizing copy, so the content appears once in the DOM
-and to assistive technology.
+With multiple items the box carries `data-sizing`. With a single item, Morph skips the hidden
+sizing copy, so the content appears once in the DOM and to assistive technology.
 
 `morphVariants` exports the `initial` / `animate` / `exit` poses for content that has to stay
 mounted while hidden, such as Action Button's icon-only pending label, which still names the

@@ -31,7 +31,8 @@ import type { CommandGroup, CommandItem, CommandPanelActionsProps } from "./comm
  *
  * It's the Select with its in-panel search field, not a bespoke popup: `searchable` gives
  * the filter field, `width="content"` sizes the panel to its rows (at least 200px) rather
- * than the tiny trigger, and `autoFocusFirstItem={false}` is the documented switch for menu-like uses.
+ * than the tiny trigger, and `autoFocusFirstItem` activates the first row while keeping
+ * the caret in the search field, so Enter can run an action immediately.
  * Base UI owns the anchoring, the dismiss, and the collision flip — the menu hangs off a
  * trigger sitting in the footer, so `side="top"` opens it upward into the panel.
  *

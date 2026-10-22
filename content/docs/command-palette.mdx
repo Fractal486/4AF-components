@@ -55,7 +55,7 @@ The registry item includes:
   or call `useCommandSearch` in a custom panel and render `CommandPanelLoading` for its first-load
   state. Root failures render `searchErrorMessage` (default: “Search failed. Change your query to
   retry.”); custom panels receive the failure as the hook's `error`;
-- paginated custom panels: observe the shared keyboard and pointer highlight with
+- paginated custom panels: observe the highlight changed by keyboard navigation or row presses with
   `useCommandPanelHighlight`, fetch when the last row is reached, and pass that request as
   `additionalRefreshing` to `useCommandSearch` so the panel header keeps showing its inline
   loader;
@@ -92,8 +92,8 @@ row and its one travelling indicator; `variant` picks how the selected tab is ma
 
 Both variants sit on the header's bottom rule. Tabs activate as the arrow keys reach them
 (`activateOnFocus` is on by default here). When the tabs filter one list, a single
-`CommandPanelTabPanel` whose `value` follows the selection is enough. A header search field
-filters within the selected tab.
+`CommandPanelTabPanel` whose `value` follows the selection is enough. Use `helpers.query` from
+the header search field to filter the selected tab's content; custom panels own their filtering.
 
 Within a custom panel using these tabs, Tab selects the next enabled tab and Shift+Tab the
 previous one, wrapping at either end and skipping disabled tabs. Focus stays where it is,
@@ -108,8 +108,8 @@ Use these panel tab parts instead of nesting the standalone `Tabs` component.
 
 `initialItemId` opens the palette straight into one item's custom panel or sub-list instead of the
 root list, for a shortcut that opens one page, such as `?` for a help panel. It is read each time
-the palette opens. From that page, Escape and Back close the palette instead of showing the root
-list; pages opened from the root still step back as usual.
+the palette opens. Back closes the palette instead of showing the root list. Escape still clears
+a nonempty search query first, then closes it; pages opened from the root still step back as usual.
 
 ```tsx
 <CommandPalette groups={groups} open={open} onOpenChange={setOpen} initialItemId={entry} />
@@ -117,9 +117,10 @@ list; pages opened from the root still step back as usual.
 
 ## Selection and hover
 
-Every list — the root list and each custom panel's — opens with its first row selected, before
-anything is typed, and moves the selection to the new first row as a query narrows the list.
-Enter runs the selected row without an arrow press first.
+The root list opens with its first enabled row active, before anything is typed, and activates
+the first match as the query changes. `CommandPanelList` initializes its first row when no row
+is active; filtering that preserves the active row can keep that highlight. Enter runs the
+active row without an arrow press first.
 
 Selection and hover are separate states. The selected row carries `data-highlighted` and moves
 with the arrow keys and with presses. Hovering gives a row a weaker fill only, so moving the
@@ -149,7 +150,7 @@ the right — and fills the right corner with two optional slots, in this order:
 
 | Slot | Prop | Key |
 | --- | --- | --- |
-| The primary action | `enter` | Return, fixed |
+| The primary action | `enter` | Fixed Return hint; native button/form activation |
 | The contextual actions menu | `actions` | Cmd/Ctrl + J, fixed |
 
 ```tsx
@@ -159,9 +160,11 @@ the right — and fills the right corner with two optional slots, in this order:
 />
 ```
 
-Neither key is configurable, and nothing else can go in that corner, so every panel uses the
-same keys. `enter` takes `label`, `onClick`, `disabled`, and `type`. `"submit"` submits the containing
-form; an `onClick` handler, if provided, also runs. `actions` takes the menu's own props:
+The key hints are fixed, and the footer exposes only these two action slots. `enter` takes
+`label`, `onClick`, `disabled`, and `type`. It renders a native button, without adding a global
+Enter binding: use `type="submit"` inside a form for native form submission, or handle Enter
+in the relevant input when needed. Clicking a submit button also runs its `onClick`, if provided.
+`actions` takes the menu's own props:
 `items` or `groups`, plus `label`, `searchPlaceholder`, and `emptyMessage`.
 
 An actions row normally runs `onSelect` and closes the menu. The fields below make it show its
@@ -186,9 +189,13 @@ result in place instead, keeping the menu open. They match Dropdown Menu's row t
 />
 ```
 
-`labels` and `icons` carry the other states—checked, pending, success, and error—each falling back
-to the row's own label or icon. Pending and error default to the shared loader and warning
-triangle. `revertAfter` and `pendingDelay` behave as on Action Button. The two toggle shapes show
+These stateful action fields apply to `CommandPanelActions` (including the footer's `actions`
+slot); main-list leaf commands use `onSelect` and close the palette.
+
+`labels` carries checked, pending, success, and error text, each falling back to the row's own
+label. `icons.checked` falls back to the resting icon; pending, success, and error default to
+the shared loader, checkmark, and warning triangle. `revertAfter` and `pendingDelay` behave as
+on Action Button. The two toggle shapes show
 no success tick; the changed label is the confirmation. An item with none of these fields closes
 the menu and calls `onSelect`.
 

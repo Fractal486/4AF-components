@@ -15,6 +15,10 @@ A one-shot reveal that progressively replaces random characters with the supplie
 to Unicode code points, which can split combined characters. Whitespace is shown immediately,
 and `prefers-reduced-motion` shows the final text without the scramble.
 
+Changing `children` or `intervalMs` restarts the reveal. Long strings reveal multiple graphemes
+per step so the animation finishes within 48 steps. The visual scramble is hidden from
+assistive technology; the complete text is available in a separate polite live region.
+
 - `children` — the string to reveal.
 - `intervalMs` — milliseconds between reveal steps. Defaults to `32`; values at or below `0`
   show the final text immediately.

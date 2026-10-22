@@ -118,14 +118,16 @@ export interface SidebarProps extends ComponentProps<"div"> {
   /** Called when a split rail button selects a different wide panel. */
   onActivePanelChange?: (panel: string) => void;
   /**
-   * Drops the edge strip that toggles the panel. For a panel an owner has pinned — a
+   * Drops the automatic edge strip in split layouts. In non-split layouts, omit the
+   * caller-rendered `SidebarRail` instead. For a panel an owner has pinned — a
    * controlled `open` it never changes — the strip is a control that does nothing, which
    * reads as breakage rather than as absence.
    */
   hideCollapseHandle?: boolean;
   /**
-   * Classes for the mobile drawer. `className` styles the desktop sidebar only; on mobile the
-   * sidebar renders inside a sheet, which this reaches instead.
+   * Classes for the mobile drawer. Collapsible and split layouts use this instead of
+   * `className` below 768px. A non-split `collapsible="none"` sidebar remains inline and
+   * continues to use `className` on mobile.
    */
   mobileClassName?: string;
 }

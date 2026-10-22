@@ -23,13 +23,13 @@ description: A date or date-range field that opens a calendar in a popover on ev
 | `placeholder` | `"Pick a date"` / `"Pick a date range"` | Trigger text while empty. |
 | `title` | `"Select a date"` / `"Select dates"` | Popover accessible name. |
 | `locale` | `"en-US"` | BCP 47 locale for the `medium` trigger label (`Intl.DateTimeFormat`, `dateStyle: "medium"`). The grid and the month / year picker follow `calendarProps.locale`. |
-| `dateFormat` | `"medium"` | `"medium"` shows the locale's medium date (Oct 19, 2026); `"numeric"` shows day / month / year in zero-padded numbers with dimmed separators (19 / 10 / 2026), in that order in every locale. A range shows both ends. |
-| `clearable` | `false` | Adds a Clear action to the panel once a value is set. |
+| `dateFormat` | `"medium"` | `"medium"` uses the locale's medium date or range format; `"numeric"` shows day / month / year in zero-padded numbers with dimmed separators (19 / 10 / 2026), in that order in every locale. Numeric ranges show both dates unless the endpoints are the same day, when one date is shown. |
+| `clearable` | `false` | Adds a Clear action to the panel once a value is set. Clearing reports `null` and closes the panel. |
 | `clearLabel` | `"Clear"` | Clear action text. |
 | `todayLabel` | `"Today"` | Current-month navigation action text. Shown on the left with an Undo2 icon; Clear stays on the right. |
 | `showToday` | `true` | Shows the Today action. Set `false` to hide it; the footer disappears when neither Today nor Clear is visible. |
 | `name` | — | Renders a hidden input: `YYYY-MM-DD`, or `YYYY-MM-DD/YYYY-MM-DD` for a range. |
-| `calendarProps` | — | Forwarded to `Calendar`: `disabled`, `startMonth`, `endMonth`, `captionLayout`, `weekStartsOn`, `locale` (a react-day-picker locale), etc. |
+| `calendarProps` | — | Calendar options such as `disabled`, `startMonth`, `endMonth`, `captionLayout`, `weekStartsOn`, and `locale` (a react-day-picker locale). The picker owns `mode`, `selected`, `onSelect`, `required`, `numberOfMonths`, and initial focus; those are not exposed through this prop. |
 
 Other button props (`id`, `disabled`, `aria-*`, `className`, `ref`) go to the trigger. The trigger
 exposes `data-slot="date-picker-trigger"`, `data-variant`, `data-size`, `data-empty` while no value is
@@ -59,15 +59,16 @@ Cells are 34px square with a 30px visible box on every device.
 
 The caption is a button: the month and year, then an up-down chevron. It toggles a picker that
 replaces the day grid, at the same size: months and years in two scrollable columns, side by
-side. Picking a year moves the calendar and keeps the picker open; picking a month returns to
-that month's days. Each column is a radio group, so it is one tab stop and arrow keys move
-through it. Escape returns to the days without closing the panel; a second Escape closes it.
+side. Picking a year moves the calendar and keeps the picker open; activating a month returns
+to that month's days. Each column is a radio group, so it is one tab stop and arrow keys change
+its selection while keeping the picker open. Escape returns to the days without closing the
+panel; a second Escape closes it.
 The toggle carries `aria-expanded`.
 
 Months entirely outside `startMonth` / `endMonth` are disabled. Years run from `startMonth`, or
-100 years back, to `endMonth`, or 20 years ahead. The picker is part of the default `label`
-caption; the `dropdown` caption layouts keep their own selects, and `disableNavigation` renders
-a plain caption.
+100 years back, to `endMonth`, or 20 years ahead, extending as needed to include the displayed
+year. The picker is part of the default `label` caption; the `dropdown` caption layouts keep
+their own selects, and `disableNavigation` renders a plain caption.
 
 Parts: `data-slot="calendar-picker-toggle"` (the caption button), `calendar-picker` (the two
 columns), and `calendar-month-grid` (the wrapper that holds the grid's height while the picker
@@ -90,8 +91,8 @@ is open).
 
 - Pointer navigation: weeks slide 24px and the caption 10px from the direction travelled, with a
   fade. Keyboard navigation: fade only.
-- CSS only (`@starting-style` on `translate` and `opacity`), using the duration tokens; collapses
-  under reduced motion.
+- The slide and fade use CSS (`@starting-style` on `translate` and `opacity`) with duration
+  tokens; they collapse under reduced motion.
 - The panel enters and exits with the Popover motion.
 - Month height changes animate over the slow duration token as the number of week rows changes. The measured height transition follows reduced-motion tokens and is disabled by `animate={false}`.
 

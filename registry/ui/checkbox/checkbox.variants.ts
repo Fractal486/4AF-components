@@ -14,8 +14,8 @@ export const checkboxVariants = cva([
   "data-[indeterminate]:border-primary data-[indeterminate]:bg-primary",
   "outline-none focus-visible:ring-2 focus-visible:ring-ring",
   "focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-  // Non-native button (a span) — the `:disabled` pseudo never matches it, so the
-  // disabled affordance keys off Base UI's data attribute instead.
+  // Base UI's data attribute keeps the disabled styling tied to primitive state,
+  // including the native Motion button used by Checkbox.
   "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
   "aria-invalid:border-destructive aria-invalid:ring-destructive/40",
   // Held permanently on its own layer: without it, scaling on press re-rasterizes

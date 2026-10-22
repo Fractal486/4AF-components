@@ -32,8 +32,12 @@ npx shadcn@latest search https://4af.selfsimilar.dev/r/registry.json -t ui
 ```
 
 The target needs a shadcn `components.json` (`npx shadcn@latest init`). Dependencies, the 4AF
-theme, and shared utilities install with the component. Existing files are skipped unless
-`--overwrite` is passed. To use `@4af/<component>` and `npx shadcn@latest search @4af`, register
+theme, and shared utilities install with the component. Unchanged source files are skipped;
+differing files prompt before replacement unless `--overwrite` is passed. Package and
+stylesheet updates still apply when source files are skipped. Preview an update with
+`add <url> --overwrite --diff`. Consumers need React 19 and Tailwind CSS v4. Component installs
+preserve existing theme variable values, and fonts remain the caller's responsibility.
+To use `@4af/<component>` and `npx shadcn@latest search @4af`, register
 the namespace once: `npx shadcn@latest registry add @4af=https://4af.selfsimilar.dev/r/{name}.json`.
 
 Each page is available as Markdown at `https://4af.selfsimilar.dev/docs/<component>.md`, and
@@ -81,7 +85,8 @@ When adding a component, update all of the relevant sources together:
 1. `registry/ui/<name>/` — portable implementation, variants, and tests.
 2. `registry.json` — install name, description, files, dependencies, and registry dependencies.
 3. `inspector/entries/` — the demo and settings controls, when the component needs a demo.
-4. `content/docs/<name>.mdx` — title/description, demo, install/usage reference, API, and notes.
+4. `content/docs/<name>.mdx` — title/description, demo, install/usage reference, API, and notes;
+   add the page to `content/docs/meta.json` so Fumadocs includes it.
 5. `lib/component-catalog.ts` — the sidebar family, catalog category, and main API mapping when
    the new item changes those derived views.
 6. `lib/component-reference.ts` — the canonical usage snippet used by the page and its Markdown.
@@ -130,6 +135,8 @@ worth reusing; a component that skips a line here is a component we'll rewrite l
   `autoFocusFirstItem={false}` opts out for menu-like uses. See the
   [Select Search implementation notes](content/docs/select-search.mdx#highlight-implementation)
   for Base UI's `autoHighlight` / `keepHighlight` requirements.
+  Ordinary Dropdown Menu submenus are an exception: pointer-hover openings start without a
+  highlighted row, while keyboard openings activate the first enabled row.
 - **Prefer compositor-friendly motion.** Animate `transform`/`scale`, `opacity`, `filter`,
   and `clip-path`. Collapsible's height transition, Sidebar's shell dimensions and
   offcanvas position, and Morph's opt-in `sizing="current"` width are accepted layout-motion
@@ -172,7 +179,9 @@ for spring press feedback; their CSS composition paths use the duration tokens.
 
 ## Sources
 
-All three are shadcn-compatible registries, so they all land in `_incoming/` automatically.
+All three are shadcn-compatible registries. The local `ui`, `lib`, and `hooks` aliases stage
+their source in `_incoming/`; the `utils` alias points at the library's existing `cn` helper.
+Review the CLI diff for utilities, dependencies, and stylesheet changes before ingestion.
 
 | Source | Built on | Expect to fix |
 | --- | --- | --- |
@@ -186,8 +195,8 @@ Plus one-off sources for specific jobs (loaders, charts). Same loop applies.
 
 1. **Download.** `pnpm exec shadcn add <url>` — the locally pinned CLI and
    `components.json` aliases point at
-   `_incoming/`, so anything from any public registry lands in staging, never in the
-   library.
+   `_incoming/` for UI, lib, and hook files. The CLI can also update packages, CSS, and the
+   existing `cn` utility, so inspect those changes before refinement.
 2. **Rebuild to the contract.** Don't polish the download; rewrite it. Most public
    components fail on `transition: all`, hardcoded durations, hex colours, and missing
    `asChild`.

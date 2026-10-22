@@ -10,16 +10,25 @@ description: A navigable heading outline that tracks the active document section
 
 **Main export:** `TableOfContents`
 
-Heading navigation with a dashed rail and an active marker. `variant="span"` (default) marks
-every visible heading; `variant="single"` marks one. Clicking an entry scrolls the document
-smoothly. When no heading is on screen, the last heading scrolled past stays active.
+Heading navigation with a dashed rail and an active marker. Pass `items` in document order as
+`{ id, title, level? }` objects: `id` must match a heading or section element, `title` is a React
+node, and `level` defaults to `2` and controls indentation. It does not discover headings for you.
+
+`variant="span"` (default) marks every visible heading; `variant="single"` marks the first
+visible heading. When no heading is on screen, the last heading scrolled past stays active
+(or the first item before any heading has been passed).
+
+Clicking an entry scrolls the document smoothly, or without smooth motion under reduced motion.
+During that scroll, `span` highlights the projected destination range; `single` highlights the
+clicked entry and keeps it active after settling until scrolling resumes. Clicking does not
+update the URL fragment or move focus to the target heading.
 
 Give it a height and it scrolls on its own, without a visible scrollbar, keeping the active entry
 centred.
 
 `labels="hover"` hides the headings until the list is hovered or keyboard-focused, leaving the
-rail and marker; `always` (default) shows them. The rail geometry is the same either way. On touch
-screens the headings always show.
+rail and marker; `always` (default) shows them. The rail geometry is the same either way. On
+devices with a coarse primary pointer the headings always show.
 
 `rootRef` is the document's scroll root. Pass it when the article scrolls inside a container
 rather than the page.

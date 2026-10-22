@@ -20,9 +20,9 @@ import { useSlotChild } from "@/registry/lib/slot";
 import { buttonVariants, type ButtonVariants } from "./button.variants";
 
 /**
- * These collide with Motion's own props of the same names, which are gesture and
- * animation callbacks rather than DOM events. Dropping them from the public type is
- * the standard cost of putting a motion component behind a native-looking API.
+ * Base UI's button props plus visual variants and press/loading controls.
+ * Element replacement uses `asChild`; the underlying `render` and `nativeButton`
+ * options are managed internally.
  */
 export interface ButtonProps
   extends Omit<

@@ -293,13 +293,13 @@ export function CommandPanelRow({
 
 /**
  * The footer of a custom panel: the escape hint on the left, and at most two things on the
- * right — the Enter action, then the actions menu.
+ * right — the primary button with a Return hint, then the actions menu.
  *
  * Both are named slots rather than children, and that is the point. An open footer grows a
  * different set of affordances on every panel, each with its own key chip, so the same
- * palette ends up teaching a different keyboard depending on how deep you have drilled. Two
- * slots with fixed chords mean the bar can only ever say "return" and "Cmd J", and both
- * always mean the same thing.
+ * palette ends up teaching a different keyboard depending on how deep you have drilled.
+ * The hints are fixed: Return for native button/form activation, and Cmd/Ctrl+J for the
+ * actions-menu shortcut. The primary slot itself does not register an Enter handler.
  *
  * The menu is rightmost so it hangs off the bottom-right corner as it opens upward.
  */

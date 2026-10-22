@@ -14,8 +14,8 @@ description: A contextual toolbar for actions on selected text.
 
 A bar of actions over selected text, styled like a tooltip. A Base UI Popover anchors it to the
 selected range, so it follows the text while scrolling, and Base UI Toolbar handles arrow-key
-focus. Pressing an item doesn't collapse the selection, and every action receives the captured
-text and range.
+focus. Pressing an item doesn't collapse the selection. Use the toolbar's item components to
+join that keyboard navigation and receive the captured text and range through their action APIs.
 
 `onOpenChange(open)` reports each committed visibility change once: opening on selection,
 closing when selection collapses or leaves the region, dismissal by an action or Escape, and
@@ -39,8 +39,9 @@ library component.
 | `SelectionToolbarToggleGroup` | Base UI `ToggleGroup` in `Toolbar.Group` | — |
 | `SelectionToolbarSeparator` | Base UI `Toolbar.Separator` | — |
 
-Every action receives the selection as it was when the bar opened: `onAction(text, range)`,
-`action(text, range)`, or `onAction(pressed, text, range)`. Use these instead of
+Actions receive the captured selection through `onAction(text, range)` or `action(text, range)`
+on buttons, and `onAction(pressed, text, range)` or `action(pressed, text, range)` on toggles.
+Use these instead of
 `window.getSelection()`, which may have changed by the time the handler runs.
 
 `variant="destructive"` uses red text on a neutral hover rather than a solid red fill, like the

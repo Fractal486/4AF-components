@@ -6,9 +6,10 @@ upstream material retained in this repository and its adaptations. Component exa
 and source records below are not an exhaustive attribution map.
 
 Preserve the applicable notices when copying or distributing adapted components,
-including when installing individual files into another project. This file supplements
-notices already present in component source files. Package dependencies retain their
-own licenses, distributed with those packages.
+including when installing individual files into another project. These notices are collected
+here; the component source files and generated registry bundles do not currently include this
+file or per-file copyright headers. Package dependencies retain their own licenses, distributed
+with those packages.
 
 License texts checked against the linked upstream sources on 2026-10-11.
 

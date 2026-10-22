@@ -123,9 +123,10 @@ export function CopyButton({
 }
 
 /**
- * `navigator.clipboard` only exists in a secure context — it's undefined on plain HTTP,
- * which is where a lot of local dev and intranet apps live. The deprecated `execCommand`
- * path is the only thing that works there, so it stays as a fallback.
+ * `navigator.clipboard` requires a secure context. HTTPS and trusted localhost origins
+ * can provide it; ordinary HTTP origins cannot. The deprecated `execCommand` path is a
+ * best-effort fallback when the Clipboard API is unavailable. A rejected Clipboard API
+ * write propagates to the caller without retrying through the fallback.
  *
  * It throws on failure rather than returning false, because ActionButton's contract is
  * that a rejected action means the work did not happen.

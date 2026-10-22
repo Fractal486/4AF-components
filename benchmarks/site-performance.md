@@ -1,6 +1,11 @@
 # Site performance — 2026-10-12
 
-Two focused changes retained after measuring the production static export:
+This is a historical measurement of the implementation described below. The current homepage
+no longer contains the installed-file browser, and `hast-util-to-html` is no longer a direct
+dependency. The recorded results do not describe the current homepage. The benchmark script
+still expects that old file browser, so it cannot run against the current site unchanged.
+
+Two focused changes were retained at the time after measuring the production static export:
 
 - Serialize the homepage's build-time highlighted source as escaped HTML instead of thousands of React token elements. The file browser still receives all nine files immediately; switching files needs no fetch. `hast-util-to-html` was already in the dependency graph and is now a direct build-time dependency. It adds no browser library.
 - Reserve the demo's actual 42rem height in its loading placeholder. Loading an entry no longer pushes the article below it down by 384px.
@@ -28,7 +33,9 @@ Timing differences are small and mixed, with overlapping LCP ranges (homepage: 1
 
 Baseline: working tree at `3fea972`, including the user's pre-existing uncommitted edits. Those edits were preserved. Separate sheet/sidebar edits and another export appeared after the measured builds; they were left untouched and are outside this before/after comparison. Both measurements used production `pnpm build` output, Wrangler's local static-assets preview, Chrome 155.0.8059.39, Node 26.10.0, a 1440×1000 viewport, no artificial throttling, and no build/test jobs launched by this task during sampling (other desktop activity was not controlled). This is a local lab comparison, not field Core Web Vitals.
 
-Stop `pnpm dev` before building. After each build, restart `pnpm start` so Wrangler uses the new asset manifest. In another terminal:
+The commands below document the original measurement workflow and require the measured
+file-browser implementation. Stop `pnpm dev` before building. After each build, restart
+`pnpm start` so Wrangler uses the new asset manifest. In another terminal:
 
 ```sh
 CHROME_PATH=/usr/bin/google-chrome PERF_RUNS=5 node scripts/benchmark-site.mjs > before.json

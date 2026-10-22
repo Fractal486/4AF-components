@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" id="matrix-loader-bp" width="1024" height="768" viewBox="-192 -144 1024 768" fill="none" role="img" aria-labelledby="matrix-loader-bp-title matrix-loader-bp-desc">
   <title id="matrix-loader-bp-title">Matrix Loader spacing</title>
-  <desc id="matrix-loader-bp-desc">The default small Matrix Loader in its scan pattern, enlarged twelve times. Four rows and four columns of 2 pixel square dots, separated by 2 pixel gaps, make a 14 by 14 pixel grid. The four columns pulse from left to right, then settle with the first column highlighted. Measurement guides appear during the final pulse. Reduced motion shows the highlighted first column and all measurements immediately.</desc>
+  <desc id="matrix-loader-bp-desc">The default small Matrix Loader in its scan pattern, enlarged twelve times. Four rows and four columns of 2 pixel square dots, separated by 2 pixel gaps, make a 14 by 14 pixel grid. In this blueprint, the four columns pulse from left to right, then settle with the first column highlighted. Measurement guides appear during the final pulse. Reduced motion makes the blueprint static immediately. The live loader continues looping at its configured duration under reduced motion; its default cycle is 1.2 seconds.</desc>
   <!-- Sources: registry/ui/matrix-loader/matrix-loader.tsx;
        registry/ui/matrix-loader/matrix-loader.variants.ts;
        inspector/entries/matrix-loader.tsx; content/docs/matrix-loader.mdx;

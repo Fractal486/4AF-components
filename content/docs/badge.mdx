@@ -10,8 +10,10 @@ description: A compact label for statuses, categories, and counts.
 
 **Main exports:** `Badge`, `BadgeIconsProvider`, types `BadgeStatus` and `BadgeIcons`
 
-A label for statuses, categories, and counts, with an optional icon or dot. Label and glyph
-changes animate through the shared `Morph` component.
+A label for statuses, categories, and counts, with an optional icon or dot. Status changes swap
+the glyph through the shared `Morph` component; string and number label changes also animate.
+For other React content, change `contentKey` to trigger a label animation. Replacing a custom
+glyph while keeping the same status updates it without a status-swap animation.
 
 The default size is `sm`. Boxed badges are 16px high with a 4px radius at `sm`, 20px with a 4px
 radius at `md`, and 24px with a 6px radius at `lg`.
@@ -48,6 +50,9 @@ ignores it.
 
 | Prop / part | Description |
 | --- | --- |
+| `status` | Defaults to `"neutral"`; determines the status colour and default glyph. |
+| `showIcon` | Defaults to `true`. Set to `false` for a label without a glyph. |
+| `dot` | Defaults to `false`. Shows a status-coloured dot instead of a glyph, even with `showIcon={false}` or `icon={null}`. |
 | `icon` | One glyph for this badge, whatever its status. `icon={null}` hides it. |
 | `icons` | Per-status glyphs for this badge, e.g. `{ danger: <CircleX /> }`. Unnamed statuses fall through. |
 | `loader` | The loading glyph for `status="loading"`. |
@@ -65,8 +70,8 @@ sized to the badge (`size-2.5` / `size-3` / `size-3.5`) unless they set their ow
 
 ## Layout animation
 
-Badge animates its width when its content changes. In a list that filters or reorders, such as a
-Command Palette or a table row, set `animateLayout={false}` on badges whose content doesn't
+`animateLayout` defaults to `true`: Badge animates its width when its content changes. In a list
+that filters or reorders, such as a Command Palette or a table row, set `animateLayout={false}` on badges whose content doesn't
 change. Otherwise the badge FLIP-animates its own position as the row moves, which slides it
 within the row and adds layout cost.
 

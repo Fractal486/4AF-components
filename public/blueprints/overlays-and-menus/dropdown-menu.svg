@@ -19,7 +19,7 @@
     checkbox, one pending action labeled Saving, a two-item radio group, and a closed submenu. Default item
     variants throughout. The parent uses Button outline/icon with
     pressScale=false, an anchored 34px square trigger with a 16px Ellipsis glyph.
-    Caller-selected panel width w-56 = 224px; the component minimum is 144px.
+    Caller-selected panel width w-56 = 224px; the component minimum is 200px.
     Shortcut keycaps have intrinsic text width; 26px is chosen here for glyph fallback.
 
     CSS pixels at 3x. Root font 16px; spacing token .25rem = 4px.

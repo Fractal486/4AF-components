@@ -243,7 +243,7 @@ export default function IndexPage() {
               <InlineLink href="/llms.txt">
                 /llms.txt
               </InlineLink>
-              , which has these commands and links every page as Markdown. The{" "}
+              , which has these commands and links component docs and reference sections as Markdown. The{" "}
               <InlineLink href="/docs/reference/agent-skill">
                 agent skill
               </InlineLink>{" "}
@@ -257,8 +257,8 @@ export default function IndexPage() {
               </DocsCodeBlock>
             </div>
             <p className={cn(PROSE, "mt-4")}>
-              Add <code className="font-mono text-sm">--dry-run</code> to see every change before
-              anything is written. Short names, browsing the catalog, and updating are covered in{" "}
+              Add <code className="font-mono text-sm">--dry-run</code> to preview files,
+              dependencies, and CSS updates. Short names, browsing the catalog, and updating are covered in{" "}
               <InlineLink href="/docs/reference/installation">
                 Installation
               </InlineLink>

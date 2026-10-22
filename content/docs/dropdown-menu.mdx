@@ -20,7 +20,8 @@ longer rows; pass a `min-w-*` class in `className` to change the minimum.
 `DropdownMenu loader={<MySpinner />}` supplies the menu's loading indicator, including portalled
 rows. Omit it to inherit [LoaderProvider](/docs/reference/engineering#shared-loading-indicators),
 with `ClassicLoader` as the fallback. `DropdownMenuActionItem` and `DropdownMenuCheckboxItem` accept
-`loader` for one row; a custom `icons.pending` takes precedence.
+`loader` for one row. On `DropdownMenuActionItem`, a custom `icons.pending` takes precedence;
+checkbox rows use the `loader` prop or their children render function for custom pending content.
 
 A disabled row can take a `disabledReason`. Hovering the row then opens a tooltip on its right
 explaining why, without the usual tooltip delay:
@@ -44,9 +45,14 @@ Single- and multi-select panels can include in-panel search. Their parent highli
 while the pointer is on the parent, inside the nested panel, or moving through the safe pointer
 corridor.
 
-Nested panels open immediately when their parent row is hovered; the safe pointer corridor still
-keeps them open while the pointer moves into the panel. The initially focused child row stays
-unhighlighted until it is hovered or reached through keyboard navigation.
+Nested panels open immediately when their parent row is hovered by default; set the trigger's
+`delay` to change that. The safe pointer corridor keeps them open while the pointer moves into
+the panel. Hover-opening a navigation submenu does not activate its first child; hovering a row
+paints its hover fill, and keyboard navigation moves the active highlight.
+
+Searchable select subpanels focus their search field on opening by default. Their
+`autoFocusFirstItem={false}` prop opts out of that automatic search-field focus; Arrow Down or
+Arrow Up in the field moves focus to the first or last enabled matching option.
 
 Select-style triggers keep their label or placeholder on the left and show the selected value or
 selection count, dimmed, immediately before the chevron. Searchable panels use a plain text field

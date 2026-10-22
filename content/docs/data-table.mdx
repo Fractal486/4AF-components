@@ -73,18 +73,21 @@ placeholder rows have to grow the column too. Never write a gutter cell into a r
 
 ## Selection
 
-A row is selectable when it has a `value`; one without still gets an empty cell, so a "no results"
-row keeps its columns aligned.
+With `selectable` on the root, a row gets a selection checkbox when it has a `value`; one
+without still gets an empty cell, so a "no results" row keeps its columns aligned. Clicking the
+row itself does not toggle selection; selection is handled by the checkbox.
 
 `rows` sets what select-all covers — pass the page being rendered, not every row held. Selecting
-all is a union, so selected values outside `rows` are kept. The header checkbox is indeterminate
-while the selection is partial and checks from there.
+all is a union, so selected values outside `rows` are kept. Clearing select-all removes only
+values in `rows`. The header checkbox is indeterminate while some, but not all, values in
+`rows` are selected and checks all of them from there.
 
 Rows expose `data-selected` for styling; their checkboxes expose selection to assistive technology.
 
 `selectionBar` turns the header into an action row while anything is selected: the labels give way
-to a count and `selectionActions` sits at the right end, with the select-all still in place so the
-selection can be cleared. The count covers the whole selection, not only the part `rows` covers.
+to a count and `selectionActions` sits at the right end, with the select-all still in place.
+The count covers the whole selection, not only the part `rows` covers. To clear selections
+across pages, control `value` and supply an action that resets it to `[]`.
 Use `size="xs"` for the actions.
 
 ```tsx

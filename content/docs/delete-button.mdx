@@ -10,8 +10,14 @@ description: A destructive action button with deliberate confirmation feedback.
 
 **Main export:** `DeleteButton`
 
-A destructive button that asks for confirmation: the first press arms it and the second runs
-it. Escape, blur, and a timeout disarm it.
+A destructive confirmation button: the first press arms it and a later press calls `onDelete`.
+Presses within 350ms of arming are ignored so a double-click cannot confirm. Escape, blur, and
+`resetAfter` disarm it; the timeout defaults to 3000ms, and `resetAfter={0}` disables the timeout.
+
+`variant` accepts `outline` (default), `ghost`, or `plain`, all with destructive text.
+`armed` / `onArmedChange` control the armed state, or use `defaultArmed` for an uncontrolled
+initial state. The button requests disarming before calling `onDelete`; it does not await that callback
+or show pending, success, or error states.
 
 By default the button keeps the width of its wider state. `sizing="current"` fits it to the
 showing state and animates the width when it arms and disarms. The button carries

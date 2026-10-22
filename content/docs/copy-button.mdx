@@ -50,8 +50,10 @@ different things. The success check is unchanged.
 ### Copying from somewhere else
 
 `writeToClipboard(text)` is exported for clipboard writes outside the button, such as a menu
-row. `navigator.clipboard` only exists in secure contexts, so on plain HTTP it falls back to
-`execCommand`. It rejects on failure instead of returning false.
+row. It uses `navigator.clipboard.writeText` when available and falls back to `execCommand`
+when that API is unavailable, such as on many non-secure HTTP origins. A rejected Clipboard
+API write is reported as a failure; it does not retry through the fallback. Both paths reject
+on failure instead of returning false.
 
 ```tsx
 await writeToClipboard(item.url);

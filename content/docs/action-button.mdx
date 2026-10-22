@@ -10,8 +10,10 @@ description: A button that confirms an asynchronous action with loading, success
 
 **Main export:** `ActionButton`
 
-Runs an async `action` and shows pending, success, and error states, then reverts to idle. By
-default the button keeps the width of its widest state throughout.
+Runs an `action` that may return a promise, shows pending, success, and error states, then
+reverts to idle after `revertAfter` milliseconds (2000 by default). Throw or reject from
+`action` to show an error. `pendingDelay` defaults to 0, and concurrent presses cannot start
+another run. By default the button keeps the width of its widest state throughout.
 
 `sizing="current"` fits the button to the showing state and animates the width as it changes.
 A label-only button then reserves no glyph slot while idle and grows when the status glyph
@@ -20,9 +22,9 @@ appears. The button carries `data-sizing`.
 `size` uses the Button scale: `xs` is 24px, `sm` is 30px, `md` is 34px, and `lg` is 38px. The
 square icon sizes are `icon-xs`, `icon-sm`, `icon`, and `icon-lg`.
 
-Without a resting `icon`, the label stays centred while the status glyphs reserve their space.
-With an icon, the icon and label stay centred as a group. `iconPosition="end"` puts the icon
-and the status glyphs that replace it after the label; the button carries
+Without a resting `icon`, the idle label stays centred despite the reserved status-glyph space.
+When a glyph is visible, the glyph and label are centred as a group. `iconPosition="end"` puts
+the icon and the status glyphs that replace it after the label; the button carries
 `data-icon-position`.
 
 `pendingMode` sets the pending presentation:
@@ -47,7 +49,8 @@ and the status glyphs that replace it after the label; the button carries
 
 `loader={<MySpinner />}` sets this button's indicator, and
 [LoaderProvider](/docs/reference/engineering#shared-loading-indicators) sets a default for a
-subtree. `ClassicLoader` is the fallback. Copy Button and Delete Button inherit the slot.
+subtree. `ClassicLoader` is the fallback. Copy Button inherits the slot; Action Toggle also
+accepts a `loader` for its pending state.
 
 A label only animates when it changes. Pass `labels={{ pending: "Saving" }}` when the word should
 change, and leave it out when only the glyph should move. With `pendingMode="icon"`,

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="480" height="360" viewBox="0 0 480 360" fill="none" role="img" aria-labelledby="toggle-bp-title toggle-bp-description">
   <title id="toggle-bp-title">Toggle spacing blueprint</title>
-  <desc id="toggle-bp-description">The bookmark presses and releases once, changing from an outline to a filled icon. A pressed bookmark Toggle, drawn at three times its CSS size. The default icon control is 34 by 34 pixels with 8 pixel corners. A 16 pixel icon viewport is centered with 9 pixels on each side. The invisible hit area extends to 40 by 40 pixels.</desc>
+  <desc id="toggle-bp-description">The bookmark presses and releases once, changing from an outline to a filled icon with the opt-in fillIcon prop enabled. A pressed bookmark Toggle, drawn at three times its CSS size. The default icon control is 34 by 34 pixels with 8 pixel corners. A 16 pixel icon viewport is centered with 9 pixels on each side. The invisible hit area extends to 40 by 40 pixels.</desc>
   <!--
     Sources:
       registry/ui/toggle/toggle.tsx

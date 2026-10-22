@@ -36,7 +36,8 @@ parts.
 
 The other parts take their native element's props and add nothing of their own.
 
-`sm` is 36px rows, `md` is 44px; both use a 36px header.
+`sm` has a 36px minimum row height, `md` 44px; both use a 36px minimum header height.
+Wrapped or taller content can increase those heights.
 
 ## Caption
 
@@ -54,7 +55,9 @@ centered below the scrolling table while the native one stays available to assis
 
 `loading` replaces the body's rows with placeholders and sets `aria-busy`. The header keeps its
 labels. Placeholder rows take their shape from the header you wrote, so give the header the
-columns you intend to render.
+columns you intend to render. The count comes from the cells in the first row of a direct
+`TableHeader` child, with fragments supported. It does not expand `colSpan` or inspect custom
+components that wrap the header or cells.
 
 ```tsx
 <Table loading={isLoading} loadingRows={8}>
@@ -79,8 +82,8 @@ when the table sits on a raised surface.
 Every rule inside the table — between rows, under the header, above the footer, and between
 columns — is 1px at 60% of the `border` token. The outline is 1px at the full token.
 
-The header and footer rows are 36px at both sizes. Rows have no hover highlight; `data-table` adds
-one to its rows, which can be selected and acted on.
+The header and footer rows have a 36px minimum height at both sizes. Rows have no hover highlight;
+`data-table` adds one to its rows, which can be selected and acted on.
 
 A vertical rule belongs to the leading edge of the cell that starts the column, which is how a
 column declines its own rule: `data-table`'s checkbox and actions columns draw none.
@@ -88,7 +91,8 @@ column declines its own rule: `data-table`'s checkbox and actions columns draw n
 ## Composing on top
 
 `useTableContext()` returns `size`, `outline`, `verticalLines`, `horizontalLines`, `stickyHeader`,
-`loading`, `loadingRows` and `columns`. `useTableSection()` returns `"header" | "body" | "footer"` — a row can't infer this,
+`loading`, `loadingRows`, `columns`, and `Row` (the registered `rowComponent`).
+`useTableSection()` returns `"header" | "body" | "footer"` — a row can't infer this,
 since a `<thead>` and a `<tbody>` hold identical `<tr>`s.
 
 With `rowComponent`, these are what `data-table` builds on. Reach for them if you are adding a

@@ -11,7 +11,8 @@ description: A semantic status message with tone variants and composable content
 **Main export:** `Alert`
 
 An inline status line: a glyph and a sentence, with no surface, border, or padding. It renders
-nothing for an empty message.
+nothing when `children` is `null`, `undefined`, or an empty string. It accepts native paragraph
+props, including `id` and `ref`, and adds a 6px top margin by default.
 
 ## Variants
 
