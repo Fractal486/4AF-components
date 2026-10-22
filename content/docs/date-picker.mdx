@@ -94,7 +94,9 @@ is open).
 - The slide and fade use CSS (`@starting-style` on `translate` and `opacity`) with duration
   tokens; they collapse under reduced motion.
 - The panel enters and exits with the Popover motion.
-- Month height changes animate over the slow duration token as the number of week rows changes. The measured height transition follows reduced-motion tokens and is disabled by `animate={false}`.
+- Month height changes animate over the slow duration token as the number of week rows changes.
+  This intentional use of layout animation avoids an abrupt size jump between months. The
+  measured height transition follows reduced-motion tokens and is disabled by `animate={false}`.
 
 ## Dependencies
 

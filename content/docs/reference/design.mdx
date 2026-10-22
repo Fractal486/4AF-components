@@ -110,8 +110,11 @@ scroll. Popups open next to the control that opened them.
 CSS handles hover, focus, ordinary press feedback, and simple entrances and exits. Button and
 Toggle use Motion for spring presses. Motion also handles retained exits such as Morph's outgoing
 content, gestures, springs, and layout animation. Transitions name the exact properties they
-change and prefer compositor-friendly motion; Collapsible, Sidebar, and Morph's opt-in
-`sizing="current"` have documented layout-motion exceptions.
+change and prefer compositor-friendly motion. Animating layout properties is discouraged
+because it can trigger layout and paint on every frame, but is appropriate when smoothly
+changing the layout is part of the intended interaction. Document the reason, as with
+Collapsible's height, Calendar's measured month height as week rows change, Sidebar's shell
+dimensions and offcanvas position, and Morph's opt-in `sizing="current"` width.
 
 Four shared CSS durations, fast (150ms), base (200ms), slow (300ms), and slower (450ms), cover
 short feedback through longer transitions. Some chevrons use separate 400ms timing. JavaScript

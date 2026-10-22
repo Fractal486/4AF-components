@@ -269,9 +269,14 @@ import { Morph } from "@/components/ui/morph";
 </Popover>`,
   },
   progress: {
-    usage: `import { Progress } from "@/components/ui/progress";
+    usage: `import { Progress, ProgressLabel, ProgressValue } from "@/components/ui/progress";
 
-<Progress aria-label="Upload progress" value={60} />`,
+<Progress value={60} className="space-y-2">
+  <div className="flex items-baseline justify-between text-sm">
+    <ProgressLabel>Uploading files</ProgressLabel>
+    <ProgressValue className="tabular-nums" />
+  </div>
+</Progress>`,
   },
   radio: {
     usage: `import { Radio, RadioGroup } from "@/components/ui/radio";

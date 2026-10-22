@@ -1,4 +1,4 @@
-import { Progress } from "@/registry/ui/progress/progress";
+import { Progress, ProgressLabel, ProgressValue } from "@/registry/ui/progress/progress";
 import { TextShimmer } from "@/registry/ui/text-shimmer/text-shimmer";
 import { bool, defineEntry, num } from "../schema";
 
@@ -12,19 +12,16 @@ export const progressEntry = defineEntry({
   },
   render({ value, showValue, shimmer }) {
     return (
-      <div className="w-full max-w-sm space-y-2">
+      <Progress value={value} aria-label={showValue ? undefined : "Upload progress"} className="w-full max-w-sm space-y-2">
         {showValue && (
           <div className="flex items-baseline justify-between text-sm">
-            {shimmer ? (
-              <TextShimmer>Uploading…</TextShimmer>
-            ) : (
-              <span className="text-muted-foreground">Uploading…</span>
-            )}
-            <span className="font-medium tabular-nums text-foreground">{value}%</span>
+            <ProgressLabel className="text-muted-foreground">
+              {shimmer ? <TextShimmer>Uploading…</TextShimmer> : "Uploading…"}
+            </ProgressLabel>
+            <ProgressValue className="font-medium tabular-nums text-foreground" />
           </div>
         )}
-        <Progress value={value} aria-label="Upload progress" />
-      </div>
+      </Progress>
     );
   },
 });

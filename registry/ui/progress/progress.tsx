@@ -2,7 +2,7 @@
 
 import { Progress as BaseProgress } from "@base-ui/react/progress";
 import { useDirection } from "@base-ui/react/direction-provider";
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
 
 /**
@@ -31,6 +31,8 @@ export interface ProgressProps
   trackClassName?: string;
   /** Extra classes for the indicator (the fill). */
   indicatorClassName?: string;
+  /** Content above the built-in track, including ProgressLabel and ProgressValue. */
+  children?: ReactNode;
 }
 
 export function Progress({
@@ -40,6 +42,7 @@ export function Progress({
   className,
   trackClassName,
   indicatorClassName,
+  children,
   ...props
 }: ProgressProps) {
   const direction = useDirection();
@@ -65,6 +68,7 @@ export function Progress({
       className={cn("w-full", className)}
       {...props}
     >
+      {children}
       <BaseProgress.Track
         className={cn(
           "relative h-2 w-full overflow-hidden rounded-full bg-muted",

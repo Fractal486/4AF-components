@@ -3,7 +3,8 @@
 This is a historical measurement of the implementation described below. The current homepage
 no longer contains the installed-file browser, and `hast-util-to-html` is no longer a direct
 dependency. The recorded results do not describe the current homepage. The benchmark script
-still expects that old file browser, so it cannot run against the current site unchanged.
+now targets the current install command; see the [current benchmark workflow](README.md).
+Its version 2 reports cannot be compared with the original JSON samples below.
 
 Two focused changes were retained at the time after measuring the production static export:
 
@@ -43,9 +44,10 @@ CHROME_PATH=/usr/bin/google-chrome PERF_RUNS=5 node scripts/benchmark-site.mjs >
 CHROME_PATH=/usr/bin/google-chrome PERF_RUNS=5 PERF_COMPARE=before.json node scripts/benchmark-site.mjs > after.json
 ```
 
-`pnpm benchmark:site` runs the same script. `PERF_URL` overrides the default `http://127.0.0.1:8787`; `CHROME_PATH` selects an installed Chrome/Chromium binary. The benchmark uses `playwright-core` without downloading a browser. Compare the same browser, export, viewport, and number of runs. Keep build/test jobs out of the measurement window.
+At the time, `pnpm benchmark:site` ran this workflow. Use the historical script and implementation
+to reproduce these measurements, or the current workflow linked above to create a new baseline.
 
-The benchmark checks every file-browser selection, hashes source text plus token styles/classes/tabindex, fails on browser page errors, and optionally checks those fingerprints and layout-shift non-regression against a previous run. Raw samples: [before](site-before.json), [after](site-after.json).
+The historical benchmark checked every file-browser selection, hashed source text plus token styles/classes/tabindex, failed on browser page errors, and optionally checked those fingerprints and layout-shift non-regression against a previous run. Raw samples: [before](site-before.json), [after](site-after.json).
 
 ## Verification and scope
 

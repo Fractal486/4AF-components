@@ -51,7 +51,7 @@ The catalog contains 48 installable UI items.
 
 | Install name and docs | Choose it for |
 | --- | --- |
-| [`progress`](https://4af.selfsimilar.dev/docs/progress.md) | Determinate progress. |
+| [`progress`](https://4af.selfsimilar.dev/docs/progress.md) | Determinate progress with optional nested label and formatted value parts. |
 | [`alert`](https://4af.selfsimilar.dev/docs/alert.md) | An inline status message or an associated field error. |
 | [`badge`](https://4af.selfsimilar.dev/docs/badge.md) | A compact status, category, or count. |
 | [`skeleton`](https://4af.selfsimilar.dev/docs/skeleton.md) | A placeholder shaped like loading content. |

@@ -50,11 +50,15 @@ pnpm registry:build      # Generate install files in public/r (served at /r/*.js
 pnpm build               # Export the complete site to out/ (stop pnpm dev first)
 pnpm start               # Preview out/ with Cloudflare Workers at localhost:8787
 pnpm test:export         # Verify exported docs, registry, search, and skill ZIP
+pnpm benchmark:site      # Measure the running production preview in Chrome
 ```
 
 > [!WARNING]
 > Never run `pnpm build` while `pnpm dev` is running. Both use `.next`, and doing so can
 > make the development page appear without styles.
+
+See the [benchmark workflow](benchmarks/README.md) for browser setup, repeatable measurements,
+and comparison reports.
 
 ## Cloudflare Workers
 

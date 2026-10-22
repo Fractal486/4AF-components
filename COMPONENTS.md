@@ -28,6 +28,7 @@ for provider overrides and alternative loaders.
 
 For custom application frames, see [Sidebar Layout's header slots](content/docs/sidebar-layout.mdx#api).
 For multiline input inside an existing editor surface, see [Textarea's plain variant](content/docs/textarea.mdx#api).
+For a labeled progress bar with a value readout, see [Progress composition](content/docs/progress.mdx#api).
 
 When API or behavior changes, update its owning component page and canonical usage reference.
 Keep this file as an index and the agent chooser focused on selecting components; link to the

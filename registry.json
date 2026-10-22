@@ -79,6 +79,7 @@
           "duration-base": "200ms",
           "duration-slow": "300ms",
           "duration-slower": "450ms",
+          "duration-chevron": "400ms",
           "shadow-border": "var(--elevation-border)",
           "shadow-raised": "var(--elevation-raised)",
           "shadow-overlay": "var(--elevation-overlay)",
@@ -198,7 +199,8 @@
             "--duration-fast": "1ms",
             "--duration-base": "1ms",
             "--duration-slow": "1ms",
-            "--duration-slower": "1ms"
+            "--duration-slower": "1ms",
+            "--duration-chevron": "1ms"
           }
         },
         ".shimmer-text": {
@@ -778,7 +780,7 @@
     {
       "name": "progress",
       "type": "registry:ui",
-      "description": "A determinate progress bar. Base UI Progress behaviour; the fill slides on transform (translateX), never width, so it stays off the layout path.",
+      "description": "A determinate progress bar with composable label and formatted value parts. Base UI Progress behaviour; the fill animates with transform instead of width.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/progress (Markdown: https://4af.selfsimilar.dev/docs/progress.md)",
       "dependencies": [
         "@base-ui/react"

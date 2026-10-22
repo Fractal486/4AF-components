@@ -1,25 +1,53 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { gzipSync } from "node:zlib";
 import { chromium } from "playwright-core";
+import { publicInstallCommand } from "../lib/site.ts";
 
 // Build first, then run against `pnpm start`. Use the same browser/viewport for comparisons.
 // CHROME_PATH selects an installed Chrome/Chromium; no browser download is required.
 const baseURL = process.env.PERF_URL ?? "http://127.0.0.1:8787";
 const runs = Number(process.env.PERF_RUNS ?? 3);
+assert.ok(Number.isSafeInteger(runs) && runs > 0, "PERF_RUNS must be a positive integer.");
+const measurement = {
+  schemaVersion: 2,
+  viewport: "1440x1000",
+  observationMs: 8000,
+  colorScheme: "light",
+  reducedMotion: "no-preference",
+  locale: "en-US",
+};
+const before = process.env.PERF_COMPARE
+  ? JSON.parse(await readFile(process.env.PERF_COMPARE, "utf8"))
+  : undefined;
+if (before) {
+  assert.equal(before.schemaVersion, measurement.schemaVersion,
+    "Incompatible benchmark report. Record a new baseline with the current script; legacy file-browser reports cannot be compared.");
+  for (const [key, value] of Object.entries({ ...measurement, runs })) {
+    assert.equal(before[key], value, `Baseline ${key} differs; use the same measurement settings.`);
+  }
+}
+const registry = JSON.parse(await readFile(new URL("../registry.json", import.meta.url), "utf8"));
+const installCommands = new Set(registry.items
+  .filter((item) => item.type === "registry:ui")
+  .map((item) => publicInstallCommand(item.name)));
 const browser = await chromium.launch({
   executablePath: process.env.CHROME_PATH ?? "/usr/bin/google-chrome",
   headless: true,
 });
-const report = { browser: browser.version(), viewport: "1440x1000", runs, pages: {} };
+const report = { ...measurement, browser: browser.version(), runs, pages: {} };
 try {
-  for (const [route, file] of [["/", "index.html"], ["/docs/button", "docs/button.html"]]) {
-    const html = await readFile(new URL(`../out/${file}`, import.meta.url));
+  if (before) assert.equal(before.browser, report.browser, "Baseline browser differs; use the same browser version.");
+  for (const route of ["/", "/docs/button"]) {
+    let html;
     const samples = [];
-    let files = [];
     for (let run = 0; run < runs; run++) {
-      const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+      const context = await browser.newContext({
+        viewport: { width: 1440, height: 1000 },
+        colorScheme: measurement.colorScheme,
+        reducedMotion: measurement.reducedMotion,
+        locale: measurement.locale,
+      });
       const page = await context.newPage();
       const errors = [];
       page.on("pageerror", (error) => errors.push(error.message));
@@ -39,10 +67,14 @@ try {
       });
       const cdp = await context.newCDPSession(page);
       await cdp.send("Performance.enable");
-      await page.goto(new URL(route, baseURL).href);
-      await page.locator(route === "/" ? "#installed-file pre" : 'section[aria-label="Button settings"]').waitFor();
+      const response = await page.goto(new URL(route, baseURL).href);
+      assert.equal(response?.status(), 200, `${route}: expected a successful page response`);
+      const servedHtml = await response.body();
+      if (html) assert.deepEqual(servedHtml, html, `${route}: served HTML changed during sampling`);
+      html = servedHtml;
+      await page.locator(route === "/" ? '#install [data-slot="install-command-url"]' : 'section[aria-label="Button settings"]').waitFor();
       // Fixed observation window includes the existing idle demo preload queue.
-      await page.waitForTimeout(8000);
+      await page.waitForTimeout(measurement.observationMs);
       const metrics = Object.fromEntries((await cdp.send("Performance.getMetrics")).metrics.map(({ name, value }) => [name, value]));
       const observed = await page.evaluate(() => ({
         ...window.__perf,
@@ -50,38 +82,34 @@ try {
         scriptBytes: performance.getEntriesByType("resource").filter((r) => r.initiatorType === "script").reduce((sum, r) => sum + r.decodedBodySize, 0),
       }));
       samples.push({ ...observed, taskMs: metrics.TaskDuration * 1000, layoutMs: metrics.LayoutDuration * 1000, scriptMs: metrics.ScriptDuration * 1000 });
-      // Exercise every installed source tab. Checks survive changes to its representation.
+      // Exercise the current homepage after sampling so interactions do not affect metrics.
       if (route === "/") {
-        const fingerprints = [];
-        for (const button of await page.getByRole("navigation", { name: "Installed files" }).getByRole("button").all()) {
-          await button.click();
-          assert.equal(await button.getAttribute("aria-pressed"), "true");
-          const source = await page.locator("#installed-file pre").evaluate((pre) => ({
-            text: pre.textContent,
-            tokens: Array.from(pre.querySelectorAll("span"), (span) => [span.textContent, span.style.cssText]),
-            style: pre.style.cssText,
-            classes: [...pre.classList].sort(),
-            tabIndex: pre.tabIndex,
-          }));
-          assert.ok(source.text.length > 0);
-          fingerprints.push({
-            name: await page.locator("#installed-file").getAttribute("aria-label"),
-            sha256: createHash("sha256").update(JSON.stringify(source)).digest("hex"),
-          });
+        const command = page.locator('#install pre').filter({ has: page.locator('[data-slot="install-command-url"]') });
+        await command.hover();
+        const held = await command.textContent();
+        assert.ok(installCommands.has(held), `Unexpected install command: ${held}`);
+        // Longer than the 2.4s rotation interval: hovering must hold one copyable command.
+        await page.waitForTimeout(2800);
+        assert.equal(await command.textContent(), held, "Install command changed while hovered");
+        if (installCommands.size > 1) {
+          await page.mouse.move(0, 0);
+          await page.waitForFunction((previous) => {
+            const url = document.querySelector('#install [data-slot="install-command-url"]');
+            return url?.closest('pre')?.textContent !== previous;
+          }, held, { timeout: 6000 });
+          const next = await command.textContent();
+          assert.ok(installCommands.has(next), `Unexpected rotated install command: ${next}`);
         }
-        if (run > 0) assert.deepEqual(fingerprints, files);
-        files = fingerprints;
       }
       assert.deepEqual(errors, [], `${route}: browser errors`);
       await context.close();
     }
     const median = Object.fromEntries(Object.keys(samples[0]).map((key) => [key, samples.map((s) => s[key]).sort((a, b) => a - b)[Math.floor(runs / 2)]]));
-    report.pages[route] = { htmlBytes: html.length, htmlGzipBytes: gzipSync(html).length, median, samples, files };
+    report.pages[route] = { htmlBytes: html.length, htmlGzipBytes: gzipSync(html).length, median, samples };
   }
-  if (process.env.PERF_COMPARE) {
-    const before = JSON.parse(await readFile(process.env.PERF_COMPARE, "utf8"));
+  if (before) {
     for (const route of Object.keys(report.pages)) {
-      assert.deepEqual(report.pages[route].files, before.pages[route].files, `${route}: highlighted source changed`);
+      assert.ok(Number.isFinite(before.pages?.[route]?.median?.cls), `${route}: baseline layout shift is missing or invalid`);
       assert.ok(report.pages[route].median.cls <= before.pages[route].median.cls + 0.001, `${route}: layout shift regressed`);
     }
   }

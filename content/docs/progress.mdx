@@ -13,10 +13,17 @@ description: Determinate progress feedback with accessible value semantics.
 A determinate Base UI progress bar whose fill moves with transform rather than animated width.
 
 `value` is clamped to `min`/`max` (defaults: 0/100). Use `className` for the root,
-`trackClassName` for the rail, and `indicatorClassName` for the fill. Give the bar an accessible
-name with `aria-label` or `aria-labelledby` pointing to an external label.
+`trackClassName` for the rail, and `indicatorClassName` for the fill.
 
-`Progress` renders its own track and indicator and does not render caller-supplied `children`.
-The exported `ProgressLabel` and `ProgressValue` are raw Base UI parts that need a Base UI
-Progress root context; they cannot be nested into this standalone wrapper to add a label or
-value. Use an external label/value when using `Progress`.
+`children` render inside the progress root, before the built-in track and indicator. Nest
+`ProgressLabel` and `ProgressValue` directly or inside a layout wrapper; both share the root's
+Base UI context. The label automatically names the progress bar. Without a nested label,
+provide `aria-label` or `aria-labelledby` pointing to an external label.
+
+`ProgressValue` displays the root's formatted value and updates with `value`, `locale`, and
+`format`. It also accepts a render function `(formattedValue, value) => ReactNode`; `value`
+has already been clamped to the root's range. Keep spacing and typography in caller classes,
+for example `className="space-y-2"` on the root and a flex row around the label and value.
+
+The self-closing `<Progress value={60} aria-label="Upload progress" />` form still renders just
+the bar. Supplying children adds content without replacing or duplicating its track.
