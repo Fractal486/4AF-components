@@ -24,6 +24,9 @@ Group, Action Button, Action Toggle, Copy Button, and Delete Button accept `shap
 The gap between icon and label is 8px at `xs`/`sm`, 10px at `md`, and 12px at `lg`. Leading and
 trailing icons get a small optical edge adjustment; icon-only buttons have no gap.
 
+The `link` variant uses a `border-strong` underline that transitions to the text color on
+hover, matching documentation links. Its underline offset is 4px.
+
 `loading` blocks interaction without changing the button's size or dropping keyboard focus.
 The button stays focusable with `aria-disabled="true"` and `aria-busy="true"`; repeated clicks,
 Enter, and Space do not activate it. An explicit `disabled` prop still disables the native

@@ -48,7 +48,7 @@ export const buttonVariants = cva(
     //
     // Hover keeps the fast expo curve, and should: a hover is a response to the cursor
     // and wants to feel immediate. Only the press wants mass.
-    "transition-[background-color,box-shadow,color,opacity]",
+    "transition-[background-color,box-shadow,color,opacity,text-decoration-color]",
     "duration-(--duration-fast) ease-out",
 
     // Hold every button on its own compositing layer, permanently.
@@ -95,7 +95,7 @@ export const buttonVariants = cva(
         plain: "bg-transparent text-foreground hover:bg-transparent",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive-hover",
-        link: "text-foreground underline decoration-border underline-offset-4 hover:decoration-current",
+        link: "text-foreground underline decoration-border-strong underline-offset-4 ease-(--default-transition-timing-function) hover:decoration-current",
       },
       size: {
         xs: `h-6 ${buttonContentGap({ size: "xs" })} rounded-[6px] px-2.5 text-xs [&_svg]:size-3.5 [&_[data-slot=loader]]:size-3.5`,

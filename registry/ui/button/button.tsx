@@ -184,7 +184,7 @@ export function Button({
         asChild &&
           pressScale &&
           !pressesContent &&
-          "transition-[background-color,box-shadow,color,opacity,scale] active:scale-[0.95] motion-reduce:active:scale-100",
+          "transition-[background-color,box-shadow,color,opacity,text-decoration-color,scale] active:scale-[0.95] motion-reduce:active:scale-100",
         // Held state for the CSS-press (`asChild`) path. `scale` is a single CSS
         // property, so this and `active:scale-[0.95]` resolve to one value (0.95) rather
         // than multiplying — no compounding when a held button is pressed to dismiss.
