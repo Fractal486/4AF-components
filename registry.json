@@ -517,6 +517,11 @@
           "path": "registry/ui/toggle/toggle.tsx",
           "type": "registry:ui",
           "target": "@ui/toggle.tsx"
+        },
+        {
+          "path": "registry/ui/toggle/toggle.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/toggle.variants.ts"
         }
       ]
     },

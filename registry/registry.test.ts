@@ -1,7 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
-import { dirname, relative, resolve } from "node:path";
+import { relative, resolve } from "node:path";
 import ts from "typescript";
 import { SITE_URL } from "../lib/site";
+import tsconfig from "../tsconfig.json";
 
 interface RegistryItem {
   name: string;
@@ -16,22 +17,22 @@ const registry = JSON.parse(readFileSync(resolve("registry.json"), "utf8")) as {
   items: RegistryItem[];
 };
 const items = new Map(registry.items.map((item) => [item.name, item]));
+// Next, Vitest, and these checks share tsconfig's paths. TypeScript cannot repeat a
+// wildcard in a target (`<name>/<name>.variants.ts`), so those aliases stay explicit there.
+const { options: compilerOptions } = ts.convertCompilerOptionsFromJson(
+  tsconfig.compilerOptions,
+  process.cwd(),
+);
+const moduleResolutionCache = ts.createModuleResolutionCache(process.cwd(), (path) => path, compilerOptions);
 
 function resolveSource(specifier: string, importer: string) {
-  const raw =
-    specifier === "@/registry/ui/ui/input.variants"
-      ? "registry/ui/input/input.variants"
-      : specifier === "@/registry/ui/ui/button.variants"
-        ? "registry/ui/button/button.variants"
-      : specifier.startsWith("@/")
-        ? specifier.slice(2)
-        : specifier.startsWith(".")
-          ? relative(process.cwd(), resolve(dirname(importer), specifier)).replaceAll("\\", "/")
-          : null;
-  if (!raw) return null;
-  return [raw, `${raw}.ts`, `${raw}.tsx`, `${raw}/index.ts`, `${raw}/index.tsx`].find((path) =>
-    existsSync(resolve(path)),
+  if (!specifier.startsWith("@/") && !specifier.startsWith(".")) return null;
+  const { resolvedModule } = ts.resolveModuleName(
+    specifier, resolve(importer), compilerOptions, ts.sys, moduleResolutionCache,
   );
+  return resolvedModule
+    ? relative(process.cwd(), resolvedModule.resolvedFileName).replaceAll("\\", "/")
+    : null;
 }
 
 const isClientModule = (source: ts.SourceFile) => {
@@ -142,7 +143,10 @@ describe("registry", () => {
           true,
         );
         for (const statement of source.statements) {
-          if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) {
+          if (
+            !(ts.isImportDeclaration(statement) || ts.isExportDeclaration(statement)) ||
+            !statement.moduleSpecifier || !ts.isStringLiteral(statement.moduleSpecifier)
+          ) {
             continue;
           }
           const specifier = statement.moduleSpecifier.text;
@@ -153,7 +157,9 @@ describe("registry", () => {
             }
             continue;
           }
-          if (!specifier.startsWith(".") && !specifier.startsWith("@/")) {
+          if (specifier.startsWith(".") || specifier.startsWith("@/")) {
+            missing.push(`${item.name}: ${file.path} cannot resolve ${specifier}`);
+          } else {
             const dependency = packageName(specifier);
             if (
               dependency !== "react" &&

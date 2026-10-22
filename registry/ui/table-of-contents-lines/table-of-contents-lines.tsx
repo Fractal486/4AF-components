@@ -103,7 +103,7 @@ export function TableOfContentsLines({
                   "group grid h-7 grid-cols-[1.5rem_minmax(0,1fr)] grid-rows-3 items-center gap-x-2.5 text-sm leading-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                   "text-muted-foreground transition-[color,translate] duration-(--duration-slow) ease-out",
                   "hover:text-foreground focus-visible:text-foreground",
-                  active && "text-foreground",
+                  "data-[active=true]:text-foreground",
                 )}
               >
                 <span
@@ -125,7 +125,7 @@ export function TableOfContentsLines({
                       "transition-[clip-path,background-color] duration-(--duration-slow) ease-out",
                       "group-hover:[clip-path:inset(0_0_0_0)] group-hover:bg-foreground",
                       "group-focus-visible:[clip-path:inset(0_0_0_0)] group-focus-visible:bg-foreground",
-                      active && "[clip-path:inset(0_0_0_0)] bg-foreground",
+                      "group-data-[active=true]:[clip-path:inset(0_0_0_0)] group-data-[active=true]:bg-foreground",
                     )}
                   />
                   {hasFollowingHeading && (
@@ -182,7 +182,7 @@ export function TableOfContentsLines({
                       : cn(
                           "transition-[translate] duration-(--duration-slow) ease-out",
                           "group-hover:translate-x-1 group-focus-visible:translate-x-1",
-                          active && "translate-x-1",
+                          "group-data-[active=true]:translate-x-1",
                         ),
                   )}
                 >

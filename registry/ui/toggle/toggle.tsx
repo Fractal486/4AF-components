@@ -1,31 +1,12 @@
 "use client";
 
 import { Toggle as BaseToggle } from "@base-ui/react/toggle";
-import { cva } from "class-variance-authority";
 import { motion, useReducedMotion, type HTMLMotionProps } from "motion/react";
 import type { ComponentProps } from "react";
 import { cn } from "@/registry/lib/cn";
 import { PRESS_SCALE, spring } from "@/registry/lib/motion";
 import { buttonVariants, type ButtonVariants } from "@/registry/ui/ui/button.variants";
-
-/**
- * Pressed state leaves the background available for hover feedback and preserves solid
- * variant fills. State is shown through icon fill, labels, and `aria-pressed`; quiet
- * variants also strengthen the text color.
- */
-const pressedVariants = cva("", {
-  variants: {
-    variant: {
-      ghost: "data-[pressed]:text-foreground",
-      plain: "data-[pressed]:text-foreground",
-      outline: "",
-      primary: "",
-      destructive: "",
-      link: "",
-    },
-  },
-  defaultVariants: { variant: "ghost" },
-});
+import { pressedVariants } from "./toggle.variants";
 
 /**
  * A Base UI toggle with controlled `pressed` / `onPressedChange` or uncontrolled

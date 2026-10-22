@@ -61,11 +61,12 @@ describe("TableOfContentsLines", () => {
     expect(firstRules?.children).toHaveLength(3);
     expect(firstRules?.firstElementChild).toHaveClass(
       "group-hover:[clip-path:inset(0_0_0_0)]",
-      "[clip-path:inset(0_0_0_0)]",
+      "group-data-[active=true]:[clip-path:inset(0_0_0_0)]",
     );
     expect(
       screen.getByRole("link", { name: "First section" }).querySelector(":scope > span:last-child"),
-    ).toHaveClass("translate-x-1");
+    ).toHaveClass("group-data-[active=true]:translate-x-1");
+    expect(screen.getByRole("link", { name: "First section" })).toHaveAttribute("data-active", "true");
     expect(firstRules?.children[1]).toHaveStyle({ transform: "translateX(-0.75rem)" });
     const lastRules = screen
       .getByRole("link", { name: "Last section" })
@@ -73,6 +74,8 @@ describe("TableOfContentsLines", () => {
     expect(lastRules?.children).toHaveLength(1);
 
     fireEvent.click(screen.getByRole("link", { name: "Last section" }));
+    expect(screen.getByRole("link", { name: "First section" })).toHaveAttribute("data-active", "false");
+    expect(screen.getByRole("link", { name: "Last section" })).toHaveAttribute("data-active", "true");
     expect(scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth", block: "start" });
     expect(screen.getByRole("link", { name: "Last section" })).toHaveAttribute(
       "aria-current",

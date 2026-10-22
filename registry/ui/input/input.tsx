@@ -100,13 +100,14 @@ export function Input({
         <span
           aria-hidden="true"
           data-slot="input-icon"
+          data-disabled={disabled ? "" : undefined}
           // `start-3` on the boxed variants matches the field's own `px-3`; `underline`
           // drops its padding, so the glyph goes flush with the text it leads.
           className={cn(
             "pointer-events-none absolute inset-y-0 start-3 flex items-center text-muted-foreground",
             "transition-[color,opacity] duration-(--duration-fast) ease-out [&_svg]:size-4",
+            "data-[disabled]:opacity-50",
             resolvedVariant === "underline" && "start-0",
-            disabled && "opacity-50",
           )}
         >
           {startIcon}

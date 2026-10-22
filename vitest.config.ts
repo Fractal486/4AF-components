@@ -1,25 +1,11 @@
-import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
-
-const root = fileURLToPath(new URL(".", import.meta.url));
 
 export default defineConfig({
   oxc: {
     jsx: { runtime: "automatic" },
   },
   resolve: {
-    alias: {
-      "@/registry/ui/ui/input.variants": fileURLToPath(
-        new URL("./registry/ui/input/input.variants.ts", import.meta.url),
-      ),
-      "@/registry/ui/ui/button.variants": fileURLToPath(
-        new URL("./registry/ui/button/button.variants.ts", import.meta.url),
-      ),
-      "@/registry/ui/ui/table.variants": fileURLToPath(
-        new URL("./registry/ui/table/table.variants.ts", import.meta.url),
-      ),
-      "@": root,
-    },
+    tsconfigPaths: true,
   },
   test: {
     environment: "jsdom",

@@ -142,14 +142,15 @@ export function Checkbox({
 
   return (
     <label
+      data-disabled={disabled ? "" : undefined}
       className={cn(
-        "inline-flex w-fit items-center gap-2 select-none",
-        disabled ? "cursor-not-allowed" : "cursor-pointer",
+        "group/checkbox-label inline-flex w-fit cursor-pointer items-center gap-2 select-none",
+        "data-[disabled]:cursor-not-allowed",
         labelClassName,
       )}
     >
       {box}
-      <span className={cn("text-sm", disabled ? "text-muted-foreground" : "text-foreground")}>
+      <span className="text-sm text-foreground group-data-[disabled]/checkbox-label:text-muted-foreground">
         {label}
       </span>
     </label>
