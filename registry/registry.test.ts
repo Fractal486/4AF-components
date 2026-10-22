@@ -1,4 +1,7 @@
-import { existsSync, readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { createRequire } from "node:module";
+import { tmpdir } from "node:os";
 import { relative, resolve } from "node:path";
 import ts from "typescript";
 import { SITE_URL } from "../lib/site";
@@ -79,6 +82,30 @@ const usesClientOnlyReact = (source: ts.SourceFile) =>
   );
 
 describe("registry", () => {
+  it("builds registry payloads with LF-only source content", () => {
+    // Build fresh payloads so this also works before public/r exists, without reading
+    // stale output or overwriting a dev server's registry during the test.
+    const output = mkdtempSync(resolve(tmpdir(), "4af-registry-lf-"));
+    try {
+      const cli = createRequire(import.meta.url).resolve("shadcn");
+      execFileSync(process.execPath, [cli, "build", "--output", output], {
+        stdio: "pipe",
+        timeout: 30_000,
+      });
+      for (const item of registry.items) {
+        const built = JSON.parse(readFileSync(resolve(output, `${item.name}.json`), "utf8")) as {
+          files?: { path: string; content: string }[];
+        };
+        for (const file of built.files ?? []) {
+          expect(file.content, `${item.name}: ${file.path}`).toBeTypeOf("string");
+          expect(file.content, `${item.name}: ${file.path}`).not.toContain("\r");
+        }
+      }
+    } finally {
+      rmSync(output, { recursive: true, force: true });
+    }
+  }, 35_000);
+
   it("links every component to its docs page, which shadcn prints after installing it", () => {
     for (const item of registry.items.filter((entry) => entry.type === "registry:ui")) {
       expect(item.docs, item.name).toBe(

@@ -44,7 +44,10 @@ assert.equal(exportedRegistry.items.length, registry.items.length);
 for (const item of registry.items) {
   const installed = JSON.parse(await read(`r/${item.name}.json`));
   assert.equal(installed.name, item.name);
-  for (const file of installed.files ?? []) assert.ok(file.content, `${item.name}: missing ${file.path}`);
+  for (const file of installed.files ?? []) {
+    assert.ok(file.content, `${item.name}: missing ${file.path}`);
+    assert.doesNotMatch(file.content, /\r/, `${item.name}: ${file.path} contains carriage returns`);
+  }
 }
 
 // Exercise the same search client as the UI, directly against the exported index.
