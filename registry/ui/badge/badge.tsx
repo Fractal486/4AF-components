@@ -89,6 +89,13 @@ export interface BadgeProps
    * nothing. @default true
    */
   animateLayout?: boolean;
+  /**
+   * Let a long label wrap onto as many lines as it needs, the badge capped at its
+   * container's width and growing in height, instead of being clipped at the edge. For
+   * sentences rather than labels. A wrapping label does not roll when it changes: the
+   * roll keeps its text on one line, which is exactly what wrapping cannot have.
+   */
+  wrap?: boolean;
 }
 
 export function Badge({
@@ -104,6 +111,7 @@ export function Badge({
   dot = false,
   contentKey,
   animateLayout = true,
+  wrap = false,
   color,
   className,
   style,
@@ -172,6 +180,9 @@ export function Badge({
         badgeVariants({ variant, status, size, shape }),
         // After the variants, so it replaces the status fill rather than competing with it.
         customFill && "bg-(--badge-fill)",
+        // After the size variants, so the fixed height and single line give way.
+        // `items-start` so a wrapped label's glyph stays on its first line.
+        wrap && "h-auto max-w-full items-start py-1 text-left whitespace-normal",
         "transition-colors duration-(--duration-base)",
         className,
       )}
@@ -184,21 +195,36 @@ export function Badge({
         // its colour crosses over (it rides the badge's `transition-colors`).
         <span
           aria-hidden
-          className="relative z-10 size-1.5 shrink-0 rounded-full bg-current transition-[background-color] duration-(--duration-base)"
+          className={cn(
+            "relative z-10 size-1.5 shrink-0 rounded-full bg-current transition-[background-color] duration-(--duration-base)",
+            // Centred on the first line of a wrapped label: half a line, less half the dot.
+            wrap && "mt-[calc((1lh_-_0.375rem)/2)]",
+          )}
         />
       ) : (
         showIcon &&
         icon !== null &&
         iconItems[resolvedStatus] !== null && (
-          <span aria-hidden className="relative z-10 inline-flex items-center justify-center overflow-hidden">
+          <span
+            aria-hidden
+            // One line tall when the label wraps, so the glyph centres on the first line
+            // rather than on the whole block.
+            className={cn("relative z-10 inline-flex items-center justify-center overflow-hidden", wrap && "h-[1lh]")}
+          >
             <Morph activeKey={resolvedStatus} items={iconItems} />
           </span>
         )
       )}
 
       {children != null && (
-        <span className="relative z-10 inline-flex overflow-hidden">
-          <Morph activeKey={labelKey} items={{ [labelKey]: children }} />
+        <span className={cn("relative z-10 inline-flex overflow-hidden", wrap && "min-w-0")}>
+          {wrap ? (
+            // Straight in the label slot, no Morph between: Morph holds its text on one
+            // line, so a sentence inside it could only ever be clipped.
+            <span data-slot="badge-text" className="block min-w-0 break-words">{children}</span>
+          ) : (
+            <Morph activeKey={labelKey} items={{ [labelKey]: children }} />
+          )}
         </span>
       )}
     </motion.span>
