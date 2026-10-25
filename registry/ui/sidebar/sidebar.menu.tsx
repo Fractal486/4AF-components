@@ -217,7 +217,7 @@ export function SidebarMenuAction({
       className={cn(
         // Keep the Button's shared behavior, but preserve the compact action's
         // existing 20px visual box and row geometry.
-        "absolute top-1.5 right-1.5 z-[1] size-5 cursor-pointer rounded-[6px] p-0",
+        "absolute top-1.5 right-1.5 z-[1] size-5 cursor-default rounded-[6px] p-0",
         nested && "top-1 right-[7px]",
         "text-muted-foreground outline-none hover:bg-transparent hover:text-foreground",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0",

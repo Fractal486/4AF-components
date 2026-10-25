@@ -85,7 +85,7 @@ export type SidebarMenuSubButtonVariants = VariantProps<typeof sidebarMenuSubBut
 
 /** Fixed icon-only controls used by the split sidebar rail. */
 export const sidebarRailButtonVariants = cva([
-  "group/rail-button flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-[8px]",
+  "group/rail-button flex size-8 shrink-0 cursor-default items-center justify-center rounded-[8px]",
   "text-muted-foreground outline-none",
   "focus-visible:ring-2 focus-visible:ring-ring",
   "hover:bg-muted hover:text-foreground",

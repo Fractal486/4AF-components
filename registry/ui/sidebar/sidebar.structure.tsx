@@ -230,7 +230,7 @@ export function SidebarGroupAction({
       className={cn(
         // The 14px inset centers this 16px glyph on the same vertical line as a menu
         // row's trailing icon inside its 8px right padding.
-        "absolute top-3.5 right-3.5 flex aspect-square w-5 cursor-pointer items-center justify-center rounded-[6px] p-0",
+        "absolute top-3.5 right-3.5 flex aspect-square w-5 cursor-default items-center justify-center rounded-[6px] p-0",
         "text-muted-foreground outline-none hover:bg-transparent hover:text-white",
         "focus-visible:ring-2 focus-visible:ring-ring",
         // A 20px control is under the comfortable touch target, so the hit area is
