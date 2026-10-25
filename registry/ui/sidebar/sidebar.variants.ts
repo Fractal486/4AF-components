@@ -11,7 +11,7 @@ import { cva, type VariantProps } from "class-variance-authority";
  */
 export const sidebarMenuButtonVariants = cva(
   [
-    "peer/menu-button flex w-full cursor-pointer items-center gap-2 overflow-hidden p-2 text-left text-sm",
+    "peer/menu-button flex w-full cursor-default items-center gap-2 overflow-hidden p-2 text-left text-sm",
     "text-muted-foreground outline-none",
     "focus-visible:ring-2 focus-visible:ring-ring",
     "transition-[width,height,padding] duration-(--duration-slow) ease-out",
@@ -55,7 +55,7 @@ export const sidebarMenuButtonVariants = cva(
 /** The nested row under a parent item. Hidden entirely once the rail collapses. */
 export const sidebarMenuSubButtonVariants = cva(
   [
-    "flex h-7 w-full min-w-0 -translate-x-px cursor-pointer items-center gap-2 overflow-hidden rounded-[6px] px-2 text-left",
+    "flex h-7 w-full min-w-0 -translate-x-px cursor-default items-center gap-2 overflow-hidden rounded-[6px] px-2 text-left",
     "text-muted-foreground outline-none",
     "focus-visible:ring-2 focus-visible:ring-ring",
     "hover:bg-muted hover:text-foreground",

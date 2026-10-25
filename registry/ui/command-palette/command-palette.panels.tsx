@@ -6,6 +6,7 @@ import { Autocomplete } from "@base-ui/react/autocomplete";
 import { ChevronRight, CornerDownLeft } from "lucide-react";
 import {
   Fragment,
+  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -23,7 +24,7 @@ import {
   SCROLLBAR,
   snapFirstRowToTop,
 } from "./command-palette.chrome";
-import { useFrozen } from "./command-palette.context";
+import { PanelActionsContext, useFrozen } from "./command-palette.context";
 import { CREATE_ID, fuzzyMatch } from "./command-palette.search";
 import type {
   CommandItem,
@@ -90,22 +91,32 @@ export function CommandPanelList({
   const listRef = useRef<HTMLDivElement>(null);
   const ref = useMergedRefs<HTMLDivElement>(listRef, snapFirstRowToTop);
 
-  // The panel root runs `mode="none"` with no `items` collection, so Base UI's
-  // `autoHighlight` has nothing to pick a first row from — a panel opened with the header
-  // field focused sat with no row ready, and the first arrow press was spent lighting one up
-  // rather than moving. Prime the last enabled selection (otherwise the first enabled row)
-  // from the DOM, using the same
-  // channel a press uses. No dependency array: rows come and go as a panel's query filters
-  // them, and the guard means this only acts when the panel has no highlight at all.
+  // A panel opens on its most recent selection, or its first enabled row when nothing is
+  // selected. The panel root runs `mode="none"`, so Base UI's `autoHighlight` can only ever
+  // reach for the first row — and does, before this runs, so the selected row has to take the
+  // highlight over rather than wait for an empty one. That happens once, the first time the
+  // list has rows: after it, the highlight is the user's. A later render with no highlight at
+  // all — a query that filtered it away — gets the first enabled row, so an arrow press is
+  // never spent lighting one up. Both go through the channel a press uses. No dependency
+  // array: rows come and go as a panel's query filters them.
+  const openedRef = useRef(false);
   useEffect(() => {
     const list = listRef.current;
-    if (!list || list.querySelector("[data-highlighted]")) return;
+    if (!list) return;
 
     const rows = Array.from(list.querySelectorAll<HTMLElement>('[role="option"]'))
       .filter((row) => row.getAttribute("aria-disabled") !== "true" &&
         !row.hasAttribute("data-disabled") && !row.closest("[hidden]"));
-    const opening = rows.filter((row) => row.getAttribute("aria-selected") === "true").at(-1) ?? rows[0];
-    if (opening) dispatchSelectionMove(opening);
+    if (rows.length === 0) return;
+    const highlighted = list.querySelector<HTMLElement>("[data-highlighted]");
+
+    if (!openedRef.current) {
+      openedRef.current = true;
+      const opening = rows.filter((row) => row.getAttribute("aria-selected") === "true").at(-1) ?? rows[0];
+      if (opening && opening !== highlighted) dispatchSelectionMove(opening);
+      return;
+    }
+    if (!highlighted) dispatchSelectionMove(rows[0]!);
   });
 
   return (
@@ -215,6 +226,11 @@ function usePointerSelection() {
  * checkbox is intentionally presentational — the row owns selection, while the containing
  * `CommandPanelList` owns the shared arrow-key navigation and `selected` is the only
  * persistent state signal.
+ *
+ * A click and Enter are one activation: both run `onSelect`, then `onActivate`. A
+ * right-click selects the row and opens the panel footer's actions menu for it — the one
+ * pointer route to a row's actions that does not also run the row. With no actions menu
+ * in the panel, the browser's own context menu is left alone.
  */
 export function CommandPanelRow({
   className,
@@ -228,12 +244,14 @@ export function CommandPanelRow({
   onActivate,
   checkbox = false,
   onKeyDown,
+  onContextMenu,
   ...props
 }: CommandPanelRowProps) {
   const interactive = onSelect != null || onActivate != null;
   const itemValue = value ?? props.id ?? String(children ?? "");
   const frozen = useFrozen(itemValue);
   const pointerSelection = usePointerSelection();
+  const panelActions = useContext(PanelActionsContext);
 
   return (
     <Autocomplete.Item
@@ -243,10 +261,18 @@ export function CommandPanelRow({
       {...pointerSelection}
       value={itemValue}
       aria-selected={interactive ? selected : undefined}
-      onClick={interactive ? (event) => {
+      onClick={interactive ? () => {
         onSelect?.();
-        onActivate?.(event);
+        onActivate?.();
       } : undefined}
+      onContextMenu={(event: ReactMouseEvent<HTMLDivElement>) => {
+        onContextMenu?.(event);
+        if (event.defaultPrevented || !interactive) return;
+        // The press has already selected the row. Selecting again costs nothing and covers
+        // a context-menu key, which arrives without a press.
+        dispatchSelectionMove(event.currentTarget);
+        if (panelActions?.open()) event.preventDefault();
+      }}
       onKeyDown={onKeyDown}
       // Paints the highlight this row would have if Base UI hadn't dropped it when the
       // actions menu took focus. Styled from the same pair of rules, so the two states are

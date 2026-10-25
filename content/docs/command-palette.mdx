@@ -121,8 +121,10 @@ found only in async search retain the results they opened with.
 ## Selection and hover
 
 The root list opens with its first enabled row active, before anything is typed, and activates
-the first match as the query changes. `CommandPanelList` initializes the last enabled row marked `selected`, or the first
-enabled row when nothing is selected; filtering that preserves the active row can keep that highlight. Enter runs the
+the first match as the query changes. `CommandPanelList` opens on its last row marked
+`selected`, or its first enabled row when none is, and activates the first enabled row whenever
+a query leaves it with no active row; filtering that preserves the active row keeps that
+highlight. Enter runs the
 active row without an arrow press first.
 
 Selection and hover are separate states. The selected row carries `data-highlighted` and moves
@@ -130,6 +132,11 @@ with the arrow keys and with presses. Hovering gives a row a weaker fill only, s
 pointer across the list never changes what Enter runs. A press selects a row and runs it, so in a
 panel that stays open, such as a checkbox list, the selection follows the row you pressed.
 Moving the pointer out of the list leaves the selection where it was.
+
+On a `CommandPanelRow`, a click and Enter are the same activation: each runs `onSelect`, then
+`onActivate`. A right-click selects the row and opens the panel footer's actions menu for it,
+without activating the row, so the pointer can reach any row's actions. A panel without an
+`actions` menu leaves the browser's context menu in place.
 Command rows and custom panel rows use the standard arrow cursor.
 
 While a row's actions menu is open, the row carries `data-frozen`, styled like the selection,
@@ -139,8 +146,8 @@ When the selection reaches the first row, the list scrolls to its top, so the se
 that row is visible. This applies to the root list and to `CommandPanelList`.
 
 The root list primes its first row from the `items` collection through `autoHighlight`.
-Custom panels have no such collection, so `CommandPanelList` activates the last enabled
-selected row (otherwise the first enabled row) after mount. Preserve that initialization when changing panel composition; root highlighting does
+Custom panels have no such collection, so `CommandPanelList` moves the highlight to its
+opening row the first time it has rows, taking over from the first row Base UI picks. Preserve that initialization when changing panel composition; root highlighting does
 not initialize custom panels.
 
 The no-results state is the height of one section label plus one row with a description.
@@ -154,7 +161,7 @@ the right — and fills the right corner with two optional slots, in this order:
 | Slot | Prop | Key |
 | --- | --- | --- |
 | The primary action | `enter` | Fixed Return hint; native button/form activation |
-| The contextual actions menu | `actions` | Cmd/Ctrl + J, fixed |
+| The contextual actions menu | `actions` | Cmd/Ctrl + J, fixed; or right-click a row |
 
 ```tsx
 <CommandPanelFooter
@@ -169,6 +176,8 @@ Enter binding: use `type="submit"` inside a form for native form submission, or 
 in the relevant input when needed. Clicking a submit button also runs its `onClick`, if provided.
 `actions` takes the menu's own props:
 `items` or `groups`, plus `label`, `searchPlaceholder`, and `emptyMessage`.
+The menu is at least 280px wide and otherwise as wide as its widest row; it keeps its opening
+width while its search filters the rows.
 
 An actions row normally runs `onSelect` and closes the menu. The fields below make it show its
 result in place instead, keeping the menu open. They match Dropdown Menu's row types:

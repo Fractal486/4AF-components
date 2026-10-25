@@ -1,6 +1,6 @@
 import type { Autocomplete } from "@base-ui/react/autocomplete";
 import type { Tabs as BaseTabs } from "@base-ui/react/tabs";
-import type { ComponentProps, MouseEvent as ReactMouseEvent, ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 export interface CommandPanelInputProps
   extends Omit<
@@ -216,8 +216,11 @@ export interface CommandPanelRowProps
   selected?: boolean;
   /** Select the row when it is clicked or activated with Enter/Space. */
   onSelect?: () => void;
-  /** Observe the activation event when a caller needs to distinguish keyboard activation. */
-  onActivate?: (event: ReactMouseEvent<HTMLDivElement>) => void;
+  /**
+   * The row's primary action, run after `onSelect` by a click or by Enter — one activation,
+   * whichever way it arrives. A right-click opens the panel's actions menu instead.
+   */
+  onActivate?: () => void;
   /** Show a trailing checkbox indicator for the row's selection state. */
   checkbox?: boolean;
   onKeyDown?: ComponentProps<"div">["onKeyDown"];

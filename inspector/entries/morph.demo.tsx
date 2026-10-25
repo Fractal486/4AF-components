@@ -31,7 +31,13 @@ export function IconToggle({
       aria-label={on ? labels[1] : labels[0]}
       aria-pressed={on}
     >
-      <Morph activeKey={on ? "on" : "off"} items={{ off: icons[0], on: icons[1] }} />
+      {/* Icons share a known 16px box, so the swap needs no hidden sizing copies. */}
+      <Morph
+        sizing="fixed"
+        className="size-4"
+        activeKey={on ? "on" : "off"}
+        items={{ off: icons[0], on: icons[1] }}
+      />
     </Button>
   );
 }

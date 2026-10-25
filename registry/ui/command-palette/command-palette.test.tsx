@@ -327,7 +327,7 @@ describe("CommandPalette", () => {
     );
   });
 
-  it("reports keyboard activation separately from pointer selection", async () => {
+  it("activates a row on a click and on Enter alike", async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
     const onActivate = vi.fn();
@@ -362,11 +362,120 @@ describe("CommandPalette", () => {
     );
 
     await user.click(await screen.findByRole("option", { name: "Projects" }));
-    await user.keyboard("{ArrowDown}{Enter}");
-
+    await user.click(await screen.findByRole("option", { name: "Alpha" }));
     expect(onSelect).toHaveBeenCalledOnce();
     expect(onActivate).toHaveBeenCalledOnce();
-    expect(onActivate.mock.calls[0]?.[0]).toHaveProperty("detail", 0);
+
+    await user.keyboard("{Enter}");
+    expect(onSelect).toHaveBeenCalledTimes(2);
+    expect(onActivate).toHaveBeenCalledTimes(2);
+  });
+
+  it("opens the actions menu for a right-clicked row without activating it", async () => {
+    const user = userEvent.setup();
+    const onActivate = vi.fn();
+
+    function RowsPanel() {
+      const [highlighted, setHighlighted] = useState<unknown>(undefined);
+      useCommandPanelHighlight(setHighlighted);
+      const name = highlighted === "beta" ? "Beta" : "Alpha";
+
+      return (
+        <CommandPanelBody>
+          <CommandPanelList>
+            <CommandPanelRow value="alpha" onActivate={onActivate}>Alpha</CommandPanelRow>
+            <CommandPanelRow value="beta" onActivate={onActivate}>Beta</CommandPanelRow>
+          </CommandPanelList>
+          <CommandPanelFooter actions={{ items: [{ id: "rename", label: `Rename ${name}` }] }} />
+        </CommandPanelBody>
+      );
+    }
+
+    render(
+      <CommandPalette
+        open
+        groups={[{ items: [{ id: "projects", label: "Projects", panel: () => <RowsPanel /> }] }]}
+      />,
+    );
+
+    await user.click(await screen.findByRole("option", { name: "Projects" }));
+    const beta = await screen.findByRole("option", { name: "Beta" });
+
+    await user.pointer({ keys: "[MouseRight]", target: beta });
+
+    // The menu describes the row under the pointer, which keeps the menu's highlight.
+    expect(await screen.findByRole("option", { name: "Rename Beta" })).toBeInTheDocument();
+    expect(beta).toHaveAttribute("data-frozen");
+    expect(onActivate).not.toHaveBeenCalled();
+  });
+
+  it("leaves the browser's context menu alone in a panel without actions", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <CommandPalette
+        open
+        groups={[
+          {
+            items: [
+              {
+                id: "projects",
+                label: "Projects",
+                panel: () => (
+                  <CommandPanelBody>
+                    <CommandPanelList>
+                      <CommandPanelRow value="alpha" onActivate={() => {}}>Alpha</CommandPanelRow>
+                    </CommandPanelList>
+                    <CommandPanelFooter />
+                  </CommandPanelBody>
+                ),
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    await user.click(await screen.findByRole("option", { name: "Projects" }));
+    const alpha = await screen.findByRole("option", { name: "Alpha" });
+    const event = new MouseEvent("contextmenu", { bubbles: true, cancelable: true, button: 2 });
+    act(() => {
+      alpha.dispatchEvent(event);
+    });
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it("opens a custom panel on its last selected row", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <CommandPalette
+        open
+        groups={[
+          {
+            items: [
+              {
+                id: "projects",
+                label: "Projects",
+                panel: () => (
+                  <CommandPanelBody>
+                    <CommandPanelList>
+                      <CommandPanelRow value="alpha" onSelect={() => {}}>Alpha</CommandPanelRow>
+                      <CommandPanelRow value="beta" selected onSelect={() => {}}>Beta</CommandPanelRow>
+                      <CommandPanelRow value="gamma" selected onSelect={() => {}}>Gamma</CommandPanelRow>
+                    </CommandPanelList>
+                  </CommandPanelBody>
+                ),
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    await user.click(await screen.findByRole("option", { name: "Projects" }));
+    expect(await screen.findByRole("option", { name: "Gamma" })).toHaveAttribute("data-highlighted");
+    expect(screen.getByRole("option", { name: "Alpha" })).not.toHaveAttribute("data-highlighted");
   });
 
   it("reports custom-panel highlights and additional refresh work", async () => {
@@ -633,6 +742,25 @@ describe("CommandPalette initialItemId", () => {
 
     await user.keyboard("{Escape}");
     expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("keeps the Escape that closes the root list from reaching the page", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const pageEscape = vi.fn();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") pageEscape();
+    };
+    document.addEventListener("keydown", onKeyDown);
+
+    try {
+      render(<CommandPalette open groups={groups} onOpenChange={onOpenChange} />);
+      await user.keyboard("{Escape}");
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+      expect(pageEscape).not.toHaveBeenCalled();
+    } finally {
+      document.removeEventListener("keydown", onKeyDown);
+    }
   });
 
   it("still steps back from a page drilled into from the root", async () => {

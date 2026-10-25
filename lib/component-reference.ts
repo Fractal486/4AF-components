@@ -243,6 +243,14 @@ import { Morph } from "@/components/ui/morph";
 <Morph
   activeKey={copied ? "done" : "idle"}
   items={{ idle: <Copy />, done: <Check /> }}
+/>
+
+// A swap inside a known box mounts only the showing item: no sizing copies at all.
+<Morph
+  sizing="fixed"
+  className="size-4"
+  activeKey={copied ? "done" : "idle"}
+  items={{ idle: <Copy />, done: <Check /> }}
 />`,
   },
   "date-picker": {

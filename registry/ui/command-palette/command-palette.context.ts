@@ -25,6 +25,19 @@ export function useCommandPanelHighlight(handler: PanelHighlightHandler | null):
   }, [handler, register]);
 }
 
+export interface PanelActionsRegistry {
+  /** The panel's actions menu hands over how to open it, for as long as it is mounted. */
+  register: (open: () => void) => () => void;
+  /** Open the panel's actions menu. False when the panel has none. */
+  open: () => boolean;
+}
+
+/**
+ * How a right-clicked row reaches the actions menu in its panel's footer. The two are
+ * siblings inside the consumer's panel, so the palette holds the menu's opener for both.
+ */
+export const PanelActionsContext = createContext<PanelActionsRegistry | null>(null);
+
 /**
  * Set while an actions menu is open, so the list behind it stops following the pointer.
  *

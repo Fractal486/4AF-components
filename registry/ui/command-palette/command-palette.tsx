@@ -20,9 +20,11 @@ import {
   ActionsOpenContext,
   FrozenRowContext,
   PaletteControlsContext,
+  PanelActionsContext,
   PanelHighlightContext,
   PanelSearchContext,
   type PaletteControls,
+  type PanelActionsRegistry,
   type PanelHighlightHandler,
   type PanelHighlightRegistration,
 } from "./command-palette.context";
@@ -390,6 +392,27 @@ export function CommandPalette({
       if (panelHighlightRef.current === handler) panelHighlightRef.current = previous;
     };
   }, []);
+  // The open panel's actions menu, for a right-clicked row to open. Held the same way as
+  // the highlight handler: the latest mounted menu wins, and unmounting restores the last.
+  const panelActionsRef = useRef<(() => void) | null>(null);
+  const panelActions = useMemo<PanelActionsRegistry>(
+    () => ({
+      register: (open) => {
+        const previous = panelActionsRef.current;
+        panelActionsRef.current = open;
+        return () => {
+          if (panelActionsRef.current === open) panelActionsRef.current = previous;
+        };
+      },
+      open: () => {
+        const open = panelActionsRef.current;
+        if (!open) return false;
+        open();
+        return true;
+      },
+    }),
+    [],
+  );
 
   const activePage = pages.length > 0 ? pages[pages.length - 1]! : null;
   const activeItem = activePage?.itemId
@@ -685,7 +708,9 @@ export function CommandPalette({
               <div className="flex min-h-0 flex-1 flex-col">
                 <PanelSearchContext.Provider value={setPanelSearching}>
                   <PanelHighlightContext.Provider value={registerPanelHighlight}>
-                    {panelNode}
+                    <PanelActionsContext.Provider value={panelActions}>
+                      {panelNode}
+                    </PanelActionsContext.Provider>
                   </PanelHighlightContext.Provider>
                 </PanelSearchContext.Provider>
               </div>

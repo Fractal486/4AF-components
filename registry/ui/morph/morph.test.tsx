@@ -43,6 +43,23 @@ describe("Morph", () => {
     expect(container.querySelector('[data-slot="morph"] [aria-hidden="true"]')).not.toBeInTheDocument();
   });
 
+  it("mounts only the showing item in a fixed box", () => {
+    const { container } = render(
+      <Morph
+        activeKey={"off" as "off" | "on"}
+        sizing="fixed"
+        className="size-4"
+        items={{ off: <span>Unchecked</span>, on: <span>Checked</span> }}
+      />,
+    );
+
+    const box = container.querySelector<HTMLElement>('[data-slot="morph"]')!;
+    expect(box).toHaveAttribute("data-sizing", "fixed");
+    expect(screen.getAllByText("Unchecked")).toHaveLength(1);
+    expect(screen.queryByText("Checked")).not.toBeInTheDocument();
+    expect(box.querySelector('[aria-hidden="true"]')).not.toBeInTheDocument();
+  });
+
   it("reserves the widest item by default without setting a width", () => {
     const report = stubResizeObserver();
     const items = { off: "Follow", on: "Following" };

@@ -22,7 +22,7 @@ import {
   type ReactNode,
 } from "react";
 import { ACTION_CLASS, CommandKeybindHint, Kbd } from "./command-palette.chrome";
-import { ActionsOpenContext } from "./command-palette.context";
+import { ActionsOpenContext, PanelActionsContext } from "./command-palette.context";
 import { matchesKeybind } from "./command-palette.keybinds";
 import type { CommandGroup, CommandItem, CommandPanelActionsProps } from "./command-palette.types";
 
@@ -30,7 +30,7 @@ import type { CommandGroup, CommandItem, CommandPanelActionsProps } from "./comm
  * A palette *inside* the palette — the contextual action menu for a panel page.
  *
  * It's the Select with its in-panel search field, not a bespoke popup: `searchable` gives
- * the filter field, `width="content"` sizes the panel to its rows (at least 200px) rather
+ * the filter field, `width="content"` sizes the panel to its rows (at least 280px) rather
  * than the tiny trigger, and `autoFocusFirstItem` activates the first row while keeping
  * the caret in the search field, so Enter can run an action immediately.
  * Base UI owns the anchoring, the dismiss, and the collision flip — the menu hangs off a
@@ -77,6 +77,14 @@ export function CommandPanelActions({
   // A panel can be torn down with its menu still open — stepping back, or the palette
   // closing under it — and the frozen highlight would outlive the thing that froze it.
   useEffect(() => () => reportActionsOpen?.(false), [reportActionsOpen]);
+
+  // A right-clicked row opens this menu. The row has already taken the highlight, so the
+  // panel's actions describe that row by the time the menu renders.
+  const panelActions = useContext(PanelActionsContext);
+  useEffect(
+    () => panelActions?.register(() => setMenuOpen(true)),
+    [panelActions, setMenuOpen],
+  );
 
   const actionGroups = useMemo(
     () => groups ?? [{ items: items ?? [] }],
@@ -208,6 +216,9 @@ export function CommandPanelActions({
         side="top"
         align="end"
         width="content"
+        // Wider than a field select's 200px floor: action labels are sentences, and a menu
+        // that changes width from panel to panel reads as a different menu each time.
+        className="min-w-70"
         searchable
         searchPosition="bottom"
         // The top action is highlighted the moment the menu opens, while the caret stays

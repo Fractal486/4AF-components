@@ -272,7 +272,7 @@ function NavLink({
       data-rail-row=""
       aria-current={pathname === item.href ? "page" : undefined}
       className={cn(
-        "block rounded-xs text-sm leading-none text-muted-foreground transition-[color] duration-(--duration-slow) ease-out",
+        "block cursor-default rounded-xs text-sm leading-none text-muted-foreground transition-[color] duration-(--duration-slow) ease-out",
         "aria-[current=page]:font-medium aria-[current=page]:text-foreground data-lit:text-foreground",
         FOCUS,
       )}
