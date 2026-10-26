@@ -519,3 +519,182 @@ describe("DataTable", () => {
     expect(screen.getByRole("button", { name: "Name" })).toBeDisabled();
   });
 });
+
+describe("DataTable range selection", () => {
+  const ROSTER = ["ada", "alan", "grace", "edsger", "barbara"];
+
+  function Roster(props: Partial<React.ComponentProps<typeof DataTable>>) {
+    return (
+      <DataTable selectable rows={ROSTER} {...props}>
+        <TableHeader>
+          <DataTableRow>
+            <DataTableHead>Name</DataTableHead>
+          </DataTableRow>
+        </TableHeader>
+        <TableBody>
+          {ROSTER.map((id) => (
+            <DataTableRow key={id} value={id} selectLabel={`Select ${id}`}>
+              <TableCell>{id}</TableCell>
+            </DataTableRow>
+          ))}
+        </TableBody>
+      </DataTable>
+    );
+  }
+
+  const box = (id: string) => screen.getByRole("checkbox", { name: `Select ${id}` });
+  const row = (id: string) => box(id).closest("tr")!;
+  const press = (id: string, init: PointerEventInit = {}) =>
+    fireEvent.pointerDown(box(id), { button: 0, pointerType: "mouse", ...init });
+
+  it("checks every row from the last one clicked to a shift-clicked one", () => {
+    const onValueChange = vi.fn();
+    render(<Roster onValueChange={onValueChange} />);
+
+    fireEvent.click(box("alan"));
+    fireEvent.click(box("edsger"), { shiftKey: true });
+
+    expect(onValueChange).toHaveBeenLastCalledWith(["alan", "grace", "edsger"]);
+    expect(box("ada")).toHaveAttribute("aria-checked", "false");
+    expect(box("barbara")).toHaveAttribute("aria-checked", "false");
+  });
+
+  it("ranges upward too, and clears the range when the shift-clicked row is checked", () => {
+    const onValueChange = vi.fn();
+    render(<Roster defaultValue={["ada", "alan", "grace", "edsger"]} onValueChange={onValueChange} />);
+
+    fireEvent.click(box("edsger"));
+    fireEvent.click(box("barbara"));
+    fireEvent.click(box("alan"), { shiftKey: true });
+
+    expect(onValueChange).toHaveBeenLastCalledWith(["ada"]);
+  });
+
+  it("chains shift-clicks from the most recent one", () => {
+    const onValueChange = vi.fn();
+    render(<Roster onValueChange={onValueChange} />);
+
+    fireEvent.click(box("ada"));
+    fireEvent.click(box("alan"), { shiftKey: true });
+    fireEvent.click(box("edsger"), { shiftKey: true });
+
+    expect(onValueChange).toHaveBeenLastCalledWith(["ada", "alan", "grace", "edsger"]);
+  });
+
+  it("toggles only the clicked row when there is no anchor yet", () => {
+    const onValueChange = vi.fn();
+    render(<Roster onValueChange={onValueChange} />);
+
+    fireEvent.click(box("grace"), { shiftKey: true });
+
+    expect(onValueChange).toHaveBeenLastCalledWith(["grace"]);
+  });
+
+  it("checks the rows a drag covers, and gives back the ones it leaves", () => {
+    const onValueChange = vi.fn();
+    render(<Roster onValueChange={onValueChange} />);
+
+    press("alan");
+    fireEvent.pointerEnter(row("grace"));
+    fireEvent.pointerEnter(row("barbara"));
+    expect(onValueChange).toHaveBeenLastCalledWith(["alan", "grace", "edsger", "barbara"]);
+
+    fireEvent.pointerEnter(row("grace"));
+    expect(onValueChange).toHaveBeenLastCalledWith(["alan", "grace"]);
+
+    fireEvent.pointerUp(document);
+    expect(box("alan")).toHaveAttribute("aria-checked", "true");
+    expect(box("grace")).toHaveAttribute("aria-checked", "true");
+    expect(box("edsger")).toHaveAttribute("aria-checked", "false");
+  });
+
+  it("clears the covered rows when the drag starts on a checked one", () => {
+    const onValueChange = vi.fn();
+    render(<Roster defaultValue={["ada", "alan", "grace"]} onValueChange={onValueChange} />);
+
+    press("grace");
+    fireEvent.pointerEnter(row("alan"));
+    fireEvent.pointerUp(document);
+
+    expect(onValueChange).toHaveBeenLastCalledWith(["ada"]);
+  });
+
+  it("swallows the click a drag ends with, so the start row is not toggled back", () => {
+    const onRowClick = vi.fn();
+    render(
+      <div onClick={onRowClick}>
+        <Roster />
+      </div>,
+    );
+
+    press("ada");
+    fireEvent.pointerEnter(row("alan"));
+    fireEvent.pointerEnter(row("ada"));
+    fireEvent.pointerUp(document);
+    fireEvent.click(box("ada"));
+
+    expect(box("ada")).toHaveAttribute("aria-checked", "true");
+    expect(box("alan")).toHaveAttribute("aria-checked", "false");
+    expect(onRowClick).not.toHaveBeenCalled();
+  });
+
+  it("leaves a press that never leaves its row to the checkbox", () => {
+    render(<Roster />);
+
+    press("ada");
+    fireEvent.pointerEnter(row("ada"));
+    fireEvent.pointerUp(document);
+    fireEvent.click(box("ada"));
+
+    expect(box("ada")).toHaveAttribute("aria-checked", "true");
+  });
+
+  it("restores the selection when Escape is pressed mid-drag", () => {
+    const onValueChange = vi.fn();
+    render(<Roster defaultValue={["barbara"]} onValueChange={onValueChange} />);
+
+    press("ada");
+    fireEvent.pointerEnter(row("grace"));
+    fireEvent.keyDown(document, { key: "Escape" });
+    fireEvent.pointerEnter(row("edsger"));
+    fireEvent.pointerUp(document);
+
+    expect(onValueChange).toHaveBeenLastCalledWith(["barbara"]);
+    expect(box("ada")).toHaveAttribute("aria-checked", "false");
+  });
+
+  it("ranges a shift-click from where the last drag ended", async () => {
+    const onValueChange = vi.fn();
+    render(<Roster onValueChange={onValueChange} />);
+
+    press("ada");
+    fireEvent.pointerEnter(row("alan"));
+    fireEvent.pointerUp(document);
+    // Past the drag's own trailing click, which is swallowed.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fireEvent.click(box("edsger"), { shiftKey: true });
+
+    expect(onValueChange).toHaveBeenLastCalledWith(["ada", "alan", "grace", "edsger"]);
+  });
+
+  it("leaves touch to scroll the page", () => {
+    const onValueChange = vi.fn();
+    render(<Roster onValueChange={onValueChange} />);
+
+    press("ada", { pointerType: "touch" });
+    fireEvent.pointerEnter(row("grace"));
+    fireEvent.pointerUp(document);
+
+    expect(onValueChange).not.toHaveBeenCalled();
+  });
+
+  it("orders a range as the rows are shown, not as `rows` lists them", () => {
+    const onValueChange = vi.fn();
+    render(<Roster rows={[...ROSTER].reverse()} onValueChange={onValueChange} />);
+
+    fireEvent.click(box("ada"));
+    fireEvent.click(box("grace"), { shiftKey: true });
+
+    expect(onValueChange).toHaveBeenLastCalledWith(["ada", "alan", "grace"]);
+  });
+});

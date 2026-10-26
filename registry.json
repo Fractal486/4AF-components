@@ -119,9 +119,9 @@
           "elevation-overlay-drop": "0 8px 16px -6px oklch(0 0 0 / 0.1), 0 16px 32px -8px oklch(0 0 0 / 0.12)"
         },
         "dark": {
-          "background": "oklch(0.120 0 0)",
+          "background": "oklch(0.100 0 0)",
           "surface": "oklch(0.178 0 0)",
-          "surface-raised": "oklch(0.105 0 0)",
+          "surface-raised": "oklch(0.120 0 0)",
           "muted": "oklch(0.205 0 0)",
           "foreground": "oklch(0.985 0.002 70)",
           "muted-foreground": "oklch(0.716 0.01 70)",

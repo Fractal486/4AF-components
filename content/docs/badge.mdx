@@ -74,10 +74,10 @@ square footprint without running the indicator's timers or animations.
 
 ## Layout animation
 
-`animateLayout` defaults to `true`: Badge animates its width when its content changes. In a list
-that filters or reorders, such as a Command Palette or a table row, set `animateLayout={false}` on badges whose content doesn't
-change. Otherwise the badge FLIP-animates its own position as the row moves, which slides it
-within the row and adds layout cost.
+`animateLayout` defaults to `true`: Badge animates its width when its own content, status,
+variant, size, shape, or icon changes. Nothing else triggers it: a badge in a list that sorts,
+filters, or reorders, such as a table row or a Command Palette, moves with its row and does not
+FLIP-animate its position. Set `animateLayout={false}` to turn off the width animation too.
 
 ```tsx
 <Badge animateLayout={false}>Beta</Badge>

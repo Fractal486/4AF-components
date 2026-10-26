@@ -7,7 +7,9 @@ import {
   createContext,
   useCallback,
   useContext,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type ComponentProps,
   type ReactNode,
@@ -68,6 +70,60 @@ export interface TableSort {
   direction: TableSortDirection;
 }
 
+interface SelectionDrag {
+  table: HTMLTableElement;
+  start: string;
+  current: string;
+  // Every step is recomputed from the selection the drag started on, so a row the pointer
+  // passes back over returns to what it was rather than keeping what the drag gave it.
+  baseline: readonly string[];
+  next: boolean;
+  moved: boolean;
+  cancelled: boolean;
+}
+
+/** The selectable body rows' values, in the order the table shows them. */
+function rowOrder(table: HTMLTableElement) {
+  return Array.from(
+    table.querySelectorAll<HTMLElement>("tbody > tr > [data-row-value]"),
+    (cell) => cell.dataset.rowValue ?? "",
+  );
+}
+
+/**
+ * The rows from one value to another, inclusive, in display order. Read off the DOM rather
+ * than `rows`, because the caller sorts the data and `rows` is not required to follow it.
+ * `null` when either end is not on screen — the previous page's anchor has no range here.
+ */
+function rangeBetween(table: HTMLTableElement, from: string, to: string) {
+  const order = rowOrder(table);
+  const a = order.indexOf(from);
+  const b = order.indexOf(to);
+  if (a === -1 || b === -1) return null;
+  return order.slice(Math.min(a, b), Math.max(a, b) + 1);
+}
+
+function applyRange(base: readonly string[], range: readonly string[], next: boolean) {
+  return next
+    ? [...base, ...range.filter((row) => !base.includes(row))]
+    : base.filter((item) => !range.includes(item));
+}
+
+/**
+ * A drag that ends on its own checkbox would otherwise toggle it a second time, and one that
+ * ends elsewhere fires its click on whatever the two ends share — the row, the table — where
+ * a caller's handler would read it as a click on that.
+ */
+function swallowNextClick() {
+  const swallow = (event: Event) => {
+    event.stopPropagation();
+    event.preventDefault();
+  };
+  window.addEventListener("click", swallow, { capture: true, once: true });
+  // A release outside the window dispatches no click at all.
+  setTimeout(() => window.removeEventListener("click", swallow, { capture: true }), 0);
+}
+
 interface DataTableContextValue {
   selectable: boolean;
   selected: readonly string[];
@@ -81,6 +137,9 @@ interface DataTableContextValue {
   actionColumnLabel: string;
   sort: TableSort | null;
   toggleRow: (value: string, next: boolean) => void;
+  extendSelection: (table: HTMLTableElement, value: string) => void;
+  beginDrag: (table: HTMLTableElement, value: string) => void;
+  dragOver: (value: string) => void;
   toggleAll: (next: boolean) => void;
   toggleSort: (column: string) => void;
 }
@@ -98,6 +157,9 @@ const DataTableContext = createContext<DataTableContextValue>({
   actionColumnLabel: "Actions",
   sort: null,
   toggleRow: () => {},
+  extendSelection: () => {},
+  beginDrag: () => {},
+  dragOver: () => {},
   toggleAll: () => {},
   toggleSort: () => {},
 });
@@ -181,8 +243,19 @@ export function DataTable({
     [isControlled, onValueChange],
   );
 
+  // For the document listeners a drag installs, which outlive the render that installed them.
+  const commitRef = useRef(commit);
+  useLayoutEffect(() => {
+    commitRef.current = commit;
+  });
+
+  // The last row toggled on its own, which a shift-click ranges from.
+  const anchor = useRef<string | null>(null);
+  const drag = useRef<SelectionDrag | null>(null);
+
   const toggleRow = useCallback(
     (rowValue: string, next: boolean) => {
+      anchor.current = rowValue;
       // Filtered rather than spliced, so a value that somehow got in twice cannot survive an
       // uncheck, and what is left keeps the order it was selected in.
       commit(next ? [...selected, rowValue] : selected.filter((item) => item !== rowValue));
@@ -190,7 +263,72 @@ export function DataTable({
     [commit, selected],
   );
 
-  const [uncontrolledSort, setUncontrolledSort] = useState<TableSort | null>(defaultSort);
+  const extendSelection = useCallback(
+    (table: HTMLTableElement, rowValue: string) => {
+      // The clicked row decides the direction, as it would on its own: a shift-click on an
+      // unchecked row checks the range, on a checked one clears it.
+      const next = !selected.includes(rowValue);
+      const range = anchor.current === null ? null : rangeBetween(table, anchor.current, rowValue);
+      anchor.current = rowValue;
+      commit(applyRange(selected, range ?? [rowValue], next));
+    },
+    [commit, selected],
+  );
+
+  const beginDrag = useCallback(
+    (table: HTMLTableElement, rowValue: string) => {
+      const state: SelectionDrag = {
+        table,
+        start: rowValue,
+        current: rowValue,
+        baseline: selected,
+        next: !selected.includes(rowValue),
+        moved: false,
+        cancelled: false,
+      };
+      drag.current = state;
+
+      const preventTextSelection = (event: Event) => event.preventDefault();
+      const cancel = (event: KeyboardEvent) => {
+        if (event.key !== "Escape" || !state.moved || state.cancelled) return;
+        state.cancelled = true;
+        commitRef.current([...state.baseline]);
+      };
+      const end = () => {
+        document.removeEventListener("pointerup", end);
+        document.removeEventListener("pointercancel", end);
+        document.removeEventListener("keydown", cancel);
+        document.removeEventListener("selectstart", preventTextSelection);
+        if (drag.current === state) drag.current = null;
+        if (!state.moved) return;
+        if (!state.cancelled) anchor.current = state.current;
+        swallowNextClick();
+      };
+
+      document.addEventListener("pointerup", end);
+      document.addEventListener("pointercancel", end);
+      document.addEventListener("keydown", cancel);
+      document.addEventListener("selectstart", preventTextSelection);
+    },
+    [selected],
+  );
+
+  const dragOver = useCallback(
+    (rowValue: string) => {
+      const state = drag.current;
+      if (!state || state.cancelled || rowValue === state.current) return;
+      // A press that has not left its own row is still a click, and the checkbox handles it.
+      if (!state.moved && rowValue === state.start) return;
+      const range = rangeBetween(state.table, state.start, rowValue);
+      if (!range) return;
+      state.current = rowValue;
+      state.moved = true;
+      commit(applyRange(state.baseline, range, state.next));
+    },
+    [commit],
+  );
+
+  const [uncontrolledSort,setUncontrolledSort] = useState<TableSort | null>(defaultSort);
   const sortIsControlled = sort !== undefined;
   const activeSort = sortIsControlled ? sort : uncontrolledSort;
 
@@ -249,6 +387,9 @@ export function DataTable({
       actionColumnLabel,
       sort: activeSort,
       toggleRow,
+      extendSelection,
+      beginDrag,
+      dragOver,
       toggleAll,
       toggleSort,
     }),
@@ -264,6 +405,9 @@ export function DataTable({
       actionColumnLabel,
       activeSort,
       toggleRow,
+      extendSelection,
+      beginDrag,
+      dragOver,
       toggleAll,
       toggleSort,
     ],
@@ -309,6 +453,7 @@ export function DataTableRow({
   value,
   selectLabel = "Select row",
   actions,
+  onPointerEnter,
   children,
   ...props
 }: DataTableRowProps) {
@@ -326,11 +471,15 @@ export function DataTableRow({
     actionColumn,
     actionColumnLabel,
     toggleRow,
+    extendSelection,
+    beginDrag,
+    dragOver,
     toggleAll,
   } = useContext(DataTableContext);
   const reduceMotion = useReducedMotion();
   const isSelected = value !== undefined && selected.includes(value);
   const isActionRow = section === "header" && selectionBar;
+  const rangeValue = selectable && section === "body" ? value : undefined;
 
   return (
     <TableRow
@@ -340,6 +489,12 @@ export function DataTableRow({
       data-selected={isSelected || undefined}
       // Its rows can be acted on, so they answer the cursor; the base table's don't.
       className={cn(section === "body" && tableInteractiveRowVariants(), className)}
+      // The whole row, not just its checkbox cell, so a drag down the column keeps going
+      // when the pointer drifts sideways off it.
+      onPointerEnter={(event) => {
+        onPointerEnter?.(event);
+        if (rangeValue !== undefined) dragOver(rangeValue);
+      }}
       {...props}
     >
       {selectable && section === "header" && (
@@ -372,7 +527,37 @@ export function DataTableRow({
 
       {selectable && section !== "header" && (
         <td
+          // Where a range reads its order from.
+          data-row-value={rangeValue}
           className={tableGutterCellVariants({ horizontal: horizontalLines, size })}
+          onPointerDown={(event) => {
+            // Touch is left to scroll: a drag that starts on the column would otherwise
+            // hold the page still under the finger.
+            if (rangeValue === undefined || event.button !== 0 || event.shiftKey) return;
+            if (event.pointerType === "touch") return;
+            const table = event.currentTarget.closest("table");
+            if (!table) return;
+            // A pen captures implicitly, which would keep the rows below from seeing it enter.
+            const target = event.target as Element;
+            if (target.hasPointerCapture?.(event.pointerId)) {
+              target.releasePointerCapture(event.pointerId);
+            }
+            beginDrag(table, rangeValue);
+          }}
+          // Shift-press would otherwise extend the page's text selection across the rows.
+          onMouseDown={(event) => {
+            if (event.shiftKey) event.preventDefault();
+          }}
+          // Ahead of the checkbox, which would toggle only its own row.
+          onClickCapture={(event) => {
+            if (rangeValue === undefined || !event.shiftKey) return;
+            if (!(event.target as Element).closest('[role="checkbox"]')) return;
+            const table = event.currentTarget.closest("table");
+            if (!table) return;
+            event.preventDefault();
+            event.stopPropagation();
+            extendSelection(table, rangeValue);
+          }}
           onClick={(event) => event.stopPropagation()}
           onKeyDown={(event) => event.stopPropagation()}
         >

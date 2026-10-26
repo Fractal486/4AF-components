@@ -15,9 +15,9 @@ it must also remap the relevant ramps to change those exceptions.
 
 | Role | Light treatment | Dark treatment | Purpose |
 | --- | --- | --- | --- |
-| Background | Warm near-white (`oklch(0.985 0.002 70)`) | Neutral near-black (`oklch(0.120 0 0)`) | Page ground and sunk wells |
+| Background | Warm near-white (`oklch(0.985 0.002 70)`) | Neutral near-black (`oklch(0.100 0 0)`) | Page ground and sunk wells |
 | Surface | White (`oklch(1 0 0)`) | Soft black (`oklch(0.178 0 0)`) | Chrome and anchored popups |
-| Raised surface | White (`oklch(1 0 0)`) | Deep black (`oklch(0.105 0 0)`) | Dialogs, sheets, and palettes |
+| Raised surface | White (`oklch(1 0 0)`) | Deep black (`oklch(0.120 0 0)`) | Dialogs, sheets, palettes, and popovers |
 | Foreground | Warm near-black (`oklch(0.155 0.006 70)`) | Warm near-white (`oklch(0.985 0.002 70)`) | Primary text and neutral actions |
 | Focus ring | Blue (`oklch(0.623 0.214 259.815)`) | The same blue | Focus and deliberate emphasis |
 | Destructive | Vivid red (`oklch(0.6 0.225 26)`) | The same red | Irreversible and failed actions |
@@ -34,8 +34,8 @@ below the 4.5:1 contrast target for normal text; OKLCH lightness alone is not a 
 A component's fill communicates its layer. `background` is the page and sunk wells such as
 Input and Sidebar Inset. Checkbox and Radio use that layer in light mode and a fixed darker
 neutral ramp for their resting wells in dark mode. `surface` is chrome and anchored popups such as
-Sidebar, Dropdown Menu, Popover, and Hover Card. `surface-raised` belongs to elements floating
-over everything: Dialog, Alert Dialog, Sheet, and Command Palette. A consuming project
+Sidebar, Dropdown Menu, and Hover Card. `surface-raised` is Dialog, Alert Dialog, Sheet, Command
+Palette, and Popover. A consuming project
 decides what those semantic roles resolve to.
 
 ## Typography

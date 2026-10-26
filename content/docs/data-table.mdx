@@ -77,6 +77,17 @@ With `selectable` on the root, a row gets a selection checkbox when it has a `va
 without still gets an empty cell, so a "no results" row keeps its columns aligned. Clicking the
 row itself does not toggle selection; selection is handled by the checkbox.
 
+Two range gestures work in the checkbox column. Both follow the rows' display order, not `rows`,
+and both set the whole range to the state the clicked or pressed row is toggled to:
+
+- **Shift-click** a checkbox to set every row from the anchor to it. The anchor is the last row
+  toggled by a plain click, a shift-click, or the end of a drag. With no anchor on the page, a
+  shift-click toggles only its own row.
+- **Drag** from a checkbox cell across other rows to set the rows the drag covers. Rows the drag
+  leaves go back to their state before the drag. Escape during the drag restores the earlier
+  selection. A press that stays on its row is an ordinary click. The click a drag ends with is
+  not passed on. Touch pointers scroll and do not drag-select.
+
 `rows` sets what select-all covers — pass the page being rendered, not every row held. Selecting
 all is a union, so selected values outside `rows` are kept. Clearing select-all removes only
 values in `rows`. The header checkbox is indeterminate while some, but not all, values in

@@ -82,11 +82,9 @@ export interface BadgeProps
   /** Forces a label roll when the text stays the same object but should re-animate. */
   contentKey?: string | number;
   /**
-   * Animate the badge resizing when its content changes (the `layout` projection).
-   * Turn it **off** for a static badge inside a list that reorders — otherwise the badge
-   * FLIP-animates its own *position* every time an ancestor row moves it, sliding within a
-   * row that itself doesn't animate. A decorative label ("Beta") never morphs, so it loses
-   * nothing. @default true
+   * Animate the badge resizing when its content changes (the `layout` projection). Only the
+   * badge's own changes animate; a list reordering around it moves it without a slide.
+   * @default true
    */
   animateLayout?: boolean;
   /**
@@ -171,10 +169,12 @@ export function Badge({
     <motion.span
       // Full `layout` (not `"size"`): the whole box is projected, which reconciles with the
       // `popLayout` exit so the badge resizes straight to the new width. `"size"` mis-measures
-      // against the briefly-present outgoing label and resizes the wrong way first. Off when
-      // `animateLayout` is false — a static badge in a reordering list shouldn't FLIP its
-      // position as ancestors move it.
+      // against the briefly-present outgoing label and resizes the wrong way first.
       layout={animateLayout && !reduce}
+      // Measured only when something the badge draws changes. Without it Motion snapshots on
+      // every render, so a row reordered by a sort FLIPs the badge from its old position and
+      // it slides within a row that doesn't move.
+      layoutDependency={`${variant}|${resolvedStatus}|${resolvedSize}|${shape}|${dot}|${showIcon}|${wrap}|${labelKey}`}
       transition={reduce ? { duration: 0 } : spring.snappy}
       className={cn(
         badgeVariants({ variant, status, size, shape }),

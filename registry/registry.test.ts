@@ -376,7 +376,7 @@ describe("registry", () => {
     );
     expect(theme.cssVars?.dark).toEqual(
       expect.objectContaining({
-        background: "oklch(0.120 0 0)",
+        background: "oklch(0.100 0 0)",
         "elevation-overlay-drop": "0 16px 32px -12px oklch(0 0 0 / 0.7)",
       }),
     );

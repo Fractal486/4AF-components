@@ -327,15 +327,7 @@ export function CommandPaletteDemo({
       label: "Open Documentation",
       icon: <FileText />,
       badge: (
-        <Badge
-          variant="outline"
-          size="sm"
-          status="info"
-          showIcon={false}
-          // Static label in a list that filters/reorders — don't let it FLIP its own
-          // position as the row moves.
-          animateLayout={false}
-        >
+        <Badge variant="outline" size="sm" status="info" showIcon={false}>
           Beta
         </Badge>
       ),

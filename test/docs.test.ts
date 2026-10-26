@@ -236,7 +236,7 @@ describe("component documentation", () => {
       "action-button": ["labels.pending", "pendingMode"],
       "action-toggle": ["new state should persist", "onPressedChange", "fillIcon"],
       "copy-button": ["Promise<string>", "<CopyButton icon="],
-      badge: ["animateLayout={false}", "FLIP-animates"],
+      badge: ["animateLayout={false}", "FLIP-animate its position"],
       select: [
         "SelectSortTrigger",
         "SelectSeparator",
