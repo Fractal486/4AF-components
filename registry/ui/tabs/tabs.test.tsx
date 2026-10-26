@@ -3,6 +3,13 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "./tabs";
 
+/** The indicator's box in the list's own pixels: anchored at the start, moved by `x`. */
+function indicatorBox(list: HTMLElement) {
+  const indicator = list.querySelector<HTMLElement>('[aria-hidden="true"]');
+  const x = /translateX\((-?[\d.]+)px\)/.exec(indicator?.style.transform ?? "")?.[1];
+  return { left: Number(x ?? 0), width: Number.parseFloat(indicator?.style.width ?? "") };
+}
+
 describe("Tabs", () => {
   it.each(["segment", "pill", "underline"] as const)("fades only hidden edges and scrolls clicked tabs in %s", async (variant) => {
     render(
@@ -37,7 +44,7 @@ describe("Tabs", () => {
     expect(list).toHaveAttribute("data-overflow-left");
     expect(list).toHaveAttribute("data-overflow-right");
     // Measuring after a scroll must keep the indicator in content coordinates.
-    await waitFor(() => expect(list.querySelector('[aria-hidden="true"]')).toHaveStyle({ left: "140px" }));
+    await waitFor(() => expect(indicatorBox(list).left).toBe(140));
     scrollTo.mockClear();
     fireEvent.click(one);
     expect(scrollTo).toHaveBeenCalledWith({ left: 0, behavior: "smooth" });
@@ -69,7 +76,7 @@ describe("Tabs", () => {
 
     fireEvent.click(screen.getByRole("tab", { name: "One" }));
     fireEvent.click(screen.getByRole("tab", { name: "Two" }));
-    await waitFor(() => expect(list.querySelector('[aria-hidden="true"]')).toHaveStyle({ left: "80px", width: "80px" }));
+    await waitFor(() => expect(indicatorBox(list)).toEqual({ left: 80, width: 80 }));
   });
 
   it("keeps its internal measurement ref when a consumer supplies one", () => {

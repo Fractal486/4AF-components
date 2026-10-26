@@ -33,13 +33,13 @@ import {
  * is optional — a `role="tablist"` you can't drive with the arrow keys is a worse lie
  * than no ARIA at all, because it promises a screen reader behaviour that isn't there.
  *
- * The travelling indicator is a single measured element animated with FLIP transforms.
- * The obvious approach — one `layoutId` span per tab, letting Motion FLIP
- * between them — looks right and animates wrong: the shared-element projection measures
- * both axes, and under the panel tree it picks up a spurious vertical delta, so the
- * indicator jumps down a frame and then slides in diagonally. Tabs sit in a row; the
- * indicator only ever moves sideways. Measuring its horizontal box and letting Motion
- * project that change through transforms keeps the indicator on the same vertical track.
+ * The travelling indicator is a single measured element animated in the list's own
+ * coordinates. Layout projection — one `layoutId` span per tab, or `layout` on this one —
+ * looks right and animates wrong: it measures the viewport box on both axes, so when the
+ * list itself moves between renders (a centred dialog changing height, a scrolled
+ * container) the indicator plays that vertical delta and slides off the separator. Tabs
+ * sit in a row; the indicator only ever moves sideways. Animating its measured `x` and
+ * `width` relative to the list keeps it on the same vertical track wherever the list goes.
  */
 
 type Variant = NonNullable<TabsVariants["variant"]>;
@@ -261,14 +261,12 @@ export function TabsList({
       {box && (
         <motion.div
           aria-hidden
-          // `left`/`width` are static styles the browser lays out once; `layout` is what
-          // moves the indicator. Motion measures the box before and after the change and
-          // plays the delta as a transform (FLIP) — so travelling between tabs never
-          // animates `left`/`width` frame by frame (both relayout). It also corrects the
-          // corner distortion a raw `scaleX` would leave on the rounded pill. No fly-in on
-          // first appearance: the element mounts at its target with no prior box to
-          // animate from.
-          layout
+          // Anchored at the list's start and moved by `x`, a transform. `width` is a real
+          // width rather than `scaleX`, which would distort the rounded pill's corners; the
+          // indicator is absolutely positioned, so animating it relayouts nothing else.
+          // `initial={false}`: no fly-in on first appearance, it mounts at its target.
+          initial={false}
+          animate={{ x: box.left, width: box.width }}
           // `cn`, so a compound's inset or radius replaces the variant's base one.
           className={cn(
             tabIndicatorVariants({ variant, appearance, size }),
@@ -276,7 +274,7 @@ export function TabsList({
             // outside of, so there the underline stays inside rather than being cut off.
             variant === "underline" && maxWidth !== undefined && "bottom-0",
           )}
-          style={{ left: box.left, width: box.width }}
+          style={{ left: 0 }}
           // A tween on the expo ease-out, not a spring: a spring starts from rest, so it
           // eases in before it decelerates. A tab switch answers a click, so the indicator
           // leaves at full speed and decelerates into place.
