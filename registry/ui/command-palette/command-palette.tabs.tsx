@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/registry/lib/cn";
-import { spring } from "@/registry/lib/motion";
+import { duration, ease } from "@/registry/lib/motion";
 import { useMergedRefs } from "@/registry/lib/refs";
 import { Tabs as BaseTabs } from "@base-ui/react/tabs";
 import { motion, useReducedMotion } from "motion/react";
@@ -50,13 +50,13 @@ export function CommandPanelTabs({ className, ...props }: CommandPanelTabsProps)
 /**
  * The tab row, and the one indicator that travels across it to the selected tab.
  *
- * Measured like Tabs' indicator — the selected tab's box relative to the row, moved by a
- * Motion layout animation so the travel is a transform rather than `left`/`width` frames —
- * with one correction the palette needs. The palette scales in as it opens, and a panel
- * can be the page it opens on (`initialItemId`), so the first measurement is often taken
- * mid-entrance. Bounding rects are scaled by that transform; dividing by the row's own
- * rendered-to-layout ratio takes it back out, where a bare measurement would leave the
- * indicator a few pixels short of its tab until the next change.
+ * Measured and animated like Tabs' indicator: the selected tab's box in the row's own
+ * coordinates, anchored at the start and moved by `x`. Layout projection would measure the
+ * viewport box, and the palette scales in as it opens, so the indicator would play that
+ * movement too. A panel can be the page the palette opens on (`initialItemId`), so the
+ * first measurement is often taken mid-entrance: bounding rects are scaled by that
+ * transform, and dividing by the row's rendered-to-layout ratio takes it back out.
+ * The underline spans the label, not the tab's padding, as Tabs' does.
  */
 export function CommandPanelTabList({
   variant = "fill",
@@ -82,9 +82,17 @@ export function CommandPanelTabList({
       if (!active) return;
       const listRect = list.getBoundingClientRect();
       const tabRect = active.getBoundingClientRect();
-      const scale = list.offsetWidth > 0 ? listRect.width / list.offsetWidth : 1;
-      const left = (tabRect.left - listRect.left) / scale + list.scrollLeft;
-      const width = tabRect.width / scale;
+      const scale = list.offsetWidth > 0 && Math.abs(listRect.width - list.offsetWidth) >= 1
+        ? listRect.width / list.offsetWidth : 1;
+      let left = (tabRect.left - listRect.left) / scale - list.clientLeft + list.scrollLeft;
+      let width = tabRect.width / scale;
+      if (variant === "underline") {
+        const { paddingLeft, paddingRight } = getComputedStyle(active);
+        const start = Number.parseFloat(paddingLeft) || 0;
+        const end = Number.parseFloat(paddingRight) || 0;
+        left += start;
+        width = Math.max(width - start - end, 0);
+      }
       setBox((previous) => previous?.left === left && previous.width === width
         ? previous : { left, width });
     };
@@ -116,12 +124,14 @@ export function CommandPanelTabList({
           <motion.div
             aria-hidden
             data-slot="command-panel-tab-indicator"
-            // `left`/`width` are laid out once per change; `layout` plays the move as a
-            // transform. No fly-in on first appearance: it mounts at its target.
-            layout
+            // Anchored at the row's start and moved by `x`, a transform. No fly-in on first
+            // appearance: it mounts at its target.
+            initial={false}
+            animate={{ x: box.left, width: box.width }}
             className={commandPanelTabIndicatorVariants({ variant })}
-            style={{ left: box.left, width: box.width }}
-            transition={reduceMotion ? { duration: 0 } : spring.snappy}
+            style={{ left: 0 }}
+            // Tabs' tween: a click answered at full speed, decelerating into place.
+            transition={reduceMotion ? { duration: 0 } : { duration: duration.slow, ease: ease.out }}
           />
         )}
         {children}
