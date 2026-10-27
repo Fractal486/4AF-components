@@ -109,6 +109,7 @@ export function SidebarLayout({
             fade
             data-slot="sidebar-layout-content"
             className="flex-1"
+            viewportProps={{ render: <div data-slot="sidebar-layout-viewport" /> }}
             viewportClassName={cn("flex flex-col", contentClassName)}
           >
             <RailSlotContext value={railSlot}>{children}</RailSlotContext>

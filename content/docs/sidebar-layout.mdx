@@ -18,6 +18,10 @@ another row instead of overflowing. The content column can shrink below its cont
 wide content scrolls inside it, and reaching the end of the content doesn't scroll the page. The
 column is a [Scroll Area](/docs/scroll-area); `contentClassName` styles its scrolling element.
 
+The outer column has `data-slot="sidebar-layout-content"`; its inner scrolling element has
+`data-slot="sidebar-layout-viewport"`. Use the viewport marker for scroll restoration, scroll
+position measurements, or scroll locking. The outer column clips content but does not scroll.
+
 | Prop | Purpose |
 | --- | --- |
 | `title` | Text or a node rendered in the default truncated title slot. |

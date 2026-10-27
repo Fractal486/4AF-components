@@ -48,6 +48,10 @@ describe("SidebarLayout", () => {
     const content = container.querySelector('[data-slot="sidebar-layout-content"]');
     expect(content).toHaveClass("min-h-0", "overflow-hidden");
     expect(content).toHaveAttribute("data-orientation", "vertical");
+    const viewport = container.querySelector('[data-slot="sidebar-layout-viewport"]');
+    expect(viewport).toBe(content?.firstElementChild);
+    expect(viewport).toHaveStyle({ overflow: "scroll" });
+    expect(viewport).toContainElement(screen.getByText("Page content"));
   });
 
   it("lets the header wrap and keeps wide content and scroll chaining inside the column", () => {

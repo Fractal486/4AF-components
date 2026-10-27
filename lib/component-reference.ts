@@ -414,6 +414,7 @@ import { Morph } from "@/components/ui/morph";
     usage: `import { Sidebar } from "@/components/ui/sidebar";
 import { SidebarLayout } from "@/components/ui/sidebar-layout";
 
+// Scroll restoration and locking target [data-slot="sidebar-layout-viewport"].
 <SidebarLayout
   sidebar={<Sidebar />}
   title="Notes"
