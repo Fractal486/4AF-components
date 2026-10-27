@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import {
   SidebarInset,
   SidebarProvider,
@@ -52,6 +53,7 @@ export interface SidebarLayoutProps extends Omit<SidebarProviderProps, "children
   /** Replace the default left-aligned SidebarTrigger, or pass null to omit it. */
   collapseControl?: ReactNode;
   headerClassName?: string;
+  /** Classes for the scrolling content column itself (padding, gap). */
   contentClassName?: string;
   children?: ReactNode;
 }
@@ -99,18 +101,18 @@ export function SidebarLayout({
         {/* The scrolling content and the rail are siblings, so the rail can run the full
             height of the inset without riding the page's scroll. */}
         <div className="flex min-h-0 flex-1">
-          <div
+          {/* A Scroll Area, so the column scrolls with the library scrollbar. Its root is
+              `min-w-0`, so wide content (a table, a code block) scrolls inside the column
+              instead of pushing the layout past the screen, and its viewport is
+              `overscroll-contain`, so reaching the end doesn't scroll the page behind it. */}
+          <ScrollArea
+            fade
             data-slot="sidebar-layout-content"
-            // `min-w-0` so wide content (a table, a code block) scrolls inside the column
-            // instead of pushing the layout past the screen; `overscroll-contain` so reaching
-            // the end of the content doesn't scroll the page behind it.
-            className={cn(
-              "flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain",
-              contentClassName,
-            )}
+            className="flex-1"
+            viewportClassName={cn("flex flex-col", contentClassName)}
           >
             <RailSlotContext value={railSlot}>{children}</RailSlotContext>
-          </div>
+          </ScrollArea>
           {/* `contents`: whatever portals in becomes a direct flex child of this row
               rather than sitting inside a wrapper that would need its own sizing. */}
           <div

@@ -2,6 +2,7 @@ import { cn } from "@/registry/lib/cn";
 import { LoadingIndicator } from "@/registry/lib/loader";
 import { useMergedRefs } from "@/registry/lib/refs";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Autocomplete } from "@base-ui/react/autocomplete";
 import { ChevronRight, CornerDownLeft } from "lucide-react";
 import {
@@ -21,7 +22,6 @@ import {
   EscapeHint,
   FooterAction,
   Kbd,
-  SCROLLBAR,
   snapFirstRowToTop,
 } from "./command-palette.chrome";
 import { PanelActionsContext, useFrozen } from "./command-palette.context";
@@ -64,12 +64,9 @@ function highlightLabel(label: string, positions: number[]): ReactNode {
  */
 export function CommandPanelBody({ className, children, ...props }: ComponentProps<"div">) {
   return (
-    <div
-      className={cn("min-h-0 flex-1 overflow-y-auto overscroll-contain p-4", SCROLLBAR, className)}
-      {...props}
-    >
+    <ScrollArea fade className="min-h-0 flex-1" viewportClassName={cn("p-4", className)} {...props}>
       {children}
-    </div>
+    </ScrollArea>
   );
 }
 
@@ -128,16 +125,16 @@ export function CommandPanelList({
           className="sr-only"
         />
       )}
-      <Autocomplete.List
-        ref={ref}
-        className={cn(
-          "min-h-0 flex-1 overflow-y-auto overscroll-contain p-1.5",
-          SCROLLBAR,
-          className,
-        )}
+      {/* The scroll area's viewport scrolls; the list inside it carries the rows. Out of the
+          tab order, since the rows move by arrow keys. */}
+      <ScrollArea
+        fade
+        className="min-h-0 flex-1"
+        viewportRef={ref}
+        viewportProps={{ tabIndex: -1 }}
       >
-        {children}
-      </Autocomplete.List>
+        <Autocomplete.List className={cn("p-1.5", className)}>{children}</Autocomplete.List>
+      </ScrollArea>
     </>
   );
 }

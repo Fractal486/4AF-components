@@ -431,31 +431,6 @@
  * Base
  * ------------------------------------------------------------------------ */
 
-/* Shared by documentation snippets, install commands, and the source browser. */
-.code-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-border-strong) transparent;
-}
-
-.code-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.code-scrollbar::-webkit-scrollbar-track,
-.code-scrollbar::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
-.code-scrollbar::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: var(--color-border-strong);
-}
-
-.code-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--color-muted-foreground);
-}
-
 @layer base {
   html {
     /* Match modal scroll locking so viewport-based type stays the same size. */

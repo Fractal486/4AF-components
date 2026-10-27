@@ -20,7 +20,15 @@ const FRUITS = [
   { value: "watermelon", label: "Watermelon" },
 ] as const;
 
-type Fruit = (typeof FRUITS)[number];
+/** Added when the demo is scrollable: enough rows that the panel outgrows its cap and scrolls. */
+const MORE_FRUITS = [
+  "Apricot", "Cherry", "Coconut", "Fig", "Guava", "Kiwi", "Lemon", "Lime", "Lychee", "Papaya",
+  "Peach", "Pear", "Pineapple", "Plum", "Pomegranate", "Raspberry",
+].map((label) => ({ value: label.toLowerCase(), label }));
+
+const ALL_FRUITS = [...FRUITS, ...MORE_FRUITS].sort((a, b) => a.label.localeCompare(b.label));
+
+type Fruit = { value: string; label: string };
 
 export const selectSearchEntry = defineEntry({
   slug: "select-search",
@@ -31,10 +39,12 @@ export const selectSearchEntry = defineEntry({
     disabled: bool(false),
     multiple: bool(false),
     selected: bool(true, "Selected"),
+    scrollable: bool(false, "Scrollable"),
     icons: bool(true),
     invalid: bool(false),
   },
-  render({ size, tone, disabled, multiple, selected, icons, invalid }) {
+  render({ size, tone, disabled, multiple, selected, scrollable, icons, invalid }) {
+    const items: readonly Fruit[] = scrollable ? ALL_FRUITS : FRUITS;
     return (
       <div className="w-full max-w-56">
         {multiple ? (
@@ -42,7 +52,7 @@ export const selectSearchEntry = defineEntry({
             key={`multiple-${selected}`}
             multiple
             size={size}
-            items={FRUITS}
+            items={items}
             defaultValue={selected ? [FRUITS[1], FRUITS[4]] : []}
             disabled={disabled}
           >
@@ -70,7 +80,7 @@ export const selectSearchEntry = defineEntry({
             key={`single-${selected}`}
             defaultValue={selected ? FRUITS[4] : null}
             size={size}
-            items={FRUITS}
+            items={items}
             disabled={disabled}
             iconForValue={icons ? (value) => <FruitIcon value={value.value} /> : undefined}
           >

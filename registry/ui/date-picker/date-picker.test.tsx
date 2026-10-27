@@ -244,26 +244,32 @@ describe("Calendar month / year picker", () => {
 
   it("holds the grid's height while the picker is open, whatever month it moves to", async () => {
     const user = userEvent.setup();
-    const offsetHeight = vi
-      .spyOn(HTMLElement.prototype, "offsetHeight", "get")
-      .mockReturnValue(210);
+    // A fractional height, held exactly: rounding it up grew the panel as the picker opened.
+    const computed = window.getComputedStyle.bind(window);
+    const getComputedStyle = vi
+      .spyOn(window, "getComputedStyle")
+      .mockImplementation((element, pseudo) =>
+        element instanceof HTMLElement && element.dataset.slot === "calendar-month-grid"
+          ? ({ height: "210.5px" } as CSSStyleDeclaration)
+          : computed(element, pseudo),
+      );
     try {
       render(<Calendar mode="single" defaultMonth={new Date(2026, 4, 1)} />);
       const grid = () => document.querySelector<HTMLElement>('[data-slot="calendar-month-grid"]')!;
 
       expect(grid().style.height).toBe("");
       await user.click(toggle());
-      expect(grid().style.height).toBe("210px");
+      expect(grid().style.height).toBe("210.5px");
 
       // A month with a different number of weeks doesn't move it while the picker is open.
       await user.click(screen.getByRole("radio", { name: "2027" }));
-      expect(grid().style.height).toBe("210px");
+      expect(grid().style.height).toBe("210.5px");
 
       // Back in the day view, the grid takes its own height again.
       await user.click(screen.getByRole("radio", { name: "Feb" }));
       expect(grid().style.height).toBe("");
     } finally {
-      offsetHeight.mockRestore();
+      getComputedStyle.mockRestore();
     }
   });
 

@@ -34,6 +34,7 @@ export const DEMO_NAMES = [
   "select-aligned",
   "select-search",
   "selection-toolbar",
+  "scroll-area",
   "separator",
   "sheet",
   "sidebar",

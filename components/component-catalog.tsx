@@ -9,6 +9,23 @@ import {
   TableRow,
 } from "@/registry/ui/table/table";
 
+/** The catalog's own page, whose contents come from the categories below rather than its MDX. */
+export const COMPONENT_CATALOG_URL = "/docs/reference/components";
+
+function categoryId(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+/**
+ * The catalog's headings, for the page's contents. They are rendered here, not written in the
+ * MDX, so Fumadocs never sees them; the page adds these to the headings it did collect.
+ */
+export const componentCatalogToc = componentCategories.map((category) => ({
+  id: categoryId(category.name),
+  title: category.name,
+  level: 2,
+}));
+
 export function ComponentCount() {
   return <>{componentCount}</>;
 }
@@ -18,7 +35,9 @@ export function ComponentCatalog() {
     <div className="not-prose my-8 space-y-8">
       {componentCategories.map((category) => (
         <section key={category.name}>
-          <h2 className="mb-3 text-xl font-semibold text-foreground">{category.name}</h2>
+          <h2 id={categoryId(category.name)} className="mb-3 text-xl font-semibold text-foreground">
+            {category.name}
+          </h2>
           <Table className="min-w-[760px] [&_thead]:bg-surface [&_thead_th]:border-b-0" stickyHeader={false}>
               <TableHeader>
                 <TableRow>

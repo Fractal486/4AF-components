@@ -6,22 +6,11 @@ import { cva, type VariantProps } from "class-variance-authority";
  *
  * The frame is on the wrapper rather than the table for one reason: `border-collapse`
  * ignores `border-radius`, so a border on a collapsed table can only ever be a square one.
- * On the wrapper it rounds — and the wrapper already clips, because setting `overflow-x`
- * forces the other axis out of `visible` too, so the corners cut the cells cleanly.
+ * On the wrapper it rounds — and the wrapper is a Scroll Area root, which clips, so the corners
+ * cut the cells cleanly.
  */
 export const tableWrapperVariants = cva(
-  [
-    "w-full overflow-x-auto",
-    // The library's thin scrollbar, same declaration the menu, dialog and select panels
-    // use. `h-1.5` as well as `w-1.5`, because this is the first of them that can scroll
-    // sideways and the webkit rule sizes each axis separately. Firefox reads the first two
-    // properties and ignores the pseudo-elements.
-    "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent]",
-    "[&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar]:w-1.5",
-    "[&::-webkit-scrollbar-track]:bg-transparent",
-    "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong",
-    "[&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground",
-  ],
+  "w-full",
   {
     variants: {
       outline: {

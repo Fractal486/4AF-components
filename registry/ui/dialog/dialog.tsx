@@ -16,6 +16,7 @@ import {
 import { cn } from "@/registry/lib/cn";
 import { duration, ease, overlayEnter, overlayExit, overlayVisible, spring } from "@/registry/lib/motion";
 import { Button } from "@/registry/ui/button/button";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 
 /**
  * A dialog — a modal centred over the page.
@@ -71,6 +72,8 @@ export type DialogPortalContainer = ComponentProps<typeof BaseDialog.Portal>["co
 export interface DialogContentProps
   extends Omit<ComponentProps<typeof BaseDialog.Popup>, "className" | "render"> {
   className?: string;
+  /** Extra classes for the scrolling body that holds the content: its padding and gap. */
+  bodyClassName?: string;
   /** Optional extra classes for the backdrop (for image/full-screen dialogs). */
   backdropClassName?: string;
   /** Mount the dialog portal into a caller-owned surface instead of document.body. */
@@ -81,6 +84,7 @@ export interface DialogContentProps
 
 export function DialogContent({
   className,
+  bodyClassName,
   backdropClassName: customBackdropClassName,
   portalContainer,
   children,
@@ -112,13 +116,9 @@ export function DialogContent({
               // Centred with a translate; Motion scales on top (Tailwind v4 keeps
               // `translate` and Motion's `transform` as separate properties, so the two
               // compose and it stays centred while it scales).
-              "fixed top-1/2 left-1/2 z-50 flex max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg -translate-1/2 flex-col gap-4 overflow-y-auto rounded-md border border-border bg-surface-raised p-6 shadow-overlay-drop",
-              // A thin custom scrollbar, shown only when the dialog is taller than the
-              // viewport. Firefox uses the standard properties; WebKit the pseudo-elements.
-              "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent]",
-              "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent",
-              "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong",
-              "[&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground",
+              // The popup clips; the body scrolls when the dialog is taller than the viewport,
+              // so the close button stays put above it.
+              "fixed top-1/2 left-1/2 z-50 flex max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg -translate-1/2 flex-col overflow-hidden rounded-md border border-border bg-surface-raised shadow-overlay-drop",
               className,
             )}
             render={
@@ -139,7 +139,13 @@ export function DialogContent({
             }
             {...props}
           >
-            {children}
+            <ScrollArea
+              fade
+              className="min-h-0"
+              viewportClassName={cn("flex flex-col gap-4 p-6", bodyClassName)}
+            >
+              {children}
+            </ScrollArea>
             {showClose && (
               <BaseDialog.Close
                 render={

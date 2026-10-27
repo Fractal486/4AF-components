@@ -16,7 +16,9 @@ A centred modal with enter and exit motion and an optional validated multi-step 
 
 Base UI handles focus trapping, dismissal, scroll locking, and labelling. `DialogContent`
 accepts `portalContainer` for a mount point of your own and `backdropClassName` for extra
-backdrop styling. `DialogSteps` animates between steps of different sizes. Its final **Done**
+backdrop styling. Its content sits in a [Scroll Area](/docs/scroll-area) that scrolls when the
+dialog is taller than the viewport; `className` styles the popup (width, surface) and
+`bodyClassName` the scrolling body (padding `p-6`, gap `gap-4`). `DialogSteps` animates between steps of different sizes. Its final **Done**
 button closes the dialog after optional validation; it does not save data or submit a form.
 
 `validateStep(index, intent)` receives `"forward"` before advancing and `"submit"` when Done

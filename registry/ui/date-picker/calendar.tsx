@@ -259,11 +259,13 @@ export function Calendar({
     // The panel follows the number of weeks only in the day view. Measured as the picker
     // opens, the grid's height is held while it is open, so moving between months there
     // doesn't resize the panel; closing it lets the grid take the new month's height.
-    // `offsetHeight`, not a rect: the popover may still be scaling in.
+    // The computed height, not a rect, because the popover may still be scaling in; and not
+    // `offsetHeight`, which rounds to whole pixels and grew the panel by the remainder.
     const grid = toggleNode.current
       ?.closest('[data-slot="calendar-month"]')
       ?.querySelector<HTMLElement>('[data-slot="calendar-month-grid"]');
-    setPicker({ open, height: open ? grid?.offsetHeight : undefined });
+    const height = grid ? Number.parseFloat(getComputedStyle(grid).height) : Number.NaN;
+    setPicker({ open, height: open && Number.isFinite(height) ? height : undefined });
   }, []);
   const toggleRef = useCallback((node: HTMLButtonElement | null) => {
     toggleNode.current = node;

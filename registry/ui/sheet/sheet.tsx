@@ -20,6 +20,7 @@ import {
 import { cn } from "@/registry/lib/cn";
 import { duration, ease, overlayExit, spring } from "@/registry/lib/motion";
 import { Button } from "@/registry/ui/button/button";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { sheetContentVariants, type SheetContentVariants } from "./sheet.variants";
 
 /**
@@ -198,23 +199,12 @@ export function SheetHeader({ className, ...props }: ComponentProps<"div">) {
   return <div className={cn("flex flex-col gap-1.5 p-5", className)} {...props} />;
 }
 
-export function SheetBody({ className, ...props }: ComponentProps<"div">) {
+/** The scrolling middle of a sheet. `className` styles the scrolling element itself. */
+export function SheetBody({ className, children, ...props }: ComponentProps<"div">) {
   return (
-    <div
-      className={cn(
-        "flex-1 overflow-y-auto px-5",
-        // A thin custom scrollbar, shown only when content overflows. Firefox uses the
-        // standard properties; WebKit/Blink need the pseudo-elements. Colours are tokens,
-        // so it stays subtle in both themes.
-        "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent]",
-        "[&::-webkit-scrollbar]:w-1.5",
-        "[&::-webkit-scrollbar-track]:bg-transparent",
-        "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong",
-        "[&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground",
-        className,
-      )}
-      {...props}
-    />
+    <ScrollArea fade className="min-h-0 flex-1" viewportClassName={cn("px-5", className)} {...props}>
+      {children}
+    </ScrollArea>
   );
 }
 

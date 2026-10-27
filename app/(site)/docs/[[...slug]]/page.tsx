@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { COMPONENT_CATALOG_URL, componentCatalogToc } from "@/components/component-catalog";
 import { getMDXComponents } from "@/components/mdx";
 import { InlineLink } from "@/components/inline-link";
 import { ArticleColumn } from "@/components/site/article-column";
 import { ComponentPlayground } from "@/components/site/component-playground";
 import { PageFrame } from "@/components/site/page-frame";
-import { siblings, siteNav } from "@/lib/site-nav";
+import { siblings } from "@/lib/site-nav";
 import { source } from "@/lib/source";
 import { pageAlternates, publicInstallCommand, SITE_URL } from "@/lib/site";
 import { CopyButton } from "@/registry/ui/copy-button/copy-button";
@@ -26,13 +27,16 @@ export default async function Page({ params }: DocsPageProps) {
   if (!page) notFound();
 
   const MdxContent = page.data.body;
-  const group = siteNav().find((g) => g.items.some((item) => item.href === page.url));
   const { previous, next } = siblings(page.url);
-  const toc = page.data.toc.map((entry) => ({
-    id: entry.url.slice(1),
-    title: entry.title,
-    level: entry.depth,
-  }));
+  const toc = [
+    ...page.data.toc.map((entry) => ({
+      id: entry.url.slice(1),
+      title: entry.title,
+      level: entry.depth,
+    })),
+    // The catalog's sections are rendered by a component, out of Fumadocs' sight.
+    ...(page.url === COMPONENT_CATALOG_URL ? componentCatalogToc : []),
+  ];
 
   const demos = slug.length === 1 ? playgroundDemos(slug[0]!, page.data.title) : [];
   if (demos.length > 0) {
@@ -62,9 +66,6 @@ export default async function Page({ params }: DocsPageProps) {
     <PageFrame toc={toc}>
       <article>
         <header className="mb-8 flex flex-col gap-3">
-          {group?.label ? (
-            <p className="font-mono text-2xs tracking-[0.04em] text-subtle-foreground">{group.label}</p>
-          ) : null}
           <h1 className="text-[length:clamp(1.75rem,3vw,2.25rem)] leading-[1.15] font-semibold tracking-[-0.03em] text-balance">
             {page.data.title}
           </h1>
@@ -81,7 +82,7 @@ export default async function Page({ params }: DocsPageProps) {
                 size="sm"
                 iconPosition="start"
                 swapLabel={false}
-                className="cursor-default"
+                className="cursor-default bg-background"
               >
                 Copy Markdown link
               </CopyButton>

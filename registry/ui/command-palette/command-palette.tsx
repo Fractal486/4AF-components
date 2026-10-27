@@ -3,6 +3,7 @@
 import { cn } from "@/registry/lib/cn";
 import { duration, ease, overlayEnter, overlayExit, overlayVisible, spring } from "@/registry/lib/motion";
 import { LoadingIndicator, LoaderProvider } from "@/registry/lib/loader";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Autocomplete } from "@base-ui/react/autocomplete";
 import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import { ChevronLeft, CornerDownLeft, Plus, Search } from "lucide-react";
@@ -13,7 +14,6 @@ import {
   EscapeHint,
   Hint,
   KBD,
-  SCROLLBAR,
   snapFirstRowToTop,
 } from "./command-palette.chrome";
 import {
@@ -809,29 +809,33 @@ export function CommandPalette({
               </kbd>
             </div>
 
-            <Autocomplete.List
-              ref={snapFirstRowToTop}
-              className={cn("min-h-0 flex-1 overflow-y-auto overscroll-contain p-1.5", SCROLLBAR)}
+            <ScrollArea
+              fade
+              className="min-h-0 flex-1"
+              viewportRef={snapFirstRowToTop}
+              viewportProps={{ tabIndex: -1 }}
             >
-              {(group: { heading?: string; items: CommandItem[] }) => (
-                <Autocomplete.Group
-                  key={group.heading ?? "group"}
-                  items={group.items}
-                  className="mb-1 last:mb-0"
-                >
-                  {group.heading && (
-                    <Autocomplete.GroupLabel className={GROUP_LABEL_CLASS}>
-                      {group.heading}
-                    </Autocomplete.GroupLabel>
-                  )}
-                  <Autocomplete.Collection>
-                    {(item: CommandItem) => (
-                      <CommandRow key={item.id} item={item} query={query} onRun={runItem} />
+              <Autocomplete.List className="p-1.5">
+                {(group: { heading?: string; items: CommandItem[] }) => (
+                  <Autocomplete.Group
+                    key={group.heading ?? "group"}
+                    items={group.items}
+                    className="mb-1 last:mb-0"
+                  >
+                    {group.heading && (
+                      <Autocomplete.GroupLabel className={GROUP_LABEL_CLASS}>
+                        {group.heading}
+                      </Autocomplete.GroupLabel>
                     )}
-                  </Autocomplete.Collection>
-                </Autocomplete.Group>
-              )}
-            </Autocomplete.List>
+                    <Autocomplete.Collection>
+                      {(item: CommandItem) => (
+                        <CommandRow key={item.id} item={item} query={query} onRun={runItem} />
+                      )}
+                    </Autocomplete.Collection>
+                  </Autocomplete.Group>
+                )}
+              </Autocomplete.List>
+            </ScrollArea>
 
             {/* Empty's box must stay mounted — it's an ARIA live region — and only its
                 *children* clear when there are results. The padding lives on an inner

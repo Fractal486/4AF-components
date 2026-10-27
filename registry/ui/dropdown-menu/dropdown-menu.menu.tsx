@@ -1,5 +1,6 @@
 import { cn } from "@/registry/lib/cn";
 import { radioVariants } from "@/registry/ui/radio/radio.variants";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 import { ChevronRight } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
@@ -33,10 +34,8 @@ export function DropdownMenuSub({
 
 const popupClassName = cn(
   // Same floating-panel material as the Select/Popover panels.
-  "z-50 max-h-[var(--available-height)] min-w-50 overflow-y-auto rounded-md border border-border bg-surface p-1 text-foreground shadow-overlay-drop outline-none",
-  "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent]",
-  "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent",
-  "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong",
+  // The popup clips and `MenuScroll` scrolls, so the rows' `p-1` inset scrolls with them.
+  "z-50 flex max-h-[var(--available-height)] min-w-50 flex-col overflow-hidden rounded-md border border-border bg-surface text-foreground shadow-overlay-drop outline-none",
   // Scale-and-blur enter from the trigger edge; only these properties change, so only
   // these are named. Base UI unmounts on transitionend, which fires because it's set.
   //
@@ -49,6 +48,18 @@ const popupClassName = cn(
   "data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[starting-style]:blur-[3px]",
   "data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[ending-style]:blur-[2px]",
 );
+
+/**
+ * The library scrollbar inside a menu panel. The viewport stays out of the tab order: the menu
+ * scrolls its highlighted row into view, and Tab is not how a menu is moved through.
+ */
+function MenuScroll({ children }: { children: ReactNode }) {
+  return (
+    <ScrollArea fade className="min-h-0" viewportClassName="p-1" viewportProps={{ tabIndex: -1 }}>
+      {children}
+    </ScrollArea>
+  );
+}
 
 export interface DropdownMenuContentProps
   extends Omit<ComponentProps<typeof BaseMenu.Popup>, "className"> {
@@ -81,7 +92,7 @@ export function DropdownMenuContent({
         className="z-50 outline-none"
       >
         <BaseMenu.Popup className={cn(popupClassName, className)} {...props}>
-          {children}
+          <MenuScroll>{children}</MenuScroll>
         </BaseMenu.Popup>
       </BaseMenu.Positioner>
     </BaseMenu.Portal>
@@ -283,7 +294,7 @@ export function DropdownMenuSubContent({
         className="z-50 outline-none"
       >
         <BaseMenu.Popup className={cn(popupClassName, className)} {...props}>
-          {children}
+          <MenuScroll>{children}</MenuScroll>
         </BaseMenu.Popup>
       </BaseMenu.Positioner>
     </BaseMenu.Portal>

@@ -31,6 +31,7 @@ export const COMPONENT_FAMILIES = [
   { name: "Popover", slugs: ["popover"] },
   { name: "Progress", slugs: ["progress"] },
   { name: "Radio", slugs: ["radio"] },
+  { name: "Scroll Area", slugs: ["scroll-area"] },
   {
     name: "Select",
 
@@ -110,6 +111,7 @@ export const COMPONENT_CATEGORIES = [
       "table-of-contents",
       "table-of-contents-lines",
       "separator",
+      "scroll-area",
       "command-palette",
       "sidebar",
       "sidebar-layout",
@@ -161,6 +163,7 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   "select-aligned": "AlignedSelect, AlignedSelectTrigger, AlignedSelectContent, AlignedSelectItem",
   "select-search": "SearchSelect and input/content/item parts",
   "selection-toolbar": "SelectionToolbar, item parts, useSelectionToolbar",
+  "scroll-area": "ScrollArea, ScrollAreaScrollbar",
   separator: "Separator",
   sheet: "Sheet and composition parts",
   sidebar: "SidebarProvider, Sidebar, SidebarPanel, SidebarHeaderButton, menu/group/submenu parts",

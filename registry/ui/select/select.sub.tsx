@@ -1,4 +1,5 @@
 import { cn } from "@/registry/lib/cn";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Select as BaseSelect } from "@base-ui/react/select";
 import { ChevronRight } from "lucide-react";
 import {
@@ -22,7 +23,6 @@ import {
   type SelectSubItemContextValue,
 } from "./select.context";
 import { SelectItem, type SelectItemProps } from "./select.item";
-import { SCROLLBAR } from "./select.shared";
 import { preventBaseUIHandler } from "./select.utils";
 
 /**
@@ -703,15 +703,16 @@ export function SelectSubContent({
             onPointerEnter={handlePointerEnter}
             onPointerLeave={handlePointerLeave}
             className={cn(
-              "max-h-[min(var(--available-height),18rem)] w-max min-w-50 overflow-y-auto rounded-md border border-border bg-surface p-1 text-foreground shadow-overlay-drop outline-none",
-              SCROLLBAR,
+              "flex max-h-[min(var(--available-height),18rem)] w-max min-w-50 flex-col overflow-hidden rounded-md border border-border bg-surface text-foreground shadow-overlay-drop outline-none",
               "origin-[var(--transform-origin)] blur-0 transition-[opacity,scale,filter] duration-(--duration-base) ease-out",
               "data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[starting-style]:blur-[3px]",
               "data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[ending-style]:blur-[2px]",
               className,
             )}
           >
-            {keepMounted || subOpen ? options : null}
+            <ScrollArea fade className="min-h-0" viewportClassName="p-1" viewportProps={{ tabIndex: -1 }}>
+              {keepMounted || subOpen ? options : null}
+            </ScrollArea>
           </BaseSelect.Popup>
         </BaseSelect.Positioner>
       </BaseSelect.Portal>

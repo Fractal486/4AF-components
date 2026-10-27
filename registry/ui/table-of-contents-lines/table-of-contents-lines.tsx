@@ -104,7 +104,9 @@ export function TableOfContentsLines({
                 data-active={active ? "true" : "false"}
                 style={{ paddingInlineStart: `${indent}rem` }}
                 className={cn(
-                  "group grid h-7 grid-cols-[1.5rem_minmax(0,1fr)] grid-rows-3 items-center gap-x-2.5 text-sm leading-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                  // The arrow cursor, like the library's other rows: the entry moves within
+                  // the page rather than leaving it.
+                  "group grid h-7 cursor-default grid-cols-[1.5rem_minmax(0,1fr)] grid-rows-3 items-center gap-x-2.5 text-sm leading-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                   "text-muted-foreground transition-[color,translate] duration-(--duration-slow) ease-out",
                   "hover:text-foreground focus-visible:text-foreground",
                   "data-[active=true]:text-foreground",

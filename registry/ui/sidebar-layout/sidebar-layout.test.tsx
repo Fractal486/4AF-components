@@ -44,10 +44,10 @@ describe("SidebarLayout", () => {
       "min-h-0",
       "overflow-hidden",
     );
-    expect(container.querySelector('[data-slot="sidebar-layout-content"]')).toHaveClass(
-      "min-h-0",
-      "overflow-y-auto",
-    );
+    // A vertical Scroll Area: the root clips, its viewport scrolls.
+    const content = container.querySelector('[data-slot="sidebar-layout-content"]');
+    expect(content).toHaveClass("min-h-0", "overflow-hidden");
+    expect(content).toHaveAttribute("data-orientation", "vertical");
   });
 
   it("lets the header wrap and keeps wide content and scroll chaining inside the column", () => {
@@ -66,10 +66,9 @@ describe("SidebarLayout", () => {
       "min-w-0",
       "flex-wrap",
     );
-    expect(container.querySelector('[data-slot="sidebar-layout-content"]')).toHaveClass(
-      "min-w-0",
-      "overscroll-contain",
-    );
+    const content = container.querySelector('[data-slot="sidebar-layout-content"]');
+    expect(content).toHaveClass("min-w-0");
+    expect(content?.firstElementChild).toHaveClass("data-[has-overflow-y]:overscroll-y-contain");
   });
 
   it("puts the rail slot beside the scroll container, not inside it", () => {

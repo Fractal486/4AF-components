@@ -272,7 +272,7 @@ describe("DropdownMenu", () => {
           <DropdownMenuActionItem
             action={action}
             labels={{ success: "Copied" }}
-            revertAfter={50}
+            revertAfter={400}
           >
             Copy link
           </DropdownMenuActionItem>
@@ -297,9 +297,10 @@ describe("DropdownMenu", () => {
     expect(screen.getByRole("menu")).toBeInTheDocument();
     expect(row).toHaveTextContent("Copied");
 
-    // A real 50ms wait rather than a faked clock: Base UI's menu schedules its own
-    // timers, and parking those on a fake clock leaves the *next* test's menu unable to
-    // open at all. The revert is short enough that waiting for it is cheap.
+    // A real wait rather than a faked clock: Base UI's menu schedules its own timers, and
+    // parking those on a fake clock leaves the *next* test's menu unable to open at all.
+    // 400ms, not less: a busy full-suite run can spend a 50ms window between the outcome
+    // landing and the assertions above, so the row had already reverted.
     await waitFor(() => expect(row).toHaveAttribute("data-status", "idle"));
     expect(row).toHaveTextContent("Copy link");
   });

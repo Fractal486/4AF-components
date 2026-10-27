@@ -18,9 +18,9 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { SidebarSplitContext, useSidebar, type SidebarSplitContextValue } from "./sidebar.context";
 import { SidebarRail } from "./sidebar.controls";
-import { SIDEBAR_SCROLLBAR } from "./sidebar.structure";
 
 // Keep the installable component's public API at this entry point.
 export { useSidebar } from "./sidebar.context";
@@ -242,18 +242,15 @@ export function Sidebar({
           </SheetHeader>
           {isSplit ? (
             <div className="flex h-full w-full">
-              <div
+              <ScrollArea
+                fade
                 data-slot="sidebar-rail-column"
-                className={cn(
-                  // `overflow-x-hidden` as on desktop: setting only the vertical axis makes the
-                  // other `auto` too, and a wide rail item showed a stray horizontal scrollbar.
-                  "flex h-full w-(--sidebar-width-icon) shrink-0 flex-col items-center gap-2 overflow-x-hidden overflow-y-auto bg-surface p-2",
-                  SIDEBAR_SCROLLBAR,
-                  "border-r border-border",
-                )}
+                className="h-full w-(--sidebar-width-icon) shrink-0 border-r border-border bg-surface"
+                // `overflow-x-hidden` as on desktop: a wide rail item must not scroll sideways.
+                viewportClassName="flex flex-col items-center gap-2 overflow-x-hidden! p-2"
               >
                 {rail}
-              </div>
+              </ScrollArea>
               <div className="flex min-w-0 flex-1 flex-col">{children}</div>
             </div>
           ) : (
@@ -326,20 +323,22 @@ export function Sidebar({
                   : undefined,
             )}
           >
-            <div
+            <ScrollArea
+              fade
               data-slot="sidebar-rail-column"
               className={cn(
-                // The border leaves the padded rail one pixel narrower than its 32px
-                // controls; never turn that intentional edge overlap into an x-scrollbar.
-                "flex h-full w-(--sidebar-width-icon) shrink-0 flex-col items-center gap-2 overflow-x-hidden overflow-y-auto bg-surface p-2",
-                SIDEBAR_SCROLLBAR,
+                "h-full w-(--sidebar-width-icon) shrink-0 bg-surface",
                 // Once the wide panel closes, this internal divider meets the
                 // container's outer edge border; keep the outer line only.
                 "border-r border-border group-data-[state=collapsed]:border-r-0",
               )}
+              // The border leaves the padded rail one pixel narrower than its 32px controls;
+              // never turn that intentional edge overlap into sideways scrolling. `!` because
+              // Base UI sets the viewport's overflow inline.
+              viewportClassName="flex flex-col items-center gap-2 overflow-x-hidden! p-2"
             >
               {rail}
-            </div>
+            </ScrollArea>
             {/* `visibility` is in the transition list on purpose: it interpolates as a
                 step that holds the *visible* end for the whole duration, so the panel
                 stays on screen while it closes and is only hidden from AT and tab order

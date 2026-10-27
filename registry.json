@@ -455,6 +455,32 @@
       ]
     },
     {
+      "name": "scroll-area",
+      "type": "registry:ui",
+      "description": "A scroll container that draws its own thin scrollbar, the same in every browser, shown on hover and scroll or always, with optional edge fades. Base UI Scroll Area behaviour.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/scroll-area (Markdown: https://4af.selfsimilar.dev/docs/scroll-area.md)",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/scroll-area/scroll-area.tsx",
+          "type": "registry:ui",
+          "target": "@ui/scroll-area.tsx"
+        },
+        {
+          "path": "registry/ui/scroll-area/scroll-area.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/scroll-area.variants.ts"
+        }
+      ]
+    },
+    {
       "name": "textarea",
       "type": "registry:ui",
       "description": "A multiline text field with bordered or plain variants, neutral or accent focus styling, and an optional resize handle with pointer cancellation and cleanup.",
@@ -896,7 +922,8 @@
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
-        "https://4af.selfsimilar.dev/r/skeleton.json"
+        "https://4af.selfsimilar.dev/r/skeleton.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json"
       ],
       "files": [
         {
@@ -1095,7 +1122,8 @@
         "https://4af.selfsimilar.dev/r/refs.json",
         "https://4af.selfsimilar.dev/r/checkbox.json",
         "https://4af.selfsimilar.dev/r/button.json",
-        "https://4af.selfsimilar.dev/r/input.json"
+        "https://4af.selfsimilar.dev/r/input.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json"
       ],
       "files": [
         {
@@ -1165,7 +1193,8 @@
         "https://4af.selfsimilar.dev/r/use-action.json",
         "https://4af.selfsimilar.dev/r/select.json",
         "https://4af.selfsimilar.dev/r/motion.json",
-        "https://4af.selfsimilar.dev/r/refs.json"
+        "https://4af.selfsimilar.dev/r/refs.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json"
       ],
       "files": [
         {
@@ -1305,7 +1334,8 @@
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/input.json",
-        "https://4af.selfsimilar.dev/r/refs.json"
+        "https://4af.selfsimilar.dev/r/refs.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json"
       ],
       "files": [
         {
@@ -1334,7 +1364,8 @@
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/refs.json",
-        "https://4af.selfsimilar.dev/r/checkbox.json"
+        "https://4af.selfsimilar.dev/r/checkbox.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json"
       ],
       "files": [
         {
@@ -1421,7 +1452,8 @@
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/motion.json",
-        "https://4af.selfsimilar.dev/r/button.json"
+        "https://4af.selfsimilar.dev/r/button.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json"
       ],
       "files": [
         {
@@ -1450,7 +1482,8 @@
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/motion.json",
-        "https://4af.selfsimilar.dev/r/button.json"
+        "https://4af.selfsimilar.dev/r/button.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json"
       ],
       "files": [
         {
@@ -1609,7 +1642,8 @@
         "https://4af.selfsimilar.dev/r/input.json",
         "https://4af.selfsimilar.dev/r/tooltip.json",
         "https://4af.selfsimilar.dev/r/use-action.json",
-        "https://4af.selfsimilar.dev/r/loader.json"
+        "https://4af.selfsimilar.dev/r/loader.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json"
       ],
       "files": [
         {
@@ -1657,7 +1691,8 @@
         "https://4af.selfsimilar.dev/r/input.json",
         "https://4af.selfsimilar.dev/r/sheet.json",
         "https://4af.selfsimilar.dev/r/skeleton.json",
-        "https://4af.selfsimilar.dev/r/tooltip.json"
+        "https://4af.selfsimilar.dev/r/tooltip.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json"
       ],
       "files": [
         {
@@ -1705,7 +1740,8 @@
       "dependencies": [],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/sidebar.json",
-        "https://4af.selfsimilar.dev/r/cn.json"
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json"
       ],
       "files": [
         {

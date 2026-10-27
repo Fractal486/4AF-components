@@ -2,6 +2,7 @@ import { cn } from "@/registry/lib/cn";
 import { duration, ease } from "@/registry/lib/motion";
 import { Button } from "@/registry/ui/button/button";
 import { Input } from "@/registry/ui/input/input";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Select as BaseSelect } from "@base-ui/react/select";
 import { Check, X } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
@@ -17,7 +18,7 @@ import {
 } from "react";
 import { SELECT_CLEAR_ACTION, SelectContext } from "./select.context";
 import { SelectSeparator } from "./select.item";
-import { FADE_EXIT, FADE_HIDDEN, FADE_SHOW, SCROLLBAR, SIZE } from "./select.shared";
+import { FADE_EXIT, FADE_HIDDEN, FADE_SHOW, SIZE } from "./select.shared";
 import { focusPanelOption } from "./select.utils";
 
 /**
@@ -419,15 +420,16 @@ export function SelectContent({
           {...props}
         >
           {searchable && searchPosition === "top" && searchField}
-          <div
-            className={cn(
-              "max-h-[min(var(--available-height),18rem)] overflow-y-auto p-1",
-              SCROLLBAR,
-              noResults && "hidden",
-            )}
+          {/* Out of the tab order: the panel moves by arrow keys and scrolls its active row
+              into view. */}
+          <ScrollArea
+            fade
+            className={cn("max-h-[min(var(--available-height),18rem)]", noResults && "hidden")}
+            viewportClassName="p-1"
+            viewportProps={{ tabIndex: -1 }}
           >
             <BaseSelect.List ref={listRef}>{children}</BaseSelect.List>
-          </div>
+          </ScrollArea>
           {noResults && (
             <div
               // One row tall, exactly: `m-1` mirrors the list's `p-1` and `py-1.5` is the

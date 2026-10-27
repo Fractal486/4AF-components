@@ -55,10 +55,6 @@ export const FADE_SHOW = { opacity: 1, scale: 1, filter: "blur(0px)" };
 // is gone before it can draw attention to going.
 export const FADE_EXIT = { opacity: 0, scale: 0.97, filter: "blur(2px)" };
 
-// A thin custom scrollbar, shown only when the list overflows. Firefox reads the first
-// two properties; WebKit the pseudo-element rules.
-export const SCROLLBAR =
-  "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground";
 
 /**
  * The icon slot sizes *any* glyph inside it, not just a direct child: a row can hand it a

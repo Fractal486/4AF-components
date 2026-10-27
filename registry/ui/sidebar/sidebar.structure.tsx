@@ -2,11 +2,9 @@ import { cn } from "@/registry/lib/cn";
 import { Slot } from "@/registry/lib/slot";
 import { Button, type ButtonProps } from "@/registry/ui/button/button";
 import { Input } from "@/registry/ui/input/input";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Separator as BaseSeparator } from "@base-ui/react/separator";
 import { createContext, useContext, type ComponentProps } from "react";
-
-export const SIDEBAR_SCROLLBAR =
-  "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground";
 
 /** The main column beside the sidebar. `inset` floats it as a card. */
 export function SidebarInset({ className, ...props }: ComponentProps<"main">) {
@@ -157,20 +155,28 @@ export function SidebarSeparator({
   );
 }
 
-export function SidebarContent({ className, ...props }: ComponentProps<"div">) {
+/**
+ * The scrolling middle of the sidebar. `className` styles the scrolling element itself.
+ *
+ * Only the vertical axis scrolls. Collapsed, the labels are wider than the rail and the column
+ * is shorter than the nav, so it clips instead: no scrollbar appearing every time it closes.
+ * `!` because Base UI sets the viewport's overflow inline.
+ */
+export function SidebarContent({ className, children, ...props }: ComponentProps<"div">) {
   return (
-    <div
+    <ScrollArea
+      fade
       data-slot="sidebar-content"
-      className={cn(
-        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto",
-        SIDEBAR_SCROLLBAR,
-        // Collapsed, the labels are wider than the rail; clipping beats a scrollbar
-        // appearing every time the sidebar closes.
-        "group-data-[collapsible=icon]:overflow-hidden group-data-[collapsible=icon]:gap-0",
+      className="min-h-0 flex-1 group-data-[collapsible=icon]:[&>[data-orientation=vertical]]:hidden"
+      viewportClassName={cn(
+        "flex flex-col gap-2 overflow-x-hidden!",
+        "group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:overflow-hidden!",
         className,
       )}
       {...props}
-    />
+    >
+      {children}
+    </ScrollArea>
   );
 }
 

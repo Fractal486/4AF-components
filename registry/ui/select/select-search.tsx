@@ -18,6 +18,7 @@ import { useMergedRefs } from "@/registry/lib/refs";
 import { cn } from "@/registry/lib/cn";
 import { duration, ease, spring } from "@/registry/lib/motion";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 
 /**
  * A searchable single or multi-select — type to filter the list, then pick one or more.
@@ -48,10 +49,6 @@ const FADE_SHOW = { opacity: 1, scale: 1, filter: "blur(0px)" };
 // is gone before it can draw attention to going.
 const FADE_EXIT = { opacity: 0, scale: 0.97, filter: "blur(2px)" };
 
-// A thin custom scrollbar, shown only when the list overflows. Firefox reads the first
-// two properties; WebKit the pseudo-element rules.
-const SCROLLBAR =
-  "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground";
 
 /**
  * The two sizes, mirroring Button. `sm` (30px) is the compact default; `md` (34px) matches
@@ -440,14 +437,15 @@ export function SearchSelectContent({
           >
             {emptyMessage}
           </Combobox.Empty>
-          <Combobox.List
-            className={cn(
-              "max-h-[min(var(--available-height),18rem)] overflow-y-auto p-1 empty:hidden",
-              SCROLLBAR,
-            )}
+          {/* The list owns its `p-1`, so with no matches `empty:hidden` collapses the whole
+              area to nothing. Out of the tab order: the field drives the list. */}
+          <ScrollArea
+            fade
+            className="max-h-[min(var(--available-height),18rem)]"
+            viewportProps={{ tabIndex: -1 }}
           >
-            {children}
-          </Combobox.List>
+            <Combobox.List className="p-1 empty:hidden">{children}</Combobox.List>
+          </ScrollArea>
         </Combobox.Popup>
       </Combobox.Positioner>
     </Combobox.Portal>

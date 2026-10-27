@@ -1,0 +1,65 @@
+---
+title: Scroll Area
+description: A scroll container that draws its own scrollbar, with optional edge fades.
+---
+
+<ComponentReference name="scroll-area" />
+
+## API
+
+**Main exports:** `ScrollArea`, `ScrollAreaScrollbar`
+
+A Base UI Scroll Area. The viewport scrolls natively (wheel, touch, keyboard) with the browser
+scrollbar hidden; a 5px thumb on a full-length rail, in a 10px hit area, is drawn in its place,
+the same in every browser, over the content rather than beside it. A scrollbar mounts only for an axis that overflows.
+
+An axis that overflows contains overscroll, so reaching its end doesn't scroll the page; an axis
+that doesn't overflow passes the wheel on to the page or pane around it.
+
+Give the root a size or a cap, for example `className="h-72"` or `"max-h-72"`; the viewport
+fills it.
+
+The library's own scroll containers use it: Dropdown Menu, Select, Select Search, Select
+Aligned and Command Palette lists, Dialog content, Sheet and Sidebar bodies, and the Table
+wrapper, all with `fade` on. `SheetBody` and `SidebarContent` pass `className` to the viewport.
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `orientation` | `"vertical" \| "horizontal" \| "both"` | `"vertical"` | Axes that get a scrollbar. `horizontal` and `both` size content to its children so wide content overflows. |
+| `scrollbar` | `"auto" \| "always"` | `"auto"` | `auto` shows the bar while the pointer is over the area or it scrolls; touch shows it only while scrolling. |
+| `fade` | `boolean` | `false` | Masks each edge that has content beyond it. The fade grows with the remaining scroll distance, up to `--scroll-area-fade` (1.75rem). |
+| `className` | `string` | | The root. |
+| `viewportClassName` | `string` | | The scrolling element. |
+| `viewportRef` | `Ref<HTMLDivElement>` | | The scrolling element, for reading or setting the scroll position. |
+| `viewportProps` | viewport props | | Other viewport props. `render` makes another element the scroller (a list primitive that must own its scroll); `tabIndex={-1}` drops it from the tab order in arrow-key widgets. |
+
+Other props spread onto Base UI's root, including `overflowEdgeThreshold`.
+
+## State
+
+| Attribute | Element | Meaning |
+| --- | --- | --- |
+| `data-orientation` | root, scrollbar, thumb | The axes; `both` on the root only. |
+| `data-scrollbar` | root | `auto` or `always`. |
+| `data-has-overflow-x` / `-y` | root, viewport | Content exceeds the viewport on that axis. |
+| `data-overflow-{x,y}-{start,end}` | root, viewport | Content lies beyond that edge. |
+| `data-hovering` | scrollbar | Pointer is over the area. |
+| `data-scrolling` | root, viewport, scrollbar | Scrolling, held briefly after it stops. |
+
+The viewport also carries `--scroll-area-overflow-{x,y}-{start,end}`, each edge's remaining
+scroll distance in pixels.
+
+Set `--scroll-area-inset-top` on the root to start the vertical scrollbar that far down, for
+example below a sticky header; the top fade starts there too, so the header stays opaque.
+Table does this with its pinned header's height.
+
+## Custom composition
+
+`ScrollAreaScrollbar` is one scrollbar and its thumb, with `scrollbar` and `thumbClassName`
+props. Use it with Base UI's `ScrollArea.Root` and `ScrollArea.Viewport` to place the bar
+elsewhere or restyle it.
+
+## Accessibility
+
+The viewport is focusable while it overflows, so keyboard users can scroll it, and draws an
+inset focus ring. The root has `role="presentation"`; name the content inside it, not the area.

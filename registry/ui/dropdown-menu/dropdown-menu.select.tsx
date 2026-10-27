@@ -1,6 +1,7 @@
 import { cn } from "@/registry/lib/cn";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Input } from "@/registry/ui/input/input";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 import { Check } from "lucide-react";
 import {
@@ -487,18 +488,15 @@ export function DropdownMenuSelectContent({
       {...props}
     >
       {searchable && searchPosition === "top" && searchField}
-      <div
-        ref={listRef}
-        className={cn(
-          "max-h-[min(var(--available-height),18rem)] overflow-y-auto p-1",
-          "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent]",
-          "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent",
-          "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong",
-          noResults && "hidden",
-        )}
+      <ScrollArea
+        fade
+        viewportRef={listRef}
+        viewportProps={{ tabIndex: -1 }}
+        className={cn("max-h-[min(var(--available-height),18rem)]", noResults && "hidden")}
+        viewportClassName="p-1"
       >
         {items}
-      </div>
+      </ScrollArea>
       {noResults && (
         // `m-1` supplies the same 4px inset as the list's `p-1`; `h-7` matches one
         // select row, keeping the full panel height identical to a single result.

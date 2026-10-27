@@ -90,8 +90,10 @@ describe("Table", () => {
     const { container, rerender } = render(<People />);
 
     const wrapper = container.querySelector('[data-slot="table-wrapper"]')!;
-    expect(wrapper.className).toContain("[scrollbar-width:thin]");
-    expect(wrapper.className).toContain("[&::-webkit-scrollbar]:h-1.5");
+    // A Scroll Area scrolling both ways: wide tables scroll sideways, bounded ones down.
+    expect(wrapper).toHaveAttribute("data-orientation", "both");
+    // The vertical bar starts below the pinned header rather than running behind it.
+    expect((wrapper as HTMLElement).style.getPropertyValue("--scroll-area-inset-top")).toMatch(/px$/);
 
     const headerRow = () => container.querySelector("thead tr")!;
     const headerCells = () => [...container.querySelectorAll("thead th")];

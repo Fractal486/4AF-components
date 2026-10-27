@@ -6,12 +6,15 @@ import {
   Fragment,
   isValidElement,
   useContext,
+  useLayoutEffect,
   useMemo,
+  useRef,
   type ComponentProps,
   type ComponentType,
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Skeleton } from "@/registry/ui/skeleton/skeleton";
 import {
   tableCellVariants,
@@ -132,6 +135,25 @@ export function Table({
   ...props
 }: TableProps) {
   const columns = useMemo(() => countColumns(children), [children]);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // A pinned header covers the top of the scroll area, so the vertical scrollbar starts below
+  // it and only spans the rows that scroll. Measured, because the header's height follows its
+  // density and whatever its cells wrap to.
+  useLayoutEffect(() => {
+    const wrapper = wrapperRef.current;
+    const head = wrapper?.querySelector("thead");
+    if (!wrapper || !head || !stickyHeader) {
+      wrapper?.style.removeProperty("--scroll-area-inset-top");
+      return;
+    }
+
+    const measure = () => wrapper.style.setProperty("--scroll-area-inset-top", `${head.offsetHeight}px`);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(head);
+    return () => observer.disconnect();
+  }, [stickyHeader, children]);
 
   const flattenedChildren = useMemo(() => flattenChildren(children), [children]);
   const firstChild = flattenedChildren[0];
@@ -164,9 +186,13 @@ export function Table({
         {/* The scroll container is not optional. A table sizes itself to its content and will
             push a page sideways rather than wrap, so something has to catch the overflow —
             and it has to be a wrapper, because `overflow` on the table doesn't apply to the
-            table's own layout box. */}
-        <div
+            table's own layout box. It scrolls both ways with the library scrollbar, and the
+            pinned header sticks to its viewport. */}
+        <ScrollArea
+          fade
+          ref={wrapperRef}
           data-slot="table-wrapper"
+          orientation="both"
           className={cn(tableWrapperVariants({ outline }), wrapperClassName)}
         >
           <table
@@ -188,7 +214,7 @@ export function Table({
             )}
             {tableChildren}
           </table>
-        </div>
+        </ScrollArea>
         {captionElement && (
           <div
             data-slot="table-caption"

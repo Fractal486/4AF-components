@@ -17,6 +17,7 @@ import {
 import { useMergedRefs } from "@/registry/lib/refs";
 import { cn } from "@/registry/lib/cn";
 import { Input } from "@/registry/ui/input/input";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import {
   alignedSelectTriggerVariants,
   type AlignedSelectTriggerVariant,
@@ -133,9 +134,17 @@ function focusEdgeOption(list: HTMLElement | null, edge: "first" | "last") {
   (edge === "first" ? options[0] : options[options.length - 1])?.focus();
 }
 
-// The library's thin scrollbar, shared with the menu, dialog and the other select panels.
-const SCROLLBAR =
-  "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground";
+
+/**
+ * The scroll area's viewport, rendered as the Select List. The viewport sets the `overflow`
+ * shorthand and the List sets `overflowX`/`overflowY`; React warns when both reach one element.
+ * The List's longhands already scroll it, so the viewport's shorthand is dropped.
+ */
+function renderListViewport({ style, ...props }: ComponentProps<"div">) {
+  const listStyle = { ...style };
+  delete listStyle.overflow;
+  return <BaseSelect.List {...props} style={listStyle} />;
+}
 
 export interface AlignedSelectProps<Value>
   extends ComponentProps<typeof BaseSelect.Root<Value, false>> {
@@ -535,23 +544,28 @@ export function AlignedSelectContent({
               trigger instead. It only shows once the offset is large: a section heading or
               two above the selected row is enough.
 
-              `--available-height` and not a fixed cap, for the same reason. In this mode Base
-              UI computes a height for the panel and clears `max-height` on the positioner so
-              its own number governs; an 18rem ceiling here would fight it. */}
-          <BaseSelect.List
-            ref={listRef}
-            className={cn(
-              "max-h-[var(--available-height)] overflow-y-auto overscroll-contain p-1",
-              SCROLLBAR,
-              noResults && "hidden",
-            )}
+              So the scroll area renders its viewport as the List: the List stays the element
+              that scrolls, and the library scrollbar tracks it.
+
+              No fixed cap either. In this mode Base UI sizes the positioner itself, grows it as
+              the list scrolls toward its far end, and gives the popup `height: 100%`. The List
+              follows with an inline `max-height: 100%`, but between them sits the scroll
+              area's root, so the root must take the popup's height too; a cap of its own (an
+              18rem, or `--available-height`, which Base UI measured before growing the panel)
+              leaves blank panel under the list as it grows. */}
+          <ScrollArea
+            fade
+            className={cn("max-h-full", noResults && "hidden")}
+            viewportRef={listRef}
+            viewportClassName="p-1"
+            viewportProps={{ tabIndex: -1, render: renderListViewport }}
           >
             <AlignedSelectActiveContext.Provider value={activeItem}>
               <AlignedSelectActivateContext.Provider value={setActiveItem}>
                 {children}
               </AlignedSelectActivateContext.Provider>
             </AlignedSelectActiveContext.Provider>
-          </BaseSelect.List>
+          </ScrollArea>
 
           {noResults && (
             <div

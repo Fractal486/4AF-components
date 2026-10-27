@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="920" viewBox="0 0 1120 920" fill="none" role="img" aria-labelledby="sa-bp-title sa-bp-description">
+  <title id="sa-bp-title">Scroll Area spacing</title>
+  <desc id="sa-bp-description">A vertical Scroll Area showing its Tags demo at the top of a forty-item list, with edge fading enabled and the automatic scrollbar visible on hover. The chosen viewport is 320 pixels wide and 288 pixels tall. Each tag row is 32 pixels tall. A 10 pixel scrollbar hit area contains a 5 pixel rail, inset 3 pixels from the right edge. Blue dashed guides outline the first row and connect to its height measurement. The list fades over the final 28 pixels at the bottom; the scrollbar fades in once during the opening animation.</desc>
+  <!--
+    Sources:
+      registry/ui/scroll-area/scroll-area.tsx
+      registry/ui/scroll-area/scroll-area.variants.ts
+      inspector/entries/scroll-area.tsx
+      app/globals.css
+      node_modules/tailwindcss/theme.css and preflight.css
+      node_modules/@base-ui/react/scroll-area/viewport/ScrollAreaViewport.js
+      node_modules/@base-ui/react/scroll-area/scrollbar/ScrollAreaScrollbar.js
+    Sidebar: COMPONENT_CATEGORIES, Navigation and layout, lib/component-catalog.ts.
+
+    State: vertical, scrollbar auto, hovering, fade true, scrollTop 0, LTR.
+    Edge fade is enabled at the user's request; the ordinary default is false.
+    Geometry and component text are drawn at 2x; labels report CSS pixels.
+    Root: x=240, y=180, width=640, height=576 in drawing units.
+    Demo h-72 is a fixed 288px. Its w-full is flexible; 320px is chosen here,
+    not a default, minimum, or maximum width of the reusable component.
+    Root and viewport have no border or padding. The caller supplies rounded-xl
+    (14px) and shadow-border. The 1px external shadow ring is represented by
+    a 2-unit stroke centered 1 drawing unit outside the root's clipping edge.
+    This ring does not subtract from the 320 x 288px viewport.
+
+    At 16px/rem, Tailwind spacing is 4px. Caller content p-4 = 16px.
+    The app text-sm token is 13px with a 1.5385 line height, nominally 20px
+    (20.0005px before browser subpixel rounding). Text in the drawing is 26px.
+    Heading: 20px line box + mb-4 (16px). First row starts at y=52 CSS px.
+    Rows: py-1.5 (6px + 6px) + 20px line box = 32px; contiguous, no gap.
+    Content height: 16 + 20 + 16 + 40*32 + 16 = 1348px.
+    Seven rows fit fully; the eighth begins at y=276px and is clipped at 288px.
+    Bottom content padding is below the viewport, so no bottom inset is drawn.
+    The requested edge mask is 1.75rem = 28px, or 56 drawing units.
+    Remaining overflow below is 1348 - 288 = 1060px, so the full 28px fade applies:
+    y=700 is opaque, y=756 is transparent. No top fade applies at scrollTop 0.
+    Only viewport content is masked; the root outline and scrollbar are unaffected.
+
+    Scrollbar border-box: 10px wide, full 288px height, right aligned.
+    Its p-0.5 is 2px; pe-[3px] overrides the right inset. Rail and thumb width:
+    10 - 2 - 3 = 5px. Rail height: 288 - 2 - 2 = 284px.
+    Base UI thumb height: max(minimum, 284 * 288 / 1348) = 60.6766px.
+    Thumb starts at the rail's top, 2px below the root; its length is content
+    dependent and deliberately has no dimension label suggesting a fixed size.
+    Root x edges 240/880; content x edges 272/848; scrollbar hit x edges 860/880;
+    rail x edges 864/874, leaving 6 drawing units (3px) to the root's right edge.
+
+    Shared blueprint background: #060606, matching the other drawings and hover card.
+    The root outline draws from 0 to 400ms. The unoutlined scrollbar fades in
+    from 250 to 400ms, using the app's 150ms fast hover duration and ease-out curve.
+    Annotations
+    fade together from 700 to 900ms. Content stays visible under its edge mask.
+    Reduced motion and PNG export show the completed drawing without animation.
+  -->
+  <defs>
+    <style>
+      #sa-bp-art text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      .sa-bp-copy { fill: #92948d; font-size: 26px; }
+      .sa-bp-label { fill: #92948d; font-size: 18px; }
+      .sa-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      .sa-bp-guide { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      .sa-bp-line { stroke: #a7a8a2; stroke-width: 2; }
+      @media (prefers-reduced-motion: no-preference) {
+        @keyframes sa-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+        @keyframes sa-bp-reveal { from { opacity: 0; } }
+        .sa-bp-draw {
+          stroke-dasharray: 1;
+          animation: sa-bp-draw 200ms ease-out var(--sa-bp-delay, 0ms) both;
+        }
+        .sa-bp-outline { animation-duration: 400ms; }
+        .sa-bp-scrollbar { animation: sa-bp-reveal 150ms cubic-bezier(0.16, 1, 0.3, 1) 250ms both; }
+        .sa-bp-guide, .sa-bp-measure, .sa-bp-label {
+          animation: sa-bp-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+    <clipPath id="sa-bp-viewport">
+      <rect x="240" y="180" width="640" height="576" rx="28"/>
+    </clipPath>
+    <linearGradient id="sa-bp-bottom-fade" gradientUnits="userSpaceOnUse" x1="0" y1="700" x2="0" y2="756">
+      <stop offset="0" stop-color="white" stop-opacity="1"/>
+      <stop offset="1" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="sa-bp-content-mask" maskUnits="userSpaceOnUse" x="240" y="180" width="640" height="576" style="mask-type:alpha">
+      <rect x="240" y="180" width="640" height="576" fill="url(#sa-bp-bottom-fade)"/>
+    </mask>
+  </defs>
+
+  <g id="sa-bp-art">
+    <rect width="1120" height="920" fill="#060606"/>
+
+    <!-- Root's shadow-border outline, outside the viewport box. -->
+    <rect x="239" y="179" width="642" height="578" rx="29" class="sa-bp-line sa-bp-draw sa-bp-outline" pathLength="1"/>
+
+    <g clip-path="url(#sa-bp-viewport)">
+      <!-- Full-length rail and content-dependent thumb fade together, like hover. -->
+      <g class="sa-bp-scrollbar">
+        <rect x="864" y="184" width="10" height="568" rx="5" fill="#353632"/>
+        <rect x="864" y="184" width="10" height="121.353" rx="5" fill="#92948d"/>
+      </g>
+
+      <!-- One complete row shows its actual bounds. -->
+      <rect x="272" y="284" width="576" height="64" class="sa-bp-guide"/>
+
+      <!-- Demo content, in the same order and type size as the source. -->
+      <g mask="url(#sa-bp-content-mask)">
+        <text x="272" y="241" class="sa-bp-copy" font-weight="500" style="fill:#c7c7c2">Tags</text>
+        <text x="272" y="325" class="sa-bp-copy">v1.40.0</text>
+        <text x="272" y="389" class="sa-bp-copy">v1.39.0</text>
+        <text x="272" y="453" class="sa-bp-copy">v1.38.0</text>
+        <text x="272" y="517" class="sa-bp-copy">v1.37.0</text>
+        <text x="272" y="581" class="sa-bp-copy">v1.36.0</text>
+        <text x="272" y="645" class="sa-bp-copy">v1.35.0</text>
+        <text x="272" y="709" class="sa-bp-copy">v1.34.0</text>
+        <text x="272" y="773" class="sa-bp-copy">v1.33.0</text>
+      </g>
+    </g>
+
+    <!-- Overall dimensions: endpoints are the root box, not the external shadow. -->
+    <path d="M240 102V166 M880 102V166" class="sa-bp-guide"/>
+    <path d="M240 110H880 M240 100V120 M880 100V120" class="sa-bp-measure"/>
+    <text x="560" y="91" text-anchor="middle" class="sa-bp-label">320 px</text>
+    <path d="M144 180H226 M144 756H226" class="sa-bp-guide"/>
+    <path d="M154 180V756 M144 180H164 M144 756H164" class="sa-bp-measure"/>
+    <text x="132" y="474" text-anchor="end" class="sa-bp-label">288 px</text>
+
+    <!-- First row's full height. -->
+    <path d="M848 284H938 M848 348H938" class="sa-bp-guide"/>
+    <path d="M928 284V348 M918 284H938 M918 348H938" class="sa-bp-measure"/>
+    <text x="948" y="322" class="sa-bp-label">32 px</text>
+
+    <!-- Rail width and right edge inset, measured directly on the rail. -->
+    <path d="M864 580V606 M874 580V606 M864 593H874 M869 593 911 557H935" class="sa-bp-measure"/>
+    <text x="948" y="563" class="sa-bp-label">5 px</text>
+    <path d="M874 646V670 M880 646V670 M874 658H880 M877 658 912 686H935" class="sa-bp-measure"/>
+    <text x="948" y="692" class="sa-bp-label">3 px</text>
+
+    <!-- Full scrollbar hit width; no magnified or artificial gap. -->
+    <path d="M860 770V822 M880 770V822" class="sa-bp-guide"/>
+    <path d="M860 810H880 M860 800V820 M880 800V820 M870 810 909 844H935" class="sa-bp-measure"/>
+    <text x="948" y="850" class="sa-bp-label">10 px</text>
+  </g>
+</svg>

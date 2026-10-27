@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { useTableOfContentsTracking } from "@/registry/lib/table-of-contents-tracking";
 import { Popover, PopoverContent, PopoverTrigger } from "@/registry/ui/popover/popover";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import type { TocItem } from "@/registry/ui/table-of-contents/table-of-contents";
 
 /** Compact counterpart to the desktop TOC, using the same section tracking. */
@@ -53,24 +54,26 @@ export function MobileToc({ items }: { items: TocItem[] }) {
           finalFocus={() => !navigating.current}
           className="w-(--anchor-width) max-w-none rounded-none border-x-0 border-t-0 bg-background/80 p-3 backdrop-blur-md"
         >
-          <nav aria-label="Page sections" className="code-scrollbar max-h-[50dvh] overflow-y-auto">
-            {items.map((item) => (
-              <a
-                key={item.id}
-                href={`#${item.id}`}
-                aria-current={item.id === activeId ? "location" : undefined}
-                className="block rounded-sm py-2 pr-3 text-sm text-muted-foreground outline-none hover:bg-foreground/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring aria-[current]:bg-foreground/8 aria-[current]:text-foreground"
-                style={{ paddingLeft: 12 + ((item.level ?? 2) - minLevel) * 12 }}
-                onClick={(event) => {
-                  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-                  navigating.current = true;
-                  scrollTo(event, item.id);
-                  setOpen(false);
-                }}
-              >
-                {item.title}
-              </a>
-            ))}
+          <nav aria-label="Page sections">
+            <ScrollArea className="max-h-[50dvh]">
+              {items.map((item) => (
+                <a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  aria-current={item.id === activeId ? "location" : undefined}
+                  className="block cursor-default rounded-sm py-2 pr-3 text-sm text-muted-foreground outline-none hover:bg-foreground/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring aria-[current]:bg-foreground/8 aria-[current]:text-foreground"
+                  style={{ paddingLeft: 12 + ((item.level ?? 2) - minLevel) * 12 }}
+                  onClick={(event) => {
+                    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                    navigating.current = true;
+                    scrollTo(event, item.id);
+                    setOpen(false);
+                  }}
+                >
+                  {item.title}
+                </a>
+              ))}
+            </ScrollArea>
           </nav>
         </PopoverContent>
       </Popover>

@@ -32,6 +32,17 @@ const CITIES = [
   "Vienna",
 ];
 
+/**
+ * Appended when the demo is scrollable: enough rows that the panel outgrows the space around
+ * the trigger and scrolls, with the selected row still placed over it.
+ */
+const MORE_CITIES = [
+  "Athens", "Barcelona", "Brussels", "Bucharest", "Budapest", "Edinburgh", "Florence",
+  "Geneva", "Hamburg", "Helsinki", "Kraków", "Lyon", "Madrid", "Milan", "Munich", "Naples",
+  "Porto", "Riga", "Rome", "Seville", "Sofia", "Stockholm", "Tallinn", "Valencia", "Vilnius",
+  "Warsaw", "Zagreb", "Zürich",
+];
+
 /** The same cities, grouped, so the sections have something to divide. */
 const REGIONS = [
   { label: "Northern", cities: ["Copenhagen", "Dublin", "Oslo", "Reykjavík"] },
@@ -48,11 +59,12 @@ export const selectAlignedEntry = defineEntry({
     variant: select(["default", "ghost", "plain"] as const, "default", "Variant"),
     showLabel: bool(true, "Show label"),
     sections: bool(false, "Sections"),
+    scrollable: bool(false, "Scrollable"),
     searchable: bool(false, "Search field"),
     disabled: bool(false, "Disabled"),
     invalid: bool(false),
   },
-  render({ size, selected, variant, showLabel, sections, searchable, disabled, invalid }) {
+  render({ size, selected, variant, showLabel, sections, scrollable, searchable, disabled, invalid }) {
     return (
       <AlignedSelectDemo
         key={String(selected)}
@@ -61,6 +73,7 @@ export const selectAlignedEntry = defineEntry({
         variant={variant}
         showLabel={showLabel}
         sections={sections}
+        scrollable={scrollable}
         searchable={searchable}
         disabled={disabled}
         invalid={invalid}
@@ -75,6 +88,7 @@ function AlignedSelectDemo({
   variant,
   showLabel,
   sections,
+  scrollable,
   searchable,
   disabled,
   invalid,
@@ -84,11 +98,14 @@ function AlignedSelectDemo({
   variant: "default" | "ghost" | "plain";
   showLabel: boolean;
   sections: boolean;
+  scrollable: boolean;
   searchable: boolean;
   disabled: boolean;
   invalid: boolean;
 }) {
   const [value, setValue] = useState<string | null>(selected ? "Istanbul" : null);
+  const cities = scrollable ? [...CITIES, ...MORE_CITIES].sort((a, b) => a.localeCompare(b)) : CITIES;
+  const regions = scrollable ? [...REGIONS, { label: "More", cities: MORE_CITIES }] : REGIONS;
 
   return (
     <div className="w-full max-w-56">
@@ -97,7 +114,7 @@ function AlignedSelectDemo({
         disabled={disabled}
         value={value}
         onValueChange={setValue}
-        items={CITIES.map((city) => ({ value: city, label: city }))}
+        items={cities.map((city) => ({ value: city, label: city }))}
       >
         <AlignedSelectTrigger
           variant={variant}
@@ -108,7 +125,7 @@ function AlignedSelectDemo({
         />
         <AlignedSelectContent searchable={searchable}>
           {sections
-            ? REGIONS.map((region) => (
+            ? regions.map((region) => (
                 <AlignedSelectGroup key={region.label}>
                   <AlignedSelectGroupLabel>{region.label}</AlignedSelectGroupLabel>
                   {region.cities.map((city) => (
@@ -118,7 +135,7 @@ function AlignedSelectDemo({
                   ))}
                 </AlignedSelectGroup>
               ))
-            : CITIES.map((city) => (
+            : cities.map((city) => (
                 <AlignedSelectItem key={city} value={city}>
                   {city}
                 </AlignedSelectItem>

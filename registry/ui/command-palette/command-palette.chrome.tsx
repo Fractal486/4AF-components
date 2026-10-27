@@ -38,11 +38,6 @@ export function snapFirstRowToTop(list: HTMLElement | null) {
   return () => observer.disconnect();
 }
 
-// A thin custom scrollbar, shared by the list and any drilled-in panel — Firefox via the
-// standard properties, WebKit via the pseudo-elements.
-export const SCROLLBAR =
-  "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground";
-
 /**
  * Every footer affordance — the escape hint, the panel actions, the actions-menu trigger —
  * shares this, so the bar can't end up with two different-looking buttons.

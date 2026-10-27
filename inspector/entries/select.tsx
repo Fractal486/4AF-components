@@ -23,12 +23,35 @@ const FRUITS = {
   watermelon: "Watermelon",
 } as const;
 
+/** Added when the demo is scrollable: enough rows that the panel outgrows its cap and scrolls. */
+const MORE_FRUITS = {
+  apricot: "Apricot",
+  cherry: "Cherry",
+  coconut: "Coconut",
+  fig: "Fig",
+  guava: "Guava",
+  kiwi: "Kiwi",
+  lemon: "Lemon",
+  lime: "Lime",
+  lychee: "Lychee",
+  papaya: "Papaya",
+  peach: "Peach",
+  pear: "Pear",
+  pineapple: "Pineapple",
+  plum: "Plum",
+  pomegranate: "Pomegranate",
+  raspberry: "Raspberry",
+} as const;
+
+const ALL_FRUITS = { ...FRUITS, ...MORE_FRUITS };
+
 const NESTED_FRUITS = ["banana", "mango"] as const;
 
-function FruitOptions({ icons }: { icons: boolean }) {
+function FruitOptions({ icons, scrollable }: { icons: boolean; scrollable: boolean }) {
   return (
     <>
-      {Object.entries(FRUITS)
+      {Object.entries(scrollable ? ALL_FRUITS : FRUITS)
+        .sort(([, a], [, b]) => a.localeCompare(b))
         .filter(([value]) => !NESTED_FRUITS.includes(value as (typeof NESTED_FRUITS)[number]))
         .map(([value, label]) => (
           <SelectItem
@@ -66,12 +89,14 @@ export const selectEntry = defineEntry({
     multiple: bool(false),
     selected: bool(true, "Selected"),
     searchable: bool(false, "Search in panel"),
+    scrollable: bool(false, "Scrollable"),
     icons: bool(true),
     variant: select(["default", "ghost", "plain"] as const, "default", "Variant"),
     showLabel: bool(true, "Show label"),
     invalid: bool(false),
   },
-  render({ size, disabled, multiple, selected, searchable, icons, variant, showLabel, invalid }) {
+  render({ size, disabled, multiple, selected, searchable, scrollable, icons, variant, showLabel, invalid }) {
+    const items = scrollable ? ALL_FRUITS : FRUITS;
     return (
       <div className="w-full max-w-56">
         {multiple ? (
@@ -79,7 +104,7 @@ export const selectEntry = defineEntry({
             key={`multiple-${selected}`}
             multiple
             size={size}
-            items={FRUITS}
+            items={items}
             defaultValue={selected ? ["banana", "mango"] : []}
             disabled={disabled}
           >
@@ -97,14 +122,14 @@ export const selectEntry = defineEntry({
               searchPlaceholder="Search fruits…"
               emptyMessage="No fruit found."
             >
-              <FruitOptions icons={icons} />
+              <FruitOptions icons={icons} scrollable={scrollable} />
             </SelectContent>
           </Select>
         ) : (
           <Select
             key={`single-${selected}`}
             size={size}
-            items={FRUITS}
+            items={items}
             defaultValue={selected ? "banana" : null}
             disabled={disabled}
             iconForValue={icons ? (value) => <FruitIcon value={String(value)} /> : undefined}
@@ -123,7 +148,7 @@ export const selectEntry = defineEntry({
               searchPlaceholder="Search fruits…"
               emptyMessage="No fruit found."
             >
-              <FruitOptions icons={icons} />
+              <FruitOptions icons={icons} scrollable={scrollable} />
             </SelectContent>
           </Select>
         )}

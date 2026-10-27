@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, type HTMLAttributes } from "react";
-import { CodeBlock, Pre, type CodeBlockProps } from "fumadocs-ui/components/codeblock";
+import { useRef, type CSSProperties, type HTMLAttributes } from "react";
+import { Pre, type CodeBlockProps } from "fumadocs-ui/components/codeblock";
 import { cn } from "@/registry/lib/cn";
 import { CopyButton } from "@/registry/ui/copy-button/copy-button";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 
 function CodeActions({ className }: HTMLAttributes<HTMLDivElement>) {
   const ref = useRef<HTMLDivElement>(null);
@@ -34,19 +35,68 @@ function CodeActions({ className }: HTMLAttributes<HTMLDivElement>) {
   );
 }
 
-const renderCodeActions: NonNullable<CodeBlockProps["Actions"]> = (props) => (
-  <CodeActions {...props} />
-);
+/**
+ * Fumadocs' code block markup and classes, with the code in a Scroll Area so snippets carry the
+ * library scrollbar. Fumadocs' own `CodeBlock` hard-codes its scrolling element (focusable, with
+ * a native scrollbar), so a Scroll Area nested in it would be a second tab stop; this renders
+ * the same figure with the Scroll Area's viewport as the one scrolling, focusable region.
+ */
+export function DocsCodeBlock({
+  title,
+  icon,
+  allowCopy = true,
+  keepBackground = false,
+  viewportProps = {},
+  className,
+  children,
+  ...props
+}: Omit<CodeBlockProps, "Actions">) {
+  const copyable = allowCopy !== false && allowCopy !== "false";
+  const { className: viewportClassName, style: viewportStyle, ...viewportRest } = viewportProps;
 
-export function DocsCodeBlock({ className, viewportProps, allowCopy = true, ...props }: CodeBlockProps) {
   return (
-    <CodeBlock
+    <figure
+      dir="ltr"
       {...props}
-      viewportProps={{ ...viewportProps, className: cn("code-scrollbar", viewportProps?.className) }}
-      className={cn("rounded-[8px] bg-muted dark:bg-surface-raised", className)}
-      allowCopy={false}
-      Actions={allowCopy === false || allowCopy === "false" ? undefined : renderCodeActions}
-    />
+      tabIndex={-1}
+      className={cn(
+        "shiki not-prose relative my-4 overflow-hidden rounded-[8px] border bg-muted text-sm dark:bg-surface-raised",
+        keepBackground && "bg-(--shiki-light-bg) dark:bg-(--shiki-dark-bg)",
+        className,
+      )}
+    >
+      {title ? (
+        <div className="flex h-9.5 items-center gap-2 border-b px-4 text-fd-muted-foreground">
+          {typeof icon === "string" ? (
+            <div className="[&_svg]:size-3.5" dangerouslySetInnerHTML={{ __html: icon }} />
+          ) : (
+            icon
+          )}
+          <figcaption className="flex-1 truncate">{title}</figcaption>
+          {copyable ? <CodeActions className="-me-2" /> : null}
+        </div>
+      ) : copyable ? (
+        <CodeActions className="absolute top-3 right-2 z-2 rounded-lg" />
+      ) : null}
+      <ScrollArea
+        orientation="both"
+        className="max-h-[600px]"
+        viewportClassName={cn("fd-scroll-container py-3.5 text-[0.8125rem]", viewportClassName)}
+        viewportProps={{
+          ...viewportRest,
+          role: "region",
+          style: {
+            "--padding-right": title ? undefined : "calc(var(--spacing) * 8)",
+            counterSet: props["data-line-numbers"]
+              ? `line ${Number(props["data-line-numbers-start"] ?? 1) - 1}`
+              : undefined,
+            ...viewportStyle,
+          } as CSSProperties,
+        }}
+      >
+        {children}
+      </ScrollArea>
+    </figure>
   );
 }
 

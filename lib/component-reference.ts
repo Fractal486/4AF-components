@@ -8,8 +8,6 @@ export const componentReferences = {
   "action-button": {
     usage: `import { ActionButton } from "@/components/ui/action-button";
 
-// Pending keeps keyboard focus; completion callbacks also run after unmount.
-// Idle sizing copies reserve the loader's space without mounting its animation.
 <ActionButton
   action={() => saveChanges()}
   labels={{ success: "Saved" }}
@@ -118,7 +116,6 @@ import { Badge } from "@/components/ui/badge";
     usage: `import { Button } from "@/components/ui/button";
 
 <Button variant="primary">Deploy</Button>
-// Keeps keyboard focus and blocks activation; inherits LoaderProvider's indicator.
 <Button loading>Deploy</Button>`,
   },
   "button-group": {
@@ -163,13 +160,11 @@ import { Button } from "@/components/ui/button";
       onSelect: deleteProject,
     }] }} />
   </>,
-}] }]} />
-// The shortcut opens the actions menu and arms confirmation before it can delete.`,
+}] }]} />`,
   },
   "copy-button": {
     usage: `import { CopyButton } from "@/components/ui/copy-button";
 
-// Async values keep keyboard focus while copying and block repeat activation.
 <CopyButton value="Text to copy" size="md">Copy</CopyButton>`,
   },
   "delete-button": {
@@ -239,13 +234,11 @@ import { Button } from "@/components/ui/button";
     usage: `import { Check, Copy } from "lucide-react";
 import { Morph } from "@/components/ui/morph";
 
-// LoadingIndicator slots keep their size in hidden copies without mounting a loader.
 <Morph
   activeKey={copied ? "done" : "idle"}
   items={{ idle: <Copy />, done: <Check /> }}
 />
 
-// A swap inside a known box mounts only the showing item: no sizing copies at all.
 <Morph
   sizing="fixed"
   className="size-4"
@@ -256,13 +249,7 @@ import { Morph } from "@/components/ui/morph";
   "date-picker": {
     usage: `import { DatePicker, DateRangePicker } from "@/components/ui/date-picker";
 
-{/* Both pickers use a popover with 34px calendar cells on every device. */}
 <DatePicker value={date} onValueChange={setDate} name="due" clearable />
-{/* Today returns to the current month without selecting; Clear resets the value. */}
-{/* Use showToday={false} and clearable={false} to omit the footer. */}
-{/* The calendar shows only the weeks needed for each month. */}
-{/* dateFormat="numeric" shows 19 / 10 / 2026 in every locale. */}
-{/* calendarProps.timeZone keeps labels, submitted dates, and the grid in the same zone. */}
 <DateRangePicker
   value={range}
   onValueChange={setRange}
@@ -316,7 +303,6 @@ import { Morph } from "@/components/ui/morph";
   SelectValue,
 } from "@/components/ui/select";
 
-// The opening row is the selection, then the first enabled option in rendered order.
 <Select size="xs" defaultValue="apple">
   <SelectTrigger variant="ghost" label="Fruit">
     <SelectValue />
@@ -331,9 +317,7 @@ import { Morph } from "@/components/ui/morph";
       </SelectSubContent>
     </SelectSub>
   </SelectContent>
-</Select>
-// Clear reports null (or [] for multiple) to onValueChange(value, details).
-// Call details.cancel() in that callback to keep the selection.`,
+</Select>`,
   },
   "select-aligned": {
     usage: `import {
@@ -343,7 +327,6 @@ import { Morph } from "@/components/ui/morph";
   AlignedSelectTrigger,
 } from "@/components/ui/select-aligned";
 
-// Dynamic option updates preserve rendered order for opening and search highlights.
 <AlignedSelect size="xs" value={city} onValueChange={setCity}>
   <AlignedSelectTrigger variant="ghost" label="City" placeholder="Pick a city" />
   <AlignedSelectContent>
@@ -355,7 +338,6 @@ import { Morph } from "@/components/ui/morph";
   "select-search": {
     usage: `import { SearchSelect, SearchSelectInput, SearchSelectContent, SearchSelectItem } from "@/components/ui/select-search";
 
-// Focusing dims the selection; clicking a row commits it and unfocuses the field.
 <SearchSelect items={items} defaultValue={items[0]}>
   <SearchSelectInput aria-label="Choose an option" placeholder="Search…" />
   <SearchSelectContent>
@@ -373,6 +355,13 @@ import { Morph } from "@/components/ui/morph";
 }>
   Selectable content
 </SelectionToolbar>`,
+  },
+  "scroll-area": {
+    usage: `import { ScrollArea } from "@/components/ui/scroll-area";
+
+<ScrollArea fade className="h-72 rounded-xl shadow-border">
+  <div className="p-4">{/* long content */}</div>
+</ScrollArea>`,
   },
   separator: {
     usage: `import { Separator } from "@/components/ui/separator";
@@ -446,7 +435,6 @@ import { SidebarLayout } from "@/components/ui/sidebar-layout";
 
 <Slider label="Price" range defaultValue={[20, 80]} thumbLabels={["Lowest price", "Highest price"]} />
 
-// Typed values snap to the grid starting at 0.5, preserving its decimal precision.
 <Slider label="Amount" min={0.5} max={10.5} step={1} defaultValue={3.5} />
 
 <Slider label="Volume" defaultValue={60} inlineLabel />`,

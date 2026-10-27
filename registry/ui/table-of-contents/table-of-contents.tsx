@@ -271,7 +271,9 @@ export function TableOfContents({
                 aria-current={item.id === currentHighlightId ? "location" : undefined}
                 style={{ paddingInlineStart: `${0.75 + ((item.level ?? 2) - minLevel) * 0.75}rem` }}
                 className={cn(
-                  "block py-1.5 pr-2 leading-snug duration-(--duration-slow) ease-out",
+                  // The arrow cursor, like the library's other rows: the entry moves within
+                  // the page rather than leaving it.
+                  "block cursor-default py-1.5 pr-2 leading-snug duration-(--duration-slow) ease-out",
                   "outline-none focus-visible:text-foreground",
                   active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
                   labels === "hover"

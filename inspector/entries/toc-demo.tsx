@@ -6,6 +6,7 @@ import {
   type TableOfContentsProps,
   type TocItem,
 } from "@/registry/ui/table-of-contents/table-of-contents";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { TableOfContentsLines } from "@/registry/ui/table-of-contents-lines/table-of-contents-lines";
 
 const SECTIONS: (TocItem & { body: string })[] = [
@@ -61,10 +62,7 @@ function TocArticle({
   scrollRef: RefObject<HTMLDivElement | null>;
 }) {
   return (
-    <div
-      ref={scrollRef}
-      className="h-80 flex-1 overflow-y-auto pr-4 [scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent]"
-    >
+    <ScrollArea fade viewportRef={scrollRef} className="h-80 flex-1" viewportClassName="pr-4">
       {sections.map((section) => (
         <section key={section.id} className="pb-8">
           <h3
@@ -76,7 +74,7 @@ function TocArticle({
           <p className="text-sm text-pretty text-muted-foreground">{section.body}</p>
         </section>
       ))}
-    </div>
+    </ScrollArea>
   );
 }
 
