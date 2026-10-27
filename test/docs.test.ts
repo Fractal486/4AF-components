@@ -10,6 +10,7 @@ import {
   componentCount,
 } from "../lib/component-catalog";
 import { renderComponentPageMarkdown } from "../lib/component-docs";
+import { playgroundDemos } from "../stories/demo-names";
 import { publicInstallCommand, SITE_URL } from "../lib/site";
 import tsconfig from "../tsconfig.json";
 
@@ -194,7 +195,9 @@ describe("component documentation", () => {
       .filter((name) => {
         const page = readFileSync(resolve("content/docs", `${name}.mdx`), "utf8");
         return (
-          !page.includes(`<ComponentDemo name="${name}" />`) ||
+          // The playground renders the demo; the page only declares the reference.
+          page.includes("<ComponentDemo") ||
+          playgroundDemos(name, name).length === 0 ||
           !page.includes(`<ComponentReference name="${name}" />`) ||
           !page.includes("## API") ||
           !page.includes("**Main export")
@@ -240,7 +243,6 @@ describe("component documentation", () => {
       select: [
         "SelectSortTrigger",
         "SelectSeparator",
-        'ComponentDemo name="select-sort"',
         "clearable",
         "ghost reset button",
         'variant="ghost"',

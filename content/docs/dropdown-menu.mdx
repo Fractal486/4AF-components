@@ -3,7 +3,6 @@ title: Dropdown Menu
 description: A Base UI menu with submenus, checkable items, groups, and keyboard navigation.
 ---
 
-<ComponentDemo name="dropdown-menu" />
 <ComponentReference name="dropdown-menu" />
 
 ## API
@@ -11,17 +10,31 @@ description: A Base UI menu with submenus, checkable items, groups, and keyboard
 **Main exports:** root, trigger, content, item, checkbox, radio, submenu, shortcut, and
 nested-select parts
 
-A Base UI menu with keyboard navigation, safe submenu pointer travel, keyboard shortcut hints,
-destructive rows, navigation submenus, and searchable single and multi-select subpanels.
+A Base UI menu with keyboard navigation, safe submenu pointer travel, and these row types:
+
+| Row | Parts | For |
+| --- | --- | --- |
+| Item | `DropdownMenuItem` | A command or link, optionally destructive or with a shortcut |
+| Checkbox | `DropdownMenuCheckboxItem` | An on/off setting, shown with a tick |
+| Toggle | `DropdownMenuCheckboxItem indicator={false}` | An on/off setting carried by its icon and label |
+| Radio | `DropdownMenuRadioGroup`, `DropdownMenuRadioItem` | One choice from a short set |
+| Action | `DropdownMenuActionItem` | Work that runs, confirms, and reverts |
+| Submenu | `DropdownMenuSub`, `DropdownMenuSubTrigger`, `DropdownMenuSubContent` | Navigation into more rows |
+| Select panel | `DropdownMenuSelect`, `DropdownMenuSelectTrigger`, `DropdownMenuSelectContent`, `DropdownMenuSelectItem` | Single or multi-select in a nested panel |
+
+`DropdownMenuLabel`, `DropdownMenuGroup`, and `DropdownMenuSeparator` structure the list.
 
 `DropdownMenuContent` and `DropdownMenuSubContent` are at least 200px wide and grow to fit
 longer rows; pass a `min-w-*` class in `className` to change the minimum.
 
-`DropdownMenu loader={<MySpinner />}` supplies the menu's loading indicator, including portalled
-rows. Omit it to inherit [LoaderProvider](/docs/reference/engineering#shared-loading-indicators),
-with `ClassicLoader` as the fallback. `DropdownMenuActionItem` and `DropdownMenuCheckboxItem` accept
-`loader` for one row. On `DropdownMenuActionItem`, a custom `icons.pending` takes precedence;
-checkbox rows use the `loader` prop or their children render function for custom pending content.
+Rows left-align every Morph inside them and mute a morphing leading icon to match a plain one.
+Don't pass `place-items-start` or a text colour at the call site.
+
+## Item rows
+
+`DropdownMenuItem` takes a leading icon, a label, and an optional `DropdownMenuShortcut`.
+`variant="destructive"` colours the label and icon; `inset` indents a row without an icon to
+line up with rows that have one.
 
 A disabled row can take a `disabledReason`. Hovering the row then opens a tooltip on its right
 explaining why, without the usual tooltip delay:
@@ -32,60 +45,69 @@ explaining why, without the usual tooltip delay:
 </DropdownMenuItem>
 ```
 
-## Nested panels
+Checkbox and radio rows accept `disabledReason` too.
 
-Dropdown Menu includes three nested-panel forms:
+## Checkbox and toggle rows
 
-- a navigation submenu;
-- a single-select panel with the chosen value shown in the parent row and a checkmark in the
-  panel;
-- a multi-select panel using small Checkbox components and an `N selected` parent label.
+`DropdownMenuCheckboxItem` is a `menuitemcheckbox`, controlled with `checked` and
+`onCheckedChange` or uncontrolled with `defaultChecked`. By default it shows Checkbox's box and
+its self-drawing tick in the leading slot.
 
-Single- and multi-select panels can include in-panel search. Their parent highlight stays active
-while the pointer is on the parent, inside the nested panel, or moving through the safe pointer
-corridor.
-
-Nested panels open immediately when their parent row is hovered by default; set the trigger's
-`delay` to change that. The safe pointer corridor keeps them open while the pointer moves into
-the panel. Hover-opening a navigation submenu does not activate its first child; hovering a row
-paints its hover fill, and keyboard navigation moves the active highlight.
-
-Select subpanels open with the selected row active, the most recent enabled selection for
-multi-select, or the first enabled row in document order. They mark it with `data-panel-active`
-and retain it when the pointer leaves a row. A query activates the first enabled match.
-Searchable panels keep focus in the search field; Enter selects the active row, and Arrow Down
-or Arrow Up moves focus to that row for Base UI keyboard navigation. With no active row, the
-arrows start at the first or last enabled match. `autoFocusFirstItem={false}` opts out of
-automatic activation and search-field focus.
-
-Select-style triggers keep their label or placeholder on the left and show the selected value or
-selection count, dimmed, immediately before the chevron. Searchable panels use a plain text field
-without a leading search icon, and the no-results state is the same height as one option row.
-
-A checkbox item shows Checkbox's box and its self-drawing tick in the leading slot. It can also
-read as a toggle button instead. Its `children` may be a function of checked state, and
-`indicator={false}` drops the checkbox and its indent so the icon and label carry the state:
+`indicator={false}` drops the checkbox and its indent, so the row reads as a toggle and its icon
+and label carry the state. `icon` and `children` may each be a function of checked state; the
+row morphs between the glyphs:
 
 ```tsx
-<DropdownMenuCheckboxItem indicator={false}>
+<DropdownMenuCheckboxItem
+  indicator={false}
+  icon={(checked) => (checked ? <BellOff /> : <Bell />)}
+>
   {(checked) => (
-    <>
-      <Morph activeKey={checked ? "on" : "off"} items={{ on: <BellOff />, off: <Bell /> }} />
-      <Morph activeKey={checked ? "on" : "off"} items={{ on: "Unmute", off: "Mute" }} />
-    </>
+    <Morph activeKey={checked ? "on" : "off"} items={{ on: "Unmute", off: "Mute" }} />
   )}
 </DropdownMenuCheckboxItem>
 ```
 
 Use `fillIcon` instead when the glyph keeps its shape, such as a bookmark, star, or heart that
-only fills in. Either way, the row keeps its `menuitemcheckbox` semantics.
+only fills in.
 
-Rows left-align every Morph inside them and mute a morphing leading icon to match a plain one.
-Don't pass `place-items-start` or a text colour at the call site.
+### Deferred changes
 
-## Asynchronous rows
+An `action` makes the change wait on work, like Action Toggle. The row keeps its current state
+while pending and calls `onCheckedChange` only after success; on failure the state is unchanged.
+The loader takes the checkbox's slot, or the icon's slot on a toggle:
 
-`DropdownMenuActionItem` runs an action, shows the result, and reverts, like Action Button:
+```tsx
+<DropdownMenuCheckboxItem
+  indicator={false}
+  icon={(muted) => (muted ? <BellOff /> : <Bell />)}
+  action={(muted) => setMuted(id, muted)}
+>
+  {(muted) => (muted ? "Unmute thread" : "Mute thread")}
+</DropdownMenuCheckboxItem>
+```
+
+The children function also receives the action status as a second argument, for a row that
+draws its own wait.
+
+| Prop | Default | |
+| --- | --- | --- |
+| `action` | — | `(checked) => void \| Promise`; handed the state being moved to |
+| `revertAfter` | `2000` | How long a failure shows, in ms |
+| `pendingDelay` | `0` | Holds back the loader, in ms |
+| `announce` | — | `{ pending, error }` screen reader messages |
+| `onError` | — | Called with the failure |
+
+## Radio rows
+
+`DropdownMenuRadioGroup` holds one value across its `DropdownMenuRadioItem` rows, controlled
+with `value` and `onValueChange` or uncontrolled with `defaultValue`. Each row shows a radio dot
+in the leading slot. Head the group with a `DropdownMenuLabel`.
+
+## Action rows
+
+`DropdownMenuActionItem` runs an action, confirms the result, and reverts, like Action Button.
+"Copy link" becoming "Copied" with a check is the typical case:
 
 ```tsx
 <DropdownMenuActionItem
@@ -98,29 +120,60 @@ Don't pass `place-items-start` or a text colour at the call site.
 </DropdownMenuActionItem>
 ```
 
-It defaults to `closeOnClick={false}` so the result stays visible. Override it when the result
-shows on the page behind the menu instead. It takes the same `labels`, `icons`, `revertAfter`, `pendingDelay`, `announce`, `onSuccess`, and
-`onError` as Action Button, and both morph between states without resizing the row.
+The icon and label morph through pending, success, and error without resizing the row. The row
+defaults to `closeOnClick={false}` so the result stays visible; set `closeOnClick` when the
+result shows on the page behind the menu instead.
 
-For a row that should stay in its new state, give `DropdownMenuCheckboxItem` an `action`. It
-keeps its current state while pending and calls `onCheckedChange` only after success, like
-Action Toggle:
+| Prop | Default | |
+| --- | --- | --- |
+| `action` | — | `() => void \| Promise` |
+| `icon` | — | Resting glyph |
+| `labels` | — | `{ pending, success, error }`; each falls back to the resting label |
+| `icons` | Loader, check, triangle | `{ pending, success, error }` |
+| `revertAfter` | `2000` | How long the outcome shows, in ms |
+| `pendingDelay` | `0` | Holds back the loader, in ms |
+| `announce` | — | `{ pending, success, error }` screen reader messages |
+| `closeOnClick` | `false` | Whether a click closes the menu |
+| `onSuccess`, `onError` | — | Called with the outcome |
 
-```tsx
-<DropdownMenuCheckboxItem action={(muted) => setMuted(id, muted)}>
-  Mute thread
-</DropdownMenuCheckboxItem>
-```
+## Submenus and select panels
 
-Without `action`, it is a plain synchronous checkbox. With it, the loader takes the checkbox's
-slot until the work settles; on failure the state is unchanged. With `indicator={false}`
-there is no checkbox slot for the loader, so the children function receives
-status as a second argument for the caller to render.
+Dropdown Menu includes three nested-panel forms:
 
-Both async rows announce their status from outside the row element, so the status text never
-becomes part of the row's accessible name.
+- a navigation submenu (`DropdownMenuSub`);
+- a single-select panel with the chosen value shown in the parent row and a checkmark in the
+  panel (`DropdownMenuSelect`);
+- a multi-select panel (`DropdownMenuSelect multiple`) using small Checkbox components and an
+  `N selected` parent label.
+
+Nested panels open immediately when their parent row is hovered by default; set the trigger's
+`delay` to change that. The safe pointer corridor keeps them open while the pointer moves into
+the panel, and the parent highlight stays active meanwhile. Hover-opening a navigation submenu
+does not activate its first child; keyboard navigation moves the active highlight.
+
+Select-style triggers keep their label or placeholder on the left and show the selected value or
+selection count, dimmed, immediately before the chevron. `searchable` adds a plain search field
+without a leading icon; the no-results state is the same height as one option row.
+
+Select panels open with the selected row active, the most recent enabled selection for
+multi-select, or the first enabled row in document order. They mark it with `data-panel-active`
+and retain it when the pointer leaves a row. A query activates the first enabled match.
+Searchable panels keep focus in the search field; Enter selects the active row, and Arrow Down
+or Arrow Up moves focus to that row for Base UI keyboard navigation. With no active row, the
+arrows start at the first or last enabled match. `autoFocusFirstItem={false}` opts out of
+automatic activation and search-field focus.
+
+## Loaders and pending work
+
+`DropdownMenu loader={<MySpinner />}` supplies the menu's loading indicator, including portalled
+rows. Omit it to inherit [LoaderProvider](/docs/reference/engineering#shared-loading-indicators),
+with `ClassicLoader` as the fallback. Action and checkbox rows accept `loader` for one row; on an
+action row, a custom `icons.pending` takes precedence.
+
+Action and deferred checkbox rows announce their status from outside the row element, so the
+status text never becomes part of the row's accessible name.
 
 Closing the menu does not cancel an in-flight action. `onSuccess` / `onError` on an action
-row, and `onCheckedChange` / `onError` on an asynchronous checkbox row, still report the
-outcome after the row unmounts. Keep controlled checked state in the parent when it must
-survive closing and reopening the menu.
+row, and `onCheckedChange` / `onError` on a deferred checkbox row, still report the outcome
+after the row unmounts. Keep controlled checked state in the parent when it must survive
+closing and reopening the menu.

@@ -7,7 +7,7 @@ contract below, and inspected through a deliberately minimal site.
 registry/     THE LIBRARY. Portable. Must never import from app/, content/, stories/, or inspector/.
   lib/        cn, slot, motion presets — shared by components.
   ui/<name>/  <name>.tsx + <name>.variants.ts
-stories/      Shared Fumadocs demo adapter.
+stories/      Demo loader and the list of playground demos.
 content/docs/ FUMADOCS MDX. One routed page per installable component.
 app/          Next.js shell, Fumadocs routes, and self-hosted search.
 inspector/    Data-driven demo entries, controls, and schemas. Never routed directly.
@@ -75,17 +75,20 @@ rather than reimplementing installation logic.
 ## Fumadocs documentation
 
 `content/docs/` is the public Fumadocs surface. Every installable `registry:ui` item has a
-`content/docs/<name>.mdx` page with frontmatter, an interactive `<ComponentDemo>`, an
-install/usage `<ComponentReference>`, an `## API` summary, and component-specific notes.
-The site serves that page as plain Markdown at `/docs/<component>.md` for agents, with the
-install and usage blocks expanded.
+`content/docs/<name>.mdx` page with frontmatter, an install/usage `<ComponentReference>`, an
+`## API` summary, and component-specific notes. The route renders the page as a playground: the
+demo on a canvas, the title, install actions and settings in a panel, and the MDX one tab away
+(`#docs`, or any heading's hash). The MDX holds no demo. The site serves that page as plain
+Markdown at `/docs/<component>.md` for agents, with the install and usage blocks expanded.
 
 When adding a component, update all of the relevant sources together:
 
 1. `registry/ui/<name>/` — portable implementation, variants, and tests.
 2. `registry.json` — install name, description, files, dependencies, and registry dependencies.
-3. `inspector/entries/` — the demo and settings controls, when the component needs a demo.
-4. `content/docs/<name>.mdx` — title/description, demo, install/usage reference, API, and notes;
+3. `inspector/entries/` — the demo and settings controls. Register the demo in
+   `stories/demo-names.ts` and its loader in `stories/component-demo.tsx`; a page whose slug
+   names a demo opens as a playground.
+4. `content/docs/<name>.mdx` — title/description, install/usage reference, API, and notes;
    add the page to `content/docs/meta.json` so Fumadocs includes it.
 5. `lib/component-catalog.ts` — the sidebar family, catalog category, and main API mapping when
    the new item changes those derived views.

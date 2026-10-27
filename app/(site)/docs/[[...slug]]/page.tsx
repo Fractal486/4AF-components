@@ -1,14 +1,16 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, ArrowRight, Maximize2 } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { getMDXComponents } from "@/components/mdx";
 import { InlineLink } from "@/components/inline-link";
+import { ArticleColumn } from "@/components/site/article-column";
+import { ComponentPlayground } from "@/components/site/component-playground";
 import { PageFrame } from "@/components/site/page-frame";
 import { siblings, siteNav } from "@/lib/site-nav";
 import { source } from "@/lib/source";
-import { pageAlternates, SITE_URL } from "@/lib/site";
-import { Button } from "@/registry/ui/button/button";
+import { pageAlternates, publicInstallCommand, SITE_URL } from "@/lib/site";
 import { CopyButton } from "@/registry/ui/copy-button/copy-button";
+import { playgroundDemos } from "@/stories/demo-names";
 
 interface DocsPageProps {
   params: Promise<{ slug?: string[] }>;
@@ -32,7 +34,31 @@ export default async function Page({ params }: DocsPageProps) {
     level: entry.depth,
   }));
 
+  const demos = slug.length === 1 ? playgroundDemos(slug[0]!, page.data.title) : [];
+  if (demos.length > 0) {
+    const link = (item?: { title: string; href: string }) =>
+      item ? { title: item.title, href: item.href } : undefined;
+    return (
+      <ComponentPlayground
+        // Each component starts from its own preview, not the last page's demo or view.
+        key={page.url}
+        title={page.data.title}
+        description={page.data.description}
+        demos={demos}
+        previous={link(previous)}
+        next={link(next)}
+        toc={toc}
+        installCommand={publicInstallCommand(slug[0]!)}
+        markdownUrl={`${SITE_URL}${page.url}.md`}
+        fullscreenHref={page.url === "/docs/sidebar-layout" ? "/full/sidebar-layout" : undefined}
+      >
+        <MdxContent components={getMDXComponents()} />
+      </ComponentPlayground>
+    );
+  }
+
   return (
+    <ArticleColumn>
     <PageFrame toc={toc}>
       <article>
         <header className="mb-8 flex flex-col gap-3">
@@ -69,19 +95,6 @@ export default async function Page({ params }: DocsPageProps) {
                 View ↗
               </InlineLink>
             </div>
-            {page.url === "/docs/sidebar-layout" ? (
-              <Button asChild variant="outline" size="sm">
-                <a
-                  href="/full/sidebar-layout"
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="Open Sidebar Layout fullscreen in a new tab"
-                >
-                  <Maximize2 aria-hidden />
-                  Open in new tab
-                </a>
-              </Button>
-            ) : null}
           </div>
         </header>
 
@@ -121,6 +134,7 @@ export default async function Page({ params }: DocsPageProps) {
         ) : null}
       </article>
     </PageFrame>
+    </ArticleColumn>
   );
 }
 

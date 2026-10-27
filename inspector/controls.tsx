@@ -3,12 +3,6 @@
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Input } from "@/registry/ui/input/input";
 import {
-  AlignedSelect,
-  AlignedSelectContent,
-  AlignedSelectItem,
-  AlignedSelectTrigger,
-} from "@/registry/ui/select/select-aligned";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -167,27 +161,28 @@ function Control({
         <span id={labelId} className="min-w-0 text-sm text-muted-foreground">
           {label}
         </span>
-        <AlignedSelect<string>
-          value={selectedLabel}
+        <Select<string>
+          value={value as string}
           disabled={disabled}
           onValueChange={(next) => {
-            const option = def.options.find((candidate) => humanizeLabel(candidate) === next);
-            if (option !== undefined) onChange(option);
+            if (next !== null) onChange(next);
           }}
         >
-          <AlignedSelectTrigger
+          <SelectTrigger
             aria-labelledby={labelId}
             variant="plain"
             className="ml-auto max-w-full shrink-0"
-          />
-          <AlignedSelectContent>
+          >
+            <SelectValue>{() => selectedLabel}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
             {def.options.map((option) => (
-              <AlignedSelectItem key={option} value={humanizeLabel(option)}>
+              <SelectItem key={option} value={option}>
                 {humanizeLabel(option)}
-              </AlignedSelectItem>
+              </SelectItem>
             ))}
-          </AlignedSelectContent>
-        </AlignedSelect>
+          </SelectContent>
+        </Select>
       </div>
     );
   }

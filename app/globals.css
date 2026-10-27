@@ -201,6 +201,20 @@
   }
 }
 
+/* Contents lists fade the edge with more beyond it (TABLE_OF_CONTENTS_EDGE_FADE). Typed so the
+   mask's colour stops interpolate; untyped, the fade snaps on at the scroll threshold. */
+@property --toc-fade-top {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: black;
+}
+
+@property --toc-fade-bottom {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: black;
+}
+
 /* Opacity-only spinner. Its bars resolve their duration locally from --classic-cycle,
    keeping the loop independent from the reduced-motion transition tokens. */
 @theme inline {
@@ -446,6 +460,15 @@
   html {
     /* Match modal scroll locking so viewport-based type stays the same size. */
     scrollbar-gutter: stable;
+  }
+
+  /* From `lg` the playground fits the viewport and never scrolls the window (its docs scroll
+     inside the frame), so the reserved gutter would only widen the frame's right margin past
+     its top and bottom ones. */
+  @media (width >= 64rem) {
+    html:has([data-view]) {
+      scrollbar-gutter: auto;
+    }
   }
 
   /* Fumadocs' search dialog is Radix, whose scroll lock (react-remove-scroll-bar) adds the

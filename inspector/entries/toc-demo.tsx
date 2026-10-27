@@ -80,15 +80,23 @@ function TocArticle({
   );
 }
 
+/**
+ * Off, the list takes its natural height and every entry shows. On, it is held short enough to
+ * scroll, which is when the active entry is kept in view and the edges fade.
+ */
+const listHeight = (scrollable: boolean) => (scrollable ? "h-32" : "h-auto");
+
 const lineSections = () =>
   SECTIONS.map((section) => ({ ...section, id: `toc-lines-${section.id}` }));
 
 export function TocDemo({
   variant,
   labels = "always",
+  scrollable = false,
 }: {
   variant?: TableOfContentsProps["variant"];
   labels?: "always" | "hover";
+  scrollable?: boolean;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -101,13 +109,19 @@ export function TocDemo({
         rootRef={scrollRef}
         variant={variant}
         labels={labels}
-        className="sticky top-0 h-40 w-44 shrink-0 self-start"
+        className={`sticky top-0 w-44 shrink-0 self-start ${listHeight(scrollable)}`}
       />
     </div>
   );
 }
 
-export function TocLinesDemo({ labels = "always" }: { labels?: "always" | "hover" }) {
+export function TocLinesDemo({
+  labels = "always",
+  scrollable = false,
+}: {
+  labels?: "always" | "hover";
+  scrollable?: boolean;
+}) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const sections = lineSections();
 
@@ -119,7 +133,7 @@ export function TocLinesDemo({ labels = "always" }: { labels?: "always" | "hover
         aria-label="Table of contents lines"
         items={sections.map(({ id, title, level }) => ({ id, title, level }))}
         rootRef={scrollRef}
-        className="sticky top-0 h-40 w-44 shrink-0 self-start"
+        className={`sticky top-0 w-44 shrink-0 self-start ${listHeight(scrollable)}`}
       />
     </div>
   );

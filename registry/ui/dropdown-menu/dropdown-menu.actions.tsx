@@ -32,6 +32,14 @@ function MenuCheckbox({ checked }: { checked: boolean }) {
   );
 }
 
+/**
+ * The 14px box a row's leading glyph sits in, so a Morph between glyphs centres where a plain
+ * row icon sits. Without the box the loader — one narrow character against 14px icons — would
+ * sit wherever its own advance width put it. The muting is here rather than from `itemBase`,
+ * whose rule reaches a direct-child Morph and this one is a level down.
+ */
+const GLYPH_SLOT = "flex size-3.5 shrink-0 items-center justify-center text-muted-foreground";
+
 export interface DropdownMenuActionItemProps
   extends Omit<DropdownMenuItemProps, "onClick" | "children"> {
   /** The work. Return a promise and the row waits for it. */
@@ -110,13 +118,7 @@ export function DropdownMenuActionItem({
         data-status={status}
         {...props}
       >
-        {/* The glyph gets the same 14px box a plain row icon occupies, and the Morph
-            centres inside it. Without the box the loader — one narrow character against
-            three 14px icons — would sit wherever its own advance width put it, which is
-            not where the icon above it in the menu sits. The muting is here rather than
-            from `itemBase`, whose rule reaches a direct-child Morph and this one is a
-            level down. */}
-        <span className="flex size-3.5 shrink-0 items-center justify-center text-muted-foreground">
+        <span className={GLYPH_SLOT}>
           {/* Every state at once, so the slot never resizes as it moves through them. */}
           <Morph
             activeKey={status}
@@ -160,10 +162,15 @@ export interface DropdownMenuCheckboxItemProps
    * rather than a ticked row.
    *
    * It's also handed the action status, which only moves off `"idle"` when there's an
-   * `action`. With `indicator={false}` there's no tick slot to put the loader in, so a
-   * deferred row has to show the wait itself.
+   * `action`, for a row that draws its own wait.
    */
   children?: ReactNode | ((checked: boolean, status: ActionStatus) => ReactNode);
+  /**
+   * The leading glyph, or one per checked state (Bell ⇄ BellOff), morphing between them.
+   * With `indicator={false}` the glyph slot is also the status slot: a deferred row's
+   * loader, and its failure triangle, take the icon's place until the work settles.
+   */
+  icon?: ReactNode | ((checked: boolean) => ReactNode);
   /**
    * The built-in left tick and its `pl-8` indent. Turn it off when the toggle state is
    * carried by the label/icon instead (the bookmark case).
@@ -206,6 +213,7 @@ export interface DropdownMenuCheckboxItemProps
 export function DropdownMenuCheckboxItem({
   className,
   children,
+  icon,
   indicator = true,
   fillIcon = false,
   action,
@@ -286,6 +294,28 @@ export function DropdownMenuCheckboxItem({
                     activeKey={status === "pending" || status === "error" ? status : "box"}
                     items={{
                       box: <MenuCheckbox checked={state.checked} />,
+                      pending: <LoadingIndicator loader={loader} />,
+                      error: <TriangleAlert />,
+                    }}
+                  />
+                </span>
+              )}
+              {icon !== undefined && (
+                <span className={GLYPH_SLOT}>
+                  {/* Every glyph at once, so the slot never resizes between them. The tick
+                      slot reports status when there is one; otherwise this one does. */}
+                  <Morph
+                    activeKey={
+                      !indicator && (status === "pending" || status === "error")
+                        ? status
+                        : typeof icon === "function"
+                          ? state.checked ? "on" : "off"
+                          : "icon"
+                    }
+                    items={{
+                      icon: typeof icon === "function" ? undefined : icon,
+                      on: typeof icon === "function" ? icon(true) : undefined,
+                      off: typeof icon === "function" ? icon(false) : undefined,
                       pending: <LoadingIndicator loader={loader} />,
                       error: <TriangleAlert />,
                     }}

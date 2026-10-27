@@ -6,7 +6,6 @@ import { ComponentReference } from "@/components/component-reference";
 import { DocsCodePre } from "@/components/docs-code-block";
 import { DocsHeading } from "@/components/docs-heading";
 import { InlineLink } from "@/components/inline-link";
-import { ComponentDemo } from "@/stories/component-demo";
 import { cn } from "@/registry/lib/cn";
 import {
   Table,
@@ -51,7 +50,6 @@ export function getMDXComponents(components?: MDXComponents) {
     caption: TableCaption,
     ComponentCatalog,
     ComponentCount,
-    ComponentDemo,
     ComponentReference,
     ...components,
   } satisfies MDXComponents;

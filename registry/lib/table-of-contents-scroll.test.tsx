@@ -8,7 +8,13 @@ import {
 
 const ITEMS = [{ id: "first" }, { id: "second" }, { id: "third" }];
 
-function ScrollHarness({ initialActiveId = "first" }: { initialActiveId?: string }) {
+const ROWS = ["first", "second", "third", "fourth"];
+
+function ScrollHarness({
+  initialActiveId = "first",
+}: {
+  initialActiveId?: string | readonly string[];
+}) {
   const navRef = useRef<HTMLElement>(null);
   const [activeId, setActiveId] = useState(initialActiveId);
   useCenterActiveTableOfContentsItem(navRef, activeId, ITEMS);
@@ -21,11 +27,16 @@ function ScrollHarness({ initialActiveId = "first" }: { initialActiveId?: string
       <button type="button" onClick={() => setActiveId("second")}>
         Activate second
       </button>
+      <button type="button" onClick={() => setActiveId(["second", "third"])}>
+        Activate second and third
+      </button>
       <nav ref={navRef} aria-label="Contents">
         <ul>
-          <li data-toc-id="first">First</li>
-          <li data-toc-id="second">Second</li>
-          <li data-toc-id="third">Third</li>
+          {ROWS.map((id) => (
+            <li key={id} data-toc-id={id}>
+              {id}
+            </li>
+          ))}
         </ul>
       </nav>
     </>
@@ -72,6 +83,26 @@ describe("useCenterActiveTableOfContentsItem", () => {
     fireEvent.click(screen.getByRole("button", { name: "Activate second" }));
 
     expect(nav.scrollTop).toBe(110);
+  });
+
+  it("centres a whole highlighted range rather than its first row", () => {
+    const { container } = render(<ScrollHarness />);
+    const nav = screen.getByRole("navigation", { name: "Contents" });
+    const rows = container.querySelectorAll<HTMLElement>("[data-toc-id]");
+
+    Object.defineProperties(nav, {
+      clientHeight: { configurable: true, value: 100 },
+      scrollHeight: { configurable: true, value: 1_000 },
+    });
+    vi.spyOn(nav, "getBoundingClientRect").mockReturnValue({ top: 0 } as DOMRect);
+    vi.spyOn(rows[1]!, "getBoundingClientRect").mockReturnValue({ top: 150, height: 20 } as DOMRect);
+    vi.spyOn(rows[2]!, "getBoundingClientRect").mockReturnValue({ top: 170, height: 20 } as DOMRect);
+    vi.stubGlobal("matchMedia", () => ({ matches: true }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Activate second and third" }));
+
+    // The range runs 150–190, so its middle (170) lands on the viewport's (50).
+    expect(nav.scrollTop).toBe(120);
   });
 
   it("returns the rail to its start when the first document section becomes active", () => {

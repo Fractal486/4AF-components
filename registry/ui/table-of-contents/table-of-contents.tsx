@@ -13,6 +13,7 @@ import { cn } from "@/registry/lib/cn";
 import { useMergedRefs } from "@/registry/lib/refs";
 import {
   useCenterActiveTableOfContentsItem,
+  useTableOfContentsEdgeFade,
   useTableOfContentsEdgePadding,
 } from "@/registry/lib/table-of-contents-scroll";
 import { useTableOfContentsTracking } from "@/registry/lib/table-of-contents-tracking";
@@ -199,14 +200,25 @@ export function TableOfContents({
     : "";
   const markerPath = geometry ? `M 1 ${geometry.top} L 1 ${geometry.top + geometry.total}` : "";
   const edgePadding = useTableOfContentsEdgePadding(navRef, items);
+  const edgeFade = useTableOfContentsEdgeFade(navRef, items);
 
-  useCenterActiveTableOfContentsItem(navRef, currentHighlightId, items, edgePadding);
+  // `span` centres its whole lit range, not the first heading in it.
+  useCenterActiveTableOfContentsItem(
+    navRef,
+    variant === "span" && markerSegments.length > 0
+      ? markerSegments.map((segment) => segment.id)
+      : currentHighlightId,
+    items,
+    edgePadding,
+  );
 
   return (
     <nav
       ref={mergedRef}
       aria-label="Table of contents"
       data-variant={variant}
+      data-overflow-top={edgeFade.top || undefined}
+      data-overflow-bottom={edgeFade.bottom || undefined}
       className={cn(tableOfContentsVariants({ variant, labels }), className)}
       {...props}
     >

@@ -63,10 +63,32 @@ export function useTableOfContentsEdgePadding(
 }
 
 /**
- * Reports which edges of a scrollable contents list have content beyond them. Consumers can use
- * the booleans for an optional fade or other overflow affordance without coupling the navigation
- * behavior to a particular visual treatment.
+ * Reports which edges of a scrollable contents list have content beyond them. Both contents
+ * lists put the result on their nav as `data-overflow-top` / `data-overflow-bottom`, which
+ * `TABLE_OF_CONTENTS_EDGE_FADE` turns into a fade.
  */
+/**
+ * Fades a contents list's edge while there is more beyond it, and keeps it sharp where the list
+ * ends: a list that fits, or one scrolled to its top, doesn't grey its first row out for nothing.
+ *
+ * A mask rather than a gradient overlay: the nav is the scroll container, so an overlay inside it
+ * would scroll away with the rows, and one outside it would have to know the background behind
+ * the list to fake the fade. A mask stays pinned to the viewport edges over whatever is behind.
+ *
+ * The two ends crossfade because the theme registers `--toc-fade-top` / `--toc-fade-bottom` as
+ * colours; untyped, the fade would snap on at the scroll threshold, a flicker on a list short
+ * enough to cross it repeatedly. The duration is the token, so reduced motion keeps the fade
+ * and drops only the crossfade.
+ */
+export const TABLE_OF_CONTENTS_EDGE_FADE = [
+  "[--toc-fade-size:1.75rem] [--toc-fade-top:black] [--toc-fade-bottom:black]",
+  "data-overflow-top:[--toc-fade-top:transparent] data-overflow-bottom:[--toc-fade-bottom:transparent]",
+  // Both spellings: some WebKit versions honour only the prefixed property.
+  "[-webkit-mask-image:linear-gradient(to_bottom,var(--toc-fade-top)_0,black_var(--toc-fade-size),black_calc(100%_-_var(--toc-fade-size)),var(--toc-fade-bottom)_100%)]",
+  "[mask-image:linear-gradient(to_bottom,var(--toc-fade-top)_0,black_var(--toc-fade-size),black_calc(100%_-_var(--toc-fade-size)),var(--toc-fade-bottom)_100%)]",
+  "transition-[--toc-fade-top,--toc-fade-bottom] duration-(--duration-base) ease-out",
+].join(" ");
+
 export function useTableOfContentsEdgeFade(
   navRef: RefObject<HTMLElement | null>,
   items: readonly unknown[],
@@ -106,20 +128,24 @@ export function useTableOfContentsEdgeFade(
 }
 
 /**
- * Keeps an active contents row near the middle of its own scroll viewport.
+ * Keeps the active contents rows near the middle of their own scroll viewport.
  *
  * The document and contents list scroll independently. The caller supplies the document-derived
- * active id; this hook only moves the contents viewport. Retargeting an in-flight animation,
+ * active id, or every id in a highlighted range (`span`), and the hook centres the whole range
+ * rather than its first row. A range taller than the viewport shows its start instead. This hook
+ * only moves the contents viewport. Retargeting an in-flight animation,
  * instead of restarting it for each heading, prevents the row from stuttering as the document
  * continues to scroll.
  */
 export function useCenterActiveTableOfContentsItem(
   navRef: RefObject<HTMLElement | null>,
-  activeId: string | undefined,
+  active: string | readonly string[] | undefined,
   items: readonly unknown[],
   layoutVersion?: unknown,
 ) {
   const animationRef = useRef<TocScrollAnimation | null>(null);
+  // A key rather than the array, so a range rebuilt on every render doesn't retarget the scroll.
+  const activeKey = typeof active === "string" ? active : (active ?? []).join("\u0000");
 
   useEffect(
     () => () => {
@@ -138,32 +164,36 @@ export function useCenterActiveTableOfContentsItem(
       animationRef.current = null;
     };
 
-    if (!nav || !activeId) {
-      cancelAnimation();
-      return;
-    }
-
-    const rows = Array.from(nav.querySelectorAll<HTMLElement>("[data-toc-id]"));
-    const activeIndex = rows.findIndex((row) => row.dataset.tocId === activeId);
-    const activeRow = rows[activeIndex];
-    if (!activeRow) {
+    const activeIds = new Set(activeKey ? activeKey.split("\u0000") : []);
+    const rows = Array.from(nav?.querySelectorAll<HTMLElement>("[data-toc-id]") ?? []);
+    const firstIndex = rows.findIndex((row) => activeIds.has(row.dataset.tocId ?? ""));
+    const lastIndex = rows.findLastIndex((row) => activeIds.has(row.dataset.tocId ?? ""));
+    const firstRow = rows[firstIndex];
+    const lastRow = rows[lastIndex];
+    if (!nav || !firstRow || !lastRow) {
       cancelAnimation();
       return;
     }
 
     const navRect = nav.getBoundingClientRect();
-    const rowRect = activeRow.getBoundingClientRect();
-    const rowCenter = rowRect.top + rowRect.height / 2;
-    const viewportCenter = navRect.top + nav.clientHeight / 2;
-    const desiredScrollTop = nav.scrollTop + rowCenter - viewportCenter;
+    const firstRect = firstRow.getBoundingClientRect();
+    const lastRect = lastRow.getBoundingClientRect();
+    const rangeTop = firstRect.top;
+    const rangeBottom = lastRect.top + lastRect.height;
+    // Centre the range; one taller than the viewport would lose its start, so lead with that.
+    const rangeOffset =
+      rangeBottom - rangeTop > nav.clientHeight
+        ? rangeTop - navRect.top
+        : (rangeTop + rangeBottom) / 2 - (navRect.top + nav.clientHeight / 2);
+    const desiredScrollTop = nav.scrollTop + rangeOffset;
     const maxScrollTop = Math.max(nav.scrollHeight - nav.clientHeight, 0);
-    // At either end there is no room to centre the row. Make those targets explicit rather than
+    // At either end there is no room to centre the range. Make those targets explicit rather than
     // deriving them from a viewport measurement while the rail is already scrolled: a return to
     // the document's first section must bring the first contents row back into view.
     const nextScrollTop =
-      activeIndex === 0
+      firstIndex === 0
         ? 0
-        : activeIndex === rows.length - 1
+        : lastIndex === rows.length - 1
           ? maxScrollTop
           : Math.min(Math.max(desiredScrollTop, 0), maxScrollTop);
 
@@ -211,5 +241,5 @@ export function useCenterActiveTableOfContentsItem(
 
     animationRef.current = animation;
     animation.frame = window.requestAnimationFrame(animate);
-  }, [activeId, items, layoutVersion, navRef]);
+  }, [activeKey, items, layoutVersion, navRef]);
 }

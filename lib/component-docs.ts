@@ -29,12 +29,11 @@ function parseFrontmatter(source: string): {
 
 /**
  * Turns the custom MDX components used by the site into Markdown that an agent can
- * consume without a React or Fumadocs runtime. Interactive demos are deliberately
- * omitted; install and usage remain as ordinary, separate fenced code blocks.
+ * consume without a React or Fumadocs runtime. Install and usage become ordinary,
+ * separate fenced code blocks. Demos are not part of the MDX: the page shell renders them.
  */
 export function expandComponentMdx(markdown: string) {
   return markdown
-    .replace(/^\s*<ComponentDemo\b[^>]*\/>\s*$/gmu, "")
     .replace(/<ComponentReference\s+name="([^"]+)"\s*\/>/gu, (_match, name: string) =>
       componentReferenceMarkdown(name) ?? "",
     )

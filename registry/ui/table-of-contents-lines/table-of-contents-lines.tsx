@@ -11,6 +11,7 @@ import { cn } from "@/registry/lib/cn";
 import { useMergedRefs } from "@/registry/lib/refs";
 import {
   useCenterActiveTableOfContentsItem,
+  useTableOfContentsEdgeFade,
   useTableOfContentsEdgePadding,
 } from "@/registry/lib/table-of-contents-scroll";
 import { useTableOfContentsTracking } from "@/registry/lib/table-of-contents-tracking";
@@ -64,6 +65,7 @@ export function TableOfContentsLines({
 
   const activeId = scrollTargetId ?? settledTargetId ?? currentId;
   const edgePadding = useTableOfContentsEdgePadding(navRef, items);
+  const edgeFade = useTableOfContentsEdgeFade(navRef, items);
 
   useCenterActiveTableOfContentsItem(navRef, activeId, items, edgePadding);
 
@@ -72,6 +74,8 @@ export function TableOfContentsLines({
       ref={mergedRef}
       aria-label="Table of contents"
       data-variant="lines"
+      data-overflow-top={edgeFade.top || undefined}
+      data-overflow-bottom={edgeFade.bottom || undefined}
       className={cn(tableOfContentsLinesVariants({ labels }), className)}
       {...props}
     >

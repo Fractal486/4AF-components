@@ -114,13 +114,16 @@ export function SidebarDemo({
   const split = variant === "split" || variant === "split-floating" || variant === "split-inset";
 
   return (
-    // The docs preview needs a containing block because the sidebar panel is fixed; the
-    // fullscreen route drops that frame so the shell can own the browser viewport instead.
+    // The playground needs a containing block because the sidebar panel is fixed, and the
+    // window fills the canvas's height; the fullscreen route drops that frame so the shell
+    // can own the browser viewport instead. In dark mode the window's surfaces step down
+    // toward the page background, so a whole app shell doesn't outshine the playground
+    // around it; tooltips portal out and keep the real tokens.
     <div
       className={
         fullscreen
           ? "relative h-dvh w-full overflow-hidden"
-          : "relative h-[28rem] w-full overflow-hidden rounded-lg border border-border [contain:paint]"
+          : "relative h-full min-h-[28rem] w-full overflow-hidden rounded-lg border border-border [contain:paint] dark:[--muted:oklch(0.165_0_0)] dark:[--surface:oklch(0.135_0_0)]"
       }
     >
       <SidebarLayout
@@ -638,12 +641,14 @@ export function SidebarDemo({
         className="h-full min-h-0"
         contentClassName="gap-3 p-4"
       >
-        <div className="h-24 rounded-lg bg-muted" />
-        <div className="grid grid-cols-3 gap-3">
+        {/* A page's outline that fills whatever height the window has. */}
+        <div className="h-24 shrink-0 rounded-lg bg-muted" />
+        <div className="grid shrink-0 grid-cols-3 gap-3">
           <div className="h-16 rounded-lg bg-muted" />
           <div className="h-16 rounded-lg bg-muted" />
           <div className="h-16 rounded-lg bg-muted" />
         </div>
+        <div className="min-h-24 flex-1 rounded-lg bg-muted" />
       </SidebarLayout>
     </div>
   );

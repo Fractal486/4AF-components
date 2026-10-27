@@ -1,12 +1,12 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
 import { Fragment, useEffect, useState } from "react";
 import { Controls } from "@/inspector/controls";
 import {
   defineEntry,
   initialValues,
   type ControlSchema,
+  type ControlValues,
   type Entry,
 } from "@/inspector/schema";
 import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
@@ -14,58 +14,9 @@ import { LoaderProvider } from "@/registry/lib/loader";
 import { ClassicLoader } from "@/registry/ui/classic-loader/classic-loader";
 import { Button } from "@/registry/ui/button/button";
 import { cn } from "@/registry/lib/cn";
-import { Tooltip } from "@/registry/ui/tooltip/tooltip";
+import type { ComponentDemoName } from "./demo-names";
 
-export type ComponentDemoName =
-  | "action-button"
-  | "action-toggle"
-  | "alert"
-  | "alert-dialog"
-  | "ascii-loader"
-  | "matrix-loader"
-  | "classic-loader"
-  | "badge"
-  | "breadcrumb"
-  | "button"
-  | "button-group"
-  | "checkbox"
-  | "collapsible"
-  | "command-palette"
-  | "copy-button"
-  | "date-picker"
-  | "delete-button"
-  | "dialog"
-  | "dropdown-menu"
-  | "empty"
-  | "hover-card"
-  | "input"
-  | "morph"
-  | "popover"
-  | "progress"
-  | "radio"
-  | "select"
-  | "select-sort"
-  | "select-aligned"
-  | "select-search"
-  | "selection-toolbar"
-  | "separator"
-  | "sheet"
-  | "sidebar"
-  | "sidebar-layout"
-  | "skeleton"
-  | "slider"
-  | "switch"
-  | "data-table"
-  | "table"
-  | "table-of-contents"
-  | "table-of-contents-lines"
-  | "tabs"
-  | "scramble-text"
-  | "blur-text"
-  | "text-shimmer"
-  | "textarea"
-  | "toggle"
-  | "tooltip";
+export type { ComponentDemoName } from "./demo-names";
 
 const LOADER_DEMOS = new Set([
   "button", "action-button", "action-toggle", "copy-button", "delete-button",
@@ -86,110 +37,11 @@ const LOADER_CONTROLS = {
   loader: { kind: "select", options: ["ascii", "classic"], defaultValue: "classic", label: "Loader" },
 } as const;
 
-function EntryPreview<S extends ControlSchema>({ entry }: { entry: Entry<S> }) {
-  const [values, setValues] = useState(() => initialValues(entry.controls));
-  const [replayKey, setReplayKey] = useState(0);
-  const [loader, setLoader] = useState<"ascii" | "classic">("classic");
-  const hasLoaderSetting = LOADER_DEMOS.has(entry.slug);
-  const hasControls = Object.keys(entry.controls).length > 0;
-  const isAppShell = entry.slug === "sidebar";
-  const replayable = entry.slug === "scramble-text" || entry.slug === "blur-text";
-  const demoWidth = DEMO_WIDTHS[entry.slug as ComponentDemoName];
-  const settingsKey = JSON.stringify([values, loader]);
-
-  return (
-    <div className="not-prose first:mt-0 my-6">
-      <div
-        data-demo-box
-        className={cn(
-          "relative isolate grid h-[42rem] min-w-0 grid-rows-[minmax(0,1fr)_auto] items-center justify-items-center gap-8 overflow-hidden rounded-xl bg-background p-6 shadow-border",
-          isAppShell && "min-h-0 items-stretch justify-items-stretch gap-3 p-3",
-        )}
-      >
-        <div
-          className={cn(
-            "flex min-h-0 w-full min-w-0 items-center justify-center",
-            isAppShell && "items-stretch",
-          )}
-        >
-          {replayable && (
-            <Tooltip content="Replay animation" delay={0}>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                aria-label={`Replay ${entry.name} animation`}
-                className="absolute top-3 right-3 z-10"
-                onClick={() => setReplayKey((current) => current + 1)}
-              >
-                <RotateCcw />
-              </Button>
-            </Tooltip>
-          )}
-          <LoaderProvider loader={loader === "ascii" ? <AsciiLoader /> : undefined}>
-            <div
-              className={cn(
-                "flex min-w-0 max-w-full flex-col items-center",
-                demoWidth && "w-full",
-                demoWidth,
-                (entry.slug === "table" || entry.slug === "data-table" || entry.slug === "collapsible") && "self-start",
-                isAppShell && "h-full min-h-0 items-stretch",
-              )}
-            >
-              <div
-                className={cn(
-                  "flex min-w-0 w-fit max-w-full items-center justify-center",
-                  demoWidth && "w-full",
-                  isAppShell && "h-full min-h-0 items-stretch",
-                )}
-              >
-                <Fragment key={`${settingsKey}-${replayKey}`}>{entry.render(values)}</Fragment>
-              </div>
-            </div>
-          </LoaderProvider>
-        </div>
-        {hasControls || hasLoaderSetting ? (
-          <section
-            aria-label={`${entry.name} settings`}
-            // Same 12px as the rows inside each Controls block, so the shared Loader row
-            // reads as one more row rather than butting against the last one.
-            className="@container mx-auto flex w-full min-w-0 max-w-[400px] flex-col gap-3 px-3 py-2"
-          >
-            <Controls
-              idPrefix={`docs-${entry.slug}`}
-              schema={entry.controls}
-              values={values}
-              onChange={(key, value) =>
-                setValues((current) => ({ ...current, [key]: value }))
-              }
-            />
-            {hasLoaderSetting && (
-              <Controls
-                idPrefix={`docs-${entry.slug}-loader`}
-                schema={LOADER_CONTROLS}
-                values={{ loader }}
-                onChange={(_key, value) => setLoader(value as "ascii" | "classic")}
-              />
-            )}
-          </section>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-function loadingPreview() {
-  // Reserve the EntryPreview height so loading a demo does not move the article.
-  return (
-    <div className="not-prose first:mt-0 my-6 grid h-[42rem] place-items-center rounded-xl bg-background shadow-border">
-      <ClassicLoader label="Loading component demo" />
-    </div>
-  );
-}
-
 type DemoName = ComponentDemoName;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyEntry = Entry<any>;
+type LoaderChoice = "ascii" | "classic";
+type Values = ControlValues<ControlSchema>;
 
 /** Demos already downloaded this session, so a page that has one renders it immediately. */
 const loaded = new Map<DemoName, AnyEntry>();
@@ -226,12 +78,35 @@ function preloadRemainingDemos() {
   whenIdle(next);
 }
 
-function LazyDemo({ name }: { name: DemoName }) {
+/**
+ * One demo's download and settings. The playground draws the canvas and the settings in
+ * different columns, so the state lives here and both read it. Key the caller by `name`: a
+ * different demo starts from its own defaults.
+ */
+export interface ComponentDemoState {
+  status: "loading" | "failed" | "ready";
+  entry?: AnyEntry;
+  values: Values;
+  setValue: (key: string, value: unknown) => void;
+  hasLoaderSetting: boolean;
+  loader: LoaderChoice;
+  setLoader: (loader: LoaderChoice) => void;
+  /** Whether the demo is a one-shot entrance worth replaying from the toolbar. */
+  replayable: boolean;
+  /** Bumped by `replay` to remount the demo. */
+  replayKey: number;
+  replay: () => void;
+}
+
+export function useComponentDemo(name: DemoName): ComponentDemoState {
   // Nothing is loaded on the server or during hydration, so both render the placeholder.
   const [entry, setEntry] = useState<AnyEntry | undefined>(() =>
     typeof window === "undefined" ? undefined : loaded.get(name),
   );
   const [failed, setFailed] = useState(false);
+  const [values, setValues] = useState<Values>();
+  const [loader, setLoader] = useState<LoaderChoice>("classic");
+  const [replayKey, setReplayKey] = useState(0);
 
   useEffect(() => {
     // Already here: the initial state picked it up, so only the background queue remains.
@@ -257,10 +132,31 @@ function LazyDemo({ name }: { name: DemoName }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name]);
 
-  if (entry) return <EntryPreview entry={entry} />;
-  if (failed) {
+  const defaults = (): Values => (entry ? initialValues(entry.controls) : {});
+
+  return {
+    status: entry ? "ready" : failed ? "failed" : "loading",
+    entry,
+    values: values ?? defaults(),
+    setValue: (key, value) =>
+      setValues((current) => ({ ...(current ?? defaults()), [key]: value as Values[string] })),
+    hasLoaderSetting: LOADER_DEMOS.has(name),
+    loader,
+    setLoader,
+    replayable: name === "scramble-text" || name === "blur-text",
+    replayKey,
+    replay: () => setReplayKey((current) => current + 1),
+  };
+}
+
+/**
+ * The demo itself, centred in whatever box the caller gives it. Changing a setting remounts
+ * the demo, so every state is seen from its entrance.
+ */
+export function DemoCanvas({ demo }: { demo: ComponentDemoState }) {
+  if (demo.status === "failed") {
     return (
-      <div className="not-prose first:mt-0 my-6 grid h-[42rem] place-items-center rounded-xl bg-background shadow-border">
+      <div className="grid h-full min-h-full place-items-center">
         <div className="flex flex-col items-center gap-3 p-6 text-center">
           <p role="alert" className="text-sm text-muted-foreground">This demo couldn’t load. Reload the page to try again.</p>
           <Button variant="outline" onClick={() => window.location.reload()}>Reload page</Button>
@@ -268,7 +164,79 @@ function LazyDemo({ name }: { name: DemoName }) {
       </div>
     );
   }
-  return loadingPreview();
+  if (!demo.entry) {
+    return (
+      <div className="grid h-full min-h-full place-items-center">
+        <ClassicLoader label="Loading component demo" />
+      </div>
+    );
+  }
+
+  const { entry, values, loader, replayKey } = demo;
+  const isAppShell = entry.slug === "sidebar";
+  const demoWidth = DEMO_WIDTHS[entry.slug as ComponentDemoName];
+  const settingsKey = JSON.stringify([values, loader]);
+
+  return (
+    <div
+      className={cn(
+        // Safe centring: a demo taller than the canvas starts at the top and scrolls, rather
+        // than overflowing above it where it can't be reached.
+        "relative isolate flex min-h-full w-full min-w-0 items-center-safe justify-center-safe p-6",
+        isAppShell && "h-full items-stretch p-3",
+      )}
+    >
+      <LoaderProvider loader={loader === "ascii" ? <AsciiLoader /> : undefined}>
+        <div
+          className={cn(
+            "flex min-w-0 max-w-full flex-col items-center",
+            demoWidth && "w-full",
+            demoWidth,
+            isAppShell && "h-full min-h-0 items-stretch",
+          )}
+        >
+          <div
+            className={cn(
+              "flex min-w-0 w-fit max-w-full items-center justify-center",
+              demoWidth && "w-full",
+              isAppShell && "h-full min-h-0 items-stretch",
+            )}
+          >
+            <Fragment key={`${settingsKey}-${replayKey}`}>{entry.render(values)}</Fragment>
+          </div>
+        </div>
+      </LoaderProvider>
+    </div>
+  );
+}
+
+export function hasDemoSettings(demo: ComponentDemoState) {
+  return demo.hasLoaderSetting || Object.keys(demo.entry?.controls ?? {}).length > 0;
+}
+
+/** The demo's settings rows; nothing until the demo has loaded. */
+export function DemoSettings({ demo, idPrefix }: { demo: ComponentDemoState; idPrefix: string }) {
+  if (!demo.entry) return null;
+  const schema: ControlSchema = demo.entry.controls;
+
+  return (
+    <>
+      <Controls
+        idPrefix={idPrefix}
+        schema={schema}
+        values={demo.values}
+        onChange={(key, value) => demo.setValue(key as string, value)}
+      />
+      {demo.hasLoaderSetting && (
+        <Controls
+          idPrefix={`${idPrefix}-loader`}
+          schema={LOADER_CONTROLS}
+          values={{ loader: demo.loader }}
+          onChange={(_key, value) => demo.setLoader(value as LoaderChoice)}
+        />
+      )}
+    </>
+  );
 }
 
 const demos: Record<DemoName, () => Promise<AnyEntry>> = {
@@ -327,7 +295,3 @@ const demos: Record<DemoName, () => Promise<AnyEntry>> = {
   toggle: async () => (await import("@/inspector/entries/toggle")).toggleEntry,
   tooltip: async () => (await import("@/inspector/entries/tooltip")).tooltipEntry,
 };
-
-export function ComponentDemo({ name }: { name: ComponentDemoName }) {
-  return <LazyDemo key={name} name={name} />;
-}

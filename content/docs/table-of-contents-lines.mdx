@@ -3,7 +3,6 @@ title: Table of Contents Lines
 description: A compact document outline visualized as interactive depth-aware lines.
 ---
 
-<ComponentDemo name="table-of-contents-lines" />
 <ComponentReference name="table-of-contents-lines" />
 
 ## API
@@ -26,7 +25,9 @@ Ctrl/Cmd-, Shift-, Alt-, and middle-clicks retain the link's native browser beha
 of starting that custom scroll.
 
 Give it a height and it scrolls on its own, without a visible scrollbar, keeping the active entry
-centred.
+centred. An edge with more entries beyond it fades out, and the fade crossfades
+as scrolling reaches or leaves that end. The nav carries `data-overflow-top` and
+`data-overflow-bottom` while each edge has more.
 
 `labels="hover"` hides the headings until the list is hovered or keyboard-focused, leaving only
 the lines; `always` (default) shows them. On devices with a coarse primary pointer the headings

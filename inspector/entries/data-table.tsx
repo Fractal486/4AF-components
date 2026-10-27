@@ -121,7 +121,7 @@ function DataTableDemo({
   footer: boolean;
   caption: boolean;
 }) {
-  const [selected, setSelected] = useState<string[]>(["4.1.3"]);
+  const [selected, setSelected] = useState<string[]>([]);
   const [sort, setSort] = useState<TableSort | null>(null);
   const releases = sorted(RELEASES, sort);
   const totals = RELEASES.filter((release) => selected.includes(release.id));

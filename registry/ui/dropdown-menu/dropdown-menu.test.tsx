@@ -398,6 +398,39 @@ describe("DropdownMenu", () => {
     expect(onCheckedChange).toHaveBeenCalledExactlyOnceWith(true);
   });
 
+  it("puts a tickless deferred row's loader in its icon slot", async () => {
+    const user = userEvent.setup();
+    let finish!: () => void;
+    const action = vi.fn(() => new Promise<void>((resolve) => { finish = resolve; }));
+
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger aria-label="More actions" />
+        <DropdownMenuContent>
+          <DropdownMenuCheckboxItem
+            indicator={false}
+            action={action}
+            icon={(checked) => <span data-testid={checked ? "muted" : "unmuted"} />}
+          >
+            Mute thread
+          </DropdownMenuCheckboxItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+    const row = await screen.findByRole("menuitemcheckbox");
+    expect(row.querySelector("[data-slot=dropdown-menu-checkbox]")).toBeNull();
+    expect(row.querySelector("[data-testid=unmuted]")).not.toBeNull();
+
+    fireEvent.click(row);
+    expect(row.querySelector("[data-slot=loader]")).not.toBeNull();
+
+    await act(async () => finish());
+    expect(row).toHaveAttribute("aria-checked", "true");
+    expect(row.querySelector("[data-testid=muted]")).not.toBeNull();
+  });
+
   it("stays a plain synchronous checkbox without an action", async () => {
     const user = userEvent.setup();
     const onCheckedChange = vi.fn();

@@ -7,6 +7,7 @@ import { InlineLink } from "@/components/inline-link";
 import { AsciiFooter } from "@/components/landing/ascii-footer";
 import { InstallCommand } from "@/components/landing/install-command";
 import { RevealGate } from "@/components/landing/reveal";
+import { ArticleColumn } from "@/components/site/article-column";
 import { MobileToc } from "@/components/site/mobile-toc";
 import { PageFrame } from "@/components/site/page-frame";
 import { componentCount, registryComponents } from "@/lib/component-catalog";
@@ -92,7 +93,7 @@ export default function IndexPage() {
       }));
 
   return (
-    <>
+    <ArticleColumn>
       {/* The narrow-screen "On this page" bar, directly under the top bar rather than after
           the hero, which sits outside the page frame. */}
       <RevealGate />
@@ -102,7 +103,7 @@ export default function IndexPage() {
       </noscript>
       <MobileToc items={toc} />
       {/* Copy on the page background at the left; the photograph is a layer behind the whole
-          hero, running off the right edge of the main area, and fades out under the copy. The
+          hero, running off the right edge of the article column, and fades out under the copy. The
           photo has no container. An oval mask
           dissolves its edges, and blending drops its sky into the page in either theme: as
           shot with `screen` in dark mode (the black disappears), inverted with `multiply` in
@@ -200,7 +201,7 @@ export default function IndexPage() {
       toc={toc}
       mobileToc={false}
       footer={
-        // Runs from the rail, like the hero (it cancels <main>'s left gutter), and ends with
+        // Runs from the column's edge, like the hero (it cancels the column's left gutter), and ends with
         // the content column, beside "On this page", which stays pinned next to it.
         <AsciiFooter
           // Pulled up into the content column's bottom padding (4rem, 7rem from sm).
@@ -296,6 +297,6 @@ export default function IndexPage() {
         </article>
     </PageFrame>
     </div>
-    </>
+    </ArticleColumn>
   );
 }

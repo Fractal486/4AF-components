@@ -8,14 +8,15 @@ import { REPOSITORY, siteNav } from "@/lib/site-nav";
  */
 export default function SiteLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="mx-auto w-full max-w-310 lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start">
+    // Full width: component pages fill the main area; reading pages centre an ArticleColumn.
+    <div className="w-full lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start">
       <div className="sticky top-0 z-30 border-b bg-background lg:h-dvh lg:border-b-0">
         <SiteRail
           nav={siteNav()}
           repository={REPOSITORY}
         />
       </div>
-      <main className="min-w-0 lg:px-[clamp(2rem,4vw,4rem)]">{children}</main>
+      <main className="min-w-0">{children}</main>
     </div>
   );
 }

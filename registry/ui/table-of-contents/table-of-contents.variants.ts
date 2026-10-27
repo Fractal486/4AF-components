@@ -1,7 +1,11 @@
 import { cva, type VariantProps } from "class-variance-authority";
+import { TABLE_OF_CONTENTS_EDGE_FADE } from "@/registry/lib/table-of-contents-scroll";
 
 export const tableOfContentsVariants = cva(
-  "min-h-0 overflow-y-auto overscroll-y-contain overflow-x-clip pe-1 text-sm [overflow-anchor:none] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
+  [
+    "min-h-0 overflow-y-auto overscroll-y-contain overflow-x-clip pe-1 text-sm [overflow-anchor:none] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
+    TABLE_OF_CONTENTS_EDGE_FADE,
+  ],
   {
     variants: {
       variant: {

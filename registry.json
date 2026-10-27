@@ -227,6 +227,16 @@
               "display": "none"
             }
           }
+        },
+        "@property --toc-fade-top": {
+          "syntax": "\"<color>\"",
+          "inherits": "false",
+          "initial-value": "black"
+        },
+        "@property --toc-fade-bottom": {
+          "syntax": "\"<color>\"",
+          "inherits": "false",
+          "initial-value": "black"
         }
       }
     },
