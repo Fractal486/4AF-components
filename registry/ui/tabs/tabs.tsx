@@ -123,7 +123,7 @@ export function TabsList({
 }) {
   const { variant, appearance, size } = useTabsContext();
   const listRef = useRef<HTMLDivElement>(null);
-  const [box, setBox] = useState<{ left: number; width: number } | null>(null);
+  const [box, setBox] = useState<{ left: number; width: number; snap: boolean } | null>(null);
   const reduceMotion = useReducedMotion();
   const mergedRef = useMergedRefs(listRef, forwardedRef);
 
@@ -157,9 +157,16 @@ export function TabsList({
     const list = listRef.current;
     if (!list) return;
 
+    // The tab the indicator last measured. A new one is a selection, and slides; the same
+    // one measured again has only changed size (a resizing sidebar or window), and the
+    // indicator snaps to it rather than replaying the slide on every frame of the resize.
+    let measured: HTMLElement | null = null;
+
     const measure = () => {
       const active = list.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
       if (!active) return;
+      const snap = active === measured;
+      measured = active;
       // getBoundingClientRect, not offsetLeft: offsetLeft rounds to whole pixels and
       // the indicator would jitter by 1px between tabs of fractional width.
       const listRect = list.getBoundingClientRect();
@@ -184,7 +191,7 @@ export function TabsList({
         width = Math.max(width - start - end, 0);
       }
       setBox((previous) => previous?.left === left && previous.width === width
-        ? previous : { left, width });
+        ? previous : { left, width, snap });
     };
 
     measure();
@@ -277,8 +284,13 @@ export function TabsList({
           style={{ left: 0 }}
           // A tween on the expo ease-out, not a spring: a spring starts from rest, so it
           // eases in before it decelerates. A tab switch answers a click, so the indicator
-          // leaves at full speed and decelerates into place.
-          transition={reduceMotion ? { duration: 0 } : { duration: duration.slow, ease: ease.out }}
+          // leaves at full speed and decelerates into place. The width settles a step
+          // sooner than the travel, so the chip has its new size before it arrives.
+          transition={reduceMotion || box.snap ? { duration: 0 } : {
+            duration: duration.slower,
+            ease: ease.out,
+            width: { duration: duration.slow, ease: ease.out },
+          }}
         />
       )}
       {children}

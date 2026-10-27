@@ -1692,7 +1692,8 @@
         "https://4af.selfsimilar.dev/r/sheet.json",
         "https://4af.selfsimilar.dev/r/skeleton.json",
         "https://4af.selfsimilar.dev/r/tooltip.json",
-        "https://4af.selfsimilar.dev/r/scroll-area.json"
+        "https://4af.selfsimilar.dev/r/scroll-area.json",
+        "https://4af.selfsimilar.dev/r/tabs.json"
       ],
       "files": [
         {
@@ -1704,6 +1705,11 @@
           "path": "registry/ui/sidebar/sidebar.context.ts",
           "type": "registry:ui",
           "target": "@ui/sidebar.context.ts"
+        },
+        {
+          "path": "registry/ui/sidebar/sidebar.tabs.tsx",
+          "type": "registry:ui",
+          "target": "@ui/sidebar.tabs.tsx"
         },
         {
           "path": "registry/ui/sidebar/sidebar.provider.tsx",

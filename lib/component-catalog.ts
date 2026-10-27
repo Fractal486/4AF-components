@@ -166,7 +166,7 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   "scroll-area": "ScrollArea, ScrollAreaScrollbar",
   separator: "Separator",
   sheet: "Sheet and composition parts",
-  sidebar: "SidebarProvider, Sidebar, SidebarPanel, SidebarHeaderButton, menu/group/submenu parts",
+  sidebar: "SidebarProvider, Sidebar, SidebarPanel, SidebarHeaderButton, SidebarTabs, menu/group/submenu parts",
   "sidebar-layout": "SidebarLayout",
   skeleton: "Skeleton",
   slider: "Slider",

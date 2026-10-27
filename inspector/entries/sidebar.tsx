@@ -38,8 +38,11 @@ export const sidebarEntry = defineEntry({
     // Swaps the nav rows for their loading skeletons.
     loading: bool(false, "Loading"),
     customHeader: bool(false, "Custom header"),
+    // A tabs row under the title switching the nav; the default layout's, as split panels
+    // already switch by rail.
+    tabs: bool(false, "Tabs"),
   },
-  render({ layout, variant, collapsible, loading, customHeader }) {
+  render({ layout, variant, collapsible, loading, customHeader, tabs }) {
     const resolvedVariant = resolveSidebarVariant(layout, variant);
 
     return (
@@ -51,6 +54,7 @@ export const sidebarEntry = defineEntry({
         collapsible={collapsible}
         loading={loading}
         customHeader={customHeader}
+        tabs={tabs && layout === "default"}
       />
     );
   },

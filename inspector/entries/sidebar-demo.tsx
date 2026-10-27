@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  Archive,
+  FilePen,
   Files,
   Inbox,
   LayoutDashboard,
@@ -8,9 +10,10 @@ import {
   Plus,
   Search,
   Settings,
+  Star,
   Users,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -38,6 +41,10 @@ import {
   SidebarPanel,
   SidebarRail,
   SidebarRailButton,
+  SidebarTabs,
+  SidebarTabsList,
+  SidebarTabsPanel,
+  SidebarTabsTab,
   useSidebar,
 } from "@/registry/ui/sidebar/sidebar";
 import { SidebarLayout } from "@/registry/ui/sidebar-layout/sidebar-layout";
@@ -50,6 +57,21 @@ const NAV = [
 ] as const;
 
 const PROJECTS = ["Aurora", "Basecamp", "Cartography"] as const;
+
+const PERSONAL = [
+  { id: "starred", label: "Starred", icon: Star },
+  { id: "drafts", label: "Drafts", icon: FilePen, badge: "3" },
+  { id: "archive", label: "Archive", icon: Archive },
+] as const;
+
+/** With `tabs`, the header, panels and footer sit inside the tabs root; without, as they are. */
+function MaybeSidebarTabs({ tabs, children }: { tabs: boolean; children: ReactNode }) {
+  return tabs ? <SidebarTabs defaultValue="workspace">{children}</SidebarTabs> : <>{children}</>;
+}
+
+function MaybeSidebarTabsPanel({ tabs, value, children }: { tabs: boolean; value: string; children: ReactNode }) {
+  return tabs ? <SidebarTabsPanel value={value}>{children}</SidebarTabsPanel> : <>{children}</>;
+}
 
 const MENU_SKELETON_WIDTHS = [70, 55, 85, 60] as const;
 const SUB_MENU_SKELETON_WIDTHS = [72, 56, 82, 64] as const;
@@ -97,12 +119,14 @@ export function SidebarDemo({
   collapsible,
   loading,
   customHeader = false,
+  tabs = false,
   fullscreen = false,
 }: {
   variant: "sidebar" | "floating" | "inset" | "split" | "split-floating" | "split-inset";
   collapsible: "offcanvas" | "icon" | "none";
   loading: boolean;
   customHeader?: boolean;
+  tabs?: boolean;
   fullscreen?: boolean;
 }) {
   const [active, setActive] = useState<string>("dashboard");
@@ -506,7 +530,7 @@ export function SidebarDemo({
               </SidebarPanel>
             </>
           ) : (
-            <>
+            <MaybeSidebarTabs tabs={tabs}>
           <SidebarHeader>
             <div className="flex items-center gap-2 px-1 py-1">
               <SidebarBrandButton />
@@ -514,11 +538,18 @@ export function SidebarDemo({
                 Acme Inc
               </span>
             </div>
+            {tabs && (
+              <SidebarTabsList aria-label="Sections">
+                <SidebarTabsTab value="workspace">Workspace</SidebarTabsTab>
+                <SidebarTabsTab value="personal">Personal</SidebarTabsTab>
+              </SidebarTabsList>
+            )}
             <div className="group-data-[collapsible=icon]:hidden">
               <SidebarInput placeholder="Search…" aria-label="Search" />
             </div>
           </SidebarHeader>
 
+          <MaybeSidebarTabsPanel tabs={tabs} value="workspace">
           <SidebarContent>
             <SidebarGroup>
               <SidebarGroupLabel>Platform</SidebarGroupLabel>
@@ -611,6 +642,36 @@ export function SidebarDemo({
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
+          </MaybeSidebarTabsPanel>
+
+          {tabs && (
+            <SidebarTabsPanel value="personal">
+              <SidebarContent>
+                <SidebarGroup>
+                  <SidebarGroupLabel>Personal</SidebarGroupLabel>
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      {loading
+                        ? <SidebarSkeletonItems widths={MENU_SKELETON_WIDTHS.slice(0, 3)} showIcon />
+                        : PERSONAL.map((item) => (
+                            <SidebarMenuItem key={item.id}>
+                              <SidebarMenuButton
+                                tooltip={item.label}
+                                isActive={active === item.id}
+                                onClick={() => setActive(item.id)}
+                              >
+                                <item.icon />
+                                <span>{item.label}</span>
+                              </SidebarMenuButton>
+                              {"badge" in item && <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>}
+                            </SidebarMenuItem>
+                          ))}
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </SidebarGroup>
+              </SidebarContent>
+            </SidebarTabsPanel>
+          )}
 
           <SidebarFooter>
             <SidebarMenu>
@@ -622,7 +683,7 @@ export function SidebarDemo({
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarFooter>
-          </>
+          </MaybeSidebarTabs>
           )}
 
           {!split && <SidebarRail />}

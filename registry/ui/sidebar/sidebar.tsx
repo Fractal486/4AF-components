@@ -68,6 +68,13 @@ export {
   SidebarSeparator,
   type SidebarHeaderButtonProps,
 } from "./sidebar.structure";
+export {
+  SidebarTabs,
+  SidebarTabsList,
+  SidebarTabsPanel,
+  SidebarTabsTab,
+  type SidebarTabsProps,
+} from "./sidebar.tabs";
 
 /**
  * An application sidebar: a collapsible nav rail with a mobile drawer.

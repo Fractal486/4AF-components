@@ -7,8 +7,8 @@ description: A responsive application sidebar with rails, panels, menus, and col
 
 ## API
 
-**Main exports:** `SidebarProvider`, `Sidebar`, `SidebarPanel`, `SidebarHeaderButton`, and the
-menu, group, submenu, action, badge, and skeleton parts
+**Main exports:** `SidebarProvider`, `Sidebar`, `SidebarPanel`, `SidebarHeaderButton`,
+`SidebarTabs`, and the menu, group, submenu, action, badge, and skeleton parts
 
 A responsive application sidebar.
 
@@ -88,6 +88,35 @@ A header contains one full-width `SidebarHeaderButton`, or two wrapped in `Sideb
 The row owns spacing, divides width evenly, and stacks its buttons when the sidebar collapses to
 icons. Add `className="flex-none"` when a button should retain its own width. Compose menus with
 Dropdown Menu rather than embedding a separate menu implementation in Sidebar.
+
+### Header tabs
+
+`SidebarTabs` switches the sidebar's contents from a tab row under the title. The root wraps the
+header, the panels, and the footer; each `SidebarTabsPanel` usually holds a `SidebarContent`.
+
+```tsx
+<SidebarTabs defaultValue="workspace">
+  <SidebarHeader>
+    <span>Acme Inc</span>
+    <SidebarTabsList aria-label="Sections">
+      <SidebarTabsTab value="workspace">Workspace</SidebarTabsTab>
+      <SidebarTabsTab value="personal">Personal</SidebarTabsTab>
+    </SidebarTabsList>
+  </SidebarHeader>
+  <SidebarTabsPanel value="workspace"><SidebarContent>…</SidebarContent></SidebarTabsPanel>
+  <SidebarTabsPanel value="personal"><SidebarContent>…</SidebarContent></SidebarTabsPanel>
+  <SidebarFooter>…</SidebarFooter>
+</SidebarTabs>
+```
+
+| Part | Notes |
+| --- | --- |
+| `SidebarTabs` | A [Tabs](/docs/tabs) root. `value`, `defaultValue`, `onValueChange`, and `variant` pass through; `appearance` defaults to `outline` and `size` to `sm`. |
+| `SidebarTabsList` | Full width, tabs sharing it evenly. Hidden when the sidebar collapses to icons; the selected panel stays. |
+| `SidebarTabsTab` | One tab, by `value`. |
+| `SidebarTabsPanel` | One tab's contents. Inactive panels stay mounted and hidden, keeping scroll position and open sections. |
+
+In split layouts, rail buttons already switch `SidebarPanel`s; tabs can sit inside one panel.
 
 ### Pinning the panel open
 

@@ -70,16 +70,23 @@ export function CommandPanelTabList({
 }: CommandPanelTabListProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const mergedRef = useMergedRefs(listRef, forwardedRef);
-  const [box, setBox] = useState<{ left: number; width: number } | null>(null);
+  const [box, setBox] = useState<{ left: number; width: number; snap: boolean } | null>(null);
   const reduceMotion = useReducedMotion();
 
   useLayoutEffect(() => {
     const list = listRef.current;
     if (!list) return;
 
+    // The tab the indicator last measured. A new one is a selection, and slides; the same
+    // one measured again has only changed size (a resizing sidebar or window), and the
+    // indicator snaps to it rather than replaying the slide on every frame of the resize.
+    let measured: HTMLElement | null = null;
+
     const measure = () => {
       const active = list.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
       if (!active) return;
+      const snap = active === measured;
+      measured = active;
       const listRect = list.getBoundingClientRect();
       const tabRect = active.getBoundingClientRect();
       const scale = list.offsetWidth > 0 && Math.abs(listRect.width - list.offsetWidth) >= 1
@@ -94,7 +101,7 @@ export function CommandPanelTabList({
         width = Math.max(width - start - end, 0);
       }
       setBox((previous) => previous?.left === left && previous.width === width
-        ? previous : { left, width });
+        ? previous : { left, width, snap });
     };
 
     measure();
@@ -130,8 +137,13 @@ export function CommandPanelTabList({
             animate={{ x: box.left, width: box.width }}
             className={commandPanelTabIndicatorVariants({ variant })}
             style={{ left: 0 }}
-            // Tabs' tween: a click answered at full speed, decelerating into place.
-            transition={reduceMotion ? { duration: 0 } : { duration: duration.slow, ease: ease.out }}
+            // Tabs' tween: a click answered at full speed, decelerating into place, with
+            // the width settling a step sooner than the travel.
+            transition={reduceMotion || box.snap ? { duration: 0 } : {
+              duration: duration.slower,
+              ease: ease.out,
+              width: { duration: duration.slow, ease: ease.out },
+            }}
           />
         )}
         {children}

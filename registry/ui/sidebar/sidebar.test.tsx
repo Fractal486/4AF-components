@@ -17,6 +17,10 @@ import {
   SidebarProvider,
   SidebarRail,
   SidebarRailButton,
+  SidebarTabs,
+  SidebarTabsList,
+  SidebarTabsPanel,
+  SidebarTabsTab,
   SidebarTrigger,
   useSidebar,
 } from "./sidebar";
@@ -465,5 +469,46 @@ describe("SidebarMenuCollapsible", () => {
     expect(trigger).toHaveAttribute("aria-expanded", "true");
     await user.click(trigger);
     expect(trigger).toHaveAttribute("aria-expanded", "false");
+  });
+});
+
+describe("SidebarTabs", () => {
+  function Tabbed({ open = true }: { open?: boolean }) {
+    return (
+      <SidebarProvider open={open} persist={false}>
+        <Sidebar collapsible="icon">
+          <SidebarTabs defaultValue="workspace">
+            <SidebarHeader>
+              <span>Acme</span>
+              <SidebarTabsList aria-label="Sections">
+                <SidebarTabsTab value="workspace">Workspace</SidebarTabsTab>
+                <SidebarTabsTab value="personal">Personal</SidebarTabsTab>
+              </SidebarTabsList>
+            </SidebarHeader>
+            <SidebarTabsPanel value="workspace"><a href="/projects">Projects</a></SidebarTabsPanel>
+            <SidebarTabsPanel value="personal"><a href="/drafts">Drafts</a></SidebarTabsPanel>
+          </SidebarTabs>
+        </Sidebar>
+      </SidebarProvider>
+    );
+  }
+
+  it("switches the panels and keeps the inactive one mounted", async () => {
+    const user = userEvent.setup();
+    render(<Tabbed />);
+    expect(screen.getByRole("tab", { name: "Workspace" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("link", { name: "Projects" })).toBeVisible();
+    expect(screen.getByText("Drafts").closest('[data-slot="sidebar-tabs-panel"]')).toHaveAttribute("hidden");
+
+    await user.click(screen.getByRole("tab", { name: "Personal" }));
+    expect(screen.getByRole("link", { name: "Drafts" })).toBeVisible();
+    expect(screen.getByText("Projects").closest('[data-slot="sidebar-tabs-panel"]')).toHaveAttribute("hidden");
+  });
+
+  it("spans the row evenly and hides it in the icon rail", () => {
+    render(<Tabbed />);
+    const list = screen.getByRole("tablist", { name: "Sections" });
+    expect(list).toHaveClass("w-full", "border", "group-data-[collapsible=icon]:hidden");
+    expect(screen.getByRole("tab", { name: "Personal" })).toHaveClass("flex-1", "text-xs");
   });
 });

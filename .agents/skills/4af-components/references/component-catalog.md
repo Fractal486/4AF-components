@@ -108,6 +108,7 @@ Use the host component's parts instead of rebuilding their state handling:
 | Tabs within a command panel | `CommandPanelTabs` in [Command Palette](https://4af.selfsimilar.dev/docs/command-palette.md) |
 | Actions and toggles over selected text | The matching item parts in [Selection Toolbar](https://4af.selfsimilar.dev/docs/selection-toolbar.md) |
 | An expandable sidebar row | `SidebarMenuCollapsible` in [Sidebar](https://4af.selfsimilar.dev/docs/sidebar.md) |
+| Tabs switching a sidebar's contents | `SidebarTabs` in [Sidebar](https://4af.selfsimilar.dev/docs/sidebar.md) |
 | A validated multi-step dialog | `DialogSteps` and `DialogStep` in [Dialog](https://4af.selfsimilar.dev/docs/dialog.md) |
 
 ## Component modules
@@ -125,7 +126,7 @@ include the component name: for example, `.context.ts` means `select.context.ts`
 | `command-palette` | `command-palette.tsx`: root state and navigation | `.types.ts`, `.context.ts`, `.search.ts`, `.keybinds.ts`, `.panels.tsx`, `.actions.tsx`, `.chrome.tsx`, `.tabs.tsx`, `.variants.ts` |
 | `select` | `select.tsx`: root state and option registration | `.context.ts`, `.shared.tsx`, `.utils.ts`, `.trigger.tsx`, `.content.tsx`, `.sub.tsx`, `.item.tsx`, `.variants.ts` |
 | `dropdown-menu` | `dropdown-menu.tsx`: public re-exports | `.menu.tsx`, `.select.tsx`, `.actions.tsx`, `.shared.tsx` |
-| `sidebar` | `sidebar.tsx`: responsive shell | `.context.ts`, `.provider.tsx`, `.controls.tsx`, `.structure.tsx`, `.menu.tsx`, `.variants.ts` |
+| `sidebar` | `sidebar.tsx`: responsive shell | `.context.ts`, `.provider.tsx`, `.controls.tsx`, `.structure.tsx`, `.menu.tsx`, `.tabs.tsx`, `.variants.ts` |
 | `selection-toolbar` | `selection-toolbar.tsx`: selection tracking and positioning | `.context.ts`, `.controls.tsx`, `.variants.ts` |
 | `date-picker` | `date-picker.tsx`: `DatePicker`, `DateRangePicker`, re-exported `Calendar` | `calendar.tsx`, `.utils.ts`, `.variants.ts` |
 | `slider` | `slider.tsx`: `Slider` | `slider-geometry.ts`: thumb and fill positioning; `.variants.ts` |
