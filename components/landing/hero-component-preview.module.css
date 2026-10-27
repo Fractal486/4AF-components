@@ -177,12 +177,40 @@
   background: var(--surface-raised);
 }
 
-/* The illustration is intentionally still: no idle loops, mouse tracking, or
-   entrance animation. The same composition also works with reduced motion. Loaders in the
-   samples (the loading badge and alert) hold their first frame rather than spin; their
-   staggered delays leave that frame looking like a spinner caught mid-turn. */
-.artwork *,
+/* Still once assembled: no idle loops or mouse tracking. Loaders in the samples (the loading
+   badge and alert) hold their first frame rather than spin; their staggered delays leave
+   that frame looking like a spinner caught mid-turn. The samples themselves are exempt, for
+   their entrance. */
+.artwork :not(.panel),
 .artwork *::before,
 .artwork *::after {
   animation-play-state: paused !important;
+}
+
+/* The entrance, with `entrance` on the landing page: each sample rises up through the plane
+   to its lift, fading in and sharpening, the palette first and the rest following outward
+   (`--enter-delay`). `translate` rather than `transform`, so it adds to the lift instead of
+   replacing it. Held on its hidden first frame until RevealGate marks the page ready, like
+   the rest of the landing entrance; `backwards` only, so nothing is left behind after. */
+@keyframes sample-in {
+  from {
+    opacity: 0;
+    translate: 0 0 -50px;
+    filter: blur(6px);
+  }
+}
+
+[data-hero-entrance] .panel {
+  animation: sample-in 500ms cubic-bezier(0.22, 1, 0.36, 1) calc(250ms + var(--enter-delay, 0ms)) backwards;
+  animation-play-state: paused;
+}
+
+:global(:root[data-landing-ready]) [data-hero-entrance] .panel {
+  animation-play-state: running;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-hero-entrance] .panel {
+    animation: none;
+  }
 }

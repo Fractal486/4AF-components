@@ -124,6 +124,17 @@ const deployments = [
 ] as const;
 
 /** One card. `lift` is its height off the plane in pixels: highest around the palette. */
+/** The palette's lift: the top of the rise, and the first sample to arrive. */
+const PEAK_LIFT = 56;
+
+/**
+ * A sample's entrance delay, from its lift: the palette first, then outward in the order
+ * the heights fall away, so the field assembles from its centre.
+ */
+function enterDelay(lift: number) {
+  return `${(PEAK_LIFT - lift) * 7}ms`;
+}
+
 function Panel({
   name,
   lift = 0,
@@ -139,7 +150,7 @@ function Panel({
     <div
       data-preview-panel={name}
       className={cn(styles.panel, className)}
-      style={{ "--lift": `${lift}px` } as CSSProperties}
+      style={{ "--lift": `${lift}px`, "--enter-delay": enterDelay(lift) } as CSSProperties}
     >
       {children}
     </div>
@@ -176,7 +187,7 @@ function SelectSearchPreview() {
  */
 function PalettePreview() {
   return (
-    <div data-preview-panel="command" className={cn(styles.panel, styles.palette)} style={{ "--lift": "56px" } as CSSProperties}>
+    <div data-preview-panel="command" className={cn(styles.panel, styles.palette)} style={{ "--lift": `${PEAK_LIFT}px`, "--enter-delay": enterDelay(PEAK_LIFT) } as CSSProperties}>
       <Autocomplete.Root
         inline
         open
@@ -221,11 +232,15 @@ function PalettePreview() {
   );
 }
 
-/** A responsive, transparent hero illustration built from the library's components. */
-export function HeroComponentPreview({ className }: { className?: string }) {
+/**
+ * A responsive, transparent hero illustration built from the library's components.
+ * `entrance` assembles it sample by sample once the landing page's RevealGate opens.
+ */
+export function HeroComponentPreview({ className, entrance = false }: { className?: string; entrance?: boolean }) {
   return (
     <div
       data-hero-preview
+      data-hero-entrance={entrance || undefined}
       role="img"
       aria-label="A command palette raised at the centre of a tilted field of component examples, including a calendar, a table, a searchable select, tabs, form fields, buttons, badges, and status messages."
       className={cn(styles.artwork, className)}

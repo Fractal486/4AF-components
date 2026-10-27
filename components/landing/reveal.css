@@ -12,40 +12,23 @@
   }
 }
 
-@keyframes landing-reveal-fade {
-  from {
-    opacity: 0;
-  }
-}
-
 /* `backwards` only: the hidden first frame covers the delay, and once the animation ends
    it is dropped, so no transform or filter is left behind on the content. */
 .landing-reveal {
   animation: landing-reveal 600ms cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms) backwards;
 }
 
-/* The hero photo only fades, and on the image itself. It blends into the page
-   (`mix-blend-mode`) and already uses `filter` for its colours, so a transform or filter on
-   it or on a wrapper would isolate it from the page or replace its colour treatment, and
-   its sky would show as a box until the animation ended. Opacity alone keeps the blend and
-   the edge mask intact. */
-.landing-reveal-fade {
-  animation: landing-reveal-fade 900ms ease-out var(--reveal-delay, 0ms) backwards;
-}
-
 .landing-reveal,
-.landing-reveal-fade,
 .landing-title .animate-blur-text-in {
   animation-play-state: paused;
 }
 
-:root[data-landing-ready] :is(.landing-reveal, .landing-reveal-fade, .landing-title .animate-blur-text-in) {
+:root[data-landing-ready] :is(.landing-reveal, .landing-title .animate-blur-text-in) {
   animation-play-state: running;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-reveal,
-  .landing-reveal-fade {
+  .landing-reveal {
     animation: none;
   }
 }

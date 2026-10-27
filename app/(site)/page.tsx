@@ -82,7 +82,7 @@ export default function IndexPage() {
       <RevealGate />
       {/* Without JavaScript the gate never opens, so run the entrance straight away. */}
       <noscript>
-        <style>{".landing-reveal,.landing-reveal-fade,.landing-title .animate-blur-text-in{animation-play-state:running}"}</style>
+        <style>{".landing-reveal,.landing-title .animate-blur-text-in,[data-hero-entrance] [data-preview-panel]{animation-play-state:running}"}</style>
       </noscript>
       {/* The copy, the artwork as a wide band across the column, then the actions over its faded
           lower edge. Narrow screens run the band out to the screen's edges. */}
@@ -100,8 +100,8 @@ export default function IndexPage() {
             warm-neutral palette, and short animations on state changes.
           </p>
         </div>
-        <div className="landing-reveal-fade pointer-events-none relative z-0 -mx-5 -mt-3 [--reveal-delay:300ms] sm:-mx-10 lg:mx-0 lg:-mt-6 lg:w-[720px]">
-          <HeroComponentPreview className="aspect-[4/3] sm:aspect-[16/9] lg:aspect-[2/1]" />
+        <div className="pointer-events-none relative z-0 -mx-5 -mt-3 sm:-mx-10 lg:mx-0 lg:-mt-6 lg:w-[720px]">
+          <HeroComponentPreview entrance className="aspect-[4/3] sm:aspect-[16/9] lg:aspect-[2/1]" />
         </div>
         {/* Below the artwork, overlapping its faded lower edge a little. */}
         <div className="landing-reveal relative z-10 -mt-2 [--reveal-delay:400ms] lg:-mt-3">
