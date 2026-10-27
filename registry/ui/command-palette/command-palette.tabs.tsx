@@ -93,6 +93,13 @@ export function CommandPanelTabList({
         ? listRect.width / list.offsetWidth : 1;
       let left = (tabRect.left - listRect.left) / scale - list.clientLeft + list.scrollLeft;
       let width = tabRect.width / scale;
+      // Under a rotated or 3D-tilted ancestor the rects are projected bounding boxes; use
+      // layout values, which ignore transforms, as Tabs does.
+      if (list.offsetWidth > 0 && list.offsetHeight > 0 &&
+        Math.abs(listRect.width / list.offsetWidth - listRect.height / list.offsetHeight) > 0.02) {
+        left = active.offsetLeft;
+        width = Number.parseFloat(getComputedStyle(active).width) || active.offsetWidth;
+      }
       if (variant === "underline") {
         const { paddingLeft, paddingRight } = getComputedStyle(active);
         const start = Number.parseFloat(paddingLeft) || 0;

@@ -57,6 +57,11 @@ export interface TableOfContentsProps
   items: TocItem[];
   /** The scroll container, when the content scrolls inside an element rather than the page. */
   rootRef?: RefObject<HTMLElement | null>;
+  /**
+   * Highlights this entry regardless of scroll position, for a list whose headings are
+   * elsewhere or not on the page at all (a preview, a static illustration). Clicks still scroll.
+   */
+  activeId?: string;
 }
 
 /** Inset (px) so the marker's rounded ends sit inside lit rows rather than on their edges. */
@@ -74,6 +79,7 @@ interface RailGeometry {
 export function TableOfContents({
   items,
   rootRef,
+  activeId,
   variant = "span",
   labels = "always",
   className,
@@ -163,16 +169,18 @@ export function TableOfContents({
 
   // A clicked destination temporarily wins over live observation. `single` follows the destination;
   // `span` follows the projected destination range, so neither variant retargets at every heading.
-  const trackingVisibleIds = scrollTargetId && variant === "span" ? scrollVisibleIds : visibleIds;
-  const trackingCurrentId =
-    scrollTargetId && variant === "span" ? scrollCurrentId : currentId;
+  const trackingVisibleIds = activeId !== undefined
+    ? [activeId]
+    : scrollTargetId && variant === "span" ? scrollVisibleIds : visibleIds;
+  const trackingCurrentId = activeId ??
+    (scrollTargetId && variant === "span" ? scrollCurrentId : currentId);
   const visibleSet = new Set(trackingVisibleIds);
   const litSegments = geometry?.segments.filter((segment) => visibleSet.has(segment.id)) ?? [];
   const currentSegment = geometry?.segments.find((segment) => segment.id === trackingCurrentId);
   const currentHighlightId =
-    variant === "single"
+    activeId ?? (variant === "single"
       ? scrollTargetId ?? settledTargetId ?? visibleIds[0] ?? currentId
-      : trackingVisibleIds[0] ?? trackingCurrentId;
+      : trackingVisibleIds[0] ?? trackingCurrentId);
   const singleSegment = geometry?.segments.find((segment) => segment.id === currentHighlightId);
   const markerSegments =
     variant === "single"

@@ -341,6 +341,15 @@ describe("TableOfContents", () => {
     root.remove();
   });
 
+  it("highlights a pinned activeId with no headings on the page", () => {
+    render(<TableOfContents items={[
+      { id: "pinned-one", title: "One" },
+      { id: "pinned-two", title: "Two" },
+    ]} activeId="pinned-two" />);
+    expect(screen.getByRole("link", { name: "Two" })).toHaveAttribute("aria-current", "location");
+    expect(screen.getByRole("link", { name: "One" })).not.toHaveAttribute("aria-current");
+  });
+
   it("withholds the headings until the list is pointed at, in the hover variant", () => {
     render(
       <TableOfContents

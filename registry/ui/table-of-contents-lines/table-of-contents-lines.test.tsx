@@ -91,6 +91,15 @@ describe("TableOfContentsLines", () => {
     root.remove();
   });
 
+  it("highlights a pinned activeId with no headings on the page", () => {
+    render(<TableOfContentsLines items={[
+      { id: "pinned-one", title: "One" },
+      { id: "pinned-two", title: "Two" },
+    ]} activeId="pinned-two" />);
+    expect(screen.getByRole("link", { name: "Two" })).toHaveAttribute("data-active", "true");
+    expect(screen.getByRole("link", { name: "One" })).toHaveAttribute("data-active", "false");
+  });
+
   it("withholds the labels until the list is pointed at, in the hover variant", () => {
     render(
       <TableOfContentsLines

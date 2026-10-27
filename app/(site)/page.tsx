@@ -5,10 +5,10 @@ import type { ReactNode } from "react";
 import { GitHubMark } from "@/components/site/github-mark";
 import { InlineLink } from "@/components/inline-link";
 import { AsciiFooter } from "@/components/landing/ascii-footer";
+import { HeroComponentPreview } from "@/components/landing/hero-component-preview";
 import { InstallCommand } from "@/components/landing/install-command";
 import { RevealGate } from "@/components/landing/reveal";
 import { ArticleColumn } from "@/components/site/article-column";
-import { MobileToc } from "@/components/site/mobile-toc";
 import { PageFrame } from "@/components/site/page-frame";
 import { componentCount, registryComponents } from "@/lib/component-catalog";
 import { REPOSITORY } from "@/lib/site-nav";
@@ -22,12 +22,6 @@ import { CopyButton } from "@/registry/ui/copy-button/copy-button";
 export const metadata: Metadata = {
   alternates: pageAlternates("/"),
 };
-
-const SECTIONS = [
-  { id: "principles", title: "Principles" },
-  { id: "install", title: "Install" },
-  { id: "about", title: "About" },
-] as const;
 
 const PRINCIPLES = [
   {
@@ -82,51 +76,18 @@ function Section({
 }
 
 export default function IndexPage() {
-  const toc = SECTIONS.map(({ id, title }, index) => ({
-        id,
-        title: (
-          <span className="flex items-baseline gap-2">
-            <span className="font-mono text-2xs tabular">{String(index + 1).padStart(2, "0")}</span>
-            {title}
-          </span>
-        ),
-      }));
-
   return (
-    <ArticleColumn>
-      {/* The narrow-screen "On this page" bar, directly under the top bar rather than after
-          the hero, which sits outside the page frame. */}
+    // Wider than a reference page's column, so the hero's artwork band fits inside it.
+    <ArticleColumn className="max-w-[68rem]">
       <RevealGate />
       {/* Without JavaScript the gate never opens, so run the entrance straight away. */}
       <noscript>
         <style>{".landing-reveal,.landing-reveal-fade,.landing-title .animate-blur-text-in{animation-play-state:running}"}</style>
       </noscript>
-      <MobileToc items={toc} />
-      {/* Copy on the page background at the left; the photograph is a layer behind the whole
-          hero, running off the right edge of the article column, and fades out under the copy. The
-          photo has no container. An oval mask
-          dissolves its edges, and blending drops its sky into the page in either theme: as
-          shot with `screen` in dark mode (the black disappears), inverted with `multiply` in
-          light mode (the white disappears); the half-turn of hue after inverting keeps the
-          colours as shot. The contrast
-          push takes the sky to pure black or white, so no faint rectangle is left behind. */}
-      <header className="relative px-5 pt-8 sm:px-10 sm:pt-12 lg:-mr-[clamp(2rem,4vw,4rem)] lg:px-0 lg:pt-0">
-        <div className="absolute inset-0 hidden lg:block">
-          <Image
-            src="/hero-architecture.webp"
-            alt=""
-            fill
-            // Either copy of the photo can be the LCP, depending on the viewport, so both load
-            // eagerly at high priority rather than one being preloaded. They share one URL, so
-            // the file is still fetched once.
-            loading="eager"
-            fetchPriority="high"
-            unoptimized
-            sizes="60vw"
-            className="landing-reveal-fade object-cover object-[60%_45%] outline-none [--reveal-delay:300ms] [mask-image:radial-gradient(ellipse_62%_90%_at_64%_50%,black_55%,transparent),linear-gradient(to_right,transparent_26%,black_52%)] [mask-composite:intersect] invert hue-rotate-180 contrast-125 brightness-110 mix-blend-multiply dark:invert-0 dark:hue-rotate-0 dark:brightness-90 dark:mix-blend-screen"
-          />
-        </div>
-        <div className="relative pb-4 lg:max-w-[30rem] lg:pt-20 lg:pb-4">
+      {/* The copy, the artwork as a wide band across the column, then the actions over its faded
+          lower edge. Narrow screens run the band out to the screen's edges. */}
+      <header className="relative isolate flex flex-col px-5 pt-8 sm:px-10 sm:pt-12 lg:px-0 lg:pt-16">
+        <div className="relative z-10 max-w-[40rem]">
           {/* A no-break space keeps the name "Base UI" on one line. */}
           <BlurText
             as="h1"
@@ -134,78 +95,66 @@ export default function IndexPage() {
           >
             {"Minimal React components built on Base\u00a0UI."}
           </BlurText>
-          <p className="landing-reveal mb-6 max-w-[52ch] text-[17px] [--reveal-delay:250ms] leading-[1.65] tracking-[-0.01em] text-pretty text-muted-foreground">
+          <p className="landing-reveal mb-6 max-w-[52ch] text-[17px] [--reveal-delay:250ms] leading-[1.65] tracking-[-0.01em] text-pretty text-subtle-foreground">
             4AF is a personal library of {componentCount} components with compact sizing, a
             warm-neutral palette, and short animations on state changes.
           </p>
-          {/* Below lg the photo follows the description. The actions overlap its lower edge. */}
-          <div aria-hidden className="relative -mx-5 aspect-[2/1] sm:-mx-10 lg:hidden">
-            <Image
-              src="/hero-architecture.webp"
-              alt=""
-              fill
-              loading="eager"
-              fetchPriority="high"
-              unoptimized
-              sizes="100vw"
-              className="landing-reveal-fade object-cover object-[55%_45%] outline-none [--reveal-delay:350ms] [mask-image:linear-gradient(to_bottom,transparent,black_22%,black_78%,transparent)] invert hue-rotate-180 contrast-125 brightness-110 mix-blend-multiply dark:invert-0 dark:hue-rotate-0 dark:brightness-90 dark:mix-blend-screen"
-            />
+        </div>
+        <div className="landing-reveal-fade pointer-events-none relative z-0 -mx-5 -mt-3 [--reveal-delay:300ms] sm:-mx-10 lg:mx-0 lg:-mt-6 lg:w-[720px]">
+          <HeroComponentPreview className="aspect-[4/3] sm:aspect-[16/9] lg:aspect-[2/1]" />
+        </div>
+        {/* Below the artwork, overlapping its faded lower edge a little. */}
+        <div className="landing-reveal relative z-10 -mt-2 [--reveal-delay:400ms] lg:-mt-3">
+          {/* Natural widths, a notch smaller on phones so both fit on one row. */}
+          <div className="flex flex-wrap items-center gap-3">
+            <Button asChild size="lg" className="px-3 text-xs min-[360px]:px-4 min-[360px]:text-sm sm:px-5 sm:text-base">
+              <Link href="/docs/reference/components">
+                Browse components
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="gap-2 bg-background px-3 text-xs min-[360px]:px-4 min-[360px]:text-sm sm:gap-3 sm:px-5 sm:text-base">
+              <a href={REPOSITORY} target="_blank" rel="noopener noreferrer">
+                <GitHubMark />
+                View on GitHub
+              </a>
+            </Button>
           </div>
-          <div className="landing-reveal relative -mt-6 [--reveal-delay:400ms] lg:mt-0">
-            {/* Natural widths, a notch smaller on phones so both fit on one row. */}
-            <div className="flex flex-wrap items-center gap-3">
-              <Button asChild size="lg" className="px-3 text-xs min-[360px]:px-4 min-[360px]:text-sm sm:px-5 sm:text-base">
-                <Link href="/docs/reference/components">
-                  Browse components
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="gap-2 px-3 text-xs min-[360px]:px-4 min-[360px]:text-sm sm:gap-3 sm:px-5 sm:text-base">
-                <a href={REPOSITORY} target="_blank" rel="noopener noreferrer">
-                  <GitHubMark />
-                  View on GitHub
-                </a>
-              </Button>
-            </div>
-            <CopyButton
-              value={AGENT_PROMPT}
-              size="md"
-              variant="plain"
-              iconPosition="end"
-              swapLabel={false}
-              // Secondary to the two buttons above, and flush with their left edge.
-              className="mt-3 px-0 text-muted-foreground hover:text-foreground"
-            >
-              <span className="inline-flex items-center gap-2.5">
-                {/* Decorative: the label names the button. `outline-none` drops the
-                    theme's image outline, which would box in the transparent logo. */}
-                {/* Served at 4x the 20px display height and not re-encoded: the optimiser
-                    picks a small width for a 45px image and recompresses it soft. */}
-                <Image
-                  src="/agents.png"
-                  alt=""
-                  width={365}
-                  height={160}
-                  unoptimized
-                  className="h-5 w-auto outline-none"
-                />
-                Agent prompt
-              </span>
-            </CopyButton>
-          </div>
-
+          <CopyButton
+            value={AGENT_PROMPT}
+            size="md"
+            variant="plain"
+            iconPosition="end"
+            swapLabel={false}
+            // Secondary to the two buttons above, and flush with their left edge.
+            className="mt-3 px-0 text-muted-foreground hover:text-foreground"
+          >
+            <span className="inline-flex items-center gap-2.5">
+              {/* Decorative: the label names the button. `outline-none` drops the
+                  theme's image outline, which would box in the transparent logo. */}
+              {/* Served at 4x the 20px display height and not re-encoded: the optimiser
+                  picks a small width for a 45px image and recompresses it soft. */}
+              <Image
+                src="/agents.png"
+                alt=""
+                width={365}
+                height={160}
+                unoptimized
+                className="h-5 w-auto outline-none"
+              />
+              Agent prompt
+            </span>
+          </CopyButton>
         </div>
       </header>
-    {/* The content and its "On this page" rail enter together, last. */}
+    {/* The content enters last. No "On this page": three short sections need no contents. */}
     <div className="landing-reveal [--reveal-delay:500ms]">
     <PageFrame
-      toc={toc}
-      mobileToc={false}
+      toc={[]}
       footer={
-        // Runs from the column's edge, like the hero (it cancels the column's left gutter), and ends with
-        // the content column, beside "On this page", which stays pinned next to it.
+        // Starts with the content column, like the hero above it, so its left fade begins there.
         <AsciiFooter
           // Pulled up into the content column's bottom padding (4rem, 7rem from sm).
-          className="-mt-8 sm:-mt-16 lg:-ml-[clamp(2rem,4vw,4rem)]"
+          className="-mt-8 sm:-mt-16"
         />
       }
     >
@@ -214,8 +163,7 @@ export default function IndexPage() {
           <Section
             id="principles"
             title="Principles"
-            // First in the frame: no rule or extra space above it, so its heading lines up with
-            // the top of the "On this page" column beside it.
+            // First in the frame: no rule or extra space above it.
             className="mt-0 border-t-0 pt-0 sm:mt-0 sm:pt-0"
           >
             <dl className="mt-3 max-w-180 border-t">

@@ -11,6 +11,7 @@ import { siblings } from "@/lib/site-nav";
 import { source } from "@/lib/source";
 import { pageAlternates, publicInstallCommand, SITE_URL } from "@/lib/site";
 import { CopyButton } from "@/registry/ui/copy-button/copy-button";
+import { Link as LinkIcon } from "lucide-react";
 import { playgroundDemos } from "@/stories/demo-names";
 
 interface DocsPageProps {
@@ -78,13 +79,14 @@ export default async function Page({ params }: DocsPageProps) {
             <div className="flex items-center gap-3">
               <CopyButton
                 value={`${SITE_URL}${page.url}.md`}
+                icon={<LinkIcon />}
                 variant="outline"
                 size="sm"
                 iconPosition="start"
                 swapLabel={false}
                 className="cursor-default bg-background"
               >
-                Copy Markdown link
+                Copy link
               </CopyButton>
               <InlineLink
                 href={`${page.url}.md`}

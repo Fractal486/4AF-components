@@ -181,6 +181,16 @@ export function TabsList({
         ? listRect.width / list.offsetWidth : 1;
       let left = (tabRect.left - listRect.left) / scale - list.clientLeft + list.scrollLeft;
       let width = tabRect.width / scale;
+      // A rotated or 3D-tilted ancestor stretches the rects unevenly: they are projected
+      // bounding boxes, and no single ratio takes that back out. Layout values ignore
+      // transforms, so fall back to them; the computed width keeps the fraction that
+      // `offsetWidth` rounds away. `offsetLeft` is from the list's padding edge, in content
+      // coordinates, which is where the indicator is positioned.
+      if (list.offsetWidth > 0 && list.offsetHeight > 0 &&
+        Math.abs(listRect.width / list.offsetWidth - listRect.height / list.offsetHeight) > 0.02) {
+        left = active.offsetLeft;
+        width = Number.parseFloat(getComputedStyle(active).width) || active.offsetWidth;
+      }
       // The underline spans the label, not the whole tab: drop the tab's horizontal padding
       // from both ends. Computed padding is already in the list's own pixels, unscaled.
       if (variant === "underline") {

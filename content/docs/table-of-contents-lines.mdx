@@ -36,5 +36,8 @@ always show.
 `rootRef` is the document's scroll root. Pass it when the article scrolls inside a container
 rather than the page.
 
+`activeId` highlights that entry regardless of scroll position, for a list whose headings are
+not on the page, such as a preview. Clicking an entry still scrolls.
+
 `ref` receives the navigation element and preserves its automatic edge padding and active-entry
 centering. Both object refs and callback refs (including cleanup callbacks) are supported.

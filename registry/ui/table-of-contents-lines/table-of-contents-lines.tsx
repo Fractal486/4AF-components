@@ -35,6 +35,11 @@ export interface TableOfContentsLinesProps
   items: TocLineItem[];
   /** The scroll container, when the content scrolls inside an element rather than the page. */
   rootRef?: RefObject<HTMLElement | null>;
+  /**
+   * Highlights this entry regardless of scroll position, for a list whose headings are
+   * elsewhere or not on the page at all (a preview, a static illustration). Clicks still scroll.
+   */
+  activeId?: string;
 }
 
 // The label is intentionally aligned with the first line in each three-line row. Its 14px
@@ -45,6 +50,7 @@ const FIRST_ROW_INSET_PX = 3;
 export function TableOfContentsLines({
   items,
   rootRef,
+  activeId: activeIdProp,
   labels = "always",
   className,
   ref,
@@ -63,7 +69,7 @@ export function TableOfContentsLines({
     settle: "pin",
   });
 
-  const activeId = scrollTargetId ?? settledTargetId ?? currentId;
+  const activeId = activeIdProp ?? scrollTargetId ?? settledTargetId ?? currentId;
   const edgePadding = useTableOfContentsEdgePadding(navRef, items);
   const edgeFade = useTableOfContentsEdgeFade(navRef, items);
 

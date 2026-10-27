@@ -79,6 +79,30 @@ describe("Tabs", () => {
     await waitFor(() => expect(indicatorBox(list)).toEqual({ left: 80, width: 80 }));
   });
 
+  it("measures from layout under a 3D-tilted ancestor", async () => {
+    render(
+      <Tabs defaultValue="two">
+        <TabsList aria-label="Tilted">
+          <TabsTab value="one">One</TabsTab>
+          <TabsTab value="two">Two</TabsTab>
+        </TabsList>
+      </Tabs>,
+    );
+    const list = screen.getByRole("tablist");
+    const two = screen.getByRole("tab", { name: "Two" });
+    // Laid out 200 x 30, projected as a box squashed vertically and widened.
+    Object.defineProperty(list, "offsetWidth", { configurable: true, value: 200 });
+    Object.defineProperty(list, "offsetHeight", { configurable: true, value: 30 });
+    vi.spyOn(list, "getBoundingClientRect").mockReturnValue({ left: 0, right: 260, width: 260, height: 18 } as DOMRect);
+    vi.spyOn(two, "getBoundingClientRect").mockReturnValue({ left: 90, right: 200, width: 110, height: 20 } as DOMRect);
+    Object.defineProperty(two, "offsetLeft", { configurable: true, value: 82 });
+    two.style.width = "79.5px";
+
+    fireEvent.click(screen.getByRole("tab", { name: "One" }));
+    fireEvent.click(two);
+    await waitFor(() => expect(indicatorBox(list)).toEqual({ left: 82, width: 79.5 }));
+  });
+
   it("keeps its internal measurement ref when a consumer supplies one", () => {
     const ref = createRef<HTMLDivElement>();
 

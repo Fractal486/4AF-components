@@ -1,0 +1,188 @@
+/* A window onto a field of components that is much larger than the window. The field is
+   clipped, and the mask dissolves every edge, so no sample ever shows a cut edge. */
+.artwork {
+  position: relative;
+  width: 100%;
+  container-type: inline-size;
+  overflow: clip;
+  isolation: isolate;
+  /* Black and white: the status colours, the blue ring and the badges all drop to grey, so
+     nothing in the backdrop pulls the eye away from the copy. */
+  filter: grayscale(1);
+  /* Soft edges rather than an oval, so a wide window reads as a band of the field: short
+     fades at the sides and top, a long one at the bottom into the page below. */
+  mask-image:
+    linear-gradient(to right, transparent, black 12%, black 88%, transparent),
+    linear-gradient(to bottom, transparent, black 14%, black 62%, transparent);
+  mask-composite: intersect;
+}
+
+/* Dimmed in dark mode, so the field sits behind the copy as a backdrop rather than competing
+   with it. Light mode keeps it at full strength. */
+:global(:where(.dark, [data-theme="dark"])) .artwork {
+  opacity: 0.6;
+}
+
+/* Layered, so the caller's aspect utility can set the window's proportions. */
+@layer components {
+  .artwork {
+    aspect-ratio: 5 / 4;
+  }
+}
+
+/* The field overflows the window at every width, so the scale only sets how large the cards
+   read; it steps with the window rather than tracking it. */
+.stage {
+  --hero-scale: 0.42;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1800px;
+  /* Close enough that the near cards grow and the far ones recede. */
+  perspective: 2400px;
+  transform: translate(-50%, -50%) scale(var(--hero-scale));
+  pointer-events: none;
+  user-select: none;
+}
+
+@container (min-width: 480px) {
+  .stage { --hero-scale: 0.48; }
+}
+
+@container (min-width: 640px) {
+  .stage { --hero-scale: 0.52; }
+}
+
+@container (min-width: 800px) {
+  .stage { --hero-scale: 0.56; }
+}
+
+@container (min-width: 960px) {
+  .stage { --hero-scale: 0.6; }
+}
+
+/* Laid back by 50°, which keeps the labels readable, and turned so the rows rise away to
+   the right, out from under the copy. */
+.grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 30px;
+  transform: rotateX(50deg) rotateZ(-34deg);
+  transform-style: preserve-3d;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  /* Room for the lifts: a raised card leans toward the camera over its neighbour. */
+  gap: 30px;
+  transform-style: preserve-3d;
+}
+
+/* Staggered starts, so the cards read as a field rather than as rows. */
+/* The outer columns hold only the corners the tilt leaves empty: low on the left, high on
+   the right. */
+/* Nudged in over its gap, so it sits inside the window. A transform rather than a margin:
+   a margin would pull every column after it along too. The samples' own padding still
+   keeps it apart from its neighbour. */
+.colA { width: 250px; padding-top: 540px; transform: translateX(42px); }
+/* Nudged toward the palette's column, closing that gap a little without moving the rest. */
+.colB { width: 270px; padding-top: 0; transform: translateX(12px); }
+/* As wide as the palette, which is drawn near its real size; the narrower samples above
+   and below it alternate sides, so the column has no straight edge. */
+.colC { width: 560px; padding-top: 80px; }
+
+/* Two samples abreast in the palette's column, so the wide column is full above and
+   below it rather than holding one narrow sample per row. */
+.row {
+  display: flex;
+  gap: 30px;
+  transform-style: preserve-3d;
+}
+
+.row > * {
+  flex: 1;
+  min-width: 0;
+}
+
+/* A sample with others hung above it, outside the layout. */
+.anchored {
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+.above {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  padding-bottom: 30px;
+  transform-style: preserve-3d;
+}
+
+/* Two samples stacked in one half of a row. */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  transform-style: preserve-3d;
+}
+.colD { width: 270px; padding-top: 40px; }
+.colE { width: 250px; padding-top: 150px; }
+
+/* No card behind each sample: the components stand on the plane as they are. Each is lifted
+   by `--lift`, highest at the palette and falling away with distance from it, so the
+   palette crowns a rise rather than floating alone. */
+.panel {
+  color: var(--foreground);
+  transform: translateZ(var(--lift, 0px));
+}
+
+/* In Tailwind's components layer, so a sample's own utility (`py-0`, `p-2`) can trim it:
+   an unlayered rule would outrank every utility. */
+@layer components {
+  .panel {
+    padding: 18px;
+  }
+}
+
+.flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+.calendar {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0;
+}
+
+/* This fixed-month illustration never resizes between months. Calendar's animated
+   wrapper measures a viewport rect, which includes our scale and 3D rotation;
+   using that number as a layout height clips the dates after hydration. */
+.calendar :global([data-slot="calendar-month-height"]) {
+  height: auto !important;
+  overflow: visible;
+}
+
+/* The palette's frame is part of the component, so it keeps its own: the real palette's
+   raised surface and hairline border. */
+.palette {
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-raised);
+}
+
+/* The illustration is intentionally still: no idle loops, mouse tracking, or
+   entrance animation. The same composition also works with reduced motion. Loaders in the
+   samples (the loading badge and alert) hold their first frame rather than spin; their
+   staggered delays leave that frame looking like a spinner caught mid-turn. */
+.artwork *,
+.artwork *::before,
+.artwork *::after {
+  animation-play-state: paused !important;
+}

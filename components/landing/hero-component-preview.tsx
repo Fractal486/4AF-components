@@ -1,0 +1,573 @@
+"use client";
+
+import { Autocomplete } from "@base-ui/react/autocomplete";
+import { Combobox } from "@base-ui/react/combobox";
+import { Toolbar as BaseToolbar } from "@base-ui/react/toolbar";
+import {
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
+  Bell,
+  Copy,
+  CornerDownLeft,
+  FolderOpen,
+  House,
+  Inbox,
+  Mail,
+  MessageSquare,
+  MoreHorizontal,
+  Palette,
+  Plus,
+  Search,
+  Trash2,
+  Users,
+} from "lucide-react";
+import type { CSSProperties, ReactNode } from "react";
+import { cn } from "@/registry/lib/cn";
+import { Alert } from "@/registry/ui/alert/alert";
+import { Badge } from "@/registry/ui/badge/badge";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/registry/ui/breadcrumb/breadcrumb";
+import { Button } from "@/registry/ui/button/button";
+import { ButtonGroup } from "@/registry/ui/button-group/button-group";
+import { Checkbox } from "@/registry/ui/checkbox/checkbox";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/registry/ui/collapsible/collapsible";
+import { CommandIcon, Hint, Kbd } from "@/registry/ui/command-palette/command-palette.chrome";
+import { CommandRow } from "@/registry/ui/command-palette/command-palette.panels";
+import type { CommandGroup, CommandItem } from "@/registry/ui/command-palette/command-palette.types";
+import { CopyButton } from "@/registry/ui/copy-button/copy-button";
+import { Calendar } from "@/registry/ui/date-picker/calendar";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/registry/ui/empty/empty";
+import { Input } from "@/registry/ui/input/input";
+import { Progress, ProgressLabel, ProgressValue } from "@/registry/ui/progress/progress";
+import { Radio, RadioGroup } from "@/registry/ui/radio/radio";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
+import { SelectionToolbarButton, SelectionToolbarSeparator } from "@/registry/ui/selection-toolbar/selection-toolbar.controls";
+import { selectionToolbarVariants } from "@/registry/ui/selection-toolbar/selection-toolbar.variants";
+import { SearchSelect, SearchSelectInput, SearchSelectItem } from "@/registry/ui/select/select-search";
+import { Separator } from "@/registry/ui/separator/separator";
+import { Skeleton } from "@/registry/ui/skeleton/skeleton";
+import { Slider } from "@/registry/ui/slider/slider";
+import { Switch } from "@/registry/ui/switch/switch";
+import { DataTable, DataTableHead, DataTableRow, DataTableRowActions } from "@/registry/ui/data-table/data-table";
+import { TableBody, TableCell, TableHeader } from "@/registry/ui/table/table";
+import { TableOfContents } from "@/registry/ui/table-of-contents/table-of-contents";
+import { TableOfContentsLines } from "@/registry/ui/table-of-contents-lines/table-of-contents-lines";
+import { Tabs, TabsList, TabsPanel, TabsTab } from "@/registry/ui/tabs/tabs";
+import styles from "./hero-component-preview.module.css";
+
+const groups: CommandGroup[] = [
+  {
+    heading: "Workspace",
+    items: [
+      { id: "overview", label: "Overview", icon: <House />, shortcut: "G H" },
+      { id: "projects", label: "Projects", icon: <FolderOpen />, shortcut: "G P" },
+      { id: "people", label: "Team members", icon: <Users /> },
+    ],
+  },
+  {
+    heading: "Actions",
+    items: [
+      { id: "create", label: "Create project", icon: <Plus />, shortcut: "⌘ N" },
+      { id: "appearance", label: "Change appearance", icon: <Palette /> },
+    ],
+  },
+];
+
+const previewMonth = new Date(2026, 9, 1);
+const previewToday = new Date(2026, 9, 12);
+const previewRange = { from: previewToday, to: new Date(2026, 9, 16) };
+const noop = () => {};
+const projects = [
+  { value: "website", label: "Website redesign", icon: <FolderOpen /> },
+  { value: "mobile", label: "Mobile app", icon: <FolderOpen /> },
+  { value: "design", label: "Design system", icon: <FolderOpen /> },
+];
+const tocItems = [
+  { id: "hero-toc-overview", title: "Overview" },
+  { id: "hero-toc-install", title: "Installation" },
+  { id: "hero-toc-usage", title: "Usage", level: 3 },
+  { id: "hero-toc-composition", title: "Composition", level: 3 },
+  { id: "hero-toc-api", title: "API reference" },
+  { id: "hero-toc-accessibility", title: "Accessibility" },
+  { id: "hero-toc-motion", title: "Motion" },
+];
+const releaseNotes = [
+  "Added Scroll Area",
+  "Sidebar tabs",
+  "Data table sorting",
+  "Calendar month heights",
+  "Command palette tabs",
+  "Morph sizing",
+  "Select search highlight",
+  "Tooltip delay groups",
+];
+const people = [
+  { name: "Alex Kim", role: "Design engineer", status: "Active", tone: "success", projects: 12, active: "2m ago" },
+  { name: "Maya Chen", role: "Product designer", status: "Active", tone: "success", projects: 8, active: "1h ago" },
+  { name: "Sam Rivera", role: "Engineer", status: "Away", tone: "warning", projects: 5, active: "Yesterday" },
+  { name: "Jordan Lee", role: "Researcher", status: "Invited", tone: "neutral", projects: 0, active: "—" },
+] as const;
+const deployments = [
+  { name: "Production", status: "Live", tone: "success" },
+  { name: "Docs", status: "Updated", tone: "info" },
+  { name: "Preview", status: "Queued", tone: "neutral" },
+  { name: "Canary", status: "Building", tone: "loading" },
+  { name: "Sandbox", status: "Paused", tone: "warning" },
+  { name: "Staging", status: "Failed", tone: "danger" },
+] as const;
+
+/** One card. `lift` is its height off the plane in pixels: highest around the palette. */
+function Panel({
+  name,
+  lift = 0,
+  className,
+  children,
+}: {
+  name: string;
+  lift?: number;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      data-preview-panel={name}
+      className={cn(styles.panel, className)}
+      style={{ "--lift": `${lift}px` } as CSSProperties}
+    >
+      {children}
+    </div>
+  );
+}
+
+function SelectSearchPreview() {
+  return (
+    <Panel name="select-search" lift={30}>
+      <p className="mb-3 text-xs font-medium">Choose a project</p>
+      <SearchSelect items={projects} defaultValue={projects[0]} open>
+        <SearchSelectInput aria-label="Search projects" placeholder="Search projects…" readOnly tabIndex={-1} />
+        {/* Keep the real list and items inside the inert artwork. A positioned portal
+            would escape both the 3D plane and the artwork's focus boundary. */}
+        <Combobox.List className="mt-1.5 rounded-md border border-border bg-surface p-1">
+          {(project: (typeof projects)[number]) => (
+            <SearchSelectItem
+              key={project.value}
+              value={project}
+              icon={project.icon}
+              className="data-[selected]:bg-muted"
+            >
+              {project.label}
+            </SearchSelectItem>
+          )}
+        </Combobox.List>
+      </SearchSelect>
+    </Panel>
+  );
+}
+
+/** The real palette rows and chrome, without the modal, portal, or global shortcut.
+ * The entire artwork is inert; these controls are a visual sample, not a second UI.
+ */
+function PalettePreview() {
+  return (
+    <div data-preview-panel="command" className={cn(styles.panel, styles.palette)} style={{ "--lift": "56px" } as CSSProperties}>
+      <Autocomplete.Root
+        inline
+        open
+        items={groups}
+        filter={null}
+        itemToStringValue={(item: CommandItem) => item.label}
+        autoHighlight="always"
+        {...({ keepHighlight: true } as Record<string, unknown>)}
+      >
+        <div className="flex h-12 items-center gap-2.5 border-b border-border pl-4 pr-3">
+          <CommandIcon className="text-subtle-foreground"><Search /></CommandIcon>
+          <Autocomplete.Input
+            aria-label="Search commands"
+            placeholder="Search for anything…"
+            readOnly
+            tabIndex={-1}
+            className="h-12 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-subtle-foreground"
+          />
+          <Kbd>⌘ K</Kbd>
+        </div>
+        <Autocomplete.List className="p-1.5">
+          {(group: CommandGroup) => (
+            <Autocomplete.Group key={group.heading} items={group.items} className="mb-1 last:mb-0">
+              <Autocomplete.GroupLabel className="px-2.5 pt-2 pb-1 text-2xs font-medium text-subtle-foreground">
+                {group.heading}
+              </Autocomplete.GroupLabel>
+              <Autocomplete.Collection>
+                {(item: CommandItem) => <CommandRow key={item.id} item={item} query="" onRun={noop} />}
+              </Autocomplete.Collection>
+            </Autocomplete.Group>
+          )}
+        </Autocomplete.List>
+        <div className="flex items-center justify-between border-t border-border px-1.5 py-2">
+          <div className="flex items-center gap-3">
+            <Hint keys={["esc"]}>Close</Hint>
+            <Hint keys={["↑", "↓"]}>Navigate</Hint>
+          </div>
+          <Hint trailingKeys keys={[<CornerDownLeft key="enter" className="size-2.5" />]}>Open</Hint>
+        </div>
+      </Autocomplete.Root>
+    </div>
+  );
+}
+
+/** A responsive, transparent hero illustration built from the library's components. */
+export function HeroComponentPreview({ className }: { className?: string }) {
+  return (
+    <div
+      data-hero-preview
+      role="img"
+      aria-label="A command palette raised at the centre of a tilted field of component examples, including a calendar, a table, a searchable select, tabs, form fields, buttons, badges, and status messages."
+      className={cn(styles.artwork, className)}
+    >
+      <div aria-hidden="true" inert className={styles.stage}>
+        <div className={styles.grid}>
+
+          <div className={cn(styles.column, styles.colA)}>
+            <Panel name="badges" lift={4}>
+              <p className="mb-3 text-xs font-medium">Deployments</p>
+              <div className="flex flex-col gap-2.5 text-xs text-muted-foreground">
+                {deployments.map(({ name, status, tone }) => (
+                  <div key={name} className="flex items-center justify-between">
+                    <span>{name}</span><Badge status={tone} size="sm">{status}</Badge>
+                  </div>
+                ))}
+              </div>
+            </Panel>
+          </div>
+
+          <div className={cn(styles.column, styles.colB)}>
+
+            <Panel name="storage" lift={10}>
+              <Progress value={42} locale="en-US">
+                <div className="mb-3 flex items-center justify-between text-xs">
+                  <ProgressLabel className="font-medium">Storage</ProgressLabel>
+                  <ProgressValue className="text-muted-foreground tabular-nums" />
+                </div>
+              </Progress>
+            </Panel>
+
+            <Panel name="progress" lift={8}>
+              <Progress value={75} locale="en-US">
+                <div className="mb-3 flex items-center justify-between text-xs">
+                  <ProgressLabel className="font-medium">Project setup</ProgressLabel>
+                  <ProgressValue className="text-muted-foreground tabular-nums" />
+                </div>
+              </Progress>
+            </Panel>
+
+            <Panel name="calendar" lift={28} className={styles.calendar}>
+              <Calendar
+                mode="range"
+                month={previewMonth}
+                today={previewToday}
+                selected={previewRange}
+                animate={false}
+              />
+            </Panel>
+
+            <Panel name="buttons" lift={36}>
+              <div className="mb-4 flex items-center justify-between">
+                <span className="text-xs font-medium">Your next idea</span>
+                <Badge status="success" size="sm">Ready</Badge>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button size="sm" className="flex-1"><Plus />Create project</Button>
+                <Button variant="outline" size="icon-sm" aria-label="More actions"><MoreHorizontal /></Button>
+              </div>
+            </Panel>
+
+            <Panel name="scroll-area" lift={30}>
+              <p className="mb-3 text-xs font-medium">Release notes</p>
+              <ScrollArea fade scrollbar="always" className="h-32 rounded-md shadow-border" viewportClassName="px-3 py-2">
+                <ul className="flex flex-col gap-2 text-xs text-muted-foreground">
+                  {releaseNotes.map((note) => <li key={note}>{note}</li>)}
+                </ul>
+              </ScrollArea>
+            </Panel>
+
+            <Panel name="selection-toolbar" lift={22}>
+              {/* The bar drawn in place: Base UI's toolbar root with the component's own surface and
+                  real items. The live component positions it in a portal over the selection. */}
+              <BaseToolbar.Root aria-label="Selection" className={cn(selectionToolbarVariants(), "mb-2")}>
+                <SelectionToolbarButton><Copy />Copy</SelectionToolbarButton>
+                <SelectionToolbarButton><MessageSquare />Comment</SelectionToolbarButton>
+                <SelectionToolbarSeparator />
+                <SelectionToolbarButton variant="destructive" aria-label="Delete"><Trash2 /></SelectionToolbarButton>
+              </BaseToolbar.Root>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Make every <span className="rounded-xs bg-muted px-0.5 text-foreground">detail feel</span> considered.
+              </p>
+            </Panel>
+
+
+
+          </div>
+
+          <div className={cn(styles.column, styles.colC)}>
+
+            <div className={styles.row}>
+              {/* The left half stacks two samples; the profile beside them keeps its place. */}
+              <div className={styles.stack}>
+                {/* Two closed rows hang above the open one, out of the flow like the sliders. */}
+                <div className={styles.anchored}>
+                  <div className={styles.above}>
+                    <Panel name="collapsed-rows" lift={18} className="flex flex-col gap-1 p-2">
+                      {["Can I use it without Tailwind?", "How do updates work?"].map((question) => (
+                        <Collapsible key={question}>
+                          <CollapsibleTrigger className="text-xs font-medium">{question}</CollapsibleTrigger>
+                          <CollapsibleContent className="px-3 pb-2 text-xs text-muted-foreground">—</CollapsibleContent>
+                        </Collapsible>
+                      ))}
+                    </Panel>
+                  </div>
+                  <Panel name="collapsible" lift={24} className="p-2">
+                    <Collapsible defaultOpen>
+                      <CollapsibleTrigger className="text-xs font-medium">Does it work with my theme?</CollapsibleTrigger>
+                      <CollapsibleContent className="px-3 pb-2 text-xs text-muted-foreground">
+                        Components read semantic tokens, so they follow your colours in light and dark.
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </Panel>
+                </div>
+                <Panel name="dialog-actions" lift={32}>
+                  <p className="mb-1 text-xs font-medium">Discard changes?</p>
+                  <p className="mb-4 text-2xs text-muted-foreground">Your edits will be lost.</p>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" size="sm">Cancel</Button>
+                    <Button variant="destructive" size="sm">Discard</Button>
+                  </div>
+                </Panel>
+              </div>
+              {/* Level with Discard changes. The sliders hang above it out of the flow, so they
+                  add no height to the row and nothing around them moves. */}
+              <div className={cn(styles.anchored, "self-end")}>
+                <div className={styles.above}>
+                  <Panel name="circle-slider" lift={18}>
+                    <Slider defaultValue={40} label="Brightness" showValue thumb="circle" />
+                  </Panel>
+                  <Panel name="knob-slider" lift={24}>
+                    <Slider defaultValue={70} label="Contrast" showValue thumb="knob" />
+                  </Panel>
+                </div>
+                <Panel name="profile" lift={32}>
+                  <div className="flex items-center gap-3">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-2xs font-medium">AK</span>
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-medium">Alex Kim</p>
+                      <p className="truncate text-2xs text-muted-foreground">Design engineer</p>
+                    </div>
+                  </div>
+                  <Separator className="my-4" />
+                  <div className="flex justify-between text-2xs text-muted-foreground">
+                    <span><span className="font-medium text-foreground tabular-nums">24</span> projects</span>
+                    <span><span className="font-medium text-foreground tabular-nums">8</span> teams</span>
+                  </div>
+                </Panel>
+              </div>
+            </div>
+
+            <div className={styles.row}>
+              <Panel name="radio" lift={46}>
+                <p className="mb-3 text-xs font-medium">Who can see this?</p>
+                <RadioGroup defaultValue="team" size="sm" aria-label="Project visibility">
+                  <Radio value="everyone" label="Everyone" />
+                  <Radio value="team" label="Team only" />
+                  <Radio value="private" label="Only me" />
+                </RadioGroup>
+              </Panel>
+              <Panel name="switches" lift={46}>
+                <div className="mb-5 flex items-center gap-2 text-xs font-medium">
+                  <Bell className="size-3.5 text-subtle-foreground" />Preferences
+                </div>
+                <div className="flex items-center justify-between gap-4 text-xs">
+                  <span>Notifications</span><Switch defaultChecked aria-label="Notifications" />
+                </div>
+                <div className="mt-4 flex items-center justify-between gap-4 text-xs">
+                  <span>Auto updates</span><Switch aria-label="Auto updates" />
+                </div>
+              </Panel>
+            </div>
+
+            <PalettePreview />
+
+
+            <Panel name="data-table" lift={30}>
+              <DataTable
+                selectable
+                actionColumn
+                stickyHeader={false}
+                rows={people.map(({ name }) => name)}
+                defaultValue={["Maya Chen"]}
+                defaultSort={{ column: "name", direction: "asc" }}
+              >
+                <TableHeader>
+                  <DataTableRow>
+                    <DataTableHead sortKey="name">Name</DataTableHead>
+                    <DataTableHead>Role</DataTableHead>
+                    <DataTableHead>Status</DataTableHead>
+                    <DataTableHead className="text-right">Projects</DataTableHead>
+                    <DataTableHead>Last active</DataTableHead>
+                  </DataTableRow>
+                </TableHeader>
+                <TableBody>
+                  {people.map(({ name, role, status, tone, projects: count, active }) => (
+                    <DataTableRow
+                      key={name}
+                      value={name}
+                      selectLabel={`Select ${name}`}
+                      actions={<DataTableRowActions label={`Actions for ${name}`}>{null}</DataTableRowActions>}
+                    >
+                      <TableCell className="font-medium">{name}</TableCell>
+                      <TableCell className="text-muted-foreground">{role}</TableCell>
+                      <TableCell><Badge status={tone} size="sm">{status}</Badge></TableCell>
+                      <TableCell className="text-right tabular-nums">{count}</TableCell>
+                      <TableCell className="text-muted-foreground">{active}</TableCell>
+                    </DataTableRow>
+                  ))}
+                </TableBody>
+              </DataTable>
+            </Panel>
+            {/* The empty state keeps the right half of the row; the left is left open. Pulled up to
+                halve the space the gap and both samples' padding leave under the table. */}
+            <div className={cn(styles.row, "-mt-16")}>
+              <div />
+              <Panel name="empty" lift={18}>
+                <Empty className="p-2">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon"><Inbox /></EmptyMedia>
+                    <EmptyTitle>No messages</EmptyTitle>
+                    <EmptyDescription>You&apos;re all caught up.</EmptyDescription>
+                  </EmptyHeader>
+                  <EmptyContent>
+                    <Button variant="outline" size="sm">Refresh</Button>
+                  </EmptyContent>
+                </Empty>
+              </Panel>
+            </div>
+
+          </div>
+
+          <div className={cn(styles.column, styles.colD)}>
+
+            <Panel name="search" lift={10}>
+              <Input placeholder="Search…" aria-label="Search" startIcon={<Search />} readOnly tabIndex={-1} />
+            </Panel>
+
+            <Panel name="button-group" lift={12}>
+              <p className="mb-3 text-xs font-medium">Text alignment</p>
+              <ButtonGroup variant="outline" size="icon-sm" aria-label="Text alignment">
+                <Button aria-label="Align left"><AlignLeft /></Button>
+                <Button aria-label="Align center"><AlignCenter /></Button>
+                <Button aria-label="Align right"><AlignRight /></Button>
+              </ButtonGroup>
+            </Panel>
+
+            <SelectSearchPreview />
+
+            <Panel name="tabs" lift={36}>
+              <Tabs defaultValue="overview" appearance="outline" size="sm" className="gap-10">
+                <TabsList aria-label="Workspace view">
+                  <TabsTab value="overview">Overview</TabsTab>
+                  <TabsTab value="activity">Activity</TabsTab>
+                  <TabsTab value="settings">Settings</TabsTab>
+                </TabsList>
+                <TabsPanel value="overview">
+                  <Breadcrumb>
+                    <BreadcrumbList size="sm">
+                      <BreadcrumbItem><BreadcrumbLink asChild><span>Home</span></BreadcrumbLink></BreadcrumbItem>
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem><BreadcrumbLink asChild><span>Projects</span></BreadcrumbLink></BreadcrumbItem>
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem><BreadcrumbPage>Website</BreadcrumbPage></BreadcrumbItem>
+                    </BreadcrumbList>
+                  </Breadcrumb>
+                </TabsPanel>
+                <TabsPanel value="activity" className="text-xs text-muted-foreground">No new activity.</TabsPanel>
+                <TabsPanel value="settings" className="text-xs text-muted-foreground">Make it feel like yours.</TabsPanel>
+              </Tabs>
+            </Panel>
+
+            <Panel name="slider" lift={30} className="py-0 [&_[data-slot=slider-ticks]]:opacity-100">
+              <Slider defaultValue={65} label="Volume" showValue showTicks step={5} thumb="bar" />
+            </Panel>
+
+            <Panel name="tasks" lift={22}>
+              <p className="mb-4 text-xs font-medium">This week</p>
+              <div className="flex flex-col gap-3.5">
+                {([["Ship the sidebar", true], ["Write the docs", true], ["Review motion", false]] as const).map(([label, done]) => (
+                  <div key={label} className="flex items-center gap-2.5 text-xs text-muted-foreground">
+                    <Checkbox defaultChecked={done} aria-label={label} /><span>{label}</span>
+                  </div>
+                ))}
+              </div>
+            </Panel>
+
+            <Panel name="install" lift={16}>
+              <p className="mb-3 text-xs font-medium">Install</p>
+              <div className="flex items-center justify-between gap-2 rounded-md bg-muted py-1 pr-1 pl-3">
+                <code className="truncate font-mono text-2xs text-muted-foreground">npx shadcn add @4af/button</code>
+                <CopyButton value="npx shadcn add @4af/button" aria-label="Copy command" tabIndex={-1} />
+              </div>
+            </Panel>
+            <Panel name="alerts" lift={10}>
+              <div className="flex flex-col gap-3">
+                <Alert variant="success" className="mt-0">Changes saved.</Alert>
+                <Alert variant="warning" className="mt-0">Your trial ends in 3 days.</Alert>
+                <Alert variant="loading" className="mt-0">Syncing your workspace…</Alert>
+              </div>
+            </Panel>
+
+          </div>
+
+          <div className={cn(styles.column, styles.colE)}>
+            <Panel name="shortcuts" lift={4}>
+              <p className="mb-3 text-xs font-medium">Shortcuts</p>
+              <div className="flex flex-col gap-2.5 text-xs text-muted-foreground">
+                {[["Search", "⌘ K"], ["New project", "⌘ N"], ["Toggle sidebar", "⌘ B"]].map(([label, keys]) => (
+                  <div key={label} className="flex items-center justify-between">
+                    <span>{label}</span><Kbd>{keys}</Kbd>
+                  </div>
+                ))}
+              </div>
+            </Panel>
+            <Panel name="invite" lift={6}>
+              <p className="mb-3 text-xs font-medium">Invite a teammate</p>
+              <Input type="email" placeholder="name@example.com" aria-label="Teammate email" startIcon={<Mail />} readOnly tabIndex={-1} />
+            </Panel>
+            <Panel name="toc-lines" lift={4}>
+              <p className="mb-2 text-xs font-medium">On this page</p>
+              {/* Ids no heading on the page uses, so the sample tracks nothing real. */}
+              <TableOfContentsLines items={tocItems} activeId="hero-toc-install" />
+            </Panel>
+            <Panel name="skeleton" lift={4}>
+              <div className="flex items-center gap-3">
+                <Skeleton className="size-8 shrink-0 animate-none rounded-full" />
+                <div className="flex flex-1 flex-col gap-2">
+                  <Skeleton className="h-2 w-24 animate-none rounded-xs" />
+                  <Skeleton className="h-1.5 w-16 animate-none rounded-xs" />
+                </div>
+              </div>
+              <Skeleton className="mt-4 h-2 w-full animate-none rounded-xs" />
+              <Skeleton className="mt-2 h-2 w-3/4 animate-none rounded-xs" />
+            </Panel>
+            <Panel name="toc" lift={4}>
+              <p className="mb-2 text-xs font-medium">Contents</p>
+              <TableOfContents aria-label="Contents" items={tocItems} activeId="hero-toc-api" />
+            </Panel>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
