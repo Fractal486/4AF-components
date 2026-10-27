@@ -163,9 +163,10 @@ export function BlueprintCard({
             <BaseTooltip.Popup
               data-theme="dark"
               className={cn(
-                // One fixed size for every drawing. The ground is the dark theme's background,
-                // which is the blueprints' own, so letterboxing is invisible in either theme.
-                "relative h-40 w-64 overflow-hidden rounded-md bg-background",
+                // One fixed size for every drawing. The ground is the blueprints' own baked-in
+                // `#060606`, not a theme token, so letterboxing stays invisible when the
+                // theme's background changes.
+                "relative h-40 w-64 overflow-hidden rounded-md bg-[oklch(0.120_0_0)]",
                 "shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_14px_30px_-12px_rgba(0,0,0,0.6)]",
                 // Fades in from the cursor; leaves with a fade and blur rather than retracing
                 // the entrance.
