@@ -63,4 +63,5 @@ keeps its edges still. Button Group already sets this on its children.
 
 Action Button, Copy Button, and Delete Button accept both props.
 
-The native button presses with a Motion spring. With `asChild`, the press is CSS.
+The native button presses with a Motion spring. With `asChild`, the press is CSS on
+`--ease-press`, the same spring sampled into `linear()` over `--duration-slow`, so both feel alike.

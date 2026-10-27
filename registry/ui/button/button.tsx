@@ -85,9 +85,11 @@ const PRESS_VARIANTS = {
 /**
  * The same content press for the `asChild` path, which can't use Motion — wrapping an
  * arbitrary child would mean nesting DOM that isn't valid. Same 0.95, driven off the
- * element's `:active` and the fast duration token, so it collapses under reduced
- * motion with everything else.
+ * element's `:active` on `--ease-press`, the press spring sampled into `linear()`, so it
+ * presses like the Motion path and still collapses under reduced motion via its token.
  */
+const SCALE_PRESS_TRANSITION =
+  "[transition:background-color_var(--duration-fast)_var(--ease-out),box-shadow_var(--duration-fast)_var(--ease-out),color_var(--duration-fast)_var(--ease-out),opacity_var(--duration-fast)_var(--ease-out),text-decoration-color_var(--duration-fast)_var(--ease-out),scale_var(--duration-slow)_var(--ease-press)]";
 const CONTENT_PRESS_CSS =
   "[&:active_[data-slot=button-content]]:scale-[0.95] motion-reduce:[&:active_[data-slot=button-content]]:scale-100";
 const CONTENT_HELD_CSS =
@@ -136,7 +138,7 @@ export function Button({
   ) : asChild ? (
     <span
       data-slot="button-content"
-      className="inline-flex items-center gap-[inherit] transition-[scale] duration-(--duration-fast) ease-out"
+      className="inline-flex items-center gap-[inherit] transition-[scale] duration-(--duration-slow) ease-press"
     >
       {labelled}
     </span>
@@ -184,7 +186,8 @@ export function Button({
         asChild &&
           pressScale &&
           !pressesContent &&
-          "transition-[background-color,box-shadow,color,opacity,text-decoration-color,scale] active:scale-[0.95] motion-reduce:active:scale-100",
+          // Colours keep the base's fast expo; only the scale takes the press curve.
+          `${SCALE_PRESS_TRANSITION} active:scale-[0.95] motion-reduce:active:scale-100`,
         // Held state for the CSS-press (`asChild`) path. `scale` is a single CSS
         // property, so this and `active:scale-[0.95]` resolve to one value (0.95) rather
         // than multiplying — no compounding when a held button is pressed to dismiss.
