@@ -54,6 +54,15 @@ describe("Alert", () => {
     expect(screen.getAllByRole("status")).toHaveLength(1);
   });
 
+  it("keeps the glyph on the first line when the message wraps", () => {
+    const { container } = render(<Alert>A message long enough to wrap</Alert>);
+
+    expect(container.firstElementChild?.className).toContain("items-start");
+    const glyph = container.querySelector('[data-slot="alert-glyph"]');
+    expect(glyph?.className).toContain("h-[1lh]");
+    expect(glyph?.querySelector("svg")).toBeInTheDocument();
+  });
+
   it("swaps the glyph with the variant, in the same slot", () => {
     const { rerender, container } = render(<Alert>Invalid</Alert>);
     const errorGlyph = container.querySelector("svg");

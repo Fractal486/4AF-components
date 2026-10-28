@@ -18,7 +18,7 @@ import { cva, type VariantProps } from "class-variance-authority";
  * because work in progress is not yet an outcome; giving it a colour, or even the weight
  * of a statement, would spend a signal on something that hasn't happened.
  */
-export const alertVariants = cva("mt-1.5 flex items-center gap-1.5 text-sm", {
+export const alertVariants = cva("mt-1.5 flex items-start gap-1.5 text-sm", {
   variants: {
     variant: {
       error: "text-destructive",

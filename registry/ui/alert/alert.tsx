@@ -24,6 +24,8 @@ import { alertVariants, type AlertVariants } from "./alert.variants";
  *
  * The glyph is always the same 14px slot, so a line that moves through the states —
  * checking, then saved or failed — swaps its glyph without the text shifting sideways.
+ * It sits in a box one line tall, so a message that wraps keeps the glyph on its first
+ * line instead of centring it against the whole block.
  */
 
 /**
@@ -65,7 +67,9 @@ export function Alert({ className, variant, children, loader, ...props }: AlertP
       className={cn(alertVariants({ variant: resolved }), className)}
       {...props}
     >
-      {GLYPH[resolved](loader)}
+      <span data-slot="alert-glyph" className="flex h-[1lh] shrink-0 items-center">
+        {GLYPH[resolved](loader)}
+      </span>
       <span className="min-w-0">{children}</span>
     </p>
   );
