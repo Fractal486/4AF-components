@@ -93,6 +93,7 @@ export function DialogContent({
 }: DialogContentProps) {
   const open = useContext(DialogOpenContext);
   const reduceMotion = useReducedMotion();
+  const frameBodyRef = useFrameHeight();
 
   return (
     <AnimatePresence>
@@ -116,9 +117,9 @@ export function DialogContent({
               // Centred with a translate; Motion scales on top (Tailwind v4 keeps
               // `translate` and Motion's `transform` as separate properties, so the two
               // compose and it stays centred while it scales).
-              // The popup clips; the body scrolls when the dialog is taller than the viewport,
-              // so the close button stays put above it.
-              "fixed top-1/2 left-1/2 z-50 flex max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg -translate-1/2 flex-col overflow-hidden rounded-md border border-border bg-surface-raised shadow-overlay-drop",
+              // The popup is only the frame: its height follows the content's measured height
+              // with a transition, and it clips the content while it grows.
+              "fixed top-1/2 left-1/2 z-50 max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg -translate-1/2 overflow-hidden rounded-md border border-border bg-surface-raised shadow-overlay-drop transition-[height] duration-(--duration-slower) ease-out",
               className,
             )}
             render={
@@ -137,14 +138,30 @@ export function DialogContent({
                 transition={reduceMotion ? { duration: 0 } : spring.smooth}
               />
             }
+            data-slot="dialog-content"
             {...props}
           >
-            <ScrollArea
-              className="min-h-0"
-              viewportClassName={cn("flex flex-col gap-4 p-6", bodyClassName)}
-            >
-              {children}
-            </ScrollArea>
+            {/* The content is centred inside the frame rather than laid out by it, so it sits
+                at its final position at once while the frame resizes around it from the same
+                centre: a content swap never travels vertically. While the frame is taller
+                (shrinking), the layer fills it and centres the body, leaving slack at both
+                edges for footers to ride the bottom edge in (see useFrameHeight). The body
+                scrolls when the dialog is taller than the viewport. */}
+            <div className="absolute inset-x-0 top-1/2 flex max-h-[calc(100dvh-2rem-2px)] min-h-full -translate-y-1/2 flex-col">
+              <ScrollArea
+                className="min-h-0 flex-1"
+                viewportClassName="flex flex-col justify-center-safe"
+              >
+                <div
+                  ref={frameBodyRef}
+                  data-slot="dialog-content-body"
+                  className={cn("flex shrink-0 flex-col gap-4 p-6", bodyClassName)}
+                >
+                  {children}
+                </div>
+              </ScrollArea>
+            </div>
+            {/* Positioned on the frame, so it follows the top edge as the frame resizes. */}
             {showClose && (
               <BaseDialog.Close
                 render={
@@ -167,6 +184,59 @@ export function DialogContent({
   );
 }
 
+/**
+ * Sizes the popup frame to its body's natural height. Written straight to the style from
+ * ResizeObserver, which runs after layout and before paint, so the first size lands before
+ * the dialog is seen; that first change is from `auto` and so isn't transitioned. The border
+ * box ignores transforms, so the popup's scale-in doesn't skew the measurement.
+ *
+ * `[data-dialog-edge="end"]` elements (footers, step navigation) are already at their final
+ * place in the centred body; they're offset to where the frame's bottom edge is now and
+ * eased home with the frame's own computed transition, so they ride that edge. Reduced
+ * motion collapses that duration with the CSS token. An interrupted resize restarts from
+ * the frame's current animated height, which is where the edge actually is. A body that
+ * scrolls keeps its footer where it is.
+ */
+function useFrameHeight() {
+  return useCallback((body: HTMLDivElement | null) => {
+    const frame = body?.closest<HTMLElement>('[data-slot="dialog-content"]');
+    if (!body || !frame || typeof ResizeObserver === "undefined") return;
+    const edgeAnimations: Animation[] = [];
+    const observer = new ResizeObserver(([entry]) => {
+      const style = getComputedStyle(frame);
+      const border =
+        Number.parseFloat(style.borderTopWidth) + Number.parseFloat(style.borderBottomWidth);
+      const natural =
+        (entry?.borderBoxSize?.[0]?.blockSize ?? Number.parseFloat(getComputedStyle(body).height)) +
+        border;
+      const max = Number.parseFloat(style.maxHeight);
+      const height = Number.isFinite(max) ? Math.min(natural, max) : natural;
+      const current = frame.style.height ? Number.parseFloat(style.height) : undefined;
+      frame.style.height = `${height}px`;
+      if (current === undefined || current === height || natural > height) return;
+
+      const offset = (current - height) / 2;
+      const timing = {
+        duration: Number.parseFloat(style.transitionDuration) * 1000,
+        easing: style.transitionTimingFunction,
+      };
+      for (const animation of edgeAnimations) animation.cancel();
+      edgeAnimations.length = 0;
+      for (const edge of body.querySelectorAll('[data-dialog-edge="end"]')) {
+        if (typeof edge.animate !== "function") continue;
+        edgeAnimations.push(
+          edge.animate([{ translate: `0 ${offset}px` }, { translate: "0 0" }], timing),
+        );
+      }
+    });
+    observer.observe(body);
+    return () => {
+      observer.disconnect();
+      for (const animation of edgeAnimations) animation.cancel();
+    };
+  }, []);
+}
+
 export function DialogHeader({ className, ...props }: ComponentProps<"div">) {
   return <div className={cn("flex flex-col gap-1.5 pr-6", className)} {...props} />;
 }
@@ -174,6 +244,7 @@ export function DialogHeader({ className, ...props }: ComponentProps<"div">) {
 export function DialogFooter({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
+      data-dialog-edge="end"
       className={cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className)}
       {...props}
     />
@@ -255,15 +326,15 @@ const stepVariants = {
     opacity: 1,
     x: 0,
     filter: "blur(0px)",
-    transition: { duration: direction === 0 ? 0 : duration.slow, ease: ease.out },
+    transition: { duration: direction === 0 ? 0 : duration.slower, ease: ease.out },
   }),
 };
 
 /**
  * A phased dialog body with progress dots and previous/next controls.
  * Re-keying on `activeStep` replays the entrance; the outgoing phase unmounts immediately
- * without AnimatePresence so text cannot overlap. Motion's size layout projection uses
- * transforms while document layout updates immediately, without animating `height`.
+ * without AnimatePresence so text cannot overlap. DialogContent resizes its frame around
+ * the new phase from the shared centre, so the phase itself only slides sideways.
  *
  * Compose inside DialogContent: Base UI owns modal focus, dismissal, and title/description
  * relationships.
@@ -324,23 +395,14 @@ export function DialogSteps({
       {...props}
     >
       <motion.div
-        // Motion's layout projection uses transforms for the size transition; unlike an
-        // explicit height animation, it does not force the browser to relayout every frame.
-        layout={reduceMotion ? false : "size"}
-        layoutDependency={activeStep}
-        transition={{ duration: reduceMotion ? 0 : duration.slow, ease: ease.out }}
+        key={activeStep}
+        custom={travel}
+        variants={stepVariants}
+        initial={swapped ? "enter" : false}
+        animate="active"
         className="min-w-0"
       >
-        <motion.div
-          key={activeStep}
-          custom={travel}
-          variants={stepVariants}
-          initial={swapped ? "enter" : false}
-          animate="active"
-          className="min-w-0"
-        >
-          {phases[activeStep]}
-        </motion.div>
+        {phases[activeStep]}
       </motion.div>
 
       <DialogStepsNavigation
@@ -375,7 +437,11 @@ function DialogStepsNavigation({
 
   return (
     // Three columns so the dots stay centred whatever width Back and Next take.
-    <nav aria-label="Dialog steps" className="mt-6 grid grid-cols-3 items-center gap-3">
+    <nav
+      aria-label="Dialog steps"
+      data-dialog-edge="end"
+      className="mt-6 grid grid-cols-3 items-center gap-3"
+    >
       <Button
         variant="ghost"
         size="sm"

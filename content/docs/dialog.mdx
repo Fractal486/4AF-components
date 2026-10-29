@@ -18,7 +18,7 @@ Base UI handles focus trapping, dismissal, scroll locking, and labelling. `Dialo
 accepts `portalContainer` for a mount point of your own and `backdropClassName` for extra
 backdrop styling. Its content sits in a [Scroll Area](/docs/scroll-area) that scrolls when the
 dialog is taller than the viewport; `className` styles the popup (width, surface) and
-`bodyClassName` the scrolling body (padding `p-6`, gap `gap-4`). `DialogSteps` animates between steps of different sizes. Its final **Done**
+`bodyClassName` the scrolling body (padding `p-6`, gap `gap-4`). The popup's height is measured from its content and transitions when the content resizes; the content stays centred, so the frame grows and shrinks around it. The close button follows the frame's top edge; `DialogFooter` and the step navigation follow its bottom edge. Don't set a fixed height or width that depends on content through `className`. `DialogSteps` morphs between steps in place (fade, blur, and a slight scale) with no directional travel. Its final **Done**
 button closes the dialog after optional validation; it does not save data or submit a form.
 
 `validateStep(index, intent)` receives `"forward"` before advancing and `"submit"` when Done
