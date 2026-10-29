@@ -440,7 +440,6 @@ export function SearchSelectContent({
           {/* The list owns its `p-1`, so with no matches `empty:hidden` collapses the whole
               area to nothing. Out of the tab order: the field drives the list. */}
           <ScrollArea
-            fade
             className="max-h-[min(var(--available-height),18rem)]"
             viewportProps={{ tabIndex: -1 }}
           >

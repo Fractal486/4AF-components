@@ -165,7 +165,6 @@ export function SidebarSeparator({
 export function SidebarContent({ className, children, ...props }: ComponentProps<"div">) {
   return (
     <ScrollArea
-      fade
       data-slot="sidebar-content"
       className="min-h-0 flex-1 group-data-[collapsible=icon]:[&>[data-orientation=vertical]]:hidden"
       viewportClassName={cn(

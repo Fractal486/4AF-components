@@ -710,7 +710,7 @@ export function SelectSubContent({
               className,
             )}
           >
-            <ScrollArea fade className="min-h-0" viewportClassName="p-1" viewportProps={{ tabIndex: -1 }}>
+            <ScrollArea className="min-h-0" viewportClassName="p-1" viewportProps={{ tabIndex: -1 }}>
               {keepMounted || subOpen ? options : null}
             </ScrollArea>
           </BaseSelect.Popup>

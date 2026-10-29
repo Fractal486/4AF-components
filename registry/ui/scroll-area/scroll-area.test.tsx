@@ -29,15 +29,13 @@ describe("ScrollArea", () => {
     expect(root).toHaveAttribute("data-scrollbar", "always");
   });
 
-  it("masks the overflowing edges only when asked", () => {
+  it("masks the overflowing edges by default, unless turned off", () => {
     const plainRef = createRef<HTMLDivElement>();
     const fadedRef = createRef<HTMLDivElement>();
     render(
       <>
-        <ScrollArea viewportRef={plainRef}>Plain</ScrollArea>
-        <ScrollArea fade viewportRef={fadedRef}>
-          Faded
-        </ScrollArea>
+        <ScrollArea fade={false} viewportRef={plainRef}>Plain</ScrollArea>
+        <ScrollArea viewportRef={fadedRef}>Faded</ScrollArea>
       </>,
     );
 

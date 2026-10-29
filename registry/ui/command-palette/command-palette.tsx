@@ -792,7 +792,6 @@ export function CommandPalette({
                 loading, and error states are centred over it. */}
             <div className="relative flex min-h-0 flex-1 flex-col">
             <ScrollArea
-              fade
               className="min-h-0 flex-1"
               viewportRef={snapFirstRowToTop}
               viewportProps={{ tabIndex: -1 }}

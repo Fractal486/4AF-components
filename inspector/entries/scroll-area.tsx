@@ -12,7 +12,7 @@ export const scrollAreaEntry = defineEntry({
   controls: {
     orientation: select(["vertical", "horizontal", "both"], "vertical", "Orientation"),
     scrollbar: select(["auto", "always"], "auto", "Scrollbar"),
-    fade: bool(false, "Edge fade"),
+    fade: bool(true, "Edge fade"),
   },
   render({ orientation, scrollbar, fade }) {
     if (orientation === "horizontal") {

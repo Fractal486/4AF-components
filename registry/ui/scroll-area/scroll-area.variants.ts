@@ -41,7 +41,7 @@ export const scrollAreaViewportVariants = cva(
         false: "",
       },
     },
-    defaultVariants: { fade: false },
+    defaultVariants: { fade: true },
   },
 );
 

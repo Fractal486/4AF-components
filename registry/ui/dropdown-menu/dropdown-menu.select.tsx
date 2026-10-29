@@ -489,7 +489,6 @@ export function DropdownMenuSelectContent({
     >
       {searchable && searchPosition === "top" && searchField}
       <ScrollArea
-        fade
         viewportRef={listRef}
         viewportProps={{ tabIndex: -1 }}
         className={cn("max-h-[min(var(--available-height),18rem)]", noResults && "hidden")}

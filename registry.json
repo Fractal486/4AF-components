@@ -457,7 +457,7 @@
     {
       "name": "scroll-area",
       "type": "registry:ui",
-      "description": "A scroll container that draws its own thin scrollbar, the same in every browser, shown on hover and scroll or always, with optional edge fades. Base UI Scroll Area behaviour.",
+      "description": "A scroll container that draws its own thin scrollbar, the same in every browser, shown on hover and scroll or always, with edge fades on by default. Base UI Scroll Area behaviour.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/scroll-area (Markdown: https://4af.selfsimilar.dev/docs/scroll-area.md)",
       "dependencies": [
         "@base-ui/react",

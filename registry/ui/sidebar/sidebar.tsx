@@ -250,7 +250,6 @@ export function Sidebar({
           {isSplit ? (
             <div className="flex h-full w-full">
               <ScrollArea
-                fade
                 data-slot="sidebar-rail-column"
                 className="h-full w-(--sidebar-width-icon) shrink-0 border-r border-border bg-surface"
                 // `overflow-x-hidden` as on desktop: a wide rail item must not scroll sideways.
@@ -331,7 +330,6 @@ export function Sidebar({
             )}
           >
             <ScrollArea
-              fade
               data-slot="sidebar-rail-column"
               className={cn(
                 "h-full w-(--sidebar-width-icon) shrink-0 bg-surface",

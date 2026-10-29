@@ -64,7 +64,7 @@ function highlightLabel(label: string, positions: number[]): ReactNode {
  */
 export function CommandPanelBody({ className, children, ...props }: ComponentProps<"div">) {
   return (
-    <ScrollArea fade className="min-h-0 flex-1" viewportClassName={cn("p-4", className)} {...props}>
+    <ScrollArea className="min-h-0 flex-1" viewportClassName={cn("p-4", className)} {...props}>
       {children}
     </ScrollArea>
   );
@@ -128,7 +128,6 @@ export function CommandPanelList({
       {/* The scroll area's viewport scrolls; the list inside it carries the rows. Out of the
           tab order, since the rows move by arrow keys. */}
       <ScrollArea
-        fade
         className="min-h-0 flex-1"
         viewportRef={ref}
         viewportProps={{ tabIndex: -1 }}

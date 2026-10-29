@@ -21,7 +21,7 @@ import {
  * Scrollbars mount only for an axis that overflows.
  *
  * Give the root a size; the viewport fills it. `orientation` picks which axes get a scrollbar,
- * `scrollbar` whether they stay visible or show only on hover and scroll, and `fade` masks the
+ * `scrollbar` whether they stay visible or show only on hover and scroll, and `fade` (on by default) masks the
  * edges that have content beyond them.
  */
 

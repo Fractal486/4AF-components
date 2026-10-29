@@ -29,7 +29,7 @@ const SCROLLBAR =
 
 function Brand() {
   return (
-    <Link href="/" className={cn("inline-flex items-center gap-2.5 rounded-xs text-[15px] font-semibold tracking-[-0.01em]", FOCUS)}>
+    <Link href="/" className={cn("inline-flex h-6 items-center gap-2.5 rounded-xs text-[15px] font-semibold tracking-[-0.01em]", FOCUS)}>
       <Image
         src="/icon.png"
         alt=""
@@ -476,11 +476,11 @@ function RailNav({
           gradient as the colour, so rows soften progressively as they reach the edge. */}
       <div
         aria-hidden="true"
-        className={cn("pointer-events-none absolute inset-x-0 top-0 h-40 bg-linear-to-b to-transparent backdrop-blur-[3px] [mask-image:linear-gradient(to_bottom,black,transparent)] opacity-0 transition-[opacity] duration-(--duration-fast) group-data-[overflow-top]/rail-nav:opacity-100", fadeClassName)}
+        className={cn("pointer-events-none absolute inset-x-0 top-0 h-28 bg-linear-to-b to-transparent backdrop-blur-[3px] [mask-image:linear-gradient(to_bottom,black,transparent)] opacity-0 transition-[opacity] duration-(--duration-fast) group-data-[overflow-top]/rail-nav:opacity-100", fadeClassName)}
       />
       <div
         aria-hidden="true"
-        className={cn("pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-linear-to-t to-transparent backdrop-blur-[3px] [mask-image:linear-gradient(to_top,black,transparent)] opacity-0 transition-[opacity] duration-(--duration-fast) group-data-[overflow-bottom]/rail-nav:opacity-100", fadeClassName)}
+        className={cn("pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-linear-to-t to-transparent backdrop-blur-[3px] [mask-image:linear-gradient(to_top,black,transparent)] opacity-0 transition-[opacity] duration-(--duration-fast) group-data-[overflow-bottom]/rail-nav:opacity-100", fadeClassName)}
       />
     </div>
   );
@@ -521,7 +521,7 @@ export function SiteRail({
   return (
     <>
       <aside className="flex h-full flex-col max-lg:hidden">
-        <div className="flex flex-col gap-5 px-6 pt-7 pb-5">
+        <div className="flex flex-col gap-5 px-6 pt-5 pb-5">
           <Brand />
           <SearchField />
         </div>

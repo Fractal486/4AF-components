@@ -202,7 +202,7 @@ export function SheetHeader({ className, ...props }: ComponentProps<"div">) {
 /** The scrolling middle of a sheet. `className` styles the scrolling element itself. */
 export function SheetBody({ className, children, ...props }: ComponentProps<"div">) {
   return (
-    <ScrollArea fade className="min-h-0 flex-1" viewportClassName={cn("px-5", className)} {...props}>
+    <ScrollArea className="min-h-0 flex-1" viewportClassName={cn("px-5", className)} {...props}>
       {children}
     </ScrollArea>
   );

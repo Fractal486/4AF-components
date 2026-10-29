@@ -358,7 +358,7 @@ export function HeroComponentPreview({ className, entrance = false }: { classNam
 
             <Panel name="scroll-area" lift={30}>
               <p className="mb-3 text-xs font-medium">Release notes</p>
-              <ScrollArea fade scrollbar="always" className="h-32 rounded-md shadow-border" viewportClassName="px-3 py-2">
+              <ScrollArea scrollbar="always" className="h-32 rounded-md shadow-border" viewportClassName="px-3 py-2">
                 <ul className="flex flex-col gap-2 text-xs text-muted-foreground">
                   {releaseNotes.map((note) => <li key={note}>{note}</li>)}
                 </ul>

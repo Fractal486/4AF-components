@@ -189,7 +189,6 @@ export function Table({
             table's own layout box. It scrolls both ways with the library scrollbar, and the
             pinned header sticks to its viewport. */}
         <ScrollArea
-          fade
           ref={wrapperRef}
           data-slot="table-wrapper"
           orientation="both"

@@ -55,7 +55,7 @@ const popupClassName = cn(
  */
 function MenuScroll({ children }: { children: ReactNode }) {
   return (
-    <ScrollArea fade className="min-h-0" viewportClassName="p-1" viewportProps={{ tabIndex: -1 }}>
+    <ScrollArea className="min-h-0" viewportClassName="p-1" viewportProps={{ tabIndex: -1 }}>
       {children}
     </ScrollArea>
   );

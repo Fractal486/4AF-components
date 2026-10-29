@@ -359,7 +359,7 @@ import { Morph } from "@/components/ui/morph";
   "scroll-area": {
     usage: `import { ScrollArea } from "@/components/ui/scroll-area";
 
-<ScrollArea fade className="h-72 rounded-xl shadow-border">
+<ScrollArea className="h-72 rounded-xl shadow-border">
   <div className="p-4">{/* long content */}</div>
 </ScrollArea>`,
   },

@@ -423,7 +423,6 @@ export function SelectContent({
           {/* Out of the tab order: the panel moves by arrow keys and scrolls its active row
               into view. */}
           <ScrollArea
-            fade
             className={cn("max-h-[min(var(--available-height),18rem)]", noResults && "hidden")}
             viewportClassName="p-1"
             viewportProps={{ tabIndex: -1 }}

@@ -75,7 +75,7 @@ The catalog contains 49 installable UI items.
 | [`table-of-contents`](https://4af.selfsimilar.dev/docs/table-of-contents.md) | Heading navigation with a rail and spanning or single-heading marker. |
 | [`table-of-contents-lines`](https://4af.selfsimilar.dev/docs/table-of-contents-lines.md) | Compact heading navigation drawn as depth-aware lines. |
 | [`separator`](https://4af.selfsimilar.dev/docs/separator.md) | A horizontal or vertical divider. |
-| [`scroll-area`](https://4af.selfsimilar.dev/docs/scroll-area.md) | A scroll container with the library's own scrollbar, hover-revealed or always shown, and optional edge fades. |
+| [`scroll-area`](https://4af.selfsimilar.dev/docs/scroll-area.md) | A scroll container with the library's own scrollbar, hover-revealed or always shown, and edge fades on by default. |
 | [`command-palette`](https://4af.selfsimilar.dev/docs/command-palette.md) | Command search, nested lists, or custom panels, including async search. |
 | [`sidebar`](https://4af.selfsimilar.dev/docs/sidebar.md) | Responsive navigation, including split rail/panel layouts. |
 | [`sidebar-layout`](https://4af.selfsimilar.dev/docs/sidebar-layout.md) | A viewport and scrolling shell with a surface-colored header and custom title content. |

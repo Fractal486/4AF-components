@@ -62,7 +62,7 @@ function TocArticle({
   scrollRef: RefObject<HTMLDivElement | null>;
 }) {
   return (
-    <ScrollArea fade viewportRef={scrollRef} className="h-80 flex-1" viewportClassName="pr-4">
+    <ScrollArea viewportRef={scrollRef} className="h-80 flex-1" viewportClassName="pr-4">
       {sections.map((section) => (
         <section key={section.id} className="pb-8">
           <h3

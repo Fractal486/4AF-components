@@ -140,7 +140,6 @@ export function DialogContent({
             {...props}
           >
             <ScrollArea
-              fade
               className="min-h-0"
               viewportClassName={cn("flex flex-col gap-4 p-6", bodyClassName)}
             >

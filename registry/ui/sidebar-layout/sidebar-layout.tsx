@@ -106,7 +106,6 @@ export function SidebarLayout({
               instead of pushing the layout past the screen, and its viewport is
               `overscroll-contain`, so reaching the end doesn't scroll the page behind it. */}
           <ScrollArea
-            fade
             data-slot="sidebar-layout-content"
             className="flex-1"
             viewportProps={{ render: <div data-slot="sidebar-layout-viewport" /> }}
