@@ -1,8 +1,9 @@
 "use client";
 
 import { ScrollArea as BaseScrollArea } from "@base-ui/react/scroll-area";
-import type { ComponentProps, Ref } from "react";
+import { useEffect, useRef, type ComponentProps, type Ref } from "react";
 import { cn } from "@/registry/lib/cn";
+import { useMergedRefs } from "@/registry/lib/refs";
 import {
   scrollAreaScrollbarVariants,
   scrollAreaThumbVariants,
@@ -55,6 +56,9 @@ export function ScrollArea({
 }: ScrollAreaProps) {
   const vertical = orientation !== "horizontal";
   const horizontal = orientation !== "vertical";
+  const ownViewportRef = useRef<HTMLDivElement>(null);
+  const viewportRefs = useMergedRefs(ownViewportRef, viewportRef);
+  useContentResize(ownViewportRef, !horizontal);
 
   return (
     <BaseScrollArea.Root
@@ -65,7 +69,7 @@ export function ScrollArea({
     >
       <BaseScrollArea.Viewport
         {...viewportProps}
-        ref={viewportRef}
+        ref={viewportRefs}
         className={cn(scrollAreaViewportVariants({ fade }), viewportClassName)}
       >
         {/* Content is sized to fit its children, so a wide child overflows horizontally
@@ -77,6 +81,42 @@ export function ScrollArea({
       {vertical && horizontal && <BaseScrollArea.Corner />}
     </BaseScrollArea.Root>
   );
+}
+
+/**
+ * Base UI re-measures overflow when the viewport resizes or when its `Content` part does.
+ * A vertical-only area leaves `Content` out (it sizes to fit its children, which suits a
+ * horizontal scroller, and it would sit between the viewport's layout classes and the
+ * children). So a viewport with a fixed height whose children shrink, such as a filtered list
+ * going empty, kept a scrollbar for content that was gone. This watches the children instead
+ * and reports a change the way a scroll does, which is what Base UI re-measures on.
+ */
+function useContentResize(viewportRef: { current: HTMLDivElement | null }, enabled: boolean) {
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!enabled || !viewport || typeof ResizeObserver === "undefined") return;
+    let frame = 0;
+    const remeasure = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => viewport.dispatchEvent(new Event("scroll")));
+    };
+    const resize = new ResizeObserver(remeasure);
+    const watchChildren = () => {
+      resize.disconnect();
+      for (const child of viewport.children) resize.observe(child);
+    };
+    const mutation = new MutationObserver(() => {
+      watchChildren();
+      remeasure();
+    });
+    watchChildren();
+    mutation.observe(viewport, { childList: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      resize.disconnect();
+      mutation.disconnect();
+    };
+  }, [viewportRef, enabled]);
 }
 
 export interface ScrollAreaScrollbarProps

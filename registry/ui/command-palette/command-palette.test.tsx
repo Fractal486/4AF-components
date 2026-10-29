@@ -20,6 +20,19 @@ import {
 } from "./command-palette";
 
 describe("CommandPalette", () => {
+  it("keeps a fixed height and centres the empty state in it", async () => {
+    const user = userEvent.setup();
+    render(<CommandPalette open groups={[{ items: [{ id: "one", label: "One" }] }]} />);
+    const popup = screen.getByRole("dialog");
+    expect(popup.className).toContain("h-[min(34rem,calc(100dvh-16vh))]");
+    expect(popup.className).not.toContain("max-h-");
+
+    await user.type(screen.getByRole("combobox"), "nothing matches");
+    const message = await screen.findByText("No results for “nothing matches”");
+    expect(screen.getByText("Try a different search")).toBeInTheDocument();
+    expect(message.parentElement?.parentElement).toHaveClass("absolute", "inset-0", "items-center", "justify-center");
+  });
+
   it("requests a root Escape close exactly once", async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();

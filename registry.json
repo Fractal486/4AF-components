@@ -465,7 +465,8 @@
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
-        "https://4af.selfsimilar.dev/r/cn.json"
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/refs.json"
       ],
       "files": [
         {

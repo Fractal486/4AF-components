@@ -103,29 +103,6 @@ export type {
 
 const GROUP_LABEL_CLASS = "px-2.5 pt-2 pb-1 text-xs font-medium text-subtle-foreground";
 
-/**
- * "No results" takes exactly the height of the smallest real result: one group label over
- * one row with a description. Typing a query that empties the list then doesn't resize the
- * panel. The height comes from an invisible copy of those two parts, built from the same
- * label class and the described row's padding and type sizes, so it follows the type scale
- * rather than hard-coding a pixel height. The list keeps its own padding while empty, so
- * that part already matches.
- */
-function NoResults({ children }: { children: ReactNode }) {
-  return (
-    <div className="relative">
-      <div aria-hidden className="invisible">
-        <div className={GROUP_LABEL_CLASS}>&nbsp;</div>
-        <div className="flex min-h-9 flex-col py-2 text-sm">
-          <span>&nbsp;</span>
-          <span className="text-xs">&nbsp;</span>
-        </div>
-      </div>
-      <div className="absolute inset-0 flex items-center justify-center px-4">{children}</div>
-    </div>
-  );
-}
-
 function omitCommandPanelInputProps(input: CommandPanelInputProps) {
   const attributes = { ...input };
   delete attributes.label;
@@ -228,7 +205,7 @@ export function CommandPalette({
   searchErrorMessage = "Search failed. Change your query to retry.",
   shortcut = true,
   placeholder = "Type a command or search…",
-  emptyMessage = "No results found.",
+  emptyMessage,
   onCreate,
   footer = true,
   open,
@@ -585,8 +562,10 @@ export function CommandPalette({
               }}
               // Top-anchored and x-centred. The vertical offset is a plain `top`, and the
               // horizontal centring a `-translate-x-1/2` now composes with Motion's scale.
+              // A fixed height, capped by the viewport: typing, an empty result, or opening a
+              // panel changes what's inside, never the window, so the footer stays put.
               className={cn(
-                "fixed top-[14vh] left-1/2 z-50 flex max-h-[min(34rem,calc(100dvh-16vh))] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 flex-col overflow-hidden rounded-md border border-border bg-surface-raised shadow-overlay-drop outline-none",
+                "fixed top-[14vh] left-1/2 z-50 flex h-[min(34rem,calc(100dvh-16vh))] w-[calc(100%-2rem)] max-w-[50rem] -translate-x-1/2 flex-col overflow-hidden rounded-md border border-border bg-surface-raised shadow-overlay-drop outline-none",
                 className,
               )}
               render={
@@ -809,6 +788,9 @@ export function CommandPalette({
               </kbd>
             </div>
 
+            {/* The body fills the fixed height; results scroll inside it, and the empty,
+                loading, and error states are centred over it. */}
+            <div className="relative flex min-h-0 flex-1 flex-col">
             <ScrollArea
               fade
               className="min-h-0 flex-1"
@@ -838,23 +820,30 @@ export function CommandPalette({
             </ScrollArea>
 
             {/* Empty's box must stay mounted — it's an ARIA live region — and only its
-                *children* clear when there are results. The padding lives on an inner
-                element that comes and goes with the message, so the outer box collapses
-                to nothing rather than leaving a dead band under the list. */}
-            <Autocomplete.Empty className="text-center text-sm text-muted-foreground">
+                *children* clear when there are results. It overlays the body rather than
+                sitting under the list, so a message is centred in the fixed height. */}
+            <Autocomplete.Empty className="pointer-events-none absolute inset-0 flex items-center justify-center text-center text-sm text-muted-foreground">
               {searching ? (
-                <div className="flex items-center justify-center gap-2 px-4 py-8">
+                <div className="flex items-center justify-center gap-2 px-4">
                   <LoadingIndicator className="size-4 text-sm text-subtle-foreground" />
                   <span>{loadingMessage}</span>
                 </div>
               ) : searchError ? (
-                <div role="alert" className="px-4 py-8">
+                <div role="alert" className="pointer-events-auto px-4">
                   {renderedSearchError}
                 </div>
               ) : (
-                <NoResults>{emptyMessage}</NoResults>
+                <div className="px-4">
+                  {emptyMessage ?? (
+                    <>
+                      <p className="text-foreground">No results for “{query.trim()}”</p>
+                      <p className="mt-1 text-subtle-foreground">Try a different search</p>
+                    </>
+                  )}
+                </div>
               )}
             </Autocomplete.Empty>
+            </div>
 
             {footer && (
               // The same two ends as a panel footer: escape at the left, the Enter action

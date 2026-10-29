@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { createRef } from "react";
 import { ScrollArea } from "./scroll-area";
 
@@ -63,5 +63,24 @@ describe("ScrollArea", () => {
     expect(screen.getByText("Vertical").parentElement).toBe(verticalRef.current);
     expect(screen.getByText("Horizontal").parentElement).not.toBe(horizontalRef.current);
     expect(screen.getByText("Horizontal").parentElement).toHaveStyle({ minWidth: "fit-content" });
+  });
+
+  it("re-measures overflow when the viewport's children change", async () => {
+    const viewportRef = createRef<HTMLDivElement>();
+    const { rerender } = render(
+      <ScrollArea className="h-40" viewportRef={viewportRef}>
+        <p>Row one</p>
+        <p>Row two</p>
+      </ScrollArea>,
+    );
+    const onScroll = vi.fn();
+    viewportRef.current!.addEventListener("scroll", onScroll);
+
+    rerender(
+      <ScrollArea className="h-40" viewportRef={viewportRef}>
+        <p>Row one</p>
+      </ScrollArea>,
+    );
+    await waitFor(() => expect(onScroll).toHaveBeenCalled());
   });
 });

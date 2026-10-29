@@ -11,7 +11,7 @@ description: A scroll container that draws its own scrollbar, with optional edge
 
 A Base UI Scroll Area. The viewport scrolls natively (wheel, touch, keyboard) with the browser
 scrollbar hidden; a 5px thumb on a full-length rail, in a 10px hit area, is drawn in its place,
-the same in every browser, over the content rather than beside it. A scrollbar mounts only for an axis that overflows.
+the same in every browser, over the content rather than beside it. A scrollbar mounts only for an axis that overflows, re-checked when the viewport or its children resize.
 
 An axis that overflows contains overscroll, so reaching its end doesn't scroll the page; an axis
 that doesn't overflow passes the wheel on to the page or pane around it.

@@ -164,7 +164,10 @@ export interface CommandPaletteProps {
   /** Bind ⌘K / Ctrl-K to toggle the palette globally. @default true */
   shortcut?: boolean;
   placeholder?: string;
-  /** Shown when the query matches nothing (and there's no create action). */
+  /**
+   * Shown when the query matches nothing (and there's no create action).
+   * @default No results for “<query>”, then “Try a different search”
+   */
   emptyMessage?: ReactNode;
   /**
    * Turns a miss into an action: a `Create "<query>"` row appears at the foot of the root

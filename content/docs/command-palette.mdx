@@ -149,7 +149,9 @@ Custom panels have no such collection, so `CommandPanelList` moves the highlight
 opening row the first time it has rows, taking over from the first row Base UI picks. Preserve that initialization when changing panel composition; root highlighting does
 not initialize custom panels.
 
-The no-results state is the height of one section label plus one row with a description.
+The palette has a fixed height of 34rem, capped by the viewport. Results scroll inside it;
+the empty, loading, and error states are centred in it. The default `emptyMessage` is two lines:
+`No results for “<query>”` and `Try a different search`. Opening a panel keeps the same height.
 
 ## Panel footer
 
