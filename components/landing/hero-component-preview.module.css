@@ -9,12 +9,30 @@
   /* Black and white: the status colours, the blue ring and the badges all drop to grey, so
      nothing in the backdrop pulls the eye away from the copy. */
   filter: grayscale(1);
-  /* Soft edges rather than an oval, so a wide window reads as a band of the field: short
-     fades at the sides and top, a long one at the bottom into the page below. */
+  /* Soft edges rather than an oval, and long ones: each fade reaches transparent before the
+     field's own rows and columns run out, so the field's edges are never what you see. A caller with
+     copy over the artwork supplies `--hero-copy-mask`, an image that is clear where the copy
+     sits (the landing page's HeroBackdrop measures it); it's intersected with the fades. */
   mask-image:
+    var(--hero-copy-mask, linear-gradient(black, black)),
     linear-gradient(to right, transparent, black 12%, black 88%, transparent),
-    linear-gradient(to bottom, transparent, black 14%, black 62%, transparent);
+    linear-gradient(to bottom, transparent, black 14%, black 74%, transparent);
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
   mask-composite: intersect;
+}
+
+/* The landing page's desktop backdrop runs behind the copy and across a whole screen, so its
+   fades are far longer: the left half stays clear for the copy, and every edge goes before
+   the field's rows and columns run out. The band on narrow screens keeps the short fades
+   above, or only the palette would show. */
+@media (min-width: 64rem) {
+  [data-hero-entrance].artwork {
+    mask-image:
+      var(--hero-copy-mask, linear-gradient(black, black)),
+      linear-gradient(to right, transparent 15%, black 50%, black 70%, transparent 96%),
+      linear-gradient(to bottom, transparent 12%, black 42%, black 58%, transparent 94%);
+  }
 }
 
 /* Dimmed in dark mode, so the field sits behind the copy as a backdrop rather than competing
@@ -33,24 +51,26 @@
 /* The field overflows the window at every width, so the scale only sets how large the cards
    read; it steps with the window rather than tracking it. */
 .stage {
-  --hero-scale: 0.42;
+  --hero-scale: 0.34;
   position: absolute;
   top: 50%;
-  left: 50%;
+  /* The field's centre across the window; a caller with copy at the left moves it right. */
+  left: var(--hero-center-x, 50%);
   width: 1800px;
   /* Close enough that the near cards grow and the far ones recede. */
   perspective: 2400px;
-  transform: translate(-50%, -50%) scale(var(--hero-scale));
+  /* `--hero-zoom`, set by the caller, enlarges the field for a larger window. */
+  transform: translate(-50%, -50%) scale(calc(var(--hero-scale) * var(--hero-zoom, 1)));
   pointer-events: none;
   user-select: none;
 }
 
 @container (min-width: 480px) {
-  .stage { --hero-scale: 0.48; }
+  .stage { --hero-scale: 0.4; }
 }
 
 @container (min-width: 640px) {
-  .stage { --hero-scale: 0.52; }
+  .stage { --hero-scale: 0.46; }
 }
 
 @container (min-width: 800px) {
@@ -72,6 +92,7 @@
 }
 
 .column {
+  position: relative;
   display: flex;
   flex-direction: column;
   /* Room for the lifts: a raised card leans toward the camera over its neighbour. */
@@ -100,9 +121,12 @@
   transform-style: preserve-3d;
 }
 
-.row > * {
-  flex: 1;
-  min-width: 0;
+/* Layered, so a sample can opt out of the even split with its own `flex-none basis-*`. */
+@layer components {
+  .row > * {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 /* A sample with others hung above it, outside the layout. */
@@ -119,6 +143,43 @@
   flex-direction: column;
   gap: 30px;
   padding-bottom: 30px;
+  transform-style: preserve-3d;
+}
+
+/* Grow upward and downward within the existing columns, keeping the palette's anchor
+   and the field's width stable. The lower extensions do not change the stage's centre. */
+.below {
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  padding-top: 30px;
+  transform-style: preserve-3d;
+}
+
+/* A small review stack to the right of Link access, on the same tilted plane. */
+.beside {
+  position: absolute;
+  top: 0;
+  left: calc(100% + 30px);
+  width: 270px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  transform-style: preserve-3d;
+}
+
+/* The calendar selector and export options sit beside Loading and Edit profile. */
+.besideLeft {
+  position: absolute;
+  top: 0;
+  right: calc(100% + 30px);
+  width: 270px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
   transform-style: preserve-3d;
 }
 
@@ -185,6 +246,11 @@
 .artwork *::before,
 .artwork *::after {
   animation-play-state: paused !important;
+}
+
+/* The shimmer, held with its highlight partway across the words rather than off their start. */
+.artwork [data-preview-panel="text-effects"] :global(.shimmer-text)::after {
+  animation-delay: -1.1s !important;
 }
 
 /* The entrance, with `entrance` on the landing page: each sample rises up through the plane

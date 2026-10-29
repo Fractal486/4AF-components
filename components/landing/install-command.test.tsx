@@ -4,7 +4,7 @@ import { InstallCommand } from "./install-command";
 
 afterEach(() => vi.useRealTimers());
 
-const command = (container: HTMLElement) => container.querySelector("pre")?.textContent;
+const command = (container: HTMLElement) => container.querySelector("button")?.textContent;
 const url = (container: HTMLElement) =>
   container.querySelector<HTMLElement>('[data-slot="install-command-url"]')!;
 
@@ -23,6 +23,15 @@ describe("InstallCommand", () => {
       "data-previous",
       "https://4af.selfsimilar.dev/r/button.json",
     );
+  });
+
+  it("copies the command on screen when clicked", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+    const { container } = render(<InstallCommand names={["button", "dialog"]} />);
+
+    await act(async () => fireEvent.click(container.querySelector("button")!));
+    expect(writeText).toHaveBeenCalledWith("npx shadcn@latest add https://4af.selfsimilar.dev/r/button.json");
   });
 
   it("holds the current URL while the pointer is on the block", () => {

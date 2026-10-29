@@ -2,7 +2,7 @@
 
 import { useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
-import { DocsCodeBlock } from "@/components/docs-code-block";
+import { CopyLine } from "./copy-line";
 import { registryItemUrl } from "@/lib/site";
 import "./install-command.css";
 
@@ -40,7 +40,7 @@ export function InstallCommand({ names }: { names: string[] }) {
 
   return (
     <div
-      className="mt-3 max-w-180"
+      className="flex"
       onPointerEnter={() => setHeld(true)}
       onPointerLeave={() => setHeld(false)}
       onFocus={() => setHeld(true)}
@@ -48,22 +48,18 @@ export function InstallCommand({ names }: { names: string[] }) {
         if (!event.currentTarget.contains(event.relatedTarget)) setHeld(false);
       }}
     >
-      <DocsCodeBlock className="my-0">
-        <pre className="min-w-full w-max px-4 pr-14 font-mono text-xs leading-6">
-          <code>
-            {COMMAND}{" "}
-            <span
-              // Keyed so each swap remounts and restarts both animations.
-              key={url}
-              data-slot="install-command-url"
-              data-previous={previous == null ? undefined : registryItemUrl(names[previous]!)}
-              className="relative inline-block h-6 overflow-y-clip align-top"
-            >
-              <span className="inline-block">{url}</span>
-            </span>
-          </code>
-        </pre>
-      </DocsCodeBlock>
+      <CopyLine value={`${COMMAND} ${url}`}>
+        {COMMAND}{" "}
+        <span
+          // Keyed so each swap remounts and restarts both animations.
+          key={url}
+          data-slot="install-command-url"
+          data-previous={previous == null ? undefined : registryItemUrl(names[previous]!)}
+          className="relative inline-block h-6 overflow-y-clip align-top"
+        >
+          <span className="inline-block">{url}</span>
+        </span>
+      </CopyLine>
     </div>
   );
 }

@@ -7,22 +7,31 @@ import {
   AlignCenter,
   AlignLeft,
   AlignRight,
+  Archive,
   Bell,
+  Bold,
   Copy,
+  CopyPlus,
   CornerDownLeft,
   FolderOpen,
   House,
   Inbox,
+  Italic,
+  Link2,
   Mail,
   MessageSquare,
   MoreHorizontal,
   Palette,
+  Pencil,
   Plus,
   Search,
+  Strikethrough,
   Trash2,
+  Type,
+  Underline,
   Users,
 } from "lucide-react";
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
 import { cn } from "@/registry/lib/cn";
 import { Alert } from "@/registry/ui/alert/alert";
 import { Badge } from "@/registry/ui/badge/badge";
@@ -34,7 +43,12 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/registry/ui/breadcrumb/breadcrumb";
+import { ActionButton } from "@/registry/ui/action-button/action-button";
+import { AsciiLoader } from "@/registry/ui/ascii-loader/ascii-loader";
+import { ActionToggle } from "@/registry/ui/action-toggle/action-toggle";
+import { BlurText } from "@/registry/ui/blur-text/blur-text";
 import { Button } from "@/registry/ui/button/button";
+import { ClassicLoader } from "@/registry/ui/classic-loader/classic-loader";
 import { ButtonGroup } from "@/registry/ui/button-group/button-group";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/registry/ui/collapsible/collapsible";
@@ -43,15 +57,19 @@ import { CommandRow } from "@/registry/ui/command-palette/command-palette.panels
 import type { CommandGroup, CommandItem } from "@/registry/ui/command-palette/command-palette.types";
 import { CopyButton } from "@/registry/ui/copy-button/copy-button";
 import { Calendar } from "@/registry/ui/date-picker/calendar";
+import { DeleteButton } from "@/registry/ui/delete-button/delete-button";
+import { itemBase } from "@/registry/ui/dropdown-menu/dropdown-menu.shared";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/registry/ui/empty/empty";
 import { Input } from "@/registry/ui/input/input";
+import { MatrixLoader } from "@/registry/ui/matrix-loader/matrix-loader";
 import { Progress, ProgressLabel, ProgressValue } from "@/registry/ui/progress/progress";
 import { Radio, RadioGroup } from "@/registry/ui/radio/radio";
+import { ScrambleText } from "@/registry/ui/scramble-text/scramble-text";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
+import { Select, SelectTrigger, SelectValue } from "@/registry/ui/select/select";
 import { SelectionToolbarButton, SelectionToolbarSeparator } from "@/registry/ui/selection-toolbar/selection-toolbar.controls";
 import { selectionToolbarVariants } from "@/registry/ui/selection-toolbar/selection-toolbar.variants";
 import { SearchSelect, SearchSelectInput, SearchSelectItem } from "@/registry/ui/select/select-search";
-import { Separator } from "@/registry/ui/separator/separator";
 import { Skeleton } from "@/registry/ui/skeleton/skeleton";
 import { Slider } from "@/registry/ui/slider/slider";
 import { Switch } from "@/registry/ui/switch/switch";
@@ -60,7 +78,13 @@ import { TableBody, TableCell, TableHeader } from "@/registry/ui/table/table";
 import { TableOfContents } from "@/registry/ui/table-of-contents/table-of-contents";
 import { TableOfContentsLines } from "@/registry/ui/table-of-contents-lines/table-of-contents-lines";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/registry/ui/tabs/tabs";
+import { TextShimmer } from "@/registry/ui/text-shimmer/text-shimmer";
+import { Textarea } from "@/registry/ui/textarea/textarea";
+import { Toggle } from "@/registry/ui/toggle/toggle";
 import styles from "./hero-component-preview.module.css";
+import { Panel, PEAK_LIFT, enterDelay } from "./hero-preview-panel";
+import { PreviewExtension } from "./hero-preview-extension";
+import { MonthYearPreview } from "./hero-month-year-preview";
 
 const groups: CommandGroup[] = [
   {
@@ -108,6 +132,17 @@ const releaseNotes = [
   "Select search highlight",
   "Tooltip delay groups",
 ];
+// The overlays always open in a portal, which can't sit on the tilted plane, so their
+// surfaces are drawn in place from each component's own classes, without the positioning.
+const OVERLAY_MENU = "flex min-w-50 flex-col rounded-md border border-border bg-surface p-1 text-foreground shadow-overlay-drop";
+const OVERLAY_TOOLTIP = "flex w-fit items-center gap-2 rounded-md bg-surface px-2.5 py-1 text-xs font-medium text-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.04),0_10px_24px_-8px_rgba(0,0,0,0.18)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_14px_30px_-12px_rgba(0,0,0,0.6)]";
+const OVERLAY_CARD = "rounded-md border border-border bg-surface p-4 text-sm text-foreground shadow-overlay-drop";
+const OVERLAY_DIALOG = "flex flex-col overflow-hidden rounded-md border border-border bg-surface-raised shadow-overlay-drop";
+
+const fonts = [
+  { value: "sans", label: "Sans-serif", icon: <Type /> },
+  { value: "mono", label: "Monospace", icon: <Type /> },
+];
 const people = [
   { name: "Alex Kim", role: "Design engineer", status: "Active", tone: "success", projects: 12, active: "2m ago" },
   { name: "Maya Chen", role: "Product designer", status: "Active", tone: "success", projects: 8, active: "1h ago" },
@@ -122,40 +157,6 @@ const deployments = [
   { name: "Sandbox", status: "Paused", tone: "warning" },
   { name: "Staging", status: "Failed", tone: "danger" },
 ] as const;
-
-/** One card. `lift` is its height off the plane in pixels: highest around the palette. */
-/** The palette's lift: the top of the rise, and the first sample to arrive. */
-const PEAK_LIFT = 56;
-
-/**
- * A sample's entrance delay, from its lift: the palette first, then outward in the order
- * the heights fall away, so the field assembles from its centre.
- */
-function enterDelay(lift: number) {
-  return `${(PEAK_LIFT - lift) * 7}ms`;
-}
-
-function Panel({
-  name,
-  lift = 0,
-  className,
-  children,
-}: {
-  name: string;
-  lift?: number;
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div
-      data-preview-panel={name}
-      className={cn(styles.panel, className)}
-      style={{ "--lift": `${lift}px`, "--enter-delay": enterDelay(lift) } as CSSProperties}
-    >
-      {children}
-    </div>
-  );
-}
 
 function SelectSearchPreview() {
   return (
@@ -242,35 +243,88 @@ export function HeroComponentPreview({ className, entrance = false }: { classNam
       data-hero-preview
       data-hero-entrance={entrance || undefined}
       role="img"
-      aria-label="A command palette raised at the centre of a tilted field of component examples, including a calendar, a table, a searchable select, tabs, form fields, buttons, badges, and status messages."
+      aria-label="A command palette raised at the centre of a tilted field of component examples, including a calendar, a data table, menus, dialogs, a searchable select, tabs, form fields, buttons, badges, loaders, and status messages."
       className={cn(styles.artwork, className)}
     >
       <div aria-hidden="true" inert className={styles.stage}>
         <div className={styles.grid}>
-
-          <div className={cn(styles.column, styles.colA)}>
-            <Panel name="badges" lift={4}>
-              <p className="mb-3 text-xs font-medium">Deployments</p>
-              <div className="flex flex-col gap-2.5 text-xs text-muted-foreground">
-                {deployments.map(({ name, status, tone }) => (
-                  <div key={name} className="flex items-center justify-between">
-                    <span>{name}</span><Badge status={tone} size="sm">{status}</Badge>
-                  </div>
-                ))}
+          <div className={cn(styles.column, styles.colA, "lg:invisible")}>
+            <div className={styles.anchored}>
+              <div className={styles.above}><PreviewExtension area="aboveLeft" /></div>
+              <Panel name="badges" lift={4}>
+                <p className="mb-3 text-xs font-medium">Deployments</p>
+                <div className="flex flex-col gap-2.5 text-xs text-muted-foreground">
+                  {deployments.map(({ name, status, tone }) => (
+                    <div key={name} className="flex items-center justify-between">
+                      <span>{name}</span><Badge status={tone} size="sm">{status}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </Panel>
+            </div>
+            <div className={styles.anchored}>
+              <div className={styles.besideLeft}>
+                <MonthYearPreview />
+                <PreviewExtension area="exportFormat" />
               </div>
-            </Panel>
+              <div className={styles.stack}>
+                <Panel name="loaders" lift={2}>
+                  <p className="mb-3 text-xs font-medium">Loading</p>
+                  <div className="flex items-center gap-4 text-muted-foreground">
+                    <ClassicLoader size="md" />
+                    <MatrixLoader />
+                    {/* Held on its first frame like the CSS loaders beside it. It runs on a timer the
+                        artwork's animation pause can't reach, so its cycle is set past any visit:
+                        about 28 hours a frame, still under the browser's timer limit. */}
+                    <AsciiLoader speed={1_000_000} />
+                  </div>
+                </Panel>
+                <Panel name="sheet" lift={2}>
+                  <div className={cn(OVERLAY_CARD, "h-56 w-full")}>
+                    <p className="text-sm font-semibold">Edit profile</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Changes save when you close.</p>
+                    <Skeleton className="mt-5 h-7 w-full animate-none rounded-md" />
+                    <Skeleton className="mt-3 h-7 w-full animate-none rounded-md" />
+                  </div>
+                </Panel>
+              </div>
+            </div>
+            <div className={styles.below}><PreviewExtension area="reading" portion="bottom" /></div>
           </div>
 
           <div className={cn(styles.column, styles.colB)}>
 
-            <Panel name="storage" lift={10}>
-              <Progress value={42} locale="en-US">
-                <div className="mb-3 flex items-center justify-between text-xs">
-                  <ProgressLabel className="font-medium">Storage</ProgressLabel>
-                  <ProgressValue className="text-muted-foreground tabular-nums" />
-                </div>
-              </Progress>
-            </Panel>
+            {/* Hung above the column's head, out of the flow, so the field grows upward and
+                nothing below moves. */}
+            <div className={styles.anchored}>
+              <div className={styles.above}>
+                <PreviewExtension area="workspace" portion="top" />
+                <Panel name="dropdown-menu" lift={4}>
+                  <div className={OVERLAY_MENU}>
+                    {[["Edit", <Pencil key="i" />, "⌘ E"], ["Duplicate", <CopyPlus key="i" />, "⌘ D"], ["Archive", <Archive key="i" />, null]].map(([label, icon, keys]) => (
+                      <div key={label as string} className={cn(itemBase, label === "Edit" && "bg-muted")}>
+                        {icon}{label}
+                        {keys ? <span className="ml-auto text-2xs text-subtle-foreground">{keys}</span> : null}
+                      </div>
+                    ))}
+                    <div className="-mx-1 my-1 h-px bg-border" />
+                    <div className={cn(itemBase, "text-destructive [&>svg]:text-destructive")}><Trash2 />Delete</div>
+                  </div>
+                </Panel>
+                <Panel name="tooltip" lift={6} className="flex flex-col items-start gap-2">
+                  <div className={OVERLAY_TOOLTIP}>Copy link <Kbd>⌘ C</Kbd></div>
+                  <Button variant="outline" size="icon-sm" aria-label="Copy link"><Link2 /></Button>
+                </Panel>
+              </div>
+              <Panel name="storage" lift={10}>
+                <Progress value={42} locale="en-US">
+                  <div className="mb-3 flex items-center justify-between text-xs">
+                    <ProgressLabel className="font-medium">Storage</ProgressLabel>
+                    <ProgressValue className="text-muted-foreground tabular-nums" />
+                  </div>
+                </Progress>
+              </Panel>
+            </div>
 
             <Panel name="progress" lift={8}>
               <Progress value={75} locale="en-US">
@@ -324,6 +378,23 @@ export function HeroComponentPreview({ className, entrance = false }: { classNam
                 Make every <span className="rounded-xs bg-muted px-0.5 text-foreground">detail feel</span> considered.
               </p>
             </Panel>
+            <Panel name="toc-lines" lift={10}>
+              <p className="mb-2 text-xs font-medium">On this page</p>
+              {/* Ids no heading on the page uses, so the sample tracks nothing real. */}
+              <TableOfContentsLines items={tocItems} activeId="hero-toc-install" />
+            </Panel>
+            <Panel name="empty" lift={8} className="relative -top-18">
+              <Empty className="p-2">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon"><Inbox /></EmptyMedia>
+                  <EmptyTitle>No messages</EmptyTitle>
+                  <EmptyDescription>You&apos;re all caught up.</EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <Button variant="outline" size="sm">Refresh</Button>
+                </EmptyContent>
+              </Empty>
+            </Panel>
 
 
 
@@ -337,6 +408,7 @@ export function HeroComponentPreview({ className, entrance = false }: { classNam
                 {/* Two closed rows hang above the open one, out of the flow like the sliders. */}
                 <div className={styles.anchored}>
                   <div className={styles.above}>
+                    <PreviewExtension area="reading" portion="top" />
                     <Panel name="collapsed-rows" lift={18} className="flex flex-col gap-1 p-2">
                       {["Can I use it without Tailwind?", "How do updates work?"].map((question) => (
                         <Collapsible key={question}>
@@ -364,10 +436,11 @@ export function HeroComponentPreview({ className, entrance = false }: { classNam
                   </div>
                 </Panel>
               </div>
-              {/* Level with Discard changes. The sliders hang above it out of the flow, so they
-                  add no height to the row and nothing around them moves. */}
+              {/* The sliders hang from the foot of the row, level with Discard changes, out of the flow,
+                  so they add no height to the row and nothing around them moves. */}
               <div className={cn(styles.anchored, "self-end")}>
                 <div className={styles.above}>
+                  <PreviewExtension area="team" portion="top" />
                   <Panel name="circle-slider" lift={18}>
                     <Slider defaultValue={40} label="Brightness" showValue thumb="circle" />
                   </Panel>
@@ -375,19 +448,16 @@ export function HeroComponentPreview({ className, entrance = false }: { classNam
                     <Slider defaultValue={70} label="Contrast" showValue thumb="knob" />
                   </Panel>
                 </div>
-                <Panel name="profile" lift={32}>
-                  <div className="flex items-center gap-3">
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-2xs font-medium">AK</span>
-                    <div className="min-w-0">
-                      <p className="truncate text-xs font-medium">Alex Kim</p>
-                      <p className="truncate text-2xs text-muted-foreground">Design engineer</p>
-                    </div>
-                  </div>
-                  <Separator className="my-4" />
-                  <div className="flex justify-between text-2xs text-muted-foreground">
-                    <span><span className="font-medium text-foreground tabular-nums">24</span> projects</span>
-                    <span><span className="font-medium text-foreground tabular-nums">8</span> teams</span>
-                  </div>
+                <Panel name="textarea" lift={32}>
+                  <p className="mb-3 text-xs font-medium">A note for the team</p>
+                  <Textarea
+                    aria-label="Team note"
+                    defaultValue={"A little less noise.\nA little more attention to detail."}
+                    rows={2}
+                    resizable={false}
+                    readOnly
+                    tabIndex={-1}
+                  />
                 </Panel>
               </div>
             </div>
@@ -453,31 +523,72 @@ export function HeroComponentPreview({ className, entrance = false }: { classNam
                 </TableBody>
               </DataTable>
             </Panel>
-            {/* The empty state keeps the right half of the row; the left is left open. Pulled up to
-                halve the space the gap and both samples' padding leave under the table. */}
-            <div className={cn(styles.row, "-mt-16")}>
-              <div />
-              <Panel name="empty" lift={18}>
-                <Empty className="p-2">
-                  <EmptyHeader>
-                    <EmptyMedia variant="icon"><Inbox /></EmptyMedia>
-                    <EmptyTitle>No messages</EmptyTitle>
-                    <EmptyDescription>You&apos;re all caught up.</EmptyDescription>
-                  </EmptyHeader>
-                  <EmptyContent>
-                    <Button variant="outline" size="sm">Refresh</Button>
-                  </EmptyContent>
-                </Empty>
+            {/* Alerts and a half-width dialog share the row below the table. */}
+            <div className={cn(styles.row, "-mt-16 items-start")}>
+              <Panel name="alerts" lift={10} className="mt-6">
+                <div className="flex flex-col gap-3">
+                  <Alert variant="success" className="mt-0">Changes saved.</Alert>
+                  <Alert variant="warning" className="mt-0">Your trial ends in 3 days.</Alert>
+                  <Alert variant="error" className="mt-0">Couldn&apos;t save your changes.</Alert>
+                  <Alert variant="info" className="mt-0">A new version is available.</Alert>
+                  <Alert variant="loading" className="mt-0">Syncing your workspace…</Alert>
+                </div>
+              </Panel>
+              <Panel name="dialog" lift={12}>
+                <div className={OVERLAY_DIALOG}>
+                  <div className="flex flex-col gap-4 p-6">
+                    <div>
+                      <p className="text-sm font-semibold">Rename project</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Visible to everyone in the workspace.</p>
+                    </div>
+                    <Input defaultValue="Website redesign" aria-label="Project name" readOnly tabIndex={-1} />
+                  </div>
+                  <div className="flex justify-end gap-2 border-t border-border px-6 py-3">
+                    <Button variant="outline" size="sm">Cancel</Button>
+                    <Button size="sm">Save</Button>
+                  </div>
+                </div>
               </Panel>
             </div>
 
+            <div className={styles.below}>
+              <div className={styles.row}>
+                <div className={styles.stack}><PreviewExtension area="workspace" portion="bottom" /></div>
+                <div className={styles.stack}><PreviewExtension area="team" portion="bottom" /></div>
+              </div>
+            </div>
           </div>
 
           <div className={cn(styles.column, styles.colD)}>
 
-            <Panel name="search" lift={10}>
-              <Input placeholder="Search…" aria-label="Search" startIcon={<Search />} readOnly tabIndex={-1} />
-            </Panel>
+            {/* Hung above the column's head, out of the flow, so the field grows upward and
+                nothing below moves. */}
+            <div className={styles.anchored}>
+              <div className={styles.above}>
+                <PreviewExtension area="assetsTop" />
+                <Panel name="hover-card" lift={4}>
+                  <div className={OVERLAY_CARD}>
+                    <div className="flex items-center gap-3">
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-2xs font-medium">MC</span>
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-medium">Maya Chen</p>
+                        <p className="truncate text-2xs text-muted-foreground">@maya · Product designer</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-xs text-muted-foreground">Designing calm interfaces for busy people.</p>
+                  </div>
+                </Panel>
+                <Panel name="select" lift={6}>
+                  <p className="mb-3 text-xs font-medium">Font</p>
+                  <Select items={fonts} defaultValue="sans">
+                    <SelectTrigger aria-label="Font"><SelectValue /></SelectTrigger>
+                  </Select>
+                </Panel>
+              </div>
+              <Panel name="search" lift={10}>
+                <Input placeholder="Search…" aria-label="Search" startIcon={<Search />} readOnly tabIndex={-1} />
+              </Panel>
+            </div>
 
             <Panel name="button-group" lift={12}>
               <p className="mb-3 text-xs font-medium">Text alignment</p>
@@ -535,35 +646,40 @@ export function HeroComponentPreview({ className, entrance = false }: { classNam
                 <CopyButton value="npx shadcn add @4af/button" aria-label="Copy command" tabIndex={-1} />
               </div>
             </Panel>
-            <Panel name="alerts" lift={10}>
-              <div className="flex flex-col gap-3">
-                <Alert variant="success" className="mt-0">Changes saved.</Alert>
-                <Alert variant="warning" className="mt-0">Your trial ends in 3 days.</Alert>
-                <Alert variant="loading" className="mt-0">Syncing your workspace…</Alert>
+            <Panel name="toggle" lift={6}>
+              <p className="mb-3 text-xs font-medium">Text formatting</p>
+              <div className="flex items-center gap-2">
+                <Toggle size="icon-sm" defaultPressed pressScale={false} aria-label="Bold"><Bold /></Toggle>
+                <Toggle size="icon-sm" pressScale={false} aria-label="Italic"><Italic /></Toggle>
+                <Toggle size="icon-sm" pressScale={false} aria-label="Underline"><Underline /></Toggle>
+                <Toggle size="icon-sm" pressScale={false} aria-label="Strikethrough"><Strikethrough /></Toggle>
               </div>
             </Panel>
 
           </div>
 
           <div className={cn(styles.column, styles.colE)}>
-            <Panel name="shortcuts" lift={4}>
-              <p className="mb-3 text-xs font-medium">Shortcuts</p>
-              <div className="flex flex-col gap-2.5 text-xs text-muted-foreground">
-                {[["Search", "⌘ K"], ["New project", "⌘ N"], ["Toggle sidebar", "⌘ B"]].map(([label, keys]) => (
-                  <div key={label} className="flex items-center justify-between">
-                    <span>{label}</span><Kbd>{keys}</Kbd>
-                  </div>
-                ))}
-              </div>
-            </Panel>
+            <div className={styles.anchored}>
+              <div className={styles.above}><PreviewExtension area="aboveRight" /></div>
+              <Panel name="shortcuts" lift={4}>
+                <p className="mb-3 text-xs font-medium">Shortcuts</p>
+                <div className="flex flex-col gap-2.5 text-xs text-muted-foreground">
+                  {[["Search", "⌘ K"], ["New project", "⌘ N"], ["Toggle sidebar", "⌘ B"]].map(([label, keys]) => (
+                    <div key={label} className="flex items-center justify-between">
+                      <span>{label}</span><Kbd>{keys}</Kbd>
+                    </div>
+                  ))}
+                </div>
+              </Panel>
+            </div>
             <Panel name="invite" lift={6}>
               <p className="mb-3 text-xs font-medium">Invite a teammate</p>
               <Input type="email" placeholder="name@example.com" aria-label="Teammate email" startIcon={<Mail />} readOnly tabIndex={-1} />
             </Panel>
-            <Panel name="toc-lines" lift={4}>
-              <p className="mb-2 text-xs font-medium">On this page</p>
-              {/* Ids no heading on the page uses, so the sample tracks nothing real. */}
-              <TableOfContentsLines items={tocItems} activeId="hero-toc-install" />
+            <Panel name="actions" lift={4} className="flex flex-wrap items-center gap-2">
+              <ActionButton action={noop} size="sm" labels={{ success: "Saved" }}>Save changes</ActionButton>
+              <ActionToggle action={noop} defaultPressed size="sm" labels={{ pressed: "Following" }}>Follow</ActionToggle>
+              <DeleteButton variant="outline" size="sm">Delete</DeleteButton>
             </Panel>
             <Panel name="skeleton" lift={4}>
               <div className="flex items-center gap-3">
@@ -580,6 +696,28 @@ export function HeroComponentPreview({ className, entrance = false }: { classNam
               <p className="mb-2 text-xs font-medium">Contents</p>
               <TableOfContents aria-label="Contents" items={tocItems} activeId="hero-toc-api" />
             </Panel>
+            <Panel name="text-effects" lift={2} className="flex flex-col gap-2 text-sm">
+              {/* All three are held mid-effect. The shimmer's sweep starts partway through (see
+                  the stylesheet). The scramble's revealed half is plain text and the rest a
+                  ScrambleText whose timer never fires, so it stays scrambled. The blur's letters
+                  are shifted back by their whole spread: the first is sharp, the last still hidden. */}
+              <TextShimmer>Generating summary…</TextShimmer>
+              <span>Decrypt<ScrambleText intervalMs={2_000_000_000}>ing payload</ScrambleText></span>
+              <BlurText delay={-300}>Hello there.</BlurText>
+            </Panel>
+            <Panel name="alert-dialog" lift={2}>
+              <div className={OVERLAY_DIALOG}>
+                <div className="p-4">
+                  <p className="text-sm font-semibold">Delete project?</p>
+                  <p className="mt-1 text-xs text-muted-foreground">This can&apos;t be undone.</p>
+                </div>
+                <div className="flex justify-end gap-2 border-t border-border p-3">
+                  <Button variant="outline" size="sm">Cancel</Button>
+                  <Button variant="destructive" size="sm">Delete</Button>
+                </div>
+              </div>
+            </Panel>
+            <div className={styles.below}><PreviewExtension area="assetsBottom" /></div>
           </div>
         </div>
       </div>
