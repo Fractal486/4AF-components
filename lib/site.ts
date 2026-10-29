@@ -36,14 +36,5 @@ export function publicInstallCommand(name: string) {
  */
 export const SKILL_INSTALL_COMMAND = "npx skills add Fractal486/4AF-components --skill 4af-components";
 
-/** A prompt for a coding agent, copied from the landing page. */
-export const AGENT_PROMPT = [
-  `Use the 4AF React component library (${SITE_URL}).`,
-  `Start by reading ${SITE_URL}/llms.txt: it has the install commands and links every`,
-  "component's documentation as Markdown.",
-  "The target needs React 19, Tailwind CSS v4, and a shadcn components.json.",
-  `Before using a component, read its page at ${SITE_URL}/docs/<name>.md.`,
-  `Install components with the shadcn CLI: npx shadcn@latest add ${SITE_URL}/r/<name>.json`,
-  "(run it with --dry-run first to preview the changes).",
-  `Optionally, install the 4AF agent skill, which packages this workflow and a component chooser: ${SKILL_INSTALL_COMMAND}`,
-].join(" ");
+/** The agents' entry point, copied from the landing page's "For agents" button. */
+export const LLMS_TXT_URL = `${SITE_URL}/llms.txt`;

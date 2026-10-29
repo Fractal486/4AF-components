@@ -33,14 +33,17 @@ export function CopyLine({ value, className, children }: { value: string; classN
           });
         }}
         className={cn(
-          "group w-fit cursor-default text-left font-mono text-xs leading-6 whitespace-nowrap text-muted-foreground",
+          // Wraps between words when the screen is narrower than the command, and anywhere
+          // as a last resort, so a long command never widens the page.
+          "group w-fit cursor-default text-left font-mono text-xs leading-6 wrap-anywhere text-muted-foreground",
           "outline-none focus-visible:ring-2 focus-visible:ring-ring",
           className,
         )}
       >
         <span
           className={cn(
-            "transition-[background-color,color] duration-(--duration-fast) ease-out",
+            // `box-decoration-clone`: a wrapped line keeps the highlight on each of its lines.
+            "box-decoration-clone transition-[background-color,color] duration-(--duration-fast) ease-out",
             "group-hover:bg-muted group-hover:text-foreground group-focus-visible:bg-muted group-focus-visible:text-foreground",
           )}
         >

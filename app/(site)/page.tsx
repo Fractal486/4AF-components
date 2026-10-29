@@ -5,24 +5,15 @@ import { GitHubMark } from "@/components/site/github-mark";
 import { InlineLink } from "@/components/inline-link";
 import { HeroBackdrop } from "@/components/landing/hero-backdrop";
 import { CopyLine } from "@/components/landing/copy-line";
-import { InstallCommand } from "@/components/landing/install-command";
 import { RevealGate } from "@/components/landing/reveal";
-import { registryComponents } from "@/lib/component-catalog";
 import { REPOSITORY } from "@/lib/site-nav";
-import { AGENT_PROMPT, SKILL_INSTALL_COMMAND, pageAlternates } from "@/lib/site";
+import { LLMS_TXT_URL, SKILL_INSTALL_COMMAND, pageAlternates } from "@/lib/site";
 import { BlurText } from "@/registry/ui/blur-text/blur-text";
 import { Button } from "@/registry/ui/button/button";
-import { CopyButton } from "@/registry/ui/copy-button/copy-button";
 
 export const metadata: Metadata = {
   alternates: pageAlternates("/"),
 };
-
-// Every installable component, starting with the button.
-const INSTALL_NAMES = [
-  "button",
-  ...registryComponents.map(({ name }) => name).filter((name) => name !== "button"),
-];
 
 /** The author and licence line. */
 function Credit() {
@@ -83,36 +74,26 @@ export default function IndexPage() {
                   View on GitHub
                 </a>
               </Button>
-              <CopyButton
-                value={AGENT_PROMPT}
-                size="md"
-                variant="plain"
-                iconPosition="end"
-                swapLabel={false}
-                className="px-1 text-muted-foreground hover:text-foreground"
-              >
-                <span className="inline-flex items-center gap-2.5">
-                  {/* Decorative: the label names the button. `outline-none` drops the
-                      theme's image outline, which would box in the transparent logo. */}
-                  {/* Served at 4x the 20px display height and not re-encoded: the optimiser
-                      picks a small width for a 45px image and recompresses it soft. */}
+            </div>
+            {/* The agents' entry point and the skill, as copyable lines. The URL is page text,
+                so an agent given only the site's address finds it too. */}
+            <div data-hero-copy className="landing-reveal mt-7 flex w-fit flex-col gap-3 [--reveal-delay:350ms]">
+              <div>
+                <p className="flex items-center gap-1.5 text-xs text-subtle-foreground">
+                  {/* Decorative: the text names it. `outline-none` drops the theme's image
+                      outline, which would box in the transparent logo. Served at 4x and not
+                      re-encoded: the optimiser would recompress so small an image soft. */}
                   <Image
                     src="/agents.png"
                     alt=""
                     width={365}
                     height={160}
                     unoptimized
-                    className="h-5 w-auto outline-none"
+                    className="h-3.5 w-auto outline-none"
                   />
-                  Agent prompt
-                </span>
-              </CopyButton>
-            </div>
-            {/* The component install, cycling through the catalog, and the agent skill. */}
-            <div data-hero-copy className="landing-reveal mt-7 flex w-fit flex-col gap-3 [--reveal-delay:350ms]">
-              <div>
-                <p className="text-xs text-subtle-foreground">Install a component</p>
-                <InstallCommand names={INSTALL_NAMES} />
+                  For agents
+                </p>
+                <CopyLine value={LLMS_TXT_URL} />
               </div>
               <div>
                 <p className="text-xs text-subtle-foreground">Install the agent skill</p>

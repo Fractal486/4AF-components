@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { gzipSync } from "node:zlib";
 import { chromium } from "playwright-core";
-import { publicInstallCommand } from "../lib/site.ts";
 
 // Build first, then run against `pnpm start`. Use the same browser/viewport for comparisons.
 // CHROME_PATH selects an installed Chrome/Chromium; no browser download is required.
@@ -27,10 +26,6 @@ if (before) {
     assert.equal(before[key], value, `Baseline ${key} differs; use the same measurement settings.`);
   }
 }
-const registry = JSON.parse(await readFile(new URL("../registry.json", import.meta.url), "utf8"));
-const installCommands = new Set(registry.items
-  .filter((item) => item.type === "registry:ui")
-  .map((item) => publicInstallCommand(item.name)));
 const browser = await chromium.launch({
   executablePath: process.env.CHROME_PATH ?? "/usr/bin/google-chrome",
   headless: true,
@@ -72,7 +67,7 @@ try {
       const servedHtml = await response.body();
       if (html) assert.deepEqual(servedHtml, html, `${route}: served HTML changed during sampling`);
       html = servedHtml;
-      await page.locator(route === "/" ? '#install [data-slot="install-command-url"]' : 'section[aria-label="Button settings"]').waitFor();
+      await page.locator(route === "/" ? "[data-hero] h1" : 'section[aria-label="Button settings"]').waitFor();
       // Fixed observation window includes the existing idle demo preload queue.
       await page.waitForTimeout(measurement.observationMs);
       const metrics = Object.fromEntries((await cdp.send("Performance.getMetrics")).metrics.map(({ name, value }) => [name, value]));
@@ -82,25 +77,6 @@ try {
         scriptBytes: performance.getEntriesByType("resource").filter((r) => r.initiatorType === "script").reduce((sum, r) => sum + r.decodedBodySize, 0),
       }));
       samples.push({ ...observed, taskMs: metrics.TaskDuration * 1000, layoutMs: metrics.LayoutDuration * 1000, scriptMs: metrics.ScriptDuration * 1000 });
-      // Exercise the current homepage after sampling so interactions do not affect metrics.
-      if (route === "/") {
-        const command = page.locator('#install pre').filter({ has: page.locator('[data-slot="install-command-url"]') });
-        await command.hover();
-        const held = await command.textContent();
-        assert.ok(installCommands.has(held), `Unexpected install command: ${held}`);
-        // Longer than the 2.4s rotation interval: hovering must hold one copyable command.
-        await page.waitForTimeout(2800);
-        assert.equal(await command.textContent(), held, "Install command changed while hovered");
-        if (installCommands.size > 1) {
-          await page.mouse.move(0, 0);
-          await page.waitForFunction((previous) => {
-            const url = document.querySelector('#install [data-slot="install-command-url"]');
-            return url?.closest('pre')?.textContent !== previous;
-          }, held, { timeout: 6000 });
-          const next = await command.textContent();
-          assert.ok(installCommands.has(next), `Unexpected rotated install command: ${next}`);
-        }
-      }
       assert.deepEqual(errors, [], `${route}: browser errors`);
       await context.close();
     }

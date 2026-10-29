@@ -89,7 +89,8 @@ const TRACK_PX = 28 / 3;
  * ruler's rhythm: a minor tick above, the label's own track (no rule), then three minors.
  */
 const HEADING_TRACKS = 5;
-const tracksOf = (row: Element) => (row.hasAttribute("data-rail-heading") ? HEADING_TRACKS : 3);
+const tracksOf = (row: Element) =>
+  row.hasAttribute("data-rail-heading") ? HEADING_TRACKS : row.hasAttribute("data-rail-end") ? 1 : 3;
 /**
  * The three ticks either side of a heading's label fade toward it, nearest first, so the
  * label sits in a soft break in the ruler rather than a hard one.
@@ -102,7 +103,7 @@ const HEADING_FADE = [0.25, 0.5, 0.75];
  * is counted in ticks, so the minor ticks fall off along the same curve as the rules.
  */
 function focusLens(nav: HTMLElement, hovered: Element | null) {
-  const rows = Array.from(nav.querySelectorAll<HTMLElement>("[data-rail-row]")).filter(
+  const rows = Array.from(nav.querySelectorAll<HTMLElement>("[data-rail-row], [data-rail-end]")).filter(
     (row) => !row.closest('[data-slot="collapsible-panel"][data-closed]'),
   );
   const current = nav.querySelector("[aria-current=page]");
@@ -163,6 +164,17 @@ function focusLens(nav: HTMLElement, hovered: Element | null) {
     fade(row, 3, middle);
     fade(row, 4, far);
   });
+  // The ruler's end fades the same way: the last row's two minors, then the closing tick.
+  const end = rows.at(-1);
+  if (end?.hasAttribute("data-rail-end")) {
+    const [near, middle, far] = HEADING_FADE as [number, number, number];
+    const previous = rows.at(-2);
+    if (previous && !previous.hasAttribute("data-rail-heading")) {
+      fade(previous, 1, far);
+      fade(previous, 2, middle);
+    }
+    fade(end, 0, near);
+  }
 }
 
 /**
@@ -464,6 +476,19 @@ function RailNav({
                   <NavLink key={item.href} item={item} pathname={pathname} onNavigate={onNavigate} blueprints={blueprints} />
                 ))}
               </CollapsibleContent>
+              {/* One closing tick after the last section, so the ruler ends on a fade of
+                  three like the break before a heading. Outside the panel, so it stays
+                  under the heading when the section collapses. */}
+              {group === nav.at(-1) && (
+                <span
+                  aria-hidden
+                  data-rail-end=""
+                  className="pointer-events-none grid items-center"
+                  style={{ height: TRACK_PX }}
+                >
+                  <Rule tick={0} rest={RULE_PX.minor} color="var(--color-border)" />
+                </span>
+              )}
             </Collapsible>
           ) : // The unlabelled lead group is only the overview, which the brand above
               // already links to; alone above the first heading it read as a stray rule.

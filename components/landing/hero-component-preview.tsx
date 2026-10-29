@@ -32,6 +32,7 @@ import {
   Users,
 } from "lucide-react";
 import type { CSSProperties } from "react";
+import { publicInstallCommand } from "@/lib/site";
 import { cn } from "@/registry/lib/cn";
 import { Alert } from "@/registry/ui/alert/alert";
 import { Badge } from "@/registry/ui/badge/badge";
@@ -642,8 +643,8 @@ export function HeroComponentPreview({ className, entrance = false }: { classNam
             <Panel name="install" lift={16}>
               <p className="mb-3 text-xs font-medium">Install</p>
               <div className="flex items-center justify-between gap-2 rounded-md bg-muted py-1 pr-1 pl-3">
-                <code className="truncate font-mono text-2xs text-muted-foreground">npx shadcn add @4af/button</code>
-                <CopyButton value="npx shadcn add @4af/button" aria-label="Copy command" tabIndex={-1} />
+                <code className="truncate font-mono text-2xs text-muted-foreground">{publicInstallCommand("button")}</code>
+                <CopyButton value={publicInstallCommand("button")} aria-label="Copy command" tabIndex={-1} />
               </div>
             </Panel>
             <Panel name="toggle" lift={6}>
