@@ -113,7 +113,7 @@ export function DocsCodeBlock({
 }
 
 /** Preserves highlighted code and metadata from MDX and server-generated snippets. */
-export function DocsCodePre({ children, ...props }: HTMLAttributes<HTMLPreElement>) {
+export function DocsCodePre({ children, ...props }: HTMLAttributes<HTMLPreElement> & Pick<CodeBlockProps, "icon">) {
   return (
     <DocsCodeBlock {...props}>
       <Pre>{children}</Pre>

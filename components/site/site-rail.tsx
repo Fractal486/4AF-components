@@ -501,11 +501,11 @@ function RailNav({
           gradient as the colour, so rows soften progressively as they reach the edge. */}
       <div
         aria-hidden="true"
-        className={cn("pointer-events-none absolute inset-x-0 top-0 h-28 bg-linear-to-b to-transparent backdrop-blur-[3px] [mask-image:linear-gradient(to_bottom,black,transparent)] opacity-0 transition-[opacity] duration-(--duration-fast) from-background group-data-[overflow-top]/rail-nav:opacity-100")}
+        className={cn("pointer-events-none absolute inset-x-0 top-0 h-24 bg-linear-to-b to-transparent backdrop-blur-[2.5px] [mask-image:linear-gradient(to_bottom,black,transparent)] opacity-0 transition-[opacity] duration-(--duration-fast) from-background group-data-[overflow-top]/rail-nav:opacity-100")}
       />
       <div
         aria-hidden="true"
-        className={cn("pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-linear-to-t to-transparent backdrop-blur-[3px] [mask-image:linear-gradient(to_top,black,transparent)] opacity-0 transition-[opacity] duration-(--duration-fast) from-background group-data-[overflow-bottom]/rail-nav:opacity-100")}
+        className={cn("pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-linear-to-t to-transparent backdrop-blur-[2.5px] [mask-image:linear-gradient(to_top,black,transparent)] opacity-0 transition-[opacity] duration-(--duration-fast) from-background group-data-[overflow-bottom]/rail-nav:opacity-100")}
       />
     </div>
   );

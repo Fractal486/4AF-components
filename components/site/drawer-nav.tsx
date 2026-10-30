@@ -80,11 +80,11 @@ export function DrawerNav({
       </ScrollArea>
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-linear-to-b from-surface-raised to-transparent opacity-0 backdrop-blur-[3px] transition-[opacity] duration-(--duration-fast) [mask-image:linear-gradient(to_bottom,black,transparent)] group-has-[[data-overflow-y-start]]/drawer-nav:opacity-100"
+        className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-linear-to-b from-surface-raised to-transparent opacity-0 backdrop-blur-[2px] transition-[opacity] duration-(--duration-fast) [mask-image:linear-gradient(to_bottom,black,transparent)] group-has-[[data-overflow-y-start]]/drawer-nav:opacity-100"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-linear-to-t from-surface-raised to-transparent opacity-0 backdrop-blur-[3px] transition-[opacity] duration-(--duration-fast) [mask-image:linear-gradient(to_top,black,transparent)] group-has-[[data-overflow-y-end]]/drawer-nav:opacity-100"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-surface-raised to-transparent opacity-0 backdrop-blur-[2px] transition-[opacity] duration-(--duration-fast) [mask-image:linear-gradient(to_top,black,transparent)] group-has-[[data-overflow-y-end]]/drawer-nav:opacity-100"
       />
     </div>
   );

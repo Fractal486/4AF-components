@@ -40,6 +40,8 @@ export function HeroBackdrop({ className, artworkClassName }: { className?: stri
       for (const piece of hero.querySelectorAll<HTMLElement>("[data-hero-copy]")) {
         const rects = piece.dataset.heroCopy === "text" ? lineRects(piece) : [piece.getBoundingClientRect()];
         for (const rect of rects) {
+          // A piece hidden at this width measures as an empty box at the corner; skip it.
+          if (rect.right === rect.left && rect.bottom === rect.top) continue;
           boxes.push({
             left: 0,
             top: rect.top - area.top - PAD,

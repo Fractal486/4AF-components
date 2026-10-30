@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { Metadata } from "next";
+import type { ComponentProps } from "react";
 import Link from "next/link";
 import { GitHubMark } from "@/components/site/github-mark";
 import { InlineLink } from "@/components/inline-link";
@@ -10,6 +11,7 @@ import { BaseUIMark, ReactMark } from "@/components/landing/title-marks";
 import { REPOSITORY } from "@/lib/site-nav";
 import { LLMS_TXT_URL, SKILL_INSTALL_COMMAND, pageAlternates } from "@/lib/site";
 import { BlurText } from "@/registry/ui/blur-text/blur-text";
+import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
 
 export const metadata: Metadata = {
@@ -20,12 +22,12 @@ export const metadata: Metadata = {
 const TITLE_STAGGER = 8;
 
 /**
- * The author and licence line, under the artwork: after its band on narrow screens, and at the
- * foot of the right half, centred under the field, where the artwork fills the hero.
+ * The author and licence line. Wide screens keep it under the commands in the copy; narrow ones,
+ * where the artwork is a band below the copy, put it after the artwork.
  */
-function Credit() {
+function Credit({ className, ...props }: ComponentProps<"p">) {
   return (
-    <p className="landing-reveal relative z-10 px-5 pb-10 text-sm text-subtle-foreground [--reveal-delay:450ms] sm:px-10 lg:absolute lg:bottom-8 lg:left-1/2 lg:w-1/2 lg:p-0 lg:text-center">
+    <p className={cn("landing-reveal text-sm text-subtle-foreground [--reveal-delay:450ms]", className)} {...props}>
     By{" "}
     <InlineLink href="https://selfsimilar.dev">
       {/* Decorative: the label names the link. Served at 4x its 20px size. */}
@@ -91,20 +93,7 @@ export default function IndexPage() {
                 so an agent given only the site's address finds it too. */}
             <div data-hero-copy className="landing-reveal mt-7 flex w-fit flex-col gap-3 [--reveal-delay:350ms]">
               <div>
-                <p className="flex items-center gap-1.5 text-xs text-subtle-foreground">
-                  {/* Decorative: the text names it. `outline-none` drops the theme's image
-                      outline, which would box in the transparent logo. Served at 4x and not
-                      re-encoded: the optimiser would recompress so small an image soft. */}
-                  <Image
-                    src="/agents.png"
-                    alt=""
-                    width={365}
-                    height={160}
-                    unoptimized
-                    className="h-3.5 w-auto outline-none"
-                  />
-                  For agents
-                </p>
+                <p className="text-xs text-subtle-foreground">For agents</p>
                 <CopyLine value={LLMS_TXT_URL} />
               </div>
               <div>
@@ -112,6 +101,7 @@ export default function IndexPage() {
                 <CopyLine value={SKILL_INSTALL_COMMAND} />
               </div>
             </div>
+            <Credit data-hero-copy className="mt-6 w-fit max-lg:hidden" />
           </div>
         </header>
         {/* The artwork is the whole hero's backdrop, its field centred in the right half and
@@ -120,7 +110,7 @@ export default function IndexPage() {
           className="pointer-events-none relative -mt-12 lg:absolute lg:inset-0 lg:mt-0"
           artworkClassName="aspect-square sm:aspect-[16/10] lg:absolute lg:inset-0 lg:aspect-auto lg:h-full lg:[--hero-center-x:75%] lg:[--hero-zoom:1.35]"
         />
-        <Credit />
+        <Credit className="relative z-10 px-5 pb-10 sm:px-10 lg:hidden" />
       </div>
     </>
   );

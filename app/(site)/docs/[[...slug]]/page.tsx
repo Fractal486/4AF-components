@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { COMPONENT_CATALOG_URL, componentCatalogToc } from "@/components/component-catalog";
+import { AgentsCodePre } from "@/components/agents-code-pre";
 import { getMDXComponents } from "@/components/mdx";
 import { InlineLink } from "@/components/inline-link";
 import { ArticleColumn } from "@/components/site/article-column";
@@ -105,7 +106,10 @@ export default async function Page({ params }: DocsPageProps) {
         </header>
 
         <div className="prose max-w-none">
-          <MdxContent components={getMDXComponents()} />
+          {/* The agent skill page's install block carries the agents' logos. */}
+          <MdxContent
+            components={getMDXComponents(page.url === "/docs/reference/agent-skill" ? { pre: AgentsCodePre } : undefined)}
+          />
         </div>
 
         {previous || next ? (
