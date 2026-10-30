@@ -335,6 +335,44 @@ function RailNav({
     if (ref.current) focusLens(ref.current, row);
   };
 
+  /** Where a mouse or pen last was over the rail; `null` once it leaves. */
+  const pointer = useRef<{ x: number; y: number } | null>(null);
+
+  /**
+   * Hover doesn't update when the rail scrolls under a resting pointer: the browser fires no
+   * pointer events until the pointer moves again, so the lens and the blueprint card would stay
+   * on the row the scroll started from. On each scroll frame, find the row now under the pointer
+   * and aim both at it. The card only follows when it's already open, and closes over a row
+   * with no blueprint. Uses refs and the handle only, so the listener never goes stale.
+   */
+  useEffect(() => {
+    const list = ref.current;
+    if (!list) return;
+    let frame = 0;
+    const reaim = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const at = pointer.current;
+        if (!at) return;
+        const under = document.elementFromPoint(at.x, at.y);
+        const row = under && list.contains(under) ? under.closest("[data-rail-row]") : null;
+        if (row !== lensTarget.current) {
+          lensTarget.current = row;
+          focusLens(list, row);
+        }
+        if (!blueprints.isOpen) return;
+        // Blueprint rows are the links that are tooltip triggers, which carry Base UI's id.
+        if (row instanceof HTMLAnchorElement && row.id) blueprints.open(row.id);
+        else blueprints.close();
+      });
+    };
+    list.addEventListener("scroll", reaim, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      list.removeEventListener("scroll", reaim);
+    };
+  }, [blueprints]);
+
   useEffect(() => {
     if (ref.current) focusLens(ref.current, lensTarget.current);
   }, [nav, pathname]);
@@ -423,7 +461,13 @@ function RailNav({
           const row = (event.target as Element).closest("[data-rail-row]");
           if (row) aimLens(row);
         }}
-        onPointerLeave={() => aimLens(null)}
+        onPointerMove={(event) => {
+          pointer.current = event.pointerType === "touch" ? null : { x: event.clientX, y: event.clientY };
+        }}
+        onPointerLeave={() => {
+          pointer.current = null;
+          aimLens(null);
+        }}
         onFocus={(event) => {
           if (event.target.matches(":focus-visible")) {
             aimLens(event.target.closest("[data-rail-row]"));
