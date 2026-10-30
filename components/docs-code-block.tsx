@@ -6,22 +6,28 @@ import { cn } from "@/registry/lib/cn";
 import { CopyButton } from "@/registry/ui/copy-button/copy-button";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 
+/** Lucide's copy glyph with the front sheet filled, so the copy reads as the solid one. */
+const COPY_ICON = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <rect x="8" y="8" width="14" height="14" rx="2" fill="currentColor" />
+    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+  </svg>
+);
+
+/** A small copy button for the tray's header strip. */
 function CodeActions({ className }: HTMLAttributes<HTMLDivElement>) {
   const ref = useRef<HTMLDivElement>(null);
 
   return (
     <div
       ref={ref}
-      className={cn("relative isolate flex items-center", className, "text-muted-foreground backdrop-blur-none")}
+      className={cn("flex items-center", className)}
     >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -inset-y-5 -left-10 -right-5 -z-10 bg-muted backdrop-blur-md [mask-image:linear-gradient(to_right,transparent,black_40%),linear-gradient(to_bottom,transparent,black_20%,black_80%,transparent)] [mask-composite:intersect] dark:bg-surface-raised"
-      />
       <CopyButton
         size="xs"
-        variant="ghost"
-        className="cursor-default"
+        variant="plain"
+        icon={COPY_ICON}
+        className="cursor-default text-muted-foreground hover:text-foreground"
         value={() => {
           const pre = ref.current?.closest("figure")?.querySelector("pre");
           if (!pre) throw new Error("Code block content is unavailable.");
@@ -40,6 +46,10 @@ function CodeActions({ className }: HTMLAttributes<HTMLDivElement>) {
  * library scrollbar. Fumadocs' own `CodeBlock` hard-codes its scrolling element (focusable, with
  * a native scrollbar), so a Scroll Area nested in it would be a second tab stop; this renders
  * the same figure with the Scroll Area's viewport as the one scrolling, focusable region.
+ *
+ * Two layers: a muted tray, 4px deep, holding the code on the page colour in a bordered inner
+ * box (4px corners inside the tray's 8px). The tray extends above the box into a header strip
+ * with the language icon, the title, and the copy button.
  */
 export function DocsCodeBlock({
   title,
@@ -60,27 +70,29 @@ export function DocsCodeBlock({
       {...props}
       tabIndex={-1}
       className={cn(
-        "shiki not-prose relative my-4 overflow-hidden rounded-[8px] border bg-muted text-sm dark:bg-surface-raised",
-        keepBackground && "bg-(--shiki-light-bg) dark:bg-(--shiki-dark-bg)",
+        "shiki not-prose relative my-4 rounded-[8px] bg-muted p-1 text-sm dark:bg-surface",
         className,
       )}
     >
-      {title ? (
-        <div className="flex h-9.5 items-center gap-2 border-b px-4 text-fd-muted-foreground">
+      {/* The tray reaches up into a header strip: the language icon and title on the left, the
+          copy button on the right. */}
+      {title || icon || copyable ? (
+        <div className="flex h-7 items-center gap-1.5 ps-1.5 pe-0.5 pb-1 text-xs text-muted-foreground [&_svg]:size-3.5">
           {typeof icon === "string" ? (
-            <div className="[&_svg]:size-3.5" dangerouslySetInnerHTML={{ __html: icon }} />
+            <div dangerouslySetInnerHTML={{ __html: icon }} />
           ) : (
             icon
           )}
-          <figcaption className="flex-1 truncate">{title}</figcaption>
-          {copyable ? <CodeActions className="-me-2" /> : null}
+          <figcaption className="flex-1 truncate font-mono">{title}</figcaption>
+          {copyable ? <CodeActions /> : null}
         </div>
-      ) : copyable ? (
-        <CodeActions className="absolute top-3 right-2 z-2 rounded-lg" />
       ) : null}
       <ScrollArea
         orientation="both"
-        className="max-h-[600px]"
+        className={cn(
+          "max-h-[600px] rounded-[4px] border bg-background",
+          keepBackground && "bg-(--shiki-light-bg) dark:bg-(--shiki-dark-bg)",
+        )}
         viewportClassName={cn("fd-scroll-container py-3.5 text-[0.8125rem]", viewportClassName)}
         viewportProps={{
           ...viewportRest,

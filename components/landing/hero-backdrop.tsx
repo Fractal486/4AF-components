@@ -82,15 +82,22 @@ export function HeroBackdrop({ className, artworkClassName }: { className?: stri
 }
 
 /**
- * One rect per rendered line of a piece of text, spanning that line's words. A BlurText heading
- * also holds a screen-reader copy of its text, kept on one unbroken line out of sight; only its
- * visible, `aria-hidden` letters are measured, or that copy reads as one long first line.
+ * One rect per rendered line of a piece of text, spanning that line's words. A BlurText run
+ * also holds a screen-reader copy of its text, kept on one unbroken line out of sight; only the
+ * visible, `aria-hidden` parts (its letters, and any logos set in the line) are measured, or that
+ * copy reads as one long first line.
  */
 function lineRects(element: HTMLElement) {
-  const range = document.createRange();
-  range.selectNodeContents(element.querySelector(":scope > [aria-hidden='true']") ?? element);
+  const visible = Array.from(element.querySelectorAll<HTMLElement>("[aria-hidden='true']"))
+    .filter((part) => !part.parentElement?.closest("[aria-hidden='true']"));
+  const rects: DOMRect[] = [];
+  for (const part of visible.length > 0 ? visible : [element]) {
+    const range = document.createRange();
+    range.selectNodeContents(part);
+    rects.push(...range.getClientRects());
+  }
   const lines = new Map<number, Box>();
-  for (const rect of range.getClientRects()) {
+  for (const rect of rects) {
     if (rect.width === 0) continue;
     const key = Math.round(rect.bottom / 8);
     const line = lines.get(key);

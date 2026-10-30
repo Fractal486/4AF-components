@@ -6,6 +6,7 @@ import { getMDXComponents } from "@/components/mdx";
 import { InlineLink } from "@/components/inline-link";
 import { ArticleColumn } from "@/components/site/article-column";
 import { ComponentPlayground } from "@/components/site/component-playground";
+import { NavIcon, hasNavIcon } from "@/components/site/nav-icons";
 import { PageFrame } from "@/components/site/page-frame";
 import { siblings } from "@/lib/site-nav";
 import { source } from "@/lib/source";
@@ -55,6 +56,7 @@ export default async function Page({ params }: DocsPageProps) {
         toc={toc}
         installCommand={publicInstallCommand(slug[0]!)}
         markdownUrl={`${SITE_URL}${page.url}.md`}
+        icon={hasNavIcon(page.url) ? <NavIcon href={page.url} className="size-5 text-muted-foreground" /> : undefined}
         fullscreenHref={page.url === "/docs/sidebar-layout" ? "/full/sidebar-layout" : undefined}
       >
         <MdxContent components={getMDXComponents()} />
@@ -67,7 +69,8 @@ export default async function Page({ params }: DocsPageProps) {
     <PageFrame toc={toc}>
       <article>
         <header className="mb-8 flex flex-col gap-3">
-          <h1 className="text-[length:clamp(1.75rem,3vw,2.25rem)] leading-[1.15] font-semibold tracking-[-0.03em] text-balance">
+          <h1 className="flex items-center gap-3 text-[length:clamp(1.75rem,3vw,2.25rem)] leading-[1.15] font-semibold tracking-[-0.03em] text-balance">
+            {hasNavIcon(page.url) ? <NavIcon href={page.url} className="size-[0.8em] text-muted-foreground" /> : null}
             {page.data.title}
           </h1>
           {page.data.description ? (

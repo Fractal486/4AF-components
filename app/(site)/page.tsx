@@ -6,6 +6,7 @@ import { InlineLink } from "@/components/inline-link";
 import { HeroBackdrop } from "@/components/landing/hero-backdrop";
 import { CopyLine } from "@/components/landing/copy-line";
 import { RevealGate } from "@/components/landing/reveal";
+import { BaseUIMark, ReactMark } from "@/components/landing/title-marks";
 import { REPOSITORY } from "@/lib/site-nav";
 import { LLMS_TXT_URL, SKILL_INSTALL_COMMAND, pageAlternates } from "@/lib/site";
 import { BlurText } from "@/registry/ui/blur-text/blur-text";
@@ -15,10 +16,16 @@ export const metadata: Metadata = {
   alternates: pageAlternates("/"),
 };
 
-/** The author and licence line. */
+/** Milliseconds between the title's letters (and logos), about BlurText's own 300ms spread. */
+const TITLE_STAGGER = 8;
+
+/**
+ * The author and licence line, under the artwork: after its band on narrow screens, and at the
+ * foot of the right half, centred under the field, where the artwork fills the hero.
+ */
 function Credit() {
   return (
-    <p data-hero-copy className="landing-reveal mt-6 w-fit text-sm text-subtle-foreground [--reveal-delay:450ms]">
+    <p className="landing-reveal relative z-10 px-5 pb-10 text-sm text-subtle-foreground [--reveal-delay:450ms] sm:px-10 lg:absolute lg:bottom-8 lg:left-1/2 lg:w-1/2 lg:p-0 lg:text-center">
     By{" "}
     <InlineLink href="https://selfsimilar.dev">
       {/* Decorative: the label names the link. Served at 4x its 20px size. */}
@@ -53,14 +60,19 @@ export default function IndexPage() {
       <div data-hero className="relative lg:grid lg:min-h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <header className="relative z-10 flex flex-col justify-center px-5 pt-10 sm:px-10 sm:pt-14 lg:py-16 lg:pr-0 lg:pl-[clamp(2rem,4vw,4rem)]">
           <div className="max-w-[34rem]">
-            {/* A no-break space keeps the name "Base UI" on one line. */}
-            <BlurText
-              as="h1"
+            {/* Three fixed lines at every width, so phones break it as desktop does. BlurText
+                keeps the newlines; a no-break space keeps the name "Base UI" together. The
+                runs share one stagger, offset so the letters and logos enter in reading order. */}
+            <h1
               data-hero-copy="text"
-              className="landing-title mb-7 text-[length:clamp(1.9rem,3.4vw,2.75rem)] leading-[1.12] font-semibold tracking-[-0.03em] text-balance"
+              className="landing-title mb-7 text-[length:clamp(1.9rem,3.4vw,2.75rem)] leading-[1.12] font-semibold tracking-[-0.03em]"
             >
-              {"Minimal React components built on Base\u00a0UI."}
-            </BlurText>
+              <BlurText stagger={TITLE_STAGGER}>{"Minimal "}</BlurText>
+              <ReactMark delay={7 * TITLE_STAGGER} />
+              <BlurText stagger={TITLE_STAGGER} delay={8 * TITLE_STAGGER}>{"React\ncomponents built\non "}</BlurText>
+              <BaseUIMark delay={30 * TITLE_STAGGER} />
+              <BlurText stagger={TITLE_STAGGER} delay={31 * TITLE_STAGGER}>{"Base\u00a0UI."}</BlurText>
+            </h1>
             {/* Natural widths, a notch smaller on phones so the row fits. */}
             <div data-hero-copy className="landing-reveal flex w-fit flex-wrap items-center gap-x-3 gap-y-2 [--reveal-delay:250ms]">
               <Button asChild size="lg" className="px-3 text-xs min-[360px]:px-4 min-[360px]:text-sm sm:px-5 sm:text-base">
@@ -100,15 +112,15 @@ export default function IndexPage() {
                 <CopyLine value={SKILL_INSTALL_COMMAND} />
               </div>
             </div>
-            <Credit />
           </div>
         </header>
         {/* The artwork is the whole hero's backdrop, its field centred in the right half and
             masked clear of the copy in the copy's own shape (`data-hero-copy`). */}
         <HeroBackdrop
-          className="pointer-events-none relative mt-6 lg:absolute lg:inset-0 lg:mt-0"
+          className="pointer-events-none relative -mt-12 lg:absolute lg:inset-0 lg:mt-0"
           artworkClassName="aspect-square sm:aspect-[16/10] lg:absolute lg:inset-0 lg:aspect-auto lg:h-full lg:[--hero-center-x:75%] lg:[--hero-zoom:1.35]"
         />
+        <Credit />
       </div>
     </>
   );

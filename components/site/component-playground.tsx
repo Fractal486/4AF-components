@@ -63,6 +63,8 @@ interface PageLink {
 
 export interface ComponentPlaygroundProps {
   title: string;
+  /** Drawn before the title: the page's sidebar icon. */
+  icon?: ReactNode;
   description?: string;
   /** The page's own demo first; more are offered as a "Demo" setting. */
   demos: PlaygroundDemo[];
@@ -101,6 +103,7 @@ export function ComponentPlayground({ demos, ...props }: ComponentPlaygroundProp
 
 function PlaygroundFrame({
   title,
+  icon,
   description,
   demos,
   demoName,
@@ -161,7 +164,10 @@ function PlaygroundFrame({
         ) : null}
 
         <header className="flex flex-col gap-3 px-5 pt-7 pb-5 max-lg:order-1 sm:px-10 lg:col-start-2 lg:row-start-1 lg:border-l lg:px-5 lg:pt-5">
-          <h1 className="text-xl font-semibold text-balance">{title}</h1>
+          <h1 className="flex items-center gap-2.5 text-xl font-semibold text-balance">
+            {icon}
+            {title}
+          </h1>
           {description ? (
             <p className="text-sm text-pretty text-muted-foreground">{description}</p>
           ) : null}

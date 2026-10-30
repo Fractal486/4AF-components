@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { ChevronDown, Menu, Search } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useSearchContext } from "fumadocs-ui/contexts/search";
 import { ThemeSwitch } from "fumadocs-ui/layouts/shared/slots/theme-switch";
@@ -18,8 +18,11 @@ import {
   CollapsibleTrigger,
 } from "@/registry/ui/collapsible/collapsible";
 import { Sheet, SheetTitle, SheetTrigger } from "@/registry/ui/sheet/sheet";
+import { DrawerNav } from "./drawer-nav";
 import { BlueprintCard, createBlueprintHandle, type BlueprintHandle } from "./blueprint-card";
 import { GitHubMark } from "./github-mark";
+import { SidebarIcon } from "./sidebar-icon";
+import { ThemeToggle } from "./theme-toggle";
 import { SiteNavigationContent } from "./site-navigation-content";
 
 const FOCUS = "outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -27,9 +30,9 @@ const FOCUS = "outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const SCROLLBAR =
   "[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden";
 
-function Brand() {
+function Brand({ onNavigate }: { onNavigate?: () => void }) {
   return (
-    <Link href="/" className={cn("inline-flex h-6 items-center gap-2.5 rounded-xs text-[15px] font-semibold tracking-[-0.01em]", FOCUS)}>
+    <Link href="/" onClick={onNavigate} className={cn("inline-flex h-6 items-center gap-2.5 rounded-xs text-[15px] font-semibold tracking-[-0.01em]", FOCUS)}>
       <Image
         src="/icon.png"
         alt=""
@@ -43,12 +46,16 @@ function Brand() {
   );
 }
 
-function SearchField() {
+/** `onOpen` runs first, so the drawer can close before the search dialog takes focus. */
+function SearchField({ onOpen }: { onOpen?: () => void }) {
   const { setOpenSearch, hotKey } = useSearchContext();
   return (
     <button
       type="button"
-      onClick={() => setOpenSearch(true)}
+      onClick={() => {
+        onOpen?.();
+        setOpenSearch(true);
+      }}
       className={cn(
         "flex h-7 w-full items-center gap-2 rounded-md bg-surface px-2.5 text-sm text-subtle-foreground shadow-border transition-[color] duration-(--duration-fast) hover:text-muted-foreground",
         FOCUS,
@@ -269,18 +276,15 @@ function RailRow({ rule, children }: { rule?: number; children: ReactNode }) {
 function NavLink({
   item,
   pathname,
-  onNavigate,
   blueprints,
 }: {
   item: NavItem;
   pathname: string;
-  onNavigate?: () => void;
   blueprints: BlueprintHandle;
 }) {
   const link = (
     <Link
       href={item.href}
-      onClick={onNavigate}
       data-rail-row=""
       aria-current={pathname === item.href ? "page" : undefined}
       className={cn(
@@ -309,13 +313,9 @@ function NavLink({
 function RailNav({
   nav,
   className,
-  fadeClassName = "from-background",
-  onNavigate,
 }: {
   nav: NavGroup[];
   className?: string;
-  fadeClassName?: string;
-  onNavigate?: () => void;
 }) {
   const pathname = usePathname();
   const ref = useRef<HTMLElement>(null);
@@ -473,7 +473,7 @@ function RailNav({
               </CollapsibleTrigger>
               <CollapsibleContent className="flex flex-col pt-0 text-sm">
                 {group.items.map((item) => (
-                  <NavLink key={item.href} item={item} pathname={pathname} onNavigate={onNavigate} blueprints={blueprints} />
+                  <NavLink key={item.href} item={item} pathname={pathname} blueprints={blueprints} />
                 ))}
               </CollapsibleContent>
               {/* One closing tick after the last section, so the ruler ends on a fade of
@@ -501,11 +501,11 @@ function RailNav({
           gradient as the colour, so rows soften progressively as they reach the edge. */}
       <div
         aria-hidden="true"
-        className={cn("pointer-events-none absolute inset-x-0 top-0 h-28 bg-linear-to-b to-transparent backdrop-blur-[3px] [mask-image:linear-gradient(to_bottom,black,transparent)] opacity-0 transition-[opacity] duration-(--duration-fast) group-data-[overflow-top]/rail-nav:opacity-100", fadeClassName)}
+        className={cn("pointer-events-none absolute inset-x-0 top-0 h-28 bg-linear-to-b to-transparent backdrop-blur-[3px] [mask-image:linear-gradient(to_bottom,black,transparent)] opacity-0 transition-[opacity] duration-(--duration-fast) from-background group-data-[overflow-top]/rail-nav:opacity-100")}
       />
       <div
         aria-hidden="true"
-        className={cn("pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-linear-to-t to-transparent backdrop-blur-[3px] [mask-image:linear-gradient(to_top,black,transparent)] opacity-0 transition-[opacity] duration-(--duration-fast) group-data-[overflow-bottom]/rail-nav:opacity-100", fadeClassName)}
+        className={cn("pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-linear-to-t to-transparent backdrop-blur-[3px] [mask-image:linear-gradient(to_top,black,transparent)] opacity-0 transition-[opacity] duration-(--duration-fast) from-background group-data-[overflow-bottom]/rail-nav:opacity-100")}
       />
     </div>
   );
@@ -529,8 +529,9 @@ function RailFooter({ repository }: { repository: string }) {
 }
 
 /**
- * The one sidebar of the site. At `lg` it is a full-height column; below it, a top bar whose
- * menu opens the same navigation in a sheet.
+ * The one sidebar of the site. At `lg` it is a full-height column; below it, a top bar: the
+ * menu, then at the far end the rail's footer (GitHub and a theme toggle) and the logo.
+ * The menu opens the brand, search, and navigation in a drawer from the left.
  */
 export function SiteRail({
   nav,
@@ -539,9 +540,7 @@ export function SiteRail({
   nav: NavGroup[];
   repository: string;
 }) {
-  const [menuOpen, setMenuOpen] = useState(false);
   const menuActions = useRef<BaseDialog.Root.Actions | null>(null);
-  const { setOpenSearch } = useSearchContext();
 
   return (
     <>
@@ -559,45 +558,47 @@ export function SiteRail({
         </div>
       </aside>
 
-      <div className="flex h-14 items-center justify-between gap-3 px-4 lg:hidden">
-        <Brand />
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" aria-label="Search" onClick={() => setOpenSearch(true)}>
-            <Search />
-          </Button>
-          <Sheet
-            open={menuOpen}
-            actionsRef={menuActions}
-            onOpenChange={(open, details) => {
-              // Motion owns this drawer's exit; keep Base UI from hiding it early.
-              if (!open) details.preventUnmountOnClose();
-              setMenuOpen(open);
-            }}
-          >
-            <SheetTrigger
-              render={
-                <Button variant="ghost" size="icon" aria-label="Open navigation">
-                  <Menu />
-                </Button>
-              }
+      <div className="flex h-14 items-center gap-2 px-3 lg:hidden">
+        <Sheet actionsRef={menuActions}>
+          <SheetTrigger
+            render={
+              <Button variant="ghost" size="icon-sm" aria-label="Open navigation" className="text-muted-foreground hover:text-foreground [&_svg]:size-4">
+                <SidebarIcon />
+              </Button>
+            }
+          />
+          <SiteNavigationContent>
+            <SheetTitle className="sr-only">Navigation</SheetTitle>
+            {/* The desktop rail's header, so the drawer reads as the same sidebar. */}
+            <div className="flex flex-col gap-5 px-5 pt-5 pb-5">
+              <Brand onNavigate={() => menuActions.current?.close()} />
+              <SearchField onOpen={() => menuActions.current?.close()} />
+            </div>
+            <DrawerNav
+              nav={nav}
+              onNavigate={() => menuActions.current?.close()}
+              className="px-1 pb-6"
             />
-            <SiteNavigationContent
-              open={menuOpen}
-              onExitComplete={() => menuActions.current?.unmount()}
-            >
-              <SheetTitle className="sr-only">Navigation</SheetTitle>
-              <RailNav
-                nav={nav}
-                onNavigate={() => menuActions.current?.close()}
-                className="px-5 pt-6 pb-8"
-                fadeClassName="from-surface-raised"
-              />
-              <div className="px-5 py-4">
-                <RailFooter repository={repository} />
-              </div>
-            </SiteNavigationContent>
-          </Sheet>
-        </div>
+          </SiteNavigationContent>
+        </Sheet>
+        {/* The rail's footer, moved up into the bar's far end beside the logo. */}
+        <Button asChild variant="ghost" size="icon-sm" className="ms-auto text-muted-foreground hover:text-foreground">
+          <a href={repository} target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <GitHubMark />
+          </a>
+        </Button>
+        <ThemeToggle />
+        <span aria-hidden className="text-border">|</span>
+        <Link href="/" aria-label="4AF Components" className={cn("rounded-xs p-1", FOCUS)}>
+          <Image
+            src="/icon.png"
+            alt=""
+            width={822}
+            height={724}
+            unoptimized
+            className="h-4 w-auto invert outline-none dark:invert-0"
+          />
+        </Link>
       </div>
     </>
   );
