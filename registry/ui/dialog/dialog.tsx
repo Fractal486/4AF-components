@@ -78,6 +78,8 @@ export interface DialogContentProps
   backdropClassName?: string;
   /** Mount the dialog portal into a caller-owned surface instead of document.body. */
   portalContainer?: DialogPortalContainer;
+  /** Measure and animate the content height. Disable when the caller sets the height. @default true */
+  autoSize?: boolean;
   showClose?: boolean;
   children?: ReactNode;
 }
@@ -87,6 +89,7 @@ export function DialogContent({
   bodyClassName,
   backdropClassName: customBackdropClassName,
   portalContainer,
+  autoSize = true,
   children,
   showClose = true,
   ...props
@@ -153,7 +156,7 @@ export function DialogContent({
                 viewportClassName="flex flex-col justify-center-safe"
               >
                 <div
-                  ref={frameBodyRef}
+                  ref={autoSize ? frameBodyRef : undefined}
                   data-slot="dialog-content-body"
                   className={cn("flex shrink-0 flex-col gap-4 p-6", bodyClassName)}
                 >
@@ -201,6 +204,8 @@ function useFrameHeight() {
   return useCallback((body: HTMLDivElement | null) => {
     const frame = body?.closest<HTMLElement>('[data-slot="dialog-content"]');
     if (!body || !frame || typeof ResizeObserver === "undefined") return;
+    const previousHeight = frame.style.height;
+    let measuredHeight: string | undefined;
     const edgeAnimations: Animation[] = [];
     const observer = new ResizeObserver(([entry]) => {
       const style = getComputedStyle(frame);
@@ -212,7 +217,8 @@ function useFrameHeight() {
       const max = Number.parseFloat(style.maxHeight);
       const height = Number.isFinite(max) ? Math.min(natural, max) : natural;
       const current = frame.style.height ? Number.parseFloat(style.height) : undefined;
-      frame.style.height = `${height}px`;
+      measuredHeight = `${height}px`;
+      frame.style.height = measuredHeight;
       if (current === undefined || current === height || natural > height) return;
 
       const offset = (current - height) / 2;
@@ -232,6 +238,8 @@ function useFrameHeight() {
     observer.observe(body);
     return () => {
       observer.disconnect();
+      // Relinquish the measured height when autoSize is disabled while open.
+      if (frame.style.height === measuredHeight) frame.style.height = previousHeight;
       for (const animation of edgeAnimations) animation.cancel();
     };
   }, []);

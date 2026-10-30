@@ -182,6 +182,7 @@ import { Button } from "@/components/ui/button";
 
 <Dialog>
   <DialogTrigger>Open dialog</DialogTrigger>
+  {/* For a fixed height, use autoSize={false} className="h-[32rem]". */}
   <DialogContent>
     <DialogTitle>Edit project</DialogTitle>
     Project settings

@@ -18,18 +18,19 @@ export const dialogEntry = defineEntry({
   name: "Dialog",
   controls: {
     showClose: bool(true, "Close button"),
+    autoSize: bool(true, "Size to content"),
     phases: bool(false, "Phased flow"),
   },
-  render({ showClose, phases }) {
+  render({ showClose, phases, autoSize }) {
     return (
       <Dialog key={phases ? "phased" : "simple"}>
         <DialogTrigger render={<Button variant="outline">Open dialog</Button>} />
         {phases ? (
-          <DialogContent showClose={showClose}>
+          <DialogContent showClose={showClose} autoSize={autoSize} className={autoSize ? undefined : "h-[32rem]"}>
             <ProfileDialogSteps />
           </DialogContent>
         ) : (
-          <DialogContent showClose={showClose}>
+          <DialogContent showClose={showClose} autoSize={autoSize} className={autoSize ? undefined : "h-[32rem]"}>
             <DialogHeader>
               <DialogTitle>Edit profile</DialogTitle>
               <DialogDescription>
