@@ -2,50 +2,30 @@
 
 import { PreviewCard as BasePreviewCard } from "@base-ui/react/preview-card";
 import type { ComponentProps, ReactNode } from "react";
-import { cn } from "@/registry/lib/cn";
+import { cn, mergeStateClassName } from "@/registry/lib/cn";
+import { useMergedRefs } from "@/registry/lib/refs";
+import { usePopupHeight } from "@/registry/lib/use-popup-height";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Skeleton } from "@/registry/ui/skeleton/skeleton";
+import { useHoverCardSideLock } from "./hover-card.position";
+import { hoverCardPopupVariants, hoverCardPositionerVariants, hoverCardSkeletonVariants } from "./hover-card.variants";
 
-/**
- * A hover card — a rich preview of what's behind a link, for sighted pointer users.
- *
- * Behaviour, positioning and timing are Base UI's PreviewCard: it opens on hover *and*
- * focus after a short delay, stays open while the pointer travels the gap between trigger
- * and card, flips at the viewport edge, and closes on a close-delay so a jittery cursor
- * doesn't flicker it. It's a preview, not a control — it holds no focus trap and isn't
- * modal, and it's purely an enhancement (a touch or keyboard user follows the link
- * itself), so nothing essential lives only inside it.
- *
- * The enter is CSS, not Motion: a hover card is a plain enter/exit with no physics or
- * gesture, so it rides Base UI's `data-starting-style` / `data-ending-style`. It scales up
- * out of a blur from the edge nearest the trigger — Base UI hands us `--transform-origin`
- * pointing there. Base UI holds the popup mounted through the transition and unmounts on
- * `transitionend`, which fires because a `transition` is set.
- */
-
+/** A supplemental preview. Base UI owns hover/focus timing, pointer travel, and dismissal. */
 export const HoverCard = BasePreviewCard.Root;
 export const HoverCardTrigger = BasePreviewCard.Trigger;
+export const createHoverCardHandle = BasePreviewCard.createHandle;
+export type HoverCardProps<Payload = unknown> = BasePreviewCard.Root.Props<Payload>;
+export type HoverCardTriggerProps<Payload = unknown> = BasePreviewCard.Trigger.Props<Payload>;
+export type HoverCardHandle<Payload = unknown> = BasePreviewCard.Handle<Payload>;
 
 export interface HoverCardSkeletonProps extends ComponentProps<"div"> {
   /** Keeps the avatar placeholder when the preview represents a profile or author. */
   showAvatar?: boolean;
 }
 
-/**
- * The default loading shape for a preview card. It mirrors the common avatar-and-copy
- * layout while leaving the outer content wrapper under the caller's control.
- */
-export function HoverCardSkeleton({
-  className,
-  showAvatar = true,
-  ...props
-}: HoverCardSkeletonProps) {
+export function HoverCardSkeleton({ className, showAvatar = true, ...props }: HoverCardSkeletonProps) {
   return (
-    <div
-      data-slot="hover-card-skeleton"
-      aria-hidden="true"
-      className={cn("flex gap-3", className)}
-      {...props}
-    >
+    <div data-slot="hover-card-skeleton" aria-hidden="true" {...props} className={cn(hoverCardSkeletonVariants(), className)}>
       {showAvatar && <Skeleton className="size-10 shrink-0 rounded-full" />}
       <div className="min-w-0 flex-1 space-y-2">
         <Skeleton className="h-4 w-24" />
@@ -60,75 +40,81 @@ export function HoverCardSkeleton({
   );
 }
 
-const popupClassName = cn(
-  // The same floating-panel material as the Popover and Select panels: the border, plus
-  // the ring-less overlay lift (shadow-overlay's hairline over a real border reads as a
-  // doubled edge).
-  "z-50 w-72 max-w-[calc(100vw-2rem)] rounded-md border border-border bg-surface p-4 text-sm text-foreground shadow-overlay-drop outline-none",
-  // Scale grows from the anchor side; `blur-0` is the resting filter so it interpolates
-  // from blur(4px) rather than from `none`, which some browsers won't tween. Only these
-  // properties change, so only these are named.
-  "origin-[var(--transform-origin)] blur-0",
-  "transition-[opacity,scale,translate,filter] duration-(--duration-fast) ease-out",
-  // Hidden pose: fade, shrink, blur — and slide in from *toward* the trigger. Larger
-  // offset entering than leaving.
-  "data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[starting-style]:blur-[4px]",
-  "data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[ending-style]:blur-[3px]",
-  "data-[side=top]:data-[starting-style]:translate-y-2 data-[side=top]:data-[ending-style]:translate-y-1",
-  "data-[side=bottom]:data-[starting-style]:-translate-y-2 data-[side=bottom]:data-[ending-style]:-translate-y-1",
-  "data-[side=left]:data-[starting-style]:translate-x-2 data-[side=left]:data-[ending-style]:translate-x-1",
-  "data-[side=right]:data-[starting-style]:-translate-x-2 data-[side=right]:data-[ending-style]:-translate-x-1",
-);
-
-export interface HoverCardContentProps
-  extends Omit<ComponentProps<typeof BasePreviewCard.Popup>, "className"> {
-  className?: string;
-  /** Shows a loading placeholder instead of the preview while its data is pending. */
-  loading?: boolean;
-  /** Optional custom placeholder; defaults to `HoverCardSkeleton`. */
-  loadingContent?: ReactNode;
-  /** Which side of the trigger to anchor to. */
-  side?: ComponentProps<typeof BasePreviewCard.Positioner>["side"];
-  /** Alignment along that side. */
-  align?: ComponentProps<typeof BasePreviewCard.Positioner>["align"];
-  /** Gap between trigger and card, in px. */
-  sideOffset?: number;
-  /** Forwarded to Base UI's positioner (collision padding, sticky, anchor, etc.). */
-  positionerProps?: Omit<
-    ComponentProps<typeof BasePreviewCard.Positioner>,
-    "side" | "align" | "sideOffset" | "children" | "className"
-  >;
+export type HoverCardPortalProps = ComponentProps<typeof BasePreviewCard.Portal>;
+export function HoverCardPortal(props: HoverCardPortalProps) {
+  return <BasePreviewCard.Portal data-slot="hover-card-portal" {...props} />;
 }
 
+export interface HoverCardPositionerProps extends ComponentProps<typeof BasePreviewCard.Positioner> {
+  /** Keep the initially resolved side until the card closes. @default true */
+  lockSide?: boolean;
+}
+
+export function HoverCardPositioner({
+  className, ref, side = "bottom", sideOffset = 6, collisionPadding = 8,
+  collisionAvoidance, lockSide = true, ...props
+}: HoverCardPositionerProps) {
+  const { ref: lockRef, lockedSide } = useHoverCardSideLock(side, lockSide);
+  const mergedRef = useMergedRefs(lockRef, ref);
+  return (
+    <BasePreviewCard.Positioner data-slot="hover-card-positioner" data-side-locked={lockedSide ? "" : undefined}
+      {...props} ref={mergedRef} side={lockedSide ?? side} sideOffset={sideOffset} collisionPadding={collisionPadding}
+      collisionAvoidance={lockedSide ? { ...collisionAvoidance, side: "none", fallbackAxisSide: "none" } : collisionAvoidance}
+      className={mergeStateClassName(hoverCardPositionerVariants(), className)} />
+  );
+}
+
+export interface HoverCardPopupProps extends ComponentProps<typeof BasePreviewCard.Popup> {
+  /** Shows a loading placeholder instead of the preview while its data is pending. */
+  loading?: boolean;
+  /** Optional custom placeholder; defaults to HoverCardSkeleton. */
+  loadingContent?: ReactNode;
+  /** Smoothly follow content height. Disable when the caller owns the height. @default true */
+  autoSize?: boolean;
+  /** Layout classes for the content inside the scroll viewport. */
+  contentClassName?: string;
+}
+
+export function HoverCardPopup({
+  className, children, loading = false, loadingContent, autoSize = true, contentClassName, ...props
+}: HoverCardPopupProps) {
+  const sizerRef = usePopupHeight("[data-hover-card-frame]");
+  return (
+    <BasePreviewCard.Popup data-slot="hover-card-content" data-hover-card-frame="" {...props}
+      className={mergeStateClassName(hoverCardPopupVariants(), className)}
+      data-auto-size={autoSize ? "" : undefined} data-loading={loading || undefined} aria-busy={loading || undefined}>
+      {/* The viewport extends into the padding so text and shadows retain their breathing room. */}
+      <ScrollArea data-slot="hover-card-scroll-area" className="-m-1.5 min-h-0 min-w-0 flex-auto" viewportClassName="p-1.5">
+        <div ref={autoSize ? sizerRef : undefined} data-slot="hover-card-body"
+          className={cn("flow-root min-w-0 wrap-anywhere", contentClassName)}>
+          {loading ? (loadingContent ?? <HoverCardSkeleton />) : children}
+        </div>
+      </ScrollArea>
+    </BasePreviewCard.Popup>
+  );
+}
+
+export interface HoverCardContentProps extends HoverCardPopupProps {
+  side?: HoverCardPositionerProps["side"];
+  align?: HoverCardPositionerProps["align"];
+  sideOffset?: HoverCardPositionerProps["sideOffset"];
+  /** Keep the initially resolved side while content changes. @default true */
+  lockSide?: boolean;
+  /** Portal container, mounting behavior, ref, and other portal props. */
+  portalProps?: Omit<HoverCardPortalProps, "children">;
+  /** Collision handling, anchor tracking, refs, and state-based positioner classes. */
+  positionerProps?: Omit<HoverCardPositionerProps, "side" | "align" | "sideOffset" | "lockSide" | "children">;
+}
+
+/** Convenience composition; refs, render, and DOM props belong to the popup. */
 export function HoverCardContent({
-  className,
-  children,
-  loading = false,
-  loadingContent,
-  side = "bottom",
-  align = "center",
-  sideOffset = 6,
-  positionerProps,
-  ...props
+  side = "bottom", align = "center", sideOffset = 6, lockSide = true, portalProps, positionerProps, ...popupProps
 }: HoverCardContentProps) {
   return (
-    <BasePreviewCard.Portal>
-      <BasePreviewCard.Positioner
-        side={side}
-        align={align}
-        sideOffset={sideOffset}
-        className="z-50 outline-none"
-        {...positionerProps}
-      >
-        <BasePreviewCard.Popup
-          {...props}
-          className={cn(popupClassName, className)}
-          data-loading={loading || undefined}
-          aria-busy={loading || undefined}
-        >
-          {loading ? (loadingContent ?? <HoverCardSkeleton />) : children}
-        </BasePreviewCard.Popup>
-      </BasePreviewCard.Positioner>
-    </BasePreviewCard.Portal>
+    <HoverCardPortal {...portalProps}>
+      <HoverCardPositioner side={side} align={align} sideOffset={sideOffset} lockSide={lockSide} {...positionerProps}>
+        <HoverCardPopup {...popupProps} />
+      </HoverCardPositioner>
+    </HoverCardPortal>
   );
 }

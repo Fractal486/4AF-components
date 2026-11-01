@@ -9,11 +9,46 @@ description: A restrained animated text treatment for transient loading states.
 
 **Main export:** `TextShimmer`
 
-A looping highlight across a label, for work in progress. `as` renders a different element
-(default `"span"`), and `duration` sets the cycle length in seconds (default `2.5`). The other
-supported props are `children` and `className`; native element props and refs are not forwarded.
+| Prop | Default | Description |
+| --- | --- | --- |
+| `as` | `"span"` | Element or component to render. Native props and the ref follow this element's type. |
+| `duration` | `2.5` | Seconds per sweep. Non-positive or non-finite values use the default. |
+| `once` | `false` | Runs one sweep, then leaves the text without a highlight. |
+| `active` | `true` | Enables the effect. Turning it off restores ordinary text without replacing the element. |
+| `children` | Required | The text or inline content. |
+| `className`, `style`, native props, `ref` | — | Forwarded to the rendered element. Styles merge with the sweep duration. |
 
-The label appears once in the DOM and truncates with an ellipsis at its container's width. Under
-reduced motion, and in browsers without text-mask support, the text is static. The overlay CSS
-ships in the shared theme; `animate-text-shimmer` is its activation class, not a Tailwind
-animation token.
+The root exposes `data-slot="text-shimmer"`, `data-active="true"` or `"false"`, and
+`data-once` when one-time playback is enabled. It contains one accessible copy of its label
+and truncates with an ellipsis at its container's width.
+
+## Playback
+
+The sweep loops by default. With `once`, it plays on mount and finishes outside the text.
+Turning `active` off stops the effect; turning it back on starts a fresh sweep. To replay
+one-time playback for a new message, change the component's React `key`.
+
+`shimmer-none` switches off the effect through CSS; `shimmer-auto` restores it. Both accept
+Tailwind variants: `md:shimmer-none` disables it on medium and larger screens, while
+`shimmer-none md:shimmer-auto` enables it only on those screens. `active={false}` and reduced
+motion take precedence over these classes.
+
+## Color
+
+The base text inherits its surrounding color, and normal text-color classes or inline styles
+can override it. The highlight mixes that color with white, with a brighter mix in dark mode.
+Changing the text color updates the highlight automatically.
+
+`--text-shimmer-highlight` overrides the highlight color, and `--text-shimmer-spread` controls
+its width (default `4ch`). `--text-shimmer-base` supplies a base color when no explicit text
+color overrides it. These variables can be set on a parent or through `style`.
+
+## Accessibility and rendering
+
+Under reduced motion, the overlay and text mask are removed entirely. Browsers without
+text-mask support also show static text. Native attributes such as `role="status"` and
+`aria-live` can announce changing messages; the shimmer does not add announcements itself.
+
+The effect uses CSS and requires no client hooks. Its translating overlay and responsive
+utilities ship in the shared theme. `animate-text-shimmer` remains the activation class,
+not a Tailwind animation token; the sweep duration is independent of motion speed tokens.

@@ -13,6 +13,37 @@ description: A composable empty-state layout for missing content and first-run a
 A composable empty state, borderless by default with an optional dashed placeholder treatment.
 Add `className="border"` to `Empty` for the dashed outline; there is no `bordered` prop.
 
-All parts accept native `div` props. `EmptyMedia` adds `variant="default"` for bare media or
-`variant="icon"` for a 40px muted tile with a 24px default SVG icon. `EmptyTitle` is a styled
-`div`, so add a semantic heading inside it when the empty state needs one in the page outline.
+| Part | Prop | Default | Description |
+| --- | --- | --- | --- |
+| `Empty` | `size`: `"sm" \| "md"` | `"md"` | Compact or regular padding, gaps, icon tile, and title. |
+| `Empty` | `animated`: `boolean` | `true` | Staggers the media, title, description, and actions on entry. |
+| `EmptyMedia` | `variant`: `"default" \| "icon"` | `"default"` | Bare media or a muted icon tile. |
+| All parts | `render`: element or render function | `<div>` | Replaces the element while preserving props, styles, and refs. |
+| All parts | `asChild`: `boolean` | `false` | Applies the part to its single child instead of adding a wrapper. Takes precedence over `render`. |
+
+All parts also accept native `div` props and a `ref`. Use `render={<h2 />}` on `EmptyTitle`
+for a heading, or `render={<section />}` on `Empty` for a section. Set `aria-labelledby`
+to the title's `id` when the section needs an accessible name.
+
+## Size
+
+The default `md` size keeps the original responsive padding: 24px, increasing to 48px at
+the medium breakpoint. Its icon tile is 40px with a 24px default SVG, and its title is 18px.
+The `sm` size keeps 24px padding, reduces the header-to-content gap from 24px to 16px,
+uses a 36px icon tile with a 20px default SVG, and reduces the title to the 15px body size.
+Header and media spacing also tighten. Explicit SVG size classes still override the default.
+
+## Entrance animation
+
+Media, title, description, and actions fade upward in that order when mounted. Each part
+uses the shared base duration and ease-out curve; the stagger scales with the same duration
+token. Reduced motion skips the animation entirely. Set `animated={false}` for an empty state
+already present on the initial page or one that changes frequently during filtering.
+Ordinary text and size updates do not replay the entrance.
+
+## Text and links
+
+Titles and descriptions wrap long unbroken names and addresses within the available width.
+Direct child paragraphs in the description receive spacing between them. Plain links at any
+depth are underlined, gain a keyboard focus outline, and brighten on hover. Embedded link or
+button components carrying `data-slot` or `data-variant` retain their own styles.

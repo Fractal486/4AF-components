@@ -3,6 +3,7 @@
 import { CalendarIcon, Undo2 } from "lucide-react";
 import { DateLib } from "react-day-picker";
 import {
+  Fragment,
   useMemo,
   useRef,
   useState,
@@ -68,7 +69,13 @@ function isSameDay(a: Date, b: Date, timeZone?: string) {
   return toIsoDate(a, timeZone) === toIsoDate(b, timeZone);
 }
 
-function focusActiveDay(panel: HTMLElement | null) {
+function focusActiveDay(panel: HTMLElement | null, preferredDay?: string) {
+  if (preferredDay) {
+    const preferred = panel?.querySelector<HTMLElement>(
+      `[data-slot="calendar-day-button"][data-day="${preferredDay}"]:not(:disabled)`,
+    );
+    if (preferred) return preferred;
+  }
   // react-day-picker gives exactly one day `tabindex="0"`: the selection, else today,
   // else the first enabled day.
   return panel?.querySelector<HTMLElement>('[data-slot="calendar-day-button"][tabindex="0"]') ?? true;
@@ -111,7 +118,7 @@ interface DatePickerSharedProps
   todayLabel?: string;
   /** Show the current-month navigation action. Defaults to true. */
   showToday?: boolean;
-  /** Submits the value with a form, as `YYYY-MM-DD` (or `YYYY-MM-DD/YYYY-MM-DD` for a range). */
+  /** Submits ISO dates: one date, comma-separated multiple dates, or a slash-separated range. */
   name?: string;
   /** Forwarded to the Calendar: disabled days, `startMonth`/`endMonth`, `captionLayout`, … */
   calendarProps?: CalendarPassthrough;
@@ -122,6 +129,7 @@ interface DatePickerShellProps
   label: ReactNode | undefined;
   hiddenValue: string | undefined;
   onClear: () => void;
+  focusDate?: Date;
   calendarProps?: CalendarPassthrough;
   children: (close: () => void, navigation: Pick<CalendarProps, "month" | "onMonthChange">) => ReactNode;
 }
@@ -141,6 +149,7 @@ function DatePickerShell({
   calendarProps,
   name,
   onClear,
+  focusDate,
   children,
   className,
   variant,
@@ -239,7 +248,7 @@ function DatePickerShell({
         ref={panelRef}
         align="start"
         aria-label={title}
-        initialFocus={() => focusActiveDay(panelRef.current)}
+        initialFocus={() => focusActiveDay(panelRef.current, focusDate ? toIsoDate(focusDate, calendarProps?.timeZone) : undefined)}
         className="w-auto max-w-[calc(100vw-2rem)] p-0"
       >
         <div data-slot="date-picker-content">{children(close, navigation)}</div>
@@ -255,13 +264,38 @@ function DatePickerShell({
 
 /* -- Single date --------------------------------------------------------------------- */
 
-export interface DatePickerProps extends DatePickerSharedProps {
+interface SingleDatePickerProps extends DatePickerSharedProps {
   value?: Date | null;
   defaultValue?: Date | null;
   onValueChange?: (value: Date | null) => void;
 }
 
-export function DatePicker({
+type MultipleCalendarPassthrough = CalendarPassthrough & Pick<
+  Extract<CalendarProps, { mode: "multiple" }>,
+  "min" | "max"
+>;
+
+interface MultipleDatePickerProps extends DatePickerSharedProps {
+  calendarProps?: MultipleCalendarPassthrough;
+  value?: Date[];
+  defaultValue?: Date[];
+  onValueChange?: (value: Date[]) => void;
+}
+
+export type DatePickerProps =
+  | (SingleDatePickerProps & { mode?: "single" })
+  | (MultipleDatePickerProps & { mode: "multiple" });
+
+export function DatePicker(props: DatePickerProps) {
+  if (props.mode === "multiple") {
+    const { mode, ...multipleProps } = props;
+    return <MultipleDatePicker key={mode} {...multipleProps} />;
+  }
+  const { mode, ...singleProps } = props;
+  return <SingleDatePicker key={mode ?? "single"} {...singleProps} />;
+}
+
+function SingleDatePicker({
   value: valueProp,
   defaultValue = null,
   onValueChange,
@@ -271,7 +305,7 @@ export function DatePicker({
   dateFormat = "medium",
   calendarProps,
   ...props
-}: DatePickerProps) {
+}: SingleDatePickerProps) {
   const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue);
   const value = valueProp !== undefined ? valueProp : uncontrolledValue;
   const timeZone = calendarProps?.timeZone;
@@ -305,6 +339,66 @@ export function DatePicker({
           onSelect={(date) => {
             setValue(date);
             close();
+          }}
+        />
+      )}
+    </DatePickerShell>
+  );
+}
+
+/* -- Multiple dates ------------------------------------------------------------------ */
+
+function MultipleDatePicker({
+  value: valueProp,
+  defaultValue = [],
+  onValueChange,
+  placeholder = "Pick dates",
+  title = "Select dates",
+  locale = "en-US",
+  dateFormat = "medium",
+  calendarProps,
+  ...props
+}: MultipleDatePickerProps) {
+  const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue);
+  const value = valueProp !== undefined ? valueProp : uncontrolledValue;
+  const timeZone = calendarProps?.timeZone;
+  const formatter = useMemo(() => new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone }), [locale, timeZone]);
+  const lastSelected = value.at(-1);
+
+  const setValue = (next: Date[]) => {
+    if (valueProp === undefined) setUncontrolledValue(next);
+    onValueChange?.(next);
+  };
+
+  return (
+    <DatePickerShell
+      {...props}
+      placeholder={placeholder}
+      title={title}
+      label={!value.length ? undefined : dateFormat === "medium"
+        ? value.map((date) => normalizeSpaces(formatter.format(date))).join(", ")
+        : value.map((date, index) => (
+        <Fragment key={`${toIsoDate(date, timeZone)}-${index}`}>
+          {index > 0 && <span className="text-muted-foreground">, </span>}
+          <NumericDate date={date} timeZone={timeZone} />
+        </Fragment>
+      ))}
+      hiddenValue={value.map((date) => toIsoDate(date, timeZone)).join(",")}
+      onClear={() => setValue([])}
+      focusDate={lastSelected}
+      calendarProps={calendarProps}
+    >
+      {(_close, navigation) => (
+        <Calendar
+          {...calendarProps}
+          {...navigation}
+          mode="multiple"
+          selected={value}
+          defaultMonth={lastSelected ?? calendarProps?.defaultMonth}
+          onSelect={(dates, _day, modifiers) => {
+            // DayPicker resets at max; a field should retain the existing selection instead.
+            if (!modifiers.selected && calendarProps?.max !== undefined && value.length >= calendarProps.max) return;
+            setValue(dates ?? []);
           }}
         />
       )}

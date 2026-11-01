@@ -3,6 +3,8 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectGroup,
+  SelectGroupLabel,
   SelectSub,
   SelectSubContent,
   SelectSubTrigger,
@@ -47,21 +49,18 @@ const ALL_FRUITS = { ...FRUITS, ...MORE_FRUITS };
 
 const NESTED_FRUITS = ["banana", "mango"] as const;
 
-function FruitOptions({ icons, scrollable }: { icons: boolean; scrollable: boolean }) {
+function FruitOptions({ icons, scrollable, groups }: { icons: boolean; scrollable: boolean; groups: boolean }) {
+  const items = Object.entries(scrollable ? ALL_FRUITS : FRUITS)
+    .sort(([, a], [, b]) => a.localeCompare(b))
+    .filter(([value]) => !NESTED_FRUITS.includes(value as (typeof NESTED_FRUITS)[number]));
+  const row = ([value, label]: [string, string]) => <SelectItem key={value} value={value}
+    icon={icons ? <FruitIcon value={value} /> : undefined}>{label}</SelectItem>;
   return (
     <>
-      {Object.entries(scrollable ? ALL_FRUITS : FRUITS)
-        .sort(([, a], [, b]) => a.localeCompare(b))
-        .filter(([value]) => !NESTED_FRUITS.includes(value as (typeof NESTED_FRUITS)[number]))
-        .map(([value, label]) => (
-          <SelectItem
-            key={value}
-            value={value}
-            icon={icons ? <FruitIcon value={value} /> : undefined}
-          >
-            {label}
-          </SelectItem>
-        ))}
+      {groups ? [true, false].map((berries) => <SelectGroup key={String(berries)}>
+        <SelectGroupLabel>{berries ? "Berries" : "Other fruit"}</SelectGroupLabel>
+        {items.filter(([value]) => value.endsWith("berry") === berries).map(row)}
+      </SelectGroup>) : items.map(row)}
       <SelectSub>
         <SelectSubTrigger>More fruit</SelectSubTrigger>
         <SelectSubContent>
@@ -90,12 +89,13 @@ export const selectEntry = defineEntry({
     selected: bool(true, "Selected"),
     searchable: bool(false, "Search in panel"),
     scrollable: bool(false, "Scrollable"),
+    groups: bool(false, "Sections"),
     icons: bool(true),
     variant: select(["default", "ghost", "plain"] as const, "default", "Variant"),
     showLabel: bool(true, "Show label"),
     invalid: bool(false),
   },
-  render({ size, disabled, multiple, selected, searchable, scrollable, icons, variant, showLabel, invalid }) {
+  render({ size, disabled, multiple, selected, searchable, scrollable, groups, icons, variant, showLabel, invalid }) {
     const items = scrollable ? ALL_FRUITS : FRUITS;
     return (
       <div className="w-full max-w-56">
@@ -122,7 +122,7 @@ export const selectEntry = defineEntry({
               searchPlaceholder="Search fruits…"
               emptyMessage="No fruit found."
             >
-              <FruitOptions icons={icons} scrollable={scrollable} />
+              <FruitOptions icons={icons} scrollable={scrollable} groups={groups} />
             </SelectContent>
           </Select>
         ) : (
@@ -148,7 +148,7 @@ export const selectEntry = defineEntry({
               searchPlaceholder="Search fruits…"
               emptyMessage="No fruit found."
             >
-              <FruitOptions icons={icons} scrollable={scrollable} />
+              <FruitOptions icons={icons} scrollable={scrollable} groups={groups} />
             </SelectContent>
           </Select>
         )}

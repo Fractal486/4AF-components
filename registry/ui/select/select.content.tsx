@@ -1,4 +1,4 @@
-import { cn } from "@/registry/lib/cn";
+import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { duration, ease } from "@/registry/lib/motion";
 import { Button } from "@/registry/ui/button/button";
 import { Input } from "@/registry/ui/input/input";
@@ -54,6 +54,8 @@ export function SelectContent({
   className,
   children,
   sideOffset = 6,
+  alignOffset = 0,
+  portalProps,
   side = "bottom",
   align: alignProp,
   width: widthProp,
@@ -67,8 +69,11 @@ export function SelectContent({
   clearIcon = <X />,
   footerActions,
   ...props
-}: Omit<ComponentProps<typeof BaseSelect.Popup>, "className"> & {
-  className?: string;
+}: ComponentProps<typeof BaseSelect.Popup> & {
+  /** Shift the panel along the trigger's alignment axis. */
+  alignOffset?: ComponentProps<typeof BaseSelect.Positioner>["alignOffset"];
+  /** Choose the portal container or other Base UI portal options. */
+  portalProps?: Omit<ComponentProps<typeof BaseSelect.Portal>, "children">;
   children?: ReactNode;
   sideOffset?: number;
   /** Which side of the trigger to open on. Base UI still collision-flips from here. */
@@ -207,7 +212,7 @@ export function SelectContent({
     return () => setPanelSearch(false);
   }, [searchable, setPanelSearch]);
 
-  // Pin a content-width panel to its *unfiltered* width so an in-panel search can't resize
+  // Pin the panel to its *unfiltered* width so an in-panel search can't resize
   // it while typing. `w-max` sizes to the widest visible row, so hiding rows would let the
   // panel narrow toward its longest remaining item; measuring the full set (query empty)
   // and holding it as a `min-width` floor keeps the panel the width it opened at.
@@ -223,7 +228,7 @@ export function SelectContent({
   // close: a stale-but-correct floor avoids a width jump during the exit blur, and the next
   // open re-measures (labels may have changed) as soon as its query resets to empty.
   useEffect(() => {
-    if (!positionerNode || !open || !searchable || width !== "content") return;
+    if (!positionerNode || !open || !searchable) return;
     if (searchQuery.trim() !== "") return;
 
     const measure = () => {
@@ -234,7 +239,7 @@ export function SelectContent({
     const observer = new ResizeObserver(measure);
     observer.observe(positionerNode);
     return () => observer.disconnect();
-  }, [positionerNode, open, searchable, width, searchQuery]);
+  }, [positionerNode, open, searchable, searchQuery]);
 
   const [openingItem, setOpeningItem] = useState<unknown>(undefined);
   useLayoutEffect(() => {
@@ -286,7 +291,7 @@ export function SelectContent({
   const searchField = searchable ? (
     <div
       className={cn(
-        "relative flex h-[38px] items-center px-3.5",
+        "relative flex h-[38px] items-stretch px-3.5",
         searchPosition === "bottom" ? "border-t border-border" : "border-b border-border",
       )}
     >
@@ -334,7 +339,7 @@ export function SelectContent({
   ) : null;
 
   return (
-    <BaseSelect.Portal>
+    <BaseSelect.Portal {...portalProps}>
       {/* Base UI handles the positioning and collision flip; `--transform-origin` points
           at the trigger's edge, so the unfold grows *from* the trigger whichever side it
           lands on. */}
@@ -342,15 +347,20 @@ export function SelectContent({
         data-slot="select-content-positioner"
         ref={setPositionerNode}
         sideOffset={sideOffset}
+        alignOffset={alignOffset}
         align={align}
         alignItemWithTrigger={false}
         side={side}
         className={cn(
           "z-50 outline-none",
-          // `trigger` keeps the panel the button's width (the default field select);
-          // `content` sizes it to its own rows — the longest label plus the reserved check
-          // slot — for a trigger sized to its own text, and never narrower than 200px.
-          width === "trigger" ? "w-[var(--anchor-width)]" : "w-max min-w-50",
+          // Both modes size the panel to its rows — the longest label plus the reserved check
+          // slot — so a row is never truncated while there is room. `trigger` keeps it at
+          // least the button's width (the default field select), so a full-width field gets
+          // a full-width panel and a trigger sized to a short value ("Day") still shows its
+          // longer rows whole. `content` is for a trigger sized to its own text, and never
+          // narrower than 200px. The available width is the cap in both.
+          "max-w-(--available-width)",
+          width === "trigger" ? "w-max min-w-(--anchor-width)" : "w-max min-w-50",
         )}
       >
         {/* The animation is driven off the `open` state, not Motion's mount: Base UI keeps
@@ -358,22 +368,16 @@ export function SelectContent({
             `initial`/`animate` would only play once (the entrance would vanish on the 2nd
             open, until a reload remounted it). Animating on `open` re-runs it every time. */}
         <BaseSelect.Popup
-          className={cn(
-            // Same `border` as the trigger so the two edges match, plus the ring-less
-            // overlay lift; the full shadow-overlay's hairline stacked on this border
-            // read as a doubled, too-heavy edge.
-            "overflow-hidden rounded-md border border-border bg-surface shadow-overlay-drop",
-            className,
-          )}
+          className={mergeStateClassName("overflow-hidden rounded-md border border-border bg-surface shadow-overlay-drop", className)}
           render={
             <motion.div
               // The `min-width` floor lives on the popup — the visible bordered box — not
               // the positioner: the popup shrink-wraps its content, so when a search hides
               // the list (leaving only the empty message) the floor is what stops it
-              // collapsing to that message's width. Content-width searchable panels only.
+              // collapsing to that message's width. Searchable panels only.
               style={{
                 transformOrigin: "var(--transform-origin)",
-                minWidth: width === "content" && lockedWidth ? lockedWidth : undefined,
+                minWidth: lockedWidth || undefined,
               }}
               initial={reduceMotion ? { opacity: 0 } : FADE_HIDDEN}
               animate={

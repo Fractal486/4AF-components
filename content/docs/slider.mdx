@@ -1,6 +1,6 @@
 ---
 title: Slider
-description: A Base UI range control with multiple thumb styles, labels, ticks, sizing, and an optional live value tooltip.
+description: A horizontal or vertical slider with three thumb styles, draggable ranges, editable values, and formatted tooltips.
 ---
 
 <ComponentReference name="slider" />
@@ -8,6 +8,20 @@ description: A Base UI range control with multiple thumb styles, labels, ticks, 
 ## API
 
 **Main export:** `Slider`
+
+| Prop | Default | Purpose |
+| --- | --- | --- |
+| `orientation` | `"horizontal"` | `"horizontal"` or `"vertical"`. Give a vertical slider or its parent an explicit height. |
+| `draggableRange` | `false` | Drag between two handles to move the selected interval while preserving its width. |
+| `animateValue` | `false` | Opt in to rolling digits and blur for the displayed values and thumb tooltips. |
+| `format` | — | `Intl.NumberFormatOptions` for the displayed values and tooltips, including currency, percent, and units. |
+| `locale` | — | Locale used for number formatting. |
+| `getAriaValueText` | — | `(formattedValue, value, index) => string` supplies a spoken value for each handle. |
+| `getAriaLabel` | — | `(index) => string` supplies an accessible name for each handle. |
+| `className` | — | A string or `(state) => string`, including orientation, values, disabled, and dragging state. |
+| `render` | `<div>` | A replacement element or `(props, state) => element`; forward the supplied props and ref. |
+| `onValueChange` | — | `(value, details) => void`. Receives a number or range tuple; `details.cancel()` rejects a change. |
+| `onValueCommitted` | — | Runs when a pointer interaction finishes or a keyboard change commits. |
 
 A controlled or uncontrolled numeric slider. Defaults are `thumb="bar"`, `size="md"`,
 `min={0}`, `max={100}`, and `step={1}`. `showValue` and `showTicks` default to `true`;
@@ -28,6 +42,10 @@ is in use, the fill mixes in 8% foreground.
 <Slider aria-label="Volume" style={{ "--slider-fill": "var(--color-ring)" } as React.CSSProperties} />
 ```
 
+Value readouts and thumb tooltips update immediately by default. Set `animateValue` to use
+[Number Animation](/docs/number-animation) for rolling digits with motion blur. They keep the root's `locale` and `format`, and reduced motion shows updates immediately.
+The editor remains a normal input while typing.
+
 With `showValue`, the number is editable: it shows a text cursor on hover,
 and a click turns it into an input. Enter or leaving the field commits the typed value, clamped
 to the range and snapped to the step; Escape cancels. A press on the number never starts a drag.
@@ -46,6 +64,23 @@ After Escape, clicking the value starts a fresh edit that can be committed norma
 `defaultValue` also enables range mode, even without `range`. The range callback receives the
 updated tuple; single-thumb mode uses a number.
 
+With `draggableRange`, dragging between the handles moves both together using `step` and stops
+at `min` or `max` without narrowing the interval. Mouse, pen, and touch are supported; each
+handle remains independently draggable and keyboard-operable. A click without dragging still
+moves the nearest handle. Whole-range changes have `details.reason="drag"` and
+`details.activeThumbIndex=-1`; the root carries `data-range-dragging` and reports
+`state.dragging=true` to `className` and `render`. Releasing a changed range fires
+`onValueCommitted` once. A canceled pointer gesture does not commit.
+
+Inside the selected interval, drag the visible handle to move one endpoint; its invisible
+hit padding does not intercept whole-range dragging.
+Range gestures respect disabled state inherited from Base UI's `Field.Root`, including when
+the field becomes disabled during a gesture; a disabled gesture does not commit a value.
+
+Vertical sliders run from the minimum at the bottom to the maximum at the top. All three
+thumb styles and both sizes work vertically; labels and values stay upright above the rail.
+Horizontal sliders follow the surrounding reading direction.
+
 The visible `label` names the slider input, including with `inlineLabel`. Without a visible
 label, supply `aria-label` or `aria-labelledby`; an explicit accessible label takes precedence
 over `label`. Range handles append “minimum” and “maximum” to the shared name. Set
@@ -63,13 +98,22 @@ above it. Within 8px of either, the thumb dodges: it fades to 15% opacity and dr
 stretch, then restores as it moves away. It never dodges at either end of the rail. The thumb
 carries `data-dodged` while dodging; under reduced motion only the fade remains. The inline value
 is `muted-foreground` at rest and `foreground` while the slider is in use. `circle` and `knob`
-ignore `inlineLabel`.
+ignore `inlineLabel`, as do vertical sliders.
 
 ## Value tooltip
 
 `showValueTooltip` (off by default) shows the live value above the thumb while it is hovered or
 keyboard-focused. It stays open while dragging, follows the thumb, and closes after release once
-the pointer has left the thumb.
+the pointer has left the thumb. Vertical sliders place the tooltip beside the thumb. Both
+tooltips stay visible during a whole-range drag. Tooltips use the same `format` and `locale`
+as the displayed values; editing still accepts a plain number.
+
+`getAriaValueText` changes what assistive technology reads without changing visible formatting.
+It receives the formatted text, raw number, and handle index. `getAriaLabel` can name handles
+by index; `thumbLabels` remains available for a fixed pair of range names.
+
+In Windows high-contrast mode, rails receive a visible outline, the selected interval uses
+the system highlight colour, and handles and keyboard focus use system colours.
 
 The bar thumb exposes `data-grabbed` while stretched by a drag, and `data-dodged` when it
 moves out of the way of an inline label. Reduced motion skips the grab stretch.

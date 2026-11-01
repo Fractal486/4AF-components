@@ -16,6 +16,7 @@ A 4×4 grid of dots. `variant="scan"` (default) pulses columns together from lef
 | --- | --- | --- |
 | `size` | `"sm"` | Dot size and gap: `"sm"` uses 2px / 2px, `"md"` uses 3px / 2px, and `"lg"` uses 4px / 3px. |
 | `duration` | `1.2` | Seconds per cycle. Non-positive or non-finite values fall back to `1.2`. |
+| `loading` | `true` | Whether to show the spinner. `false` renders nothing, including no accessible status or reserved space. Visibility changes immediately. |
 | `label` | — | An accessible status name; omit it for a decorative loader. |
 
 Native `div` props, `className`, `style`, and an element `ref` are supported.

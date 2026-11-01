@@ -1,13 +1,15 @@
 ---
 title: Data Table
-description: The stateful table — a checkbox column, a selection action row, three-step column sorting, and a per-row actions menu.
+description: Search, filter, sort, paginate, and select data, with column visibility, pinned columns, and row actions.
 ---
 
 <ComponentReference name="data-table" />
 
 ## API
 
-**Main exports:** `DataTable`, `DataTableRow`, `DataTableHead`, `DataTableRowActions`, `TableSort`,
+**Main exports:** `DataTable`, `useDataTable`, `createDataTableColumns`, `useDataTableContext`,
+`DataTableContent`, `DataTableToolbar`, `DataTableSearch`, `DataTableFilter`, `DataTableViewOptions`,
+`DataTablePagination`, `DataTableRow`, `DataTableHead`, `DataTableRowActions`, `TableSort`,
 `TableSortDirection`
 
 `TableCaption`, `TableHeader`, `TableBody`, `TableFooter` and `TableCell` are re-exported from
@@ -17,14 +19,153 @@ description: The stateful table — a checkbox column, a selection action row, t
 Use `DataTableHead` for every header cell, sortable or not — a plain `TableHead` won't fade under
 the selection bar.
 
+## Data-driven tables
+
+Pass records and column definitions to `useDataTable`, then pass its instance as `table` to
+`DataTable`. Compose `DataTableToolbar`, `DataTableContent`, and `DataTablePagination`
+inside it. The model uses TanStack Table v9 and performs sorting, filtering, and pagination.
+Existing hand-composed tables work without a `table` prop.
+
+Keep data and column definitions stable, using module constants or `useMemo` when needed.
+Supply `getRowId` with a stable record ID so selection follows records as data changes.
+The checkbox and actions columns still come from `selectable` and `actionColumn`; do not
+add selection or action columns to the column definitions.
+
+### useDataTable
+
+Accepts TanStack Table options, including:
+
+| Option | Purpose |
+| --- | --- |
+| `data`, `columns` | Records and column definitions. |
+| `getRowId` | Stable record identity; otherwise TanStack uses row indexes. |
+| `initialState` | Starting sorting, filters, column visibility, selection, and pagination. Defaults to page 0 with 10 rows. |
+| `state` and matching change handlers | Control any state, such as `sorting`/`onSortingChange` or `rowSelection`/`onRowSelectionChange`. |
+| `enableRowSelection` | Boolean or a row predicate; false keeps that row's checkbox visible but disabled. |
+| `enableMultiRowSelection` | Boolean or a row predicate; false makes selecting that row replace the current selection. Applies to checkboxes, ranges, and select-all. |
+| `enableSortingRemoval` | Set false to cycle between ascending and descending without clearing sorting. |
+| `enableMultiSort`, `isMultiSortEvent`, `maxMultiSortColCount` | Configure multiple sorting, its modifier gesture, and the maximum number of sorted columns. |
+| `manualPagination` | Bypass local page slicing when the caller supplies the current page or wants all rows. |
+| `manualSorting`, `manualFiltering` | Let the caller provide sorted/filtered records, for example from a server. |
+| `rowCount` / `pageCount` | Total size for server pagination. Use `pageCount: -1` when the number of pages is unknown. |
+
+In data mode, the hook owns selection and sorting. Use its state and handlers instead of the
+hand-composed root's `value`, `sort`, or `sorting` props. Omitting the pagination controls
+does not disable page slicing; use `manualPagination: true` to show all supplied records.
+
+### Columns
+
+`createDataTableColumns<T>()` returns the typed `accessor`, `display`, `group`, and
+`columns` helpers. Accessors can read a field or calculate a value. Headers and cells accept
+custom renderers; the content component generates the native table elements and sort buttons.
+Set `enableSorting: false` for a column that should not sort, or `enableHiding: false` for
+one that must remain visible. `sortFn` and `filterFn` customize how values compare and match.
+Set `sortDescFirst: true` on a column to start its generated sort button in descending order.
+Generated headers use the model's sorting rules and change handlers.
+
+Column `meta` accepts the exported `DataTableColumnMeta` fields:
+
+| Field | Purpose |
+| --- | --- |
+| `label` | A readable label for the View menu and announcements when the header is rich content. |
+| `align` | `"start"`, `"center"`, or `"end"` on the heading and data cells. |
+| `pinned` | `"start"` or `"end"`; multiple columns receive automatic offsets. |
+| `rowHeader` | Render body cells as row headings. |
+| `className` | Classes shared by the column's heading and body cells. |
+
+### DataTableContent
+
+| Prop | Purpose |
+| --- | --- |
+| `getRowLabel` | `(record) => string` used in checkbox names. Defaults to the row ID. |
+| `rowActions` | `(record) => ReactNode` for each row's actions. Requires `actionColumn` on the root. |
+| `children` | Optional `TableCaption` and `TableFooter` composition. |
+
+Loading, empty states, size, lines, wrapping, and scroll height use the existing root props.
+Loading cells and empty-state spans follow the visible leaf columns, including grouped headers
+and hidden columns. Loading cells retain each leaf column's alignment and pinning.
+A custom footer should follow `table.getVisibleLeafColumns()` so hiding a column keeps it aligned.
+
+### Toolbar, search, and filters
+
+`DataTableToolbar` accepts native div props and wraps controls onto another line when needed.
+`DataTableSearch` accepts Input props except its model-owned value/change-value props. It
+searches all searchable columns, returns to the first page, and supports a clear button and Escape.
+Use `column="columnId"` to filter one column. `placeholder` defaults to `"Search…"`,
+`aria-label` to `"Search table"`, and `clearLabel` to `"Clear search"`.
+
+### DataTableFilter
+
+A multiple Select on `SelectSortTrigger` that filters one column to the checked values. The
+trigger is dashed while unset and shows the checked labels once filtering; the panel stays open
+while choices are toggled and has a clear footer. Sort trigger props are forwarded, and the
+visible label names the trigger.
+
+| Prop | Default | Purpose |
+| --- | --- | --- |
+| `column` | — | Column id to filter. |
+| `options` | The column's distinct values | `{ value: string; label?: ReactNode }[]`. |
+| `label` | Column label | Trigger prefix and accessible name. |
+| `clearLabel` | `"Clear"` | Clear footer text. |
+
+Columns filter with text matching by default; an array filter value keeps rows whose value, as a
+string, equals one of its entries. Select triggers placed directly in the toolbar size to their value.
+
+For other filters, `useDataTableContext<T>()` exposes the nearest model. Set a column's filter
+with `table.getColumn(id)?.setFilterValue(value)`; a custom Select or checkbox can provide the
+control. Use `table.Subscribe` with a state selector when rendering model state in custom controls
+or footers, since the table instance remains stable as its store changes.
+
+### DataTableViewOptions
+
+A multiple Select on `SelectSortTrigger` listing the hideable columns. The panel stays open after
+each change and prevents hiding the last visible column. Sort trigger props are forwarded:
+`label` defaults to `"View"`, `icon` to a sliders glyph, and `showValue` to `false`.
+`groupLabel` defaults to `"Columns"`, and `getLabel(column)` can customize each column's name.
+
+### DataTablePagination
+
+| Prop | Default | Purpose |
+| --- | --- | --- |
+| `pageSizes` | `[10, 20, 50, 100]` | Allowed positive page sizes; the current size is also included. |
+| `showSelection` | Root's `selectable` | Show selected/total filtered rows instead of only the row count. |
+| `labels` | English labels | Override `rowsPerPage`, `firstPage`, `previousPage`, `nextPage`, and `lastPage`. |
+| `formatSelection` | Selected of total rows | `(selected, total) => ReactNode`; counts filtered rows across pages. |
+| `formatRows` | Total rows | `(total) => ReactNode`. |
+| `formatPage` | Page X of Y, or Page X when unknown | `(page, count) => ReactNode`; page is one-based and count is `-1` when unknown. |
+
+Native div props are forwarded. Page controls disable at the boundaries and during loading.
+Empty results show page 1 of 1. When records shrink, an out-of-range page returns to the last
+available page. Selection persists across pages; select-all affects only selectable rows on
+the current page.
+
+With `manualPagination`, row summaries and their formatters use the model's total row count;
+provide `rowCount` for a server-wide total. Selected-row counts still reflect selected records
+in the supplied page. With `pageCount: -1`, Next remains available, Last is disabled, and the
+page index is not clamped until a nonnegative page count is known.
+
+### Announcements
+
+Data-driven tables announce all sorting priorities and directions, the result count after a
+short pause in filtering, and page changes. These use polite live regions. Labels and page
+formatters can be localized. Both reading directions use logical alignment and pinned edges.
+
 ## Props
 
 ### DataTable
 
-Takes every [`Table`](/docs/table) prop and adds:
+Takes every [`Table`](/docs/table) prop, including `wrap` and `emptyState` (`ReactNode`, default `"No results."`).
+An empty body keeps the selection and actions columns aligned without adding a row checkbox
+or actions. Loading takes precedence; `null` hides the empty state. Adds:
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
+| `table` | `DataTableInstance<T>` | — | Enables the data-driven composition described above. |
+| `containerClassName` | `string` | — | Styles its outer toolbar/content/pagination wrapper. |
+| `disabledRows` | `readonly string[]` | `[]` | Hand-composed row values excluded from selection. |
+| `sorting` | `readonly TableSort[]` | — | Controlled sorts in priority order for hand-composed tables. |
+| `defaultSorting` | `readonly TableSort[]` | `[]` | Uncontrolled initial sorts. |
+| `onSortingChange` | `(sorting: TableSort[]) => void` | — | Fired with all active sorts. |
 | `selectable` | `boolean` | `false` | Adds the checkbox column on the left. |
 | `rows` | `readonly string[]` | `[]` | Row values the select-all covers. |
 | `value` | `readonly string[]` | — | Selected row values, controlled. |
@@ -43,15 +184,19 @@ Takes every [`Table`](/docs/table) prop and adds:
 
 | Prop | Type | Description |
 | --- | --- | --- |
+| `disabled` | `boolean` | Keeps its checkbox visible but excludes it from individual, select-all, and range selection. |
 | `value` | `string` | Makes the row selectable and names it in the selection. |
 | `selectLabel` | `string` | Names this row's checkbox. Defaults to `"Select row"`. |
 | `actions` | `ReactNode` | What goes in the actions column. Needs `actionColumn`. |
 
 ### DataTableHead
 
+Takes every `TableHead` prop, including `align`, `pinned`, and native `scope`, and adds:
+
 | Prop | Type | Description |
 | --- | --- | --- |
 | `sortKey` | `string` | Makes the column sortable and names it in `TableSort.column`. |
+| `onSort` | Button click handler | Optional replacement for the hand-composed sort cycle. Generated headers use their model column's toggle handler. |
 
 `TableSort` is `{ column: string; direction: "asc" \| "desc" }`.
 
@@ -66,6 +211,12 @@ Takes every `DropdownMenuContent` prop — `side`, `align`, `sideOffset` — and
 | `children` | `ReactNode` | — | The menu's items. |
 
 ## Columns
+
+The shared Table layout applies here too: `wrap` controls text wrapping, `align` sets logical
+cell alignment (end-aligned headers place the sort chevrons before the label), and `pinned` keeps columns at either scrolling edge with fades along their inner edges. Apply pinning to both
+`DataTableHead` and its body cells. The checkbox column is always pinned at the start; the actions column pins when the last column is pinned `end`. `DataTableHead scope="row"` can label a body row and stays
+visible and accessible while the selection bar covers the column headings. See
+[Table layout](/docs/table#layout) for offsets, loading rows, and automatic background matching.
 
 `selectable` and `actionColumn` go on the root, not on individual rows: the header and the
 placeholder rows have to grow the column too. Never write a gutter cell into a row by hand.
@@ -139,10 +290,15 @@ With `verticalLines`, neither gutter column draws a vertical rule beside it.
 
 ## Sorting
 
-`sortKey` cycles ascending, descending, unsorted; switching columns restarts at ascending.
+`sortKey` cycles ascending, descending, unsorted. Shift-click a heading to add it as a secondary
+sort; sorted headings show their priority when several are active. A regular click replaces the
+sort list with that column. `sorting`/`defaultSorting`/`onSortingChange` use arrays; the existing
+`sort`/`defaultSort`/`onSortChange` API still supports a single sort. A controlled `sort` keeps
+single-column behavior. When both controlled forms are supplied, `sorting` takes precedence.
 `aria-sort` is set on the `<th>`. An unsorted sortable header shows `ChevronsUpDown`.
 
-The component owns the sort control and its state; ordering the rows is up to the caller:
+In hand-composed tables, the component owns the controls and state; the caller orders the rows.
+In data-driven tables, the model sorts the records automatically.
 
 ```tsx
 const [sort, setSort] = useState<TableSort | null>(null);
@@ -154,8 +310,9 @@ const rows = useMemo(() => sortPeople(people, sort), [people, sort]);
 
 ## Loading
 
-As on the base table, plus: placeholder rows grow the gutter cells and stay in column, and the
-select-all and sort controls are disabled.
+As on the base table, plus: the select-all checkbox and each body-row checkbox become matching
+checkbox-sized skeletons. Placeholder rows keep their gutter cells aligned, the actions gutter
+stays empty, and sorting is disabled. The checkbox skeletons are decorative and cannot receive focus.
 
 ```tsx
 <DataTable selectable actionColumn loading loadingRows={8}>

@@ -230,6 +230,27 @@
   }
 }
 
+/* Indeterminate progress moves in the reading direction. Its fixed loop duration is
+   independent of the transition tokens; the component stops it under reduced motion. */
+@keyframes skeleton-reveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes empty-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes progress-slide {
+  from {
+    transform: translateX(calc(-100% * var(--progress-direction, 1)));
+  }
+  to {
+    transform: translateX(calc(250% * var(--progress-direction, 1)));
+  }
+}
+
 /* ---------------------------------------------------------------------------
  * 2. Semantic tokens
  * ------------------------------------------------------------------------ */
@@ -274,9 +295,8 @@
   --muted-foreground: var(--color-neutral-600);
   --subtle-foreground: var(--color-neutral-500);
 
-  /* Match the shared shimmer treatment: a neutral gray base with a soft near-white sheen. */
-  --text-shimmer-base: oklch(0.538 0 70);
-  --text-shimmer-highlight: oklch(0.946 0 70);
+  /* Highlights inherit the label hue; dark mode increases the light mixed into it. */
+  --text-shimmer-highlight: color-mix(in oklch, currentColor 45%, white);
 
   --border: var(--color-neutral-200);
   --border-strong: var(--color-neutral-300);
@@ -341,8 +361,7 @@
   --muted-foreground: var(--color-neutral-400);
   --subtle-foreground: var(--color-neutral-500);
 
-  --text-shimmer-base: oklch(0.538 0 70);
-  --text-shimmer-highlight: oklch(0.946 0 70);
+  --text-shimmer-highlight: color-mix(in oklch, currentColor 20%, white);
 
   --border: oklch(0.235 0 0); /* #1E1E1E — component outline */
   --border-strong: oklch(0.285 0 0); /* #2A2A2A */
@@ -522,42 +541,70 @@
   to { translate: 100% 0; }
 }
 
-.shimmer-text {
-  position: relative;
-  color: var(--text-shimmer-base);
+@layer components {
+  .shimmer-text {
+    position: relative;
+    color: var(--text-shimmer-base, inherit);
+    --text-shimmer-display: block;
+    --text-shimmer-mask: linear-gradient(white, white);
+  }
 }
 
-/* Text clipping uses the WebKit implementation this effect was designed for. Keeping the
-   image and clip properties on the same implementation avoids a one-pixel mask edge above
-   inline text in browsers that partially support the unprefixed path. */
+/* Utilities work with Tailwind's responsive variants, e.g. md:shimmer-none. */
+@utility shimmer-none {
+  --text-shimmer-display: none;
+  --text-shimmer-mask: none;
+}
+
+@utility shimmer-auto {
+  --text-shimmer-display: block;
+  --text-shimmer-mask: linear-gradient(white, white);
+}
+
+/* Keep the mask and clipping on the same implementation to avoid partial-support edges. */
 @supports (-webkit-mask-clip: text) {
-  /* Masking the element to its own glyphs is a no-op for the text and is what confines
-     the ::after highlight to them. */
   .shimmer-text {
-    -webkit-mask-image: linear-gradient(white, white);
+    -webkit-mask-image: var(--text-shimmer-mask);
     -webkit-mask-clip: text;
   }
 
   .shimmer-text.animate-text-shimmer::after {
     content: "";
+    display: var(--text-shimmer-display);
     position: absolute;
     inset: 0;
     background: linear-gradient(
       90deg,
       transparent calc(50% - var(--text-shimmer-spread, 4ch)),
-      var(--text-shimmer-highlight) 50%,
+      var(--text-shimmer-highlight, color-mix(in oklch, currentColor 45%, white)) 50%,
       transparent calc(50% + var(--text-shimmer-spread, 4ch))
     );
     pointer-events: none;
-    /* `translate`, not `transform`: that is the property the keyframes move, and naming
-       the wrong one buys no compositing. */
+    /* Rest outside the text when a one-time sweep finishes. No retained animation needed. */
+    translate: 100% 0;
+    /* Retained from the measured overlay optimization described above. */
     will-change: translate;
     animation: text-shimmer var(--text-shimmer-duration, 2.5s) linear infinite;
   }
 
-  /* No frozen frame to fall back to: a highlight stopped mid-label reads as a rendering
-     fault rather than a state. Drop the sweep and leave legible base-coloured text. */
+  .shimmer-text.animate-text-shimmer[data-once]::after {
+    animation-iteration-count: 1;
+  }
+
+  .shimmer-text[data-active="false"] {
+    -webkit-mask-image: none;
+  }
+
+  .shimmer-text.animate-text-shimmer[data-active="false"]::after {
+    display: none;
+  }
+
+  /* Restore ordinary text, including its antialiasing, instead of freezing a highlight. */
   @media (prefers-reduced-motion: reduce) {
+    .shimmer-text {
+      -webkit-mask-image: none;
+    }
+
     .shimmer-text.animate-text-shimmer::after {
       display: none;
     }

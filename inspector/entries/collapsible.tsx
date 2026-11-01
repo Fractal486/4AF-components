@@ -1,7 +1,9 @@
+import { Folder } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
+  CollapsibleTriggerIcon,
 } from "@/registry/ui/collapsible/collapsible";
 import { bool, defineEntry, select } from "../schema";
 
@@ -24,12 +26,11 @@ export const collapsibleEntry = defineEntry({
   name: "Collapsible",
   controls: {
     variant: select(VARIANTS, "plain"),
-    chevron: select(CHEVRONS, "end"),
-    // Two rows are what shows the thing a single one can't: the second section moving
-    // the instant the first one opens, rather than being dragged down over 200ms.
+    chevron: select(CHEVRONS, "end", "Icon position"),
+    icon: select(["chevron", "folder"] as const, "chevron", "Icon", (values) => values.chevron === "none"),
     stacked: bool(true, "Two sections"),
   },
-  render({ variant, chevron, stacked }) {
+  render({ variant, chevron, icon, stacked }) {
     const sections = stacked ? SECTIONS : SECTIONS.slice(0, 1);
 
     return (
@@ -39,11 +40,14 @@ export const collapsibleEntry = defineEntry({
       // the row looks like it's moving when in a real page it wouldn't.
       <div className="flex w-full max-w-md flex-col gap-3 self-start">
         {sections.map((section, index) => (
-          <Collapsible key={section.title} variant={variant} defaultOpen={index === 0}>
-            <CollapsibleTrigger chevron={chevron === "none" ? false : chevron}>
-              {section.title}
+          <Collapsible key={section.title} variant={variant} defaultOpen={index === 0}
+            className={variant === "card" ? "flex flex-col gap-1" : "flex flex-col gap-2"}>
+            <CollapsibleTrigger chevron={icon === "chevron" && chevron !== "none" ? chevron : false}>
+              {icon === "folder" && chevron === "start" && <CollapsibleTriggerIcon><Folder /></CollapsibleTriggerIcon>}
+              {icon === "chevron" && chevron !== "none" ? section.title : <span className="min-w-0 flex-1">{section.title}</span>}
+              {icon === "folder" && chevron === "end" && <CollapsibleTriggerIcon><Folder /></CollapsibleTriggerIcon>}
             </CollapsibleTrigger>
-            <CollapsibleContent>{section.body}</CollapsibleContent>
+            <CollapsibleContent className="pt-0">{section.body}</CollapsibleContent>
           </Collapsible>
         ))}
       </div>

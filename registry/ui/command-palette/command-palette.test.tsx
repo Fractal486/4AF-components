@@ -316,7 +316,7 @@ describe("CommandPalette", () => {
     await screen.findByRole("option", { name: "Rename" });
     const searchInput = screen.getByRole("textbox", { name: "Search options" });
     expect(searchInput).toHaveClass("h-full");
-    expect(searchInput.parentElement).toHaveClass("h-[38px]");
+    expect(searchInput.closest('[data-slot="input-wrapper"]')?.parentElement).toHaveClass("h-[38px]", "items-stretch");
 
     // Base UI drops its own highlight when the menu takes focus, so the row paints the
     // frozen one instead — the two are styled identically.

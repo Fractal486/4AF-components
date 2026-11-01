@@ -21,8 +21,10 @@ swap is instant. Morph supplies no button styling, padding, or fixed height of i
 | `"current"` | The showing item. The width transitions over `--duration-base` and is instant under reduced motion. Without `ResizeObserver` the box resizes without animating. |
 | `"fixed"` | The dimensions `className` gives it. Only the showing item mounts, so a known box carries no hidden sizing copies, and with them no duplicate controls or effects. |
 
-With multiple items, or with `sizing="fixed"`, the box carries `data-sizing`. With a single item, Morph skips the hidden
-sizing copy, so the content appears once in the DOM and to assistive technology.
+The box carries `data-sizing`. A single item skips the hidden sizing copy unless
+`sizing="current"` needs to measure its width. With `current`, you may supply just the current
+label under its changing `activeKey`: Morph holds the previous measured width until the new
+label is measured, then transitions smoothly. Hidden copies are excluded from assistive technology.
 
 Hidden sizing copies keep each `LoadingIndicator`'s fixed-size wrapper but leave its loader
 unmounted. This preserves the measured size without running hidden timers or spinner animations,

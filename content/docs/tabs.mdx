@@ -9,8 +9,24 @@ description: A Base UI tab set with keyboard navigation and an animated active i
 
 **Main exports:** `Tabs`, `TabsList`, `TabsTab`, `TabsCount`, `TabsPanel`
 
-Base UI tabs with a travelling Motion indicator; `segment`, `pill`, and `underline` variants; an
+Base UI tabs with a travelling indicator; `segment`, `pill`, and `underline` variants; an
 `appearance` for segment and pill; and two sizes.
+
+| Part | Props and behavior |
+| --- | --- |
+| `Tabs` | `value` / `defaultValue` / `onValueChange`; `orientation="horizontal" \| "vertical"` (default `horizontal`); `variant`, `appearance`, and `size`. |
+| `TabsList` | Automatically scrolls along its orientation when constrained. `maxWidth` optionally adds a width limit; numbers are pixels. `activateOnFocus` defaults to `false`; `loopFocus` defaults to `true`. |
+| `TabsTab` | `value`, `disabled`, and arbitrary children, including icons and counts. |
+| `TabsPanel` | `value` and `keepMounted` (default `true`). Inactive panels retain their content and state unless `keepMounted={false}` is supplied. |
+| `TabsCount` | A dim, tabular count after the label. Accepts native span attributes and refs. |
+
+`Tabs`, `TabsList`, `TabsTab`, and `TabsPanel` forward refs and native props and accept Base UI's `render`
+prop, either a replacement element or a render function. Replacing a panel keeps its tab-panel semantics,
+event handlers, refs, and content entrance animation. Preserve the supplied props when using a render
+function.
+
+Their `className` and `style` also accept state functions. Root/list state includes `orientation`; tab
+state includes `active` and `disabled`; panel state includes `hidden`. String classes work as before.
 
 | `appearance` | Track and selected chip |
 | --- | --- |
@@ -40,13 +56,33 @@ track. Segment corners step down with it, from an 8px track around 6px tabs to a
 
 ## Scrolling and edge fades
 
-Set `maxWidth` on `TabsList` to enable a horizontally scrolling bar in any variant.
-Use a number for pixels (`maxWidth={280}`) or a CSS length (`maxWidth="20rem"`).
-The bar never grows past its parent's width, so give it a parent with a definite width.
+All variants scroll automatically when their tabs exceed the available space. Give the parent a definite
+width for horizontal lists. `maxWidth` is an optional additional limit: use a number for pixels
+(`maxWidth={280}`) or a CSS length (`maxWidth="20rem"`). The list never grows past its parent's width.
 
-An edge fades with a tapered blur while more tabs are hidden on that side, including the track
-and the underline variant's rule. Touch and trackpad scrolling work natively, with the scrollbar
-hidden. Clicking a tab in either half of the bar scrolls it toward the centre when more content
-is hidden on that side. Keyboard focus, the initial selection, and controlled selection changes also bring hidden
-tabs into view. Under reduced motion the scrolling is instant. Focus rings sit inside the tabs so
-they aren't clipped. Scrolling applies to horizontal tab lists only.
+With `orientation="vertical"` on `Tabs`, tabs stack beside the panels and the indicator moves vertically.
+The underline becomes a side marker. Constrain the list's height with `className` or `style` when needed;
+overflowing vertical lists scroll with fades at the top and bottom. Reading direction also moves the
+side marker to the appropriate edge.
+
+An edge fades with a tapered blur while more tabs are hidden on that side, including the track and the
+underline variant's rule. Touch and trackpad scrolling work natively, with the scrollbar hidden.
+Clicking a tab in either half of the list scrolls it toward the centre when more content is hidden on
+that side. Keyboard focus, the initial selection, and controlled selection changes also bring hidden
+tabs into view. Under reduced motion the scrolling is instant. Focus rings sit inside the tabs so they
+aren't clipped.
+
+## Icons
+
+Place an SVG inside `TabsTab` alongside its label. Icons get consistent spacing, do not shrink, and
+default to 14px at `sm` or 16px at `md`. An explicit `size-*` class on an icon overrides that default.
+Give icon-only tabs an accessible label, and mark decorative icons `aria-hidden`.
+
+## Motion and initial rendering
+
+Base UI positions the indicator before React hydration, so server-rendered tabs can show their active
+selection immediately. Selection changes animate its position and dimensions; resizing snaps it into
+place. Dimensions animate to preserve the chip's rounded corners without distorting them.
+Indicator timing follows `--duration-slower`, `--duration-slow`, and `--ease-out`; reduced motion removes
+the transition. Content panels keep their existing short fade and upward entrance, with no motion under
+reduced motion.

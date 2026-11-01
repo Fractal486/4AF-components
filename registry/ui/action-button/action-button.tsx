@@ -5,12 +5,12 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
 import { duration, ease, spring } from "@/registry/lib/motion";
-import { useAction, type ActionStatus } from "@/registry/lib/use-action";
+import { useAction, type ActionStatus, type ActionRevertAfter } from "@/registry/lib/use-action";
 import { LoadingIndicator } from "@/registry/lib/loader";
 import { Button, type ButtonProps } from "@/registry/ui/button/button";
 import { Morph, morphVariants } from "@/registry/ui/morph/morph";
 
-export type { ActionStatus };
+export type { ActionStatus, ActionRevertAfter };
 
 function AnimatedCheck() {
   const reduceMotion = useReducedMotion();
@@ -44,7 +44,12 @@ function AnimatedCheck() {
 export interface ActionButtonProps
   extends Omit<ButtonProps, "loading" | "children" | "asChild"> {
   /** The work. Return a promise and the button waits for it. */
-  action: () => void | Promise<unknown>;
+  action?: () => void | Promise<unknown>;
+  /** Drive feedback from a form or another external owner. */
+  status?: ActionStatus;
+  onStatusChange?: (status: ActionStatus) => void;
+  /** Rejection reason when the status is controlled externally. */
+  error?: unknown;
   /** The resting label. */
   children?: ReactNode;
   /** An icon shown beside the resting label. */
@@ -55,7 +60,7 @@ export interface ActionButtonProps
    */
   iconPosition?: "start" | "end";
   /** Labels per state. Each falls back to the resting label. */
-  labels?: { pending?: ReactNode; success?: ReactNode; error?: ReactNode };
+  labels?: { pending?: ReactNode; success?: ReactNode; error?: ReactNode | ((error: unknown) => ReactNode) };
   /**
    * `"widest"` (the default) holds the button at the width of its widest state. `"current"`
    * fits it to the showing state and animates the width as the state changes.
@@ -64,7 +69,7 @@ export interface ActionButtonProps
   /** Whether pending keeps its label beside the loader or shows only a centered loader. */
   pendingMode?: "label" | "icon";
   /** How long the outcome holds before returning to idle, in ms. */
-  revertAfter?: number;
+  revertAfter?: ActionRevertAfter;
   /**
    * Don't show `pending` until the action has been running this long, in ms.
    *
@@ -93,6 +98,9 @@ export interface ActionButtonProps
  */
 export function ActionButton({
   action,
+  status: controlledStatus,
+  onStatusChange,
+  error: controlledError,
   children,
   icon,
   iconPosition = "start",
@@ -110,15 +118,26 @@ export function ActionButton({
   onClick,
   onSuccess,
   onError,
+  onPointerEnter,
+  onPointerLeave,
+  onFocus,
+  onBlur,
   ...props
 }: ActionButtonProps) {
-  const { status, run } = useAction({
+  const { status, error, run, buttonProps } = useAction({
     action,
+    status: controlledStatus,
+    onStatusChange,
     revertAfter,
     pendingDelay,
     onSuccess,
     onError,
   });
+
+  const errorLabel = typeof labels?.error === "function"
+    ? status === "error" ? labels.error(controlledError !== undefined ? controlledError : error) : undefined
+    : labels?.error;
+  const resolvedLabels = { ...labels, error: errorLabel };
 
   const reduceMotion = useReducedMotion();
   // The Morph's own transition, so the icon-only swap moves exactly like every other one.
@@ -130,7 +149,7 @@ export function ActionButton({
   // Icon-only pending deliberately keeps the idle label in the hidden sizer. That preserves
   // the button's accessible name while the centered loader is drawn over the whole content
   // box.
-  const override = status === "idle" || pendingIconOnly ? undefined : labels?.[status];
+  const override = status === "idle" || pendingIconOnly ? undefined : resolvedLabels[status];
   const labelKey = pendingIconOnly ? "idle" : override == null ? "idle" : status;
   const glyphKey = pendingIconOnly ? "idle" : status;
   const fit = sizing === "current";
@@ -148,7 +167,7 @@ export function ActionButton({
   );
   const labelled =
     Boolean(children) ||
-    Boolean(labels && (labels.pending ?? labels.success ?? labels.error));
+    Boolean(labels && (labels.pending ?? labels.success ?? errorLabel));
   // While idle, a label-only action still reserves the status glyph's width so its button
   // never resizes when it runs. That leading-only slot would otherwise push the visible
   // label to the right, so centre the idle label by half the reserved slot and gap. Once a
@@ -178,8 +197,12 @@ export function ActionButton({
         // letting that land last meant the action simply never ran.
         onClick={(event) => {
           onClick?.(event);
-          run();
+          if (!event.defaultPrevented) void run();
         }}
+        onPointerEnter={(event) => { onPointerEnter?.(event); buttonProps.onPointerEnter(event); }}
+        onPointerLeave={(event) => { onPointerLeave?.(event); buttonProps.onPointerLeave(); }}
+        onFocus={(event) => { onFocus?.(event); buttonProps.onFocus(); }}
+        onBlur={(event) => { onBlur?.(event); buttonProps.onBlur(); }}
         disabled={disabled || status === "pending"}
         focusableWhenDisabled={(!disabled && status === "pending") || focusableWhenDisabled}
         aria-busy={status === "pending" || undefined}
@@ -240,7 +263,7 @@ export function ActionButton({
                   idle: children,
                   pending: labels?.pending,
                   success: labels?.success,
-                  error: labels?.error,
+                  error: errorLabel,
                 }}
               />
             )}
@@ -273,7 +296,7 @@ export function ActionButton({
       <span aria-live="polite" className="sr-only">
         {status === "pending" && (announce?.pending ?? "Working")}
         {status === "success" && (announce?.success ?? "Done")}
-        {status === "error" && (announce?.error ?? "Something went wrong")}
+        {status === "error" && (announce?.error ?? (typeof errorLabel === "string" ? errorLabel : "Something went wrong"))}
       </span>
     </>
   );

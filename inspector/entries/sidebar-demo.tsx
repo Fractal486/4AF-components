@@ -51,7 +51,7 @@ import { SidebarLayout } from "@/registry/ui/sidebar-layout/sidebar-layout";
 
 const NAV = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "inbox", label: "Inbox", icon: Inbox, badge: "12" },
+  { id: "inbox", label: "Inbox", icon: Inbox, badge: 12 },
   { id: "files", label: "Files", icon: Files },
   { id: "team", label: "Team", icon: Users },
 ] as const;
@@ -60,7 +60,7 @@ const PROJECTS = ["Aurora", "Basecamp", "Cartography"] as const;
 
 const PERSONAL = [
   { id: "starred", label: "Starred", icon: Star },
-  { id: "drafts", label: "Drafts", icon: FilePen, badge: "3" },
+  { id: "drafts", label: "Drafts", icon: FilePen, badge: 3 },
   { id: "archive", label: "Archive", icon: Archive },
 ] as const;
 
@@ -289,7 +289,7 @@ export function SidebarDemo({
                                 <Inbox />
                                 <span>Inbox</span>
                               </SidebarMenuButton>
-                              <SidebarMenuBadge>99+</SidebarMenuBadge>
+                              <SidebarMenuBadge count={120} label="unread messages" />
                             </SidebarMenuItem>
                             <SidebarMenuItem>
                               <SidebarMenuButton
@@ -567,13 +567,10 @@ export function SidebarDemo({
                             <item.icon />
                             <span>{item.label}</span>
                           </SidebarMenuButton>
-                          {"badge" in item && item.badge ? (
-                            <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>
-                          ) : (
-                            <SidebarMenuAction showOnHover aria-label={`More for ${item.label}`}>
-                              <MoreHorizontal />
-                            </SidebarMenuAction>
-                          )}
+                          {"badge" in item && <SidebarMenuBadge count={item.badge} label="unread messages" />}
+                          <SidebarMenuAction showOnHover replacesBadge={"badge" in item} aria-label={`More for ${item.label}`}>
+                            <MoreHorizontal />
+                          </SidebarMenuAction>
                         </SidebarMenuItem>
                       ))}
                 </SidebarMenu>
@@ -663,7 +660,7 @@ export function SidebarDemo({
                                 <item.icon />
                                 <span>{item.label}</span>
                               </SidebarMenuButton>
-                              {"badge" in item && <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>}
+                              {"badge" in item && <SidebarMenuBadge count={item.badge} label="drafts" />}
                             </SidebarMenuItem>
                           ))}
                     </SidebarMenu>

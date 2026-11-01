@@ -1,45 +1,18 @@
-import { Check, Info, OctagonAlert, TriangleAlert } from "lucide-react";
-import type { ComponentProps, ReactNode } from "react";
-import { cn } from "@/registry/lib/cn";
+"use client";
+
+import { Collapsible as BaseCollapsible } from "@base-ui/react/collapsible";
+import { useRender } from "@base-ui/react/use-render";
+import { Check, Info, OctagonAlert, TriangleAlert, X } from "lucide-react";
+import { useLayoutEffect, useRef, type ComponentProps, type ReactNode } from "react";
+import { tabbable } from "tabbable";
+import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { LoadingIndicator } from "@/registry/lib/loader";
-import { alertVariants, type AlertVariants } from "./alert.variants";
+import {
+  alertVariants, alertTitleVariants, alertDescriptionVariants,
+  alertCloseVariants, type AlertVariants,
+} from "./alert.variants";
 
-/**
- * An inline status line — a glyph and a sentence, in the colour of what it's telling you.
- * Five of them: `error`, `warning`, `success`, `info`, and `loading`.
- *
- * It carries no surface of its own: no panel, no border, no padding beyond the space
- * above it. That's what lets the same component sit under a field, beside a save button,
- * at the foot of a form, or in a settings row without any of them having to make room for
- * a box. Reach for Badge when the status is a label on a row rather than a sentence.
- *
- * Under a field, point the control's `aria-describedby` at this (give it an `id`) so the
- * line is announced with the field. It renders nothing when there's no message, so
- * `{error && <Alert>{error}</Alert>}` and a bare `<Alert>{error}</Alert>` behave the same.
- *
- * **Only the error interrupts.** It's `role="alert"`, which is right for something that
- * has just stopped the user from continuing. Everything else is `role="status"`, the
- * polite one that waits for a pause in speech — a caution, a confirmation, a note or a
- * progress line has no business cutting across whatever the user was being told.
- *
- * The glyph is always the same 14px slot, so a line that moves through the states —
- * checking, then saved or failed — swaps its glyph without the text shifting sideways.
- * It sits in a box one line tall, so a message that wraps keeps the glyph on its first
- * line instead of centring it against the whole block.
- */
-
-/**
- * Status glyphs use Lucide icons, and the loading indicator follows LoaderProvider.
- *
- * The loader uses the same 14px box as the other icons, which is what
- * keeps the sentence from stepping sideways when the state resolves.
- *
- * No `label` on it, deliberately. The line beside it is already the announcement, and its
- * own live region would have a screen reader say "Loading" over the sentence explaining
- * what's loading.
- */
 const ICON_SLOT = "size-3.5 shrink-0";
-
 const GLYPH: Record<NonNullable<AlertVariants["variant"]>, (loader?: ReactNode) => ReactNode> = {
   error: () => <OctagonAlert aria-hidden="true" className={ICON_SLOT} />,
   warning: () => <TriangleAlert aria-hidden="true" className={ICON_SLOT} />,
@@ -48,38 +21,122 @@ const GLYPH: Record<NonNullable<AlertVariants["variant"]>, (loader?: ReactNode) 
   loading: (loader) => <LoadingIndicator loader={loader} className={ICON_SLOT} />,
 };
 
-export interface AlertProps extends Omit<ComponentProps<"p">, "children">, AlertVariants {
-  children?: ReactNode;
+export interface AlertProps extends ComponentProps<typeof BaseCollapsible.Root>, AlertVariants {
+  /** Overrides the loading glyph's LoaderProvider. */
   loader?: ReactNode;
+  /** Omit for the status glyph; null or false removes its column. */
+  icon?: ReactNode;
 }
 
-export function Alert({ className, variant, children, loader, ...props }: AlertProps) {
+/** Inline status content, with Base UI owning visibility and the closing lifecycle. */
+export function Alert({ className, variant, children, loader, icon, render, defaultOpen = true, ...props }: AlertProps) {
   if (children == null || children === "") return null;
-
-  // CVA types a variant as nullable, so the default is resolved here rather than in the
-  // destructure — `variant={null}` has to land on the same line as no variant at all.
   const resolved = variant ?? "error";
+  const glyph = icon === undefined ? GLYPH[resolved](loader) : icon;
 
   return (
-    <p
+    <BaseCollapsible.Root
       role={resolved === "error" ? "alert" : "status"}
+      data-slot="alert"
       data-variant={resolved}
-      className={cn(alertVariants({ variant: resolved }), className)}
+      defaultOpen={defaultOpen}
+      className={mergeStateClassName(alertVariants({ variant: resolved }), className)}
       {...props}
+      render={(elementProps, state) => (
+        <AlertSurface {...elementProps} state={state} render={render} />
+      )}
     >
-      <span data-slot="alert-glyph" className="flex h-[1lh] shrink-0 items-center">
-        {GLYPH[resolved](loader)}
-      </span>
-      <span className="min-w-0">{children}</span>
-    </p>
+      {glyph != null && glyph !== false && (
+        <span aria-hidden="true" data-slot="alert-glyph" className="flex h-[1lh] shrink-0 items-center [&_svg]:size-3.5">
+          {glyph}
+        </span>
+      )}
+      <div data-slot="alert-content" className="min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto] [&:has(>[data-slot^=alert-])]:grid">
+        {children}
+      </div>
+    </BaseCollapsible.Root>
   );
 }
 
-/**
- * @deprecated Renamed to `Alert`. The component outgrew the name once it stopped being
- * only an error and only under a field. The alias keeps existing call sites working and
- * can go once they've been updated.
- */
+/** The root and panel share one DOM node, so inline alerts don't gain a layout wrapper. */
+function AlertSurface({ state, render, ref, ...props }: ComponentProps<"div"> & {
+  state: BaseCollapsible.Root.State;
+  render: AlertProps["render"];
+}) {
+  const elementRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const element = elementRef.current;
+    if (!state.open && element) moveFocusOutside(element);
+  }, [state.open]);
+
+  return useRender({
+    render: <BaseCollapsible.Panel render={render} />,
+    ref: [ref ?? null, elementRef],
+    props: {
+      ...props,
+      // Remove controls from keyboard navigation during the exit, not just afterwards.
+      inert: !state.open || undefined,
+      "aria-hidden": !state.open || undefined,
+      "data-state": state.open ? "open" : "closed",
+    },
+  });
+}
+
+function moveFocusOutside(element: HTMLElement) {
+  const doc = element.ownerDocument;
+  if (!element.contains(doc.activeElement)) return;
+  const candidates = tabbable(doc.body).filter((node) => !element.contains(node));
+  const next = candidates.find((node) => element.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING);
+  const previous = candidates.findLast((node) => element.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_PRECEDING);
+  const target = next ?? previous;
+  if (target) {
+    target.focus({ preventScroll: true });
+  } else {
+    // A standalone alert can be the document's only focusable content.
+    const oldTabIndex = doc.body.getAttribute("tabindex");
+    doc.body.tabIndex = -1;
+    doc.body.focus({ preventScroll: true });
+    if (oldTabIndex === null) doc.body.removeAttribute("tabindex");
+    else doc.body.setAttribute("tabindex", oldTabIndex);
+  }
+}
+
+export type AlertTitleProps = useRender.ComponentProps<"div">;
+export function AlertTitle({ render, ref, className, ...props }: AlertTitleProps) {
+  return useRender({ defaultTagName: "div", render, ref, props: {
+    "data-slot": "alert-title", ...props, className: cn(alertTitleVariants(), className),
+  } });
+}
+
+export type AlertDescriptionProps = useRender.ComponentProps<"div">;
+export function AlertDescription({ render, ref, className, ...props }: AlertDescriptionProps) {
+  return useRender({ defaultTagName: "div", render, ref, props: {
+    "data-slot": "alert-description", ...props, className: cn(alertDescriptionVariants(), className),
+  } });
+}
+
+export type AlertCloseProps = ComponentProps<typeof BaseCollapsible.Trigger>;
+export function AlertClose({ className, children, onClick, ...props }: AlertCloseProps) {
+  return (
+    <BaseCollapsible.Trigger
+      aria-label="Dismiss"
+      // A dismiss button is not a disclosure control.
+      aria-expanded={undefined}
+      aria-controls={undefined}
+      data-slot="alert-close"
+      className={mergeStateClassName(alertCloseVariants(), className)}
+      {...props}
+      onClick={(event) => {
+        onClick?.(event);
+        if (event.defaultPrevented) event.preventBaseUIHandler();
+      }}
+    >
+      {children ?? <X aria-hidden="true" className="size-3.5" />}
+    </BaseCollapsible.Trigger>
+  );
+}
+
+/** @deprecated Renamed to Alert. */
 export const FieldError = Alert;
-/** @deprecated Renamed to `AlertProps`. */
+/** @deprecated Renamed to AlertProps. */
 export type FieldErrorProps = AlertProps;

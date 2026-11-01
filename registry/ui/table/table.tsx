@@ -11,14 +11,21 @@ import {
   useRef,
   type ComponentProps,
   type ComponentType,
+  type CSSProperties,
   type ReactNode,
 } from "react";
 import { cn } from "@/registry/lib/cn";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Skeleton } from "@/registry/ui/skeleton/skeleton";
+import { observePinnedColumnFades } from "./table-scroll-fade";
 import {
   tableCellVariants,
+  tableCellLayoutVariants,
+  tableViewportVariants,
   tableCaptionVariants,
+  tableEmptyCellVariants,
+  tableEmptyContentVariants,
+  tableEmptyRowVariants,
   tableHeadVariants,
   tableHeaderRowVariants,
   tableRowVariants,
@@ -36,6 +43,15 @@ import {
  * `"use client"` is required for shared context; these parts hold no interactive state.
  */
 
+export interface TableCellLayoutProps {
+  /** Logical text alignment. End alignment also uses tabular numbers. */
+  align?: "start" | "end" | ComponentProps<"td">["align"];
+  /** Keep this cell at the corresponding edge while scrolling horizontally. */
+  pinned?: "start" | "end";
+}
+
+type ColumnLayout = TableCellLayoutProps & { style?: CSSProperties };
+
 interface TableContextValue {
   size: TableVariants["size"];
   outline: boolean;
@@ -44,7 +60,10 @@ interface TableContextValue {
   stickyHeader: boolean;
   loading: boolean;
   loadingRows: number;
+  emptyState: ReactNode;
   columns: number;
+  columnLayouts: readonly ColumnLayout[];
+  wrap: boolean;
   Row: ComponentType<ComponentProps<"tr">>;
 }
 
@@ -56,7 +75,10 @@ const TableContext = createContext<TableContextValue>({
   stickyHeader: true,
   loading: false,
   loadingRows: 5,
+  emptyState: "No results.",
   columns: 0,
+  columnLayouts: [],
+  wrap: false,
   Row: TableRow,
 });
 
@@ -92,6 +114,8 @@ export interface TableProps
   size?: TableVariants["size"];
   /** Class for the scroll container the table sits in. */
   wrapperClassName?: string;
+  /** Wrap cell text and align body cells to the top. @default false */
+  wrap?: boolean;
   /** Draw a rounded frame around the table, on its scroll container. @default false */
   outline?: boolean;
   /** Draw a rule between every pair of columns. @default false */
@@ -110,8 +134,12 @@ export interface TableProps
   loading?: boolean;
   /** How many placeholder rows to draw. @default 5 */
   loadingRows?: number;
+  /** Content shown when TableBody has no children. Pass null to hide it. @default "No results." */
+  emptyState?: ReactNode;
+  /** Visible data column layouts, excluding gutters. Overrides header inference for grouped headers. */
+  columnLayouts?: readonly ColumnLayout[];
   /**
-   * The component placeholder rows are built from. `DataTable` sets this to its own row so a
+   * The component loading and empty rows are built from. `DataTable` sets this to its own row so a
    * loading table still grows the checkbox and actions columns, and the placeholders line up
    * with the header instead of sitting one column to the left of it.
    *
@@ -124,18 +152,29 @@ export function Table({
   className,
   wrapperClassName,
   size = "sm",
+  wrap = false,
   outline = false,
   verticalLines = false,
   horizontalLines = true,
   stickyHeader = true,
   loading = false,
   loadingRows = 5,
+  emptyState = "No results.",
   rowComponent = TableRow,
+  columnLayouts: providedColumnLayouts,
   children,
   ...props
 }: TableProps) {
-  const columns = useMemo(() => countColumns(children), [children]);
+  const columnLayouts = useMemo(() => providedColumnLayouts ?? readColumnLayouts(children), [providedColumnLayouts, children]);
+  const columns = columnLayouts.length;
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const viewport = viewportRef.current;
+    const table = viewport?.querySelector<HTMLTableElement>("table");
+    if (viewport && table) return observePinnedColumnFades(viewport, table);
+  }, []);
 
   // A pinned header covers the top of the scroll area, so the vertical scrollbar starts below
   // it and only spans the rows that scroll. Measured, because the header's height follows its
@@ -166,23 +205,26 @@ export function Table({
   const context = useMemo<TableContextValue>(
     () => ({
       size,
+      wrap,
       outline,
       verticalLines,
       horizontalLines,
       stickyHeader,
       loading,
       loadingRows,
-      // Counted from the header the caller wrote, so a placeholder row is the same shape as a
-      // real one. Gutter columns aren't in the tally: the row adds those cells itself.
+      emptyState,
+      // Supplied by a data model or inferred from the header. Gutter columns aren't in
+      // the tally: the row adds those cells itself.
       columns,
+      columnLayouts,
       Row: rowComponent,
     }),
-    [size, outline, verticalLines, horizontalLines, stickyHeader, loading, loadingRows, columns, rowComponent],
+    [size, wrap, outline, verticalLines, horizontalLines, stickyHeader, loading, loadingRows, emptyState, columns, columnLayouts, rowComponent],
   );
 
   return (
     <TableContext.Provider value={context}>
-      <div data-slot="table-container" className="w-full">
+      <div data-slot="table-container" className="w-full min-w-0" dir={props.dir}>
         {/* The scroll container is not optional. A table sizes itself to its content and will
             push a page sideways rather than wrap, so something has to catch the overflow —
             and it has to be a wrapper, because `overflow` on the table doesn't apply to the
@@ -192,11 +234,14 @@ export function Table({
           ref={wrapperRef}
           data-slot="table-wrapper"
           orientation="both"
+          viewportRef={viewportRef}
+          viewportClassName={tableViewportVariants()}
           className={cn(tableWrapperVariants({ outline }), wrapperClassName)}
         >
           <table
             data-slot="table"
             data-size={size}
+            data-wrap={wrap ? "" : undefined}
             data-outline={outline || undefined}
             data-vertical-lines={verticalLines || undefined}
             data-horizontal-lines={horizontalLines || undefined}
@@ -253,18 +298,24 @@ export function TableCaption({ className, ...props }: ComponentProps<"caption">)
  * or conditional set of headers arrives wrapped in one. Gutter columns are deliberately not
  * counted — the row adds those cells itself, in placeholder rows as well as real ones.
  */
-function countColumns(children: ReactNode): number {
+function readColumnLayouts(children: ReactNode): ColumnLayout[] {
   for (const child of flattenChildren(children)) {
     if (!isValidElement<{ children?: ReactNode }>(child) || child.type !== TableHeader) continue;
 
     for (const row of flattenChildren(child.props.children)) {
       if (isValidElement<{ children?: ReactNode }>(row)) {
-        return flattenChildren(row.props.children).length;
+        return flattenChildren(row.props.children).map((cell) => {
+          if (!isValidElement<ColumnLayout>(cell)) return {};
+          const { pinned, align, style } = cell.props;
+          // Only carry the pin offset into generated rows, not header-only styling.
+          const offset = (style as (CSSProperties & { "--table-pin-offset"?: string | number }) | undefined)?.["--table-pin-offset"];
+          return { pinned, align, style: offset == null ? undefined : { "--table-pin-offset": offset } as CSSProperties };
+        });
       }
     }
   }
 
-  return 0;
+  return [];
 }
 
 function flattenChildren(children: ReactNode): ReactNode[] {
@@ -291,12 +342,14 @@ export function TableHeader({ className, ...props }: ComponentProps<"thead">) {
 }
 
 export function TableBody({ className, children, ...props }: ComponentProps<"tbody">) {
-  const { loading, loadingRows, columns, Row } = useContext(TableContext);
+  const { loading, loadingRows, emptyState, columns, columnLayouts, Row } = useContext(TableContext);
+  const empty = !loading && flattenChildren(children).length === 0;
 
   return (
     <TableSectionContext.Provider value="body">
       <tbody
         data-slot="table-body"
+        data-empty={empty || undefined}
         // The last row's rule would otherwise land on the table's own bottom edge, where it
         // reads as a stray line under the data rather than as a separator between rows.
         // Reached through the cells, since `border-separate` gives a `<tr>` nothing to drop.
@@ -306,14 +359,14 @@ export function TableBody({ className, children, ...props }: ComponentProps<"tbo
         {loading
           ? Array.from({ length: loadingRows }, (_, row) => (
               // Built from the registered row, so in a DataTable these grow the same gutter
-              // cells a real row does — empty, since there is nothing yet to select or act on.
+              // cells a real row does, with a checkbox placeholder when selection is enabled.
               <Row
                 key={`skeleton-${row}`}
                 data-slot="table-skeleton-row"
                 className="data-[slot=table-skeleton-row]:hover:bg-transparent dark:data-[slot=table-skeleton-row]:hover:bg-transparent"
               >
                 {Array.from({ length: columns }, (_, column) => (
-                  <TableCell key={column}>
+                  <TableCell key={column} {...columnLayouts[column]}>
                     <Skeleton
                       className={cn("h-4 max-w-full", SKELETON_WIDTHS[column % SKELETON_WIDTHS.length])}
                     />
@@ -321,7 +374,15 @@ export function TableBody({ className, children, ...props }: ComponentProps<"tbo
                 ))}
               </Row>
             ))
-          : children}
+          : empty && emptyState != null && typeof emptyState !== "boolean"
+            ? (
+                <Row data-slot="table-empty-row" className={tableEmptyRowVariants()}>
+                  <TableCell colSpan={Math.max(1, columns)} className={tableEmptyCellVariants()}>
+                    <div data-slot="table-empty-content" className={tableEmptyContentVariants()}>{emptyState}</div>
+                  </TableCell>
+                </Row>
+              )
+            : children}
       </tbody>
     </TableSectionContext.Provider>
   );
@@ -368,20 +429,25 @@ export function TableRow({ className, ...props }: ComponentProps<"tr">) {
   );
 }
 
-export function TableHead({ className, scope = "col", ...props }: ComponentProps<"th">) {
+export interface TableHeadProps extends Omit<ComponentProps<"th">, "align">, TableCellLayoutProps {}
+
+export function TableHead({ className, scope, align, pinned, ...props }: TableHeadProps) {
   const { size, verticalLines, horizontalLines, stickyHeader } = useContext(TableContext);
+  const section = useContext(TableSectionContext);
+  const isHeader = section === "header";
 
   return (
     <th
       data-slot="table-head"
-      scope={scope}
+      data-align={align}
+      align={align === "start" || align === "end" ? undefined : align}
+      data-pinned={pinned}
+      scope={scope ?? (isHeader ? "col" : "row")}
       className={cn(
-        tableHeadVariants({
-          size,
-          horizontal: horizontalLines,
-          vertical: verticalLines,
-          pinned: stickyHeader,
-        }),
+        tableCellLayoutVariants(),
+        isHeader
+          ? tableHeadVariants({ size, horizontal: horizontalLines, vertical: verticalLines, pinned: stickyHeader })
+          : [tableCellVariants({ size, horizontal: horizontalLines, vertical: verticalLines }), "font-medium"],
         className,
       )}
       {...props}
@@ -389,13 +455,19 @@ export function TableHead({ className, scope = "col", ...props }: ComponentProps
   );
 }
 
-export function TableCell({ className, ...props }: ComponentProps<"td">) {
+export interface TableCellProps extends Omit<ComponentProps<"td">, "align">, TableCellLayoutProps {}
+
+export function TableCell({ className, align, pinned, ...props }: TableCellProps) {
   const { size, verticalLines, horizontalLines } = useContext(TableContext);
 
   return (
     <td
       data-slot="table-cell"
+      data-align={align}
+      align={align === "start" || align === "end" ? undefined : align}
+      data-pinned={pinned}
       className={cn(
+        tableCellLayoutVariants(),
         tableCellVariants({ size, horizontal: horizontalLines, vertical: verticalLines }),
         className,
       )}

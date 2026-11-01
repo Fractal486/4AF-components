@@ -1,126 +1,162 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
 
 export type ActionStatus = "idle" | "pending" | "success" | "error";
+export type ActionRevertAfter = number | { success?: number; error?: number };
 
 export interface UseActionOptions {
-  /** The work. Return a promise and the status waits for it. */
-  action: () => void | Promise<unknown>;
-  /** How long the outcome holds before returning to idle, in ms. @default 2000 */
-  revertAfter?: number;
-  /**
-   * Don't report `pending` until the action has been running this long, in ms.
-   *
-   * Defaults to 0 — the press must be answered on the frame it happens, or the control
-   * feels broken. Raise it only when the action is genuinely near-instant (a clipboard
-   * write, a warm cache), where a spinner would flash for a single frame on its way to
-   * the check mark and read as a glitch rather than as progress.
-   */
+  /** Optional when an external form owns the work and status. */
+  action?: () => void | Promise<unknown>;
+  status?: ActionStatus;
+  onStatusChange?: (status: ActionStatus) => void;
+  /** Milliseconds before idle, shared or per outcome. Omitted outcomes use 2000. */
+  revertAfter?: ActionRevertAfter;
+  /** Delay the pending indicator for near-instant work. @default 0 */
   pendingDelay?: number;
-  /** Called after success, even if the initiating control has unmounted. */
+  /** Outcome callbacks still run after unmount, unless reset invalidated the request. */
   onSuccess?: () => void;
-  /** Called after failure, even if the initiating control has unmounted. */
   onError?: (error: unknown) => void;
 }
 
-/**
- * Runs an action with pending, success, and error states. Prevents concurrent runs,
- * skips local state updates after unmount while still delivering outcome callbacks,
- * and resets the outcome after `revertAfter` while mounted.
- * Shared by ActionButton and asynchronous menu rows.
- */
+type RevertClock = {
+  status: "success" | "error";
+  duration: number;
+  revision: number;
+  remaining: number;
+};
+
+/** Async feedback shared by action controls and menu rows. Reset ignores late results;
+ * it does not abort the underlying work. Spread buttonProps to hold errors while reading. */
 export function useAction({
   action,
+  status: controlledStatus,
+  onStatusChange,
   revertAfter = 2000,
   pendingDelay = 0,
   onSuccess,
   onError,
-}: UseActionOptions): { status: ActionStatus; run: () => Promise<void> } {
-  const [status, setStatus] = useState<ActionStatus>("idle");
+}: UseActionOptions) {
+  const [internalStatus, setInternalStatus] = useState<ActionStatus>("idle");
+  const [error, setError] = useState<unknown>();
+  const [revision, setRevision] = useState(0);
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const status = controlledStatus ?? internalStatus;
+  const held = status === "error" && (hovered || focused);
   const revertTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const alive = useRef(true);
-  // The real double-submit guard. `status` can still be "idle" during a fast action
-  // (see pendingDelay), and it's a render value anyway — a second click landing in the
-  // same tick would read a stale one. A ref is the only thing that's true immediately.
+  const clock = useRef<RevertClock | null>(null);
+  const generation = useRef(0);
   const running = useRef(false);
+  const alive = useRef(true);
+
+  const clearTimers = useCallback(() => {
+    clearTimeout(revertTimer.current ?? undefined);
+    clearTimeout(pendingTimer.current ?? undefined);
+    revertTimer.current = null;
+    pendingTimer.current = null;
+  }, []);
 
   useEffect(() => {
     alive.current = true;
     return () => {
-      // The action is async: it can resolve long after the user has navigated away.
-      // Without this the resolution lands on a component that no longer exists.
       alive.current = false;
-      clearTimeout(revertTimer.current ?? undefined);
-      clearTimeout(pendingTimer.current ?? undefined);
+      clearTimers();
     };
-  }, []);
+  }, [clearTimers]);
 
-  const scheduleRevert = useCallback(() => {
-    clearTimeout(revertTimer.current ?? undefined);
-    revertTimer.current = setTimeout(() => {
-      // `!running.current` as well as `alive`: a revert must never land on an action
-      // that's in flight. Belt and braces — `run` already cancels this timer — but the
-      // failure mode is a control that says "Deploy" while it's still deploying, which
-      // is worth two lines to make impossible.
-      if (alive.current && !running.current) setStatus("idle");
-    }, revertAfter);
-  }, [revertAfter]);
+  const changeStatus = useCallback((next: ActionStatus) => {
+    if (!alive.current) return;
+    setInternalStatus(next);
+    onStatusChange?.(next);
+  }, [onStatusChange]);
+
+  const outcomeDuration = typeof revertAfter === "number" ? revertAfter
+    : status === "error" ? revertAfter.error ?? 2000 : revertAfter.success ?? 2000;
+  const resetDuration = Number.isFinite(outcomeDuration) ? Math.max(0, outcomeDuration) : 2000;
+
+  useEffect(() => {
+    if (status !== "success" && status !== "error") {
+      clock.current = null;
+      return;
+    }
+    if (!clock.current || clock.current.status !== status || clock.current.duration !== resetDuration
+      || clock.current.revision !== revision) {
+      clock.current = { status, duration: resetDuration, revision, remaining: resetDuration };
+    }
+    // Hover and focus share one clock. Leaving one does not resume it while the other holds it.
+    if (held || running.current) return;
+    const current = clock.current;
+    const started = Date.now();
+    const timer = setTimeout(() => {
+      if (!alive.current || running.current || clock.current !== current) return;
+      changeStatus("idle");
+    }, current.remaining);
+    revertTimer.current = timer;
+    return () => {
+      clearTimeout(timer);
+      current.remaining = Math.max(0, current.remaining - (Date.now() - started));
+    };
+  }, [status, resetDuration, revision, held, changeStatus]);
+
+  const reset = useCallback(() => {
+    generation.current += 1;
+    running.current = false;
+    clearTimers();
+    clock.current = null;
+    if (!alive.current) return;
+    setError(undefined);
+    setRevision(value => value + 1);
+    changeStatus("idle");
+  }, [clearTimers, changeStatus]);
 
   const run = useCallback(async () => {
-    // Callers disable the control while pending too, but guard here as well: `disabled`
-    // is a DOM state, and a stray programmatic `.click()` doesn't respect it.
-    if (running.current) return;
+    // The ref guards the delay window and same-tick presses, before React has rendered.
+    if (!action || !alive.current || running.current || controlledStatus === "pending") return;
+    const request = ++generation.current;
     running.current = true;
-
-    // Cancel the previous outcome's teardown. Press again while "Deployed" is still
-    // showing and its revert is already scheduled — leave it running and it fires on the
-    // *old* clock: mid-way through the new action it flips back to idle, or it cuts the
-    // second confirmation short. Each run owns its own revert, so the last one's has to
-    // be dropped the moment a new one starts.
-    clearTimeout(revertTimer.current ?? undefined);
-
-    // Instant by default. A control that swallows a press and does nothing for a beat
-    // reads as broken, and no amount of correctness later makes up for that first
-    // moment. Deferring is opt-in, for actions that finish so fast the spinner would be
-    // a flicker rather than progress — and even a `setTimeout(…, 0)` is a frame too
-    // late, so zero means synchronous, not "very soon".
-    clearTimeout(pendingTimer.current ?? undefined);
+    clearTimers();
+    clock.current = null;
+    // Keep a previous rejection while pendingDelay still shows its error label.
+    // The next outcome or an explicit reset replaces it.
     if (pendingDelay <= 0) {
-      setStatus("pending");
+      changeStatus("pending");
     } else {
       pendingTimer.current = setTimeout(() => {
-        if (alive.current && running.current) setStatus("pending");
+        if (alive.current && running.current && generation.current === request) changeStatus("pending");
       }, pendingDelay);
     }
 
+    let failed = false;
+    let reason: unknown;
     try {
       await action();
-    } catch (error) {
-      // A failure that renders as success is the worst outcome available: the user
-      // believes the work happened and moves on.
-      running.current = false;
-      clearTimeout(pendingTimer.current ?? undefined);
-      if (alive.current) setStatus("error");
-      try {
-        onError?.(error);
-      } finally {
-        // Consumer notifications may throw, but must not strand the state machine.
-        if (alive.current) scheduleRevert();
-      }
-      return;
+    } catch (caught) {
+      failed = true;
+      reason = caught;
     }
-
+    if (generation.current !== request) return;
     running.current = false;
     clearTimeout(pendingTimer.current ?? undefined);
-    if (alive.current) setStatus("success");
-    try {
-      onSuccess?.();
-    } finally {
-      if (alive.current) scheduleRevert();
+    if (alive.current) {
+      // Wrap arbitrary rejection values: a thrown function is data, not a React updater.
+      setError(() => reason);
+      setRevision(value => value + 1);
+      changeStatus(failed ? "error" : "success");
     }
-  }, [action, pendingDelay, onError, onSuccess, scheduleRevert]);
+    if (failed) onError?.(reason);
+    else onSuccess?.();
+  }, [action, controlledStatus, pendingDelay, onSuccess, onError, changeStatus, clearTimers]);
 
-  return { status, run };
+  const buttonProps = {
+    onPointerEnter: (event: PointerEvent<HTMLElement>) => {
+      if (event.pointerType !== "touch") setHovered(true);
+    },
+    onPointerLeave: () => setHovered(false),
+    onFocus: () => setFocused(true),
+    onBlur: () => setFocused(false),
+  };
+
+  return { status, error, run, reset, buttonProps };
 }

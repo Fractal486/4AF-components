@@ -1,13 +1,15 @@
 ---
 title: Tooltip
-description: A concise hover and focus label with Base UI positioning and delay behavior.
+description: Hover and focus hints with cursor tracking, shared popups, and composable parts.
 ---
 
 <ComponentReference name="tooltip" />
 
 ## API
 
-**Main exports:** `TooltipProvider`, `Tooltip`
+**Main exports:** `TooltipProvider`, `Tooltip`, `TooltipRoot`, `TooltipTrigger`,
+`TooltipContent`, `TooltipPortal`, `TooltipPositioner`, `TooltipPopup`, `TooltipGroup`,
+and `createTooltipHandle`
 
 A Base UI hover and focus tooltip with delay, collision-aware placement, and a CSS scale-and-blur
 entrance. Use `delay` to control when it opens; `closeOnClick={false}` keeps it open when the
@@ -15,6 +17,34 @@ trigger is pressed, which is useful for live-value controls such as sliders. Pas
 controlled visibility, and `disableHoverablePopup` when the tooltip should close as soon as the
 pointer leaves the trigger instead of remaining open while the popup is hovered. Positioning
 options can be forwarded through `positionerProps`.
+
+### Tooltip
+
+The existing `content` and single-child API remains the convenient form for one trigger.
+Root behavior passes through to Base UI.
+
+| Prop | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `content` | `ReactNode` | required | The hint. |
+| `children` | `ReactElement` | required | The trigger element. |
+| `open` / `defaultOpen` | `boolean` | uncontrolled / `false` | Controlled or initially open visibility. |
+| `onOpenChange` | `(open, details) => void` | | Reports the reason and triggering event; `details.cancel()` cancels the change. |
+| `onOpenChangeComplete` | `(open) => void` | | Called after opening or closing finishes. |
+| `disabled` | `boolean` | `false` | Turns off the tooltip without disabling or remounting its trigger. |
+| `trackCursorAxis` | `"none" \| "x" \| "y" \| "both"` | `"none"` | Follows the pointer on the selected axes. Keyboard focus still anchors to the trigger. |
+| `side` / `align` | positioner options | `"top"` / `"center"` | Preferred placement; Base UI handles collisions. |
+| `sideOffset` | number or offset callback | `8` | Space between the hint and its anchor. |
+| `delay` | `number` | provider timing | Opening delay for this trigger. |
+| `closeOnClick` | `boolean` | `true` | Whether pressing the trigger closes the hint. |
+| `disableHoverablePopup` | `boolean` | `false` | Close when leaving the trigger instead of allowing the pointer onto the popup. |
+| `className` | string or state callback | | Popup classes, merged with its base styling. |
+| `popupProps` | popup props | | Popup ref, DOM attributes, events, or a custom `render` element. |
+| `positionerProps` | positioner props | | Collision settings, anchor, ref, styles, and state-aware classes. |
+| `portalProps` | portal props | | Custom `container`, `keepMounted`, ref, and other portal attributes. |
+
+Change reasons include `trigger-hover`, `trigger-focus`, `trigger-press`, `outside-press`,
+`escape-key`, `disabled`, `imperative-action`, and `none`. Controlled owners update `open`
+in response to `onOpenChange`. Base UI's `actionsRef` also passes through for imperative closing.
 
 With `content={null}`, `content={undefined}`, or `content=""`, the popup is disabled and
 unmounted. The trigger stays mounted, preserving keyboard focus and its local state when
@@ -26,3 +56,45 @@ for a custom overlay. `className` styles the popup itself.
 
 Within one `TooltipProvider`, moving between neighbouring triggers opens the next tooltip
 instantly, without the entrance transition.
+
+## Composable parts
+
+`TooltipRoot` accepts the full Base UI root API, including controlled visibility, disabling,
+cursor tracking, and typed handles. Place `TooltipTrigger` and `TooltipContent` inside it.
+The trigger accepts `render`, refs, DOM props, state-aware classes, and Base UI trigger options.
+Its `disabled` prop suppresses the hint while keeping the underlying element enabled.
+
+`TooltipContent` combines the portal, positioner, and styled popup. Its `ref`, `className`,
+`render`, and other DOM props belong to the popup. Use `portalProps` and `positionerProps` for
+the surrounding parts. For full control, compose `TooltipPortal`, `TooltipPositioner`, and
+`TooltipPopup` separately inside a root; no extra portal is added by `TooltipPopup`.
+
+Popup class callbacks receive `open`, `side`, `align`, `instant`, and `transitionStatus`.
+Positioner callbacks receive `open`, `side`, `align`, `instant`, and `anchorHidden`;
+trigger callbacks receive `open`.
+The actual DOM parts carry `data-slot="tooltip-trigger"`, `tooltip-portal`,
+`tooltip-positioner`, and `tooltip-content`.
+
+## Shared tooltips
+
+`TooltipGroup` owns one popup. Each `TooltipTrigger` inside it supplies a `content` prop.
+Moving between triggers changes the shared popup's content and anchor. Position and size
+update immediately; the existing opening and closing animation stays the same.
+
+The group accepts the same visibility, cursor, presentation, and popup settings as `Tooltip`,
+plus provider `delay`, `closeDelay`, and `timeout`. Empty trigger content disables that hint.
+Independent `Tooltip` or `TooltipRoot` instances nested inside a group stay independent.
+
+For detached triggers or structured data, create a stable `createTooltipHandle<Payload>()`,
+pass it to each trigger and `TooltipRoot`, and put the trigger's data in `payload`.
+The root's child render function receives `{ payload }`; render it inside `TooltipContent`.
+`triggerId` and `defaultTriggerId` select an initial anchor when controlling a shared root.
+
+## Long content and accessibility
+
+Content wraps within the available width, up to the existing maximum. Long unbroken URLs
+wrap too. Positioning remains collision-aware near screen edges and in custom containers.
+
+Use a tooltip for supplementary hints; name icon-only triggers with `aria-label`. Keyboard
+focus opens the hint, Escape closes it, and the trigger remains usable when its tooltip is
+disabled. A disabled Button can still expose a hint with `focusableWhenDisabled`.

@@ -1,20 +1,34 @@
 import { createRef } from "react";
+import { renderToString } from "react-dom/server";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "./tabs";
 
-/** The indicator's box in the list's own pixels: anchored at the start, moved by `x`. */
+/** The selected tab's measured box in the list's own CSS pixels. */
 function indicatorBox(list: HTMLElement) {
-  const indicator = list.querySelector<HTMLElement>('[aria-hidden="true"]');
-  const x = /translateX\((-?[\d.]+)px\)/.exec(indicator?.style.transform ?? "")?.[1];
-  return { left: Number(x ?? 0), width: Number.parseFloat(indicator?.style.width ?? "") };
+  const indicator = list.querySelector<HTMLElement>('[data-slot="tabs-indicator"]');
+  return {
+    left: parseFloat(indicator?.style.getPropertyValue("--active-tab-left") ?? ""),
+    width: parseFloat(indicator?.style.getPropertyValue("--active-tab-width") ?? ""),
+  };
+}
+
+function layoutBox(element: HTMLElement, left: number, width: number, height = 30) {
+  element.style.width = `${width}px`;
+  element.style.height = `${height}px`;
+  Object.defineProperties(element, {
+    offsetLeft: { configurable: true, value: left },
+    offsetTop: { configurable: true, value: 0 },
+    offsetWidth: { configurable: true, value: width },
+    offsetHeight: { configurable: true, value: height },
+  });
 }
 
 describe("Tabs", () => {
   it.each(["segment", "pill", "underline"] as const)("fades only hidden edges and scrolls clicked tabs in %s", async (variant) => {
     render(
       <Tabs variant={variant} defaultValue="one">
-        <TabsList maxWidth={200} aria-label="Scrollable">
+        <TabsList aria-label="Scrollable">
           <TabsTab value="one">One</TabsTab>
           <TabsTab value="two">Two</TabsTab>
           <TabsTab value="three">Three</TabsTab>
@@ -29,6 +43,9 @@ describe("Tabs", () => {
     vi.spyOn(list, "getBoundingClientRect").mockReturnValue({ left: 0, right: 200, width: 200 } as DOMRect);
     const one = screen.getByRole("tab", { name: "One" });
     const two = screen.getByRole("tab", { name: "Two" });
+    layoutBox(list, 0, 200);
+    layoutBox(one, 0, 80);
+    layoutBox(two, 140, 80);
     vi.spyOn(one, "getBoundingClientRect").mockImplementation(() => ({ left: 0 - list.scrollLeft, right: 80 - list.scrollLeft, width: 80 }) as DOMRect);
     vi.spyOn(two, "getBoundingClientRect").mockImplementation(() => ({ left: 140 - list.scrollLeft, right: 220 - list.scrollLeft, width: 80 }) as DOMRect);
     const scrollTo = vi.fn();
@@ -69,7 +86,8 @@ describe("Tabs", () => {
     );
     const list = screen.getByRole("tablist");
     // Laid out 200px wide, drawn at half size.
-    Object.defineProperty(list, "offsetWidth", { configurable: true, value: 200 });
+    layoutBox(list, 0, 200);
+    layoutBox(screen.getByRole("tab", { name: "Two" }), 80, 80);
     vi.spyOn(list, "getBoundingClientRect").mockReturnValue({ left: 10, right: 110, width: 100 } as DOMRect);
     vi.spyOn(screen.getByRole("tab", { name: "Two" }), "getBoundingClientRect")
       .mockReturnValue({ left: 50, right: 90, width: 40 } as DOMRect);
@@ -90,6 +108,8 @@ describe("Tabs", () => {
     );
     const list = screen.getByRole("tablist");
     const two = screen.getByRole("tab", { name: "Two" });
+    layoutBox(list, 0, 200);
+    layoutBox(two, 82, 79.5);
     // Laid out 200 x 30, projected as a box squashed vertically and widened.
     Object.defineProperty(list, "offsetWidth", { configurable: true, value: 200 });
     Object.defineProperty(list, "offsetHeight", { configurable: true, value: 30 });
@@ -227,7 +247,7 @@ describe("Tabs appearance", () => {
     expect(list).toHaveClass("p-[3px]", "gap-[3px]", "rounded-[8px]");
     expect(screen.getByRole("tab", { name: "One" })).toHaveClass("py-[3px]", "rounded-[4px]");
     await waitFor(() =>
-      expect(list.querySelector('[aria-hidden="true"]')).toHaveClass("inset-y-[3px]", "rounded-[4px]"),
+      expect(list.querySelector('[data-slot="tabs-indicator"]')).toHaveClass("rounded-[4px]"),
     );
     expect(list.querySelector('[aria-hidden="true"]')).not.toHaveClass("inset-y-0.5");
   });
@@ -252,5 +272,111 @@ describe("Tabs appearance", () => {
     expect(list).toHaveClass("border-b");
     expect(list).not.toHaveClass("p-[3px]");
     expect(list.className).not.toMatch(/(^| )border( |$)/);
+  });
+});
+
+
+describe("Tabs composition and orientation", () => {
+  it("navigates vertically and exposes state to all part classes", async () => {
+    const user = userEvent.setup();
+    render(
+      <Tabs orientation="vertical" defaultValue="one" className={(state) => state.orientation === "vertical" ? "vertical-root" : ""}>
+        <TabsList aria-label="Sections" className={(state) => state.orientation === "vertical" ? "vertical-list" : ""}>
+          <TabsTab value="one" className={(state) => state.active ? "selected" : "resting"}>One</TabsTab>
+          <TabsTab value="disabled" disabled className={(state) => state.disabled ? "unavailable" : ""}>Disabled</TabsTab>
+          <TabsTab value="two" className={(state) => state.active ? "selected" : "resting"}>Two</TabsTab>
+        </TabsList>
+        <TabsPanel value="one" className={(state) => state.hidden ? "inactive" : "visible"}>First</TabsPanel>
+        <TabsPanel value="two">Second</TabsPanel>
+      </Tabs>,
+    );
+    const list = screen.getByRole("tablist", { name: "Sections" });
+    expect(list).toHaveAttribute("aria-orientation", "vertical");
+    expect(list).toHaveClass("vertical-list", "flex-col");
+    expect(list.parentElement).toHaveClass("vertical-root", "flex-row");
+    expect(screen.getByRole("tab", { name: "Disabled" })).toHaveClass("unavailable");
+    act(() => screen.getByRole("tab", { name: "One" }).focus());
+    await user.keyboard("{End}{Enter}");
+    expect(screen.getByRole("tab", { name: "Two" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Two" })).toHaveClass("selected");
+    expect(screen.getByRole("tab", { name: "One" })).toHaveClass("resting");
+    expect(screen.getByText("First").closest('[role="tabpanel"]')).toHaveClass("inactive");
+    expect(screen.getByRole("tabpanel", { name: "Two" })).toHaveTextContent("Second");
+    await user.keyboard("{ArrowDown}{Enter}");
+    expect(screen.getByRole("tab", { name: "One" })).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("merges panel element refs and events while retaining panel semantics and mounted content", async () => {
+    const user = userEvent.setup();
+    const panelRef = createRef<HTMLDivElement>();
+    const surfaceRef = createRef<HTMLElement>();
+    const panelClick = vi.fn();
+    const surfaceClick = vi.fn();
+    render(
+      <Tabs defaultValue="one">
+        <TabsList><TabsTab value="one">One</TabsTab><TabsTab value="two">Two</TabsTab></TabsList>
+        <TabsPanel value="one" ref={panelRef} className="panel" onClick={panelClick}
+          render={<section ref={surfaceRef} className="surface" onClick={surfaceClick} />}>
+          <input aria-label="Draft" defaultValue="Saved text" />
+        </TabsPanel>
+        <TabsPanel value="two" render={(props, state) => <article {...props} data-panel-hidden={state.hidden} />}>Second</TabsPanel>
+      </Tabs>,
+    );
+    const panel = screen.getByRole("tabpanel", { name: "One" });
+    expect(panel.tagName).toBe("SECTION");
+    expect(panel).toHaveClass("panel", "surface");
+    expect(panelRef.current).toBe(panel);
+    expect(surfaceRef.current).toBe(panel);
+    await user.click(screen.getByRole("textbox", { name: "Draft" }));
+    expect(panelClick).toHaveBeenCalledOnce();
+    expect(surfaceClick).toHaveBeenCalledOnce();
+    await user.click(screen.getByRole("tab", { name: "Two" }));
+    const second = screen.getByRole("tabpanel", { name: "Two" });
+    expect(second.tagName).toBe("ARTICLE");
+    expect(second).toHaveAttribute("data-panel-hidden", "false");
+    expect(panel).toHaveAttribute("hidden");
+    await user.click(screen.getByRole("tab", { name: "One" }));
+    expect(screen.getByRole("textbox", { name: "Draft" })).toHaveValue("Saved text");
+  });
+
+  it("scrolls a height-constrained vertical list and updates top/bottom fades", () => {
+    render(<Tabs orientation="vertical" defaultValue="one"><TabsList>
+      <TabsTab value="one">One</TabsTab><TabsTab value="two">Two</TabsTab>
+    </TabsList></Tabs>);
+    const list = screen.getByRole("tablist");
+    const two = screen.getByRole("tab", { name: "Two" });
+    Object.defineProperties(list, {
+      clientHeight: { configurable: true, value: 100 },
+      scrollHeight: { configurable: true, value: 240 },
+    });
+    vi.spyOn(list, "getBoundingClientRect").mockReturnValue({ top: 0, bottom: 100, height: 100 } as DOMRect);
+    vi.spyOn(two, "getBoundingClientRect").mockReturnValue({ top: 140, bottom: 170, height: 30 } as DOMRect);
+    list.scrollTo = vi.fn();
+    fireEvent.scroll(list);
+    expect(list).toHaveAttribute("data-overflow-bottom");
+    expect(list).not.toHaveAttribute("data-overflow-top");
+    fireEvent.click(two);
+    expect(list.scrollTo).toHaveBeenCalledWith({ top: 105, behavior: "smooth" });
+    act(() => { list.scrollTop = 140; fireEvent.scroll(list); });
+    expect(list).toHaveAttribute("data-overflow-top");
+    expect(list).not.toHaveAttribute("data-overflow-bottom");
+  });
+
+  it("keeps state-based styles when an optional width limit is supplied", () => {
+    render(<Tabs orientation="vertical" defaultValue="one"><TabsList maxWidth={180}
+      style={(state) => ({ color: state.orientation === "vertical" ? "red" : "blue" })}>
+      <TabsTab value="one">One</TabsTab>
+    </TabsList></Tabs>);
+    expect(screen.getByRole("tablist")).toHaveStyle({ color: "rgb(255, 0, 0)" });
+    expect(screen.getByRole("tablist").style.maxWidth.replaceAll(" ", "")).toBe("min(100%,180px)");
+  });
+
+  it("includes the indicator and its positioning script in server-rendered HTML", () => {
+    const html = renderToString(<Tabs defaultValue="two"><TabsList>
+      <TabsTab value="one">One</TabsTab><TabsTab value="two">Two</TabsTab>
+    </TabsList></Tabs>);
+    expect(html).toContain('data-slot="tabs-indicator"');
+    expect(html).toContain("<script");
+    expect(html).toContain("--active-tab-left");
   });
 });

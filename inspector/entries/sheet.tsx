@@ -11,7 +11,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/registry/ui/sheet/sheet";
-import { defineEntry, select } from "../schema";
+import { bool, defineEntry, select } from "../schema";
 
 const SIDES = ["right", "left", "top", "bottom"] as const;
 
@@ -20,12 +20,14 @@ export const sheetEntry = defineEntry({
   name: "Sheet",
   controls: {
     side: select(SIDES, "right"),
+    content: select(["short", "long"], "short", "Content"),
+    showClose: bool(true, "Close button"),
   },
-  render({ side }) {
+  render({ side, content, showClose }) {
     return (
       <Sheet>
         <SheetTrigger render={<Button variant="outline">Open sheet</Button>} />
-        <SheetContent side={side}>
+        <SheetContent side={side} showClose={showClose}>
           <SheetHeader>
             <SheetTitle>Edit profile</SheetTitle>
             <SheetDescription>
@@ -43,7 +45,7 @@ export const sheetEntry = defineEntry({
               "Website",
               "Company",
               "Phone",
-            ].map((label) => (
+            ].slice(0, content === "short" ? 2 : undefined).map((label) => (
               <label key={label} className="flex flex-col gap-1.5">
                 <span className="text-sm text-muted-foreground">{label}</span>
                 <Input tone="accent" defaultValue={label} />

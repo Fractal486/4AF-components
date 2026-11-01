@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { Controls, fitsPillTabs } from "./controls";
-import { select, type ControlValues } from "./schema";
+import { num, select, text, type ControlValues } from "./schema";
 
 // Long enough to stay a dropdown — a short enum renders as pill tabs instead, which the
 // "short enums" suite below covers.
@@ -28,6 +28,15 @@ function ControlsHarness() {
 }
 
 describe("Controls select", () => {
+  it("sizes the text input's flex item so it can share a row with its label", () => {
+    render(<Controls schema={{ name: text("Ada", "Name") }} values={{ name: "Ada" }} onChange={() => {}} />);
+    const input = screen.getByRole("textbox", { name: "Name" });
+    const wrapper = input.closest('[data-slot="input-wrapper"]');
+    expect(wrapper?.parentElement).toBe(input.closest("label"));
+    expect(wrapper).toHaveClass("ml-auto", "w-48", "max-w-full", "shrink-0");
+    expect(wrapper).not.toHaveClass("w-full");
+  });
+
   it("prefixes field ids when settings panels share control keys", () => {
     render(
       <>
@@ -105,5 +114,30 @@ describe("Controls short enums", () => {
 
     // A lone option is not a choice.
     expect(fitsPillTabs(["Only"])).toBe(false);
+  });
+});
+
+describe("Controls disabledWhen", () => {
+  it("dims and disables every kind of control that doesn't apply", () => {
+    const off = () => true;
+    const disabledSchema = {
+      icon: select(["none", "leading", "only"] as const, "none", "Icon", off),
+      count: num(3, { min: 2, max: 5, label: "Buttons", disabledWhen: off }),
+      placeholder: text("Hi", "Placeholder", undefined, off),
+    };
+    render(
+      <Controls
+        schema={disabledSchema}
+        values={{ icon: "none", count: 3, placeholder: "Hi" }}
+        onChange={() => {}}
+      />,
+    );
+
+    for (const tab of screen.getAllByRole("tab")) expect(tab).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByText("Icon").parentElement).toHaveClass("opacity-50");
+    expect(screen.getByText("Buttons").parentElement).toHaveClass("opacity-50");
+    expect(screen.getByRole("slider", { name: "Buttons" })).toBeDisabled();
+    expect(screen.getByRole("textbox")).toBeDisabled();
+    expect(screen.getByText("Placeholder").parentElement).toHaveClass("opacity-50");
   });
 });

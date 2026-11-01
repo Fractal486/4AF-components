@@ -2,115 +2,96 @@
 
 import { Popover as BasePopover } from "@base-ui/react/popover";
 import type { ComponentProps } from "react";
-import { cn } from "@/registry/lib/cn";
+import { cn, mergeStateClassName } from "@/registry/lib/cn";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
+import { usePopoverHeight } from "./popover.height";
+import {
+  popoverPopupVariants, popoverPositionerVariants, popoverHeaderVariants,
+  popoverTitleVariants, popoverDescriptionVariants,
+} from "./popover.variants";
 
-/**
- * A popover — an interactive panel anchored to a trigger.
- *
- * Behaviour, positioning and focus are Base UI's: it opens on click, flips to the
- * opposite side when it would overflow, moves focus into the panel and returns it to the
- * trigger on close, and dismisses on Escape or an outside click. Unlike a dialog it isn't
- * modal by default — the page behind stays live — which is the right default for a
- * lightweight editing surface. Pass `modal` to trap focus and scroll-lock.
- *
- * The enter is CSS, not Motion: a popover is a plain enter/exit with no physics or
- * gesture, so it rides Base UI's `data-starting-style` / `data-ending-style` attributes.
- * It scales up out of a blur from the edge nearest the trigger — Base UI hands us
- * `--transform-origin` pointing there — so it resolves into place rather than snapping in.
- * Base UI holds the popup mounted through the transition and unmounts on `transitionend`,
- * which fires because a `transition` is set.
- */
-
+/** Visibility, positioning, nested dismissal, and focus belong to Base UI. */
 export const Popover = BasePopover.Root;
 export const PopoverTrigger = BasePopover.Trigger;
 export const PopoverClose = BasePopover.Close;
+export const createPopoverHandle = BasePopover.createHandle;
+export type PopoverProps<Payload = unknown> = BasePopover.Root.Props<Payload>;
+export type PopoverHandle<Payload = unknown> = BasePopover.Handle<Payload>;
+export type PopoverTriggerProps<Payload = unknown> = BasePopover.Trigger.Props<Payload>;
 
-const popupClassName = cn(
-  // Same floating-panel material as the Select panel: the trigger's border, plus the
-  // ring-less overlay lift (shadow-overlay's hairline stacked on a real border reads as a
-  // doubled, too-heavy edge).
-  "z-50 w-72 max-w-[calc(100vw-2rem)] rounded-md border border-border bg-surface-raised p-4 text-sm text-foreground shadow-overlay-drop outline-none",
-  // Scale grows from the anchor side; `blur-0` is the resting filter so it interpolates
-  // from blur(4px) rather than from `none`, which some browsers won't tween. Only these
-  // properties change, so only these are named.
-  "origin-[var(--transform-origin)] blur-0",
-  "transition-[opacity,scale,translate,filter] duration-(--duration-fast) ease-out",
-  // Hidden pose: fade, shrink, blur — and slide in from *toward* the trigger, so a panel
-  // below its trigger drops down into place. Larger offset entering than leaving.
-  "data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[starting-style]:blur-[4px]",
-  "data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[ending-style]:blur-[3px]",
-  "data-[side=top]:data-[starting-style]:translate-y-2 data-[side=top]:data-[ending-style]:translate-y-1",
-  "data-[side=bottom]:data-[starting-style]:-translate-y-2 data-[side=bottom]:data-[ending-style]:-translate-y-1",
-  "data-[side=left]:data-[starting-style]:translate-x-2 data-[side=left]:data-[ending-style]:translate-x-1",
-  "data-[side=right]:data-[starting-style]:-translate-x-2 data-[side=right]:data-[ending-style]:-translate-x-1",
-);
-
-export interface PopoverContentProps
-  extends Omit<ComponentProps<typeof BasePopover.Popup>, "className"> {
-  className?: string;
-  /** Which side of the trigger to anchor to. */
-  side?: ComponentProps<typeof BasePopover.Positioner>["side"];
-  /** Alignment along that side. */
-  align?: ComponentProps<typeof BasePopover.Positioner>["align"];
-  /** Gap between trigger and panel, in px. */
-  sideOffset?: number;
-  /** Forwarded to Base UI's positioner (collision padding, sticky, anchor, etc.). */
-  positionerProps?: Omit<
-    ComponentProps<typeof BasePopover.Positioner>,
-    "side" | "align" | "sideOffset" | "children" | "className"
-  >;
+export type PopoverPortalProps = ComponentProps<typeof BasePopover.Portal>;
+export function PopoverPortal(props: PopoverPortalProps) {
+  return <BasePopover.Portal data-slot="popover-portal" {...props} />;
 }
 
+export type PopoverPositionerProps = ComponentProps<typeof BasePopover.Positioner>;
+export function PopoverPositioner({ className, sideOffset = 6, collisionPadding = 8, ...props }: PopoverPositionerProps) {
+  return <BasePopover.Positioner data-slot="popover-positioner" sideOffset={sideOffset}
+    collisionPadding={collisionPadding} {...props}
+    className={mergeStateClassName(popoverPositionerVariants(), className)} />;
+}
+
+export interface PopoverPopupProps extends ComponentProps<typeof BasePopover.Popup> {
+  /** Smoothly follow content height. Disable when the caller owns the panel height. */
+  autoSize?: boolean;
+  /** Layout classes for the content inside the scroll viewport. */
+  contentClassName?: string;
+}
+
+/** A measured surface; Scroll Area owns overflow, while Base UI owns focus and presence. */
+export function PopoverPopup({ className, children, autoSize = true, contentClassName, ...props }: PopoverPopupProps) {
+  const sizerRef = usePopoverHeight();
+  return (
+    <BasePopover.Popup data-slot="popover-content" data-popover-frame="" data-auto-size={autoSize ? "" : undefined}
+      {...props} className={mergeStateClassName(popoverPopupVariants(), className)}>
+      {/* Bleed the viewport into the panel padding so focus rings and button shadows
+          do not get clipped or create a scrollbar when the content otherwise fits. */}
+      <ScrollArea data-slot="popover-scroll-area" className="-m-1.5 min-h-0 min-w-0 flex-auto" viewportClassName="p-1.5">
+        <div ref={autoSize ? sizerRef : undefined} data-slot="popover-content-sizer"
+          className={cn("flow-root min-w-0 wrap-anywhere", contentClassName)}>
+          {children}
+        </div>
+      </ScrollArea>
+    </BasePopover.Popup>
+  );
+}
+
+export interface PopoverContentProps extends PopoverPopupProps {
+  /** Which side of the trigger to anchor to. */
+  side?: PopoverPositionerProps["side"];
+  /** Alignment along that side. */
+  align?: PopoverPositionerProps["align"];
+  /** Gap between trigger and panel, in px. */
+  sideOffset?: PopoverPositionerProps["sideOffset"];
+  /** Portal container, mounting behavior, ref, and other portal props. */
+  portalProps?: Omit<PopoverPortalProps, "children">;
+  /** Collision padding, anchor, sticky positioning, state classes, and other positioner props. */
+  positionerProps?: Omit<PopoverPositionerProps, "side" | "align" | "sideOffset" | "children">;
+}
+
+/** Convenient portal + positioner + popup. Its ref and DOM props belong to the popup. */
 export function PopoverContent({
-  className,
-  children,
-  side = "bottom",
-  align = "center",
-  sideOffset = 6,
-  positionerProps,
-  ...props
+  side = "bottom", align = "center", sideOffset = 6, portalProps, positionerProps, ...popupProps
 }: PopoverContentProps) {
   return (
-    <BasePopover.Portal>
-      <BasePopover.Positioner
-        side={side}
-        align={align}
-        sideOffset={sideOffset}
-        className="z-50 outline-none"
-        {...positionerProps}
-      >
-        <BasePopover.Popup className={cn(popupClassName, className)} {...props}>
-          {children}
-        </BasePopover.Popup>
-      </BasePopover.Positioner>
-    </BasePopover.Portal>
+    <PopoverPortal {...portalProps}>
+      <PopoverPositioner side={side} align={align} sideOffset={sideOffset} {...positionerProps}>
+        <PopoverPopup {...popupProps} />
+      </PopoverPositioner>
+    </PopoverPortal>
   );
 }
 
 export function PopoverHeader({ className, ...props }: ComponentProps<"div">) {
-  return <div className={cn("mb-3 flex flex-col gap-1", className)} {...props} />;
+  return <div data-slot="popover-header" {...props} className={cn(popoverHeaderVariants(), className)} />;
 }
 
-export function PopoverTitle({
-  className,
-  ...props
-}: ComponentProps<typeof BasePopover.Title>) {
-  return (
-    <BasePopover.Title
-      className={cn("text-sm font-semibold text-foreground", className)}
-      {...props}
-    />
-  );
+export function PopoverTitle({ className, ...props }: ComponentProps<typeof BasePopover.Title>) {
+  return <BasePopover.Title data-slot="popover-title" {...props}
+    className={mergeStateClassName(popoverTitleVariants(), className)} />;
 }
 
-export function PopoverDescription({
-  className,
-  ...props
-}: ComponentProps<typeof BasePopover.Description>) {
-  return (
-    <BasePopover.Description
-      className={cn("text-sm text-pretty text-muted-foreground", className)}
-      {...props}
-    />
-  );
+export function PopoverDescription({ className, ...props }: ComponentProps<typeof BasePopover.Description>) {
+  return <BasePopover.Description data-slot="popover-description" {...props}
+    className={mergeStateClassName(popoverDescriptionVariants(), className)} />;
 }

@@ -17,9 +17,11 @@ export const checkboxVariants = cva([
   // Base UI's data attribute keeps the disabled styling tied to primitive state,
   // including the native Motion button used by Checkbox.
   "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
-  "aria-invalid:border-destructive aria-invalid:ring-destructive/40",
+  "[&:is([aria-invalid=true],[data-invalid])]:border-destructive [&:is([aria-invalid=true],[data-invalid])]:ring-2 [&:is([aria-invalid=true],[data-invalid])]:ring-destructive/40",
   // Held permanently on its own layer: without it, scaling on press re-rasterizes
   // the box and its border snaps against the pixel grid — the same jump the buttons
   // had, and worse on something this small.
   "will-change-transform",
 ]);
+
+export const checkboxGroupVariants = cva("flex flex-col gap-3");

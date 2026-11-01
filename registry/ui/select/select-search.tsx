@@ -1,6 +1,7 @@
 "use client";
 
 import { Combobox } from "@base-ui/react/combobox";
+import { useRender } from "@base-ui/react/use-render";
 import { Check, ChevronDown, Search } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import {
@@ -15,7 +16,7 @@ import {
   type RefObject,
 } from "react";
 import { useMergedRefs } from "@/registry/lib/refs";
-import { cn } from "@/registry/lib/cn";
+import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { duration, ease, spring } from "@/registry/lib/motion";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
@@ -62,7 +63,7 @@ const SIZE: Record<
   { field: string; glyph: string; iconSlot: string; iconPadding: string; row: string; radius: string }
 > = {
   sm: {
-    field: "h-[30px] text-xs",
+    field: "h-[30px] pr-9 text-xs",
     glyph: "size-3.5",
     iconSlot: "size-3.5 [&>svg]:size-3.5 [&_[data-slot=loader]]:size-3.5",
     iconPadding: "pl-9",
@@ -70,7 +71,7 @@ const SIZE: Record<
     radius: "rounded-[6px]",
   },
   md: {
-    field: "h-[34px] text-sm",
+    field: "h-[34px] pr-9.5 text-sm",
     glyph: "size-4",
     iconSlot: "size-4 [&>svg]:size-4 [&_[data-slot=loader]]:size-4",
     iconPadding: "pl-9.5",
@@ -277,6 +278,29 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
   );
 }
 
+function SearchInputSurface({ elementProps, state, render, placeholder, displayedPlaceholder }: {
+  elementProps: ComponentProps<"input">;
+  state: Combobox.Input.State;
+  render: ComponentProps<typeof Combobox.Input>["render"];
+  placeholder: ReactNode;
+  displayedPlaceholder: ReactNode;
+}) {
+  const input = useRender({
+    defaultTagName: "input",
+    render: typeof render === "function" ? (props) => render(props, state) : render,
+    props: { ...elementProps },
+  });
+  return <>
+    {/* Use the resolved state-based classes for both the field and its width measurement. */}
+    <span aria-hidden="true" data-slot="search-select-input-sizer"
+      className={cn(elementProps.className, "pointer-events-none invisible grid w-max min-w-max whitespace-pre")}>
+      <span className="col-start-1 row-start-1">{placeholder}</span>
+      <span className="col-start-1 row-start-1">{displayedPlaceholder}</span>
+    </span>
+    {input}
+  </>;
+}
+
 export function SearchSelectInput({
   ref,
   className,
@@ -284,9 +308,9 @@ export function SearchSelectInput({
   placeholder,
   onFocus,
   onBlur,
+  render,
   ...props
-}: Omit<ComponentProps<typeof Combobox.Input>, "className"> & {
-  className?: string;
+}: ComponentProps<typeof Combobox.Input> & {
   /**
    * Focus colour. `neutral` is a quiet grey (the default — a field you type into the
    * whole time you're searching shouldn't sit lit in the accent); `accent` uses the
@@ -300,12 +324,27 @@ export function SearchSelectInput({
   const reduceMotion = useReducedMotion();
 
   return (
-    <div className="relative">
+    <div data-slot="search-select-field" className="relative grid min-w-max">
       <Combobox.Value>
         {(selectedValue) => {
           const selectedIcon = !multiple
             ? iconFor(selectedValue)
             : undefined;
+          const displayedPlaceholder = !focused && multiple && Array.isArray(selectedValue) && selectedValue.length > 0
+            ? `${selectedValue.length} selected`
+            : selectedLabel || placeholder;
+          const inputClasses = mergeStateClassName(cn(
+            "col-start-1 row-start-1 min-w-0 w-full border border-border bg-surface pl-3.5 text-foreground",
+            SIZE[size].field,
+            SIZE[size].radius,
+            "outline-none placeholder:text-muted-foreground data-[selected-label]:placeholder:text-foreground",
+            "transition-[border-color,box-shadow,color] duration-(--duration-fast) ease-out",
+            "hover:border-border-strong disabled:cursor-not-allowed disabled:opacity-50",
+            "[&:is([aria-invalid=true],[data-invalid])]:border-destructive! [&:is([aria-invalid=true],[data-invalid])]:ring-[3px]! [&:is([aria-invalid=true],[data-invalid])]:ring-destructive/25! [&:is([aria-invalid=true],[data-invalid])]:shadow-none!",
+            selectedIcon && SIZE[size].iconPadding,
+            tone === "accent"
+              ? "focus:border-ring focus:ring-[3px] focus:ring-ring/25"
+              : "focus:border-[oklch(0.719_0_0)] focus:shadow-[0_0_0_3px_oklch(0.390_0_0_/_0.502)]"), className);
 
           return (
             <>
@@ -319,28 +358,11 @@ export function SearchSelectInput({
               />
               <Combobox.Input
                 ref={mergedRef}
+                size={1}
+                data-slot="search-select-input"
                 data-selected-label={!focused && !multiple && selectedLabel ? "" : undefined}
-                className={cn(
-                  "w-full border border-border bg-surface pr-9 pl-3.5 text-foreground",
-                  SIZE[size].field,
-                  SIZE[size].radius,
-                  "outline-none placeholder:text-muted-foreground data-[selected-label]:placeholder:text-foreground",
-                  "transition-[border-color,box-shadow,color] duration-(--duration-fast) ease-out",
-                  "hover:border-border-strong disabled:cursor-not-allowed disabled:opacity-50",
-                  // Invalid mirrors the Input's treatment; `shadow-none` clears the neutral
-                  // tone's grey focus shadow so only the red reads through. Pair with `Alert`.
-                  "aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/25 aria-invalid:shadow-none",
-                  selectedIcon && SIZE[size].iconPadding,
-                  tone === "accent"
-                    ? "focus:border-ring focus:ring-[3px] focus:ring-ring/25"
-                    : "focus:border-[oklch(0.719_0_0)] focus:shadow-[0_0_0_3px_oklch(0.390_0_0_/_0.502)]",
-                  className,
-                )}
-                placeholder={
-                  !focused && multiple && Array.isArray(selectedValue) && selectedValue.length > 0
-                    ? `${selectedValue.length} selected`
-                    : selectedLabel || placeholder
-                }
+                className={inputClasses}
+                placeholder={displayedPlaceholder}
                 onFocus={(event) => {
                   setFocused(true);
                   onFocus?.(event);
@@ -350,16 +372,20 @@ export function SearchSelectInput({
                   onBlur?.(event);
                 }}
                 {...props}
+                render={(elementProps, state) => <SearchInputSurface elementProps={elementProps} state={state}
+                  render={render} placeholder={placeholder} displayedPlaceholder={displayedPlaceholder} />}
               />
             </>
           );
         }}
       </Combobox.Value>
-      {/* Opens/closes the list; the input itself opens it on focus/typing too. */}
+      {/* Match Select's padding and actual border, with an 8px text-to-glyph gap.
+          Borders round differently from padding at fractional zoom, so do not fold the
+          border into calc(... + 1px). The input reserves this button's full width. */}
       <Combobox.Trigger
         aria-label="Toggle list"
         className={cn(
-          "absolute inset-y-0 right-0 flex w-9 cursor-pointer items-center justify-center text-muted-foreground outline-none",
+          "absolute inset-y-0 right-0 flex cursor-pointer items-center justify-center border-r border-transparent pl-2 pr-3.5 text-muted-foreground outline-none",
           "disabled:cursor-not-allowed disabled:opacity-50",
         )}
       >
@@ -382,9 +408,16 @@ export function SearchSelectContent({
   children,
   emptyMessage = "No results.",
   sideOffset = 6,
+  side = "bottom",
+  align = "start",
+  alignOffset = 0,
+  portalProps,
   ...props
-}: Omit<ComponentProps<typeof Combobox.Popup>, "className" | "children"> & {
-  className?: string;
+}: Omit<ComponentProps<typeof Combobox.Popup>, "children"> & {
+  side?: ComponentProps<typeof Combobox.Positioner>["side"];
+  align?: ComponentProps<typeof Combobox.Positioner>["align"];
+  alignOffset?: ComponentProps<typeof Combobox.Positioner>["alignOffset"];
+  portalProps?: Omit<ComponentProps<typeof Combobox.Portal>, "children">;
   /** The List render function — `(item, index) => <SearchSelectItem …>`. */
   children: ComponentProps<typeof Combobox.List>["children"];
   emptyMessage?: ReactNode;
@@ -394,20 +427,18 @@ export function SearchSelectContent({
   const { open, size } = useContext(SearchContext);
 
   return (
-    <Combobox.Portal keepMounted>
+    <Combobox.Portal keepMounted {...portalProps}>
       <Combobox.Positioner
         sideOffset={sideOffset}
-        side="bottom"
-        align="start"
-        className="z-50 w-[var(--anchor-width)] outline-none"
+        side={side}
+        align={align}
+        alignOffset={alignOffset}
+        className="z-50 w-max min-w-(--anchor-width) max-w-(--available-width) outline-none"
       >
         {/* Fade driven off `open` (not Motion's mount) so it replays every open — Base UI
             keeps the popup mounted after the first one. */}
         <Combobox.Popup
-          className={cn(
-            "overflow-hidden rounded-md border border-border bg-surface shadow-overlay-drop",
-            className,
-          )}
+          className={mergeStateClassName("overflow-hidden rounded-md border border-border bg-surface shadow-overlay-drop", className)}
           render={
             <motion.div
               style={{ transformOrigin: "var(--transform-origin)" }}
@@ -451,10 +482,22 @@ export function SearchSelectContent({
   );
 }
 
-export type SearchSelectItemProps = Omit<ComponentProps<typeof Combobox.Item>, "className"> & {
+/** Iterates Base UI's filtered items within a SearchSelectGroup. */
+export const SearchSelectCollection = Combobox.Collection;
+
+export function SearchSelectGroup({ className, ...props }: ComponentProps<typeof Combobox.Group>) {
+  return <Combobox.Group data-slot="search-select-group"
+    className={mergeStateClassName("flex flex-col [&:not(:has([role=option]:not([hidden])))]:hidden", className)} {...props} />;
+}
+
+export function SearchSelectGroupLabel({ className, ...props }: ComponentProps<typeof Combobox.GroupLabel>) {
+  return <Combobox.GroupLabel data-slot="search-select-group-label"
+    className={mergeStateClassName("px-2.5 pt-2 pb-1 text-[10px] font-medium text-subtle-foreground/70", className)} {...props} />;
+}
+
+export type SearchSelectItemProps = ComponentProps<typeof Combobox.Item> & {
   /** An optional leading icon. It is inert and hidden from assistive technology. */
   icon?: ReactNode;
-  className?: string;
   children?: ReactNode;
 };
 
@@ -472,11 +515,9 @@ function SearchSelectItemIcon({
   return (
     <span
       aria-hidden="true"
-      className={cn(
+      className={mergeStateClassName(cn(
         "pointer-events-none flex shrink-0 items-center justify-center",
-        SIZE[size].iconSlot,
-        className,
-      )}
+        SIZE[size].iconSlot), className)}
     >
       {icon}
     </span>
@@ -500,16 +541,14 @@ export function SearchSelectItem({
   return (
     <Combobox.Item
       value={value}
-      className={cn(
+      className={mergeStateClassName(cn(
         "flex items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
         // Base UI moves this highlight with the keyboard as well as the pointer; it snaps
         // (no transition) so it keeps up with arrow-key navigation rather than lagging.
         "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
-        "data-[selected]:text-foreground",
-        className,
-      )}
+        "data-[selected]:text-foreground"), className)}
       {...props}
     >
       <SearchSelectItemIcon icon={icon} size={size} />
@@ -527,13 +566,9 @@ export function SearchSelectItem({
  * The option remains the interactive listbox element. The shared Checkbox is inert and
  * mirrors its selected state, preserving one keyboard and screen-reader interaction model.
  */
-export type SearchMultiSelectItemProps = Omit<
-  ComponentProps<typeof Combobox.Item>,
-  "className"
-> & {
+export type SearchMultiSelectItemProps = ComponentProps<typeof Combobox.Item> & {
   /** An optional icon shown after the checkbox and before the label. */
   icon?: ReactNode;
-  className?: string;
   children?: ReactNode;
 };
 
@@ -554,15 +589,13 @@ export function SearchMultiSelectItem({
   return (
     <Combobox.Item
       value={value}
-      className={cn(
+      className={mergeStateClassName(cn(
         "flex items-center gap-2.5 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
         "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
         "data-[selected]:text-foreground",
-        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-        className,
-      )}
+        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50"), className)}
       {...props}
     >
       <Combobox.ItemIndicator

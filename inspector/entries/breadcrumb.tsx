@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Breadcrumb,
   BreadcrumbCollapse,
@@ -17,37 +18,44 @@ export const breadcrumbEntry = defineEntry({
     collapse: bool(true, "Collapse middle"),
   },
   render({ size, collapse }) {
-    const middle = (
-      <>
-        <BreadcrumbItem>
-          <BreadcrumbLink href="#">Docs</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbLink href="#">Components</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbLink href="#">Navigation</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-      </>
-    );
-
-    return (
-      <Breadcrumb>
-        <BreadcrumbList size={size}>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="#">Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          {/* Remounted when toggled, so switching the control back to collapsed starts closed. */}
-          {collapse ? <BreadcrumbCollapse key="collapse">{middle}</BreadcrumbCollapse> : middle}
-          <BreadcrumbItem>
-            <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-    );
+    return <BreadcrumbDemo size={size} collapse={collapse} />;
   },
 });
+
+function BreadcrumbDemo({ size, collapse }: { size: "sm" | "md"; collapse: boolean }) {
+  const [state, setState] = useState({ collapse, expanded: false });
+  if (state.collapse !== collapse) setState({ collapse, expanded: false });
+  const middle = (
+    <>
+      <BreadcrumbItem>
+        <BreadcrumbLink href="#">Docs</BreadcrumbLink>
+      </BreadcrumbItem>
+      <BreadcrumbSeparator />
+      <BreadcrumbItem>
+        <BreadcrumbLink href="#">Components</BreadcrumbLink>
+      </BreadcrumbItem>
+      <BreadcrumbSeparator />
+      <BreadcrumbItem>
+        <BreadcrumbLink href="#">Navigation</BreadcrumbLink>
+      </BreadcrumbItem>
+      <BreadcrumbSeparator />
+    </>
+  );
+
+  return (
+    <Breadcrumb>
+      <BreadcrumbList size={size}>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="#">Home</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbCollapse open={!collapse || state.expanded} onOpenChange={(expanded) => setState({ collapse, expanded })}>
+          {middle}
+        </BreadcrumbCollapse>
+        <BreadcrumbItem>
+          <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
+}

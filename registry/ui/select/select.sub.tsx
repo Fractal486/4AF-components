@@ -1,4 +1,4 @@
-import { cn } from "@/registry/lib/cn";
+import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Select as BaseSelect } from "@base-ui/react/select";
 import { ChevronRight } from "lucide-react";
@@ -381,10 +381,9 @@ export function SelectSub({
 export interface SelectSubTriggerProps
   extends Omit<
     SelectItemProps,
-    "children" | "value" | "className" | "disabled" | "label" | "render" | "end"
+    "children" | "value" | "disabled" | "label" | "render" | "end"
   > {
   children?: ReactNode;
-  className?: string;
   label?: string;
   disabled?: boolean;
   id?: string;
@@ -500,7 +499,7 @@ export function SelectSubTrigger({
       onKeyDown={handleKeyDown}
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
-      className={cn("data-[popup-open]:bg-muted data-[popup-open]:text-foreground", className)}
+      className={mergeStateClassName("data-[popup-open]:bg-muted data-[popup-open]:text-foreground", className)}
       end={
         <span className="flex shrink-0 items-center gap-1.5">
           {select.multiple && (
@@ -525,8 +524,8 @@ export function SelectSubTrigger({
 }
 
 export interface SelectSubContentProps
-  extends Omit<ComponentProps<typeof BaseSelect.Popup>, "className"> {
-  className?: string;
+  extends ComponentProps<typeof BaseSelect.Popup> {
+  portalProps?: Omit<ComponentProps<typeof BaseSelect.Portal>, "children">;
   children?: ReactNode;
   side?: ComponentProps<typeof BaseSelect.Positioner>["side"];
   align?: ComponentProps<typeof BaseSelect.Positioner>["align"];
@@ -543,6 +542,7 @@ type SelectSubContentKeyDownEvent = Parameters<
 /** A nested select panel whose children are ordinary `SelectItem`s. */
 export function SelectSubContent({
   className,
+  portalProps,
   children,
   side = "right",
   align = "start",
@@ -681,7 +681,7 @@ export function SelectSubContent({
       onOpenChange={handleNestedOpenChange}
       onValueChange={(nextValue, details) => select.setValue(nextValue, details)}
     >
-      <BaseSelect.Portal>
+      <BaseSelect.Portal {...portalProps}>
         <BaseSelect.Positioner
           data-slot="select-sub-positioner"
           ref={setNestedPanelNode}
@@ -702,13 +702,11 @@ export function SelectSubContent({
             onKeyDown={handleKeyDown}
             onPointerEnter={handlePointerEnter}
             onPointerLeave={handlePointerLeave}
-            className={cn(
+            className={mergeStateClassName(cn(
               "flex max-h-[min(var(--available-height),18rem)] w-max min-w-50 flex-col overflow-hidden rounded-md border border-border bg-surface text-foreground shadow-overlay-drop outline-none",
               "origin-[var(--transform-origin)] blur-0 transition-[opacity,scale,filter] duration-(--duration-base) ease-out",
               "data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[starting-style]:blur-[3px]",
-              "data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[ending-style]:blur-[2px]",
-              className,
-            )}
+              "data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[ending-style]:blur-[2px]"), className)}
           >
             <ScrollArea className="min-h-0" viewportClassName="p-1" viewportProps={{ tabIndex: -1 }}>
               {keepMounted || subOpen ? options : null}

@@ -10,9 +10,31 @@ description: A button that confirms an asynchronous action with loading, success
 **Main export:** `ActionButton`
 
 Runs an `action` that may return a promise, shows pending, success, and error states, then
-reverts to idle after `revertAfter` milliseconds (2000 by default). Throw or reject from
+reverts to idle after `revertAfter` milliseconds (2000 by default for each outcome). Throw or reject from
 `action` to show an error. `pendingDelay` defaults to 0, and concurrent presses cannot start
 another run. By default the button keeps the width of its widest state throughout.
+
+| Prop | Default | Purpose |
+| --- | --- | --- |
+| `status` | Internally managed | `"idle"`, `"pending"`, `"success"`, or `"error"`. Controls the visible feedback from a form or another external owner. |
+| `onStatusChange` | — | Reports requested transitions, including automatic resets. With controlled `status`, update the prop to accept a change. |
+| `revertAfter` | `2000` | One duration for both outcomes, or `{ success, error }` for separate durations in milliseconds. An omitted outcome uses 2000ms. |
+| `labels.error` | Resting label | A React node or `(error) => ReactNode`, evaluated when showing an error. Receives the action's rejection reason. |
+| `error` | Last rejection | Supplies the rejection reason for an externally controlled error state. |
+
+`action` is optional when external code owns the work. Controlled `status` remains authoritative;
+the component requests transitions through `onStatusChange` rather than overriding it. Pending
+status blocks activation in both modes. A click handler that prevents the default also prevents
+the internal action from running.
+
+The error reset countdown pauses while the button is hovered or focused, including when it
+was already focused when the failure occurred. It resumes with its remaining time after both
+pointer and focus leave. Success resets normally. Changing unrelated props or callbacks does
+not restart the countdown.
+
+A function-based error label is not evaluated before an error occurs. Its width is only known
+after failure, so the button may grow to fit it even with `sizing="widest"`. A string error
+label also becomes the screen-reader announcement unless `announce.error` overrides it.
 
 While pending, the button keeps keyboard focus and exposes `aria-disabled="true"` and
 `aria-busy="true"`. Repeat activation is blocked. An explicit `disabled` prop still disables
@@ -20,6 +42,19 @@ the native button unless you opt into `focusableWhenDisabled`.
 
 `onSuccess` and `onError` report the action's outcome even if the button unmounts before it
 settles. Unmounting stops local feedback and reset timers, but does not cancel the action.
+
+## Shared action helper
+
+`useAction` from the installed `@/lib/use-action` module accepts `action`, `status`,
+`onStatusChange`, `revertAfter`, `pendingDelay`, `onSuccess`, and `onError`. It returns
+`status`, the last `error`, `run()`, `reset()`, and `buttonProps` containing hover/focus handlers.
+Attach those handlers to a custom action surface to pause its error countdown. ActionButton
+attaches them automatically and composes them with caller-provided handlers.
+
+`reset()` clears the error and timers and requests idle immediately. Results and outcome
+callbacks from a request started before the reset are ignored, and a fresh run may start.
+It does not abort the underlying network request or undo its effects. Ordinary unmounting
+still delivers outcome callbacks, as described above.
 
 `sizing="current"` fits the button to the showing state and animates the width as it changes.
 A label-only button then reserves no glyph slot while idle and grows when the status glyph

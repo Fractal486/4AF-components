@@ -15,7 +15,7 @@ import {
   type ReactNode,
 } from "react";
 import { useMergedRefs } from "@/registry/lib/refs";
-import { cn } from "@/registry/lib/cn";
+import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { Input } from "@/registry/ui/input/input";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import {
@@ -26,7 +26,8 @@ import {
 /**
  * A select that opens **on** its trigger rather than below it.
  *
- * The default and ghost panels take the trigger's width and are positioned so the selected row lands
+ * The default and ghost panels are at least the trigger's width, growing to the longest
+ * row, and are positioned so the selected row lands
  * exactly where the trigger's value was — press it and the current choice doesn't move, the
  * other options simply appear around it. A plain trigger instead lets the panel shrink-wrap to
  * its longest row plus the reserved check slot, at least 200px, while keeping that same
@@ -306,12 +307,10 @@ export function AlignedSelectTrigger({
     <BaseSelect.Trigger
       data-slot="aligned-select-trigger"
       data-variant={resolvedVariant}
-      className={cn(
+      className={mergeStateClassName(cn(
         SIZE[size].field,
         alignedSelectTriggerVariants({ variant: resolvedVariant }),
-        SIZE[size].radius,
-        className,
-      )}
+        SIZE[size].radius), className)}
       {...props}
     >
       <BaseSelect.Value
@@ -344,6 +343,10 @@ export function AlignedSelectTrigger({
 }
 
 export interface AlignedSelectContentProps extends ComponentProps<typeof BaseSelect.Popup> {
+  /** Choose the portal container or other Base UI portal options. */
+  portalProps?: Omit<ComponentProps<typeof BaseSelect.Portal>, "children">;
+  /** Alignment-axis offset for dropdown placement; aligned overlap keeps the selected row in place. */
+  alignOffset?: ComponentProps<typeof BaseSelect.Positioner>["alignOffset"];
   /**
    * `trigger` keeps the panel the trigger's width; `content` sizes it to the longest row plus
    * the reserved check slot, at least 200px. When omitted, this follows the trigger variant: `plain` uses
@@ -387,6 +390,8 @@ export function AlignedSelectContent({
   searchLabel = "Search options",
   searchPlaceholder = "Search…",
   positionerProps,
+  portalProps,
+  alignOffset,
   children,
   ...props
 }: AlignedSelectContentProps) {
@@ -443,21 +448,25 @@ export function AlignedSelectContent({
   }, [open, searchable]);
 
   return (
-    <BaseSelect.Portal>
+    <BaseSelect.Portal {...portalProps}>
       <BaseSelect.Positioner
+        alignOffset={alignOffset}
         data-slot="aligned-select-positioner"
         // The whole variant, in one prop. Base UI overlaps the trigger and offsets the
         // panel by the selected item's position inside it.
         alignItemWithTrigger
         className={cn(
           "z-50 outline-none",
-          width === "trigger" ? "w-[var(--anchor-width)]" : "w-max min-w-50",
+          // Both modes size to the rows, so none truncates while there is room; `trigger`
+          // keeps the panel at least the trigger's width. See SelectContent.
+          "max-w-(--available-width)",
+          width === "trigger" ? "w-max min-w-(--anchor-width)" : "w-max min-w-50",
         )}
         {...positionerProps}
       >
         <BaseSelect.Popup
           data-slot="aligned-select-content"
-          className={cn(
+          className={mergeStateClassName(cn(
             "overflow-hidden rounded-md border border-border bg-surface shadow-overlay-drop",
             // Grown out of the selected row, which is the one thing that must not move.
             //
@@ -474,9 +483,7 @@ export function AlignedSelectContent({
             "origin-[var(--transform-origin)] blur-0",
             "transition-[opacity,scale,filter] duration-(--duration-base) ease-out",
             "data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[starting-style]:blur-[3px]",
-            "data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[ending-style]:blur-[2px]",
-            className,
-          )}
+            "data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[ending-style]:blur-[2px]"), className)}
           // Base UI hands focus to the popup itself when a query leaves no row to land on.
           // Bounce it back, or the caret leaves the field mid-word.
           onFocus={(event) => {
@@ -485,7 +492,7 @@ export function AlignedSelectContent({
           {...props}
         >
           {searchable && (
-            <div className="flex h-[38px] items-center border-b border-border px-3.5">
+            <div className="flex h-[38px] items-stretch border-b border-border px-3.5">
               <Input
                 ref={inputRef}
                 aria-label={searchLabel}
@@ -603,7 +610,7 @@ export function AlignedSelectGroup({
   return (
     <BaseSelect.Group
       data-slot="aligned-select-group"
-      className={cn('[&:not(:has([role=option]))]:hidden', className)}
+      className={mergeStateClassName('[&:not(:has([role=option]))]:hidden', className)}
       {...props}
     />
   );
@@ -617,18 +624,7 @@ export function AlignedSelectGroupLabel({
   return (
     <BaseSelect.GroupLabel
       data-slot="aligned-select-group-label"
-      className={cn(
-        // 10px, below the type scale's `2xs` floor and deliberately so: at 11px a heading
-        // still reads as a peer of a 12px row, and a section label is a caption for the rows
-        // rather than one of them. Uppercase would separate it too, but costs legibility at
-        // this size.
-        //
-        // `subtle-foreground` is already the quietest text token, so the last step down is an
-        // alpha on it — which composites toward whichever surface it sits on and therefore
-        // dims in both themes rather than only one.
-        "px-2.5 pt-2 pb-1 text-[10px] font-medium text-subtle-foreground/70",
-        className,
-      )}
+      className={mergeStateClassName("px-2.5 pt-2 pb-1 text-[10px] font-medium text-subtle-foreground/70", className)}
       {...props}
     />
   );
@@ -693,16 +689,14 @@ export function AlignedSelectItem({
         onFocusCapture?.(event);
         if (!event.defaultPrevented) setActiveItem(value);
       }}
-      className={cn(
+      className={mergeStateClassName(cn(
         "flex items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
         "data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
         "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
         "data-[selected]:text-foreground",
-        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-        className,
-      )}
+        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50"), className)}
       {...props}
     >
       <BaseSelect.ItemText className="flex-1 truncate">{children}</BaseSelect.ItemText>

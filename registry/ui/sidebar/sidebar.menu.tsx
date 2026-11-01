@@ -1,6 +1,7 @@
 import { cn } from "@/registry/lib/cn";
 import { Slot } from "@/registry/lib/slot";
 import { Button } from "@/registry/ui/button/button";
+import { BadgeCount } from "@/registry/ui/badge/badge";
 import { Skeleton } from "@/registry/ui/skeleton/skeleton";
 import { Tooltip } from "@/registry/ui/tooltip/tooltip";
 import { Collapsible as BaseCollapsible } from "@base-ui/react/collapsible";
@@ -9,6 +10,8 @@ import type { ComponentProps, CSSProperties, ReactNode } from "react";
 import { useSidebar } from "./sidebar.context";
 import {
   sidebarMenuButtonVariants,
+  sidebarMenuBadgeVariants,
+  sidebarMenuReplacementActionVariants,
   sidebarMenuSubButtonVariants,
   type SidebarMenuButtonVariants,
   type SidebarMenuSubButtonVariants,
@@ -153,7 +156,7 @@ export function SidebarMenuCollapsibleTrigger({
               <span
                 aria-hidden="true"
                 data-slot="sidebar-menu-badge-spacer"
-                className="hidden w-7 shrink-0 group-data-[collapsible=icon]:hidden group-has-data-[slot=sidebar-menu-badge]/menu-collapsible:block"
+                className="hidden w-7 shrink-0 group-data-[collapsible=icon]:hidden group-has-data-[slot=sidebar-menu-badge]/menu-collapsible:block pointer-fine:group-has-[>_[data-replaces-badge]]/menu-collapsible:hidden"
               />
               <span
                 aria-hidden="true"
@@ -194,18 +197,23 @@ export function SidebarMenuCollapsibleContent({
   );
 }
 
+export interface SidebarMenuActionProps extends ComponentProps<"button"> {
+  asChild?: boolean;
+  showOnHover?: boolean;
+  /** Shares the badge's slot on hover/focus; touch keeps both visible in separate slots. */
+  replacesBadge?: boolean;
+  /** Marks the action as belonging to a nested menu row. */
+  nested?: boolean;
+}
+
 export function SidebarMenuAction({
   className,
   asChild = false,
   showOnHover = false,
   nested = false,
+  replacesBadge = false,
   ...props
-}: ComponentProps<"button"> & {
-  asChild?: boolean;
-  showOnHover?: boolean;
-  /** Marks the action as belonging to a nested menu row. */
-  nested?: boolean;
-}) {
+}: SidebarMenuActionProps) {
   return (
     <Button
       asChild={asChild}
@@ -213,6 +221,8 @@ export function SidebarMenuAction({
       size="icon-sm"
       pressScale={false}
       data-slot={nested ? "sidebar-menu-sub-action" : "sidebar-menu-action"}
+      data-replaces-badge={replacesBadge || undefined}
+      data-nested={nested || undefined}
       {...props}
       className={cn(
         // Keep the Button's shared behavior, but preserve the compact action's
@@ -230,35 +240,60 @@ export function SidebarMenuAction({
           "group-has-data-[slot=sidebar-menu-chevron]/menu-collapsible:right-8",
         // Hidden until the row is hovered or focused — but never on touch, where there's
         // no hover to reveal it and the action would be unreachable.
-        showOnHover &&
+        showOnHover && !replacesBadge &&
           (nested
             ? "md:opacity-0 group-focus-within/menu-sub-item:opacity-100 group-hover/menu-sub-item:opacity-100 group-has-data-[active=true]/menu-sub-item:opacity-100 data-[state=open]:opacity-100"
             : "md:opacity-0 group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 group-has-data-[active=true]/menu-item:opacity-100 data-[state=open]:opacity-100"),
         "[&>svg]:size-4 [&>svg]:shrink-0",
+        sidebarMenuReplacementActionVariants(),
         className,
       )}
     />
   );
 }
 
-export function SidebarMenuBadge({ className, ...props }: ComponentProps<"div">) {
+export interface SidebarMenuBadgeProps extends ComponentProps<"div"> {
+  /** Zero and negative counts hide the badge. Legacy custom children still work without count. */
+  count?: number;
+  max?: number;
+  label?: string;
+  locales?: Intl.LocalesArgument;
+  animated?: boolean;
+  dot?: boolean;
+  tone?: "default" | "success" | "warning" | "destructive";
+}
+
+export function SidebarMenuBadge({
+  className, count, max = 99, label, locales = "en-US", animated = false,
+  dot = false, tone = "default", children, ...props
+}: SidebarMenuBadgeProps) {
+  const value = count === undefined ? undefined : Number.isFinite(count) ? Math.max(0, Math.floor(count)) : 0;
+  if (value === 0) return null;
+
   return (
     <div
       data-slot="sidebar-menu-badge"
-      className={cn(
-        "pointer-events-none absolute right-1 flex h-5 min-w-5 items-center justify-center rounded-md px-1",
-        // Tabular figures so a counter ticking 9 → 10 doesn't shift the digits around.
-        "text-xs font-medium tabular-nums text-muted-foreground select-none",
-        "peer-data-[size=sm]/menu-button:top-1",
-        "peer-data-[size=default]/menu-button:top-1.5",
-        "peer-data-[size=lg]/menu-button:top-2.5",
-        "group-data-[collapsible=icon]:hidden",
-        "group-has-data-[slot=sidebar-menu-chevron]/menu-collapsible:right-8",
-        "group-has-data-[slot=sidebar-menu-action]/menu-collapsible:right-14!",
-        className,
-      )}
+      data-count={value}
+      data-dot={dot || undefined}
+      data-tone={tone}
+      className={cn(sidebarMenuBadgeVariants(), className)}
       {...props}
-    />
+    >
+      {dot ? (
+        <>
+          <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
+          <span className="sr-only">{value !== undefined ? `${new Intl.NumberFormat(locales).format(value)} ` : ""}{label}</span>
+        </>
+      ) : value !== undefined ? (
+        <>
+          <span className="group-data-[collapsible=icon]:sr-only">
+            <BadgeCount value={value} max={max} locales={locales} animated={animated} />
+            {label && <span className="sr-only"> {label}</span>}
+          </span>
+          <span aria-hidden="true" className="hidden size-1.5 rounded-full bg-current group-data-[collapsible=icon]:block" />
+        </>
+      ) : children}
+    </div>
   );
 }
 

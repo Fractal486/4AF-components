@@ -17,13 +17,13 @@ export const selectTriggerVariants = cva(
         default: [
           "w-full justify-between border border-border bg-surface px-3.5",
           "hover:border-border-strong data-[popup-open]:border-border-strong",
-          "aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",
+          "[&:is([aria-invalid=true],[data-invalid])]:border-destructive! [&:is([aria-invalid=true],[data-invalid])]:ring-[3px]! [&:is([aria-invalid=true],[data-invalid])]:ring-destructive/25!",
         ],
         ghost: [
           "w-full justify-between border border-transparent bg-transparent px-3.5 text-muted-foreground",
           "hover:border-transparent hover:bg-muted hover:text-foreground",
           "data-[popup-open]:border-transparent data-[popup-open]:bg-muted data-[popup-open]:text-foreground",
-          "aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",
+          "[&:is([aria-invalid=true],[data-invalid])]:ring-[3px]! [&:is([aria-invalid=true],[data-invalid])]:ring-destructive/25!",
         ],
         // Plain keeps the control's hit area and type scale, but owns no surface or edge.
         // The explicit transparent hover/open states keep a consumer's global button styles
@@ -31,7 +31,7 @@ export const selectTriggerVariants = cva(
         plain: [
           "w-auto justify-start gap-1.5 border-0 bg-transparent px-0",
           "hover:border-0 hover:bg-transparent data-[popup-open]:border-0 data-[popup-open]:bg-transparent",
-          "aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",
+          "[&:is([aria-invalid=true],[data-invalid])]:ring-[3px]! [&:is([aria-invalid=true],[data-invalid])]:ring-destructive/25!",
         ],
       },
     },
@@ -46,12 +46,14 @@ export const selectSortTriggerVariants = cva(
     "transition-[background-color,border-color,color] duration-(--duration-base) ease-out",
     "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
     "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
+    "[&:is([aria-invalid=true],[data-invalid])]:ring-[3px]! [&:is([aria-invalid=true],[data-invalid])]:ring-destructive/25!",
   ],
   {
     variants: {
       variant: {
         default: [
           "border hover:border-border-strong",
+          "[&:is([aria-invalid=true],[data-invalid])]:border-destructive!",
           "data-[popup-open]:border-border-strong data-[popup-open]:bg-muted",
         ],
         ghost: [

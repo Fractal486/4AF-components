@@ -1,4 +1,4 @@
-import { cn } from "@/registry/lib/cn";
+import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Input } from "@/registry/ui/input/input";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
@@ -267,7 +267,7 @@ export function DropdownMenuSelect<Value, Multiple extends boolean | undefined =
 }
 
 const selectItemBase = cn(
-  "relative flex items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-xs outline-none select-none",
+  "relative flex min-w-0 items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-xs wrap-anywhere outline-none select-none",
   "text-muted-foreground data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
   "data-[checked]:text-foreground",
   "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
@@ -291,7 +291,7 @@ export interface DropdownMenuSelectTriggerProps
   icon?: ReactNode;
   /** The label shown on the left side of the trigger. */
   placeholder?: ReactNode;
-  className?: string;
+  className?: ComponentProps<typeof BaseMenu.SubmenuTrigger>["className"];
   /** Hover delay in milliseconds. @default 0 */
   delay?: number;
 }
@@ -327,14 +327,14 @@ export function DropdownMenuSelectTrigger({
       {...props}
       disabled={disabled || context.disabled}
       label={label ?? (typeof placeholder === "string" ? placeholder : undefined)}
-      className={cn("min-w-0", className)}
+      className={mergeStateClassName("min-w-0", className)}
     >
       {icon && (
         <span aria-hidden="true" className={selectItemIcon}>
           {icon}
         </span>
       )}
-      <span className="min-w-0 flex-1 truncate text-foreground">{label ?? placeholder}</span>
+      <span className="min-w-0 flex-1 wrap-anywhere text-foreground">{label ?? placeholder}</span>
       {hasSelection && (
         <span className="ml-auto max-w-[50%] shrink-0 truncate text-muted-foreground">{summary}</span>
       )}
@@ -361,7 +361,7 @@ export function DropdownMenuSelectContent({
   className,
   side = "right",
   align = "start",
-  keepMounted = true,
+  keepMounted,
   searchable = false,
   searchPosition = "top",
   searchPlaceholder = "Search…",
@@ -432,11 +432,11 @@ export function DropdownMenuSelectContent({
     // A fixed 38px row, flush to the panel edge: the negative margins cancel the popup's
     // `p-1` so the strip runs from the panel's top edge to its separator line at exactly
     // 38px (the popup's `overflow-hidden` clips it to the rounded corners). `px-3.5` matches
-    // the standalone Select's search inset and its 4px list + 10px row icon inset. Icon and
-    // input are centred flex children rather than an absolute icon over a padded input.
+    // the standalone Select's search inset and its 4px list + 10px row icon inset.
+    // Stretch the Input wrapper so its h-full field fills the search strip.
     <div
       className={cn(
-        "-mx-1 flex h-[38px] shrink-0 items-center gap-2 px-3.5",
+        "-mx-1 flex h-[38px] shrink-0 items-stretch gap-2 px-3.5",
         searchPosition === "bottom" ? "-mb-1 border-t border-border" : "-mt-1 border-b border-border",
       )}
     >
@@ -477,8 +477,8 @@ export function DropdownMenuSelectContent({
     <DropdownMenuSubContent
       side={side}
       align={align}
-      keepMounted={keepMounted}
-      className={cn(searchable && "overflow-hidden", className)}
+      keepMounted={keepMounted ?? props.portalProps?.keepMounted ?? true}
+      className={mergeStateClassName(cn(searchable && "overflow-hidden"), className)}
       onFocus={(event) => {
         onFocus?.(event);
         if (searchable && autoFocusFirstItem && event.target === event.currentTarget) {
@@ -516,7 +516,7 @@ export interface DropdownMenuSelectItemProps {
   disabled?: boolean;
   /** Explain why a disabled option is unavailable. Hovering the row shows the explanation. */
   disabledReason?: ReactNode;
-  className?: string;
+  className?: ComponentProps<typeof BaseMenu.RadioItem>["className"];
   /** Text used by an ancestor searchable select panel to match this option. */
   searchValue?: string;
 }
@@ -570,7 +570,7 @@ export function DropdownMenuSelectItem({
         disabled={isDisabled || hiddenBySearch}
         hidden={hiddenBySearch}
         label={itemLabel}
-        className={cn(selectItemBase, hasReason && "data-[disabled]:pointer-events-auto", className)}
+        className={mergeStateClassName(cn(selectItemBase, hasReason && "data-[disabled]:pointer-events-auto"), className)}
         render={(itemProps, state) => (
           <DisabledReasonTooltip disabled={isDisabled} reason={disabledReason}>
             <div {...itemProps}>
@@ -585,7 +585,7 @@ export function DropdownMenuSelectItem({
                   {icon}
                 </span>
               )}
-              <span className="min-w-0 flex-1 truncate">{children}</span>
+              <span className="min-w-0 flex-1 wrap-anywhere">{children}</span>
             </div>
           </DisabledReasonTooltip>
         )}
@@ -600,14 +600,14 @@ export function DropdownMenuSelectItem({
       disabled={isDisabled || hiddenBySearch}
       hidden={hiddenBySearch}
       label={itemLabel}
-      className={cn(selectItemBase, hasReason && "data-[disabled]:pointer-events-auto", className)}
+      className={mergeStateClassName(cn(selectItemBase, hasReason && "data-[disabled]:pointer-events-auto"), className)}
     >
       {icon && (
         <span aria-hidden="true" className={selectItemIcon}>
           {icon}
         </span>
       )}
-      <span className="min-w-0 flex-1 truncate">{children}</span>
+      <span className="min-w-0 flex-1 wrap-anywhere">{children}</span>
       <BaseMenu.RadioItemIndicator
         keepMounted
         className={cn(

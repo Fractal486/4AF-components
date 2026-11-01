@@ -1,18 +1,98 @@
 ---
 title: Alert Dialog
-description: A modal confirmation dialog for consequential actions, built on Base UI.
+description: A confirmation dialog with async actions, Cancel focus, an optional icon, and shared Dialog layout.
 ---
 
 <ComponentReference name="alert-dialog" />
 
 ## API
 
-**Main exports:** `AlertDialog` and its content, action, cancel, title, and description parts
+**Main exports:** `AlertDialog`, `AlertDialogTrigger`, `AlertDialogClose`,
+`AlertDialogContent`, `AlertDialogPopup`, `AlertDialogPortal`, `AlertDialogBackdrop`
+(also `AlertDialogOverlay`), `AlertDialogHeader`, `AlertDialogBody`, `AlertDialogFooter`,
+`AlertDialogFooterItem`, `AlertDialogMedia`, `AlertDialogTitle`, `AlertDialogDescription`,
+`AlertDialogCancel`, `AlertDialogAction`, `createAlertDialogHandle`, and the
+`AlertDialogHandle` and `AlertDialogPortalContainer` types.
 
-A modal for confirming consequential actions. Backdrop clicks do not dismiss it; Escape and
-close controls do. Place Cancel first, or set `initialFocus` on `AlertDialogContent`, when
-cancellation should receive initial focus.
+| Part | Props | Behavior |
+| --- | --- | --- |
+| `AlertDialog` | `open`, `defaultOpen`, `onOpenChange`, `onOpenChangeComplete` | Controlled or uncontrolled visibility, cancelable changes, and completion after the transition. Close requests blocked by a pending action do not call `onOpenChange`. |
+| `AlertDialog` | `disablePointerDismissal = true` | Prevents outside clicks from closing the dialog. Set `false` to allow them; pending actions still block dismissal. |
+| `AlertDialog` | `handle`, `triggerId`, `defaultTriggerId`, `children`, `actionsRef` | Shared trigger payloads and imperative close/unmount actions. Children can be a function receiving `{ payload }`. |
+| `AlertDialogContent` / `AlertDialogPopup` | `autoSize = true`, `bodyClassName` | Shared Dialog height measurement, resizing, padding, and gap. Set `autoSize={false}` for a caller-controlled height. |
+| `AlertDialogContent` / `AlertDialogPopup` | `className`, `render`, `ref`, DOM props | Customize the popup. Class callbacks receive `{ open, transitionStatus, nested, nestedDialogOpen }`. |
+| `AlertDialogContent` / `AlertDialogPopup` | `initialFocus`, `finalFocus` | Focus starts on the enabled Cancel control, regardless of its position. An explicit `initialFocus` overrides this. With no enabled Cancel, Base UI chooses the initial focus. |
+| `AlertDialogContent` | `portalContainer`, `portalProps`, `backdropClassName`, `backdropProps` | Configure the portal and backdrop, including custom rendering and state-aware backdrop classes. |
+| `AlertDialogPortal` | `container`, `keepMounted`, `ref`, DOM props | Custom mount points and retaining hidden content between openings. |
+| `AlertDialogBody` | Scroll Area props, `contentClassName` | Independently scrolling content, using the same implementation as `DialogBody`. |
+| `AlertDialogMedia` | `variant = "default"`, `asChild`, `ref`, DOM props | Neutral or `"destructive"` icon area. It sits beside the title and description on desktop and above them on phones. Decorative by default. |
+| `AlertDialogAction` | `onClick`, `onError`, Button props | A synchronous handler closes immediately. A returned promise shows loading and closes only when it resolves. A rejected or thrown action stays open and calls `onError(error)`. |
+| `AlertDialogCancel` | Button props | Defaults to an outline Cancel button. It cannot dismiss while an action is pending. |
+| `AlertDialogFooterItem` | `children`, `disabled`, `focusableWhenDisabled` | Registers a custom button or link in the footer's keyboard navigation. The child remains the rendered element. |
 
-`AlertDialogAction` closes when pressed; it does not await an asynchronous `onClick` handler.
-For an action that must finish before dismissal, control `open` and close it after success, or
-cancel close requests through the root's `onOpenChange` details while work is pending.
+## Async actions
+
+Return a promise from `AlertDialogAction.onClick` to let the component await it. While it is
+pending, the active action shows the shared loading indicator, other action buttons and Cancel
+are disabled, and Escape, outside clicks, explicit close controls, and imperative close
+requests cannot dismiss the dialog. The action and Cancel remain focusable during loading.
+Repeated presses cannot start the action again while it is pending.
+
+Success clears loading and requests a close. A root `onOpenChange` handler can still cancel
+that close. Rejection or a synchronous error clears loading, keeps the dialog open, and calls
+`onError` so the caller can display an error message. Another press retries the action.
+Calling `event.preventDefault()` in `onClick` keeps the dialog open after a synchronous action
+or successful promise; returned promises still get loading and dismissal protection.
+
+Loading uses the same [shared indicator](/docs/reference/engineering#shared-loading-indicators)
+as Button: `ClassicLoader` by default, a surrounding `LoaderProvider` override, or a local
+`loader` prop. The popup exposes `aria-busy` and `data-pending` while work is pending.
+
+An external owner can still set controlled `open` to `false` or unmount the dialog. Late
+promise outcomes from that session are ignored and cannot close a newly opened dialog.
+The underlying task is not aborted. Keep cancellation or abort logic in the caller when needed.
+
+## Keyboard and focus
+
+Opening focuses the enabled `AlertDialogCancel`, including when an action or input appears
+before it. Provide `initialFocus` to choose another element or disable automatic focus.
+Base UI traps focus while open and returns it to the activating trigger when closed.
+
+The footer uses Base UI's composite navigation. Left/right and up/down move between registered
+controls, wrap at the ends, and skip disabled controls unless they are explicitly focusable.
+Home/End select the first/last control. Tab continues to visit the individual buttons while
+remaining inside the dialog. Cancel, Action, and Close participate automatically; wrap other
+footer controls with `AlertDialogFooterItem`. On phones, DOM order matches the reversed visual
+button stack. `dir="rtl"` on the content, popup, or footer reverses horizontal navigation.
+
+## Shared Dialog parts
+
+Alert Dialog installs [Dialog](/docs/dialog) as a registry dependency and reuses its portal,
+backdrop, popup layout, scrolling, height measurement, nested layering, motion, title, and
+description. Its header and footer extend those same parts with media layout and keyboard
+navigation. There is no automatic corner or footer Close button; compose Cancel and Action
+controls explicitly.
+
+Base UI's Alert Dialog root permanently blocks outside presses, so this component uses its
+configurable modal Dialog root and sets the shared popup's role to `alertdialog`. The default
+still blocks outside dismissal. Title and description supply the accessible name and description;
+Base UI continues to own focus trapping, scroll locking, dismissal, and nested modal behavior.
+
+Place `AlertDialogBody` directly inside the content or popup to keep siblings such as the
+footer visible while its contents scroll. Put the header outside the body when it should
+stay fixed too. Without a separate body, the whole content scrolls within the viewport height
+limit. `className` styles the popup surface and width; `bodyClassName` styles the shared outer
+padding and gap. `contentClassName` styles the content inside a separate body.
+
+`AlertDialogContent` is the convenient portal/backdrop/popup composition. Use
+`AlertDialogPortal`, `AlertDialogBackdrop`, and `AlertDialogPopup` separately for custom
+compositions. Shared parts retain Dialog's `data-slot` names; the popup, media, and action
+controls use the corresponding `alert-dialog-*` names. Dialog and Alert Dialog can nest inside
+each other with the same shared stacking and focus behavior.
+
+## Shared triggers
+
+Create a stable `createAlertDialogHandle<Payload>()`, pass it to the root and its triggers,
+and provide a `payload` on each trigger. The root's children function receives the active
+payload. Triggers can live elsewhere in the React tree. Keep the handle stable across renders
+and account for an undefined payload before a trigger is activated.

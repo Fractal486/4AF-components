@@ -39,7 +39,7 @@ describe("Slider", () => {
     await user.clear(input);
     await user.type(input, `${typed}{Enter}`);
 
-    expect(onValueChange).toHaveBeenCalledExactlyOnceWith(expected);
+    expect(onValueChange).toHaveBeenCalledExactlyOnceWith(expected, expect.objectContaining({ reason: "none" }));
     expect(screen.getByRole("slider")).toHaveAttribute("aria-valuenow", String(expected));
   });
 
@@ -57,7 +57,7 @@ describe("Slider", () => {
     await user.click(screen.getByText("40"));
     await user.clear(screen.getByRole("textbox", { name: "Edit Amount" }));
     await user.type(screen.getByRole("textbox", { name: "Edit Amount" }), "65{Enter}");
-    expect(onValueChange).toHaveBeenCalledExactlyOnceWith(65);
+    expect(onValueChange).toHaveBeenCalledExactlyOnceWith(65, expect.objectContaining({ reason: "none" }));
     expect(screen.getByRole("slider")).toHaveAttribute("aria-valuenow", "65");
   });
 
@@ -355,7 +355,7 @@ describe("Slider", () => {
     await user.clear(input);
     await user.type(input, "47{Enter}");
     // Snapped to the step of 10.
-    expect(onValueChange).toHaveBeenLastCalledWith(50);
+    expect(onValueChange).toHaveBeenLastCalledWith(50, expect.objectContaining({ reason: "none" }));
     expect(slider).toHaveAttribute("aria-valuenow", "50");
 
     await user.click(screen.getByText("50"));

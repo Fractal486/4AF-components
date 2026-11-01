@@ -22,10 +22,12 @@ export type ControlDef =
       kind: "multiselect";
       options: readonly string[];
       defaultValue: readonly string[];
+      showCount?: boolean;
       label?: string;
+      disabledWhen?: DisabledWhen;
     }
   | { kind: "boolean"; defaultValue: boolean; label?: string; disabledWhen?: DisabledWhen }
-  | { kind: "text"; defaultValue: string; label?: string; placeholder?: string }
+  | { kind: "text"; defaultValue: string; label?: string; placeholder?: string; disabledWhen?: DisabledWhen }
   | {
       kind: "number";
       defaultValue: number;
@@ -33,6 +35,7 @@ export type ControlDef =
       min?: number;
       max?: number;
       step?: number;
+      disabledWhen?: DisabledWhen;
     };
 
 export type ControlSchema = Record<string, ControlDef>;
@@ -80,8 +83,15 @@ export function multi<const O extends readonly string[]>(
   options: O,
   defaultValue: readonly O[number][],
   label?: string,
-): { kind: "multiselect"; options: O; defaultValue: readonly O[number][]; label?: string } {
-  return { kind: "multiselect", options, defaultValue, label };
+  disabledWhen?: DisabledWhen,
+): {
+  kind: "multiselect";
+  options: O;
+  defaultValue: readonly O[number][];
+  label?: string;
+  disabledWhen?: DisabledWhen;
+} {
+  return { kind: "multiselect", options, defaultValue, label, disabledWhen };
 }
 
 export function bool(
@@ -96,13 +106,14 @@ export function text(
   defaultValue: string,
   label?: string,
   placeholder?: string,
-): { kind: "text"; defaultValue: string; label?: string; placeholder?: string } {
-  return { kind: "text", defaultValue, label, placeholder };
+  disabledWhen?: DisabledWhen,
+): { kind: "text"; defaultValue: string; label?: string; placeholder?: string; disabledWhen?: DisabledWhen } {
+  return { kind: "text", defaultValue, label, placeholder, disabledWhen };
 }
 
 export function num(
   defaultValue: number,
-  opts: { min?: number; max?: number; step?: number; label?: string } = {},
+  opts: { min?: number; max?: number; step?: number; label?: string; disabledWhen?: DisabledWhen } = {},
 ): {
   kind: "number";
   defaultValue: number;
@@ -110,6 +121,7 @@ export function num(
   min?: number;
   max?: number;
   step?: number;
+  disabledWhen?: DisabledWhen;
 } {
   return { kind: "number", defaultValue, ...opts };
 }

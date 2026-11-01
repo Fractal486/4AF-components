@@ -1,0 +1,855 @@
+"use client";
+
+import { ChevronUp, ChevronsUpDown, Ellipsis } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import {
+  Children,
+  createContext,
+  isValidElement,
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+} from "react";
+import { cn } from "@/registry/lib/cn";
+import { duration, ease, spring } from "@/registry/lib/motion";
+import { Button } from "@/registry/ui/button/button";
+import { Checkbox } from "@/registry/ui/checkbox/checkbox";
+import { Skeleton } from "@/registry/ui/skeleton/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  type DropdownMenuContentProps,
+} from "@/registry/ui/dropdown-menu/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+  useTableContext,
+  useTableSection,
+  type TableProps,
+  type TableHeadProps,
+} from "@/registry/ui/table/table";
+// `ui/ui/` is not a typo: a sibling `.variants` file is imported through the alias in
+// `tsconfig.json` so the registry build rewrites it to `@/components/ui/table.variants` in the
+// target project. The plain `@/registry/ui/table/…` form resolves here and installs broken.
+import {
+  tableGutterCellVariants,
+  tableInteractiveRowVariants,
+} from "@/registry/ui/ui/table.variants";
+import {
+  dataTableCheckboxSkeletonVariants,
+  dataTableHeadContentVariants,
+  dataTableRowActionsTriggerVariants,
+  dataTableRowActionsVariants,
+  dataTableSelectionBarVariants,
+  dataTableSortButtonVariants,
+  dataTableSortIconVariants,
+} from "./data-table.variants";
+
+/**
+ * Selection, three-step sort controls, a selection action bar, and per-row actions,
+ * composed from the presentational [table](../table/table.tsx) parts. This component owns
+ * selection and sort state plus `aria-sort`; the caller orders the data.
+ *
+ * Set `selectable` and `actionColumn` on the root to add gutter cells consistently to
+ * headers, body rows, and placeholders. Do not add those cells by hand.
+ */
+
+export type TableSortDirection = "asc" | "desc";
+
+export interface TableSort {
+  /** The `sortKey` of the column doing the sorting. */
+  column: string;
+  direction: TableSortDirection;
+}
+
+interface SelectionDrag {
+  table: HTMLTableElement;
+  start: string;
+  current: string;
+  // Every step is recomputed from the selection the drag started on, so a row the pointer
+  // passes back over returns to what it was rather than keeping what the drag gave it.
+  baseline: readonly string[];
+  next: boolean;
+  moved: boolean;
+  cancelled: boolean;
+}
+
+/** The selectable body rows' values, in the order the table shows them. */
+function rowOrder(table: HTMLTableElement) {
+  return Array.from(
+    table.querySelectorAll<HTMLElement>("tbody > tr > [data-row-value]"),
+    (cell) => cell.dataset.rowValue ?? "",
+  );
+}
+
+/**
+ * The rows from one value to another, inclusive, in display order. Read off the DOM rather
+ * than `rows`, because the caller sorts the data and `rows` is not required to follow it.
+ * `null` when either end is not on screen — the previous page's anchor has no range here.
+ */
+function rangeBetween(table: HTMLTableElement, from: string, to: string) {
+  const order = rowOrder(table);
+  const a = order.indexOf(from);
+  const b = order.indexOf(to);
+  if (a === -1 || b === -1) return null;
+  return order.slice(Math.min(a, b), Math.max(a, b) + 1);
+}
+
+function applyRange(base: readonly string[], range: readonly string[], next: boolean) {
+  return next
+    ? [...base, ...range.filter((row) => !base.includes(row))]
+    : base.filter((item) => !range.includes(item));
+}
+
+/**
+ * A drag that ends on its own checkbox would otherwise toggle it a second time, and one that
+ * ends elsewhere fires its click on whatever the two ends share — the row, the table — where
+ * a caller's handler would read it as a click on that.
+ */
+function swallowNextClick() {
+  const swallow = (event: Event) => {
+    event.stopPropagation();
+    event.preventDefault();
+  };
+  window.addEventListener("click", swallow, { capture: true, once: true });
+  // A release outside the window dispatches no click at all.
+  setTimeout(() => window.removeEventListener("click", swallow, { capture: true }), 0);
+}
+
+interface DataTableContextValue {
+  selectable: boolean;
+  selected: readonly string[];
+  allSelected: boolean;
+  someSelected: boolean;
+  selectAllLabel: string;
+  selectionBar: boolean;
+  selectionActions: ReactNode;
+  selectedCount: number;
+  actionColumn: boolean;
+  actionColumnLabel: string;
+  sorting: readonly TableSort[];
+  disabledRows: ReadonlySet<string>;
+  selectionEmpty: boolean;
+  toggleRow: (value: string, next: boolean) => void;
+  extendSelection: (table: HTMLTableElement, value: string) => void;
+  beginDrag: (table: HTMLTableElement, value: string) => void;
+  dragOver: (value: string) => void;
+  toggleAll: (next: boolean) => void;
+  toggleSort: (column: string, multiple: boolean) => void;
+}
+
+const DataTableContext = createContext<DataTableContextValue>({
+  selectable: false,
+  selected: [],
+  allSelected: false,
+  someSelected: false,
+  selectAllLabel: "Select all rows",
+  selectionBar: false,
+  selectionActions: null,
+  selectedCount: 0,
+  actionColumn: false,
+  actionColumnLabel: "Actions",
+  sorting: [],
+  disabledRows: new Set(),
+  selectionEmpty: true,
+  toggleRow: () => {},
+  extendSelection: () => {},
+  beginDrag: () => {},
+  dragOver: () => {},
+  toggleAll: () => {},
+  toggleSort: () => {},
+});
+
+export interface DataTableProps extends TableProps {
+  /** Disabled row values are excluded from select-all and range gestures. */
+  disabledRows?: readonly string[];
+  /** Multiple sorts, in priority order. Shift-click adds a column. */
+  sorting?: readonly TableSort[];
+  defaultSorting?: readonly TableSort[];
+  onSortingChange?: (sorting: TableSort[]) => void;
+  /** Add the checkbox column on the left. */
+  selectable?: boolean;
+  /**
+   * The row values the select-all covers.
+   *
+   * Explicit rather than collected from the rows as they mount, and the difference shows up
+   * the moment the table is paginated: select-all should apply to the page in front of you,
+   * not to every row that exists, and only the caller knows which of those it is rendering.
+   */
+  rows?: readonly string[];
+  /** Selected row values, controlled. */
+  value?: readonly string[];
+  /** Selected row values, uncontrolled. */
+  defaultValue?: readonly string[];
+  onValueChange?: (value: string[]) => void;
+  /** Names the select-all checkbox. */
+  selectAllLabel?: string;
+  /**
+   * Turn the header row into an action row while anything is selected: the column labels
+   * give way to a count, and `selectionActions` sits at the right end. Needs `selectable`.
+   */
+  selectionBar?: boolean;
+  /** Buttons for the right end of the action row. */
+  selectionActions?: ReactNode;
+  /**
+   * Add the per-row actions column on the right. On the root rather than inferred from the
+   * rows, because the header and the placeholder rows have to grow the column too, and
+   * neither of them can see what the body's rows were given.
+   */
+  actionColumn?: boolean;
+  /**
+   * Names the actions column for assistive technology. The header cell is visually empty —
+   * a label over a column of icon buttons is noise — but an unnamed column is not.
+   *
+   * @default "Actions"
+   */
+  actionColumnLabel?: string;
+  /** The column doing the sorting, controlled. `null` is unsorted. */
+  sort?: TableSort | null;
+  /** The column doing the sorting, uncontrolled. */
+  defaultSort?: TableSort | null;
+  /**
+   * Fired with the next state of the three-step cycle: ascending, descending, then back to
+   * `null`. The table owns the control and the state; the rows are yours to order, because
+   * only you know what the values in them actually are.
+   */
+  onSortChange?: (sort: TableSort | null) => void;
+}
+
+export function DataTable({
+  selectable = false,
+  rows,
+  disabledRows,
+  sorting,
+  defaultSorting = [],
+  onSortingChange,
+  value,
+  defaultValue,
+  onValueChange,
+  selectAllLabel = "Select all rows",
+  selectionBar = false,
+  selectionActions,
+  actionColumn = false,
+  actionColumnLabel = "Actions",
+  sort,
+  defaultSort = null,
+  onSortChange,
+  children,
+  ...tableProps
+}: DataTableProps) {
+  const disabledValues = useMemo(() => {
+    const values = new Set(disabledRows);
+    const visit = (nodes: ReactNode) => Children.forEach(nodes, (node) => {
+      if (!isValidElement<{ value?: string; disabled?: boolean; children?: ReactNode }>(node)) return;
+      if (node.props.disabled && node.props.value !== undefined) values.add(node.props.value);
+      visit(node.props.children);
+    });
+    visit(children);
+    return values;
+  }, [disabledRows, children]);
+  const [uncontrolled, setUncontrolled] = useState<readonly string[]>(defaultValue ?? []);
+  const isControlled = value !== undefined;
+  const selected = isControlled ? value : uncontrolled;
+
+  const commit = useCallback(
+    (next: string[]) => {
+      if (!isControlled) setUncontrolled(next);
+      onValueChange?.(next);
+    },
+    [isControlled, onValueChange],
+  );
+
+  // For the document listeners a drag installs, which outlive the render that installed them.
+  const commitRef = useRef(commit);
+  useLayoutEffect(() => {
+    commitRef.current = commit;
+  });
+
+  // The last row toggled on its own, which a shift-click ranges from.
+  const anchor = useRef<string | null>(null);
+  const drag = useRef<SelectionDrag | null>(null);
+
+  const toggleRow = useCallback(
+    (rowValue: string, next: boolean) => {
+      if (disabledValues.has(rowValue)) return;
+      anchor.current = rowValue;
+      // Filtered rather than spliced, so a value that somehow got in twice cannot survive an
+      // uncheck, and what is left keeps the order it was selected in.
+      commit(next ? [...selected, rowValue] : selected.filter((item) => item !== rowValue));
+    },
+    [commit, selected, disabledValues],
+  );
+
+  const extendSelection = useCallback(
+    (table: HTMLTableElement, rowValue: string) => {
+      // The clicked row decides the direction, as it would on its own: a shift-click on an
+      // unchecked row checks the range, on a checked one clears it.
+      const next = !selected.includes(rowValue);
+      const range = anchor.current === null ? null : rangeBetween(table, anchor.current, rowValue);
+      anchor.current = rowValue;
+      commit(applyRange(selected, range ?? [rowValue], next));
+    },
+    [commit, selected],
+  );
+
+  const beginDrag = useCallback(
+    (table: HTMLTableElement, rowValue: string) => {
+      const state: SelectionDrag = {
+        table,
+        start: rowValue,
+        current: rowValue,
+        baseline: selected,
+        next: !selected.includes(rowValue),
+        moved: false,
+        cancelled: false,
+      };
+      drag.current = state;
+
+      const preventTextSelection = (event: Event) => event.preventDefault();
+      const cancel = (event: KeyboardEvent) => {
+        if (event.key !== "Escape" || !state.moved || state.cancelled) return;
+        state.cancelled = true;
+        commitRef.current([...state.baseline]);
+      };
+      const end = () => {
+        document.removeEventListener("pointerup", end);
+        document.removeEventListener("pointercancel", end);
+        document.removeEventListener("keydown", cancel);
+        document.removeEventListener("selectstart", preventTextSelection);
+        if (drag.current === state) drag.current = null;
+        if (!state.moved) return;
+        if (!state.cancelled) anchor.current = state.current;
+        swallowNextClick();
+      };
+
+      document.addEventListener("pointerup", end);
+      document.addEventListener("pointercancel", end);
+      document.addEventListener("keydown", cancel);
+      document.addEventListener("selectstart", preventTextSelection);
+    },
+    [selected],
+  );
+
+  const dragOver = useCallback(
+    (rowValue: string) => {
+      const state = drag.current;
+      if (!state || state.cancelled || rowValue === state.current) return;
+      // A press that has not left its own row is still a click, and the checkbox handles it.
+      if (!state.moved && rowValue === state.start) return;
+      const range = rangeBetween(state.table, state.start, rowValue);
+      if (!range) return;
+      state.current = rowValue;
+      state.moved = true;
+      commit(applyRange(state.baseline, range, state.next));
+    },
+    [commit],
+  );
+
+  const [uncontrolledSorting, setUncontrolledSorting] = useState<readonly TableSort[]>(
+    defaultSort ? [defaultSort] : defaultSorting,
+  );
+  const activeSorting = useMemo(() => sorting ?? (sort !== undefined ? (sort ? [sort] : []) : uncontrolledSorting), [sorting, sort, uncontrolledSorting]);
+  const toggleSort = useCallback((column: string, multiple: boolean) => {
+    const current = activeSorting.find((item) => item.column === column);
+    const next: TableSort | null = !current ? { column, direction: "asc" }
+      : current.direction === "asc" ? { column, direction: "desc" } : null;
+    const result = multiple && (sort === undefined || sorting !== undefined)
+      ? current ? activeSorting.flatMap((item) => item.column === column ? (next ? [next] : []) : [item])
+        : [...activeSorting, ...(next ? [next] : [])]
+      : next ? [next] : [];
+    if (sorting === undefined && sort === undefined) setUncontrolledSorting(result);
+    onSortingChange?.(result);
+    onSortChange?.(result[0] ?? null);
+  }, [activeSorting, sorting, sort, onSortingChange, onSortChange]);
+
+  // Memoised on `rows` itself: `rows ?? []` mints a new array every render, which would give
+  // `toggleAll` a new identity every render, which would give the context a new one — and
+  // re-render every cell in the table on every keystroke happening anywhere above it.
+  const coverage = useMemo(() => (rows ?? []).filter((row) => !disabledValues.has(row)), [rows, disabledValues]);
+  const selectedCount = coverage.filter((row) => selected.includes(row)).length;
+  const allSelected = coverage.length > 0 && selectedCount === coverage.length;
+  const someSelected = selectedCount > 0;
+
+  const toggleAll = useCallback(
+    (next: boolean) => {
+      if (next) {
+        // A union, not a replacement: a selected row that is not on this page — the previous
+        // page of a paginated table — is not the select-all's to throw away.
+        commit([...selected, ...coverage.filter((row) => !selected.includes(row))]);
+      } else {
+        commit(selected.filter((item) => !coverage.includes(item)));
+      }
+    },
+    [commit, coverage, selected],
+  );
+
+  const context = useMemo<DataTableContextValue>(
+    () => ({
+      selectable,
+      selected,
+      allSelected,
+      someSelected,
+      selectAllLabel,
+      selectionBar: selectionBar && selectable && selected.length > 0,
+      selectionActions,
+      // The whole selection, not just the part `rows` covers: with a page's worth of rows on
+      // screen the count still has to speak for everything the user has picked.
+      selectedCount: selected.length,
+      actionColumn,
+      actionColumnLabel,
+      sorting: activeSorting,
+      disabledRows: disabledValues,
+      selectionEmpty: coverage.length === 0,
+      toggleRow,
+      extendSelection,
+      beginDrag,
+      dragOver,
+      toggleAll,
+      toggleSort,
+    }),
+    [
+      selectable,
+      selected,
+      allSelected,
+      someSelected,
+      selectAllLabel,
+      selectionBar,
+      selectionActions,
+      actionColumn,
+      actionColumnLabel,
+      activeSorting,
+      disabledValues,
+      coverage.length,
+      toggleRow,
+      extendSelection,
+      beginDrag,
+      dragOver,
+      toggleAll,
+      toggleSort,
+    ],
+  );
+
+  return (
+    <DataTableContext.Provider value={context}>
+      <Table
+        data-selectable={selectable || undefined}
+        // So placeholder rows grow the same gutter cells a real row does and stay in column.
+        rowComponent={DataTableRow}
+        {...tableProps}
+      >
+        {children}
+      </Table>
+    </DataTableContext.Provider>
+  );
+}
+
+export interface DataTableRowProps extends ComponentProps<"tr"> {
+  /** Keep the row checkbox visible but unavailable for selection. */
+  disabled?: boolean;
+  /**
+   * What this row is called in the selection. A row in a selectable table needs one to be
+   * selectable at all; a row without one still gets the column's empty cell, which is how a
+   * "no results" row avoids knocking every column out of line.
+   */
+  value?: string;
+  /**
+   * Names this row's checkbox. Give it the row's subject — "Select Ada Lovelace" — because
+   * "Select row" repeated down a column tells a screen reader user nothing about which row
+   * they are on.
+   */
+  selectLabel?: string;
+  /**
+   * What goes in the actions column for this row — typically a `DropdownMenu` whose trigger is
+   * an icon Button. Needs `actionColumn` on the root; without it there is no column to put
+   * this in and it is ignored.
+   */
+  actions?: ReactNode;
+}
+
+export function DataTableRow({
+  className,
+  value,
+  selectLabel = "Select row",
+  disabled = false,
+  actions,
+  onPointerEnter,
+  children,
+  ...props
+}: DataTableRowProps) {
+  const { size, horizontalLines, stickyHeader, loading, columnLayouts } = useTableContext();
+  const section = useTableSection();
+  // The checkbox column is always pinned: it is how a row gets selected, so it never scrolls
+  // away. The actions column pins when the data column beside it does.
+  const pinStart = "start";
+  const pinEnd = columnLayouts.at(-1)?.pinned === "end" ? "end" : undefined;
+  const {
+    selectable,
+    disabledRows,
+    selectionEmpty,
+    selected,
+    allSelected,
+    someSelected,
+    selectAllLabel,
+    selectionBar,
+    selectionActions,
+    selectedCount,
+    actionColumn,
+    actionColumnLabel,
+    toggleRow,
+    extendSelection,
+    beginDrag,
+    dragOver,
+    toggleAll,
+  } = useContext(DataTableContext);
+  const reduceMotion = useReducedMotion();
+  const isSelected = value !== undefined && selected.includes(value);
+  const isActionRow = section === "header" && selectionBar;
+  const selectionDisabled = disabled || loading || (value !== undefined && disabledRows.has(value));
+  const rangeValue = selectable && !selectionDisabled && section === "body" ? value : undefined;
+
+  return (
+    <TableRow
+      data-action-row={isActionRow || undefined}
+      data-selection-disabled={selectionDisabled || undefined}
+      // Rows expose `data-selected` for styling; their checkboxes expose selection
+      // to assistive technology.
+      data-selected={isSelected || undefined}
+      // Its rows can be acted on, so they answer the cursor; the base table's don't.
+      className={cn(section === "body" && tableInteractiveRowVariants(), className)}
+      // The whole row, not just its checkbox cell, so a drag down the column keeps going
+      // when the pointer drifts sideways off it.
+      onPointerEnter={(event) => {
+        onPointerEnter?.(event);
+        if (rangeValue !== undefined) dragOver(rangeValue);
+      }}
+      {...props}
+    >
+      {selectable && section === "header" && (
+        <th
+          scope="col"
+          data-pinned={pinStart}
+          // Above the selection bar, which covers the rest of the row: the checkbox is how
+          // the selection gets cleared, so it is the one control that must stay reachable.
+          className={cn(
+            tableGutterCellVariants({ horizontal: horizontalLines, size, pinned: stickyHeader }),
+            "relative z-40 data-[pinned]:z-40",
+          )}
+        >
+          <span className="flex items-center">
+            {loading ? <Skeleton render={<span />} className={dataTableCheckboxSkeletonVariants()} /> : <Checkbox
+              aria-label={selectAllLabel}
+              // Nothing to select yet, and an indeterminate box over a body of placeholders
+              // would be claiming otherwise.
+              disabled={loading || selectionEmpty}
+              checked={allSelected}
+              // A partial selection is indeterminate, and pressing it from there checks —
+              // which is what the control's own semantics say a press does, and what a
+              // keyboard user has been told will happen. Clearing instead would be a
+              // second, invisible rule.
+              indeterminate={someSelected && !allSelected}
+              onCheckedChange={toggleAll}
+            />}
+          </span>
+        </th>
+      )}
+
+      {selectable && section !== "header" && (
+        <td
+          // Where a range reads its order from.
+          data-row-value={rangeValue}
+          data-pinned={pinStart}
+          className={tableGutterCellVariants({ horizontal: horizontalLines, size })}
+          onPointerDown={(event) => {
+            // Touch is left to scroll: a drag that starts on the column would otherwise
+            // hold the page still under the finger.
+            if (rangeValue === undefined || event.button !== 0 || event.shiftKey) return;
+            if (event.pointerType === "touch") return;
+            const table = event.currentTarget.closest("table");
+            if (!table) return;
+            // A pen captures implicitly, which would keep the rows below from seeing it enter.
+            const target = event.target as Element;
+            if (target.hasPointerCapture?.(event.pointerId)) {
+              target.releasePointerCapture(event.pointerId);
+            }
+            beginDrag(table, rangeValue);
+          }}
+          // Shift-press would otherwise extend the page's text selection across the rows.
+          onMouseDown={(event) => {
+            if (event.shiftKey) event.preventDefault();
+          }}
+          // Ahead of the checkbox, which would toggle only its own row.
+          onClickCapture={(event) => {
+            if (rangeValue === undefined || !event.shiftKey) return;
+            if (!(event.target as Element).closest('[role="checkbox"]')) return;
+            const table = event.currentTarget.closest("table");
+            if (!table) return;
+            event.preventDefault();
+            event.stopPropagation();
+            extendSelection(table, rangeValue);
+          }}
+          onClick={(event) => event.stopPropagation()}
+          onKeyDown={(event) => event.stopPropagation()}
+        >
+          {loading && section === "body" ? (
+            <span className="flex items-center"><Skeleton render={<span />} className={dataTableCheckboxSkeletonVariants()} /></span>
+          ) : value !== undefined && (
+            <span className="flex items-center">
+              <Checkbox
+                aria-label={selectLabel}
+                checked={isSelected}
+                disabled={selectionDisabled}
+                onCheckedChange={(next) => toggleRow(value, next)}
+              />
+            </span>
+          )}
+        </td>
+      )}
+
+      {children}
+
+      {actionColumn && section === "header" && (
+        <th
+          scope="col"
+          // Pointedly *not* `relative z-40`, unlike the select-all cell above. That cell lifts
+          // itself over the selection bar because its checkbox is how the selection gets
+          // cleared. This one holds nothing but a screen-reader label, and lifting it would
+          // park an opaque empty box over the right end of the bar — which is exactly where
+          // `selectionActions` sit. It stays under the bar and lets the actions through.
+          data-pinned={pinEnd}
+          className={tableGutterCellVariants({ horizontal: horizontalLines, size, pinned: stickyHeader })}
+        >
+          {/* Visually empty — a label over a column of icon buttons is noise — but a column
+              with no accessible name at all leaves the cells under it unexplained. */}
+          <span className="sr-only">{actionColumnLabel}</span>
+        </th>
+      )}
+
+      {actionColumn && section !== "header" && (
+        <td
+          data-pinned={pinEnd}
+          className={tableGutterCellVariants({ horizontal: horizontalLines, size })}
+          // Same reasoning as the checkbox cell: opening a row's menu is not clicking the row,
+          // and a table with a row-level handler shouldn't fire it on the way to the menu.
+          onClick={(event) => event.stopPropagation()}
+          onKeyDown={(event) => event.stopPropagation()}
+        >
+          {actions !== undefined && (
+            <span data-slot="data-table-row-actions" className={dataTableRowActionsVariants()}>
+              {actions}
+            </span>
+          )}
+        </td>
+      )}
+
+      {/* Laid *over* the labels rather than replacing them: the columns keep their widths,
+          nothing reflows as the selection comes and goes, and the bar has something to
+          arrive on top of. An absolutely positioned cell is still a valid child of a row —
+          it simply stops taking part in the column layout, which is the point. */}
+      {section === "header" && (
+        <AnimatePresence initial={false}>
+          {isActionRow && (
+            <motion.th
+              key="selection-bar"
+              data-slot="data-table-selection-bar"
+              colSpan={Children.toArray(children).length || undefined}
+              className={dataTableSelectionBarVariants({ size })}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              // The entrance run backwards, so the bar leaves the way it arrived and the
+              // labels come back up through it.
+              exit={{ opacity: 0, y: -8 }}
+              transition={
+                reduceMotion ? { duration: 0 } : { duration: duration.slow, ease: ease.out }
+              }
+            >
+              {/* Polite, so the count is read after whatever the checkbox itself announced
+                  rather than cutting across it. */}
+              <span aria-live="polite">{selectedCount} selected</span>
+              {selectionActions ? (
+                <span data-slot="data-table-selection-actions" className="flex items-center gap-1">
+                  {selectionActions}
+                </span>
+              ) : null}
+            </motion.th>
+          )}
+        </AnimatePresence>
+      )}
+    </TableRow>
+  );
+}
+
+export interface DataTableHeadProps extends TableHeadProps {
+  /**
+   * Makes the column sortable and names it in `TableSort.column`. Omit it for a column that
+   * can't be ordered — a thumbnail, a status dot — and it stays a plain header that still
+   * fades correctly under the selection bar.
+   */
+  sortKey?: string;
+  /** Own the sort interaction, for example with a table model's toggle handler. */
+  onSort?: ComponentProps<"button">["onClick"];
+}
+
+export function DataTableHead({ className, sortKey, onSort, children, ...props }: DataTableHeadProps) {
+  const { loading } = useTableContext();
+  const { selectionBar, sorting, toggleSort } = useContext(DataTableContext);
+  const section = useTableSection();
+  const covered = section === "header" && selectionBar;
+  const reduceMotion = useReducedMotion();
+  const sortIndex = sorting.findIndex((item) => item.column === sortKey);
+  const sort = sorting[sortIndex];
+  const active = sortIndex !== -1;
+
+  return (
+    <TableHead
+      // On the `<th>`, because that is where `aria-sort` is defined — for a column header,
+      // not for a control inside one. The button and the chevron both read their state back
+      // off it rather than carrying a second copy of it.
+      data-sort-direction={sort?.direction}
+      data-sort-priority={active ? sortIndex + 1 : undefined}
+      aria-sort={
+        sortIndex > 0 || sortKey === undefined
+          ? undefined
+          : active
+            ? sort?.direction === "asc"
+              ? "ascending"
+              : "descending"
+            : "none"
+      }
+      // Covered by the selection bar, so out of the way entirely: a label that can still be
+      // tabbed to and sorted from behind an opaque overlay is a control nobody can see.
+      inert={covered || undefined}
+      aria-hidden={covered || undefined}
+      className={cn(sortKey && "group/sort", className)}
+      {...props}
+    >
+      <span className={dataTableHeadContentVariants({ covered })}>
+        {sortKey === undefined ? (
+          children
+        ) : (
+          <button
+            type="button"
+            data-slot="data-table-sort"
+            // The labels are known before the data is, so the header keeps them — but there
+            // is nothing to order until the rows arrive.
+            disabled={loading}
+            aria-description={active && sorting.length > 1 ? `Sorted ${sort?.direction === "asc" ? "ascending" : "descending"}, priority ${sortIndex + 1}` : undefined}
+            className={dataTableSortButtonVariants()}
+            onClick={onSort ?? ((event) => toggleSort(sortKey, event.shiftKey))}
+          >
+            {children}
+            {active && sorting.length > 1 && <span className="text-[10px] tabular-nums" aria-label={`Sort priority ${sortIndex + 1}`}>{sortIndex + 1}</span>}
+            {/* An unsorted column offers both directions. Once active, the chevron indicates
+                the current direction; descending turns it over with the same spring and
+                reduced-motion behavior as the rest of the table control. Returning to the
+                unsorted icon is immediate, so the double-chevron never spins on the way in. */}
+            <motion.span
+              aria-hidden="true"
+              className="inline-flex"
+              animate={{ rotate: active && sort?.direction === "desc" ? 180 : 0 }}
+              transition={
+                reduceMotion || !active
+                  ? { duration: 0 }
+                  : spring.chevron
+              }
+            >
+              {active ? (
+                <ChevronUp className={dataTableSortIconVariants()} />
+              ) : (
+                <ChevronsUpDown className={dataTableSortIconVariants()} />
+              )}
+            </motion.span>
+          </button>
+        )}
+      </span>
+    </TableHead>
+  );
+}
+
+export interface DataTableRowActionsProps extends Omit<DropdownMenuContentProps, "children"> {
+  /**
+   * Names this row's menu, and required for that reason. "More actions" repeated down a column
+   * tells a screen reader user nothing about which row they are on, so the label takes the
+   * row's subject — `Actions for 4.2.0` — and the type is what makes you supply one.
+   */
+  label: string;
+  /** The trigger's glyph. @default <Ellipsis /> */
+  icon?: ReactNode;
+  /** The menu's items. */
+  children?: ReactNode;
+}
+
+/**
+ * The row menu, as one control rather than five decisions.
+ *
+ * `actions` takes any node, so a row that wants two plain buttons or a link is free to pass
+ * them. This is here for the case that is otherwise re-decided at every call site — the glyph,
+ * the button size, the variant, the press wiring, the label — because a library that leaves
+ * those to the caller has a different ⋯ button in every table within a month.
+ *
+ * The size follows the table's density rather than being a prop of its own: 24px in a compact
+ * row, 30px in a comfortable one. Anything further from the default is a sign the row wants its
+ * own trigger, which is what `actions` already allows.
+ */
+export function DataTableRowActions({
+  label,
+  icon,
+  align = "end",
+  children,
+  ...props
+}: DataTableRowActionsProps) {
+  const { size } = useTableContext();
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={(triggerProps, state) => (
+          <Button
+            {...triggerProps}
+            size={size === "sm" ? "icon-xs" : "icon-sm"}
+            // Plain, not ghost: the glyph is already sitting in a row that washes on hover, and
+            // a second surface under it reads as a control stacked on a control. The colour is
+            // ours, because `plain` is `text-foreground` and the row's hover should reveal this
+            // glyph without also lighting it up.
+            variant="plain"
+            className={dataTableRowActionsTriggerVariants()}
+            // Base UI's own state, which is also what holds the reveal open: the trigger keeps
+            // `data-popup-open` while the menu stands, and the cell reads it with `:has()`.
+            pressed={state.open}
+            // The menu opens on mousedown, which can interrupt Motion's pointer press as the
+            // popup mounts. Drive the held scale off the state attribute instead.
+            pressScale={false}
+            aria-label={label}
+          >
+            {icon ?? <Ellipsis />}
+          </Button>
+        )}
+      />
+      <DropdownMenuContent align={align} {...props}>
+        {children}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+/**
+ * The layout parts are the base table's, unchanged, and re-exported so a data table is one
+ * import. `DataTableRow` replaces `TableRow` and `DataTableHead` replaces `TableHead`; the
+ * rest are the same components a plain table uses.
+ *
+ * Re-exported from the import above rather than with `export … from`, which the registry build
+ * does not rewrite — it leaves the source path half-translated and the installed file fails to
+ * resolve it.
+ */
+export { TableBody, TableCaption, TableCell, TableFooter, TableHeader };

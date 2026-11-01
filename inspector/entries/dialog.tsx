@@ -1,17 +1,5 @@
-import { Button } from "@/registry/ui/button/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/registry/ui/dialog/dialog";
-import { Input } from "@/registry/ui/input/input";
-import { ProfileDialogSteps } from "./dialog.demo";
-import { bool, defineEntry } from "../schema";
+import { DialogDemo } from "./dialog.demo";
+import { bool, defineEntry, select } from "../schema";
 
 export const dialogEntry = defineEntry({
   slug: "dialog",
@@ -20,40 +8,12 @@ export const dialogEntry = defineEntry({
     showClose: bool(true, "Close button"),
     autoSize: bool(true, "Size to content"),
     phases: bool(false, "Phased flow"),
+    content: select(["short", "long"], "short", "Content", (v) => Boolean(v.phases)),
+    nested: bool(false, "Nested dialog", (v) => Boolean(v.phases)),
+    shared: bool(false, "Shared dialog"),
+    footerClose: bool(false, "Footer close button", (v) => Boolean(v.phases)),
   },
-  render({ showClose, phases, autoSize }) {
-    return (
-      <Dialog key={phases ? "phased" : "simple"}>
-        <DialogTrigger render={<Button variant="outline">Open dialog</Button>} />
-        {phases ? (
-          <DialogContent showClose={showClose} autoSize={autoSize} className={autoSize ? undefined : "h-[32rem]"}>
-            <ProfileDialogSteps />
-          </DialogContent>
-        ) : (
-          <DialogContent showClose={showClose} autoSize={autoSize} className={autoSize ? undefined : "h-[32rem]"}>
-            <DialogHeader>
-              <DialogTitle>Edit profile</DialogTitle>
-              <DialogDescription>
-                Update your profile details.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="flex flex-col gap-3">
-              {["Name", "Email"].map((label) => (
-                <label key={label} className="flex flex-col gap-1.5">
-                  <span className="text-sm text-muted-foreground">{label}</span>
-                  <Input tone="accent" defaultValue={label} />
-                </label>
-              ))}
-            </div>
-
-            <DialogFooter>
-              <DialogClose render={<Button variant="ghost">Cancel</Button>} />
-              <DialogClose render={<Button variant="primary">Save changes</Button>} />
-            </DialogFooter>
-          </DialogContent>
-        )}
-      </Dialog>
-    );
+  render(props) {
+    return <DialogDemo {...props} />;
   },
 });

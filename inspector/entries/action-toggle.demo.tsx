@@ -8,6 +8,7 @@ export function ActionToggleDemo({
   variant,
   size,
   shape,
+  status,
   duration,
   fail,
   sizing,
@@ -15,6 +16,7 @@ export function ActionToggleDemo({
   variant: ControlVariant;
   size: TextSize;
   shape: "rectangular" | "pill";
+  status: "automatic" | "idle" | "pending" | "error";
   duration: number;
   fail: boolean;
   sizing: "widest" | "current";
@@ -27,17 +29,18 @@ export function ActionToggleDemo({
 
   return (
     <ActionToggle
-      // Remounted when the settings change so it starts from unpressed rather than
-      // mid-flight — an uncontrolled state machine ignores changed props otherwise.
-      key={`${variant}-${size}-${duration}-${fail}`}
+      // Changing a simulation setting starts a fresh demo action.
+      key={`${variant}-${size}-${duration}-${fail}-${status}`}
       action={follow}
+      status={status === "automatic" ? undefined : status}
+      error={status === "error" ? new Error("Network error") : undefined}
       variant={variant}
       size={size}
       shape={shape}
       sizing={sizing}
       icon={<Plus />}
       icons={{ pressed: <Check /> }}
-      labels={{ pressed: "Following", error: "Try again" }}
+      labels={{ pressed: "Following", error: error => error instanceof Error ? error.message : "Try again" }}
       announce={{ pending: "Updating follow status", error: "Could not update follow status" }}
     >
       Follow

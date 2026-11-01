@@ -1,17 +1,59 @@
 ---
 title: Sheet
-description: A modal edge panel with Base UI focus management and animated entry and exit.
+description: A modal edge panel that adapts to viewport height, with customizable surfaces and animated entry and exit.
 ---
 
 <ComponentReference name="sheet" />
 
 ## API
 
-**Main exports:** `Sheet` and its trigger, close, content, header, body, footer, title, and
-description parts
+**Main exports:** `Sheet`, `SheetTrigger`, `SheetClose`, `SheetContent`, `SheetPortal`,
+`SheetOverlay`, `SheetHeader`, `SheetBody`, `SheetFooter`, `SheetTitle`, `SheetDescription`.
+Types: `SheetProps`, `SheetContentProps`, `SheetOverlayProps`.
 
 A focus-trapped Base UI dialog that enters from an edge. Its directional exit uses the shared
 `duration.base` timing and `ease.out` curve; reduced motion completes immediately.
+
+### Content props
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `side` | `"top" \| "right" \| "bottom" \| "left"` | `"right"` | Edge the sheet opens from. |
+| `showClose` | `boolean` | `true` | Shows the built-in close button and reserves space for it in `SheetHeader`. |
+| `className` | `string \| (state) => string` | — | Panel classes, merged with the defaults. The callback receives Base UI popup state. |
+| `render` | `ReactElement \| (props, state) => ReactElement` | `div` | Replaces the panel element while retaining Base UI behavior and the enter/exit animation. Custom components must forward the supplied props and ref. |
+| `overlayProps` | `SheetOverlayProps` | — | Backdrop props, including `className`, `style`, `render`, and `ref`. Class and style callbacks receive Base UI backdrop state. |
+| `portalProps` | Portal props except `children` and `keepMounted` | — | Changes the portal container or its other props. `SheetContent` owns mounting so exit animations can finish. |
+| `onExitComplete` | `() => void` | — | Called after the exit animation finishes and the panel leaves the DOM. |
+
+Other Base UI popup props, including `initialFocus`, `finalFocus`, `ref`, state-based `style`,
+and ARIA attributes, are forwarded. `Sheet` accepts Base UI root options such as `open`,
+`defaultOpen`, `onOpenChange`, `modal`, and `disablePointerDismissal`.
+
+### Sizing and layout
+
+Side sheets fill the current viewport height using `100dvh`. Top and bottom sheets size to
+their content, capped at `85dvh`; they no longer default to a fixed height. These viewport units
+respond when mobile browser controls expand or collapse. Explicit height classes still work.
+
+Use `SheetHeader`, `SheetBody`, and `SheetFooter` to keep the header and actions in place while
+the body scrolls. Long titles, descriptions, and unbroken body text wrap within the panel.
+The header reserves room for the close button only while it is shown. If the header and footer
+alone exceed the available height, the panel itself can scroll to keep them reachable.
+
+In forced-colors mode, the panel uses a system-colored border, background, and text; the
+backdrop uses a system background without blur.
+
+### Customization
+
+`SheetContent` includes one portal and backdrop automatically. Customize them through
+`portalProps` and `overlayProps`; there is no need to add duplicate wrappers. `SheetPortal`
+and `SheetOverlay` are also exported for custom Base UI compositions. `SheetOverlay` includes
+the standard backdrop animation; the surrounding composition owns its presence lifecycle.
+
+`SheetTitle` and `SheetDescription` also accept state-based class callbacks. The panel exposes
+`data-side` and `data-slot="sheet-content"`; the portal, backdrop, header, body, footer, title,
+and description have corresponding `sheet-*` slots.
 
 ### After the exit
 

@@ -7,7 +7,7 @@ description: A compact label for statuses, categories, and counts.
 
 ## API
 
-**Main exports:** `Badge`, `BadgeIconsProvider`, types `BadgeStatus` and `BadgeIcons`
+**Main exports:** `Badge`, `BadgeClose`, `BadgeDot`, `BadgeCount`, `BadgeIconsProvider`, types `BadgeStatus` and `BadgeIcons`
 
 A label for statuses, categories, and counts, with an optional icon or dot. Status changes swap
 the glyph through the shared `Morph` component; string and number label changes also animate.
@@ -24,14 +24,54 @@ radius at `md`, and 24px with a 6px radius at `lg`.
 | `solid` (default) | A translucent status-coloured fill; text and icon in the same, stronger status colour. |
 | `outline` | No fill and a grey outline; only the text and icon follow `status`. |
 | `plain` | No background or outline. |
+| `filled` | Opaque status fill with contrasting text and icons. |
 
-`shape="pill"` fully rounds `solid` and `outline` badges; `rounded` is the default and `plain`
+`shape="pill"` fully rounds `solid`, `outline`, and `filled` badges; `rounded` is the default and `plain`
 ignores it.
 
 | Prop | Description |
 | --- | --- |
-| `wrap` | Lets a long label wrap onto as many lines as it needs: the badge is capped at its container's width and grows in height instead of clipping the text. For sentences rather than labels. A wrapping label does not roll when it changes. |
+| `wrap` | Defaults to `false`: long labels truncate with an ellipsis while icons and the close button stay visible. Set to `true` to wrap within the container and grow in height. A wrapping label does not roll when it changes. |
 | `color` | Any CSS colour, replacing the `solid` fill. Used as given, so pass a translucent colour for the default wash look. Text and icon keep the `status` colour. Ignored by `plain` and `outline`. The badge carries `data-color` while it applies. |
+| `neutralText` | Optional neutral label with status-colored icons/dots. Defaults to `false`; applies to `plain`, `solid`, and `outline`. `filled` keeps contrasting ink. |
+| `pulse` | Pulses the built-in dot when `dot` is enabled. Defaults to `false`; disabled by reduced motion. |
+| `render` | An element or `(props, { open }) => element` replacing the root span. Native links and buttons get hover tint, press scale, and a keyboard focus ring. Forward all supplied props and the ref in custom components. |
+| `aria-invalid` | Adds an error outline and ring. |
+| `open` / `defaultOpen` | Controlled visibility or initial visibility (`true` by default). |
+| `onOpenChange` | Receives `(open, details)` when dismissal is requested. `details.cancel()` cancels it. |
+| `onOpenChangeComplete` | Receives the settled visibility after the animation. Remove dismissed items from your data here. |
+
+### Removable badges
+
+Place `BadgeClose` directly inside `Badge`, beside its label. Its default accessible name is
+`Remove {label}`, including when you supply an `id`; `aria-label` or `aria-labelledby` overrides
+it. Enter, Space, Backspace, and Delete remove the badge.
+Prevent the close button's `onClick` default to cancel removal. After closing, focus moves to the
+next available sibling close button, then the previous one, then another nearby control.
+Focus elsewhere is preserved. Use a noninteractive badge root when it contains `BadgeClose`;
+buttons cannot be nested inside a button or link.
+
+Removal follows HextaUI's animation: the badge shrinks horizontally over 260ms while fading and
+scaling to 0.9 over 140ms. Its neighbors move into the gap. New client-mounted and restored badges
+fade and scale in over 200ms; server-rendered initial badges stay still. Reduced motion skips these
+animations. Width, padding, border, and margin changes are deliberate layout-animation exceptions
+to close the space between tags.
+
+### Counts and dots
+
+`BadgeCount` accepts `value`, `max` (default `99`, or `Infinity` for no cap), `animated` (default
+`false`), `duration` (default `520` milliseconds), `trend` (`auto`, `up`, `down`, or `shortest`),
+`locales`, and `format` (`Intl.NumberFormatOptions`). It uses the shared [Number Animation](/docs/number-animation) component. Set `animated` to opt in; otherwise counts update immediately. When enabled, only changing digits roll, using
+[SF Interface Numbers](https://github.com/wheresryan22/sfinterface-numbers)' basic roll with motion
+blur and soft window edges. Added or removed digits animate their width so the count fits naturally.
+The default timing follows the shared motion scale; an explicit `duration` overrides the roll time.
+Negative and non-finite values display zero; values are whole counts. Values above the cap show
+the cap with a plus sign, while assistive technology receives the full formatted count.
+Counts read left to right even inside a right-to-left badge. Reduced motion shows changes immediately.
+
+`BadgeDot` can replace the built-in glyph as a direct child; `pulse` adds the same optional ping
+as the root's `dot`/`pulse` props. Dots are decorative. Parts scale with the badge size. Composed
+count and close parts stay mounted outside the label's Morph animation, avoiding duplicate controls.
 
 ```tsx
 <Badge color="oklch(0.7 0.15 250 / 0.15)">Beta</Badge>
@@ -73,10 +113,14 @@ square footprint without running the indicator's timers or animations.
 
 ## Layout animation
 
-`animateLayout` defaults to `true`: Badge animates its width when its own content, status,
-variant, size, shape, or icon changes. Nothing else triggers it: a badge in a list that sorts,
-filters, or reorders, such as a table row or a Command Palette, moves with its row and does not
-FLIP-animate its position. Set `animateLayout={false}` to turn off the width animation too.
+`animateLayout` defaults to `true`. Text labels resize with the same measured width transition
+as Action Button's `sizing="current"`, over `--duration-base`. The text stays at its natural scale
+while the badge grows or shrinks, including when `render` supplies a button or link.
+Rapid changes retarget from the current width; reduced motion makes the change immediate.
+
+Other size changes on the default surface use layout projection. A badge in a list that sorts,
+filters, or reorders moves with its row and does not FLIP-animate its position. Set
+`animateLayout={false}` to turn off resizing animation. Wrapping labels keep their natural layout.
 
 ```tsx
 <Badge animateLayout={false}>Beta</Badge>

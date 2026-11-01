@@ -2,11 +2,11 @@
 
 import { Radio as BaseRadio } from "@base-ui/react/radio";
 import { RadioGroup as BaseRadioGroup } from "@base-ui/react/radio-group";
-import { motion, useReducedMotion } from "motion/react";
+import { motion, useReducedMotion, type HTMLMotionProps } from "motion/react";
 import { createContext, useContext, type ComponentProps, type ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
 import { PRESS_SCALE, spring } from "@/registry/lib/motion";
-import { radioVariants, type RadioVariants } from "./radio.variants";
+import { radioIndicatorVariants, radioVariants, type RadioVariants } from "./radio.variants";
 
 /**
  * A radio group.
@@ -17,14 +17,12 @@ import { radioVariants, type RadioVariants } from "./radio.variants";
  *
  * It's the Checkbox's sibling and shares its look — the same recessed well, border and
  * focus ring — differing only where the two controls genuinely differ: a radio is a single
- * choice, so it keeps its outline and shows a dot instead of filling. The dot is CSS, a
+ * choice, so it keeps its outline and fills a white ring around an open center. The ring is CSS, a
  * scale/opacity transition off Base UI's `data-checked`; unlike the checkbox's self-drawing
  * tick there's no path to animate, so no runtime is needed. The circle gives the same
  * press-scale on tap and — deliberately — nothing on hover, matching the Checkbox.
  */
 
-// Dot diameter per box size — roughly 40% of the box, centred by the circle's flexbox.
-const DOT = { sm: "size-1.5", md: "size-2", lg: "size-2.5" } as const;
 // Row gap per size — the smaller the control, the tighter the rows sit.
 const GROUP_GAP = { sm: "gap-1.5", md: "gap-2.5", lg: "gap-3" } as const;
 
@@ -41,15 +39,20 @@ export interface RadioGroupProps extends ComponentProps<typeof BaseRadioGroup> {
 export function RadioGroup({ className, size = "md", ...props }: RadioGroupProps) {
   return (
     <RadioSizeContext.Provider value={size}>
-      <BaseRadioGroup className={cn("flex flex-col", GROUP_GAP[size], className)} {...props} />
+      <BaseRadioGroup
+        className={typeof className === "function"
+          ? (state) => cn("flex flex-col", GROUP_GAP[size], className(state))
+          : cn("flex flex-col", GROUP_GAP[size], className)}
+        {...props}
+        data-slot="radio-group"
+      />
     </RadioSizeContext.Provider>
   );
 }
 
 export interface RadioProps
-  extends Omit<ComponentProps<typeof BaseRadio.Root>, "className" | "render">,
+  extends ComponentProps<typeof BaseRadio.Root>,
     RadioVariants {
-  className?: string;
   /**
    * Text beside the circle. When set, the circle and text sit inside one `<label>`, so
    * clicking anywhere on the row selects it — the label binds to Base UI's hidden radio
@@ -66,6 +69,8 @@ export function Radio({
   disabled,
   label,
   labelClassName,
+  render,
+  children,
   ...props
 }: RadioProps) {
   const reduceMotion = useReducedMotion();
@@ -76,31 +81,26 @@ export function Radio({
   const control = (
     <BaseRadio.Root
       disabled={disabled}
-      className={cn(radioVariants({ size }), className)}
-      // A span, not a native button (Base UI's default for a radio), so there's no
-      // nativeButton dance — Motion only adds the press gesture.
-      render={
+      className={typeof className === "function"
+        ? (state) => cn(radioVariants({ size }), className(state))
+        : cn(radioVariants({ size }), className)}
+      render={render ?? ((rootProps, state) => (
         <motion.span
-          whileTap={reduceMotion || disabled ? undefined : { scale: PRESS_SCALE }}
+          {...(rootProps as HTMLMotionProps<"span">)}
+          whileTap={reduceMotion || state.disabled ? undefined : { scale: PRESS_SCALE }}
           transition={spring.press}
         />
-      }
+      ))}
       {...props}
+      data-slot="radio"
     >
       <BaseRadio.Indicator
-        // keepMounted so the dot is in the DOM to scale *out* on deselect, not yanked.
+        // Keep the ring mounted so it can scale out on deselect.
         keepMounted
-        className={cn(
-          // Centred with a transform, not flexbox: at fractional device-pixel ratios a
-          // laid-out box snaps to the pixel grid and lands half a pixel off inside the
-          // 1.5px border; a translate renders sub-pixel and stays centred. (Tailwind v4
-          // keeps `translate` and `scale` as separate properties, so they compose.)
-          "absolute top-1/2 left-1/2 -translate-1/2 rounded-full bg-primary",
-          DOT[size ?? "md"],
-          "scale-0 opacity-0 transition-[scale,opacity] duration-(--duration-fast) ease-out",
-          "data-[checked]:scale-100 data-[checked]:opacity-100",
-        )}
+        data-slot="radio-indicator"
+        className={radioIndicatorVariants({ size })}
       />
+      {children}
     </BaseRadio.Root>
   );
 

@@ -8,7 +8,8 @@ description: A Base UI menu with submenus, checkable items, groups, and keyboard
 ## API
 
 **Main exports:** root, trigger, content, item, checkbox, radio, submenu, shortcut, and
-nested-select parts
+nested-select parts, plus `createDropdownMenuHandle`, `DropdownMenuPortal`,
+`DropdownMenuPositioner`, and `DropdownMenuPopup`.
 
 A Base UI menu with keyboard navigation, safe submenu pointer travel, and these row types:
 
@@ -24,11 +25,49 @@ A Base UI menu with keyboard navigation, safe submenu pointer travel, and these 
 
 `DropdownMenuLabel`, `DropdownMenuGroup`, and `DropdownMenuSeparator` structure the list.
 
-`DropdownMenuContent` and `DropdownMenuSubContent` are at least 200px wide and grow to fit
-longer rows; pass a `min-w-*` class in `className` to change the minimum.
+Menus grow from a 200px minimum up to 20rem, while staying within the available width.
+Long labels and unbroken URLs wrap in ordinary, checkbox, radio, action, submenu, and
+nested-select rows. Shortcuts remain on the first line. Override the panel limits with
+`min-w-*` and `max-w-*` classes when needed.
 
 Rows left-align every Morph inside them and mute a morphing leading icon to match a plain one.
 Don't pass `place-items-start` or a text colour at the call site.
+
+## Shared menus
+
+A stable `createDropdownMenuHandle<Payload>()` connects detached triggers to one
+`DropdownMenu`. Each trigger supplies a typed `payload`, and the root's function child
+receives the opening trigger's payload. This lets several row-action buttons share a menu
+while acting on the correct row. Closing returns focus to the trigger that opened it.
+`DropdownMenuHandle`, `DropdownMenuProps`, and `DropdownMenuTriggerProps` preserve the payload type.
+
+## Portals and positioning
+
+`DropdownMenuContent`, `DropdownMenuSubContent`, and `DropdownMenuSelectContent` accept:
+
+- `portalProps`: `container`, `keepMounted`, portal refs, and other portal props.
+  The existing top-level `keepMounted` shorthand takes precedence when supplied.
+- `positionerProps`: a custom `anchor`, `collisionBoundary`, `collisionPadding`
+  (8px by default), `collisionAvoidance`, `sticky`, `positionMethod`,
+  `disableAnchorTracking`, positioner refs, and state-based classes.
+- `side`, `align`, `sideOffset`, and `alignOffset` remain direct props.
+  Offsets accept numbers or Base UI offset functions.
+
+Refs, DOM events, `render`, and `className` on the content belong to the popup.
+For a custom composition, use `DropdownMenuPortal`, `DropdownMenuPositioner`, and
+`DropdownMenuPopup`; the popup retains Scroll Area and the menu's appearance.
+`DropdownMenuContent` already includes those parts.
+
+## State-based styling
+
+Popup and positioner `className` props accept strings or callbacks receiving their Base UI
+state, including whether the menu is open and its resolved placement. Item, checkbox, radio,
+action, submenu-trigger, and nested-select row classes also accept callbacks. Row state includes
+`highlighted` and `disabled`; checkable rows also expose `checked`.
+
+The default styling is preserved and merged with the callback's result. Group, radio-group,
+trigger, and separator parts retain their respective primitive class callbacks. Plain labels
+and shortcuts take ordinary string classes.
 
 ## Item rows
 
@@ -101,7 +140,7 @@ draws its own wait.
 ## Radio rows
 
 `DropdownMenuRadioGroup` holds one value across its `DropdownMenuRadioItem` rows, controlled
-with `value` and `onValueChange` or uncontrolled with `defaultValue`. Each row shows a radio dot
+with `value` and `onValueChange` or uncontrolled with `defaultValue`. Each row shares Radio's white selection ring with an open center
 in the leading slot. Head the group with a `DropdownMenuLabel`.
 
 ## Action rows

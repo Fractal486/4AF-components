@@ -15,6 +15,33 @@ uncontrolled state, or `pressed` / `onPressedChange` for controlled state; a con
 must update `pressed` from `onPressedChange`. Use it for states such as Follow/Following
 or Subscribe/Subscribed. Its appearance defaults to `variant="outline"` and `size="md"`.
 
+| Prop | Default | Purpose |
+| --- | --- | --- |
+| `status` | Internally managed | `"idle"`, `"pending"`, `"success"`, or `"error"`. Controls feedback independently of `pressed`. Success shows the current on/off state. |
+| `onStatusChange` | — | Reports requested feedback transitions, including resets. Update controlled `status` to accept a change. |
+| `error` | Last rejection | Error supplied by an external owner for a controlled error state. |
+| `labels.error` | Resting label | A React node or `(error) => ReactNode`, evaluated when showing an error. |
+| `revertAfter` | `2000` | Error reset countdown in milliseconds. It pauses while hovered or focused and resumes with the remaining time after both leave. Resetting feedback never changes `pressed`. |
+| `actionsRef` | — | A React ref receiving `{ reset() }`. The ordinary element `ref` still points to the toggle button. |
+
+When another part of the application owns the asynchronous work, omit `action` and control
+`pressed` and `status` externally. In that mode, `onPressedChange` requests the next on/off value
+immediately; the owner decides when to accept it. Without an `action` or controlled `pressed`,
+it changes immediately like a normal Toggle. With `action`, it still waits for success.
+Changing `status` by itself never commits a new pressed value.
+
+Hover and focus handlers supplied by the caller are composed with the error-hold behavior.
+Touch hover does not hold errors. Function-based error labels receive the actual rejection
+reason, or the supplied `error`, and are not evaluated before failure. Their width is only
+known on failure, so the control may grow to fit the message even with `sizing="widest"`.
+A string error label is also announced unless `announce.error` overrides it.
+
+Call `actionsRef.current?.reset()` to clear feedback, the stored rejection, and pending reset
+timers. It ignores results and callbacks from an outstanding action, allowing a fresh attempt
+without a late success changing the toggle. It does not abort network work or undo its effects.
+Controlled status requires the owner to accept the requested `"idle"` state. This uses the
+same reset behavior as the [shared action helper](/docs/action-button#shared-action-helper).
+
 While pending, the toggle keeps keyboard focus with `aria-disabled="true"` and
 `aria-busy="true"`, and blocks repeat activation. An explicit `disabled` prop still disables
 the native button.
@@ -51,7 +78,12 @@ It is not optimistic. By default the label stays while the loader runs; `labels.
 the pending label, and `pendingDelay` can defer the indicator (default 0ms). On failure it
 shows the error for `revertAfter` milliseconds (default 2000) and keeps its previous state.
 `onPressedChange` fires only on success, even if the toggle has unmounted while waiting.
-`onError` also reports failures after unmount; unmounting does not cancel the action.
+`onError` also reports failures after unmount; unmounting does not cancel the action. An explicit
+feedback reset ignores those callbacks for the old request.
 
 With `fillIcon` and no `icons.pressed`, the same glyph fills when pressed instead of being
 replaced.
+
+It also inherits Toggle's `fillBackground`, state-aware `className`, and `render` props.
+Background feedback follows the committed pressed state, including while an action is pending.
+Custom rendering owns its press animation; forward the supplied props and ref.

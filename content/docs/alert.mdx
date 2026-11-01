@@ -7,11 +7,48 @@ description: A semantic status message with tone variants and composable content
 
 ## API
 
-**Main export:** `Alert`
+**Main exports:** `Alert`, `AlertTitle`, `AlertDescription`, `AlertClose`
 
 An inline status line: a glyph and a sentence, with no surface, border, or padding. It renders
-nothing when `children` is `null`, `undefined`, or an empty string. It accepts native paragraph
-props, including `id` and `ref`, and adds a 6px top margin by default.
+nothing when `children` is `null`, `undefined`, or an empty string. It accepts native div
+props, including `id` and `ref`, and adds a 6px top margin by default. The root now renders a
+`div` so headings and paragraphs can be composed without invalid HTML.
+
+| Prop | Default | Purpose |
+| --- | --- | --- |
+| `variant` | `"error"` | `error`, `warning`, `success`, `info`, or `loading`. |
+| `icon` | Status glyph | A custom React node; `null` or `false` removes the icon and its space. |
+| `loader` | Provider default | Overrides the loading glyph when `icon` is omitted. |
+| `open` | — | Controls visibility. |
+| `defaultOpen` | `true` | Initial visibility when uncontrolled. |
+| `onOpenChange` | — | Receives `(open, details)` when dismissal is requested; `details.cancel()` cancels it. |
+| `render` | — | Replaces the root element with an element or render function. |
+
+### Composition
+
+`AlertTitle` supplies an optional medium-weight title. `AlertDescription` holds the message,
+including paragraphs, lists, and links. Either can appear alone. Plain children remain supported.
+`AlertClose` adds a plain dismiss icon with no hover background. It sits above the description's
+right edge, alongside the title when present. Without a description, it sits beside the first line.
+Place these parts directly inside `Alert`, alongside one another.
+
+All parts forward refs and native props and accept `render`, including a heading element on
+`AlertTitle`. Custom components must spread the supplied props and forward the ref. `Alert` and
+`AlertClose` also accept state-based `className` functions. When rendering the close control as a
+non-button, set `nativeButton={false}`. Its default accessible label is “Dismiss”; override
+`aria-label` when needed.
+
+### Dismissal
+
+`AlertClose` closes the alert. Calling `event.preventDefault()` in its `onClick` cancels dismissal.
+With controlled `open`, the parent decides when to apply the requested change. Visibility changes
+use a simple fade out or fade in, without moving or resizing the alert during the transition.
+Reduced motion uses the shared duration tokens.
+
+During closing, the content is removed from keyboard navigation and assistive technology, then
+unmounted. If focus is inside, it moves to the next available control outside the alert, then the
+previous one if needed, or the document body if neither exists. Focus elsewhere stays put.
+Custom icons are decorative; put meaningful information in the title or description.
 
 ## Variants
 

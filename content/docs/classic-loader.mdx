@@ -16,6 +16,7 @@ consumers of `LoadingIndicator`. Use a component's `loader` prop or `LoaderProvi
 | --- | --- | --- |
 | `size` | `"md"` | `"sm"` (16px), `"md"` (20px), or `"lg"` (32px). Override dimensions with `className`, such as `size-12`. |
 | `speed` | `1` | Playback multiplier: `1` is normal, `2` is twice as fast, and `0.5` is half speed. Non-positive or non-finite values fall back to normal speed. |
+| `loading` | `true` | Whether to show the spinner. `false` renders nothing, including no accessible status or reserved space. Visibility changes immediately. |
 | `label` | — | Optional accessible status name. Without a label the spinner is decorative and hidden from assistive technology. |
 | `asChild` | `false` | Render onto a single empty child element, such as `<div />`, instead of the default `<span>`. The loader supplies its contents. |
 

@@ -538,7 +538,9 @@ function CalendarMonth({ calendarMonth, className, ...rest }: MonthProps) {
   useEffect(() => {
     const element = monthRef.current;
     if (!element) return;
-    const measure = () => setHeight(element.getBoundingClientRect().height);
+    // Layout height is unaffected by the popover's entrance scale. Measuring its
+    // transformed rectangle could permanently clip the final week after opening.
+    const measure = () => setHeight(Number.parseFloat(getComputedStyle(element).height) || element.offsetHeight);
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(element);

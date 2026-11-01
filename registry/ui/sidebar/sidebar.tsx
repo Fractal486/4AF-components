@@ -17,6 +17,7 @@ import {
   type ComponentProps,
   type CSSProperties,
   type ReactNode,
+  type MouseEvent,
 } from "react";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { SidebarSplitContext, useSidebar, type SidebarSplitContextValue } from "./sidebar.context";
@@ -46,6 +47,8 @@ export {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   type SidebarMenuButtonProps,
+  type SidebarMenuBadgeProps,
+  type SidebarMenuActionProps,
   type SidebarMenuCollapsibleContentProps,
   type SidebarMenuCollapsibleProps,
   type SidebarMenuCollapsibleTriggerProps,
@@ -102,6 +105,14 @@ const SIDEBAR_WIDTH_MOBILE = "18rem";
 
 const SIDEBAR_WIDTH_SPLIT_RAIL = "3rem";
 
+function isMobileNavigation(event: MouseEvent) {
+  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey
+    || !(event.target instanceof Element)) return false;
+  const link = event.target.closest("a[href]");
+  return link instanceof HTMLAnchorElement && link.getAttribute("aria-disabled") !== "true"
+    && !link.hasAttribute("download") && (!link.target || link.target.toLowerCase() === "_self");
+}
+
 /* -- Shell ---------------------------------------------------------------------------- */
 
 export interface SidebarProps extends ComponentProps<"div"> {
@@ -153,7 +164,7 @@ export function Sidebar({
   children,
   ...props
 }: SidebarProps) {
-  const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+  const { isMobile, state, openMobile, setOpenMobile, shortcutScope } = useSidebar();
   const [uncontrolledActivePanel, setUncontrolledActivePanel] = useState(defaultActivePanel);
   const isActivePanelControlled = activePanel !== undefined;
   const currentActivePanel = isActivePanelControlled ? activePanel : uncontrolledActivePanel;
@@ -226,6 +237,12 @@ export function Sidebar({
           showClose={false}
           data-slot="sidebar"
           data-mobile="true"
+          data-sidebar-scope={shortcutScope}
+          onClick={(event) => {
+            // Client routers prevent the browser's default navigation before routing.
+            // The link still navigates, so defaultPrevented does not suppress this close.
+            if (isMobileNavigation(event)) setOpenMobile(false);
+          }}
           className={cn(
             isSplit
               ? "w-[calc(var(--sidebar-width)+var(--sidebar-width-icon))]"

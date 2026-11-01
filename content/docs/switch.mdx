@@ -1,6 +1,6 @@
 ---
 title: Switch
-description: A Base UI switch with a rounded center-pill press response.
+description: A draggable Base UI switch with saving feedback and a rounded center-pill press response.
 ---
 
 <ComponentReference name="switch" />
@@ -19,3 +19,52 @@ track. `tone="fixed"` keeps the thumb dark in both states.
 Use `checked` / `onCheckedChange` for controlled state or `defaultChecked` for uncontrolled
 state. Call `details.cancel()` in `onCheckedChange(nextChecked, details)` to reject a toggle;
 the checked state and thumb's motion direction both stay unchanged.
+
+| Prop | Default | Purpose |
+| --- | --- | --- |
+| `onCheckedChange` | — | `(checked, details) => void \| PromiseLike<unknown>`. Return a promise to enable optimistic saving. |
+| `icons` | `false` | Decorative checkmark and off-ring in the track. The accessible name remains the caller's label. |
+| `pendingDelay` | `400` | Milliseconds before the saving indicator appears. Saving and repeat-activation blocking start immediately. |
+| `loader` | Inherited | Custom pending indicator, using the shared `LoaderProvider` and `ClassicLoader` fallback. |
+| `onError` | — | Receives a rejected saving promise or a synchronous callback error. Use it for application-specific error feedback. |
+| `render` | Base UI span | Custom element or `(props, state) => ReactElement`. Forward supplied props, children, and ref. For a native button, also set `nativeButton`. |
+| `className` | — | String or function receiving Base UI's checked, disabled, read-only, required, and field state. Returned classes merge with the built-in styles. |
+
+## Dragging
+
+Drag horizontally past the track's midpoint to switch on or off. Releasing before that point
+returns to the original state. Both directions work with right-to-left layout. Pointer
+cancellation or lost capture cancels the gesture. A drag commits through Base UI's normal
+change callback, so `details.cancel()` works for dragging as well as clicking.
+Releasing outside before the drag begins cancels the press; moving back over the switch
+without a button held does not move the thumb.
+
+Dragging and activation are blocked when disabled, read-only, or saving. Touch gestures
+leave vertical page scrolling available. The thumb follows the pointer directly, then
+springs to the accepted state. Reduced motion makes the settling movement instant.
+
+## Saving
+
+A returned promise switches the thumb immediately. Pending saves expose `aria-busy` and
+`aria-disabled`, keep focus, and block repeat changes. Fast saves finish without a spinner;
+slower saves show the shared loading indicator inside the thumb after `pendingDelay`.
+
+Success commits an uncontrolled value. Failure restores its previous value, announces a
+generic saving error, calls `onError`, and shakes once unless reduced motion is enabled.
+Controlled switches show the optimistic value while saving, then return to the latest
+`checked` prop on either outcome: the caller must accept successful changes and roll back
+any parent state it changed early. A canceled change never starts saving feedback.
+
+A form reset clears feedback and restores `defaultChecked` for an uncontrolled switch.
+Canceled resets do nothing. Resetting or unmounting ignores outstanding results and error
+callbacks; it does not abort the underlying save or undo its external effects.
+
+## Validation and composition
+
+`aria-invalid="true"` or Base UI Field's `data-invalid` adds a destructive ring. Field
+labels, descriptions, validation, and inherited disabled state remain supported. Native
+form props and refs still reach Base UI's root and hidden input.
+
+The root carries `data-slot="switch"`, `data-pending`, `data-error`, and `data-dragging` when
+applicable, alongside Base UI's checked/unchecked attributes. `data-slot="switch-icons"`
+identifies the optional marks and `data-slot="switch-thumb"` identifies the thumb.

@@ -1,13 +1,77 @@
 ---
 title: Popover
-description: A positioned non-modal surface with accessible trigger, focus, and dismissal behavior.
+description: An anchored panel with smooth resizing, scrolling content, and shared triggers.
 ---
 
 <ComponentReference name="popover" />
 
 ## API
 
-**Main exports:** `Popover` and its trigger, close, content, header, title, and description parts
+**Main exports:** `Popover`, `PopoverTrigger`, `PopoverClose`, `PopoverContent`,
+`PopoverHeader`, `PopoverTitle`, `PopoverDescription`, `PopoverPortal`,
+`PopoverPositioner`, `PopoverPopup`, and `createPopoverHandle`.
 
-An interactive anchored panel with Base UI positioning and optional modal behaviour. The demo also
-shows a Select dropdown and Switch composed inside the panel body.
+- `Popover` supports `open`, `defaultOpen`, `onOpenChange`, `onOpenChangeComplete`,
+  `actionsRef`, `modal`, `handle`, and trigger payloads through Base UI. Open-change
+  details report the reason and allow cancellation.
+- `PopoverTrigger` accepts `disabled`, `openOnHover`, `delay`, `closeDelay`, `handle`,
+  and `payload`. Its `render` prop composes a Button or another compatible element.
+- `PopoverContent` combines a portal, positioner, and popup. `side="bottom"`,
+  `align="center"`, and `sideOffset={6}` set its preferred placement.
+- `positionerProps` forwards collision boundaries, collision avoidance, padding
+  (8px by default), alignment offsets, a custom anchor, sticky positioning, positioning
+  method, refs, and state-based classes.
+- `portalProps` forwards `container`, `keepMounted`, refs, and other portal props.
+- `autoSize` defaults to `true`: the panel animates to its content height. Set it to
+  `false` when providing a fixed height or your own sizing behavior.
+- `contentClassName` styles the content wrapper inside the scroll viewport. Use it for
+  content layout, spacing, and gaps; `className` styles the panel itself.
+- `PopoverContent` and `PopoverPopup` accept `initialFocus`, `finalFocus`, `render`,
+  DOM props, and refs. Their `className` may be a string or a function receiving open,
+  side, alignment, transition, and instant state. The positioner, title, and description
+  also preserve their respective Base UI state-based class callbacks.
+- `PopoverHeader` accepts ordinary div props and a ref. Title and description automatically
+  label and describe the panel. `PopoverClose` composes the caller's close control.
+
+## Resizing and overflow
+
+The panel follows content as it loads, expands, or collapses. Continuous size changes,
+such as an expanding textarea or an already-animated calendar, follow directly rather
+than accumulating animation lag. Height is intentionally animated because the surface
+must grow around its content. Durations use the library's motion tokens and collapse
+under reduced motion.
+
+Available screen space limits the panel's height and width. Tall content scrolls through
+the shared Scroll Area component, with its scrollbar and edge fades. Scrollbars stay hidden during
+a height resize and return only if content still overflows after it settles. Titles, descriptions,
+and ordinary content wrap long words and URLs. The panel keeps its existing padding;
+`className="p-0"` still works for content that supplies its own, such as Calendar.
+
+## Shared triggers
+
+`createPopoverHandle<Payload>()` connects triggers anywhere in the React tree to a single
+`Popover`. Keep the handle stable. Each trigger supplies a typed `payload`; the root's
+function child receives the active trigger's payload. Closing returns focus to the active
+trigger. `PopoverProps`, `PopoverTriggerProps`, and `PopoverHandle` preserve the payload type.
+
+## Portals and composition
+
+Use `portalProps.container` to choose a mounting container and `portalProps.keepMounted`
+to preserve child state while closed. Kept-mounted content remains hidden and outside
+keyboard navigation. The default unmounts after the closing transition.
+
+For a custom structure, compose `PopoverPortal`, `PopoverPositioner`, and `PopoverPopup`
+separately. `PopoverPopup` retains automatic sizing, Scroll Area, and motion. Do not wrap
+`PopoverContent` in another portal or positioner; it already includes both.
+
+## Focus and dismissal
+
+The default is non-modal: the surrounding page remains interactive. `modal={true}` blocks
+outside interactions and applies Base UI's modal scrolling behavior; include a
+`PopoverClose` inside to enable focus trapping and give touch screen readers a way out.
+`modal="trap-focus"` traps focus without locking page scrolling.
+
+Escape and outside interaction close the panel. Nested popovers and controls such as Select
+use Base UI's shared dismissal behavior, so interaction inside a child keeps its parent open
+and Escape closes the topmost layer. Hover opening, controlled state, custom focus targets,
+and collision positioning are available independently of the demo settings.

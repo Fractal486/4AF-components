@@ -354,6 +354,27 @@ describe("Base UI Select", () => {
     );
   });
 
+  it("keeps a field panel at least the trigger's width and grows it to the longest row", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <Select items={FRUITS} defaultValue="banana">
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue />
+        </SelectTrigger>
+        <FruitOptions />
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    await screen.findByRole("option", { name: "Mango" });
+
+    expect(container.ownerDocument.querySelector('[data-slot="select-content-positioner"]')).toHaveClass(
+      "w-max",
+      "min-w-(--anchor-width)",
+      "max-w-(--available-width)",
+    );
+  });
+
   it("uses content width for a plain sort panel by default", async () => {
     const user = userEvent.setup();
     const { container } = render(
@@ -1312,8 +1333,9 @@ describe("Base UI Select", () => {
     expect(input).toHaveAttribute("placeholder", "Search fruit");
     expect(input).toHaveClass("h-full");
     expect(input).toHaveClass("p-0");
-    expect(input.parentElement).toHaveClass("h-[38px]", "px-3.5");
-    expect(input.parentElement?.querySelector("svg")).not.toBeInTheDocument();
+    const strip = input.closest('[data-slot="input-wrapper"]')?.parentElement;
+    expect(strip).toHaveClass("h-[38px]", "items-stretch", "px-3.5");
+    expect(strip?.querySelector("svg")).not.toBeInTheDocument();
 
     await user.keyboard("{ArrowDown}");
     expect(screen.getByRole("option", { name: "Apple" })).toHaveFocus();

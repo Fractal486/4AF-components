@@ -11,6 +11,7 @@ export const DEMO_NAMES = [
   "matrix-loader",
   "classic-loader",
   "badge",
+  "number-animation",
   "breadcrumb",
   "button",
   "button-group",

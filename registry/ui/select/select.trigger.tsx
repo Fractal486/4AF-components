@@ -1,4 +1,4 @@
-import { cn } from "@/registry/lib/cn";
+import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { spring } from "@/registry/lib/motion";
 import { useMergedRefs } from "@/registry/lib/refs";
 import { Select as BaseSelect } from "@base-ui/react/select";
@@ -25,7 +25,7 @@ export function SelectValue({
   if (!multiple && render == null) {
     return (
       <BaseSelect.Value
-        className={cn("truncate", className)}
+        className={mergeStateClassName("truncate", className)}
         placeholder={placeholder}
         render={(valueProps, state) => (
           <span
@@ -45,7 +45,7 @@ export function SelectValue({
 
   return (
     <BaseSelect.Value
-      className={cn("truncate", className)}
+      className={mergeStateClassName("truncate", className)}
       placeholder={placeholder}
       render={render}
       {...props}
@@ -64,8 +64,7 @@ export function SelectValue({
 }
 
 export interface SelectTriggerProps
-  extends Omit<ComponentProps<typeof BaseSelect.Trigger>, "className"> {
-  className?: string;
+  extends ComponentProps<typeof BaseSelect.Trigger> {
   children?: ReactNode;
   /** Boxed field by default; `ghost` keeps its geometry with Button's ghost colors; `plain` removes the surface, border and horizontal padding. */
   variant?: SelectTriggerVariant;
@@ -100,16 +99,15 @@ export function SelectTrigger({
   return (
     <BaseSelect.Trigger
       ref={triggerRef}
+      data-slot="select-trigger"
       data-variant={resolvedVariant}
-      className={cn(
+      className={mergeStateClassName(cn(
         // `md` (34px) matches Button's default and the Input — a select beside either in a
         // form row lines up with it. `sm` (30px, the default) is the compact toolbar size;
         // `xs` is the dense 24px control.
         SIZE[size].field,
         selectTriggerVariants({ variant: resolvedVariant }),
-        SIZE[size].radius,
-        className,
-      )}
+        SIZE[size].radius), className)}
       {...props}
     >
       {label ? (
@@ -139,8 +137,7 @@ export function SelectTrigger({
 }
 
 export interface SelectSortTriggerProps
-  extends Omit<ComponentProps<typeof BaseSelect.Trigger>, "className" | "children"> {
-  className?: string;
+  extends Omit<ComponentProps<typeof BaseSelect.Trigger>, "children"> {
   /** Chip by default; `ghost` keeps its geometry with Button's ghost colors; `plain` removes the surface, border and horizontal padding. */
   variant?: SelectTriggerVariant;
   /** @deprecated Use `variant="plain"` or `variant="default"`. */
@@ -198,7 +195,7 @@ export function SelectSortTrigger({
       ref={triggerRef}
       data-variant={resolvedVariant}
       data-unset={isUnset || undefined}
-      className={cn(
+      className={mergeStateClassName(cn(
         // Square once the label and chevron are gone: the padded chip is sized for text,
         // so a glyph on its own comes out 38x30 and reads as a mistake in the row of
         // 30x30 icon buttons it stands in. Each tier matches Button's icon box.
@@ -208,9 +205,7 @@ export function SelectSortTrigger({
         resolvedVariant === "default" &&
           (isUnset
             ? "border-dashed border-border-strong bg-surface"
-            : "border-border bg-muted"),
-        className,
-      )}
+            : "border-border bg-muted")), className)}
       {...props}
     >
       {icon && (

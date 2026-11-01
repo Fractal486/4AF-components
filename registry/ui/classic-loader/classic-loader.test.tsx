@@ -3,6 +3,23 @@ import { fireEvent, render } from "@testing-library/react";
 import { ClassicLoader } from "./classic-loader";
 
 describe("ClassicLoader", () => {
+  it("removes the spinner and status when not loading, then restores them", () => {
+    const ref = createRef<HTMLElement>();
+    const { container, queryByRole, rerender } = render(<ClassicLoader ref={ref} label="Working" loading={false} />);
+    expect(container).toBeEmptyDOMElement();
+    expect(queryByRole("status")).not.toBeInTheDocument();
+    expect(ref.current).toBeNull();
+    rerender(<ClassicLoader ref={ref} label="Working" loading />);
+    expect(queryByRole("status", { name: "Working" })).toBe(ref.current);
+    expect(ref.current?.querySelectorAll("rect")).toHaveLength(12);
+    expect(ref.current).not.toHaveAttribute("loading");
+    rerender(<ClassicLoader ref={ref} label="Working" loading={false} />);
+    expect(container).toBeEmptyDOMElement();
+    expect(ref.current).toBeNull();
+    rerender(<ClassicLoader label="Working" />);
+    expect(queryByRole("status", { name: "Working" })).toBeInTheDocument();
+  });
+
   it("announces an optional status and otherwise remains decorative", () => {
     const { getByRole, container, rerender } = render(<ClassicLoader label="Loading results" />);
     expect(getByRole("status", { name: "Loading results" })).not.toHaveAttribute("aria-hidden");

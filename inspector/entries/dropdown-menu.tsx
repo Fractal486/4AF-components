@@ -21,6 +21,7 @@ import { Button } from "@/registry/ui/button/button";
 import { Morph } from "@/registry/ui/morph/morph";
 import {
   DropdownMenu,
+  createDropdownMenuHandle,
   DropdownMenuActionItem,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
@@ -40,7 +41,8 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/registry/ui/dropdown-menu/dropdown-menu";
-import { defineEntry, select } from "../schema";
+import { bool, defineEntry, select } from "../schema";
+import { SafeTriangleOverlay } from "./dropdown-menu.safe-triangle";
 
 const SIDES = ["bottom", "top", "right", "left"] as const;
 const ALIGNS = ["start", "center", "end"] as const;
@@ -217,18 +219,31 @@ export const dropdownMenuEntry = defineEntry({
   controls: {
     side: select(SIDES, "bottom"),
     align: select(ALIGNS, "start"),
+    longLabels: bool(false, "Long labels"),
+    shared: bool(false, "Shared menu"),
+    safeTriangle: bool(false, "Show safe triangle"),
   },
-  render: ({ side, align }) => <DropdownMenuDemo side={side} align={align} />,
+  render: ({ side, align, safeTriangle, longLabels, shared }) => (
+    <>
+      <DropdownMenuDemo side={side} align={align} longLabels={longLabels} shared={shared} />
+      {safeTriangle && <SafeTriangleOverlay />}
+    </>
+  ),
 });
 
 function DropdownMenuDemo({
   side,
   align,
+  longLabels,
+  shared,
 }: {
   side: (typeof SIDES)[number];
   align: (typeof ALIGNS)[number];
+  longLabels: boolean;
+  shared: boolean;
 }) {
   const [rows, setRows] = useState<RowKind>("items");
+  const [handle] = useState(() => createDropdownMenuHandle<string>());
 
   return (
     <>
@@ -262,28 +277,61 @@ function DropdownMenuDemo({
           </Button>
         ))}
       </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={(props, state) => (
-            <Button
-              {...props}
-              variant="plain"
-              size="icon"
-              aria-label="Options"
-              pressed={state.open}
-              // Menu opens on mousedown, which can interrupt Motion's pointer press
-              // when the popup mounts. Drive this held scale from Base UI's state attr.
-              pressScale={false}
-              className="transition-[background-color,box-shadow,color,opacity,scale] active:scale-[0.95] motion-reduce:active:scale-100 data-[popup-open]:scale-[0.95] motion-reduce:data-[popup-open]:scale-100"
-            >
-              <Ellipsis />
-            </Button>
-          )}
-        />
-        <DropdownMenuContent side={side} align={align} className="w-56">
-          {ROWS_BY_KIND[rows]()}
-        </DropdownMenuContent>
+      <div className="flex gap-2">
+        {(shared ? ["Alex", "Taylor"] : ["Options"]).map(name => (
+          <DropdownMenuTrigger key={name} handle={handle} payload={name}
+            render={(props, state) => (
+              <Button {...props} variant={shared ? "outline" : "plain"} size={shared ? "sm" : "icon"}
+                aria-label={shared ? `Options for ${name}` : "Options"} pressed={state.open} pressScale={false}
+                className="transition-[background-color,box-shadow,color,opacity,scale] active:scale-[0.95] motion-reduce:active:scale-100 data-[popup-open]:scale-[0.95] motion-reduce:data-[popup-open]:scale-100">
+                {shared ? <><User />{name}</> : <Ellipsis />}
+              </Button>
+            )} />
+        ))}
+      </div>
+      <DropdownMenu handle={handle}>
+        {({payload}) => (
+          <DropdownMenuContent side={side} align={align} className={longLabels ? undefined : "w-56"}>
+            {shared && <DropdownMenuLabel>Actions for {payload}</DropdownMenuLabel>}
+            {longLabels ? <LongLabelRows kind={rows} /> : ROWS_BY_KIND[rows]()}
+          </DropdownMenuContent>
+        )}
       </DropdownMenu>
     </>
   );
+}
+
+const longLabel = "Review the accessibility improvements across all shared workspace components";
+const longUrl = "https://example.com/projects/design-system/accessible-component-library/release-notes";
+
+function LongLabelRows({kind}: {kind:RowKind}) {
+  if (kind === "checkboxes" || kind === "toggles") return <>
+    <DropdownMenuCheckboxItem defaultChecked indicator={kind === "checkboxes"} icon={kind === "toggles" ? <Bell /> : undefined}>
+      {longLabel}
+    </DropdownMenuCheckboxItem>
+    <DropdownMenuCheckboxItem>{longUrl}</DropdownMenuCheckboxItem>
+  </>;
+  if (kind === "radio") return <DropdownMenuRadioGroup defaultValue="review">
+    <DropdownMenuRadioItem value="review">{longLabel}</DropdownMenuRadioItem>
+    <DropdownMenuRadioItem value="notes">{longUrl}</DropdownMenuRadioItem>
+  </DropdownMenuRadioGroup>;
+  if (kind === "actions") return <DropdownMenuActionItem icon={<RefreshCw />} action={() => wait(1200)}
+    labels={{pending:"Updating every shared workspace component",success:"All shared workspace components are now up to date"}}>
+    {longLabel}
+  </DropdownMenuActionItem>;
+  if (kind === "panels") return <>
+    <DropdownMenuSub><DropdownMenuSubTrigger>{longLabel}</DropdownMenuSubTrigger>
+      <DropdownMenuSubContent><DropdownMenuItem>{longUrl}<DropdownMenuShortcut>⌘P</DropdownMenuShortcut></DropdownMenuItem></DropdownMenuSubContent>
+    </DropdownMenuSub>
+    <DropdownMenuSelect<string> defaultValue="review"><DropdownMenuSelectTrigger placeholder="Workspace review settings" />
+      <DropdownMenuSelectContent searchable><DropdownMenuSelectItem value="review">{longLabel}</DropdownMenuSelectItem>
+        <DropdownMenuSelectItem value="notes">{longUrl}</DropdownMenuSelectItem>
+      </DropdownMenuSelectContent>
+    </DropdownMenuSelect>
+  </>;
+  return <>
+    <DropdownMenuItem><User />{longLabel}<DropdownMenuShortcut>⌘P</DropdownMenuShortcut></DropdownMenuItem>
+    <DropdownMenuItem><Link2 />{longUrl}</DropdownMenuItem>
+    <DropdownMenuItem variant="destructive"><Trash2 />Permanently delete every archived project in this workspace</DropdownMenuItem>
+  </>;
 }

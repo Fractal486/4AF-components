@@ -1,4 +1,4 @@
-import { cn } from "@/registry/lib/cn";
+import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { useAction, type ActionStatus } from "@/registry/lib/use-action";
 import { LoadingIndicator } from "@/registry/lib/loader";
 import { CheckboxMark } from "@/registry/ui/checkbox/checkbox";
@@ -265,7 +265,8 @@ export function DropdownMenuCheckboxItem({
   return (
     <>
       <BaseMenu.CheckboxItem
-        className={cn(
+        data-slot="dropdown-menu-checkbox-item"
+        className={mergeStateClassName(cn(
           itemBase,
           indicator && "pr-2 pl-8",
           hasReason && "data-[disabled]:pointer-events-auto",
@@ -273,8 +274,7 @@ export function DropdownMenuCheckboxItem({
             "[&_svg]:transition-[fill] [&_svg]:duration-(--duration-fast) [&_svg]:ease-out",
             "data-[checked]:[&_svg]:fill-current",
           ],
-          className,
-        )}
+        ), className)}
         // Render function to read `checked`: the tick can Morph in and out (draw itself
         // in, blur out) instead of snapping, and `children` can swap on it.
         render={(itemProps, state) => (

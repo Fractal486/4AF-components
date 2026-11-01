@@ -29,12 +29,12 @@ describe("text shimmer keyframes", () => {
       from: { translate: "-100% 0" },
       to: { translate: "100% 0" },
     });
-    expect(theme.css[".shimmer-text"]).toEqual({
-      position: "relative", color: "var(--text-shimmer-base)",
+    expect(theme.css["@layer components"][".shimmer-text"]).toMatchObject({
+      position: "relative", color: "var(--text-shimmer-base, inherit)",
     });
     const supported = theme.css["@supports (-webkit-mask-clip: text)"];
     expect(supported[".shimmer-text"]).toEqual({
-      "-webkit-mask-image": "linear-gradient(white, white)", "-webkit-mask-clip": "text",
+      "-webkit-mask-image": "var(--text-shimmer-mask)", "-webkit-mask-clip": "text",
     });
     expect(supported[".shimmer-text.animate-text-shimmer::after"]).toMatchObject({
       content: '""',
@@ -42,6 +42,7 @@ describe("text shimmer keyframes", () => {
       animation: "text-shimmer var(--text-shimmer-duration, 2.5s) linear infinite",
     });
     expect(supported["@media (prefers-reduced-motion: reduce)"]).toEqual({
+      ".shimmer-text": { "-webkit-mask-image": "none" },
       ".shimmer-text.animate-text-shimmer::after": { display: "none" },
     });
   });

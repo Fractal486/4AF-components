@@ -5,11 +5,16 @@ import { cva, type VariantProps } from "class-variance-authority";
  * `max-h-*` cap works as well as a fixed height: the viewport shrinks to the root instead of
  * needing a definite height to resolve `100%` against.
  */
-export const scrollAreaVariants = cva("flex min-h-0 min-w-0 flex-col overflow-hidden");
+export const scrollAreaVariants = cva([
+  "flex min-h-0 min-w-0 flex-col overflow-hidden",
+  // Paint the focus outline on the unmasked root. An inset outline stays visible even
+  // inside another clipping panel, and direct-child focus excludes controls in the content.
+  "has-[>:focus-visible]:outline-2 has-[>:focus-visible]:-outline-offset-2 has-[>:focus-visible]:outline-ring",
+]);
 
 /**
- * The scrolling element. It is focusable while it overflows, so it carries an inset ring: an
- * outset one would be clipped by the root.
+ * The scrolling element is focusable while it overflows. Its focus outline is painted on
+ * the root, outside this element’s fade mask.
  *
  * Overscroll is contained per axis, and only on an axis that overflows. Base UI makes the
  * viewport a scroll container on both axes (`overflow: scroll`), and a browser can apply
@@ -28,7 +33,6 @@ export const scrollAreaViewportVariants = cva(
   [
     "min-h-0 w-full flex-auto rounded-[inherit] outline-none",
     "data-[has-overflow-x]:overscroll-x-contain data-[has-overflow-y]:overscroll-y-contain",
-    "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
   ],
   {
     variants: {
@@ -58,7 +62,8 @@ export const scrollAreaViewportVariants = cva(
  *
  * `auto` keeps the bar hidden until one of those, so it overlays the content without taking
  * room from it; touch has no hover, so there it shows only while scrolling. It appears on the
- * fast token and leaves on the slow one.
+ * fast token and leaves on the slow one. Hidden tracks let pointers reach content underneath;
+ * hover or scrolling restores their drag/click target. Always-visible tracks stay interactive.
  */
 export const scrollAreaScrollbarVariants = cva(
   [
@@ -72,9 +77,9 @@ export const scrollAreaScrollbarVariants = cva(
     variants: {
       scrollbar: {
         auto: [
-          "opacity-0 transition-[opacity] duration-(--duration-slow) ease-out",
-          "data-[hovering]:opacity-100 data-[hovering]:duration-(--duration-fast)",
-          "data-[scrolling]:opacity-100 data-[scrolling]:duration-(--duration-fast)",
+          "pointer-events-none opacity-0 transition-[opacity] duration-(--duration-slow) ease-out",
+          "data-[hovering]:pointer-events-auto data-[hovering]:opacity-100 data-[hovering]:duration-(--duration-fast)",
+          "data-[scrolling]:pointer-events-auto data-[scrolling]:opacity-100 data-[scrolling]:duration-(--duration-fast)",
         ],
         always: "",
       },

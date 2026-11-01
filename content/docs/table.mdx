@@ -1,6 +1,6 @@
 ---
 title: Table
-description: A presentational semantic table with two densities, a pinned header, grid lines, a composable caption, and a loading state.
+description: A semantic table with pinned columns, wrapping text, aligned cells, and loading and empty states.
 ---
 
 <ComponentReference name="table" />
@@ -10,8 +10,8 @@ description: A presentational semantic table with two densities, a pinned header
 **Main exports:** `Table`, `TableCaption`, `TableHeader`, `TableBody`, `TableFooter`, `TableRow`,
 `TableHead`, `TableCell`
 
-Native `<table>` semantics with the library's row rules, two densities, a pinned header, optional
-grid lines, an optional caption, and a loading state.
+Native `<table>` semantics with two densities, pinned headers and columns, wrapping text, optional
+grid lines, a caption, and loading and empty states.
 
 This table has no controls and no state. For a checkbox column, a selection action row, column
 sorting, or a per-row actions menu, install [`data-table`](/docs/data-table), which composes these
@@ -24,16 +24,34 @@ parts.
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `size` | `"sm" \| "md"` | `"sm"` | Row density. |
+| `wrap` | `boolean` | `false` | Wrap cell text and align body content to the top. Without it, cells stay on one line and wide content scrolls. |
 | `outline` | `boolean` | `false` | Rounded frame around the table, on its scroll container. |
 | `verticalLines` | `boolean` | `false` | A rule between every pair of columns. |
 | `horizontalLines` | `boolean` | `true` | A rule between rows and under the header. |
 | `stickyHeader` | `boolean` | `true` | Pins the header row to the top of the scroll container. |
 | `loading` | `boolean` | `false` | Fill the body with placeholder rows and mark the table busy. |
 | `loadingRows` | `number` | `5` | How many placeholder rows to draw. |
+| `columnLayouts` | `readonly (TableCellLayoutProps & { style?: CSSProperties })[]` | Inferred from the header | Visible data columns for loading and empty rows. Supply one entry per leaf column for grouped headers; omit selection/action gutters. Data-driven tables supply this automatically. |
+| `emptyState` | `ReactNode` | `"No results."` | Content shown in a spanning body cell when `TableBody` has no children. Loading takes precedence. Pass `null` to hide it. Arrays, fragments, and conditional children are supported; custom row components that return `null` are not detected as empty. Column counting follows the same header requirements as loading. |
 | `wrapperClassName` | `string` | — | Class for the scroll container. |
-| `rowComponent` | `ComponentType` | `TableRow` | The component placeholder rows are built from. `DataTable` sets this; you should not need to. |
+| `rowComponent` | `ComponentType` | `TableRow` | The component loading and empty rows are built from. `DataTable` sets this; you should not need to. |
 
-The other parts take their native element's props and add nothing of their own.
+### TableHead and TableCell
+
+Both forward their native props and refs, and add:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `align` | `"start"`, `"center"`, or `"end"` | Start alignment | Logical text alignment. End alignment also uses tabular numbers so digits line up. Native `left`, `right`, `justify`, and `char` values remain accepted for compatibility. |
+| `pinned` | `"start"` or `"end"` | — | Keep the cell at that horizontal edge while scrolling. |
+
+Cells expose `data-align` and `data-pinned`; the table exposes `data-wrap` while wrapping.
+The other parts take their native element's props.
+
+`TableHead` defaults to `scope="col"` in the header and `scope="row"` in the body or footer.
+A heading in the body gets normal body text size, foreground color, and cell padding, with
+medium weight. It does not inherit the column header's vertical pinning or header fill.
+An explicit `scope` is preserved.
 
 `sm` has a 36px minimum row height, `md` 44px; both use a 36px minimum header height.
 Wrapped or taller content can increase those heights.
@@ -57,6 +75,9 @@ labels. Placeholder rows take their shape from the header you wrote, so give the
 columns you intend to render. The count comes from the cells in the first row of a direct
 `TableHeader` child, with fragments supported. It does not expand `colSpan` or inspect custom
 components that wrap the header or cells.
+For grouped or wrapped headers, pass `columnLayouts` with one entry per visible leaf column.
+Each entry can carry `align`, `pinned`, and `style`; use `{}` for a column with default layout.
+The array also determines the empty-state cell's span.
 
 ```tsx
 <Table loading={isLoading} loadingRows={8}>
@@ -73,8 +94,38 @@ The header needs a bounded height to pin to:
 <Table wrapperClassName="max-h-80">
 ```
 
-Pinned header cells take `bg-background`. Pass another fill through `className` on `TableHead`
-when the table sits on a raised surface.
+Empty-state content stays centered in the visible scroll area, including with pinned columns
+and Data Table’s selection/actions gutters. Custom empty content can wrap and grow the row.
+
+### Pinned columns
+
+Set `pinned="start"` or `"end"` on a column's heading and each corresponding body/footer cell.
+These are logical edges: start is left in left-to-right layouts and right in right-to-left layouts.
+A pinned body cell stays horizontally fixed while scrolling vertically with its row. Header
+rows remain above pinned body cells. Cells with keyboard focus rise above neighboring pinned
+cells so their controls stay reachable.
+
+Multiple pinned columns on the same side receive automatic offsets based on their widths.
+Grouped headers measure the leaf-column row, including selection and actions gutters, so
+pinned data columns keep their spacing even when the first header row contains only groups.
+Offsets update when columns resize, appear, or disappear, in either reading direction. The
+component does not assign column widths. An explicit `--table-pin-offset` in a cell’s `style`
+overrides its automatic offset; keep custom offsets consistent across the heading and body/footer.
+Loading rows inherit pinning, alignment, and custom offsets from the first header row.
+
+Pinned cells use an opaque version of the row's background, including Data Table hover and
+selection states. Scrolling content fades immediately after the start-pinned columns and before
+the end-pinned columns, matching the fade below the sticky header. Pinned cells stay opaque.
+The fades grow with the content actually hidden behind each pinned group and disappear when
+there is none. They follow column resizing, pin offsets, and right-to-left layouts automatically.
+Scrolling and fade length still use Scroll Area.
+
+### Backgrounds
+
+The default table background follows the page. Tables inside a `data-slot="card"` container,
+a card variant, or a 4AF Hover Card use `--surface`. Tables inside a 4AF Popover use
+`--surface-raised`. The theme tokens remain live when the theme changes. For a custom surface,
+set `--table-bg` through the Table's `style`; pinned columns and header cells use the same fill.
 
 ## Rules
 
@@ -90,7 +141,7 @@ column declines its own rule: `data-table`'s checkbox and actions columns draw n
 ## Composing on top
 
 `useTableContext()` returns `size`, `outline`, `verticalLines`, `horizontalLines`, `stickyHeader`,
-`loading`, `loadingRows`, `columns`, and `Row` (the registered `rowComponent`).
+`loading`, `loadingRows`, `emptyState`, `wrap`, `columns`, `columnLayouts`, and `Row` (the registered `rowComponent`).
 `useTableSection()` returns `"header" | "body" | "footer"` — a row can't infer this,
 since a `<thead>` and a `<tbody>` hold identical `<tr>`s.
 

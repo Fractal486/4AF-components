@@ -2,8 +2,8 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 /**
  * The circle, sharing the Checkbox's recessed-well look so the two controls read as a
- * set — but a radio is a single choice, so it keeps its outline (rather than filling) and
- * shows a dot. The small size matches Checkbox's fixed 16px box; medium and large
+ * set — but a radio is a single choice, so selection fills a white ring around an open
+ * center. The small size matches Checkbox's fixed 16px box; medium and large
  * radios are 20px and 24px.
  */
 export const radioVariants = cva(
@@ -14,12 +14,11 @@ export const radioVariants = cva(
     // page colour.
     "border-[1.5px] border-border bg-background dark:bg-neutral-1000",
     "transition-[box-shadow] duration-(--duration-base) ease-out",
-    // The border stays neutral whether or not it's checked — only the dot inside changes,
-    // so selection reads as the dot appearing, not the ring lighting up.
+    // The outer border stays neutral; the selection ring fills the interior.
     "outline-none focus-visible:ring-2 focus-visible:ring-ring",
     "focus-visible:ring-offset-2 focus-visible:ring-offset-background",
     "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
-    "aria-invalid:border-destructive aria-invalid:ring-destructive/40",
+    "[&:is([aria-invalid=true],[data-invalid])]:border-destructive [&:is([aria-invalid=true],[data-invalid])]:ring-2 [&:is([aria-invalid=true],[data-invalid])]:ring-destructive/40",
     // Held on its own layer so the press-scale doesn't snap the border to the pixel grid.
     "will-change-transform",
   ],
@@ -36,3 +35,22 @@ export const radioVariants = cva(
 );
 
 export type RadioVariants = VariantProps<typeof radioVariants>;
+
+export const radioIndicatorVariants = cva(
+  [
+    "pointer-events-none absolute inset-0 rounded-full border-white",
+    "scale-0 opacity-0 transition-[scale,opacity] duration-(--duration-fast) ease-out",
+    "data-[checked]:scale-100 data-[checked]:opacity-100",
+  ],
+  {
+    variants: {
+      // Leave the former dot's 6/8/10px diameter open inside the 1.5px outer border.
+      size: {
+        sm: "border-[3.5px]",
+        md: "border-[4.5px]",
+        lg: "border-[5.5px]",
+      },
+    },
+    defaultVariants: { size: "md" },
+  },
+);

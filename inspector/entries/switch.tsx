@@ -1,7 +1,7 @@
 "use client";
 
 import { Switch } from "@/registry/ui/switch/switch";
-import { bool, defineEntry, select, text } from "../schema";
+import { bool, defineEntry, select } from "../schema";
 
 const TONES = ["adaptive", "fixed"] as const;
 
@@ -9,28 +9,31 @@ export const switchEntry = defineEntry({
   slug: "switch",
   name: "Switch",
   controls: {
-    label: text("Enable notifications", "Label"),
     tone: select(TONES, "adaptive"),
+    icons: bool(false, "On/off marks"),
+    saving: select(["off", "success", "failure"], "off", "Saving"),
     defaultChecked: bool(true, "On"),
     disabled: bool(false),
+    invalid: bool(false),
   },
-  render({ label, tone, defaultChecked, disabled }) {
-    const hasLabel = label.trim().length > 0;
+  render({ tone, icons, saving, defaultChecked, disabled, invalid }) {
     return (
       <label
         className="flex items-center gap-2 text-sm text-foreground"
       >
         <Switch
           tone={tone}
+          icons={icons}
+          aria-invalid={invalid || undefined}
+          onCheckedChange={saving === "off" ? undefined : () => new Promise<void>((resolve, reject) => {
+            setTimeout(() => saving === "failure" ? reject(new Error("Could not save change.")) : resolve(), 1200);
+          })}
           defaultChecked={defaultChecked}
           disabled={disabled}
-          aria-label={hasLabel ? undefined : "Preview switch"}
         />
-        {hasLabel && (
-          <span data-disabled={disabled || undefined} className="data-disabled:opacity-50">
-            {label}
-          </span>
-        )}
+        <span data-disabled={disabled || undefined} className="data-disabled:opacity-50">
+          Enable notifications
+        </span>
       </label>
     );
   },

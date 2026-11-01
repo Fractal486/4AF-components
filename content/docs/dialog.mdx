@@ -1,42 +1,92 @@
 ---
 title: Dialog
-description: A focus-trapped Base UI modal with asymmetric enter and exit motion and optional phased content.
+description: A centered modal with a scrollable body, nested layers, shared triggers, and optional multi-step flows.
 ---
 
 <ComponentReference name="dialog" />
 
 ## API
 
-**Main exports:** `Dialog`, `DialogTrigger`, `DialogClose`, and its content, title, and footer
-parts; `DialogSteps`, `DialogStep`, and the `DialogPortalContainer` type
+**Main exports:** `Dialog`, `DialogTrigger`, `DialogClose`, `DialogContent`, `DialogPortal`,
+`DialogBackdrop` (also `DialogOverlay`), `DialogPopup`, `DialogHeader`, `DialogBody`,
+`DialogFooter`, `DialogTitle`, `DialogDescription`, `DialogSteps`, `DialogStep`,
+`createDialogHandle`, and the `DialogHandle` and `DialogPortalContainer` types.
 
-A centred modal with enter and exit motion and an optional validated multi-step flow.
+| Part | Props | Behavior |
+| --- | --- | --- |
+| `Dialog` | `open`, `defaultOpen`, `onOpenChange`, `onOpenChangeComplete` | Controlled or uncontrolled visibility; change details can cancel opening or closing. Completion runs after the transition. |
+| `Dialog` | `modal`, `disablePointerDismissal` | Base UI manages focus trapping, scroll locking, outside presses, and Escape. |
+| `Dialog` | `handle`, `triggerId`, `defaultTriggerId`, `children` | Shared triggers and content based on the active trigger's payload; children can be a node or a function receiving `{ payload }`. |
+| `DialogContent` / `DialogPopup` | `autoSize = true` | Measures and animates the content height. Set `false` for a caller-controlled height. |
+| `DialogContent` / `DialogPopup` | `showClose = true` | Shows the corner Close button. The header reserves its space only while it is present. |
+| `DialogContent` / `DialogPopup` | `initialFocus`, `finalFocus` | Customize where focus moves on opening and closing. Touch openings focus the popup by default to avoid opening the virtual keyboard. |
+| `DialogContent` / `DialogPopup` | `className`, `render`, `ref`, DOM props | Customize the popup element, surface, and width. Classes can be a string or a callback receiving `{ open, transitionStatus, nested, nestedDialogOpen }`. |
+| `DialogContent` / `DialogPopup` | `bodyClassName` | Padding and gaps around the content layout; defaults to `p-6 gap-4`. |
+| `DialogContent` | `portalContainer`, `portalProps`, `backdropClassName`, `backdropProps` | Customize the portal and backdrop. `portalContainer` and `backdropClassName` override the corresponding nested props when supplied. |
+| `DialogPortal` | `container`, `keepMounted`, `ref`, DOM props | Choose a mount point or retain hidden content between openings. |
+| `DialogBackdrop` | `className`, `render`, `ref`, DOM props | Customize the backdrop; class callbacks receive `{ open, transitionStatus }`. Nested backdrops render automatically with a lighter tint. |
+| `DialogBody` | Scroll Area props, `contentClassName` | An independent scroll area between a fixed header and footer. `className` styles its root; `contentClassName` styles its inner content. |
+| `DialogFooter` | `showCloseButton = false`, `closeLabel = "Close"` | Optionally appends an outline Close button. It respects canceled close requests. |
+| `DialogTitle` / `DialogDescription` | Base UI title / description props | Accessible labeling, custom elements, refs, and state-aware classes. Long words and URLs wrap; description links have underline, hover, and keyboard-focus styling. |
 
-`DialogContent.autoSize` is a boolean, defaulting to `true`. Set it to `false` to let
-CSS or `style` control the popup height instead of measuring and animating its content.
+## Scrolling and sizing
 
-## Notes
+Place `DialogHeader`, `DialogBody`, and `DialogFooter` directly inside `DialogContent` or
+`DialogPopup`. Only `DialogBody` scrolls when the content exceeds the available height;
+the header, footer, and corner close button remain visible. It uses [Scroll Area](/docs/scroll-area),
+including its edge fades and custom scrollbar. Put form fields inside `DialogBody`; use
+`render` on the popup to make the whole dialog a form when needed.
 
-Base UI handles focus trapping, dismissal, scroll locking, and labelling. `DialogContent`
-accepts `portalContainer` for a mount point of your own and `backdropClassName` for extra
-backdrop styling. Its content sits in a [Scroll Area](/docs/scroll-area) that scrolls when the
-dialog is taller than the viewport; `className` styles the popup (width, surface) and
-`bodyClassName` the scrolling body (padding `p-6`, gap `gap-4`). The popup's height is measured from its content and transitions when the content resizes; the content stays centred, so the frame grows and shrinks around it. The close button follows the frame's top edge; `DialogFooter` and the step navigation follow its bottom edge. With `autoSize` enabled, leave the height to the component. For a fixed-height or full-screen
-viewer, set `autoSize={false}` and provide the popup geometry through `className` or `style`.
-This only disables content-height measurement; it does not apply full-screen styling or change
-focus trapping, dismissal, scrolling, or enter/exit motion. Switching it off while open removes
-the measured height and restores the previous inline height.
+Existing compositions without `DialogBody` keep their whole-content scrolling behavior.
+`bodyClassName` continues to style the outer padding and gap, including when a body is present.
 
-```tsx
-<DialogContent autoSize={false} className="h-[32rem]">
-  <DialogTitle>Preview</DialogTitle>
-  {/* Caller-sized content */}
-</DialogContent>
-```
+The popup measures its natural content height and transitions around its center as the content
+changes. This intentionally animates height so the frame follows expanding content or changing
+steps. A separate body is measured before its viewport constrains it, so long content does not
+push the footer off-screen. The popup stays within the available viewport height.
 
-`DialogSteps` morphs between steps in place (fade, blur, and a slight scale) with no directional travel. Its final **Done**
-button closes the dialog after optional validation; it does not save data or submit a form.
+With `autoSize` enabled, leave the height to the component. For a fixed-height or full-screen
+viewer, set `autoSize={false}` and provide popup geometry through `className` or `style`.
+Switching it off while open removes the measured height and restores the previous inline height.
+
+## Shared dialogs
+
+Create a stable handle with `createDialogHandle<Payload>()` and pass it to `Dialog` and each
+`DialogTrigger`. Triggers can live elsewhere in the React tree. Each trigger supplies its own
+`payload`; the root's children function receives that payload to render the matching content.
+Keep the handle stable across renders, for example with a lazy `useState` initializer.
+Account for an undefined payload before a trigger has been activated. For an initially open
+or controlled dialog, `defaultTriggerId` or `triggerId` associates it with the intended trigger.
+Base UI returns focus to the trigger that opened it.
+
+## Composition and nesting
+
+Dialog and [Alert Dialog](/docs/alert-dialog) share their layout, sizing, scrolling, motion,
+and visual parts. Alert Dialog adds confirmation semantics, async actions, Cancel focus,
+and blocked backdrop dismissal by default. Alert Dialog installs Dialog as a
+registry dependency, so these shared parts have one implementation.
+
+`DialogContent` combines `DialogPortal`, `DialogBackdrop`, and `DialogPopup`. For a custom
+composition, render the portal yourself with a backdrop and popup inside it. Both composition
+paths share sizing, close controls, text handling, and motion. `render` replaces a surface
+while retaining Base UI's accessibility props and event handlers; custom components must
+forward their props and ref. Use `portalProps.keepMounted` on the convenience composition
+or `keepMounted` on a separate portal to retain local state while closed.
+
+Nest another `Dialog` in the parent's content. When it opens, the parent steps back and
+shrinks slightly, and the child gets a lighter backdrop. Base UI owns the nesting behavior:
+Escape closes the top dialog, and focus returns to its trigger in the parent. Reduced motion
+removes the stacking movement and scale. Opening fades in with a small scale and blur;
+closing fades and blurs without reversing the entrance scale. CSS durations use the motion
+tokens, and Base UI retains the popup until its exit finishes.
+
+## Multi-step flows
+
+`DialogSteps` supports `step`, `defaultStep`, `onStepChange`, and `labels`. Compose one
+`DialogStep` per phase. A changed phase enters with a short horizontal fade and blur; reduced
+motion removes that movement. Its final **Done** button closes the dialog after optional
+validation; it does not save data or submit a form.
 
 `validateStep(index, intent)` receives `"forward"` before advancing and `"submit"` when Done
-is pressed. Return `false` to block the operation. A failed submit validation keeps
-`DialogContent` open so the user can correct the current step.
+is pressed. Return `false` to block the operation. A failed submit validation keeps the dialog
+open so the user can correct the current step.

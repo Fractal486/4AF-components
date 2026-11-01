@@ -12,6 +12,8 @@ export { SelectContent, type SelectFooterAction } from "./select.content";
 export { useSelectSearch } from "./select.context";
 export {
   SelectItem,
+  SelectGroup,
+  SelectGroupLabel,
   SelectSeparator,
   type SelectItemProps,
   type SelectSeparatorProps,

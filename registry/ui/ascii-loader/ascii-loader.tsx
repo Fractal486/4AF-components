@@ -20,6 +20,8 @@ import { cn } from "@/registry/lib/cn";
 const FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
 export interface AsciiLoaderProps {
+  /** Whether to render the spinner. Omit to always show it. */
+  loading?: boolean;
   /** Seconds per full cycle. */
   speed?: number;
   /**
@@ -30,15 +32,18 @@ export interface AsciiLoaderProps {
   className?: string;
 }
 
-export function AsciiLoader({ speed = 0.8, label, className }: AsciiLoaderProps) {
+export function AsciiLoader({ speed = 0.8, loading = true, label, className }: AsciiLoaderProps) {
   const reduce = useReducedMotion() ?? false;
   const [frame, setFrame] = useState(0);
 
   useEffect(() => {
+    if (!loading) return;
     const step = ((reduce ? speed * 2.5 : speed) / FRAMES.length) * 1000;
     const id = setInterval(() => setFrame((f) => (f + 1) % FRAMES.length), step);
     return () => clearInterval(id);
-  }, [speed, reduce]);
+  }, [speed, reduce, loading]);
+
+  if (!loading) return null;
 
   return (
     <span

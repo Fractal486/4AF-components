@@ -46,6 +46,31 @@ const selectAll = () => screen.getByRole("checkbox", { name: "Select all rows" }
 const rowBox = (name: string) => screen.getByRole("checkbox", { name: `Select ${name}` });
 
 describe("DataTable", () => {
+  it.each([
+    { selectable: false, actionColumn: false },
+    { selectable: true, actionColumn: false },
+    { selectable: false, actionColumn: true },
+    { selectable: true, actionColumn: true },
+  ])("keeps the empty state aligned with $selectable selection and $actionColumn actions", (props) => {
+    const { container } = render(
+      <DataTable {...props} rows={[]} emptyState="No matching releases">
+        <TableHeader>
+          <DataTableRow><DataTableHead>Version</DataTableHead><DataTableHead>Channel</DataTableHead></DataTableRow>
+        </TableHeader>
+        <TableBody />
+      </DataTable>,
+    );
+    const cell = screen.getByRole("cell", { name: "No matching releases" });
+    expect(cell).toHaveAttribute("colspan", "2");
+    const row = cell.closest("tr")!;
+    expect(row).toHaveAttribute("data-slot", "table-empty-row");
+    expect(row.children).toHaveLength(1 + Number(props.selectable) + Number(props.actionColumn));
+    const span = Array.from(row.cells).reduce((total, current) => total + current.colSpan, 0);
+    expect(span).toBe(screen.getAllByRole("columnheader").length);
+    expect(container.querySelector("tbody input")).toBeNull();
+    expect(container.querySelector("tbody button")).toBeNull();
+  });
+
   it("adds one checkbox per row plus the select-all, from a single prop", () => {
     render(<People selectable />);
 
@@ -246,11 +271,31 @@ describe("DataTable", () => {
 
     // The select-all lifts itself over the bar on purpose: its checkbox is how the selection
     // gets cleared, so it has to stay reachable.
-    expect(selectAllCell.className).toContain("z-10");
+    expect(selectAllCell.className).toContain("z-40");
     // The actions header holds nothing but a screen-reader label. Lifting it would park an
     // opaque empty box over the right end of the bar — exactly where `selectionActions` sit.
-    expect(actionsCell.className).not.toContain("z-10");
+    expect(actionsCell.className).not.toContain("z-40");
     expect(actionsCell.className).not.toContain("relative");
+  });
+
+  it("always pins the checkbox column, and the actions column with a pinned end", () => {
+    const { container, rerender } = render(<DataTable selectable actionColumn>
+      <TableHeader><DataTableRow><DataTableHead pinned="start">Name</DataTableHead><DataTableHead>Role</DataTableHead><DataTableHead pinned="end">Total</DataTableHead></DataTableRow></TableHeader>
+      <TableBody><DataTableRow value="ada" actions={<span />}><TableCell pinned="start">Ada</TableCell><TableCell>Maths</TableCell><TableCell pinned="end">1</TableCell></DataTableRow></TableBody>
+    </DataTable>);
+    for (const row of container.querySelectorAll("tr")) {
+      expect(row.cells[0]).toHaveAttribute("data-pinned", "start");
+      expect(row.cells[4]).toHaveAttribute("data-pinned", "end");
+    }
+
+    rerender(<DataTable selectable actionColumn>
+      <TableHeader><DataTableRow><DataTableHead>Name</DataTableHead><DataTableHead pinned="end">Role</DataTableHead><DataTableHead>Total</DataTableHead></DataTableRow></TableHeader>
+      <TableBody><DataTableRow value="ada" actions={<span />}><TableCell>Ada</TableCell><TableCell pinned="end">Maths</TableCell><TableCell>1</TableCell></DataTableRow></TableBody>
+    </DataTable>);
+    for (const row of container.querySelectorAll("tr")) {
+      expect(row.cells[0]).toHaveAttribute("data-pinned", "start");
+      expect(row.cells[4]).not.toHaveAttribute("data-pinned");
+    }
   });
 
   it("renames the actions column when the default doesn't fit", () => {
@@ -350,20 +395,21 @@ describe("DataTable", () => {
 
     const bodyRows = [...container.querySelectorAll("tbody tr")];
     expect(bodyRows).toHaveLength(3);
-    // One placeholder for the declared column, plus an empty cell at each gutter — the same
-    // three cells the header row has, so a loading table doesn't shift sideways.
-    expect(container.querySelectorAll('[data-slot="skeleton"]')).toHaveLength(3);
+    // Each body row has a data placeholder and a checkbox placeholder; the header
+    // checkbox also becomes a skeleton. The action gutter remains empty.
+    expect(container.querySelectorAll('[data-slot="skeleton"]')).toHaveLength(7);
     expect(bodyRows[0]!.children).toHaveLength(3);
     expect(container.querySelectorAll("thead th")).toHaveLength(3);
 
     // Nothing to select yet, and an indeterminate box over placeholders would claim otherwise.
-    expect(selectAll()).toBeDisabled();
+    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+    expect(container.querySelector('thead [data-slot="skeleton"]')).toHaveAttribute("aria-hidden", "true");
   });
 
   it("washes its body rows on hover, which the base table's rows don't", () => {
     render(<People selectable />);
     const row = screen.getByText("Ada Lovelace").closest("tr")!;
-    expect(row.className).toContain("hover:not-data-[selected]:bg-black/[0.01]");
+    expect(row.className).toContain("hover:not-data-[selected]:[--table-row-bg:color-mix(in_oklab,black_1%,var(--table-bg))]");
   });
 
   it("draws no vertical rule beside either gutter column", () => {
@@ -375,15 +421,15 @@ describe("DataTable", () => {
     // The checkbox column is against the frame; the actions column has nothing behind it to
     // divide, since the ⋯ is hidden until the row is hovered. A rule either side of those would
     // be fencing off an empty strip.
-    expect(cells[0]!.className).not.toContain("border-l");
-    expect(cells[cells.length - 1]!.className).not.toContain("border-l");
+    expect(cells[0]!.className).not.toContain("border-s");
+    expect(cells[cells.length - 1]!.className).not.toContain("border-s");
     // The data columns still carry theirs.
-    expect(cells[1]!.className).toContain("not-first:border-l");
+    expect(cells[1]!.className).toContain("not-first:border-s");
 
     // And the header row matches, so the grid lines up top to bottom.
     const headerCells = [...container.querySelectorAll("thead th")];
-    expect(headerCells[0]!.className).not.toContain("border-l");
-    expect(screen.getByText("Actions").closest("th")!.className).not.toContain("border-l");
+    expect(headerCells[0]!.className).not.toContain("border-s");
+    expect(screen.getByText("Actions").closest("th")!.className).not.toContain("border-s");
   });
 
   it("keeps a valueless row's columns aligned, without a checkbox in it", () => {

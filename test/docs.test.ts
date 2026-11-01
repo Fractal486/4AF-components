@@ -87,7 +87,7 @@ describe("component documentation", () => {
         const target = symbol!.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(symbol!) : symbol!;
         expect(Boolean(target.flags & ts.SymbolFlags.Value), `${item.name}: ${identifier} must be a value`).toBe(true);
         expect(
-          target.getDeclarations()?.some((declaration) => shippedFiles.has(declaration.getSourceFile().fileName)),
+          target.getDeclarations()?.some((declaration) => shippedFiles.has(resolve(declaration.getSourceFile().fileName))),
           `${item.name}: ${identifier} must resolve to a shipped declaration`,
         ).toBe(true);
       }
@@ -251,7 +251,7 @@ describe("component documentation", () => {
       ],
       "select-aligned": [
         'variant="default" | "ghost" | "plain"',
-        "default and ghost panels match the trigger width",
+        "default and ghost panels are at least the trigger's width",
         "Fruit: Banana",
       ],
       "select-search": ["Resolution order", "iconForValue", "SearchSelectItem"],

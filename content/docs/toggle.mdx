@@ -14,3 +14,16 @@ A Base UI pressed/unpressed control using the Button appearance and sizes. It de
 `defaultPressed` for uncontrolled state. `fillIcon` is off by default; set it to fill the glyph
 while pressed. `pressScale={false}` disables press scaling. `shape="pill"` rounds it fully, making the
 square icon sizes circles; the default is `rectangular`. The toggle carries `data-shape`.
+
+`fillBackground` is off by default. Enable it to change the background while pressed,
+with or without `fillIcon`. Quiet variants use a neutral fill; primary and destructive
+keep their own palette. The control carries `data-fill-background`, `data-variant`, and `data-size`.
+
+`className` accepts a string or a function receiving `{ pressed, disabled }`. Returned
+classes merge with the built-in styles, so callers can override them for either state.
+
+`render` accepts a React element or `(props, state) => ReactElement` to replace the default
+button. Spread the supplied props and forward its ref when using a custom component or
+render function. Set `nativeButton={false}` for a non-button element so Base UI supplies
+the appropriate keyboard behavior. Custom rendering replaces the default Motion button,
+so it owns its press animation; `pressScale` applies only to the default renderer.

@@ -45,8 +45,13 @@ semantics.
 
 ## Press behavior
 
-Buttons scale to `0.95` while pressed by default. Set `pressScale={false}` on anchored triggers,
-where the resize would make the attached panel appear to move.
+Buttons scale to `0.95` while pressed by default. A truthy `aria-haspopup` automatically disables
+press scaling so popup triggers stay anchored. This also works with `asChild`, including when
+the child supplies `aria-haspopup`. Explicit `pressScale={true}` or `false` overrides the default.
+For anchored controls without popup semantics, set `pressScale={false}` yourself.
+
+Popup triggers carry `data-popup-trigger`. While `aria-expanded="true"`, they keep their
+variant's hover appearance after the pointer leaves. The `plain` variant remains transparent.
 
 ```tsx
 <Button pressScale={false}>Open menu</Button>

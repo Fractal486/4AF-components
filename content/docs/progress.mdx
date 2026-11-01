@@ -1,28 +1,83 @@
 ---
 title: Progress
-description: Determinate progress feedback with accessible value semantics.
+description: Progress bars, stacked segments, and circular rings with custom colors and indeterminate states.
 ---
 
 <ComponentReference name="progress" />
 
 ## API
 
-**Main exports:** `Progress`, `ProgressLabel`, `ProgressValue`
+**Main exports:** `Progress`, `ProgressCircle`, `ProgressLabel`, `ProgressValue`; types
+`ProgressProps`, `ProgressCircleProps`, `ProgressValueProps`, `ProgressSegment`, `ProgressSize`, `ProgressCircleSize`.
 
-A determinate Base UI progress bar whose fill moves with transform rather than animated width.
+Both shapes use Base UI Progress for accessible value semantics. `Progress` renders a bar;
+`ProgressCircle` renders a ring starting at twelve o'clock.
 
-`value` is clamped to `min`/`max` (defaults: 0/100). Use `className` for the root,
-`trackClassName` for the rail, and `indicatorClassName` for the fill.
+### Shared props
 
-`children` render inside the progress root, before the built-in track and indicator. Nest
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `number \| null` | `null` | Clamped to `min`/`max`. Omit or pass `null` for indeterminate progress. Non-finite numeric values fall back to `min`. |
+| `min` / `max` | `number` | `0` / `100` | Numeric range. Invalid bounds are normalized to a finite increasing range. |
+| `color` | CSS color | Primary ink | Fill color. Accepts a CSS variable or any valid CSS color. Does not change the value or completion state. |
+| `className` | `string` | — | Root classes. |
+| `trackClassName` | `string` | — | Bar rail or SVG track classes. |
+| `indicatorClassName` | `string` | — | Bar fill, segment, or SVG indicator classes. |
+| `children` | `ReactNode` | — | Content above the bar, or centered inside the ring. |
+| `locale` / `format` | `Intl.LocalesArgument` / `Intl.NumberFormatOptions` | Runtime locale / percentage | Formats the visible and accessible value. |
+| `getAriaValueText` | `(formattedValue, value) => string` | Formatted value | Overrides the accessible value text, including the automatic segment breakdown. |
+
+Other Base UI root props, including `ref`, `render`, `aria-label`, and `aria-labelledby`, are forwarded.
+
+### Shape-specific props
+
+| Component | Prop | Default | Description |
+| --- | --- | --- | --- |
+| `Progress` | `size` | `"md"` | `"xs"`, `"sm"`, `"md"`, `"lg"`: 2, 4, 8, or 12px rail height. |
+| `Progress` | `segments` | — | Array of `{ value, label?, color? }`. Values are amounts of the range, not endpoints. Their sum plus `min` replaces `value`; an empty array is zero progress. |
+| `ProgressCircle` | `size` | `"md"` | `"sm"`, `"md"`, `"lg"`, `"xl"`: 16, 24, 40, or 64px diameter. Use `lg` or `xl` when centering a value readout. |
+
+Segment amounts are nonnegative and finite; invalid amounts become zero. Overflow is clipped
+to the remaining range in array order. Each segment inherits the root color unless it supplies
+its own `color`. Labels append a localized breakdown of the displayed amounts to `aria-valuetext`.
+Segments follow reading direction and remain within the rail at 100%.
+
+### Label and value
+
+For `Progress`, `children` render inside the root before the built-in track and indicator. Nest
 `ProgressLabel` and `ProgressValue` directly or inside a layout wrapper; both share the root's
 Base UI context. The label automatically names the progress bar. Without a nested label,
 provide `aria-label` or `aria-labelledby` pointing to an external label.
 
 `ProgressValue` displays the root's formatted value and updates with `value`, `locale`, and
-`format`. It also accepts a render function `(formattedValue, value) => ReactNode`; `value`
+`format`. Numbers update immediately by default. Set `animated` on `ProgressValue` to opt in to
+[Number Animation](/docs/number-animation) for rolling digits with motion blur. This affects only
+the number; the bar and ring keep their existing motion.
+Without `format`, it shows the percentage of the configured range; with `format`, it shows the
+formatted numeric value. Both the bar and circle share this behavior. Reduced motion shows updates
+immediately. It also accepts a render function `(formattedValue, value) => ReactNode`; `value`
 has already been clamped to the root's range. Keep spacing and typography in caller classes,
 for example `className="space-y-2"` on the root and a flex row around the label and value.
 
 The self-closing `<Progress value={60} aria-label="Upload progress" />` form still renders just
 the bar. Supplying children adds content without replacing or duplicating its track.
+
+## States and motion
+
+Roots expose `data-size` and Base UI's `data-progressing`, `data-complete`, or
+`data-indeterminate`. Segmented bars also expose `data-segmented`.
+
+Indeterminate bars slide a short fill across the rail in the reading direction; indeterminate
+rings rotate an arc. Neither announces a current numeric value, and `ProgressValue` is empty.
+Reduced motion stops these loops. Loop durations stay independent of the transition tokens
+so they cannot collapse into a strobe.
+
+Determinate bars transition `transform`; segments transition `clip-path`, with no animated
+width or layout. Rings transition `stroke-dashoffset` to change the visible arc: this small SVG
+paint animation is intentional because a transform alone cannot change the fraction of a circle
+filled. All determinate transitions use the slow duration token and follow reduced-motion settings.
+
+## Source
+
+Feature structure informed by [HextaUI Progress](https://hextaui.com/docs/progress), adapted to
+4AF's theme, Base UI composition, and motion contract.

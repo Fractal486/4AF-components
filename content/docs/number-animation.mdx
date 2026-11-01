@@ -1,0 +1,54 @@
+---
+title: Number Animation
+description: Rolling numbers with motion blur, soft edges, and locale-aware formatting.
+---
+
+<ComponentReference name="number-animation" />
+
+## API
+
+**Main export:** `NumberAnimation`; types `NumberAnimationProps`, `NumberAnimationTrend`.
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `value` | Required | Number to display. Supports negative values and fractions. |
+| `locales` | Runtime locale | Locale or locale list passed to `Intl.NumberFormat`. |
+| `format` | Intl defaults | Number formatting options, including decimal places, currency, percent, units, and grouping. |
+| `prefix` / `suffix` | — | Text before or after the formatted number. |
+| `trend` | `"auto"` | Roll direction: `"auto"` follows value changes, `"up"` or `"down"` fixes direction, and `"shortest"` takes the shortest digit path. |
+| `duration` | `520` ms at the default motion scale | Roll duration in milliseconds. Omit to follow the shared motion scale. |
+| `easing` | `"cubic-bezier(0.32, 0.72, 0, 1)"` | Roll easing curve. |
+| `onAnimationsStart` / `onAnimationsFinish` | — | Called when an animation batch starts or the latest batch finishes. Interrupted batches do not call finish. |
+| `render` | `<span>` | Replacement element or render function. Forward the supplied props and ref. |
+
+Native span props, `className`, `style`, and `ref` are forwarded. Font size, weight, and color
+come from the surrounding text. The root exposes `data-slot="number-animation"` and
+`data-animated`.
+
+## Formatting and accessibility
+
+Formatting happens before animation. Decimal and grouping separators, signs, currency symbols,
+and localized digits stay in their formatted order. The number reads left to right; surrounding
+layout may use either direction. Screen readers receive one complete formatted value instead of
+the repeated digit strips. Set `aria-live="polite"` if updates should be announced; announcements
+are off by default.
+
+## Motion
+
+Initial content renders immediately. Subsequent changes animate automatically: only changed digits
+roll, with motion blur and soft window edges. Rapid updates interrupt the current roll from its visible position. Added and removed
+columns animate their width so the number resizes naturally; this is an intentional layout
+animation. Reduced motion shows the latest value immediately.
+
+The basic roll and blur are adapted locally from
+[SF Interface Numbers](https://github.com/wheresryan22/sfinterface-numbers), with formatting and
+column presence adapted from [HextaUI](https://github.com/preetsuthar17/hextaui). The source license
+notices ship with the component. Neither source is a runtime package dependency.
+
+## Shared readouts
+
+[BadgeCount](/docs/badge#counts-and-dots), [Slider](/docs/slider), and
+[ProgressValue](/docs/progress#label-and-value) offer this animation as an opt-in: set `animated` on BadgeCount or ProgressValue, or
+`animateValue` on Slider. All default to `false`. BadgeCount keeps
+its whole-number cap and full accessible count; Slider keeps its editable values and formatting;
+Progress keeps its percentage or custom numeric format and empty indeterminate value.

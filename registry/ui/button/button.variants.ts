@@ -84,18 +84,18 @@ export const buttonVariants = cva(
       variant: {
         /** The default. Ink, not colour — colour is a signal, and most buttons
             are not the most important thing on the screen. */
-        primary: "bg-primary text-primary-foreground hover:bg-primary-hover",
+        primary: "bg-primary text-primary-foreground hover:bg-primary-hover data-[popup-trigger]:aria-expanded:bg-primary-hover",
         /** A shadow, not a border: no layout cost, and being built from transparency
             it sits correctly on any background rather than only the one it was
             picked against. Hover moves the fill only — the outline holds still,
             because the fill already says "you're on it", and moving both is two
             signals for one event. */
-        outline: "bg-surface text-foreground shadow-border hover:bg-muted",
-        ghost: "text-muted-foreground hover:bg-muted hover:text-foreground",
+        outline: "bg-surface text-foreground shadow-border hover:bg-muted data-[popup-trigger]:aria-expanded:bg-muted",
+        ghost: "text-muted-foreground hover:bg-muted hover:text-foreground data-[popup-trigger]:aria-expanded:bg-muted data-[popup-trigger]:aria-expanded:text-foreground",
         plain: "bg-transparent text-foreground hover:bg-transparent",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive-hover",
-        link: "text-foreground underline decoration-border-strong underline-offset-4 ease-(--default-transition-timing-function) hover:decoration-current",
+          "bg-destructive text-destructive-foreground hover:bg-destructive-hover data-[popup-trigger]:aria-expanded:bg-destructive-hover",
+        link: "text-foreground underline decoration-border-strong underline-offset-4 ease-(--default-transition-timing-function) hover:decoration-current data-[popup-trigger]:aria-expanded:decoration-current",
       },
       size: {
         xs: `h-6 ${buttonContentGap({ size: "xs" })} rounded-[6px] px-2.5 text-xs [&_svg]:size-3.5 [&_[data-slot=loader]]:size-3.5`,

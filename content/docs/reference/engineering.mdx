@@ -41,10 +41,14 @@ lifecycle.
 Transitions name their properties and prefer compositor-friendly motion. Animating layout
 properties such as `width`, `height`, `top`, and `left` is discouraged because it can trigger
 layout and paint on every frame. Use it when smoothly changing the layout is part of the
-intended interaction, and document the reason. Existing uses include Collapsible's height
+intended interaction, and document the reason. Textarea animates its auto-growing height so
+the surrounding form reflows as lines are added or removed. Badge removal animates width, padding,
+border and margin to close the gap between tags; Number Animation (shared by Badge, Slider, and Progress) animates digit widths when columns
+appear or disappear so the count resizes smoothly. Existing uses also include Collapsible's height and gap margins
 transition, Dialog's measured frame height, Calendar's measured month height as week rows change, Sidebar's shell dimensions
 and offcanvas position, its collapsing menu rows (width, height, padding) and group labels
-(margin), and Morph's opt-in `sizing="current"` width. Sidebar's row geometry and label spacing
+(margin), and Morph's opt-in `sizing="current"` width, also used by Badge text labels to resize without
+scaling their text. Sidebar's row geometry and label spacing
 transition so the navigation reflows smoothly into the icon rail without leaving gaps for
 hidden labels.
 
@@ -135,7 +139,7 @@ pages:
 | `slot` | Small local helper for `asChild` composition. `useSlotChild` lives in a separate server-compatible module, so components that render on the server can call it |
 | `motion` | Shared spring and easing presets |
 | `loader` | Caller-supplied loading slots and provider defaults, with `ClassicLoader` as the fallback |
-| `use-action` | Run, pending, outcome, and revert state shared by Action Button and asynchronous menu rows |
+| `use-action` | Controlled or internal action status, per-outcome reset timing, error hover/focus holds, and manual reset that ignores stale results; see [Action Button's helper reference](/docs/action-button#shared-action-helper) |
 | `table-of-contents-scroll` | Active-entry centering, endpoint padding, and overflow-edge state for constrained contents rails |
 | `table-of-contents-tracking` | Heading activation, visibility observation, and click-to-scroll settling shared by both contents variants |
 

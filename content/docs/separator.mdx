@@ -1,12 +1,43 @@
 ---
 title: Separator
-description: An accessible visual divider with horizontal and vertical orientations.
+description: A horizontal or vertical hairline with rich labels, alignment, and decorative mode.
 ---
 
 <ComponentReference name="separator" />
 
 ## API
 
-**Main export:** `Separator`
+**Main export:** `Separator`; types `SeparatorProps`, `SeparatorAlign`.
 
 An accessible horizontal or vertical divider built on Base UI Separator.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `orientation` | `"horizontal" \| "vertical"` | `"horizontal"` | Direction of the divider. Vertical separators stretch to their flex row's height; outside a flex row, give the separator a height. |
+| `label` | `ReactNode` | — | Text, icons, or other content in the divider. Takes precedence over `children` when provided. Empty or whitespace-only content renders the plain divider. |
+| `children` | `ReactNode` | — | Alternative way to supply label content. |
+| `align` | `"start" \| "center" \| "end"` | `"center"` | Positions the label along the divider. At either edge, only the opposite line remains. |
+| `decorative` | `boolean` | `false` | Removes the separator announcement from a purely visual line. Label content remains accessible. |
+| `className` | `string \| (state) => string` | — | Root styling, merged with the component's classes. The callback receives Base UI's orientation state. |
+
+Base UI props, including `ref`, `render`, and ARIA attributes, are forwarded. `render` can
+substitute a `span` when the separator appears inside inline content.
+
+## Labels and layout
+
+Vertical labels remain upright. Long labels wrap, including unbroken strings, while each visible
+line retains at least 16px. Direct SVG children are sized to 14px with spacing beside the text.
+
+The hairline is 1 CSS pixel by default, half a pixel on displays at 2× density, and a third of a
+pixel at 3× and above. Plain and labeled lines use the system text color in forced-colors mode.
+
+The root exposes `data-orientation`, `data-labeled`, `data-align` when labeled, and
+`data-decorative` when enabled. The text and lines expose `data-slot="separator-label"` and
+`data-slot="separator-line"`.
+
+## Accessibility
+
+Plain dividers retain Base UI's `role="separator"` and `aria-orientation`. Decorative lines use
+`role="none"` without `aria-orientation`. Labeled dividers have neither attribute, allowing text,
+icons, and other content to retain their own semantics instead of becoming presentational
+descendants of a separator. Caller-supplied ARIA attributes and roles take precedence.

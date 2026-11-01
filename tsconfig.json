@@ -23,6 +23,7 @@
       "@/registry/ui/ui/input.variants": ["./registry/ui/input/input.variants.ts"],
       "@/registry/ui/ui/button.variants": ["./registry/ui/button/button.variants.ts"],
       "@/registry/ui/ui/table.variants": ["./registry/ui/table/table.variants.ts"],
+      "@/registry/ui/ui/dialog.shared": ["./registry/ui/dialog/dialog.shared.tsx"],
       "@/registry/*": ["./registry/*"],
       "@/inspector/*": ["./inspector/*"],
       "@/app/*": ["./app/*"],

@@ -1,11 +1,12 @@
 "use client";
 
 import { Checkbox as BaseCheckbox } from "@base-ui/react/checkbox";
-import { motion, useReducedMotion, type SVGMotionProps } from "motion/react";
+import { CheckboxGroup as BaseCheckboxGroup } from "@base-ui/react/checkbox-group";
+import { motion, useReducedMotion, type HTMLMotionProps, type SVGMotionProps } from "motion/react";
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
 import { duration, ease, PRESS_SCALE, spring } from "@/registry/lib/motion";
-import { checkboxVariants } from "./checkbox.variants";
+import { checkboxGroupVariants, checkboxVariants } from "./checkbox.variants";
 
 /**
  * A checkbox.
@@ -24,8 +25,7 @@ import { checkboxVariants } from "./checkbox.variants";
  * different depending on what you're pointing with.
  */
 export interface CheckboxProps
-  extends Omit<ComponentProps<typeof BaseCheckbox.Root>, "className" | "render" | "nativeButton"> {
-  className?: string;
+  extends ComponentProps<typeof BaseCheckbox.Root> {
   /**
    * Text beside the box. When set, the box and the text sit inside one `<label>`, so
    * clicking anywhere on the row toggles the checkbox — the label binds to Base UI's
@@ -99,6 +99,9 @@ export function Checkbox({
   disabled,
   label,
   labelClassName,
+  render,
+  nativeButton = render == null,
+  children,
   ...props
 }: CheckboxProps) {
   const reduceMotion = useReducedMotion();
@@ -106,23 +109,24 @@ export function Checkbox({
   const box = (
     <BaseCheckbox.Root
       disabled={disabled}
-      // The render below is a native <button>, so tell Base UI as much — otherwise it
-      // warns and would add synthetic button attributes on top of the native ones.
-      nativeButton
-      className={cn(checkboxVariants(), className)}
-      // Element form, not a function: Base UI clones this and injects its own props,
-      // so there's no explicit spread to collide with Motion's gesture props.
-      render={
+      nativeButton={nativeButton}
+      className={typeof className === "function"
+        ? (state) => cn(checkboxVariants(), className(state))
+        : cn(checkboxVariants(), className)}
+      render={render ?? ((rootProps, state) => (
         <motion.button
-          whileTap={reduceMotion || disabled ? undefined : { scale: PRESS_SCALE }}
+          {...(rootProps as HTMLMotionProps<"button">)}
+          whileTap={reduceMotion || state.disabled ? undefined : { scale: PRESS_SCALE }}
           transition={spring.press}
         />
-      }
+      ))}
       {...props}
+      data-slot="checkbox"
     >
       <BaseCheckbox.Indicator
         // keepMounted so the tick is in the DOM to draw *out* on uncheck, not yanked.
         keepMounted
+        data-slot="checkbox-indicator"
         className="grid size-[70%] place-items-center text-current"
         render={(indicatorProps, state) => (
           <CheckboxMark
@@ -135,6 +139,7 @@ export function Checkbox({
           />
         )}
       />
+      {children}
     </BaseCheckbox.Root>
   );
 
@@ -145,14 +150,29 @@ export function Checkbox({
       data-disabled={disabled ? "" : undefined}
       className={cn(
         "group/checkbox-label inline-flex w-fit cursor-pointer items-center gap-2 select-none",
-        "data-[disabled]:cursor-not-allowed",
+        "data-[disabled]:cursor-not-allowed has-[[data-slot=checkbox][data-disabled]]:cursor-not-allowed",
         labelClassName,
       )}
     >
       {box}
-      <span className="text-sm text-foreground group-data-[disabled]/checkbox-label:text-muted-foreground">
+      <span className="text-sm text-foreground group-data-[disabled]/checkbox-label:text-muted-foreground group-has-[[data-slot=checkbox][data-disabled]]/checkbox-label:text-muted-foreground">
         {label}
       </span>
     </label>
+  );
+}
+
+export type CheckboxGroupProps = ComponentProps<typeof BaseCheckboxGroup>;
+
+/** Shared values and parent selection, with all interaction owned by Base UI. */
+export function CheckboxGroup({ className, ...props }: CheckboxGroupProps) {
+  return (
+    <BaseCheckboxGroup
+      className={typeof className === "function"
+        ? (state) => cn(checkboxGroupVariants(), className(state))
+        : cn(checkboxGroupVariants(), className)}
+      {...props}
+      data-slot="checkbox-group"
+    />
   );
 }

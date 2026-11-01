@@ -22,7 +22,8 @@ function DocsTable({ className, ...props }: ComponentProps<"table">) {
   return (
     <Table
       {...props}
-      className={cn("[&_thead]:bg-surface [&_thead_th]:border-b-0", className)}
+      className={cn("[&_thead]:bg-surface [&_thead_th]:bg-surface [&_thead_th]:border-b-0", className)}
+      wrap
       stickyHeader={false}
       wrapperClassName="not-prose my-6"
     />

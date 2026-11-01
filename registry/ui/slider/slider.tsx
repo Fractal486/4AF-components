@@ -24,7 +24,9 @@ import {
 } from "react";
 import { cn } from "@/registry/lib/cn";
 import { duration, ease, spring } from "@/registry/lib/motion";
+import { NumberAnimation } from "@/registry/ui/number-animation/number-animation";
 import { Tooltip } from "@/registry/ui/tooltip/tooltip";
+import { useSliderRangeDrag } from "./slider-range-drag";
 import {
   getSliderThumbCenter,
   getSliderControlWidth,
@@ -40,6 +42,8 @@ import {
   sliderThumbVariants,
   sliderTickVariants,
   sliderTicksVariants,
+  sliderRootVariants,
+  sliderVisualVariants,
 } from "./slider.variants";
 
 /**
@@ -47,7 +51,7 @@ import {
  *
  * Behaviour is Base UI's: a real `<input type="range">` carries the pointer drag,
  * keyboard map (arrows, Home/End, PageUp/Down large-step), step snapping, ARIA, form
- * integration and RTL. None of that is hand-rolled.
+ * integration and RTL. The optional whole-range gesture moves both Base UI values together.
  *
  * The feel is Motion's. Base UI's thumb is kept but hidden — it's the focus and
  * behaviour target — and a thumb and fill are drawn over it. A thumb under the pointer
@@ -131,17 +135,17 @@ function BarThumb({
       data-slot="slider-thumb"
       data-grabbed={stretched ? "" : undefined}
       data-dodged={dodged ? "" : undefined}
-      className="absolute inset-0 rounded-full drop-shadow-sm group-has-[[type=range]:focus-visible]:ring-4 group-has-[[type=range]:focus-visible]:ring-ring/40"
+      className="absolute inset-0 rounded-full drop-shadow-sm forced-colors:outline forced-colors:outline-[CanvasText] group-has-[[type=range]:focus-visible]:ring-4 group-has-[[type=range]:focus-visible]:ring-ring/40 forced-colors:group-has-[[type=range]:focus-visible]:outline-offset-2 forced-colors:group-has-[[type=range]:focus-visible]:outline-2 forced-colors:group-has-[[type=range]:focus-visible]:outline-[Highlight]"
       animate={{ opacity: dodged ? DODGE_OPACITY : 1 }}
       transition={reduceMotion ? { duration: 0 } : { duration: duration.fast, ease: ease.out }}
     >
       <motion.span
-        className="absolute inset-x-0 top-0 aspect-square rounded-full bg-foreground"
+        className="absolute inset-x-0 top-0 aspect-square rounded-full bg-foreground forced-colors:bg-[Canvas]"
         animate={{ y: stretched ? -reach : 0, scale: stretched ? BAR_GRAB_WIDEN : 1 }}
         transition={transition}
       />
       <motion.span
-        className="absolute inset-x-0 bg-foreground"
+        className="absolute inset-x-0 bg-foreground forced-colors:bg-[Canvas]"
         style={{ top: capRadius, bottom: capRadius }}
         animate={{
           scaleY: stretched ? middleScale : 1,
@@ -150,7 +154,7 @@ function BarThumb({
         transition={transition}
       />
       <motion.span
-        className="absolute inset-x-0 bottom-0 aspect-square rounded-full bg-foreground"
+        className="absolute inset-x-0 bottom-0 aspect-square rounded-full bg-foreground forced-colors:bg-[Canvas]"
         animate={{ y: stretched ? reach : 0, scale: stretched ? BAR_GRAB_WIDEN : 1 }}
         transition={transition}
       />
@@ -221,6 +225,9 @@ function EditableValue({
   step,
   label,
   onCommit,
+  animateValue,
+  locale,
+  format,
   className,
 }: {
   /** Which thumb's value this is; a range shows one editable value per thumb. */
@@ -231,6 +238,9 @@ function EditableValue({
   step: number;
   label: string;
   onCommit: (index: number, value: number) => void;
+  animateValue: boolean;
+  locale?: Intl.LocalesArgument;
+  format?: Intl.NumberFormatOptions;
   className?: string;
 }) {
   const [draft, setDraft] = useState<string | null>(null);
@@ -287,7 +297,7 @@ function EditableValue({
       }}
       className={cn("pointer-events-auto cursor-text tabular", className)}
     >
-      {(formatted) => formatted[index]}
+      {(formatted, values) => animateValue ? <NumberAnimation value={values[index]!} locales={locale} format={format} /> : formatted[index]}
     </BaseSlider.Value>
   );
 }
@@ -347,12 +357,15 @@ type ThumbFlags = [boolean, boolean];
 export interface SliderProps
   extends Omit<
     ComponentProps<typeof BaseSlider.Root>,
-    "className" | "render" | "value" | "defaultValue" | "onValueChange"
+    "value" | "defaultValue" | "onValueChange"
   > {
   value?: SliderValue;
   defaultValue?: SliderValue;
-  onValueChange?: ((value: number) => void) | ((value: SliderRange) => void);
-  className?: string;
+  onValueChange?: ((value: number, details: BaseSlider.Root.ChangeEventDetails) => void) | ((value: SliderRange, details: BaseSlider.Root.ChangeEventDetails) => void);
+  /** Move both range handles together by dragging the space between them. */
+  draggableRange?: boolean;
+  getAriaValueText?: ComponentProps<typeof BaseSlider.Thumb>["getAriaValueText"];
+  getAriaLabel?: ComponentProps<typeof BaseSlider.Thumb>["getAriaLabel"];
   /** Render two independently draggable thumbs with the fill between them. */
   range?: boolean;
   /**
@@ -362,6 +375,8 @@ export interface SliderProps
   showTicks?: boolean;
   /** The current value, shown above the track on the right. */
   showValue?: boolean;
+  /** Opt in to rolling numbers in readouts and thumb tooltips. Defaults to false. */
+  animateValue?: boolean;
   /** Show the live value in a tooltip above the thumb while it is hovered or focused. */
   showValueTooltip?: boolean;
   /** Text shown above the track on the left, opposite the value. */
@@ -430,7 +445,7 @@ const DODGE_OPACITY = 0.15;
 // 15%. The bar's in-use step mixes in 8% foreground, so a custom colour deepens (or, in the
 // dark theme, lightens) the same way the default grey steps up to about 20%.
 const FILL_COLOR =
-  "[--slider-fill-rest:var(--slider-fill,color-mix(in_oklab,var(--color-foreground)_15%,transparent))] [--slider-fill-active:color-mix(in_oklab,var(--slider-fill-rest),var(--color-foreground)_8%)] bg-(color:--slider-fill-rest)";
+  "[--slider-fill-rest:var(--slider-fill,color-mix(in_oklab,var(--color-foreground)_15%,transparent))] [--slider-fill-active:color-mix(in_oklab,var(--slider-fill-rest),var(--color-foreground)_8%)] bg-(color:--slider-fill-rest) forced-colors:bg-[Highlight]! forced-colors:forced-color-adjust-none";
 
 // "In use" for the bar: hovered, dragged, or keyboard-focused. Focus means the slider's own
 // range input, not anything focused inside the control, so typing into the editable value
@@ -449,11 +464,13 @@ export function Slider({
   value,
   defaultValue,
   onValueChange,
+  onValueCommitted,
   min = 0,
   max = 100,
   step = 1,
   showTicks = true,
   showValue = true,
+  animateValue = false,
   showValueTooltip = false,
   label,
   thumbLabels,
@@ -463,15 +480,22 @@ export function Slider({
   thumb = "bar",
   size = "md",
   range = false,
+  draggableRange = false,
+  minStepsBetweenValues = 0,
+  orientation = "horizontal",
+  getAriaValueText,
+  getAriaLabel,
   disabled,
   className,
+  render,
   ...props
 }: SliderProps) {
   const labelId = useId();
   const labelledBy = ariaLabelledBy ?? (ariaLabel == null && label != null ? labelId : undefined);
   const isBar = thumb === "bar";
   const isKnob = thumb === "knob";
-  const inline = inlineLabel && isBar;
+  const vertical = orientation === "vertical";
+  const inline = inlineLabel && isBar && !vertical;
   const dims = DIMS[thumb][size];
   const roundThumbGrabScale = isKnob ? KNOB_GRAB_SCALE[size] : 1.12;
   // A thumb the fill holds (circle, bar) travels inset by the fill's reach past it; the knob,
@@ -480,7 +504,7 @@ export function Slider({
   const holdsThumb = dims.fillCapRadiusPx > 0;
   const reduceMotion = useReducedMotion();
   const direction = useDirection();
-  const isRtl = direction === "rtl";
+  const isRtl = !vertical && direction === "rtl";
   const normalizedMin = Number.isFinite(min) ? min : 0;
   const normalizedMax = Number.isFinite(max) && max > normalizedMin ? max : normalizedMin + 1;
   const normalizedStep = Number.isFinite(step) && step > 0 ? step : 1;
@@ -505,6 +529,7 @@ export function Slider({
   const activeThumbIndexRef = useRef<number | null>(null);
   const [pixelRatio, setPixelRatio] = useState(1);
   const [controlWidth, setControlWidth] = useState(0);
+  const [controlThickness, setControlThickness] = useState(0);
 
   const controlled = value !== undefined;
   const current = controlled ? value : internal;
@@ -568,13 +593,14 @@ export function Slider({
     const control = controlRef.current;
     if (!control) return;
     const measure = () => {
-      const nextWidth = getSliderControlWidth(control);
+      const nextWidth = vertical ? control.offsetHeight : getSliderControlWidth(control);
       setControlWidth(nextWidth);
+      setControlThickness(control.offsetWidth);
       setTooltipAlignOffsets(
         visualPercentsRef.current.map(
           (percent) =>
-            getSliderThumbCenter(percent, nextWidth, thumbTravelInsetPx, followFillPx, isRtl) -
-            nextWidth / 2,
+            (getSliderThumbCenter(percent, nextWidth, thumbTravelInsetPx, followFillPx, isRtl) -
+            nextWidth / 2) * (vertical ? -1 : 1),
         ) as ThumbValues,
       );
       // Captured with the width because ticks are snapped to the *device* pixel grid, and
@@ -585,7 +611,7 @@ export function Slider({
     const observer = new ResizeObserver(measure);
     observer.observe(control);
     return () => observer.disconnect();
-  }, [dims.thumbPx, thumbTravelInsetPx, followFillPx, isRtl]);
+  }, [dims.thumbPx, thumbTravelInsetPx, followFillPx, isRtl, vertical]);
   const thumbX0 = useTransform(
     pos0,
     (p) =>
@@ -677,7 +703,7 @@ export function Slider({
   useMotionValueEvent(thumbX0, "change", (latest) => {
     if (showValueTooltip) {
       setTooltipAlignOffsets((previous) => [
-        latest + dims.thumbPx / 2 - controlWidth / 2,
+        (latest + dims.thumbPx / 2 - controlWidth / 2) * (vertical ? -1 : 1),
         previous[1],
       ]);
     }
@@ -686,7 +712,7 @@ export function Slider({
     if (showValueTooltip) {
       setTooltipAlignOffsets((previous) => [
         previous[0],
-        latest + dims.thumbPx / 2 - controlWidth / 2,
+        (latest + dims.thumbPx / 2 - controlWidth / 2) * (vertical ? -1 : 1),
       ]);
     }
   });
@@ -770,8 +796,14 @@ export function Slider({
 
   const handleValueChange = (
     next: number | readonly number[],
-    details?: { reason?: string; activeThumbIndex?: number },
+    details?: BaseSlider.Root.ChangeEventDetails,
   ) => {
+    const eventDetails: BaseSlider.Root.ChangeEventDetails = details ?? {
+      reason: "none", event: new Event("change"), trigger: controlRef.current ?? undefined,
+      activeThumbIndex: -1, isCanceled: false, isPropagationAllowed: false,
+      cancel() { this.isCanceled = true; },
+      allowPropagation() { this.isPropagationAllowed = true; },
+    };
     // With both range thumbs on one value, the press can't tell which was meant — it picks
     // by distance, and the two are equally close — but Base UI resolves it from the drag's
     // direction. Hand the grab (its stretch, its tooltip) to the thumb that is actually moving.
@@ -783,19 +815,23 @@ export function Slider({
     const nextValue = isRange
       ? normalizeSliderRange(next, normalizedMin, normalizedMax)
       : normalizeSliderValue(next, normalizedMin, normalizedMax);
+    if (isRange) {
+      (onValueChange as ((value: SliderRange, details: BaseSlider.Root.ChangeEventDetails) => void) | undefined)?.(
+        nextValue as SliderRange,
+        eventDetails,
+      );
+    } else {
+      (onValueChange as ((value: number, details: BaseSlider.Root.ChangeEventDetails) => void) | undefined)?.(
+        nextValue as number,
+        eventDetails,
+      );
+    }
+    if (eventDetails.isCanceled) return false;
     if (!controlled) setInternal(nextValue);
     const nextThumbs = Array.isArray(nextValue) ? nextValue : [nextValue, nextValue];
     follow(0, toVisualPercent(nextThumbs[0]), details?.reason);
     follow(1, toVisualPercent(nextThumbs[1]), details?.reason);
-    if (isRange) {
-      (onValueChange as ((value: SliderRange) => void) | undefined)?.(
-        nextValue as SliderRange,
-      );
-    } else {
-      (onValueChange as ((value: number) => void) | undefined)?.(
-        nextValue as number,
-      );
-    }
+    return true;
   };
 
   // The shown numbers can be typed into — one per thumb — unless the slider is disabled.
@@ -813,7 +849,17 @@ export function Slider({
     handleValueChange(index === 0 ? [Math.min(typed, high), high] : [low, Math.max(typed, low)]);
   };
   const renderValue = (className: string) => {
-    if (!editableValue) return <BaseSlider.Value className={cn("tabular", className)} />;
+    if (!editableValue && !animateValue) return <BaseSlider.Value className={cn("tabular", className)} />;
+    if (!editableValue) return (
+      <BaseSlider.Value className={cn("inline-flex items-baseline gap-1 tabular", className)}>
+        {(_, values) => values.map((number, index) => (
+          <span key={index} className="inline-flex items-baseline gap-1">
+            {index > 0 && <span aria-hidden>–</span>}
+            <NumberAnimation value={number} locales={props.locale} format={props.format} />
+          </span>
+        ))}
+      </BaseSlider.Value>
+    );
     const editable = (index: 0 | 1) => (
       <EditableValue
         index={index}
@@ -823,6 +869,9 @@ export function Slider({
         step={normalizedStep}
         label={editLabel(index)}
         onCommit={commitTypedValue}
+        animateValue={animateValue}
+        locale={props.locale}
+        format={props.format}
         className={className}
       />
     );
@@ -902,7 +951,7 @@ export function Slider({
 
   const isTooltipOpen = (index: number) =>
     showValueTooltip &&
-    (draggingIndex === index || thumbHovered[index] || thumbFocused[index]);
+    (rangeGesture.dragging || draggingIndex === index || thumbHovered[index] || thumbFocused[index]);
 
   const thumbIndices = isRange ? ([0, 1] as const) : ([0] as const);
 
@@ -927,18 +976,37 @@ export function Slider({
     return closestIndex;
   };
 
+  const rangeGesture = useSliderRangeDrag({
+    enabled: draggableRange && isRange && !disabled, controlRef, values: normalizedThumbValues,
+    min: normalizedMin, max: normalizedMax, step: normalizedStep, minStepsBetweenValues,
+    vertical, rtl: isRtl, inset: thumbTravelInsetPx, onChange: handleValueChange,
+    onCommit: onValueCommitted,
+    onStart: () => { pointerInteractionRef.current = true; setThumbFocused([false, false]); },
+    onEnd: handlePointerEnd,
+  });
+  const interactionState = (state: BaseSlider.Root.State): BaseSlider.Root.State => rangeGesture.dragging
+    ? { ...state, dragging: true, activeThumbIndex: -1 } : state;
+
   return (
     <BaseSlider.Root
       value={normalizedValue}
       onValueChange={handleValueChange as never}
+      onValueCommitted={onValueCommitted}
+      minStepsBetweenValues={minStepsBetweenValues}
       min={normalizedMin}
       max={normalizedMax}
       step={normalizedStep}
       disabled={disabled}
+      orientation={orientation}
+      data-slot="slider"
       data-range={isRange ? "true" : undefined}
+      data-range-dragging={rangeGesture.dragging ? "" : undefined}
       aria-label={ariaLabel}
       aria-labelledby={labelledBy}
-      className={cn("relative w-full", className)}
+      className={typeof className === "function"
+        ? (state) => cn(sliderRootVariants({ orientation }), className(interactionState(state)))
+        : cn(sliderRootVariants({ orientation }), className)}
+      render={typeof render === "function" ? (renderProps, state) => render(renderProps, interactionState(state)) : render}
       {...props}
     >
       {(showValue || label != null) && !inline && (
@@ -958,10 +1026,15 @@ export function Slider({
       )}
 
       <BaseSlider.Control
+        data-slot="slider-control"
         ref={controlRef}
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerEnd}
-        onLostPointerCapture={handlePointerEnd}
+        onPointerDownCapture={rangeGesture.onPointerDownCapture}
+        onPointerMoveCapture={rangeGesture.onPointerMoveCapture}
+        onPointerUpCapture={rangeGesture.onPointerUpCapture}
+        onPointerCancelCapture={rangeGesture.onPointerCancelCapture}
+        onLostPointerCapture={(event) => { rangeGesture.onLostPointerCapture(event); handlePointerEnd(event); }}
         render={(renderProps, state) => {
           const activeThumbIndex =
             state.activeThumbIndex >= 0
@@ -972,7 +1045,7 @@ export function Slider({
             <div
               {...renderProps}
               data-dragging-index={
-                state.dragging && activeThumbIndex >= 0
+                rangeGesture.dragging ? "range" : state.dragging && activeThumbIndex >= 0
                   ? activeThumbIndex
                   : undefined
               }
@@ -982,11 +1055,13 @@ export function Slider({
         className={sliderControlVariants({
           thumb,
           size,
-          cursor: disabled ? "disabled" : isBar ? "grab" : isRtl ? "resize-rtl" : "resize-ltr",
+          orientation,
+          cursor: disabled ? "disabled" : isBar ? "grab" : vertical ? "resize-vertical" : isRtl ? "resize-rtl" : "resize-ltr",
         })}
       >
         {/* The rail — clipped to its own shape so the fill rounds with it. The visual thumb
             sits above this clip, while the knob can still overhang its thin rail. */}
+        <div className={sliderVisualVariants({ orientation })} style={vertical ? { width: controlWidth, height: controlThickness } : undefined}>
         <div className={sliderRailVariants({ thumb, size })}>
           {/* Fill — the single bar's is a whole box slid along the rail, its straight edge
               the value (see `faderFillX`); otherwise a clip that reaches past a thumb it
@@ -1082,6 +1157,8 @@ export function Slider({
           )}
         </div>
 
+        </div>
+
         {/* Base UI's thumb: the input lives here for focus, keyboard and ARIA. Hidden,
             because the visual thumb below is what's seen. When opted in, the same thumb
             is the tooltip anchor, so the value popup follows Base UI's real thumb position. */}
@@ -1091,16 +1168,20 @@ export function Slider({
           const customLabel = isRange ? thumbLabels?.[index] : undefined;
           const baseThumb = (
             <BaseSlider.Thumb
+              data-slot="slider-thumb-hit"
               key={`slider-thumb-${index}`}
               ref={thumbRefs[index]}
               index={index}
+              getAriaValueText={getAriaValueText}
+              getAriaLabel={getAriaLabel}
               aria-label={customLabel ?? (isRange
                 ? labelledBy ? undefined : [ariaLabel, bound].filter(Boolean).join(" ")
                 : ariaLabel)}
               aria-labelledby={customLabel == null && labelledBy
                 ? isRange ? `${labelledBy} ${boundId}` : labelledBy
                 : undefined}
-              className={cn("opacity-0", sliderThumbVariants({ thumb, size }), isBar && BAR_HIT_WIDTH)}
+              className={cn("opacity-0", sliderThumbVariants({ thumb, size }), isBar && (vertical ? "h-6" : BAR_HIT_WIDTH))}
+              style={vertical && isBar ? { width: dims.thumbHeightPx } : undefined}
               onPointerDown={() => handleThumbPointerDown(index)}
               onPointerEnter={() => setThumbHover(index, true)}
               onPointerLeave={() => setThumbHover(index, false)}
@@ -1114,9 +1195,9 @@ export function Slider({
           return showValueTooltip ? (
             <Tooltip
               key={`slider-tooltip-${index}`}
-              content={normalizedThumbValues[index]}
+              content={<BaseSlider.Value>{(formatted, values) => animateValue ? <NumberAnimation value={values[index]!} locales={props.locale} format={props.format} /> : formatted[index]}</BaseSlider.Value>}
               open={isTooltipOpen(index)}
-              side="top"
+              side={vertical ? "right" : "top"}
               sideOffset={dims.tooltipSideOffset}
               delay={0}
               closeOnClick={false}
@@ -1136,6 +1217,7 @@ export function Slider({
             grab scale off the Motion-positioned element prevents a press from changing its
             pixel position. The focus ring lights up when the hidden input is focus-visible
             (`group-has`), so keyboard focus shows on the thing you can actually see. */}
+        <div className={sliderVisualVariants({ orientation })} style={vertical ? { width: controlWidth, height: controlThickness } : undefined}>
         {thumbIndices.map((index) => (
           <motion.div
             key={`visual-slider-thumb-${index}`}
@@ -1151,7 +1233,7 @@ export function Slider({
             {isBar ? (
               <BarThumb
                 dodged={inline && dodged[index]}
-                stretched={!reduceMotion && draggingIndex === index && !(inline && dodged[index])}
+                stretched={!reduceMotion && (rangeGesture.dragging || draggingIndex === index) && !(inline && dodged[index])}
                 heightPx={dims.thumbHeightPx}
                 widthPx={dims.thumbPx}
                 reduceMotion={reduceMotion ?? false}
@@ -1161,10 +1243,11 @@ export function Slider({
               data-slot="slider-thumb"
               data-dodged={inline && dodged[index] ? "" : undefined}
               className={cn(
-                "absolute inset-0 origin-center bg-foreground shadow-sm",
+                "absolute inset-0 origin-center bg-foreground shadow-sm forced-colors:bg-[Canvas] forced-colors:outline forced-colors:outline-[CanvasText]",
                 // A round knob: the circle the height of the rail, or the dot on its line.
                 sliderThumbVariants({ thumb, size }),
                 "group-has-[[type=range]:focus-visible]:ring-4 group-has-[[type=range]:focus-visible]:ring-ring/40",
+                "forced-colors:group-has-[[type=range]:focus-visible]:outline-offset-2 forced-colors:group-has-[[type=range]:focus-visible]:outline-2 forced-colors:group-has-[[type=range]:focus-visible]:outline-[Highlight]",
               )}
               // A round thumb can't stretch one axis without going oval, so it grabs by
               // growing evenly (the bar stretches; see BarThumb). Keep this on the inner shape
@@ -1173,7 +1256,7 @@ export function Slider({
               animate={
                 reduceMotion
                   ? { scale: 1 }
-                  : { scale: draggingIndex === index ? roundThumbGrabScale : 1 }
+                  : { scale: rangeGesture.dragging || draggingIndex === index ? roundThumbGrabScale : 1 }
               }
               transition={
                 reduceMotion
@@ -1184,6 +1267,7 @@ export function Slider({
             )}
           </motion.div>
         ))}
+        </div>
 
         {isRange && (
           <span className="sr-only">

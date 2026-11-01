@@ -32,7 +32,7 @@ export interface MorphProps<K extends string> {
   /** Which item is showing. Changing it is what triggers the swap. */
   activeKey: K;
   /**
-   * Every state this can be in — not just the current one.
+   * Every state for `widest` sizing. `current` may also receive just the current item.
    *
    * Taking all of them is what lets the box reserve the size of the *widest*, so it
    * never resizes mid-swap. A control that changes width under the cursor moves the
@@ -68,12 +68,13 @@ export function Morph<K extends string>({
   const reduceMotion = useReducedMotion();
   const transition = reduceMotion ? { duration: 0 } : spring.clean;
   const keys = Object.keys(items) as K[];
-  const { box, widths } = useItemWidths(keys, sizing === "current" && keys.length > 1);
+  const current = sizing === "current";
+  const { box, width } = useItemWidths(keys, activeKey, current);
 
-  // A known box needs no sizing copies. Neither does a single state, whose hidden copy
-  // would only duplicate readable text. Keep the same presence lifecycle for both so
-  // fixed-size icon swaps still retain their outgoing state through the animation.
-  if (sizing === "fixed" || keys.length === 1) {
+  // A known box needs no sizing copies. A single state only needs one when fitting its
+  // width, so changing text can be measured without scaling the visible content.
+  // Keep the same presence lifecycle so fixed-size swaps retain their outgoing state.
+  if (sizing === "fixed" || (!current && keys.length === 1)) {
     return (
       <span data-slot="morph" data-sizing={sizing} className={cn("relative inline-grid place-items-center", className)}>
         <AnimatePresence mode="popLayout" initial={false}>
@@ -92,9 +93,6 @@ export function Morph<K extends string>({
       </span>
     );
   }
-
-  const current = sizing === "current";
-  const width = widths[activeKey];
 
   return (
     // Every item lives in the same single grid cell, so the cell is as wide and as tall
@@ -125,6 +123,8 @@ export function Morph<K extends string>({
           key={key}
           data-morph-sizer={current ? key : undefined}
           aria-hidden="true"
+          // Measure intrinsic text even when the caller caps visible children for truncation.
+          style={current ? { width: "max-content", maxWidth: "none" } : undefined}
           className={cn(
             "invisible pointer-events-none whitespace-nowrap",
             current ? "absolute top-0 left-0" : "[grid-area:1/1]",
@@ -167,33 +167,40 @@ export function Morph<K extends string>({
  * while pressed, and a rect read mid-press would size the box 5% too small. Without a
  * ResizeObserver no width is set and the box sizes to the showing item without animating.
  */
-function useItemWidths<K extends string>(keys: K[], enabled: boolean) {
+function useItemWidths<K extends string>(keys: K[], activeKey: K, enabled: boolean) {
   const box = useRef<HTMLSpanElement>(null);
-  const [widths, setWidths] = useState<Partial<Record<K, number>>>({});
+  const [measurement, setMeasurement] = useState<{ widths: Partial<Record<K, number>>; currentWidth?: number }>({ widths: {} });
   const signature = JSON.stringify(keys);
 
   useLayoutEffect(() => {
     const root = box.current;
     if (!enabled || !root || typeof ResizeObserver === "undefined") return;
+    const observedKeys = JSON.parse(signature) as K[];
     const sizers = root.querySelectorAll<HTMLElement>(":scope > [data-morph-sizer]");
 
     const observer = new ResizeObserver((entries) => {
-      setWidths((previous) => {
-        let next = previous;
+      setMeasurement((previous) => {
+        // Keep only the current item set; dynamic one-item labels must not accumulate keys.
+        const widths: Partial<Record<K, number>> = {};
+        for (const key of observedKeys) {
+          if (previous.widths[key] !== undefined) widths[key] = previous.widths[key];
+        }
         for (const entry of entries) {
           const key = (entry.target as HTMLElement).dataset.morphSizer as K;
-          const width =
-            entry.borderBoxSize?.[0]?.inlineSize ?? (entry.target as HTMLElement).offsetWidth;
-          if (previous[key] === width) continue;
-          if (next === previous) next = { ...previous };
-          next[key] = width;
+          widths[key] = entry.borderBoxSize?.[0]?.inlineSize ?? (entry.target as HTMLElement).offsetWidth;
         }
-        return next;
+        const currentWidth = widths[activeKey] ?? previous.currentWidth;
+        if (currentWidth === previous.currentWidth &&
+          Object.keys(widths).length === Object.keys(previous.widths).length &&
+          observedKeys.every(key => widths[key] === previous.widths[key])) return previous;
+        return { widths, currentWidth };
       });
     });
     sizers.forEach((sizer) => observer.observe(sizer));
     return () => observer.disconnect();
-  }, [enabled, signature]);
+  }, [enabled, signature, activeKey]);
 
-  return { box, widths: enabled ? widths : ({} as Partial<Record<K, number>>) };
+  // Hold the last measured width while a newly introduced key is measured. Clearing it
+  // to auto here would jump to the new width before the CSS transition can start.
+  return { box, width: enabled ? measurement.widths[activeKey] ?? measurement.currentWidth : undefined };
 }

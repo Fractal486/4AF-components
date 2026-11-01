@@ -10,7 +10,8 @@ export const componentReferences = {
 
 <ActionButton
   action={() => saveChanges()}
-  labels={{ success: "Saved" }}
+  labels={{ success: "Saved", error: (error) => error instanceof Error ? error.message : "Failed" }}
+  revertAfter={{ success: 2000, error: 4000 }}
 >
   Save changes
 </ActionButton>`,
@@ -22,25 +23,32 @@ export const componentReferences = {
   pressed={following}
   action={(next) => saveFollowing(next)}
   onPressedChange={setFollowing}
-  labels={{ pressed: "Following" }}
+  labels={{ pressed: "Following", error: (error) => error instanceof Error ? error.message : "Try again" }}
 >
   Follow
 </ActionToggle>`,
   },
   alert: {
-    usage: `import { Alert } from "@/components/ui/alert";
+    usage: `import { Alert, AlertTitle, AlertDescription, AlertClose } from "@/components/ui/alert";
 
-<Alert variant="success">Changes saved.</Alert>
-<Alert variant="loading">Checking availability…</Alert>`,
+<Alert variant="success" open={open} onOpenChange={setOpen}>
+  <AlertTitle>Changes saved</AlertTitle>
+  <AlertDescription>Your settings are up to date.</AlertDescription>
+  <AlertClose />
+</Alert>`,
   },
   "alert-dialog": {
-    usage: `import {
+    usage: `import { Trash2 } from "lucide-react";
+import {
   AlertDialog,
   AlertDialogAction,
+  AlertDialogBody,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
@@ -48,11 +56,18 @@ export const componentReferences = {
 <AlertDialog>
   <AlertDialogTrigger>Delete project</AlertDialogTrigger>
   <AlertDialogContent>
-    <AlertDialogTitle>Delete project?</AlertDialogTitle>
-    <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+    <AlertDialogBody>
+      <AlertDialogHeader>
+        <AlertDialogMedia variant="destructive"><Trash2 /></AlertDialogMedia>
+        <AlertDialogTitle>Delete project?</AlertDialogTitle>
+        <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+      </AlertDialogHeader>
+    </AlertDialogBody>
     <AlertDialogFooter>
       <AlertDialogCancel>Cancel</AlertDialogCancel>
-      <AlertDialogAction variant="destructive">Delete</AlertDialogAction>
+      <AlertDialogAction variant="destructive" onClick={() => deleteProject(projectId)}>
+        Delete
+      </AlertDialogAction>
     </AlertDialogFooter>
   </AlertDialogContent>
 </AlertDialog>`,
@@ -60,19 +75,19 @@ export const componentReferences = {
   "ascii-loader": {
     usage: `import { AsciiLoader } from "@/components/ui/ascii-loader";
 
-<AsciiLoader label="Loading" />`,
+<AsciiLoader loading={isLoading} label="Loading" />`,
   },
   "matrix-loader": {
     usage: [
       'import { MatrixLoader } from "@/components/ui/matrix-loader";',
       "",
-      '<MatrixLoader variant="twinkle" label="Loading" />',
+      '<MatrixLoader loading={isLoading} variant="twinkle" label="Loading" />',
     ].join("\n"),
   },
   "classic-loader": {
     usage: `import { ClassicLoader } from "@/components/ui/classic-loader";
 
-<ClassicLoader size="md" speed={1} label="Loading results" />`,
+<ClassicLoader loading={isLoading} size="md" speed={1} label="Loading results" />`,
   },
   breadcrumb: {
     usage: `import {
@@ -88,10 +103,10 @@ export const componentReferences = {
 <Breadcrumb>
   <BreadcrumbList>
     <BreadcrumbItem>
-      <BreadcrumbLink href="/">Home</BreadcrumbLink>
+      <BreadcrumbLink render={<a href="/" />}>Home</BreadcrumbLink>
     </BreadcrumbItem>
     <BreadcrumbSeparator />
-    <BreadcrumbCollapse>
+    <BreadcrumbCollapse open={pathExpanded} onOpenChange={setPathExpanded}>
       <BreadcrumbItem>
         <BreadcrumbLink href="/docs">Docs</BreadcrumbLink>
       </BreadcrumbItem>
@@ -103,20 +118,29 @@ export const componentReferences = {
   </BreadcrumbList>
 </Breadcrumb>`,
   },
+  "number-animation": {
+    usage: `import { NumberAnimation } from "@/components/ui/number-animation";
+
+<NumberAnimation value={total} locales="en-US" format={{ style: "currency", currency: "USD" }} />`,
+  },
   badge: {
     usage: `import { CircleX } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge, BadgeClose, BadgeCount } from "@/components/ui/badge";
 
 <Badge variant="solid" shape="pill">Approved</Badge>
+<Badge render={<button type="button" />}>Follow</Badge>
 <Badge status="loading">Syncing</Badge>
 <Badge status="danger" icons={{ danger: <CircleX /> }}>Failed</Badge>
-<Badge color="oklch(0.7 0.15 250 / 0.15)">Beta</Badge>`,
+<Badge variant="outline" neutralText dot pulse>Live</Badge>
+<Badge variant="filled" status="danger" showIcon={false}><BadgeCount animated value={unread} max={99} /></Badge>
+<Badge open={open} onOpenChange={setOpen}>Design<BadgeClose id="remove-design" /></Badge>`,
   },
   button: {
     usage: `import { Button } from "@/components/ui/button";
 
 <Button variant="primary">Deploy</Button>
-<Button loading>Deploy</Button>`,
+<Button loading>Deploy</Button>
+<Button variant="ghost" aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>Actions</Button>`,
   },
   "button-group": {
     usage: `import { ButtonGroup } from "@/components/ui/button-group";
@@ -128,9 +152,13 @@ import { Button } from "@/components/ui/button";
 </ButtonGroup>`,
   },
   checkbox: {
-    usage: `import { Checkbox } from "@/components/ui/checkbox";
+    usage: `import { Checkbox, CheckboxGroup } from "@/components/ui/checkbox";
 
-<Checkbox label="Accept terms and conditions" />`,
+<CheckboxGroup aria-label="Notifications" allValues={["email", "push"]} defaultValue={["email"]}>
+  <Checkbox parent label="Select all" />
+  <Checkbox value="email" label="Email" />
+  <Checkbox value="push" label="Push notifications" />
+</CheckboxGroup>`,
   },
   collapsible: {
     usage: `import {
@@ -139,9 +167,9 @@ import { Button } from "@/components/ui/button";
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
-<Collapsible>
+<Collapsible className="flex flex-col gap-2">
   <CollapsibleTrigger>Details</CollapsibleTrigger>
-  <CollapsibleContent>More information.</CollapsibleContent>
+  <CollapsibleContent className="pt-0">More information.</CollapsibleContent>
 </Collapsible>`,
   },
   "command-palette": {
@@ -175,7 +203,10 @@ import { Button } from "@/components/ui/button";
   dialog: {
     usage: `import {
   Dialog,
+  DialogBody,
   DialogContent,
+  DialogFooter,
+  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
@@ -184,8 +215,11 @@ import { Button } from "@/components/ui/button";
   <DialogTrigger>Open dialog</DialogTrigger>
   {/* For a fixed height, use autoSize={false} className="h-[32rem]". */}
   <DialogContent>
-    <DialogTitle>Edit project</DialogTitle>
-    Project settings
+    <DialogHeader>
+      <DialogTitle>Edit project</DialogTitle>
+    </DialogHeader>
+    <DialogBody>Project settings</DialogBody>
+    <DialogFooter showCloseButton />
   </DialogContent>
 </Dialog>`,
   },
@@ -199,7 +233,7 @@ import { Button } from "@/components/ui/button";
 
 <DropdownMenu>
   <DropdownMenuTrigger>Actions</DropdownMenuTrigger>
-  <DropdownMenuContent>
+  <DropdownMenuContent portalProps={{ keepMounted: true }} positionerProps={{ collisionPadding: 8 }}>
     <DropdownMenuItem>Edit</DropdownMenuItem>
     <DropdownMenuItem disabled disabledReason="Billing is available on the Pro plan.">
       Billing
@@ -208,10 +242,16 @@ import { Button } from "@/components/ui/button";
 </DropdownMenu>`,
   },
   empty: {
-    usage: `import { Empty, EmptyTitle } from "@/components/ui/empty";
+    usage: `import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 
-<Empty>
-  <EmptyTitle>No projects yet</EmptyTitle>
+<Empty size="sm" animated render={<section aria-labelledby="empty-title" />}>
+  <EmptyHeader>
+    <EmptyTitle id="empty-title" render={<h2 />}>No projects yet</EmptyTitle>
+    <EmptyDescription>
+      <p>Create a project to get started.</p>
+      <p>Read the <a href="/guide">setup guide</a> for help.</p>
+    </EmptyDescription>
+  </EmptyHeader>
 </Empty>`,
   },
   "hover-card": {
@@ -223,13 +263,27 @@ import { Button } from "@/components/ui/button";
 
 <HoverCard>
   <HoverCardTrigger href="/people/alex">Alex Morgan</HoverCardTrigger>
-  <HoverCardContent>Preview content</HoverCardContent>
+  <HoverCardContent autoSize lockSide portalProps={{ keepMounted: true }}>
+    Preview content
+  </HoverCardContent>
 </HoverCard>`,
   },
   input: {
-    usage: `import { Input } from "@/components/ui/input";
+    usage: `import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input, InputCount } from "@/components/ui/input";
 
-<Input aria-label="Search" placeholder="Search…" />`,
+<Input
+  aria-label="Name" value={name} onValueChange={setName}
+  wrapperClassName="max-w-sm"
+  maxLength={40} aria-describedby="name-count"
+  endAction={name ? (
+    <Button variant="ghost" size="icon-xs" aria-label="Clear name" onClick={() => setName("")}>
+      <X />
+    </Button>
+  ) : undefined}
+/>
+<InputCount id="name-count" length={name.length} maxLength={40} />`,
   },
   morph: {
     usage: `import { Check, Copy } from "lucide-react";
@@ -268,7 +322,7 @@ import { Morph } from "@/components/ui/morph";
 
 <Popover>
   <PopoverTrigger>Open</PopoverTrigger>
-  <PopoverContent>
+  <PopoverContent autoSize portalProps={{ keepMounted: true }}>
     <PopoverTitle>Display options</PopoverTitle>
     Popover content
   </PopoverContent>
@@ -277,10 +331,10 @@ import { Morph } from "@/components/ui/morph";
   progress: {
     usage: `import { Progress, ProgressLabel, ProgressValue } from "@/components/ui/progress";
 
-<Progress value={60} className="space-y-2">
+<Progress value={progress} color="var(--ring)" className="space-y-2">
   <div className="flex items-baseline justify-between text-sm">
     <ProgressLabel>Uploading files</ProgressLabel>
-    <ProgressValue className="tabular-nums" />
+    <ProgressValue animated className="tabular-nums" />
   </div>
 </Progress>`,
   },
@@ -288,7 +342,8 @@ import { Morph } from "@/components/ui/morph";
     usage: `import { Radio, RadioGroup } from "@/components/ui/radio";
 
 <RadioGroup aria-label="Density" defaultValue="comfortable">
-  <Radio value="comfortable" label="Comfortable" />
+  <Radio value="comfortable" label="Comfortable" className={({ checked }) => checked ? "shadow-border" : undefined} />
+  <Radio value="compact" label="Compact" render={<span />} />
 </RadioGroup>`,
   },
   select: {
@@ -296,6 +351,8 @@ import { Morph } from "@/components/ui/morph";
   Select,
   SelectContent,
   SelectItem,
+  SelectGroup,
+  SelectGroupLabel,
   SelectSeparator,
   SelectSub,
   SelectSubContent,
@@ -309,7 +366,10 @@ import { Morph } from "@/components/ui/morph";
     <SelectValue />
   </SelectTrigger>
   <SelectContent clearable>
-    <SelectItem value="apple">Apple</SelectItem>
+    <SelectGroup>
+      <SelectGroupLabel>Popular</SelectGroupLabel>
+      <SelectItem value="apple">Apple</SelectItem>
+    </SelectGroup>
     <SelectSeparator />
     <SelectSub>
       <SelectSubTrigger>More fruit</SelectSubTrigger>
@@ -329,7 +389,8 @@ import { Morph } from "@/components/ui/morph";
 } from "@/components/ui/select-aligned";
 
 <AlignedSelect size="xs" value={city} onValueChange={setCity}>
-  <AlignedSelectTrigger variant="ghost" label="City" placeholder="Pick a city" />
+  <AlignedSelectTrigger variant="ghost" label="City" placeholder="Pick a city"
+    className={({ valid }) => valid === false ? "text-destructive" : undefined} />
   <AlignedSelectContent>
     <AlignedSelectItem value="Lisbon">Lisbon</AlignedSelectItem>
     <AlignedSelectItem value="Oslo">Oslo</AlignedSelectItem>
@@ -337,12 +398,19 @@ import { Morph } from "@/components/ui/morph";
 </AlignedSelect>`,
   },
   "select-search": {
-    usage: `import { SearchSelect, SearchSelectInput, SearchSelectContent, SearchSelectItem } from "@/components/ui/select-search";
+    usage: `import { SearchSelect, SearchSelectInput, SearchSelectContent, SearchSelectItem, SearchSelectGroup, SearchSelectGroupLabel, SearchSelectCollection } from "@/components/ui/select-search";
 
-<SearchSelect items={items} defaultValue={items[0]}>
-  <SearchSelectInput aria-label="Choose an option" placeholder="Search…" />
-  <SearchSelectContent>
-    {(item) => <SearchSelectItem key={item.value} value={item}>{item.label}</SearchSelectItem>}
+<SearchSelect items={groups}>
+  <SearchSelectInput aria-label="Choose an option" placeholder="Search available options…" />
+  <SearchSelectContent align="start" alignOffset={4}>
+    {(group) => (
+      <SearchSelectGroup key={group.label} items={group.items}>
+        <SearchSelectGroupLabel>{group.label}</SearchSelectGroupLabel>
+        <SearchSelectCollection>
+          {(item) => <SearchSelectItem key={item.value} value={item}>{item.label}</SearchSelectItem>}
+        </SearchSelectCollection>
+      </SearchSelectGroup>
+    )}
   </SearchSelectContent>
 </SearchSelect>`,
   },
@@ -360,28 +428,34 @@ import { Morph } from "@/components/ui/morph";
   "scroll-area": {
     usage: `import { ScrollArea } from "@/components/ui/scroll-area";
 
-<ScrollArea className="h-72 rounded-xl shadow-border">
+<ScrollArea className={({ scrolling }) =>
+  "h-72 rounded-xl shadow-border" + (scrolling ? " bg-surface" : "")
+}>
   <div className="p-4">{/* long content */}</div>
 </ScrollArea>`,
   },
   separator: {
     usage: `import { Separator } from "@/components/ui/separator";
 
-<Separator />`,
+<Separator label="Or" align="center" />`,
   },
   sheet: {
     usage: `import {
   Sheet,
+  SheetBody,
   SheetContent,
+  SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 
 <Sheet>
   <SheetTrigger>Open sheet</SheetTrigger>
-  <SheetContent>
-    <SheetTitle>Edit project</SheetTitle>
-    Project settings
+  <SheetContent side="bottom">
+    <SheetHeader>
+      <SheetTitle>Edit project</SheetTitle>
+    </SheetHeader>
+    <SheetBody>Project settings</SheetBody>
   </SheetContent>
 </Sheet>`,
   },
@@ -390,6 +464,10 @@ import { Morph } from "@/components/ui/morph";
   Sidebar,
   SidebarContent,
   SidebarMenu,
+  SidebarMenuAction,
+  SidebarMenuBadge,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarMenuCollapsible,
   SidebarMenuCollapsibleContent,
   SidebarMenuCollapsibleTrigger,
@@ -397,10 +475,15 @@ import { Morph } from "@/components/ui/morph";
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
-<SidebarProvider>
+<SidebarProvider keyboardShortcut="mod+b">
   <Sidebar>
     <SidebarContent>
       <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton asChild><a href="/inbox">Inbox</a></SidebarMenuButton>
+          <SidebarMenuBadge count={12} label="unread messages" />
+          <SidebarMenuAction replacesBadge aria-label="More inbox actions">…</SidebarMenuAction>
+        </SidebarMenuItem>
         <SidebarMenuCollapsible defaultOpen>
           <SidebarMenuCollapsibleTrigger>Projects</SidebarMenuCollapsibleTrigger>
           <SidebarMenuCollapsibleContent>Navigation</SidebarMenuCollapsibleContent>
@@ -428,14 +511,16 @@ import { SidebarLayout } from "@/components/ui/sidebar-layout";
   skeleton: {
     usage: `import { Skeleton } from "@/components/ui/skeleton";
 
-<Skeleton className="h-4 w-32" />`,
+<Skeleton loading={isLoading}>
+  <span>Account details</span>
+</Skeleton>`,
   },
   slider: {
     usage: `import { Slider } from "@/components/ui/slider";
 
-<Slider aria-label="Volume" defaultValue={60} showValueTooltip />
+<Slider aria-label="Volume" defaultValue={60} animateValue showValueTooltip />
 
-<Slider label="Price" range defaultValue={[20, 80]} thumbLabels={["Lowest price", "Highest price"]} />
+<Slider label="Price" range draggableRange defaultValue={[20, 80]} showValueTooltip format={{ style: "currency", currency: "USD" }} thumbLabels={["Lowest price", "Highest price"]} />
 
 <Slider label="Amount" min={0.5} max={10.5} step={1} defaultValue={3.5} />
 
@@ -446,8 +531,13 @@ import { SidebarLayout } from "@/components/ui/sidebar-layout";
 
 <Switch
   aria-label="Enable notifications"
+  icons
   onCheckedChange={(next, details) => {
-    if (next && !canEnableNotifications) details.cancel();
+    if (next && !canEnableNotifications) {
+      details.cancel();
+      return;
+    }
+    return saveNotifications(next);
   }}
 />`,
   },
@@ -462,19 +552,20 @@ import { SidebarLayout } from "@/components/ui/sidebar-layout";
   TableRow,
 } from "@/components/ui/table";
 
-<Table>
+// Pinned columns automatically fade content scrolling behind their inner edges.
+<Table wrap>
   <TableCaption>People</TableCaption>
   <TableHeader>
     <TableRow>
-      <TableHead>Name</TableHead>
-      <TableHead>Role</TableHead>
+      <TableHead pinned="start">Name</TableHead>
+      <TableHead align="center">Role</TableHead>
     </TableRow>
   </TableHeader>
   <TableBody>
     {people.map((person) => (
       <TableRow key={person.id}>
-        <TableCell>{person.name}</TableCell>
-        <TableCell>{person.role}</TableCell>
+        <TableHead scope="row" pinned="start">{person.name}</TableHead>
+        <TableCell align="center">{person.role}</TableCell>
       </TableRow>
     ))}
   </TableBody>
@@ -482,52 +573,37 @@ import { SidebarLayout } from "@/components/ui/sidebar-layout";
   },
   "data-table": {
     usage: `import {
-  DataTable,
-  DataTableHead,
-  DataTableRow,
-  DataTableRowActions,
-  TableBody,
-  TableCell,
-  TableHeader,
+  DataTable, DataTableContent, DataTableToolbar, DataTableSearch, DataTableFilter,
+  DataTableViewOptions, DataTablePagination, createDataTableColumns, useDataTable,
 } from "@/components/ui/data-table";
-import { Button } from "@/components/ui/button";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
-<DataTable
-  selectable
-  selectionBar
-  actionColumn
-  rows={people.map((person) => person.id)}
-  value={selected}
-  onValueChange={setSelected}
-  sort={sort}
-  onSortChange={setSort}
-  selectionActions={<Button size="xs" variant="ghost">Export</Button>}
->
-  <TableHeader>
-    <DataTableRow>
-      <DataTableHead sortKey="name">Name</DataTableHead>
-      <DataTableHead>Role</DataTableHead>
-    </DataTableRow>
-  </TableHeader>
-  <TableBody>
-    {sortPeople(people, sort).map((person) => (
-      <DataTableRow
-        key={person.id}
-        value={person.id}
-        selectLabel={\`Select \${person.name}\`}
-        actions={
-          <DataTableRowActions label={\`Actions for \${person.name}\`}>
-            <DropdownMenuItem>Edit</DropdownMenuItem>
-          </DataTableRowActions>
-        }
-      >
-        <TableCell>{person.name}</TableCell>
-        <TableCell>{person.role}</TableCell>
-      </DataTableRow>
-    ))}
-  </TableBody>
-</DataTable>`,
+type Person = { id: string; name: string; role: string };
+const helper = createDataTableColumns<Person>();
+const columns = helper.columns([
+  // Leaf-column pinning includes the selection gutter below grouped headings.
+  helper.group({ id: "person", header: "Person", columns: helper.columns([
+    helper.accessor("name", { header: "Name", enableHiding: false, meta: { rowHeader: true, pinned: "start" } }),
+    helper.accessor("role", { header: "Role" }),
+  ]) }),
+]);
+
+function PeopleTable({ people }: { people: Person[] }) {
+  const table = useDataTable({
+    data: people, columns, getRowId: (person) => person.id,
+    enableMultiRowSelection: true, // Set false for single selection, including range gestures.
+  });
+  return (
+    <DataTable table={table} selectable wrap>
+      <DataTableToolbar>
+        <DataTableSearch placeholder="Search people…" />
+        <DataTableFilter column="role" />
+        <DataTableViewOptions className="ms-auto" />
+      </DataTableToolbar>
+      <DataTableContent<Person> getRowLabel={(person) => person.name} />
+      <DataTablePagination />
+    </DataTable>
+  );
+}`,
   },
   "table-of-contents": {
     usage: `import { TableOfContents } from "@/components/ui/table-of-contents";
@@ -552,32 +628,23 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
   tabs: {
     usage: `import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
 
-<Tabs defaultValue="account">
-  <TabsList>
-    <TabsTab value="account">Account</TabsTab>
-  </TabsList>
-  <TabsPanel value="account">Account settings</TabsPanel>
-</Tabs>
-
-<Tabs variant="pill" size="sm" defaultValue="account">
-  <TabsList maxWidth={280}>
-    <TabsTab value="account">Account</TabsTab>
+<Tabs orientation="vertical" defaultValue="account">
+  <TabsList aria-label="Settings" className="max-h-48">
+    <TabsTab value="account" className={({ active }) => active ? "font-semibold" : undefined}>
+      Account
+    </TabsTab>
     <TabsTab value="notifications">Notifications</TabsTab>
-    <TabsTab value="billing">Billing</TabsTab>
-    <TabsTab value="team">Team members</TabsTab>
-    <TabsTab value="security">Security</TabsTab>
   </TabsList>
-  <TabsPanel value="account">Account settings</TabsPanel>
-  <TabsPanel value="notifications">Notification settings</TabsPanel>
-  <TabsPanel value="billing">Billing settings</TabsPanel>
-  <TabsPanel value="team">Team members</TabsPanel>
-  <TabsPanel value="security">Security settings</TabsPanel>
+  <TabsPanel value="account" render={<section />}>Account settings</TabsPanel>
+  <TabsPanel value="notifications" render={<section />}>Notification settings</TabsPanel>
 </Tabs>`,
   },
   "text-shimmer": {
     usage: `import { TextShimmer } from "@/components/ui/text-shimmer";
 
-<TextShimmer duration={2.5}>Syncing changes…</TextShimmer>`,
+<TextShimmer as="p" role="status" active={isSyncing} once={false} duration={2.5}>
+  {isSyncing ? "Syncing changes…" : "Changes synced"}
+</TextShimmer>`,
   },
   "scramble-text": {
     usage: `import { ScrambleText } from "@/components/ui/scramble-text";
@@ -594,19 +661,20 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
   textarea: {
     usage: `import { Textarea } from "@/components/ui/textarea";
 
-<Textarea aria-label="Notes" placeholder="Write a note…" />
+// Auto-grow uses layout width, including inside scaled containers.
+<Textarea aria-label="Notes" placeholder="Write a note…" minRows={3} maxRows={10} />
 <Textarea variant="plain" aria-label="Draft" placeholder="Write inside your own editor surface…" />`,
   },
   toggle: {
     usage: `import { Toggle } from "@/components/ui/toggle";
 
-<Toggle aria-label="Pin item">Pin</Toggle>`,
+<Toggle aria-label="Pin item" fillBackground>Pin</Toggle>`,
   },
   tooltip: {
     usage: `import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
 
 <TooltipProvider>
-  <Tooltip content="Save changes">
+  <Tooltip content="Save changes" trackCursorAxis="x">
     <button>Save</button>
   </Tooltip>
 </TooltipProvider>`,

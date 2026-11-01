@@ -9,13 +9,14 @@ export const radioEntry = defineEntry({
   controls: {
     size: select(SIZES, "md", "Size"),
     disabled: bool(false),
+    invalid: bool(false),
   },
-  render({ size, disabled }) {
+  render({ size, disabled, invalid }) {
     return (
       <RadioGroup size={size} defaultValue="standard" disabled={disabled} aria-label="Plan">
-        <Radio value="standard" label="Standard" />
-        <Radio value="pro" label="Pro" />
-        <Radio value="enterprise" label="Enterprise" />
+        <Radio value="standard" label="Standard" aria-invalid={invalid || undefined} />
+        <Radio value="pro" label="Pro" aria-invalid={invalid || undefined} />
+        <Radio value="enterprise" label="Enterprise" aria-invalid={invalid || undefined} />
       </RadioGroup>
     );
   },

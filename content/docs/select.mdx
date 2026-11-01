@@ -8,11 +8,40 @@ description: A composable Base UI select with rich items, sizing, and positionin
 ## API
 
 **Main exports:** `Select`, `SelectTrigger`, `SelectSortTrigger`, `SelectValue`, `SelectContent`,
-`SelectItem`, `SelectSeparator`, `SelectSub`, `SelectSubTrigger`, `SelectSubContent`
+`SelectItem`, `SelectGroup`, `SelectGroupLabel`, `SelectSeparator`, `SelectSub`, `SelectSubTrigger`, `SelectSubContent`
 
 An accessible Base UI single or multi-select with icons declarable on `items` so a preselected
 value resolves before mount, optional in-panel search, a clear footer, content sizing, and the
 compact sort/filter trigger.
+
+### Sections
+
+Wrap related items in `SelectGroup` and add `SelectGroupLabel` for their heading. Base UI
+connects the heading to the group's options for assistive technology. Panel search hides a
+section when all of its options are filtered out; its heading does not remain by itself.
+Sections work with single and multiple selection and do not change the selected value.
+
+### State-based classes and validation
+
+The trigger, sort trigger, value, content, items, groups, group labels, separator, and submenu
+parts accept a `className` string or `(state) => string | undefined`. Callback results merge
+with the existing styles. State comes from the corresponding Base UI primitive: triggers
+include open and Field state, values include the current value and placeholder state, items
+include selected/highlighted/disabled state, and popups include open/side/alignment state.
+
+`SelectTrigger` and `SelectSortTrigger` style both `aria-invalid="true"` and Base UI Field's
+`data-invalid`. Error styling remains visible while hovered, focused, or open. Default
+triggers show an error border and ring; ghost and plain triggers show the ring.
+
+### Popup placement
+
+`SelectContent` accepts `alignOffset` (default `0`) alongside `side`, `align`, and `sideOffset`.
+It shifts the popup along the alignment axis. `SelectSubContent` retains its existing
+`alignOffset` default of `-4`.
+
+Both content parts accept `portalProps`, forwarded to Base UI's Portal. Use its `container`
+to mount the panel inside a particular element or ref, or `keepMounted` to retain the portal.
+Nested panels take their own `portalProps`; they do not inherit the parent panel's container.
 
 ### Trigger variants
 
@@ -39,8 +68,10 @@ on the selection, so the chip names a filter only once one is set:
 For example, `label="Fruit"` displays `Fruit: Banana`.
 
 When `SelectContent` has no explicit `width`, it follows the trigger: default and ghost
-`SelectTrigger`s keep a trigger-width panel, while plain triggers and every `SelectSortTrigger`
-use content width: the longest option label plus the reserved checkmark slot, at least 200px.
+`SelectTrigger`s use trigger width, while plain triggers and every `SelectSortTrigger` use
+content width. Both size the panel to the longest option label plus the reserved checkmark
+slot, so options are not truncated while the viewport has room. Trigger width is at least
+the trigger's width; content width is at least 200px.
 Set `width="trigger"` or `width="content"` on `SelectContent` to override that default.
 Nested `SelectSubContent` panels always use content width with a 200px minimum; adjust their
 `className` to change it.

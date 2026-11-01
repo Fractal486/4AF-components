@@ -11,9 +11,10 @@ export const toggleEntry = defineEntry({
     size: select(ICON_SIZES, "icon"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     fillIcon: bool(true, "Fill the icon when pressed"),
+    fillBackground: bool(false, "Fill the background when pressed"),
     defaultPressed: bool(false, "Start pressed"),
   },
-  render({ variant, size, shape, fillIcon, defaultPressed }) {
+  render({ variant, size, shape, fillIcon, fillBackground, defaultPressed }) {
     return (
       <div className="flex items-center gap-3">
         {[
@@ -30,6 +31,7 @@ export const toggleEntry = defineEntry({
             size={size}
             shape={shape}
             fillIcon={fillIcon}
+            fillBackground={fillBackground}
             defaultPressed={defaultPressed}
             aria-label={label}
           >

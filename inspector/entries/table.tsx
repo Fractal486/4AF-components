@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/registry/ui/table/table";
-import { bool, defineEntry, select } from "../schema";
+import { bool, defineEntry, multi, select } from "../schema";
 
 const SIZES = ["sm", "md"] as const;
 
@@ -29,6 +29,7 @@ const RELEASES = [
 const NUMBER = new Intl.NumberFormat("en-GB");
 
 const TOTAL = RELEASES.reduce((sum, release) => sum + release.downloads, 0);
+const CHANNELS = new Set(RELEASES.map((release) => release.channel)).size;
 
 
 export const tableEntry = defineEntry({
@@ -36,24 +37,28 @@ export const tableEntry = defineEntry({
   name: "Table",
   controls: {
     size: select(SIZES, "sm"),
-    outline: bool(false, "Outline"),
-    verticalLines: bool(false, "Vertical lines"),
-    horizontalLines: bool(true, "Horizontal lines"),
+    wrap: bool(false, "Wrap text"),
+    pinned: bool(false, "Pinned columns"),
+    alignment: select(["start", "center", "end"], "end", "Number alignment"),
+    lines: multi(["horizontal", "vertical", "outline"], ["horizontal"], "Lines"),
     scroll: bool(true, "Bounded height"),
     loading: bool(false, "Loading"),
+    empty: bool(false, "Empty"),
     footer: bool(false, "Footer"),
     caption: bool(true, "Caption"),
   },
-  render({ size, outline, verticalLines, horizontalLines, scroll, loading, footer, caption }) {
+  render({ size, wrap, pinned, alignment, lines, scroll, loading, empty, footer, caption }) {
     return (
       // `self-start` keeps the table at the top of the preview box rather than floating in
       // the middle of it — a table is read from its header down, not from its centre out.
       <div className="w-full max-w-xl self-start">
         <Table
           size={size}
-          outline={outline}
-          verticalLines={verticalLines}
-          horizontalLines={horizontalLines}
+          wrap={wrap}
+          className={pinned ? "min-w-3xl" : undefined}
+          outline={lines.includes("outline")}
+          verticalLines={lines.includes("vertical")}
+          horizontalLines={lines.includes("horizontal")}
           loading={loading}
           // The header pins to the scroll container, so it needs one with a height to pin to.
           wrapperClassName={scroll ? "max-h-64" : undefined}
@@ -61,18 +66,19 @@ export const tableEntry = defineEntry({
           {caption && <TableCaption>Release history</TableCaption>}
           <TableHeader>
             <TableRow>
-              <TableHead>Version</TableHead>
+              <TableHead pinned={pinned ? "start" : undefined}>Version</TableHead>
               <TableHead>Channel</TableHead>
               {/* Numbers right-align so their digits stack; `tabular-nums` stops the column
                   twitching as the figures change width. */}
-              <TableHead className="text-right">Downloads</TableHead>
-              <TableHead className="text-right">Published</TableHead>
+              <TableHead>Notes</TableHead>
+              <TableHead align={alignment}>Downloads</TableHead>
+              <TableHead align="end" pinned={pinned ? "end" : undefined}>Published</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {RELEASES.map((release) => (
+            {(empty ? [] : RELEASES).map((release) => (
               <TableRow key={release.id}>
-                <TableCell className="font-medium">{release.version}</TableCell>
+                <TableHead scope="row" pinned={pinned ? "start" : undefined}>{release.version}</TableHead>
                 <TableCell>
                   <Badge
                     size="sm"
@@ -82,10 +88,11 @@ export const tableEntry = defineEntry({
                     {release.channel}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right tabular-nums">
+                <TableCell>{release.channel === "stable" ? "Maintenance fixes and performance improvements" : "Early access for compatibility testing"}</TableCell>
+                <TableCell align={alignment}>
                   {NUMBER.format(release.downloads)}
                 </TableCell>
-                <TableCell className="text-right text-muted-foreground">
+                <TableCell align="end" pinned={pinned ? "end" : undefined} className="text-muted-foreground">
                   {release.published}
                 </TableCell>
               </TableRow>
@@ -94,9 +101,13 @@ export const tableEntry = defineEntry({
           {footer && (
             <TableFooter>
               <TableRow>
-                <TableCell colSpan={2}>All releases</TableCell>
-                <TableCell className="text-right tabular-nums">{NUMBER.format(TOTAL)}</TableCell>
-                <TableCell />
+                <TableHead scope="row" pinned={pinned ? "start" : undefined}>{empty ? 0 : RELEASES.length} releases</TableHead>
+                <TableCell>{empty ? 0 : CHANNELS} channels</TableCell>
+                <TableCell>Total downloads</TableCell>
+                <TableCell align={alignment}>{NUMBER.format(empty ? 0 : TOTAL)}</TableCell>
+                <TableCell align="end" pinned={pinned ? "end" : undefined}>
+                  {empty ? "—" : `Latest: ${RELEASES[0].published}`}
+                </TableCell>
               </TableRow>
             </TableFooter>
           )}

@@ -33,6 +33,47 @@ Below 768px, collapsible sidebars and split layouts render as a drawer. A non-sp
 `collapsible="none"` stays inline at every viewport size. For drawer layouts, `className` styles
 the desktop sidebar; style the drawer with `mobileClassName`.
 
+## Keyboard shortcut
+
+`SidebarProvider` accepts `keyboardShortcut`, defaulting to `"mod+b"`. Use `null` to
+turn it off, or another combination such as `"mod+shift+s"`. Supported modifiers are
+`mod`, `ctrl`, `meta`, `alt`, and `shift`; `mod` means Command on Apple devices and Ctrl
+elsewhere. Modifiers must match exactly. The trigger's hint follows this setting.
+
+When several sidebars share a shortcut, the one containing focus responds, including its
+mobile sheet. Outside all of them, the first matching sidebar in page order responds.
+Repeated, already-handled, and composing key events are ignored, as are shortcuts typed in
+inputs, textareas, selects, or rich text editors.
+
+## Mobile navigation
+
+Following an ordinary link inside the mobile sheet closes it, including links handled by
+client-side routers. New-tab links, downloads, modified clicks, and `aria-disabled` links
+keep it open. Buttons and desktop navigation do not close the sidebar.
+
+## Menu badges and actions
+
+`SidebarMenuBadge` keeps accepting custom children. Its count and dot props add notification
+indicators that remain visible as a small dot when the sidebar collapses to icons.
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `count` | `number` | | Integer count. Zero, negative, and non-finite values hide the badge. |
+| `max` | `number` | `99` | Larger counts show the cap followed by `+`. The full count stays accessible. |
+| `animated` | `boolean` | `false` | Opts into the shared Number Animation through BadgeCount. |
+| `locales` | `Intl.LocalesArgument` | `"en-US"` | Number formatting locale. |
+| `dot` | `boolean` | `false` | Show a status dot in expanded mode too. |
+| `tone` | `"default" \| "success" \| "warning" \| "destructive"` | `"default"` | Count or dot color. Custom classes can override it. |
+| `label` | `string` | | Accessible description, such as “unread messages”; names a standalone dot. |
+
+`SidebarMenuAction replacesBadge` shares a sibling badge's position on devices with a fine
+pointer. The badge gives way to the action on hover, keyboard focus, or while its menu is open.
+Touch devices keep both visible in separate slots. In icon mode the action hides and the
+notification dot remains. `showOnHover` is implicit when `replacesBadge` is enabled.
+
+Sidebar reuses `BadgeCount` for formatting and optional number animation; it installs Badge
+and its Number Animation dependency. Existing text badges and actions keep their behavior.
+
 ## Menu control geometry
 
 `SidebarMenuButton` supports `size="sm"`, `size="default"`, and `size="lg"`. The compact

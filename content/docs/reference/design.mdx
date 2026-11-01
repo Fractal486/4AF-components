@@ -114,7 +114,8 @@ change and prefer compositor-friendly motion. Animating layout properties is dis
 because it can trigger layout and paint on every frame, but is appropriate when smoothly
 changing the layout is part of the intended interaction. Document the reason, as with
 Collapsible's height, Dialog's measured frame height, Calendar's measured month height as week rows change, Sidebar's shell
-dimensions and offcanvas position, and Morph's opt-in `sizing="current"` width.
+dimensions and offcanvas position, Morph's opt-in `sizing="current"` width, and Breadcrumb's crumb widths
+and inline margins, which let neighboring crumbs reflow while hidden segments expand or collapse.
 
 Four shared CSS durations, fast (150ms), base (200ms), slow (300ms), and slower (450ms), cover
 short feedback through longer transitions. Some chevrons use separate 400ms timing. JavaScript

@@ -1,12 +1,19 @@
 "use client";
 
 import { TriangleAlert } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useImperativeHandle, useState, type ReactNode, type Ref } from "react";
 import { cn } from "@/registry/lib/cn";
-import { useAction } from "@/registry/lib/use-action";
+import { useAction, type ActionStatus } from "@/registry/lib/use-action";
 import { LoadingIndicator } from "@/registry/lib/loader";
 import { Morph } from "@/registry/ui/morph/morph";
 import { Toggle, type ToggleProps } from "@/registry/ui/toggle/toggle";
+
+export type { ActionStatus };
+
+export interface ActionToggleActions {
+  /** Clear feedback and ignore outstanding results without changing pressed state. */
+  reset: () => void;
+}
 
 export interface ActionToggleProps
   extends Omit<ToggleProps, "pressed" | "defaultPressed" | "onPressedChange" | "children"> {
@@ -14,19 +21,26 @@ export interface ActionToggleProps
    * The work that has to succeed before the new state is real. It's handed the state
    * being moved *to*, so one function can serve both directions.
    */
-  action: (pressed: boolean) => void | Promise<unknown>;
+  action?: (pressed: boolean) => void | Promise<unknown>;
+  /** External feedback state, independent of the persistent pressed state. */
+  status?: ActionStatus;
+  onStatusChange?: (status: ActionStatus) => void;
+  /** Rejection reason for an externally controlled error state. */
+  error?: unknown;
+  /** Imperative feedback controls; the ordinary ref still points to the button. */
+  actionsRef?: Ref<ActionToggleActions>;
   /** Controlled state. Provide `onPressedChange` with it. */
   pressed?: boolean;
   /** Uncontrolled starting state. @default false */
   defaultPressed?: boolean;
-  /** Called after the action succeeds and the state changes. */
+  /** Reports success, or requests a change immediately when action is externally owned. */
   onPressedChange?: (pressed: boolean) => void;
   /** The resting label, unpressed. */
   children?: ReactNode;
   /** The resting glyph, unpressed. */
   icon?: ReactNode;
   /** Labels for the other states. Each falls back to the label it's replacing. */
-  labels?: { pressed?: ReactNode; pending?: ReactNode; error?: ReactNode };
+  labels?: { pressed?: ReactNode; pending?: ReactNode; error?: ReactNode | ((error: unknown) => ReactNode) };
   /** Glyphs for the other states. Pending and error default to the loader and the
       warning triangle. */
   icons?: { pressed?: ReactNode; pending?: ReactNode; error?: ReactNode };
@@ -66,6 +80,10 @@ export interface ActionToggleProps
  */
 export function ActionToggle({
   action,
+  status: controlledStatus,
+  onStatusChange,
+  error: controlledError,
+  actionsRef,
   pressed,
   defaultPressed = false,
   onPressedChange,
@@ -80,6 +98,10 @@ export function ActionToggle({
   announce,
   disabled,
   onClick,
+  onPointerEnter,
+  onPointerLeave,
+  onFocus,
+  onBlur,
   pressScale,
   // A labelled toggle is the case this exists for, so it defaults to a control with room
   // for a label rather than to Toggle's icon-sized ghost. Pass `size="icon"` for a star.
@@ -93,8 +115,10 @@ export function ActionToggle({
   const current = isControlled ? pressed : uncontrolled;
   const target = !current;
 
-  const { status, run } = useAction({
-    action: () => action(target),
+  const { status, error, run, reset, buttonProps } = useAction({
+    action: action ? () => action(target) : undefined,
+    status: controlledStatus,
+    onStatusChange,
     revertAfter,
     pendingDelay,
     // The state moves here and nowhere else. A controlled parent is told the same way it
@@ -105,6 +129,12 @@ export function ActionToggle({
     },
     onError,
   });
+
+  useImperativeHandle(actionsRef, () => ({ reset }), [reset]);
+
+  const errorLabel = typeof labels?.error === "function"
+    ? status === "error" ? labels.error(controlledError !== undefined ? controlledError : error) : undefined
+    : labels?.error;
 
   // `success` deliberately shows the resting content: the control having *become*
   // Following is the confirmation, and a tick on top of that would be a second one.
@@ -123,87 +153,101 @@ export function ActionToggle({
   const labelKey =
     status === "pending" && labels?.pending != null
       ? "pending"
-      : status === "error" && labels?.error != null
+      : status === "error" && errorLabel != null
         ? "error"
         : current && labels?.pressed != null
           ? "on"
           : "off";
-  const labelled = Boolean(children) || Boolean(labels?.pressed);
+  const labelled = Boolean(children) || Boolean(labels?.pressed) || Boolean(labels?.pending) || Boolean(errorLabel);
   // A fitted control drops the glyph's gap while no glyph is showing, on the same clock as
   // the Morph's width, so a label-only resting state sits centred.
   const glyphShown = glyphKey === "off" ? icon != null : true;
 
   return (
-    <Toggle
-      pressed={current}
-      onPressedChange={run}
-      disabled={disabled}
-      // Base UI Toggle has no focusableWhenDisabled prop. Cancel its activation while
-      // pending instead of making the focused button natively disabled.
-      onClick={(event) => {
-        if (status === "pending") {
-          event.preventDefault();
-          event.preventBaseUIHandler();
-          return;
-        }
-        onClick?.(event);
-      }}
-      pressScale={status === "pending" ? false : pressScale}
-      aria-disabled={status === "pending" || undefined}
-      aria-busy={status === "pending" || undefined}
-      data-status={status}
-      variant={variant}
-      size={size}
-      data-sizing={sizing}
-      {...props}
-    >
-      {/* One box, so the button's own gap applies between glyph and label rather than a
-          second copy of it — and so the padding logic still sees a single child.
-
-          Glyph and label morph separately: the loader is a text glyph, about half the
-          advance width of a 16px icon, so morphing them together centres the narrower
-          state and drags the label sideways on every status change. Each Morph is handed
-          every state at once, so the control reserves the width of the widest and holds
-          still — "Follow" and "Following" are different widths, and a button that resizes
-          as it lands moves out from under the cursor that's still resting on it.
-          `sizing="current"` trades that away on purpose. */}
-      <span
-        className={cn(
-          "inline-flex items-center",
-          sizing === "current" && "transition-[gap] duration-(--duration-base) ease-out",
-          sizing === "current" && !glyphShown ? "gap-0" : "gap-[inherit]",
-        )}
+    <>
+      <Toggle
+        pressed={current}
+        onPressedChange={(next) => {
+          if (status === "pending") return;
+          if (action) void run();
+          else {
+            if (!isControlled) setUncontrolled(next);
+            onPressedChange?.(next);
+          }
+        }}
+        disabled={disabled}
+        // Base UI Toggle has no focusableWhenDisabled prop. Cancel its activation while
+        // pending instead of making the focused button natively disabled.
+        onClick={(event) => {
+          if (status === "pending") {
+            event.preventDefault();
+            event.preventBaseUIHandler();
+            return;
+          }
+          onClick?.(event);
+        }}
+        onPointerEnter={(event) => { onPointerEnter?.(event); buttonProps.onPointerEnter(event); }}
+        onPointerLeave={(event) => { onPointerLeave?.(event); buttonProps.onPointerLeave(); }}
+        onFocus={(event) => { onFocus?.(event); buttonProps.onFocus(); }}
+        onBlur={(event) => { onBlur?.(event); buttonProps.onBlur(); }}
+        pressScale={status === "pending" ? false : pressScale}
+        aria-disabled={status === "pending" || undefined}
+        aria-busy={status === "pending" || undefined}
+        data-status={status}
+        variant={variant}
+        size={size}
+        data-sizing={sizing}
+        {...props}
       >
-        <Morph
-          activeKey={glyphKey}
-          sizing={sizing}
-          items={{
-            off: icon,
-            on: icons?.pressed ?? icon,
-            pending: icons?.pending ?? <LoadingIndicator loader={loader} />,
-            error: icons?.error ?? <TriangleAlert />,
-          }}
-        />
-        {labelled && (
+        {/* One box, so the button's own gap applies between glyph and label rather than a
+            second copy of it — and so the padding logic still sees a single child.
+
+            Glyph and label morph separately: the loader is a text glyph, about half the
+            advance width of a 16px icon, so morphing them together centres the narrower
+            state and drags the label sideways on every status change. Each Morph is handed
+            every state at once, so the control reserves the width of the widest and holds
+            still — "Follow" and "Following" are different widths, and a button that resizes
+            as it lands moves out from under the cursor that's still resting on it.
+            `sizing="current"` trades that away on purpose. */}
+        <span
+          className={cn(
+            "inline-flex items-center",
+            sizing === "current" && "transition-[gap] duration-(--duration-base) ease-out",
+            sizing === "current" && !glyphShown ? "gap-0" : "gap-[inherit]",
+          )}
+        >
           <Morph
-            activeKey={labelKey}
+            activeKey={glyphKey}
             sizing={sizing}
             items={{
-              off: children,
-              on: labels?.pressed,
-              pending: labels?.pending,
-              error: labels?.error,
+              off: icon,
+              on: icons?.pressed ?? icon,
+              pending: icons?.pending ?? <LoadingIndicator loader={loader} />,
+              error: icons?.error ?? <TriangleAlert />,
             }}
           />
-        )}
-      </span>
+          {labelled && (
+            <Morph
+              activeKey={labelKey}
+              sizing={sizing}
+              items={{
+                off: children,
+                on: labels?.pressed,
+                pending: labels?.pending,
+                error: errorLabel,
+              }}
+            />
+          )}
+        </span>
+
+      </Toggle>
 
       {/* `aria-pressed` announces the landing on its own. What it can't say is that the
           control is working, or that the press didn't take. */}
       <span aria-live="polite" className="sr-only">
         {status === "pending" && (announce?.pending ?? "Working")}
-        {status === "error" && (announce?.error ?? "Something went wrong")}
+        {status === "error" && (announce?.error ?? (typeof errorLabel === "string" ? errorLabel : "Something went wrong"))}
       </span>
-    </Toggle>
+    </>
   );
 }

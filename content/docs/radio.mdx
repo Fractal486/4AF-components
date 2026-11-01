@@ -1,6 +1,6 @@
 ---
 title: Radio
-description: A Base UI radio group with controlled and uncontrolled selection.
+description: A Base UI radio group with custom rendering, state-based styling, and validation feedback.
 ---
 
 <ComponentReference name="radio" />
@@ -9,9 +9,40 @@ description: A Base UI radio group with controlled and uncontrolled selection.
 
 **Main exports:** `RadioGroup`, `Radio`
 
-A single-choice Base UI radio group with the Checkbox family's styling and an animated dot.
+A single-choice Base UI radio group with the Checkbox family's styling. Selection fills
+the interior white around an open center, leaving the underlying surface visible in the middle.
 `RadioGroup` defaults to `size="md"` (20px); `sm` is 16px and `lg` is 24px. A `Radio` can
 override the group's size. Each radio accepts a clickable `label`.
 
 Use `value` / `onValueChange` on the group for controlled selection or `defaultValue` for
 uncontrolled selection. Arrow keys move selection within the group.
+
+| Prop | Component | Purpose |
+| --- | --- | --- |
+| `render` | Both | Custom element or `(props, state) => ReactElement`. Forward the supplied props, children, and ref. Defaults to a `div` for the group and a Motion `span` for each radio. |
+| `className` | Both | String or `(state) => string \| undefined`, merged with the built-in classes. Group state includes read-only, required, and Field state; radio state also includes checked and disabled. |
+| `nativeButton` | `Radio` | Set to `true` when a custom renderer returns a native button. Defaults to `false`. |
+| `label`, `labelClassName` | `Radio` | Optional clickable label and classes for its wrapper. |
+| `aria-invalid` | `Radio` | Set to `true` for a destructive border and ring. Base UI Field validation also applies this appearance through `data-invalid`. |
+
+## Validation
+
+Place the group inside a Base UI Field to connect validation state, descriptions, and errors.
+Invalid radios show a destructive border and ring whether selected or unselected, including
+while focused. For validation managed outside Field, pass `aria-invalid` to each radio.
+An invalid attribute on the group alone does not style its children.
+
+## Custom rendering and classes
+
+Custom radio rendering retains the built-in selection ring, group selection, keyboard behavior, and
+hidden form input. Additional `children` render alongside the ring. A custom renderer owns
+its press animation; the default renderer retains the existing press spring and respects
+inherited disabled state and reduced motion.
+
+State-based classes update when selection or Field state changes. Their result is merged
+with the default layout and size classes, so utilities can override those defaults. Group
+size still flows to its radios, including custom-rendered radios.
+
+Refs and native props pass through to Base UI. The group, radio, and selection ring expose
+`data-slot="radio-group"`, `data-slot="radio"`, and `data-slot="radio-indicator"`, alongside
+Base UI's state attributes.

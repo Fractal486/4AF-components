@@ -1,16 +1,56 @@
 ---
 title: Skeleton
-description: A placeholder surface for preserving layout while content loads.
+description: Pulsing placeholders, content-sized loading wrappers, and text lines that follow surrounding typography.
 ---
 
 <ComponentReference name="skeleton" />
 
 ## API
 
-**Main export:** `Skeleton`
+**Main exports:** `Skeleton`, `SkeletonText`; types `SkeletonProps`, `SkeletonTextProps`.
 
-A generic loading placeholder sized by normal utility classes. Its pulse is disabled for reduced
-motion.
+A generic loading placeholder sized by normal utility classes, or a wrapper sized by its real
+content. The pulse and content reveal are disabled for reduced motion.
+
+### Skeleton
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `loading` | `boolean` | — | When supplied, `true` hides the children behind a placeholder and `false` reveals them. Omit for a standalone placeholder. |
+| `children` | `ReactNode` | — | Real content kept mounted and in layout when `loading` is supplied. |
+| `render` | `ReactElement \| (props, state) => ReactElement` | `div` | Replaces the root element. Use a `span` for a placeholder inside a sentence. Custom components must forward the supplied props and ref. |
+| `className` | `string` | — | Size, shape, and other root styling. |
+
+DOM props and `ref` are forwarded. The root exposes `data-state="loading"` or `"ready"`;
+wrappers also expose `data-loading="true"` or `"false"` and `data-wrapped`. A completed load
+adds `data-revealed`. The child wrapper exposes `data-slot="skeleton-content"`.
+
+### SkeletonText
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `lines` | `number` | `3` | Number of lines, rounded down and clamped to 1–50. Non-finite values become 1. |
+| `className` | `string` | — | Root layout and typography. |
+
+Each row uses the surrounding line height, and its bar follows the font size. The final line is
+shorter when there is more than one line. Normal div props and `ref` are forwarded.
+
+## Loading content
+
+Wrapped children stay mounted while hidden, preserving their current dimensions and local
+state. Their dimensions must already be available; changing text or image dimensions after
+loading can still change the layout.
+
+After `loading` changes from `true` to `false`, content fades in using the base duration and
+ease-out tokens. Content that starts ready is shown immediately. Reduced motion disables both
+the pulse and reveal animation.
+
+## Accessibility
+
+Standalone placeholders and `SkeletonText` are decorative and hidden from assistive technology.
+Content wrappers expose `aria-busy` while loading. Their hidden children are also `inert` and
+hidden from assistive technology, so buttons and links cannot receive focus or be activated until
+the content is ready. Add a separate loading message when an announcement is needed.
 
 ## Shape
 

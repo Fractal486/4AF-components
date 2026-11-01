@@ -30,6 +30,8 @@ export interface ClassicLoaderProps extends Omit<ComponentProps<"span">, "childr
   size?: ClassicLoaderSize;
   /** Playback multiplier: 1 is normal, 2 is twice as fast, 0.5 is half speed. */
   speed?: number;
+  /** Whether to render the spinner. Omit to always show it. */
+  loading?: boolean;
   /** Omit when nearby text already announces the busy state. */
   label?: string;
 }
@@ -69,6 +71,7 @@ export const ClassicLoader = forwardRef<HTMLElement, ClassicLoaderProps>(
       children: childrenProp,
       className,
       speed = 1,
+      loading = true,
       label,
       size = "md",
       style,
@@ -77,6 +80,7 @@ export const ClassicLoader = forwardRef<HTMLElement, ClassicLoaderProps>(
     ref,
   ) {
     const children = useSlotChild(childrenProp) as ReactElement | undefined;
+    if (!loading) return null;
     const Root = asChild ? Slot : "span";
     const playbackSpeed = Number.isFinite(speed) && speed > 0 ? speed : 1;
     const cycle = 1.2 / playbackSpeed;

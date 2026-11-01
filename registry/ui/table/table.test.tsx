@@ -41,6 +41,48 @@ function People(
 }
 
 describe("Table", () => {
+  it("shows an empty state across the data columns and removes it when rows arrive", () => {
+    function Results({ populated = false, loading = false }) {
+      return (
+        <Table loading={loading}>
+          <TableHeader>
+            <TableRow><TableHead>Name</TableHead><TableHead>Role</TableHead></TableRow>
+          </TableHeader>
+          <TableBody>
+            <>{null}{false}{[]}{populated && (
+              <TableRow><TableCell>Ada</TableCell><TableCell>Engineer</TableCell></TableRow>
+            )}</>
+          </TableBody>
+        </Table>
+      );
+    }
+    const { container, rerender } = render(<Results />);
+    expect(screen.getByRole("cell", { name: "No results." })).toHaveAttribute("colspan", "2");
+    expect(container.querySelector("tbody")).toHaveAttribute("data-empty", "true");
+
+    rerender(<Results loading />);
+    expect(screen.queryByText("No results.")).not.toBeInTheDocument();
+    expect(container.querySelector("tbody")).not.toHaveAttribute("data-empty");
+    expect(container.querySelectorAll('[data-slot="table-skeleton-row"]')).toHaveLength(5);
+
+    rerender(<Results populated />);
+    expect(screen.queryByText("No results.")).not.toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "Ada" })).toBeInTheDocument();
+    expect(container.querySelector("tbody")).not.toHaveAttribute("data-empty");
+  });
+
+  it("accepts custom empty content, can hide it, and uses a valid span without a header", () => {
+    const { container, rerender } = render(
+      <Table emptyState={<button type="button">Create first item</button>}><TableBody /></Table>,
+    );
+    expect(screen.getByRole("button", { name: "Create first item" }).closest("td"))
+      .toHaveAttribute("colspan", "1");
+
+    rerender(<Table emptyState={null}><TableBody /></Table>);
+    expect(container.querySelector("tbody")).toBeEmptyDOMElement();
+    expect(container.querySelector("tbody")).toHaveAttribute("data-empty", "true");
+  });
+
   it("renders a composable caption as the table's first semantic child", () => {
     const { container } = render(<People caption="People" />);
 
@@ -103,7 +145,7 @@ describe("Table", () => {
     expect(headerRow().className).toContain("sticky");
     // Above cell content that positions itself — a Badge's label sits at `relative z-10`,
     // which lands in the table's stacking context and wins a tie on source order.
-    expect(headerRow().className).toContain("z-20");
+    expect(headerRow().className).toContain("z-30");
     // Flush, not overhanging. A negative offset pins the header a pixel above the scrollport,
     // so it hops up and loses its top pixel on the first wheel notch.
     expect(headerRow().className).toContain("top-0");
@@ -112,10 +154,10 @@ describe("Table", () => {
     // A pinned cell needs a fill, or the rows travelling underneath show through it — plus a
     // pixel of that fill above it, which is what closes the sub-pixel seam a sticky element
     // opens on a fractional scroll boundary. That is the job the negative offset used to do.
-    expect(headerCells().every((cell) => cell.className.includes("bg-background"))).toBe(true);
+    expect(headerCells().every((cell) => cell.className.includes("bg-(--table-bg)"))).toBe(true);
     expect(
       headerCells().every((cell) =>
-        cell.className.includes("shadow-[0_-1px_0_0_var(--color-background)]"),
+        cell.className.includes("shadow-[0_-1px_0_0_var(--table-bg)]"),
       ),
     ).toBe(true);
     // Separated borders, or a pinned cell travels without its edge and the collapsed one it
@@ -239,19 +281,19 @@ describe("Table", () => {
     const cells = () => [...container.querySelectorAll("th, td")];
 
     expect(wrapper()).not.toHaveClass("border");
-    expect(cells().some((cell) => cell.className.includes("border-l"))).toBe(false);
+    expect(cells().some((cell) => cell.className.includes("border-s"))).toBe(false);
 
     rerender(<People outline />);
     // The frame is the wrapper's, because `border-collapse` ignores `border-radius` and a
     // border on the table itself could only ever be square.
     expect(wrapper()).toHaveClass("border", "rounded-md");
-    expect(cells().some((cell) => cell.className.includes("border-l"))).toBe(false);
+    expect(cells().some((cell) => cell.className.includes("border-s"))).toBe(false);
 
     rerender(<People verticalLines />);
     expect(wrapper()).not.toHaveClass("border");
     // Every cell carries the rule on its leading edge, and `not-first` keeps it off the row's
     // left edge, where the table's own edge is.
-    expect(cells().every((cell) => cell.className.includes("not-first:border-l"))).toBe(true);
+    expect(cells().every((cell) => cell.className.includes("not-first:border-s"))).toBe(true);
     // The verticals take the separator tier from the base rather than restating a colour.
     expect(cells().every((cell) => cell.className.includes("border-border/60"))).toBe(true);
   });

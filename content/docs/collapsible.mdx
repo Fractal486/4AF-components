@@ -1,21 +1,72 @@
 ---
 title: Collapsible
-description: An accessible disclosure region with animated content and composable triggers.
+description: An accessible disclosure with custom icons and smooth, gap-aware expansion.
 ---
 
 <ComponentReference name="collapsible" />
 
 ## API
 
-**Main exports:** `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent`
+**Main exports:** `Collapsible`, `CollapsibleTrigger`, `CollapsibleTriggerIcon`, `CollapsibleContent`
 
-A Base UI disclosure in `plain` or `card` appearance. `CollapsibleTrigger` places its chevron
-with `chevron="end"` (default) or `"start"`, or hides it with `chevron={false}`.
+### Collapsible
 
-Plain triggers use the compact 6px radius; card triggers use 8px.
+| Prop | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `variant` | `"plain"` or `"card"` | `"plain"` | A bare disclosure or a section with its own surface. |
+| `open` | `boolean` | — | Controlled open state. |
+| `defaultOpen` | `boolean` | `false` | Initial uncontrolled state. |
+| `onOpenChange` | `(open, eventDetails) => void` | — | Reports open changes and their cause. |
+| `disabled` | `boolean` | `false` | Disables interaction. |
+| `className` | String or state callback | — | Adds classes using `open`, `disabled`, and `transitionStatus`. |
+| `render` | Element or render callback | — | Replaces the root element while retaining Base UI behavior. |
 
-## Motion
+### CollapsibleTrigger
 
-The panel animates its height, so content below it moves with the disclosure rather than
-jumping. This is a documented exception to compositor-only motion, alongside Sidebar. The content
-inside fades and blurs in and out.
+`chevron="end"` places the built-in chevron at the end; `"start"` places it before the label.
+Use `chevron={false}` to supply the complete row yourself, including a `CollapsibleTriggerIcon`.
+Its `className` accepts the same state callback as the root. Native button props, `ref`,
+`render`, and Base UI's `nativeButton` are forwarded. Keep custom triggers keyboard accessible.
+
+### CollapsibleTriggerIcon
+
+A decorative icon part for use inside the trigger. With no children, it renders a chevron
+that rotates when the panel opens. Supply `children` for another icon; custom icons keep their
+own appearance and can respond to the trigger's `data-panel-open` state through CSS.
+
+Accepts `className`, `ref`, native span props, and `render`. `asChild` merges the part onto
+its single child and takes precedence over `render`. The icon is hidden from assistive
+technology by default; the trigger's text provides its accessible name.
+
+### CollapsibleContent
+
+| Prop | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `className` | `string` | — | Styles the inner content, including padding. |
+| `panelClassName` | String or state callback | — | Styles the outer, height-animated panel. |
+| `keepMounted` | `boolean` | `false` | Retains the closed content in the DOM while hiding it. |
+| `hiddenUntilFound` | `boolean` | `false` | Retains closed content so browser find-in-page can reveal it in supporting browsers. |
+| `render` | Element or render callback | — | Replaces the outer panel element. |
+
+`ref`, native props, and `style` target the outer panel. Root, trigger, and panel `style`
+props also accept Base UI state callbacks. Keep padding on the inner content so the outer
+panel can collapse to zero height. The panel exposes `data-open`, `data-closed`, transition
+attributes, and `data-settled` when fully open and no longer moving.
+
+## Layout and motion
+
+The panel animates its height and compensates for one adjoining gap in a flex column,
+including reversed columns and `display: contents` wrappers.
+The gap shrinks with the content, so removing the closed panel does not leave a final spacing
+jump. Use the parent's `gap` for spacing; set the content's `pt-0` when that gap replaces its
+default top padding.
+
+For grid layouts, use padding on `CollapsibleContent` instead of a row gap next to the panel.
+Grid tracks cannot shrink below zero, so negative margins cannot remove their gap smoothly.
+The default content padding collapses with the panel in either layout.
+
+Height and gap margins intentionally animate layout to move surrounding content smoothly.
+The inner content retains its fade and blur, with the same `--duration-base` timing in both
+directions. Content is clipped during expansion and collapse; overflow becomes visible when
+fully open so focus rings and nested surfaces can extend beyond the panel. Durations follow
+the shared motion tokens, including reduced motion.

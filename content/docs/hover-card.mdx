@@ -1,17 +1,81 @@
 ---
 title: Hover Card
-description: A hover and focus preview surface with Base UI positioning and dismissal.
+description: A hover and focus preview with smooth resizing, scrolling content, and shared triggers.
 ---
 
 <ComponentReference name="hover-card" />
 
 ## API
 
-**Main exports:** `HoverCard`, `HoverCardTrigger`, `HoverCardContent`, `HoverCardSkeleton`
+**Main exports:** `HoverCard`, `HoverCardTrigger`, `HoverCardContent`, `HoverCardSkeleton`,
+`HoverCardPortal`, `HoverCardPositioner`, `HoverCardPopup`, and `createHoverCardHandle`.
 
-A rich preview panel shown from hover or keyboard focus, with a built-in loading placeholder and
-custom loading-content support.
+- `HoverCard` supports controlled `open`, uncontrolled `defaultOpen`, `onOpenChange`,
+  `onOpenChangeComplete`, `actionsRef`, `handle`, and trigger payloads through Base UI.
+  Open-change details include the reason and allow cancellation.
+- `HoverCardTrigger` renders a link by default. It accepts `href`, `delay` (600ms),
+  `closeDelay` (300ms), `handle`, `payload`, custom `render`, state-based classes, and a ref.
+- `HoverCardContent` combines a portal, positioner, and popup. Placement defaults to
+  `side="bottom"`, `align="center"`, and `sideOffset={6}`. The offset also accepts a function.
+- `positionerProps` forwards collision padding (8px by default), collision boundaries and
+  avoidance, alignment offsets, a custom anchor, positioning method, sticky positioning,
+  anchor tracking, DOM props, refs, and state-based classes.
+- `lockSide` defaults to `true`: the card keeps the side Base UI selects when it opens.
+  Set `false` to allow it to flip again as content or available space changes.
+- `autoSize` defaults to `true`: the surface smoothly follows its content height. Set
+  `false` when providing a fixed height or your own sizing behavior.
+- `portalProps` forwards `container`, `keepMounted`, refs, and other portal props.
+- `className` on the popup accepts a string or a function receiving open state, resolved
+  side/alignment, transition status, and instant state. `render`, DOM props, and refs
+  still belong to the popup. `contentClassName` styles its inner content layout.
+- `loading` displays a skeleton and marks the popup with `aria-busy` and `data-loading`.
+  `loadingContent` supplies a custom placeholder. `HoverCardSkeleton` accepts ordinary
+  div props and `showAvatar`, which defaults to `true`.
 
-`HoverCardTrigger` renders a link by default; give it an `href` so it is reachable by keyboard
-and remains useful on touch devices. Keep essential information available at that destination;
-the preview is supplemental content, not a modal or a focus-trapped interaction surface.
+## Resizing and long content
+
+Loaded or expanded content smoothly changes the card's height. Continuous size changes
+follow directly so an already-animating child does not lag. The height measurement is shared
+with Popover, while hover behavior remains Base UI Preview Card's. Height is intentionally
+animated because the frame must grow with the content; durations follow the motion tokens
+and reduced-motion setting.
+
+Available space caps the card's height and width. Tall content uses the shared Scroll Area,
+including its scrollbar and edge fades. Scrollbars stay hidden during a height resize and return
+only if content still overflows after it settles. Long words and URLs wrap inside the card. Keep custom
+flex children shrinkable with `min-w-0` and avoid forced no-wrap styles when content should wrap.
+
+## Stable placement
+
+Base UI first resolves collisions and chooses a side. With `lockSide`, that side stays fixed
+while the card is open; content growth uses the available space and then scrolls instead of
+flipping the card across its link. Alignment can still shift within the boundary. Closing the
+card resets the lock, including with `keepMounted`; changing the preferred `side` also resets it.
+
+## Shared cards
+
+Keep a stable `createHoverCardHandle<Payload>()` and pass it to a `HoverCard` and its detached
+triggers. Each trigger supplies a typed `payload`, available through the root's function child.
+The exported `HoverCardProps`, `HoverCardTriggerProps`, and `HoverCardHandle` preserve that type.
+One card can therefore show different previews for links anywhere in the React tree.
+
+## Portal and composition
+
+`portalProps.container` chooses where the card mounts. `portalProps.keepMounted` preserves its
+child state while closed; the default unmounts after the exit transition. Closed content remains
+hidden and outside keyboard navigation.
+
+For a custom structure, compose `HoverCardPortal`, `HoverCardPositioner`, and `HoverCardPopup`.
+The positioner supplies stable placement, and the popup retains sizing, scrolling, and loading
+support. `HoverCardContent` already includes all three parts.
+
+## Interaction and accessibility
+
+Give the trigger an `href` so it is reachable by keyboard and remains useful on touch devices.
+Hover or focus opens the card after the configured delay. The pointer can travel into the card
+without dismissing it. Escape closes it, and its focus stays on the trigger rather than moving
+into the preview.
+
+Keep essential information available at the link's destination. This is supplemental preview
+content, not a modal or a focus-trapped interaction surface. Use Popover when the panel needs
+controls that must be reachable by keyboard.

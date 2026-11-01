@@ -35,7 +35,24 @@ export const tableWrapperVariants = cva(
  * row groups are ignored outright. Every rule below therefore lives on the cells, and the
  * row is left owning only its background.
  */
-export const tableVariants = cva("w-full border-separate border-spacing-0 caption-bottom text-sm");
+export const tableVariants = cva([
+  "group/table w-full border-separate border-spacing-0 caption-bottom text-sm",
+  "[--table-bg:var(--background)]",
+  "in-data-[variant=card]:[--table-bg:var(--surface)]",
+  "in-data-[slot=card]:[--table-bg:var(--surface)]",
+  "in-data-[slot=hover-card-content]:[--table-bg:var(--surface)]",
+  "in-data-[slot=popover-content]:[--table-bg:var(--surface-raised)]",
+]);
+
+export const tableEmptyRowVariants = cva(
+  "data-[slot=table-empty-row]:hover:bg-transparent dark:data-[slot=table-empty-row]:hover:bg-transparent",
+);
+
+export const tableEmptyCellVariants = cva("h-24 text-center text-muted-foreground group-data-[wrap]/table:align-middle");
+
+// Negative trailing margin removes the viewport-wide content from column sizing.
+// The content still contributes its height, so rich empty states can grow the row.
+export const tableEmptyContentVariants = cva("w-[var(--table-empty-width,100%)] me-[calc(-1*var(--table-empty-width,100%))] px-2.5 whitespace-normal text-center [transform:translateX(var(--table-empty-x,0px))]");
 
 /**
  * The composable native caption. `caption-bottom` on the table places it below the data while
@@ -69,8 +86,7 @@ export const tableCaptionVariants = cva("text-center text-xs text-muted-foregrou
  * with a 1px background-coloured shadow above each one, which paints over the gap without moving
  * anything.
  *
- * `z-20`, not `z-10`, because cell content routinely positions itself — a Badge's label sits
- * at `relative z-10` — and a tie is broken by source order, in `<tbody>`'s favour.
+ * Header rows sit above pinned body cells, which in turn cover positioned cell content.
  *
  * Positioned either way: unpinned it still needs to be a containing block, or an overlay laid
  * across it — DataTable's selection bar — would be positioned against the scroll container
@@ -79,7 +95,7 @@ export const tableCaptionVariants = cva("text-center text-xs text-muted-foregrou
 export const tableHeaderRowVariants = cva("", {
   variants: {
     pinned: {
-      true: "sticky top-0 z-20",
+      true: "sticky top-0 z-30",
       false: "relative",
     },
   },
@@ -94,12 +110,11 @@ export const tableRowVariants = cva([
   // lights up under the cursor promises an action it doesn't have. DataTable adds the hover
   // (`tableInteractiveRowVariants`) for its selectable rows.
   //
-  // The selected wash is here because `data-selected` is how DataTable marks a row, and the
-  // base row never sets it. A wash rather than a fill: the `bg-white/[…]` form states the
-  // colour exactly — `oklch(1 0 0)` *is* white — while sidestepping the arbitrary-value parser
-  // that reads a bare `/` inside `bg-[oklch(…)]` as an opacity modifier. Mirrored to black for
-  // the light theme, because white over a white surface is nothing at all.
-  "data-[selected]:bg-black/[0.02] dark:data-[selected]:bg-white/[0.02]",
+  // Share an opaque mixed fill with pinned cells: a translucent cell would reveal the
+  // columns moving behind it. DataTable sets data-selected; plain rows never set it.
+  "[--table-row-bg:var(--table-bg)] bg-(--table-row-bg)",
+  "data-[selected]:[--table-row-bg:color-mix(in_oklab,black_2%,var(--table-bg))]",
+  "dark:data-[selected]:[--table-row-bg:color-mix(in_oklab,white_2%,var(--table-bg))]",
 ]);
 
 /**
@@ -113,7 +128,7 @@ export const tableRowVariants = cva([
  * it in the class list instead.
  */
 export const tableInteractiveRowVariants = cva(
-  "hover:not-data-[selected]:bg-black/[0.01] dark:hover:not-data-[selected]:bg-white/[0.01]",
+  "hover:not-data-[selected]:[--table-row-bg:color-mix(in_oklab,black_1%,var(--table-bg))] dark:hover:not-data-[selected]:[--table-row-bg:color-mix(in_oklab,white_1%,var(--table-bg))]",
 );
 
 /**
@@ -129,9 +144,8 @@ export const tableInteractiveRowVariants = cva(
  */
 export const tableHeadVariants = cva(
   [
-    // Muted and small: a column header names the data, it isn't part of it. `whitespace-nowrap`
-    // because a wrapped header changes the height of the whole header row.
-    "text-left align-middle font-medium whitespace-nowrap text-muted-foreground",
+    // Column headings stay smaller and muted; wrapping comes from the shared cell layout.
+    "align-middle font-medium text-muted-foreground group-data-[wrap]/table:align-middle",
     "border-border/60",
   ],
   {
@@ -168,7 +182,7 @@ export const tableHeadVariants = cva(
        * old `not-last` quietly stopped excluding the right cell as soon as a selection stood.
        */
       vertical: {
-        true: "not-first:border-l",
+        true: "not-first:border-s",
         false: "",
       },
       /**
@@ -181,11 +195,10 @@ export const tableHeadVariants = cva(
        * through; painting over it here rather than overhanging the row keeps the header from
        * hopping when scrolling starts.
        *
-       * `bg-background` is the page's own ground; a table on a raised surface should pass its
-       * fill through `className`.
+       * The table background follows its surrounding surface and can be overridden locally.
        */
       pinned: {
-        true: "bg-background shadow-[0_-1px_0_0_var(--color-background)]",
+        true: "bg-(--table-bg) shadow-[0_-1px_0_0_var(--table-bg)]",
         false: "",
       },
     },
@@ -211,7 +224,7 @@ export const tableCellVariants = cva(["border-border/60 align-middle text-foregr
     },
     /** The vertical rule, on the cell's leading edge. See `tableHeadVariants`. */
     vertical: {
-      true: "not-first:border-l",
+      true: "not-first:border-s",
       false: "",
     },
   },
@@ -232,7 +245,15 @@ export const tableCellVariants = cva(["border-border/60 align-middle text-foregr
  * edge and the actions column at the trailing one, and a placeholder row draws it empty at
  * both ends so a loading table keeps the shape of a loaded one.
  */
-export const tableGutterCellVariants = cva("w-px border-border/60 align-middle", {
+/** Sticky placement for a pinned cell; the offset is the caller's or the measured one. */
+const PINNED_CELL = [
+  "data-[pinned]:sticky data-[pinned]:z-20 data-[pinned]:bg-(--table-row-bg)",
+  "data-[pinned=start]:start-[var(--table-pin-offset,var(--table-auto-pin-offset,0px))] data-[pinned=end]:end-[var(--table-pin-offset,var(--table-auto-pin-offset,0px))]",
+  "data-[pinned]:has-focus-visible:z-25",
+];
+
+/** Gutter cells pin with the data column beside them, so a pinned edge keeps its checkbox or menu. */
+export const tableGutterCellVariants = cva(["w-px border-border/60 align-middle", ...PINNED_CELL], {
   variants: {
     /** The rule under the cell, matching the data cells beside it, in the header or the body. */
     horizontal: {
@@ -248,7 +269,7 @@ export const tableGutterCellVariants = cva("w-px border-border/60 align-middle",
      * closes the sticky seam. See `tableHeadVariants`.
      */
     pinned: {
-      true: "bg-background shadow-[0_-1px_0_0_var(--color-background)]",
+      true: "bg-(--table-bg) shadow-[0_-1px_0_0_var(--table-bg)]",
       false: "",
     },
   },
@@ -256,3 +277,20 @@ export const tableGutterCellVariants = cva("w-px border-border/60 align-middle",
 });
 
 export type TableVariants = VariantProps<typeof tableCellVariants>;
+
+/** Shared by data cells and row/column headings. Logical edges also work in RTL. */
+export const tableCellLayoutVariants = cva([
+  "text-start whitespace-nowrap",
+  "group-data-[wrap]/table:whitespace-normal group-data-[wrap]/table:align-top",
+  "group-data-[wrap]/table:text-pretty group-data-[wrap]/table:wrap-break-word",
+  "data-[align=start]:text-start data-[align=center]:text-center data-[align=end]:text-end data-[align=end]:tabular-nums",
+  "data-[align=left]:text-left data-[align=right]:text-right data-[align=justify]:text-justify",
+  ...PINNED_CELL,
+]);
+
+/** The two masks intersect, just like Scroll Area. Opaque pinned regions sit outside
+ * each horizontal fade; the fade grows with the content hidden behind their inner edges. */
+export const tableViewportVariants = cva([
+  "has-[[data-pinned]]:[mask-image:linear-gradient(to_bottom,black_var(--scroll-area-inset-top,0px),transparent_var(--scroll-area-inset-top,0px),black_calc(var(--scroll-area-inset-top,0px)_+_min(var(--scroll-area-overflow-y-start,0px),var(--scroll-area-fade))),black_calc(100%_-_min(var(--scroll-area-overflow-y-end,0px),var(--scroll-area-fade))),transparent),linear-gradient(to_right,black_var(--table-pinned-start,0px),transparent_var(--table-pinned-start,0px),black_calc(var(--table-pinned-start,0px)_+_min(var(--table-hidden-start,var(--scroll-area-overflow-x-start,0px)),var(--scroll-area-fade))),black_calc(100%_-_var(--table-pinned-end,0px)_-_min(var(--table-hidden-end,var(--scroll-area-overflow-x-end,0px)),var(--scroll-area-fade))),transparent_calc(100%_-_var(--table-pinned-end,0px)),black_calc(100%_-_var(--table-pinned-end,0px)))]",
+  "rtl:has-[[data-pinned]]:[mask-image:linear-gradient(to_bottom,black_var(--scroll-area-inset-top,0px),transparent_var(--scroll-area-inset-top,0px),black_calc(var(--scroll-area-inset-top,0px)_+_min(var(--scroll-area-overflow-y-start,0px),var(--scroll-area-fade))),black_calc(100%_-_min(var(--scroll-area-overflow-y-end,0px),var(--scroll-area-fade))),transparent),linear-gradient(to_left,black_var(--table-pinned-start,0px),transparent_var(--table-pinned-start,0px),black_calc(var(--table-pinned-start,0px)_+_min(var(--table-hidden-start,var(--scroll-area-overflow-x-start,0px)),var(--scroll-area-fade))),black_calc(100%_-_var(--table-pinned-end,0px)_-_min(var(--table-hidden-end,var(--scroll-area-overflow-x-end,0px)),var(--scroll-area-fade))),transparent_calc(100%_-_var(--table-pinned-end,0px)),black_calc(100%_-_var(--table-pinned-end,0px)))]",
+]);

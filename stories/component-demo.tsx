@@ -151,7 +151,8 @@ export function useComponentDemo(name: DemoName): ComponentDemoState {
 
 /**
  * The demo itself, centred in whatever box the caller gives it. Changing a setting remounts
- * the demo, so every state is seen from its entrance.
+ * the demo, so every state is seen from its entrance. Progress values and Breadcrumb's
+ * collapse setting update in place so their transitions remain visible.
  */
 export function DemoCanvas({ demo }: { demo: ComponentDemoState }) {
   if (demo.status === "failed") {
@@ -175,7 +176,13 @@ export function DemoCanvas({ demo }: { demo: ComponentDemoState }) {
   const { entry, values, loader, replayKey } = demo;
   const isAppShell = entry.slug === "sidebar";
   const demoWidth = DEMO_WIDTHS[entry.slug as ComponentDemoName];
-  const settingsKey = JSON.stringify([values, loader]);
+  const remountSettings = entry.slug === "progress" ? { ...values, value: undefined }
+    : entry.slug === "breadcrumb" ? { ...values, collapse: undefined }
+    : values;
+  const settingsKey = JSON.stringify([
+    remountSettings,
+    loader,
+  ]);
 
   return (
     <div
@@ -250,6 +257,7 @@ const demos: Record<DemoName, () => Promise<AnyEntry>> = {
   "action-toggle": async () => (await import("@/inspector/entries/action-toggle")).actionToggleEntry,
   alert: async () => (await import("@/inspector/entries/alert")).alertEntry,
   "alert-dialog": async () => (await import("@/inspector/entries/alert-dialog")).alertDialogEntry,
+  "number-animation": async () => (await import("@/inspector/entries/number-animation")).numberAnimationEntry,
   badge: async () => (await import("@/inspector/entries/badge")).badgeEntry,
   breadcrumb: async () => (await import("@/inspector/entries/breadcrumb")).breadcrumbEntry,
   button: async () => (await import("@/inspector/entries/button")).buttonEntry,

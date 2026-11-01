@@ -10,15 +10,20 @@ description: A trail of links to the current page, with an optional ellipsis tha
 **Main exports:** `Breadcrumb`, `BreadcrumbList`, `BreadcrumbItem`, `BreadcrumbLink`, `BreadcrumbPage`,
 `BreadcrumbSeparator`, `BreadcrumbEllipsis`, `BreadcrumbCollapse`
 
+All parts except `BreadcrumbCollapse` accept native attributes and refs, plus `render` (an element or
+render function) and `asChild`. Both replace the underlying element while keeping the part's styling,
+attributes, event handlers, and refs. `asChild` takes precedence when both are supplied. Keep appropriate
+navigation and list semantics when choosing replacement elements.
+
 | Part | Element | Notes |
 | --- | --- | --- |
 | `Breadcrumb` | `nav` | `aria-label="Breadcrumb"` by default. |
 | `BreadcrumbList` | `ol` | `size="sm" \| "md"` (default `md`): text, gap, and the separator, icon, and ellipsis sizes. Wraps onto further lines. |
 | `BreadcrumbItem` | `li` | One crumb. |
-| `BreadcrumbLink` | `a` | `asChild` renders onto a framework link. Hover and focus bring it to `foreground`. |
+| `BreadcrumbLink` | `a` | `render` or `asChild` renders onto a framework link. Hover and focus bring it to `foreground`. |
 | `BreadcrumbPage` | `span` | The current page; `aria-current="page"`. |
 | `BreadcrumbSeparator` | `li` | Presentational, hidden from assistive technology. Defaults to a chevron mirrored in RTL; pass children to replace it. |
-| `BreadcrumbEllipsis` | `span` | Decorative alone. With `asChild` it renders onto a `button`, link, or menu trigger, gains a hover fill, focus ring, open state (`aria-expanded` / `data-popup-open`), and a 40px hit area; a child without content gets the dots. |
+| `BreadcrumbEllipsis` | `span` | Decorative alone. With `render` or `asChild` it can become a `button`, link, or menu trigger, gaining a hover fill, focus ring, open state (`aria-expanded` / `data-popup-open`), and a 40px hit area. An empty `asChild` child gets the dots. Give interactive ellipses an accessible name. |
 | `BreadcrumbCollapse` | `li` + children | Hides its children behind an ellipsis button until pressed. |
 
 ### BreadcrumbCollapse
@@ -43,20 +48,24 @@ with a separator:
 <BreadcrumbItem><BreadcrumbPage>Breadcrumb</BreadcrumbPage></BreadcrumbItem>
 ```
 
-Closed, the trail reads `Home / … / Breadcrumb`. Collapsed items and separators carry `data-collapsed`
-and `data-breadcrumb-group`; the collapse's own item carries `data-state="open" | "closed"`. When the
-ellipsis had focus, opening moves focus to the first revealed link; closing while focus is in the group
-moves it to the ellipsis.
+Closed, the trail reads `Home / … / Breadcrumb`. Group items and separators carry `data-breadcrumb-group`;
+`data-collapsed` is added after their closing animation finishes. The collapse's own item carries
+`data-state="open" | "closed"` and `data-transitioning` while animating. Its ellipsis is hidden after expansion
+finishes. When the ellipsis had focus, opening moves focus to the first visible revealed link after the
+animation settles; closing while focus is in the group returns it to the ellipsis after the exit finishes.
+Moving focus elsewhere during an animation cancels that transfer.
 
 For a menu of the hidden crumbs instead of an in-place reveal, render `BreadcrumbEllipsis asChild` onto a
 `DropdownMenu` trigger.
 
 ## Motion
 
-- Opening or closing is a FLIP on `transform`: crumbs that stay visible slide from their old position to
-  their new one, on both axes when the trail wraps. Revealed crumbs fade in from a 4px blur.
-- Timing comes from `--duration-slow` and `--ease-out`, so reduced motion collapses it to an instant change.
-- No width or margin animates.
+- Crumbs expand and fade in, or shrink and fade out, before being hidden. The ellipsis makes the opposite
+  transition. Changing direction mid-animation continues from the current widths and opacity.
+- Width and inline margin intentionally animate so adjacent crumbs reflow as space opens or closes.
+  Text is kept on one line and clipped only during the transition; normal wrapping returns at rest.
+- Timing comes from `--duration-slow` and `--ease-out`. Reduced motion, or a browser without the Web
+  Animations API, settles immediately and transfers focus without waiting.
 
 ## Source
 

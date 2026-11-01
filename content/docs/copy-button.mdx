@@ -11,6 +11,10 @@ description: A clipboard action with transient success feedback and icon morphin
 
 An Action Button that copies text to the clipboard, with visual and screen-reader confirmation.
 
+It inherits ActionButton's controlled `status` / `onStatusChange` and separate success/error
+`revertAfter` durations. Errors stay visible while hovered or focused; the remaining reset
+countdown resumes after both leave.
+
 `size` accepts `xs`, `sm`, `md`, or `lg`. With a label these are the standard button sizes;
 without one they are the matching square `icon-xs`, `icon-sm`, `icon`, or `icon-lg` sizes. An
 icon-only button defaults to `icon`. With a label, the icon gap matches Button (8, 10, or 12px).

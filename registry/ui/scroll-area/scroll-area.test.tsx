@@ -1,6 +1,7 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { ScrollArea as BaseScrollArea } from "@base-ui/react/scroll-area";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { createRef } from "react";
-import { ScrollArea } from "./scroll-area";
+import { ScrollArea, ScrollAreaScrollbar } from "./scroll-area";
 
 describe("ScrollArea", () => {
   it("renders the children in a viewport the caller can reach by ref", () => {
@@ -80,5 +81,60 @@ describe("ScrollArea", () => {
       </ScrollArea>,
     );
     await waitFor(() => expect(onScroll).toHaveBeenCalled());
+  });
+});
+
+describe("Scroll Area state-based classes", () => {
+  it("merges root and viewport classes and updates them when scrolling and overflow change", async () => {
+    const rootRef = createRef<HTMLDivElement>();
+    const viewportRef = createRef<HTMLDivElement>();
+    render(
+      <ScrollArea
+        ref={rootRef}
+        viewportRef={viewportRef}
+        className={({ hasOverflowY }) => hasOverflowY ? "root-overflows" : "root-fits"}
+        viewportClassName={({ scrolling }) => scrolling ? "viewport-scrolling" : "viewport-idle"}
+      >
+        <p>Content</p>
+      </ScrollArea>,
+    );
+    expect(rootRef.current).toHaveClass("root-fits", "flex", "overflow-hidden");
+    expect(viewportRef.current).toHaveClass("viewport-idle", "flex-auto");
+    const viewport = viewportRef.current!;
+    Object.defineProperties(viewport, {
+      clientHeight: { configurable: true, value: 100 },
+      scrollHeight: { configurable: true, value: 300 },
+      clientWidth: { configurable: true, value: 200 },
+      scrollWidth: { configurable: true, value: 200 },
+    });
+    fireEvent.wheel(viewport, { deltaY: 40 });
+    viewport.scrollTop = 40;
+    fireEvent.scroll(viewport);
+    await waitFor(() => expect(rootRef.current).toHaveClass("root-overflows"));
+    await waitFor(() => expect(viewport).toHaveClass("viewport-scrolling"));
+    expect(viewport.className).toContain("mask-image");
+    Object.defineProperty(viewport, "scrollHeight", { configurable: true, value: 100 });
+    viewport.scrollTop = 0;
+    fireEvent.scroll(viewport);
+    await waitFor(() => expect(rootRef.current).toHaveClass("root-fits"));
+  });
+
+  it("passes live orientation and hover state to custom track and thumb classes", async () => {
+    const { container } = render(
+      <BaseScrollArea.Root data-testid="custom-scroll-root">
+        <BaseScrollArea.Viewport><span>Content</span></BaseScrollArea.Viewport>
+        <ScrollAreaScrollbar
+          keepMounted
+          orientation="horizontal"
+          className={({ orientation, hovering }) => "track-" + orientation + (hovering ? " track-hovered" : "")}
+          thumbClassName={({ orientation }) => "thumb-" + orientation}
+        />
+      </BaseScrollArea.Root>,
+    );
+    const track = container.querySelector(".track-horizontal")!;
+    expect(track).toHaveClass("flex", "touch-none");
+    expect(container.querySelector(".thumb-horizontal")).toHaveClass("rounded-full");
+    fireEvent.pointerEnter(screen.getByTestId("custom-scroll-root"), { pointerType: "mouse" });
+    await waitFor(() => expect(track).toHaveClass("track-hovered"));
   });
 });

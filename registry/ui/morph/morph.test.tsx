@@ -18,7 +18,7 @@ function stubResizeObserver() {
         this.targets.push(target);
       }
       unobserve() {}
-      disconnect() {}
+      disconnect() { this.targets.length = 0; }
     },
   );
   return (widthOf: (target: Element) => number) =>
@@ -87,5 +87,25 @@ describe("Morph", () => {
 
     rerender(<Morph activeKey="on" items={items} sizing="current" />);
     expect(box.style.width).toBe("72.5px");
+  });
+
+  it("keeps the previous width until a new single-item label is measured", () => {
+    const report = stubResizeObserver();
+    const { container, rerender } = render(<Morph activeKey="follow" items={{ follow: "Follow" }} sizing="current" />);
+    const box = container.querySelector<HTMLElement>('[data-slot="morph"]')!;
+    report(() => 48);
+    expect(box.style.width).toBe("48px");
+
+    rerender(<Morph activeKey="following" items={{ following: "Following" }} sizing="current" />);
+    expect(container.querySelector('[data-slot="morph"]')).toBe(box);
+    expect(box.style.width).toBe("48px");
+    report(() => 72.5);
+    expect(box.style.width).toBe("72.5px");
+    expect(box).toHaveClass("transition-[width]", "duration-(--duration-base)");
+
+    rerender(<Morph activeKey="follow" items={{ follow: "Follow" }} sizing="current" />);
+    expect(box.style.width).toBe("72.5px");
+    report(() => 48);
+    expect(box.style.width).toBe("48px");
   });
 });

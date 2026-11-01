@@ -8,8 +8,7 @@ export function ActionButtonDemo({
   variant,
   size,
   shape,
-  revertAfter,
-  duration,
+  status,
   fail,
   withIcon,
   pendingMode,
@@ -18,8 +17,7 @@ export function ActionButtonDemo({
   variant: ControlVariant;
   size: TextSize;
   shape: "rectangular" | "pill";
-  revertAfter: number;
-  duration: number;
+  status: "automatic" | "idle" | "pending" | "success" | "error";
   fail: boolean;
   withIcon: boolean;
   pendingMode: "label" | "icon";
@@ -27,24 +25,25 @@ export function ActionButtonDemo({
 }) {
   async function deploy() {
     await new Promise((resolve, reject) =>
-      setTimeout(() => (fail ? reject(new Error("Deploy failed")) : resolve(null)), duration),
+      setTimeout(() => (fail ? reject(new Error("Deploy failed")) : resolve(null)), 1200),
     );
   }
 
   return (
     <ActionButton
-      // Remounted when the settings change so it starts from idle rather than
-      // mid-flight — an uncontrolled state machine ignores changed props otherwise.
-      key={`${variant}-${size}-${revertAfter}-${duration}-${fail}-${withIcon}-${pendingMode}`}
+      // Changing a simulation setting starts a fresh demo action.
+      key={`${variant}-${size}-${fail}-${withIcon}-${pendingMode}-${status}`}
       action={deploy}
+      status={status === "automatic" ? undefined : status}
+      error={status === "error" ? new Error("Deploy failed") : undefined}
       variant={variant}
       size={size}
       shape={shape}
-      revertAfter={revertAfter}
+      revertAfter={{ success: 2000, error: 4000 }}
       pendingMode={pendingMode}
       sizing={sizing}
       icon={withIcon ? <Rocket /> : undefined}
-      labels={{ pending: "Deploying", success: "Deployed", error: "Failed" }}
+      labels={{ pending: "Deploying", success: "Deployed", error: error => error instanceof Error ? error.message : "Failed" }}
       announce={{
         pending: "Deploying",
         success: "Deployed successfully",

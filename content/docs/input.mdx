@@ -1,24 +1,54 @@
 ---
 title: Input
-description: A styled text field with tones, a shared 34px default height, validation states, an optional leading icon, and number steppers.
+description: A form field with validation, helper text, icons, and optional actions.
 ---
 
 <ComponentReference name="input" />
 
 ## API
 
-**Main export:** `Input`
+**Main exports:** `Input`, `InputCount`
 
 A Base UI input with default, plain, and underline structures; neutral or accent focus; invalid
-and disabled states; an optional leading icon; and custom number steppers.
+and disabled states; an optional leading icon and trailing action; and custom number steppers.
 
 `variant` defaults to `default` and `tone` to `neutral`. Native input props and Base UI's value
 APIs are forwarded. `autoComplete` defaults to `"off"`; pass another value to enable it.
 
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `wrapperClassName` | `string` | — | Layout classes for the outermost wrapper, including width, margins, and flex sizing. `className` and `ref` still target the native input. |
+| `description` | `ReactNode` | — | Supporting content below the field. Automatically linked with `aria-describedby`, preserving any caller-provided description or error IDs. Adds a wrapper; `className` and `ref` still target the input. Pass `null` to hide the content while retaining the wrapper. |
+| `type` | Native input type | `"text"` | Includes `"date"` and `"time"` for native date/time entry, and `"file"` for the browser's file chooser. Date values use `YYYY-MM-DD`; time values use `HH:mm` or `HH:mm:ss` when seconds are enabled through `step`. |
+| `accept` | `string` | — | File chooser filter: MIME types or extensions, comma-separated. Applies to `type="file"`. |
+| `multiple` | `boolean` | `false` | Allows selecting multiple files with `type="file"`. |
+
+File inputs use native browser selection. Read the selected `FileList` from
+`event.currentTarget.files` in `onChange`, or from the input ref. Keep file selection uncontrolled;
+`value` and `defaultValue` cannot set files. `onValueChange` reports the native value string,
+not file objects. Selecting files does not upload them; the caller handles submission.
+The empty file message uses muted text; the chooser button and selected filename use normal
+text contrast. `data-file-empty` marks an empty file selection and updates on selection or form reset.
+
+## Validation
+
+Native constraints such as `required`, `type="email"`, `pattern`, `min`, and `max` automatically
+show error styling through the browser's `:user-invalid` state. Untouched fields stay neutral;
+the browser reveals errors after interaction or a failed native form submission. Correcting
+the value clears the native error styling, and a form reset clears the interaction state.
+The browser controls the exact interaction timing. This does not add validation messages.
+
+Explicit `aria-invalid="true"` and Base UI Field's `data-invalid` use the same styling.
+Errors retain their appearance while hovered or focused, including focus on a trailing action.
+The default variant shows a red border and ring; underline colors its bottom border; plain
+remains borderless. Native validation still follows normal form behavior, including `noValidate`.
+
 ## Leading icon
 
 `startIcon` takes any node and pins it to the leading edge of the field, inside the border.
-Text inputs without an icon render without a wrapper; icons and number steppers add one.
+The field keeps a positioned wrapper so showing or hiding an icon or trailing action does not
+replace the input or lose its focus, selection, or uncontrolled value. `className` and `ref`
+still target the input. A description adds a separate outer wrapper.
 
 ```tsx
 import { Search } from "lucide-react";
@@ -34,12 +64,89 @@ On `default` and `plain` the glyph sits at the field's own 12px inset. `underlin
 horizontal padding, so the icon goes flush with the text it leads. A leading icon composes with
 a number field: the icon takes the leading edge and the steppers keep the trailing one.
 
+## Trailing action
+
+`endAction` takes one interactive control and pins it to the trailing edge of the field, inside
+the border. Use an `icon-xs` Button, or an `xs` Button or ActionButton for a label with or
+without an icon.
+
+```tsx
+import { TicketPercent, X } from "lucide-react";
+import { ActionButton } from "@/components/ui/action-button";
+
+<Input
+  aria-label="Search"
+  endAction={
+    <Button variant="ghost" size="icon-xs" aria-label="Clear">
+      <X />
+    </Button>
+  }
+/>
+
+<Input
+  aria-label="Coupon code"
+  endAction={
+    <ActionButton
+      variant="ghost"
+      size="xs"
+      icon={<TicketPercent />}
+      action={() => applyCoupon()}
+      labels={{ success: "Applied" }}
+    >
+      Apply
+    </ActionButton>
+  }
+/>
+```
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `endAction` | `ReactNode` | — | A trailing control. Not `aria-hidden`; give it an accessible name. Ignored when `type` is `"number"` or `"file"`. |
+
+- The input and wrapper carry `data-action-end`; the slot is `data-slot="input-action"`.
+- The slot sits at a 5px inset and sets its child's radius to 3px, concentric with the field's
+  8px. On `underline` it goes flush with `end-0` and keeps the child's radius.
+- The slot measures its content with a ResizeObserver and writes the width to
+  `--input-action-width` on the wrapper. The text stops 8px short of the action at any width,
+  including a label that changes (Copy → Copied). Before measurement the width is 24px.
+- The field keeps its focus border and ring while focus is on the action.
+- Conditional actions such as `endAction={value ? <ClearButton /> : undefined}` keep the
+  input mounted as they appear and disappear.
+- The slot carries `data-disabled` when the input is disabled. It does not disable the
+  control; pass `disabled` to the Button when it should follow the field.
+- Composes with `startIcon` and `description`.
+
 ## Sizing
 
 The default field is 34px high with the medium control's 8px radius, matching the medium Button
 and Select controls. The underline variant remains square. Use `className` when a field needs a
 deliberately different height.
 
+Use `wrapperClassName` for layout constraints, for example
+`wrapperClassName="ml-auto w-48 max-w-full shrink-0"` in a wrapping settings row.
+It sizes the whole field, including its description when present, without replacing the input.
+
 `type="number"` adds the number-stepper buttons with the compact 6px radius inside the field.
 They follow the input's native `min`, `max`, and `step`, and are disabled when the field is
 `disabled` or `readOnly`.
+
+## Character counter
+
+`InputCount` is included with Input and can also accompany a Textarea. Pass the current
+string's `length`; it renders the count alone or `length / maxLength` when a limit is provided.
+It does not read a field or restrict typing. Set the field's native `maxLength` separately
+when the limit should be enforced. JavaScript string length matches native `maxLength`
+counting in UTF-16 code units, so some emoji occupy more than one unit.
+
+| Prop | Default | Purpose |
+| --- | --- | --- |
+| `length` | Required | Current character count. |
+| `maxLength` | — | Optional limit; `null` or omitted shows only the count. |
+| `threshold` | 10% of the limit, rounded up, at most 20 | Remaining characters at which the counter becomes emphasized and starts announcing. `0` announces only at or over the limit. |
+| `announcement` | English remaining/limit message | `(remaining: number) => string` for custom or translated screen-reader text. Negative values mean over the limit; returning an empty string silences it. |
+
+The counter carries `data-slot="input-count"` and `data-state="near"` or `"limit"` as applicable.
+At or beyond the limit it uses destructive text. A separate polite live region announces after
+a 400ms typing pause, keeping ordinary typing quiet. Native span props, `className`, and `ref`
+target the visible count; give it an `id` and reference it with the field's `aria-describedby`
+to include it in the field description.

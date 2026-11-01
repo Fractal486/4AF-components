@@ -10,3 +10,12 @@ const twMerge = extendTailwindMerge({
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+/** Merge Base UI state-based classes without passing the callback to clsx. */
+export function mergeStateClassName(base: string, className?: string): string;
+export function mergeStateClassName<State>(base: string, className: string | ((state: State) => string | undefined) | undefined): string | ((state: State) => string);
+export function mergeStateClassName<State>(base: string, className?: string | ((state: State) => string | undefined)) {
+  return typeof className === "function"
+    ? (state: State) => cn(base, className(state))
+    : cn(base, className);
+}

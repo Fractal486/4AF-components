@@ -3,7 +3,6 @@
 import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import {
   AnimatePresence,
-  motion,
   useReducedMotion,
   type TargetAndTransition,
 } from "motion/react";
@@ -21,7 +20,17 @@ import { cn } from "@/registry/lib/cn";
 import { duration, ease, overlayExit, spring } from "@/registry/lib/motion";
 import { Button } from "@/registry/ui/button/button";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
-import { sheetContentVariants, type SheetContentVariants } from "./sheet.variants";
+import { SheetOverlaySurface, SheetPanelSurface } from "./sheet.motion";
+import {
+  sheetBodyVariants,
+  sheetContentVariants,
+  sheetDescriptionVariants,
+  sheetFooterVariants,
+  sheetHeaderVariants,
+  sheetOverlayVariants,
+  sheetTitleVariants,
+  type SheetContentVariants,
+} from "./sheet.variants";
 
 /**
  * A sheet — a dialog that slides in from an edge.
@@ -43,6 +52,7 @@ import { sheetContentVariants, type SheetContentVariants } from "./sheet.variant
  */
 
 const SheetOpenContext = createContext(false);
+const SheetContentContext = createContext({ showClose: true });
 const sheetOpenAttribute = "data-4af-sheet-open";
 let openSheetCount = 0;
 
@@ -106,13 +116,46 @@ const exitTo: Record<Side, TargetAndTransition> = {
   bottom: { y: 48, opacity: 0, filter: "blur(14px)" },
 };
 
-const backdropClassName = "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm";
+function mergeClassName<State>(base: string, className: string | ((state: State) => string | undefined) | undefined) {
+  return typeof className === "function" ? (state: State) => cn(base, className(state)) : cn(base, className);
+}
+
+export function SheetPortal(props: ComponentProps<typeof BaseDialog.Portal>) {
+  return <BaseDialog.Portal data-slot="sheet-portal" {...props} />;
+}
+
+export type SheetOverlayProps = ComponentProps<typeof BaseDialog.Backdrop>;
+
+export function SheetOverlay({ className, render, ...props }: SheetOverlayProps) {
+  const reduceMotion = useReducedMotion();
+  return (
+    <BaseDialog.Backdrop
+      data-slot="sheet-overlay"
+      className={mergeClassName(sheetOverlayVariants(), className)}
+      render={(elementProps, state) => (
+        <SheetOverlaySurface
+          elementProps={elementProps}
+          state={state}
+          render={render}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0, transition: { duration: reduceMotion ? 0 : duration.fast } }}
+          transition={{ duration: reduceMotion ? 0 : duration.slow, ease: ease.out }}
+        />
+      )}
+      {...props}
+    />
+  );
+}
 
 export interface SheetContentProps
-  extends Omit<ComponentProps<typeof BaseDialog.Popup>, "className" | "render">,
+  extends ComponentProps<typeof BaseDialog.Popup>,
     SheetContentVariants {
-  className?: string;
   showClose?: boolean;
+  /** Customize the built-in backdrop, including its classes, render element, and ref. */
+  overlayProps?: SheetOverlayProps;
+  /** Customize the portal or its container. Content owns mounting for exit animations. */
+  portalProps?: Omit<ComponentProps<typeof BaseDialog.Portal>, "children" | "keepMounted">;
   /**
    * Fired once the exit animation has finished and the panel has left the DOM.
    *
@@ -128,8 +171,11 @@ export interface SheetContentProps
 export function SheetContent({
   side = "right",
   className,
+  render,
   children,
   showClose = true,
+  overlayProps,
+  portalProps,
   onExitComplete,
   ...props
 }: SheetContentProps) {
@@ -142,22 +188,17 @@ export function SheetContent({
       {open && (
         // keepMounted on the Portal keeps the whole subtree in the DOM so
         // AnimatePresence, not Base UI, owns when it's torn down.
-        <BaseDialog.Portal keepMounted>
-          <BaseDialog.Backdrop
-            render={
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0, transition: { duration: reduceMotion ? 0 : duration.fast } }}
-                transition={{ duration: reduceMotion ? 0 : duration.slow, ease: ease.out }}
-                className={backdropClassName}
-              />
-            }
-          />
+        <SheetPortal {...portalProps} keepMounted>
+          <SheetOverlay {...overlayProps} />
           <BaseDialog.Popup
-            className={cn(sheetContentVariants({ side: resolvedSide }), className)}
-            render={
-              <motion.div
+            data-slot="sheet-content"
+            data-side={resolvedSide}
+            className={mergeClassName(sheetContentVariants({ side: resolvedSide }), className)}
+            render={(elementProps, state) => (
+              <SheetPanelSurface
+                elementProps={elementProps}
+                state={state}
+                render={render}
                 initial={
                   reduceMotion ? { opacity: 0 } : { ...enterFrom[resolvedSide], opacity: 1 }
                 }
@@ -169,10 +210,12 @@ export function SheetContent({
                 }
                 transition={reduceMotion ? { duration: 0 } : spring.smooth}
               />
-            }
+            )}
             {...props}
           >
-            {children}
+            <SheetContentContext.Provider value={{ showClose }}>
+              {children}
+            </SheetContentContext.Provider>
             {showClose && (
               <BaseDialog.Close
                 render={
@@ -189,20 +232,21 @@ export function SheetContent({
               />
             )}
           </BaseDialog.Popup>
-        </BaseDialog.Portal>
+        </SheetPortal>
       )}
     </AnimatePresence>
   );
 }
 
 export function SheetHeader({ className, ...props }: ComponentProps<"div">) {
-  return <div className={cn("flex flex-col gap-1.5 p-5", className)} {...props} />;
+  const { showClose } = useContext(SheetContentContext);
+  return <div data-slot="sheet-header" data-show-close={showClose ? "" : undefined} className={cn(sheetHeaderVariants(), className)} {...props} />;
 }
 
 /** The scrolling middle of a sheet. `className` styles the scrolling element itself. */
 export function SheetBody({ className, children, ...props }: ComponentProps<"div">) {
   return (
-    <ScrollArea className="min-h-0 flex-1" viewportClassName={cn("px-5", className)} {...props}>
+    <ScrollArea data-slot="sheet-body" className="min-h-0 min-w-0 flex-auto" viewportClassName={cn(sheetBodyVariants(), className)} {...props}>
       {children}
     </ScrollArea>
   );
@@ -211,10 +255,8 @@ export function SheetBody({ className, children, ...props }: ComponentProps<"div
 export function SheetFooter({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
-      className={cn(
-        "mt-auto flex flex-col-reverse gap-2 p-5 sm:flex-row sm:justify-end",
-        className,
-      )}
+      data-slot="sheet-footer"
+      className={cn(sheetFooterVariants(), className)}
       {...props}
     />
   );
@@ -226,7 +268,8 @@ export function SheetTitle({
 }: ComponentProps<typeof BaseDialog.Title>) {
   return (
     <BaseDialog.Title
-      className={cn("text-base font-semibold text-foreground", className)}
+      data-slot="sheet-title"
+      className={mergeClassName(sheetTitleVariants(), className)}
       {...props}
     />
   );
@@ -238,7 +281,8 @@ export function SheetDescription({
 }: ComponentProps<typeof BaseDialog.Description>) {
   return (
     <BaseDialog.Description
-      className={cn("text-sm text-pretty text-muted-foreground", className)}
+      data-slot="sheet-description"
+      className={mergeClassName(sheetDescriptionVariants(), className)}
       {...props}
     />
   );

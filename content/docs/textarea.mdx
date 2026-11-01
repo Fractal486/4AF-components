@@ -1,6 +1,6 @@
 ---
 title: Textarea
-description: A multiline text field aligned with the 4AF input tones and sizing system.
+description: An auto-growing multiline field with row limits, form integration, and an optional submit shortcut.
 ---
 
 <ComponentReference name="textarea" />
@@ -9,23 +9,75 @@ description: A multiline text field aligned with the 4AF input tones and sizing 
 
 **Main export:** `Textarea`
 
-A native multiline field matching Input, with an optional pointer-captured corner grip that
-resizes its height. The default minimum height is 64px; `rows` and `className` set the initial sizing.
+A Base UI field control rendering a native textarea, matching Input's appearance. It grows
+with its content by default, between 3 and 10 rows, then scrolls internally.
 
 | Prop | Values | Default |
 | --- | --- | --- |
 | `variant` | `default`, `plain` | `default` |
 | `tone` | `neutral`, `accent` | `neutral` |
 | `resizable` | `boolean` | `true` |
+| `description` | `ReactNode` | — |
+| `autoResize` | `boolean` | `true` |
+| `minRows` | `number` | `rows`, then `3` |
+| `maxRows` | `number` | `10` |
+| `submitOnShortcut` | `boolean` | `false` |
+| `onValueChange` | `(value, details) => void` | — |
+
+`description` renders supporting content below the field and links it with `aria-describedby`,
+preserving caller-provided description or error IDs. It adds an outer wrapper; `className` and
+`ref` still target the textarea, and the resize grip stays attached to the field. Pass `null`
+to hide the content while retaining the wrapper.
 
 `default` provides the standalone bordered field. `plain` removes the border and focus shadow
 for editors whose surrounding surface already supplies the frame. Both retain native textarea
 props, refs, disabled handling, and the optional resize grip. The field exposes its choices as
 `data-variant` and `data-tone`.
 
-The field uses the medium form-row treatment with an 8px radius. When `resizable` is enabled,
-the 16px corner grip uses the compact 6px radius.
+## Growing and resizing
+
+`minRows` and `maxRows` set the automatic height limits. Row counts are whole numbers clamped
+to 1–100, and the maximum cannot fall below the minimum. `rows` is retained as a fallback
+starting row count. The field measures its actual typography and padding, and responds to
+typing, controlled value changes, form resets, font loading, and changes in available width.
+An empty field also fits its placeholder up to the maximum.
+Measurements use the field's layout width, so scaling a containing preview does not change
+the wrapping or calculated height.
+
+Height transitions intentionally reflow the surrounding form smoothly. They use the motion
+duration tokens and collapse under reduced motion. A hidden measurement copy keeps the live
+textarea's value, focus, selection, and caret untouched. `className` can supply additional
+minimum or maximum heights; auto-grow owns the inline height while enabled.
+
+Set `autoResize={false}` for manual sizing. The minimum height is then 64px, and `rows` or
+`minRows` sets the initial size. The field uses an 8px radius. With `resizable`, its 16px
+corner grip uses a 6px radius; auto-grow hides that grip to avoid competing height controls.
 
 Start resizing with the primary mouse button, touch, or pen. Other mouse buttons are ignored.
 The drag ends on pointer release, cancellation, or lost capture, and is cleaned up if the
 field unmounts, becomes disabled, or has resizing turned off.
+
+## Form integration and validation
+
+Inside Base UI `Field.Root`, the textarea inherits the field name and disabled state, connects
+`Field.Label`, `Field.Description`, and visible `Field.Error` content, and participates in
+the field's validation and touched/dirty/filled state. Its own `description` and any supplied
+`aria-describedby` IDs are preserved alongside those associations. For an externally supplied
+error, use `Field.Root invalid` with `Field.Error match` to show and associate that message.
+
+Native constraints such as `required` and `minLength` use `:user-invalid` for automatic error
+styling after interaction or a failed native submission, according to browser timing. Untouched
+fields stay neutral; corrections and resets clear native error styling. Explicit `aria-invalid`
+and Base UI's `data-invalid` use the same treatment. Plain remains borderless.
+
+Use `value` with `onChange` or `onValueChange` for controlled text, or `defaultValue` for
+uncontrolled text. `ref` still targets the native textarea. Native props and event handlers
+continue to work, including an external form association through `form`.
+
+## Submit shortcut
+
+`submitOnShortcut` enables Ctrl + Enter or Command + Enter to submit the associated form
+through `requestSubmit()`, preserving validation and the form's submit handler. Enter by
+itself keeps adding newlines. A caller's `onKeyDown` can cancel the shortcut with
+`preventDefault()`. Text composition is respected, and a textarea without an associated
+form does not intercept the key.

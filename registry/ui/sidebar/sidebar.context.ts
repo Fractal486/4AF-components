@@ -3,6 +3,9 @@ import { createContext, useContext } from "react";
 /* -- State ---------------------------------------------------------------------------- */
 
 export interface SidebarContextValue {
+  /** Shared by the layout and its portalled mobile sheet for shortcut ownership. */
+  shortcutScope: string;
+  keyboardShortcut: string | null;
   state: "expanded" | "collapsed";
   open: boolean;
   setOpen: (open: boolean) => void;

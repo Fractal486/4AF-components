@@ -1,10 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { dialogEntry } from "./dialog";
+import { initialValues } from "../schema";
 
 it("reviews the edited profile and retains choices when returning to earlier phases", async () => {
   const user = userEvent.setup();
-  render(dialogEntry.render({ showClose: true, phases: true, autoSize: true }));
+  render(dialogEntry.render({ ...initialValues(dialogEntry.controls), phases: true }));
   await user.click(screen.getByRole("button", { name: "Open dialog" }));
 
   const name = await screen.findByRole("textbox", { name: "Name" });
@@ -35,7 +36,7 @@ it("reviews the edited profile and retains choices when returning to earlier pha
 
 it("reports empty profile fields and no enabled updates accurately", async () => {
   const user = userEvent.setup();
-  render(dialogEntry.render({ showClose: true, phases: true, autoSize: true }));
+  render(dialogEntry.render({ ...initialValues(dialogEntry.controls), phases: true }));
   await user.click(screen.getByRole("button", { name: "Open dialog" }));
   await user.clear(await screen.findByRole("textbox", { name: "Name" }));
   await user.clear(screen.getByRole("textbox", { name: "Email" }));

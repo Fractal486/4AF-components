@@ -1,5 +1,11 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
+export const fieldWrapperVariants = cva("block w-full min-w-0");
+export const fieldDescriptionVariants = cva("mt-1.5 block text-xs leading-relaxed text-muted-foreground");
+export const inputCountVariants = cva(
+  "text-xs text-muted-foreground tabular-nums data-[state=near]:text-foreground data-[state=limit]:text-destructive",
+);
+
 /**
  * Input keeps its versions in a sibling CVA file so the component stays focused on
  * Base UI's native input behaviour. `plain` is useful when the surrounding field
@@ -8,10 +14,14 @@ import { cva, type VariantProps } from "class-variance-authority";
 export const inputVariants = cva(
   [
     "flex h-[34px] w-full min-w-0 rounded-[8px] bg-transparent px-3 py-1 text-sm",
-    "text-foreground placeholder:text-muted-foreground",
+    "text-foreground placeholder:text-muted-foreground data-[file-empty]:text-muted-foreground",
     // A leading icon is absolutely positioned over the field, so the text has to step
     // aside for it: the icon's own inset (12px) plus its 16px box plus an 8px gap.
     "data-[icon-start]:ps-9",
+    // A trailing action sits at a 5px inset; the text stops 8px short of it. Input sets
+    // `--input-action-width` from the measured action; 24px (an icon button) covers the
+    // first paint and environments without ResizeObserver.
+    "data-[action-end]:pe-[calc(var(--input-action-width,24px)+13px)]",
     "outline-none",
     // The slow token, well behind a button's hover: the focus border and ring are a state
     // settling in, not a response that has to keep up with the cursor.
@@ -21,8 +31,12 @@ export const inputVariants = cva(
     // or not the field is focused. The red border is shared by every variant (on
     // `underline` it colours the single bottom border); the 3px ring is added only to the
     // boxed `default` variant below.
-    "aria-invalid:border-destructive",
-    "file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium",
+    // Native user-invalid waits for interaction or submission. Base UI Field owns
+    // data-invalid. Error styling must win over hover and focus-within treatments.
+    "[&:is([aria-invalid=true],[data-invalid],:user-invalid)]:border-destructive!",
+    // File inputs lay out the button and filename on one baseline. Let the button fill the
+    // inner height and center its text; a fixed 28px button overflows the padded 24px box.
+    "[&[type=file]]:py-0 file:me-3 file:inline-flex file:h-full file:items-center file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground",
     "selection:bg-primary selection:text-primary-foreground",
   ],
   {
@@ -37,7 +51,7 @@ export const inputVariants = cva(
         // `px-0` pulls the leading icon flush to the edge as well, so the text only has
         // to clear the 16px glyph plus the same 8px gap.
         underline:
-          "rounded-none border-0 border-b border-b-border px-0 shadow-none hover:border-b-border-strong data-[icon-start]:ps-6",
+          "rounded-none border-0 border-b border-b-border px-0 shadow-none hover:border-b-border-strong data-[icon-start]:ps-6 data-[action-end]:pe-[calc(var(--input-action-width,24px)+8px)]",
       },
       // The focus colour. `neutral` is a grey ring that stands apart from the accent;
       // `accent` uses the `--ring` token, so it matches every other focusable control
@@ -52,7 +66,7 @@ export const inputVariants = cva(
         // The invalid ring, boxed variant only — matches `accent`'s 3px ring but red.
         // `shadow-none` clears the neutral tone's grey focus shadow so only the red reads.
         variant: "default",
-        class: "aria-invalid:ring-[3px] aria-invalid:ring-destructive/25 aria-invalid:shadow-none",
+        class: "[&:is([aria-invalid=true],[data-invalid],:user-invalid)]:ring-[3px]! [&:is([aria-invalid=true],[data-invalid],:user-invalid)]:ring-destructive/25! [&:is([aria-invalid=true],[data-invalid],:user-invalid)]:shadow-none!",
       },
       {
         // Rest/hover borders match the Select (tokens above). The *focus* border stays a
@@ -60,15 +74,26 @@ export const inputVariants = cva(
         // instead of merging — matching it to `border-strong` blends it into the ring.
         variant: "default",
         tone: "neutral",
-        class: "focus:border-[oklch(0.719_0_0)] focus:shadow-[0_0_0_3px_oklch(0.390_0_0_/_0.502)]",
+        class: [
+          "focus:border-[oklch(0.719_0_0)] focus:shadow-[0_0_0_3px_oklch(0.390_0_0_/_0.502)]",
+          // With a trailing action, focus on that button still reads as the field's focus.
+          "group-focus-within/input:border-[oklch(0.719_0_0)] group-focus-within/input:shadow-[0_0_0_3px_oklch(0.390_0_0_/_0.502)]",
+        ],
       },
       {
         variant: "default",
         tone: "accent",
-        class: "focus:border-ring focus:ring-[3px] focus:ring-ring/25",
+        class: [
+          "focus:border-ring focus:ring-[3px] focus:ring-ring/25",
+          "group-focus-within/input:border-ring group-focus-within/input:ring-[3px] group-focus-within/input:ring-ring/25",
+        ],
       },
-      { variant: "underline", tone: "neutral", class: "focus:border-b-[oklch(0.719_0_0)]" },
-      { variant: "underline", tone: "accent", class: "focus:border-b-ring" },
+      {
+        variant: "underline",
+        tone: "neutral",
+        class: "focus:border-b-[oklch(0.719_0_0)] group-focus-within/input:border-b-[oklch(0.719_0_0)]",
+      },
+      { variant: "underline", tone: "accent", class: "focus:border-b-ring group-focus-within/input:border-b-ring" },
     ],
     defaultVariants: { variant: "default", tone: "neutral" },
   },

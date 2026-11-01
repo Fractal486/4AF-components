@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
-import { relative, resolve } from "node:path";
+import { dirname, relative, resolve } from "node:path";
 import ts from "typescript";
 import { SITE_URL } from "../lib/site";
 import tsconfig from "../tsconfig.json";
@@ -30,6 +30,14 @@ const moduleResolutionCache = ts.createModuleResolutionCache(process.cwd(), (pat
 
 function resolveSource(specifier: string, importer: string) {
   if (!specifier.startsWith("@/") && !specifier.startsWith(".")) return null;
+  // Stylesheets are shipped assets, not TypeScript modules. Resolve their actual paths
+  // so the same existence and dependency-closure checks apply to them.
+  if (specifier.endsWith(".css")) {
+    const path = specifier.startsWith("@/")
+      ? resolve(specifier.slice(2))
+      : resolve(dirname(importer), specifier);
+    return existsSync(path) ? relative(process.cwd(), path).replaceAll("\\", "/") : null;
+  }
   const { resolvedModule } = ts.resolveModuleName(
     specifier, resolve(importer), compilerOptions, ts.sys, moduleResolutionCache,
   );
@@ -163,6 +171,7 @@ describe("registry", () => {
       );
 
       for (const file of item.files ?? []) {
+        if (!/\.tsx?$/.test(file.path)) continue;
         const source = ts.createSourceFile(
           file.path,
           readFileSync(resolve(file.path), "utf8"),
@@ -209,6 +218,7 @@ describe("registry", () => {
       const importedFiles = new Set<string>();
       const importedPackages = new Set<string>();
       for (const file of item.files ?? []) {
+        if (!/\.tsx?$/.test(file.path)) continue;
         const source = ts.createSourceFile(file.path, readFileSync(resolve(file.path), "utf8"), ts.ScriptTarget.Latest, true);
         for (const statement of source.statements) {
           if (!(ts.isImportDeclaration(statement) || ts.isExportDeclaration(statement))) continue;
@@ -345,6 +355,25 @@ describe("registry", () => {
     expect(readFileSync(resolve("registry/ui/toggle/toggle.tsx"), "utf8")).toContain(
       'from "@/registry/ui/ui/button.variants"',
     );
+  });
+
+  it("installs Alert Dialog's shared Dialog imports and re-exports at the flat UI alias", () => {
+    expect(items.get("dialog")?.files).toEqual(expect.arrayContaining([
+      expect.objectContaining({ path: "registry/ui/dialog/dialog.shared.tsx", target: "@ui/dialog.shared.tsx" }),
+    ]));
+    const sharedImports: string[] = [];
+    for (const file of items.get("alert-dialog")?.files ?? []) {
+      const source = ts.createSourceFile(file.path, readFileSync(resolve(file.path), "utf8"), ts.ScriptTarget.Latest, true);
+      for (const statement of source.statements) {
+        if (!(ts.isImportDeclaration(statement) || ts.isExportDeclaration(statement))) continue;
+        const specifier = statement.moduleSpecifier;
+        if (!specifier || !ts.isStringLiteral(specifier) || !specifier.text.endsWith("/dialog.shared")) continue;
+        sharedImports.push(specifier.text);
+        expect(specifier.text, file.path).toBe("@/registry/ui/ui/dialog.shared");
+        expect(resolveSource(specifier.text, file.path)).toBe("registry/ui/dialog/dialog.shared.tsx");
+      }
+    }
+    expect(sharedImports.length).toBeGreaterThan(0);
   });
 
   it("ships the custom tokens consumed by installable components", () => {

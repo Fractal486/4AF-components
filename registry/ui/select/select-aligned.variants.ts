@@ -9,7 +9,7 @@ export const alignedSelectTriggerVariants = cva(
     "cursor-pointer outline-none select-none",
     "transition-[background-color,border-color,color] duration-(--duration-base) ease-out",
     "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-    "aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",
+    "[&:is([aria-invalid=true],[data-invalid])]:ring-[3px]! [&:is([aria-invalid=true],[data-invalid])]:ring-destructive/25!",
     "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
   ],
   {
@@ -18,7 +18,7 @@ export const alignedSelectTriggerVariants = cva(
         default: [
           "w-full justify-between border border-border bg-surface px-3.5",
           "hover:border-border-strong data-[popup-open]:border-border-strong",
-          "aria-invalid:border-destructive",
+          "[&:is([aria-invalid=true],[data-invalid])]:border-destructive!",
         ],
         ghost: [
           "w-full justify-between border border-transparent bg-transparent px-3.5 text-muted-foreground",

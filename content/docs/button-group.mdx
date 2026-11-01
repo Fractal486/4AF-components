@@ -1,6 +1,6 @@
 ---
 title: Button Group
-description: A grouped set of related buttons with shared geometry and separators.
+description: A grouped set of related buttons, optionally joined with input, select, and date fields, with shared geometry and separators.
 ---
 
 <ComponentReference name="button-group" />
@@ -23,3 +23,53 @@ controls switch between content panels. Direct `Button` children default to
 `pressTarget="content"` so press feedback leaves the joined edges still. Fragments are flattened;
 other components receive the joining classes but must forward them to their button and set
 their own variant, size, shape, and press behavior.
+
+## Fields
+
+Fields can join the group alongside Buttons: `Input`, `Select`, `AlignedSelect`,
+`SearchSelect`, and the `DatePicker` and `DateRangePicker` triggers. Use it for a search field with a submit button,
+a currency select beside an amount, or a grouping select beside a date range.
+
+```tsx
+<ButtonGroup variant="outline" aria-label="Search" className="w-full">
+  <Input aria-label="Query" placeholder="Search…" />
+  <Button>Search</Button>
+</ButtonGroup>
+
+<ButtonGroup variant="outline" aria-label="Amount" className="w-full">
+  <Select size="md" defaultValue="usd">
+    <SelectTrigger aria-label="Currency">
+      <SelectValue />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="usd">USD</SelectItem>
+      <SelectItem value="eur">EUR</SelectItem>
+    </SelectContent>
+  </Select>
+  <Input aria-label="Amount" inputMode="decimal" />
+</ButtonGroup>
+```
+
+- A group containing a field is always framed by one outline. The field drops its own border
+  and keeps divider hairlines on its joined edges, whatever the Buttons' variant.
+- Focused or invalid, the field shows its full border and ring and is raised over its
+  neighbours.
+- Horizontally, Input and SearchSelect take the free width (`flex-1`). Select, AlignedSelect,
+  and date picker triggers size to the value they show, like Buttons to their labels, and
+  resize when it changes. Their standalone widths, such as the date picker's panel width, do
+  not apply in a group. Give the group a width, such as `className="w-full"`, when it has
+  a text field.
+- The layout defaults have zero specificity. Pass `className="flex-1"` to a trigger to make
+  it fill, or `basis-*` to fix its width; `w-*` alone does not apply in a group.
+- Match the sizes so every control has the same height: the `xs`, `sm`, and `md` sizes of
+  Select, AlignedSelect, and the date pickers equal Button's (24px, 30px, 34px); SearchSelect
+  has `sm` and `md`. Input is
+  34px only, so a group with an Input uses `md`. The group's `size` reaches Buttons only;
+  set each field's own `size`.
+- Use the `default` Input variant. `startIcon` and `endAction` work inside a group. Put a
+  field's description and errors outside the group.
+- Fields are recognised by `data-slot`: `input`, `input-wrapper`, `search-select-field`,
+  `select-trigger`, `aligned-select-trigger`, and `date-picker-trigger`. ButtonGroup does not import them.
+- The hidden form input that the selects, and a date picker with `name`, render after their
+  trigger does not count as a neighbour: a trigger before it is still the group's last
+  control.

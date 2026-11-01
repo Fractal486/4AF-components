@@ -32,6 +32,8 @@ const PILL_CHAR_PX = 6; // one `text-xs` character, averaged over mixed-case Lat
 const SETTINGS_FIELD_PX = 192; // `max-w-48`, the text control this lines up with
 // Wrap only when this label and control cannot fit together, regardless of panel width.
 const CONTROL_ROW = "flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-2";
+/** A setting that doesn't apply to the current configuration dims as a whole row. */
+const DISABLED_ROW = "cursor-not-allowed opacity-50";
 
 export function fitsPillTabs(labels: readonly string[]): boolean {
   // One option is not a choice, and a lone pill reads as a button that does nothing.
@@ -101,16 +103,17 @@ function Control({
   // and Fast Refresh keeps the old state around. Without it, the field flips from
   // uncontrolled to controlled and Base UI (rightly) warns.
   const value = rawValue === undefined ? def.defaultValue : rawValue;
+  const disabled = def.disabledWhen?.(values) ?? false;
+  const row = cn(CONTROL_ROW, disabled && DISABLED_ROW);
 
   if (def.kind === "boolean") {
-    const disabled = def.disabledWhen?.(values) ?? false;
     // The whole row is the hit area (wrapping <label>), not a 16px square you aim at —
     // this mirrors the Checkbox's own label structure, so a row click toggles it.
     return (
       <label
         className={cn(
           "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-4",
-          disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
+          disabled ? DISABLED_ROW : "cursor-pointer",
         )}
       >
         <span className="min-w-0 text-sm text-muted-foreground select-none">{label}</span>
@@ -126,13 +129,12 @@ function Control({
   if (def.kind === "select") {
     const labelId = `${id}-label`;
     const selectedLabel = humanizeLabel(value as string);
-    const disabled = def.disabledWhen?.(values) ?? false;
 
     if (fitsPillTabs(def.options.map(humanizeLabel))) {
       // The tab's value is the raw option, so picking one hands back exactly what the schema
       // declared — no round-trip through the display label and back.
       return (
-        <div className={CONTROL_ROW}>
+        <div className={row}>
           <span id={labelId} className="min-w-0 text-sm text-muted-foreground">
             {label}
           </span>
@@ -157,7 +159,7 @@ function Control({
     }
 
     return (
-      <div className={CONTROL_ROW}>
+      <div className={row}>
         <span id={labelId} className="min-w-0 text-sm text-muted-foreground">
           {label}
         </span>
@@ -189,17 +191,17 @@ function Control({
 
   if (def.kind === "multiselect") {
     const labelId = `${id}-label`;
-    const selected = value as readonly string[];
+    const selected = Array.isArray(value) ? value as readonly string[] : def.defaultValue;
 
-    // The library's own multi-select. Its trigger names the picks rather than counting them:
-    // with three options at most, "Horizontal, Outline" says more than "2 selected".
+    // A compact count can summarize longer option lists without widening the setting.
     return (
-      <div className={CONTROL_ROW}>
+      <div className={row}>
         <span id={labelId} className="min-w-0 text-sm text-muted-foreground">
           {label}
         </span>
         <Select<string, true>
           multiple
+          disabled={disabled}
           value={[...selected]}
           onValueChange={(next) =>
             // Kept in the schema's order, whatever order they were picked in.
@@ -214,6 +216,7 @@ function Control({
             <SelectValue>
               {(picked: unknown) => {
                 const options = Array.isArray(picked) ? (picked as string[]) : [];
+                if (def.showCount) return `${options.length} selected`;
                 return options.length === 0 ? (
                   <span className="text-muted-foreground">None</span>
                 ) : (
@@ -241,7 +244,7 @@ function Control({
     // Keep the label, rail, and value in one compact row so numeric props follow their
     // names instead of taking a full-width line in the settings strip.
     return (
-      <div className={CONTROL_ROW}>
+      <div className={row}>
         <span className="min-w-0 text-sm text-muted-foreground">{label}</span>
         <div className="ml-auto flex min-w-0 max-w-full shrink-0 items-center gap-2">
           <Slider
@@ -254,6 +257,7 @@ function Control({
             min={def.min}
             max={def.max}
             step={def.step}
+            disabled={disabled}
             value={value as number}
             onValueChange={onChange}
           />
@@ -268,7 +272,7 @@ function Control({
   const labelId = `${id}-label`;
 
   return (
-    <label className={CONTROL_ROW}>
+    <label className={row}>
       <span id={labelId} className="min-w-0 text-sm text-muted-foreground">
         {label}
       </span>
@@ -276,8 +280,9 @@ function Control({
         id={id}
         aria-labelledby={labelId}
         tone="accent"
-        className="ml-auto w-48 max-w-full shrink-0"
+        wrapperClassName="ml-auto w-48 max-w-full shrink-0"
         value={value as string}
+        disabled={disabled}
         placeholder={def.placeholder}
         onChange={(e) => onChange(e.target.value)}
       />

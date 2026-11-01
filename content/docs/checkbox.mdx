@@ -1,13 +1,65 @@
 ---
 title: Checkbox
-description: A Base UI checkbox supporting controlled, uncontrolled, and indeterminate states.
+description: An animated Base UI checkbox with shared group values, select-all parents, and validation styling.
 ---
 
 <ComponentReference name="checkbox" />
 
 ## API
 
-**Main export:** `Checkbox`
+**Main exports:** `Checkbox`, `CheckboxGroup`
 
 A Base UI checkbox with a tick that draws itself, an indeterminate state, and an optional
 clickable `label`. It is a fixed 16px box with a 4px radius and has no `size` prop.
+
+### Checkbox
+
+| Prop | Default | Purpose |
+| --- | --- | --- |
+| `checked`, `defaultChecked`, `onCheckedChange` | Uncontrolled, off | Controlled or uncontrolled selection. Call `details.cancel()` to reject a change. |
+| `indeterminate` | `false` | Shows a dash for a mixed selection. A group parent derives this automatically. |
+| `label` | — | Optional React node beside the box, inside a clickable label. |
+| `labelClassName` | — | Classes for the wrapping label. |
+| `value` | Base UI default | Identifies a checkbox in its group and in form submission. Use a unique string for each group item. |
+| `parent` | `false` | Toggles all values in the nearest group's `allValues`. |
+| `disabled`, `readOnly`, `required` | `false` | Base UI interaction and form constraints. Group and Field disabled state are inherited. |
+| `render` | Motion button | Custom element or `(props, state) => ReactElement`. Forward the supplied props, children, and ref. Custom rendering owns its press animation. |
+| `nativeButton` | `true` for the default renderer; otherwise `false` | Set to `true` when a custom renderer returns a native button. |
+| `className` | — | String or `(state) => string \| undefined`. Classes merge with the built-in styles. State includes checked, indeterminate, disabled, read-only, and Field state. |
+
+Native form props, `ref`, and `inputRef` pass through to Base UI. `children` adds content
+alongside the built-in indicator. `CheckboxMark` remains available for non-interactive
+checkbox visuals in composed controls.
+
+### CheckboxGroup
+
+| Prop | Default | Purpose |
+| --- | --- | --- |
+| `value`, `defaultValue`, `onValueChange` | Uncontrolled, empty | Array of selected strings. The callback receives `(values, details)` and supports `details.cancel()`. |
+| `allValues` | — | Every selectable value covered by the group's parent checkbox. Required when using `parent`. |
+| `disabled` | `false` | Disables the group's checkboxes. |
+| `render` | `div` | Custom element or render function, with the supplied props, children, and ref forwarded. |
+| `className` | — | String or state function, merged with the default vertical layout and spacing. |
+
+## Groups and select all
+
+Import `CheckboxGroup` from the same `checkbox` module; no separate install is needed.
+Give every group an `aria-label` or `aria-labelledby`. Its checkboxes use `value` to join
+the shared selection. A checkbox with `parent` selects or clears `allValues` and shows a
+dash when only some values are selected.
+
+Nested groups each manage their own values. To make an outer parent cover every nested
+group, keep a shared selected-value array, pass each inner group its filtered subset, and
+merge inner changes back into that array. Pass all values to the outer group's `allValues`.
+Checkboxes always use their nearest group; independently controlled groups are not
+automatically synchronized.
+
+## Validation and styling
+
+`aria-invalid="true"` and Base UI Field's `data-invalid` both show a destructive border
+and ring, including checked and indeterminate states. A Field's validation drives this
+automatically; `aria-invalid` is available when validation is managed elsewhere.
+
+The box exposes `data-slot="checkbox"`, the mark `data-slot="checkbox-indicator"`, and
+the group `data-slot="checkbox-group"`. Base UI adds checked, unchecked, indeterminate,
+disabled, read-only, required, and Field-state attributes where applicable.

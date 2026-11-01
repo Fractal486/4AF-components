@@ -25,6 +25,8 @@ export const sidebarMenuButtonVariants = cva(
     "aria-disabled:pointer-events-none aria-disabled:opacity-50",
     // Leaves room for a trailing action button when the row has one.
     "group-has-data-[slot=sidebar-menu-action]/menu-item:pr-8",
+    "group-has-[>_[data-slot=sidebar-menu-badge]]/menu-item:pr-10",
+    "pointer-coarse:group-has-[>_[data-replaces-badge]]/menu-item:pr-16",
     // Collapsed to the icon rail, every row becomes a square with the glyph centred.
     // `!` because the size/padding above are set per-size and would otherwise win.
     "group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2!",
@@ -81,6 +83,33 @@ export const sidebarMenuSubButtonVariants = cva(
 );
 
 export type SidebarMenuButtonVariants = VariantProps<typeof sidebarMenuButtonVariants>;
+
+/** Replacement actions share the badge slot on a mouse; touch keeps both reachable. */
+export const sidebarMenuReplacementActionVariants = cva([
+  "data-[replaces-badge]:pointer-fine:opacity-0",
+  "data-[replaces-badge]:pointer-fine:group-hover/menu-item:opacity-100",
+  "data-[replaces-badge]:pointer-fine:group-focus-within/menu-item:opacity-100",
+  "data-[replaces-badge]:pointer-fine:data-popup-open:opacity-100 data-[replaces-badge]:pointer-fine:data-[state=open]:opacity-100",
+]);
+
+export const sidebarMenuBadgeVariants = cva([
+  "pointer-events-none absolute right-1 flex h-5 min-w-5 items-center justify-center rounded-md px-1",
+  "text-xs font-medium tabular-nums text-muted-foreground select-none",
+  "data-[tone=success]:text-success data-[tone=warning]:text-warning-700 dark:data-[tone=warning]:text-warning-400 data-[tone=destructive]:text-destructive",
+  "peer-data-[size=sm]/menu-button:top-1 peer-data-[size=default]/menu-button:top-1.5 peer-data-[size=lg]/menu-button:top-2.5",
+  "group-has-[>_[data-replaces-badge]]/menu-item:right-8 pointer-fine:group-has-[>_[data-replaces-badge]]/menu-item:right-1",
+  "group-has-data-[slot=sidebar-menu-chevron]/menu-collapsible:right-8",
+  "group-has-data-[slot=sidebar-menu-action]/menu-collapsible:right-14!",
+  "pointer-fine:group-has-[>_[data-replaces-badge]]/menu-collapsible:right-8!",
+  "pointer-fine:group-has-[>_[data-replaces-badge]]/menu-item:group-hover/menu-item:opacity-0",
+  "pointer-fine:group-has-[>_[data-replaces-badge]]/menu-item:group-focus-within/menu-item:opacity-0",
+  "pointer-fine:group-has-[>_[data-replaces-badge][data-popup-open]]/menu-item:opacity-0",
+  "pointer-fine:group-has-[>_[data-replaces-badge][data-state=open]]/menu-item:opacity-0",
+  "group-data-[collapsible=icon]:not-data-count:not-data-dot:hidden",
+  "group-data-[collapsible=icon]:right-1.5! group-data-[collapsible=icon]:top-1.5! group-data-[collapsible=icon]:size-1.5 group-data-[collapsible=icon]:min-w-0 group-data-[collapsible=icon]:p-0",
+  // The replacement action disappears in icon mode; its notification dot stays visible.
+  "group-data-[collapsible=icon]:opacity-100!",
+]);
 export type SidebarMenuSubButtonVariants = VariantProps<typeof sidebarMenuSubButtonVariants>;
 
 /** Fixed icon-only controls used by the split sidebar rail. */

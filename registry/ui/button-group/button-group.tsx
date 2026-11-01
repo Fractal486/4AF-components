@@ -97,6 +97,11 @@ function flattenElements(children: ReactNode): ReactElement<ItemProps>[] {
  * props injected; anything else in the group (a menu trigger, a `Tooltip`-wrapped
  * button) receives the class names and is otherwise left alone, because passing it
  * props it doesn't know about would land them on the DOM.
+ *
+ * An Input or a Select joins the run as a field: it takes the free width and gives its
+ * border to the group's outline. That styling lives on the group (see
+ * `button-group.variants.ts`), keyed off the fields' `data-slot`, so this file needs no
+ * import of either.
  */
 export function ButtonGroup({
   className,

@@ -22,7 +22,7 @@ export const collapsibleTriggerVariants = cva(
   [
     "group/collapsible-trigger flex w-full cursor-pointer items-center gap-2",
     "text-left text-sm font-medium select-none",
-    "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+    "[&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0",
     // Only the colours change here — the chevron's rotation is named on the chevron
     // itself, so neither element is watching properties it never animates.
     "transition-[background-color,color] duration-(--duration-fast) ease-out",
@@ -45,31 +45,25 @@ export const collapsibleTriggerVariants = cva(
   },
 );
 
-/**
- * The panel — the only element in this library that transitions a layout property, and the
- * reason why is in `collapsible.tsx`. Its one job is to open the space; the content inside
- * it isn't clipped and doesn't move.
- *
- * Base UI measures the panel and publishes `--collapsible-panel-height`; once the panel is
- * open and settled it resets that var to `auto`, so content that grows later (a nested
- * disclosure, a loaded image) isn't stuck at the height it was measured at.
- *
- * **No `overflow-hidden`.** Clipping would reveal the content top-down as the panel grows,
- * which reads as a wipe over text that is otherwise standing still. Without it the content
- * simply fades in where it will end up, and the height transition does nothing but move
- * the rows below out of the way — which was the only thing it was ever needed for. The
- * content does overhang the following row for the length of the transition, but it's
- * transparent at the moment the overhang is largest, so there's nothing to see. It also
- * means a focus ring inside the content isn't cropped, which a clip would have done.
- *
- * The panel carries no padding of its own, deliberately: padding is part of the box, so a
- * padded element at `h-0` is still padding-tall and the panel could never close flush.
- * That's the inner content box's job.
- */
+export const collapsibleIconVariants = cva(
+  "inline-flex size-4 shrink-0 items-center justify-center text-muted-foreground [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
+);
+
+export const collapsibleChevronVariants = cva(
+  "transition-[rotate] duration-(--duration-base) ease-out group-data-[panel-open]/collapsible-trigger:rotate-90",
+);
+
+/** Height and margins reflow the following rows, including the column gap. The panel
+ * stays padding-free so it can reach zero; overflow returns after the motion settles.
+ * Base UI resets its measured height to auto so open content can grow naturally. */
 export const collapsiblePanelVariants = cva([
-  "group/collapsible-panel h-(--collapsible-panel-height)",
-  "transition-[height] duration-(--duration-base) ease-out",
+  "group/collapsible-panel h-(--collapsible-panel-height) overflow-clip data-[settled]:overflow-visible",
+  "transition-[height,margin-block-start,margin-block-end] duration-(--duration-base) ease-out",
   "data-[starting-style]:h-0 data-[ending-style]:h-0",
+  "data-[starting-style]:[margin-block-start:calc(-1*var(--collapsible-gap-start,0px))]",
+  "data-[starting-style]:[margin-block-end:calc(-1*var(--collapsible-gap-end,0px))]",
+  "data-[closed]:[margin-block-start:calc(-1*var(--collapsible-gap-start,0px))]",
+  "data-[closed]:[margin-block-end:calc(-1*var(--collapsible-gap-end,0px))]",
 ]);
 
 /** The content inside the panel: padding, and the fade that lands it. */

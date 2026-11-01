@@ -8,10 +8,38 @@ description: A searchable Base UI select for larger option sets.
 ## API
 
 **Main exports:** `SearchSelect`, `SearchSelectInput`, `SearchSelectContent`, `SearchSelectItem`,
-`SearchMultiSelectItem`
+`SearchMultiSelectItem`, `SearchSelectGroup`, `SearchSelectGroupLabel`, `SearchSelectCollection`
 
 An editable Combobox-style trigger with live filtering, single or checkbox-based multi-selection,
 icons, and full keyboard and ARIA behaviour.
+
+## Sections
+
+For grouped data, pass `items` as an array of `{ label, items }` groups. The content's render
+function receives each filtered group. Render a `SearchSelectGroup` with that group's `items`,
+a `SearchSelectGroupLabel` for its heading, and a `SearchSelectCollection` inside it to render
+the filtered options with `SearchSelectItem` or `SearchMultiSelectItem`. Base UI owns filtering,
+keyboard navigation, and the accessible connection between headings and options. Empty
+sections hide their headings. Selected values remain individual items, not group objects.
+
+## State-based classes and validation
+
+The input, content, both item types, groups, and group labels accept a `className` string or
+`(state) => string | undefined`, merged with their defaults. State comes from each Base UI
+Combobox primitive: inputs include open and Field state, items include selected/highlighted
+state, and popups include open/side/alignment state. The placeholder sizer uses the input's
+resolved classes too, so state-based font and padding changes preserve its minimum width.
+
+The input styles both `aria-invalid="true"` and Field's `data-invalid`, including while focused
+or hovered. The error border and ring take precedence over either focus tone. Existing Field
+labels, descriptions, and validation behavior remain connected.
+
+## Popup placement
+
+`SearchSelectContent` accepts `side` (default `"bottom"`), `align` (default `"start"`),
+`sideOffset` (default `6`), and `alignOffset` (default `0`). Base UI still handles collision
+avoidance. `portalProps` forwards Portal options such as `container` (an element or ref)
+and `keepMounted`; Search Select keeps the portal mounted by default.
 
 ## Searching and cancelling
 
@@ -40,6 +68,13 @@ label for custom item shapes. Multi-select shows a count summary while the input
 The input trigger and its option rows share the selected size, and the input uses the matching
 button radius: 6px for `sm` and 8px for `md`.
 Single-select input text and icons align with their option-row counterparts at both sizes.
+The trailing chevron shares Select and Select Aligned's inset, including in vertical button groups.
+
+The input is at least as wide as its placeholder, including icon space, padding, and the
+dropdown button. It also reserves room for the displayed selection or multi-select summary.
+This minimum applies in button groups too; the field still expands to fill available space.
+The panel is at least as wide as the input and grows to fit its longest visible row, up to
+the available viewport width. Rows truncate only when that space runs out.
 
 ## Item data
 

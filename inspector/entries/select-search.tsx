@@ -5,6 +5,9 @@ import {
   SearchSelectContent,
   SearchSelectInput,
   SearchSelectItem,
+  SearchSelectGroup,
+  SearchSelectGroupLabel,
+  SearchSelectCollection,
 } from "@/registry/ui/select/select-search";
 import { FruitIcon } from "./select-fruit-icons";
 import { bool, defineEntry, select } from "../schema";
@@ -29,6 +32,21 @@ const MORE_FRUITS = [
 const ALL_FRUITS = [...FRUITS, ...MORE_FRUITS].sort((a, b) => a.label.localeCompare(b.label));
 
 type Fruit = { value: string; label: string };
+type FruitGroup = { label: string; items: readonly Fruit[] };
+
+function FruitOptions({ multiple, icons }: { multiple: boolean; icons: boolean }) {
+  const Item = multiple ? SearchMultiSelectItem : SearchSelectItem;
+  const row = (item: Fruit) => <Item key={item.value} value={item}
+    icon={icons ? <FruitIcon value={item.value} /> : undefined}>{item.label}</Item>;
+  return <SearchSelectContent emptyMessage="No fruit found.">
+    {(item: Fruit | FruitGroup) => "items" in item ? (
+      <SearchSelectGroup key={item.label} items={item.items}>
+        <SearchSelectGroupLabel>{item.label}</SearchSelectGroupLabel>
+        <SearchSelectCollection>{row}</SearchSelectCollection>
+      </SearchSelectGroup>
+    ) : row(item)}
+  </SearchSelectContent>;
+}
 
 export const selectSearchEntry = defineEntry({
   slug: "select-search",
@@ -40,11 +58,16 @@ export const selectSearchEntry = defineEntry({
     multiple: bool(false),
     selected: bool(true, "Selected"),
     scrollable: bool(false, "Scrollable"),
+    groups: bool(false, "Sections"),
     icons: bool(true),
     invalid: bool(false),
   },
-  render({ size, tone, disabled, multiple, selected, scrollable, icons, invalid }) {
+  render({ size, tone, disabled, multiple, selected, scrollable, groups, icons, invalid }) {
     const items: readonly Fruit[] = scrollable ? ALL_FRUITS : FRUITS;
+    const options = groups ? [
+      { label: "Berries", items: items.filter((item) => item.value.endsWith("berry")) },
+      { label: "Other fruit", items: items.filter((item) => !item.value.endsWith("berry")) },
+    ] : items;
     return (
       <div className="w-full max-w-56">
         {multiple ? (
@@ -52,7 +75,7 @@ export const selectSearchEntry = defineEntry({
             key={`multiple-${selected}`}
             multiple
             size={size}
-            items={items}
+            items={options}
             defaultValue={selected ? [FRUITS[1], FRUITS[4]] : []}
             disabled={disabled}
           >
@@ -63,24 +86,14 @@ export const selectSearchEntry = defineEntry({
               aria-invalid={invalid ? true : undefined}
               aria-describedby={invalid ? "select-search-error" : undefined}
             />
-            <SearchSelectContent emptyMessage="No fruit found.">
-              {(item: Fruit) => (
-                <SearchMultiSelectItem
-                  key={item.value}
-                  value={item}
-                  icon={icons ? <FruitIcon value={item.value} /> : undefined}
-                >
-                  {item.label}
-                </SearchMultiSelectItem>
-              )}
-            </SearchSelectContent>
+            <FruitOptions multiple icons={icons} />
           </SearchSelect>
         ) : (
           <SearchSelect<Fruit>
             key={`single-${selected}`}
             defaultValue={selected ? FRUITS[4] : null}
             size={size}
-            items={items}
+            items={options}
             disabled={disabled}
             iconForValue={icons ? (value) => <FruitIcon value={value.value} /> : undefined}
           >
@@ -91,17 +104,7 @@ export const selectSearchEntry = defineEntry({
               aria-invalid={invalid ? true : undefined}
               aria-describedby={invalid ? "select-search-error" : undefined}
             />
-            <SearchSelectContent emptyMessage="No fruit found.">
-              {(item: Fruit) => (
-                <SearchSelectItem
-                  key={item.value}
-                  value={item}
-                  icon={icons ? <FruitIcon value={item.value} /> : undefined}
-                >
-                  {item.label}
-                </SearchSelectItem>
-              )}
-            </SearchSelectContent>
+            <FruitOptions multiple={false} icons={icons} />
           </SearchSelect>
         )}
         {invalid && <Alert id="select-search-error">Please choose an option.</Alert>}

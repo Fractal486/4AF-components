@@ -7,6 +7,21 @@ description: A select whose panel opens on the trigger, with the selected row la
 
 ## API
 
+All public parts accept a `className` string or `(state) => string | undefined`, merged with
+their default styles. Each callback receives its Base UI primitive's state: the trigger
+includes open and Field state, rows include selected/highlighted/disabled state, and the
+popup includes open/side/alignment state. Groups and their labels support callbacks too.
+
+`AlignedSelectTrigger` styles both `aria-invalid="true"` and Field's `data-invalid`. Error
+styling remains visible while focused, hovered, or open. Default triggers show a destructive
+border and ring; ghost and plain triggers show the ring.
+
+`AlignedSelectContent` accepts `portalProps` for Base UI Portal options, including `container`
+and `keepMounted`. Its `alignOffset` shorthand defaults to Base UI's `0` and applies to normal
+dropdown placement; selected-row overlap keeps the row aligned with the trigger. Existing
+`positionerProps` remains available for full positioning control and takes precedence over
+the shorthand when both specify an offset.
+
 **Main exports:** `AlignedSelect`, `AlignedSelectTrigger`, `AlignedSelectContent`,
 `AlignedSelectItem`, `AlignedSelectGroup`, `AlignedSelectGroupLabel`
 
@@ -29,8 +44,8 @@ leaving the glyph directly beside the label. The focus ring remains for keyboard
 It also accepts an optional `label`, rendered as a dimmed prefix before the value. For example,
 `label="Fruit"` displays `Fruit: Banana`.
 
-By default, default and ghost panels match the trigger width; plain panels fit their content, at
-least 200px wide.
+By default, default and ghost panels are at least the trigger's width; plain panels are at least
+200px wide. Both grow to the longest row, so rows are not truncated while the viewport has room.
 Set `width="trigger"` or `width="content"` on `AlignedSelectContent` to override.
 
 ```tsx

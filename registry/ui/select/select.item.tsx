@@ -1,4 +1,4 @@
-import { cn } from "@/registry/lib/cn";
+import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Select as BaseSelect } from "@base-ui/react/select";
 import { Check } from "lucide-react";
@@ -16,11 +16,21 @@ import { SELECT_CLEAR_ACTION, SelectContext, SelectSubItemContext } from "./sele
 import { SIZE, SelectItemIcon } from "./select.shared";
 import { isEquivalentNode, setForwardedRef } from "./select.utils";
 
+/** Accessible section; filtering hides its heading when no visible options remain. */
+export function SelectGroup({ className, ...props }: ComponentProps<typeof BaseSelect.Group>) {
+  return <BaseSelect.Group data-slot="select-group"
+    className={mergeStateClassName("flex flex-col [&:not(:has([role=option]:not([hidden])))]:hidden", className)} {...props} />;
+}
+
+export function SelectGroupLabel({ className, ...props }: ComponentProps<typeof BaseSelect.GroupLabel>) {
+  return <BaseSelect.GroupLabel data-slot="select-group-label"
+    className={mergeStateClassName("px-2.5 pt-2 pb-1 text-[10px] font-medium text-subtle-foreground/70", className)} {...props} />;
+}
+
 export type SelectSeparatorProps = Omit<
   ComponentProps<typeof BaseSelect.Separator>,
-  "className" | "orientation" | "ref"
+  "orientation" | "ref"
 > & {
-  className?: string;
   orientation?: ComponentProps<typeof BaseSelect.Separator>["orientation"];
 };
 
@@ -39,7 +49,7 @@ export const SelectSeparator = forwardRef<HTMLDivElement, SelectSeparatorProps>(
         ref={forwardedRef}
         data-slot="select-separator"
         orientation={orientation}
-        className={cn(
+        className={mergeStateClassName(cn(
           // A border rather than a one-pixel filled box, which is how every other rule in
           // the panel is drawn — the search field's included. The two are the same pixel
           // on paper, but a background box lands wherever the box lands: at a fractional
@@ -48,9 +58,7 @@ export const SelectSeparator = forwardRef<HTMLDivElement, SelectSeparatorProps>(
           "shrink-0 border-border",
           orientation === "horizontal"
             ? "-mx-1 my-1 h-0 w-auto border-t"
-            : "mx-1 h-full w-0 border-l",
-          className,
-        )}
+            : "mx-1 h-full w-0 border-l"), className)}
         {...props}
       />
     );
@@ -59,11 +67,10 @@ export const SelectSeparator = forwardRef<HTMLDivElement, SelectSeparatorProps>(
 
 export type SelectItemProps = Omit<
   ComponentProps<typeof BaseSelect.Item>,
-  "className" | "disabled"
+  "disabled"
 > & {
   /** An optional leading icon. It is inert and hidden from assistive technology. */
   icon?: ReactNode;
-  className?: string;
   children?: ReactNode;
   disabled?: boolean;
   /** Optional trailing content in place of the selection indicator. */
@@ -266,7 +273,7 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
         onMouseUp={handleMouseUp}
         onPointerCancel={handlePointerCancel}
         onPointerDown={handlePointerDown}
-        className={cn(
+        className={mergeStateClassName(cn(
           "flex items-center gap-2.5 rounded-xs px-2.5 py-1.5 outline-none select-none",
           SIZE[size].row,
           "text-muted-foreground",
@@ -277,9 +284,7 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
               "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
           "data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
           "data-[selected]:text-foreground",
-          "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-          className,
-        )}
+          "data-[disabled]:pointer-events-none data-[disabled]:opacity-50"), className)}
         {...props}
       >
         {end || !indicator ? (
@@ -329,7 +334,7 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
       onMouseUp={handleMouseUp}
       onPointerCancel={handlePointerCancel}
       onPointerDown={handlePointerDown}
-      className={cn(
+      className={mergeStateClassName(cn(
         "flex items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
@@ -343,9 +348,7 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
             "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
         "data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
         "data-[selected]:text-foreground",
-        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-        className,
-      )}
+        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50"), className)}
       {...props}
     >
       <SelectItemIcon icon={icon} size={size} />

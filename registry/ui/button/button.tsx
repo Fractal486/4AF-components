@@ -37,7 +37,7 @@ export interface ButtonProps
   loading?: boolean;
   /** Overrides the nearest LoaderProvider for this button's loading indicator. */
   loader?: ReactNode;
-  /** Animate a scale change while pressed. Set false for anchored triggers. @default true */
+  /** Animate press scale. Defaults off for popup triggers and on for other buttons. */
   pressScale?: boolean;
   /**
    * Holds the button in its pressed state — e.g. while a popover or menu it triggers is
@@ -104,7 +104,7 @@ export function Button({
   loading = false,
   loader,
   loadingLabel = "Loading",
-  pressScale = true,
+  pressScale: pressScaleProp,
   pressed = false,
   pressTarget = "button",
   disabled,
@@ -114,6 +114,11 @@ export function Button({
   ...props
 }: ButtonProps) {
   const children = useSlotChild(childrenProp);
+  const childPopup = asChild && isValidElement<{ "aria-haspopup"?: ButtonProps["aria-haspopup"] }>(children)
+    ? children.props["aria-haspopup"] : undefined;
+  const popup = props["aria-haspopup"] ?? childPopup;
+  const isPopupTrigger = popup != null && popup !== false && popup !== "false";
+  const pressScale = pressScaleProp ?? !isPopupTrigger;
   const isDisabled = disabled || loading;
   const icons = iconEdges(children, asChild);
   const reduceMotion = useReducedMotion();
@@ -205,6 +210,7 @@ export function Button({
       data-variant={variant ?? "primary"}
       data-size={size ?? "md"}
       data-shape={shape ?? "rectangular"}
+      data-popup-trigger={isPopupTrigger ? "" : undefined}
       data-loading={loading || undefined}
       data-pressed={pressed || undefined}
       data-icon-start={icons.start || undefined}

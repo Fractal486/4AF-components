@@ -2,7 +2,7 @@
 
 import { ScrollArea as BaseScrollArea } from "@base-ui/react/scroll-area";
 import { useEffect, useRef, type ComponentProps, type Ref } from "react";
-import { cn } from "@/registry/lib/cn";
+import { mergeStateClassName } from "@/registry/lib/cn";
 import { useMergedRefs } from "@/registry/lib/refs";
 import {
   scrollAreaScrollbarVariants,
@@ -28,11 +28,12 @@ import {
 export interface ScrollAreaProps
   extends Omit<ComponentProps<typeof BaseScrollArea.Root>, "className">,
     ScrollAreaVariants {
-  className?: string;
+  /** Root classes, or a callback receiving Base UI scrolling and overflow state. */
+  className?: ComponentProps<typeof BaseScrollArea.Root>["className"];
   /** Which axes scroll. Defaults to vertical. */
   orientation?: "vertical" | "horizontal" | "both";
-  /** Extra classes for the viewport, the element that scrolls. */
-  viewportClassName?: string;
+  /** Viewport classes, or a callback receiving its scrolling and overflow state. */
+  viewportClassName?: ComponentProps<typeof BaseScrollArea.Viewport>["className"];
   /** The viewport, for reading or setting the scroll position. */
   viewportRef?: Ref<HTMLDivElement>;
   /**
@@ -64,13 +65,13 @@ export function ScrollArea({
     <BaseScrollArea.Root
       data-orientation={orientation}
       data-scrollbar={scrollbar ?? "auto"}
-      className={cn(scrollAreaVariants(), className)}
+      className={mergeStateClassName(scrollAreaVariants(), className)}
       {...props}
     >
       <BaseScrollArea.Viewport
         {...viewportProps}
         ref={viewportRefs}
-        className={cn(scrollAreaViewportVariants({ fade }), viewportClassName)}
+        className={mergeStateClassName(scrollAreaViewportVariants({ fade }), viewportClassName)}
       >
         {/* Content is sized to fit its children, so a wide child overflows horizontally
             rather than being squeezed to the viewport. Only when that axis scrolls. */}
@@ -122,9 +123,10 @@ function useContentResize(viewportRef: { current: HTMLDivElement | null }, enabl
 export interface ScrollAreaScrollbarProps
   extends Omit<ComponentProps<typeof BaseScrollArea.Scrollbar>, "className">,
     Pick<ScrollAreaVariants, "scrollbar"> {
-  className?: string;
-  /** Extra classes for the thumb. */
-  thumbClassName?: string;
+  /** Track classes, or a callback receiving overflow, orientation, hover and scroll state. */
+  className?: ComponentProps<typeof BaseScrollArea.Scrollbar>["className"];
+  /** Thumb classes, or a callback receiving Base UI thumb state. */
+  thumbClassName?: ComponentProps<typeof BaseScrollArea.Thumb>["className"];
 }
 
 /** One scrollbar and its thumb. `ScrollArea` renders these; export for custom compositions. */
@@ -136,10 +138,10 @@ export function ScrollAreaScrollbar({
 }: ScrollAreaScrollbarProps) {
   return (
     <BaseScrollArea.Scrollbar
-      className={cn(scrollAreaScrollbarVariants({ scrollbar }), className)}
+      className={mergeStateClassName(scrollAreaScrollbarVariants({ scrollbar }), className)}
       {...props}
     >
-      <BaseScrollArea.Thumb className={cn(scrollAreaThumbVariants(), thumbClassName)} />
+      <BaseScrollArea.Thumb className={mergeStateClassName(scrollAreaThumbVariants(), thumbClassName)} />
     </BaseScrollArea.Scrollbar>
   );
 }

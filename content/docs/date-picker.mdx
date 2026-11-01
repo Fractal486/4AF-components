@@ -1,6 +1,6 @@
 ---
 title: Date Picker
-description: A date or date-range field that opens a calendar in a popover on every device.
+description: A single-date, multiple-date, or date-range field that opens a calendar in a popover on every device.
 ---
 
 <ComponentReference name="date-picker" />
@@ -13,21 +13,24 @@ description: A date or date-range field that opens a calendar in a popover on ev
 
 | Prop | Default | Description |
 | --- | --- | --- |
-| `value` | — | Controlled value: `Date \| null`, or `DateRange \| null` for the range picker. |
-| `defaultValue` | `null` | Uncontrolled initial value. |
-| `onValueChange` | — | Called with the new value, or `null` when cleared. |
+| `mode` | `"single"` | `DatePicker` only: `"single"` selects one date; `"multiple"` toggles separate dates. Use `DateRangePicker` for a continuous range. |
+| `value` | — | Controlled value: `Date \| null` for single, `Date[]` for multiple, or `DateRange \| null` for the range picker. |
+| `defaultValue` | `null` / `[]` | Uncontrolled initial value. Multiple mode defaults to an empty array. |
+| `onValueChange` | — | Called with the new value. Clearing reports `[]` in multiple mode and `null` otherwise. |
 | `open` / `defaultOpen` / `onOpenChange` | — / `false` / — | Controlled or uncontrolled panel state. |
 | `variant` | `"default"` | `"default"` boxed field, `"ghost"`, or `"plain"` (no surface, border, or horizontal padding). `default` and `ghost` are as wide as the panel; `plain` fits its text. The calendar icon sits at the end of the field. |
 | `size` | `"md"` | `"xs"` (24px), `"sm"` (30px), or `"md"` (34px). |
-| `placeholder` | `"Pick a date"` / `"Pick a date range"` | Trigger text while empty. |
+| `placeholder` | `"Pick a date"` / `"Pick dates"` / `"Pick a date range"` | Trigger text while empty, for single, multiple, or range selection. |
 | `title` | `"Select a date"` / `"Select dates"` | Popover accessible name. |
 | `locale` | `"en-US"` | BCP 47 locale for the `medium` trigger label (`Intl.DateTimeFormat`, `dateStyle: "medium"`). The grid and the month / year picker follow `calendarProps.locale`. |
 | `dateFormat` | `"medium"` | `"medium"` uses the locale's medium date or range format; `"numeric"` shows day / month / year in zero-padded numbers with dimmed separators (19 / 10 / 2026), in that order in every locale. Numeric ranges show both dates unless the endpoints are the same day, when one date is shown. |
-| `clearable` | `false` | Adds a Clear action to the panel once a value is set. Clearing reports `null` and closes the panel. |
+| `clearable` | `false` | Adds a Clear action once a value is set. Clears all selections and closes the panel, including when a multiple-selection minimum is set. |
 | `clearLabel` | `"Clear"` | Clear action text. |
 | `todayLabel` | `"Today"` | Current-month navigation action text. Shown on the left with an Undo2 icon; Clear stays on the right. |
 | `showToday` | `true` | Shows the Today action. Set `false` to hide it; the footer disappears when neither Today nor Clear is visible. |
-| `name` | — | Renders a hidden input: `YYYY-MM-DD`, or `YYYY-MM-DD/YYYY-MM-DD` for a range. |
+| `name` | — | Renders a hidden input: `YYYY-MM-DD` for single, comma-separated ISO dates in selection order for multiple, or `YYYY-MM-DD/YYYY-MM-DD` for a range. Empty selections submit an empty string. |
+| `calendarProps.min` / `calendarProps.max` | — | In multiple mode, minimum selected count when deselecting and maximum count when adding. At maximum, further additions are ignored and existing selections remain. In range mode these constrain nights. |
+| `calendarProps.disabled` | — | Days that cannot be selected. Accepts react-day-picker's `Matcher \| Matcher[]`: dates, date ranges, before/after bounds, weekdays, predicates, or booleans. For ranges, set `calendarProps.excludeDisabled` to also reject spans containing disabled days. |
 | `calendarProps` | — | Calendar options such as `disabled`, `startMonth`, `endMonth`, `captionLayout`, `weekStartsOn`, `timeZone`, range constraints (`min`, `max`, `excludeDisabled`), and `locale` (a react-day-picker locale). The picker owns `mode`, `selected`, `onSelect`, `required`, `numberOfMonths`, and initial focus; those are not exposed through this prop. |
 
 Other button props (`id`, `disabled`, `aria-*`, `className`, `ref`) go to the trigger. The trigger
@@ -76,8 +79,12 @@ is open).
 ## Behavior
 
 - Both pickers use a trigger-anchored `Popover` with the same calendar sizing on every device.
-- On open, focus goes to the selected day, else today, else the first enabled day.
+- On open, focus goes to the selected day (the last date in the array in multiple mode), else today, else the first enabled day.
 - A single date commits and closes on click.
+- Multiple mode commits each addition or removal immediately and stays open. Escape, an outside
+  click, or the trigger closes it without reverting selections. Dates remain selected across
+  month navigation. The trigger lists dates in selection order using `dateFormat` and truncates
+  visually when needed; the full text remains available to assistive technology.
 - Today returns to the current month without changing the selection or closing the panel. A draft range is preserved. It respects `today`, `timeZone`, month bounds, and `disableNavigation`; controlled calendars receive `onMonthChange`.
 - A range commits and closes on the second click, in either order. The first click of a new pick
   starts a fresh range. Dismissing mid-pick keeps the previous value. `calendarProps.min` and

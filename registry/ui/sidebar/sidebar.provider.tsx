@@ -1,8 +1,10 @@
 import { cn } from "@/registry/lib/cn";
+import { useMergedRefs } from "@/registry/lib/refs";
 import { TooltipProvider } from "@/registry/ui/tooltip/tooltip";
 import {
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -19,7 +21,48 @@ const SIDEBAR_WIDTH = "16rem";
 
 const SIDEBAR_WIDTH_ICON = "3rem";
 
-const SIDEBAR_KEYBOARD_SHORTCUT = "b";
+const SIDEBAR_KEYBOARD_SHORTCUT = "mod+b";
+
+const shortcutOwners = new Map<string, { element: HTMLDivElement; shortcut: string }>();
+
+function matchesShortcut(event: KeyboardEvent, shortcut: string) {
+  const parts = shortcut.toLowerCase().split("+").map((part) => part.trim());
+  const key = parts.pop();
+  if (!key || parts.some((part) => !["mod", "ctrl", "meta", "alt", "shift"].includes(part))) return false;
+  const apple = /Mac|iPhone|iPad|iPod/i.test(navigator.platform);
+  const ctrl = parts.includes("ctrl") || (parts.includes("mod") && !apple);
+  const meta = parts.includes("meta") || (parts.includes("mod") && apple);
+  return event.key.toLowerCase() === (key === "space" ? " " : key)
+    && event.ctrlKey === ctrl && event.metaKey === meta
+    && event.altKey === parts.includes("alt") && event.shiftKey === parts.includes("shift");
+}
+
+function isEditing(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  const editable = target.closest("[contenteditable]")?.getAttribute("contenteditable");
+  return target.isContentEditable || (editable !== undefined && editable !== null && editable !== "false")
+    || Boolean(target.closest("input, textarea, select, [role=textbox]"));
+}
+
+function shortcutOwner(event: KeyboardEvent) {
+  let scope = (document.activeElement instanceof Element ? document.activeElement : null)
+    ?.closest<HTMLElement>("[data-sidebar-scope]");
+  while (scope) {
+    const id = scope.dataset.sidebarScope!;
+    const owner = shortcutOwners.get(id);
+    if (owner && matchesShortcut(event, owner.shortcut)) return id;
+    scope = scope.parentElement?.closest<HTMLElement>("[data-sidebar-scope]") ?? null;
+  }
+  // DOM order, rather than effect registration order, also handles nested providers.
+  return [...shortcutOwners.entries()]
+    .filter(([, owner]) => matchesShortcut(event, owner.shortcut))
+    .sort(([, a], [, b]) => a.element.compareDocumentPosition(b.element) & Node.DOCUMENT_POSITION_PRECEDING ? 1 : -1)[0]?.[0];
+}
+
+export function sidebarShortcutLabel(shortcut: string) {
+  const labels: Record<string, string> = { mod: "Ctrl/⌘", ctrl: "Ctrl", meta: "⌘", alt: "Alt", shift: "Shift", space: "Space" };
+  return shortcut.split("+").map((part) => labels[part.trim().toLowerCase()] ?? part.trim().toUpperCase()).join(" + ");
+}
 
 const MOBILE_BREAKPOINT = 768;
 
@@ -48,6 +91,8 @@ export interface SidebarProviderProps extends ComponentProps<"div"> {
   onOpenChange?: (open: boolean) => void;
   /** Persist the open state to a cookie so the server can render it already correct. */
   persist?: boolean;
+  /** A key combination such as `mod+b` or `ctrl+shift+s`; null disables it. */
+  keyboardShortcut?: string | null;
 }
 
 export function SidebarProvider({
@@ -55,11 +100,16 @@ export function SidebarProvider({
   open: openProp,
   onOpenChange,
   persist = true,
+  keyboardShortcut = SIDEBAR_KEYBOARD_SHORTCUT,
   className,
   style,
   children,
+  ref,
   ...props
 }: SidebarProviderProps) {
+  const shortcutScope = useId();
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const wrapperRefs = useMergedRefs(wrapperRef, ref);
   const isMobile = useIsMobile();
   const [openMobile, setOpenMobile] = useState(false);
   const [uncontrolled, setUncontrolled] = useState(defaultOpen);
@@ -92,21 +142,26 @@ export function SidebarProvider({
   }, [isMobile, open, openMobile, setOpen]);
 
   useEffect(() => {
+    const element = wrapperRef.current;
+    if (!element || !keyboardShortcut) return;
+    shortcutOwners.set(shortcutScope, { element, shortcut: keyboardShortcut });
     const onKeyDown = (event: KeyboardEvent) => {
-      if (
-        event.key.toLowerCase() === SIDEBAR_KEYBOARD_SHORTCUT &&
-        (event.metaKey || event.ctrlKey)
-      ) {
-        event.preventDefault();
-        toggleSidebar();
-      }
+      if (event.defaultPrevented || event.repeat || event.isComposing || isEditing(event.target)
+        || !matchesShortcut(event, keyboardShortcut) || shortcutOwner(event) !== shortcutScope) return;
+      event.preventDefault();
+      toggleSidebar();
     };
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [toggleSidebar]);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      shortcutOwners.delete(shortcutScope);
+    };
+  }, [keyboardShortcut, shortcutScope, toggleSidebar]);
 
   const value = useMemo<SidebarContextValue>(
     () => ({
+      shortcutScope,
+      keyboardShortcut,
       state: open ? "expanded" : "collapsed",
       open,
       setOpen,
@@ -115,7 +170,7 @@ export function SidebarProvider({
       isMobile,
       toggleSidebar,
     }),
-    [open, setOpen, openMobile, isMobile, toggleSidebar],
+    [open, setOpen, openMobile, isMobile, toggleSidebar, shortcutScope, keyboardShortcut],
   );
 
   return (
@@ -124,6 +179,8 @@ export function SidebarProvider({
           moving between rail icons shows the next one immediately instead of re-waiting. */}
       <TooltipProvider delay={0}>
         <div
+          ref={wrapperRefs}
+          data-sidebar-scope={shortcutScope}
           data-slot="sidebar-wrapper"
           style={
             {
