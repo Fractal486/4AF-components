@@ -223,6 +223,30 @@ import { Button } from "@/components/ui/button";
   </DialogContent>
 </Dialog>`,
   },
+  "context-menu": {
+    usage: `import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuShortcut,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+
+<ContextMenu>
+  <ContextMenuTrigger className="rounded-xl border border-dashed border-border p-8">
+    Right click here
+  </ContextMenuTrigger>
+  <ContextMenuContent>
+    <ContextMenuItem>
+      Duplicate
+      <ContextMenuShortcut keys="mod+d" />
+    </ContextMenuItem>
+    <ContextMenuSeparator />
+    <ContextMenuItem variant="destructive">Delete</ContextMenuItem>
+  </ContextMenuContent>
+</ContextMenu>`,
+  },
   "dropdown-menu": {
     usage: `import {
   DropdownMenu,

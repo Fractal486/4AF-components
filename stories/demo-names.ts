@@ -18,6 +18,7 @@ export const DEMO_NAMES = [
   "checkbox",
   "collapsible",
   "command-palette",
+  "context-menu",
   "copy-button",
   "date-picker",
   "delete-button",

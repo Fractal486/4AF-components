@@ -432,6 +432,37 @@ describe("DropdownMenu", () => {
     expect(row.querySelector("[data-testid=muted]")).not.toBeNull();
   });
 
+  it("shows a deferred row's loader at the trailing edge when it has no tick or icon", async () => {
+    const user = userEvent.setup();
+    let finish!: () => void;
+    const action = vi.fn(() => new Promise<void>((resolve) => { finish = resolve; }));
+
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger aria-label="More actions" />
+        <DropdownMenuContent>
+          <DropdownMenuCheckboxItem indicator={false} action={action}>
+            Word wrap
+          </DropdownMenuCheckboxItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+    const row = await screen.findByRole("menuitemcheckbox");
+    const status = row.querySelector("[data-slot=dropdown-menu-checkbox-item-status]");
+    expect(status).not.toBeNull();
+    // Morph keeps every state as a hidden sizer; only the shown copy is outside them.
+    const shownLoader = () => status!.querySelector("[data-slot=loader]:not([aria-hidden=true] *)");
+    expect(shownLoader()).toBeNull();
+
+    fireEvent.click(row);
+    expect(shownLoader()).not.toBeNull();
+
+    await act(async () => finish());
+    expect(row).toHaveAttribute("aria-checked", "true");
+  });
+
   it("stays a plain synchronous checkbox without an action", async () => {
     const user = userEvent.setup();
     const onCheckedChange = vi.fn();

@@ -129,6 +129,16 @@ const ROWS_BY_KIND: Record<RowKind, () => ReactNode> = {
           <Morph activeKey={checked ? "on" : "off"} items={{ on: "Unmute thread", off: "Mute thread" }} />
         )}
       </DropdownMenuCheckboxItem>
+      {/* No tick and no icon: the loader shows at the row's trailing edge instead. */}
+      <DropdownMenuCheckboxItem
+        indicator={false}
+        action={() => wait(1200)}
+        announce={{ pending: "Updating follow status" }}
+      >
+        {(checked) => (
+          <Morph activeKey={checked ? "on" : "off"} items={{ on: "Unfollow thread", off: "Follow thread" }} />
+        )}
+      </DropdownMenuCheckboxItem>
     </>
   ),
   radio: () => (

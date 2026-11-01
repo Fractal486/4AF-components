@@ -118,7 +118,8 @@ only fills in.
 
 An `action` makes the change wait on work, like Action Toggle. The row keeps its current state
 while pending and calls `onCheckedChange` only after success; on failure the state is unchanged.
-The loader takes the checkbox's slot, or the icon's slot on a toggle:
+The loader takes the checkbox's slot, or the icon's slot on a toggle. A toggle with no icon
+shows it at the row's trailing edge, in a slot with `data-slot="dropdown-menu-checkbox-item-status"`:
 
 ```tsx
 <DropdownMenuCheckboxItem

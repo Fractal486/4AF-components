@@ -323,6 +323,22 @@ export function DropdownMenuCheckboxItem({
                 </span>
               )}
               {typeof children === "function" ? children(state.checked, status) : children}
+              {deferred && !indicator && icon === undefined && (
+                // No tick and no icon leaves nowhere to report the wait, so a trailing slot
+                // does. Trailing rather than leading: an empty leading box would indent this
+                // label against every other row. The slot is reserved while idle so the
+                // label never shifts when the loader arrives.
+                <span data-slot="dropdown-menu-checkbox-item-status" className={cn(GLYPH_SLOT, "ml-auto")}>
+                  <Morph
+                    activeKey={status === "pending" || status === "error" ? status : "idle"}
+                    items={{
+                      idle: undefined,
+                      pending: <LoadingIndicator loader={loader} />,
+                      error: <TriangleAlert />,
+                    }}
+                  />
+                </span>
+              )}
             </div>
           </DisabledReasonTooltip>
         )}

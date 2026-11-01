@@ -17,7 +17,7 @@ notes, and install/usage examples. The links below open the same owning document
 
 ## Installable catalog
 
-The catalog contains 52 installable UI items.
+The catalog contains 53 installable UI items.
 
 ### Actions
 
@@ -98,6 +98,7 @@ for row summaries and accepts `pageCount: -1` while the page count is unknown.
 | [`selection-toolbar`](https://4af.selfsimilar.dev/docs/selection-toolbar.md) | Actions on selected text, with the captured text and range passed to handlers. |
 | [`hover-card`](https://4af.selfsimilar.dev/docs/hover-card.md) | A hover/focus preview with smooth sizing, stable placement, shared trigger handles and payloads, loading placeholders, Scroll Area overflow, portal options, and state-based classes. |
 | [`dropdown-menu`](https://4af.selfsimilar.dev/docs/dropdown-menu.md) | Action menus, checkable rows, submenus, or nested searchable selection panels. Shared payload handles, wrapping labels, state classes, and configurable portal/positioner parts. |
+| [`context-menu`](https://4af.selfsimilar.dev/docs/context-menu.md) | Right-click and long-press actions on an area or row, anchored at the pointer, with touch hold feedback and a disabled mode that keeps the browser menu. Every Dropdown Menu row and popup part is available as a `ContextMenu*` part; installs Dropdown Menu. |
 | [`menubar`](https://4af.selfsimilar.dev/docs/menubar.md) | A desktop-style bar of menus with pointer and arrow-key sweeping, a sliding open-menu highlight, outline or plain bars, two sizes, and vertical layout. Every Dropdown Menu row is available as a `Menubar*` part; installs Dropdown Menu. |
 
 ## Bundled composition choices
@@ -144,6 +145,7 @@ include the component name: for example, `.context.ts` means `select.context.ts`
 | `command-palette` | `command-palette.tsx`: root state and navigation | `.types.ts`, `.context.ts`, `.search.ts`, `.keybinds.ts`, `.panels.tsx`, `.actions.tsx`, `.chrome.tsx`, `.tabs.tsx`, `.variants.ts` |
 | `select` | `select.tsx`: root state and option registration | `.context.ts`, `.shared.tsx`, `.utils.ts`, `.trigger.tsx`, `.content.tsx`, `.sub.tsx`, `.item.tsx`, `.variants.ts` |
 | `dropdown-menu` | `dropdown-menu.tsx`: public re-exports | `.menu.tsx`, `.select.tsx`, `.actions.tsx`, `.shared.tsx`, `.variants.ts` |
+| `context-menu` | `context-menu.tsx`: root, trigger with hold feedback, content, positioner, and `ContextMenu*` aliases of the Dropdown Menu rows | `.variants.ts`: trigger hold feedback |
 | `menubar` | `menubar.tsx`: bar, menu, trigger, content, and `Menubar*` aliases of the Dropdown Menu rows | `.highlight.ts`: open-trigger measurement for the sliding highlight; `.variants.ts` |
 | `tooltip` | `tooltip.tsx`: Tooltip, composable parts, shared groups, and typed handles | `.variants.ts`: popup and positioner styles |
 | `popover` | `popover.tsx`: root, shared handles, and composable popup parts | `.height.ts`: wrapper for the shared `use-popup-height` utility; `.variants.ts`: panel and typography styles |

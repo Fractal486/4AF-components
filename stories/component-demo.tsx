@@ -20,14 +20,14 @@ export type { ComponentDemoName } from "./demo-names";
 
 const LOADER_DEMOS = new Set([
   "button", "action-button", "action-toggle", "copy-button", "delete-button",
-  "alert", "badge", "dropdown-menu", "menubar", "command-palette", "selection-toolbar",
+  "alert", "badge", "dropdown-menu", "menubar", "context-menu", "command-palette", "selection-toolbar",
 ]);
 // Sizing belongs to the demo shell.
 const DEMO_WIDTHS: Partial<Record<ComponentDemoName, string>> = {
   input: "max-w-sm", textarea: "max-w-sm", slider: "max-w-sm",
   progress: "max-w-sm", skeleton: "max-w-sm",
   select: "max-w-56", "select-search": "max-w-56", "select-aligned": "max-w-56",
-  empty: "max-w-md", collapsible: "max-w-md", tabs: "max-w-md",
+  "context-menu": "max-w-sm", empty: "max-w-md", collapsible: "max-w-md", tabs: "max-w-md",
   "scroll-area": "max-w-sm", separator: "max-w-xs", "selection-toolbar": "max-w-lg",
   table: "max-w-xl", "data-table": "max-w-xl",
   "table-of-contents": "max-w-2xl", "table-of-contents-lines": "max-w-2xl",
@@ -265,6 +265,7 @@ const demos: Record<DemoName, () => Promise<AnyEntry>> = {
   checkbox: async () => (await import("@/inspector/entries/checkbox")).checkboxEntry,
   collapsible: async () => (await import("@/inspector/entries/collapsible")).collapsibleEntry,
   "command-palette": async () => (await import("@/inspector/entries/command-palette")).commandPaletteEntry,
+  "context-menu": async () => (await import("@/inspector/entries/context-menu")).contextMenuEntry,
   "copy-button": async () => (await import("@/inspector/entries/copy-button")).copyButtonEntry,
   "date-picker": async () => (await import("@/inspector/entries/date-picker")).datePickerEntry,
   "delete-button": async () => (await import("@/inspector/entries/delete-button")).deleteButtonEntry,

@@ -2013,6 +2013,35 @@
       ]
     },
     {
+      "name": "context-menu",
+      "type": "registry:ui",
+      "description": "A right-click and long-press menu anchored at the pointer, with touch hold feedback, a disabled mode that keeps the browser menu, and every Dropdown Menu row, panel, and composable popup part.",
+      "title": "Context Menu",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/context-menu (Markdown: https://4af.selfsimilar.dev/docs/context-menu.md)",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/loader.json",
+        "https://4af.selfsimilar.dev/r/dropdown-menu.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/context-menu/context-menu.tsx",
+          "type": "registry:ui",
+          "target": "@ui/context-menu.tsx"
+        },
+        {
+          "path": "registry/ui/context-menu/context-menu.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/context-menu.variants.ts"
+        }
+      ]
+    },
+    {
       "name": "menubar",
       "type": "registry:ui",
       "description": "A desktop-style bar of Dropdown Menus with arrow-key and pointer sweeping between menus, a sliding open-menu highlight, instant panel switching, outline or plain bars, two sizes, and vertical layout.",
