@@ -10,6 +10,7 @@ import { ThemeSwitch } from "fumadocs-ui/layouts/shared/slots/theme-switch";
 import type { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import { Tooltip as BaseTooltip } from "@base-ui/react/tooltip";
 import type { NavGroup, NavItem } from "@/lib/site-nav";
+import { Kbd } from "@/registry/ui/kbd/kbd";
 import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
 import {
@@ -63,11 +64,9 @@ function SearchField({ onOpen }: { onOpen?: () => void }) {
     >
       <Search className="size-3.5" aria-hidden />
       Search
-      <kbd className="ms-auto flex gap-0.5 font-mono text-2xs">
-        {hotKey.map((key, index) => (
-          <span key={index}>{key.display}</span>
-        ))}
-      </kbd>
+      <Kbd className="ms-auto bg-transparent p-0">
+        {hotKey.map((key, index) => <span key={index}>{key.display}</span>)}
+      </Kbd>
     </button>
   );
 }

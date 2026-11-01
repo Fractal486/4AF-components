@@ -1,5 +1,6 @@
 "use client";
 
+import { Kbd } from "@/registry/ui/kbd/kbd";
 import { cn } from "@/registry/lib/cn";
 import { duration, ease, overlayEnter, overlayExit, overlayVisible, spring } from "@/registry/lib/motion";
 import { LoadingIndicator, LoaderProvider } from "@/registry/lib/loader";
@@ -13,7 +14,6 @@ import {
   CommandIcon,
   EscapeHint,
   Hint,
-  KBD,
   snapFirstRowToTop,
 } from "./command-palette.chrome";
 import {
@@ -40,7 +40,8 @@ import type {
 } from "./command-palette.types";
 
 // Keep the installable component's public API at this entry point.
-export { CommandIcon, Kbd } from "./command-palette.chrome";
+export { CommandIcon } from "./command-palette.chrome";
+export { Kbd, type KbdProps } from "@/registry/ui/kbd/kbd";
 export { useCommandPanelHighlight } from "./command-palette.context";
 export {
   CommandPanelBody,
@@ -783,9 +784,9 @@ export function CommandPalette({
                 <LoadingIndicator className="size-4 shrink-0 text-sm text-subtle-foreground" />
               )}
 
-              <kbd className={cn(KBD, "hidden sm:block")}>
+              <Kbd className="hidden px-1.5 sm:inline-flex">
                 Esc
-              </kbd>
+              </Kbd>
             </div>
 
             {/* The body fills the fixed height; results scroll inside it, and the empty,

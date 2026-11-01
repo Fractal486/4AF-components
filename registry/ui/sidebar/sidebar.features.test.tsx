@@ -82,7 +82,7 @@ describe("Sidebar shortcut ownership", () => {
     const user = userEvent.setup();
     render(<SidebarProvider persist={false} keyboardShortcut="ctrl+shift+s"><SidebarTrigger /></SidebarProvider>);
     await user.hover(screen.getByRole("button", { name: "Toggle sidebar" }));
-    expect(await screen.findByText("Ctrl + Shift + S")).toBeVisible();
+    expect(await screen.findByText("Ctrl+Shift+S")).toBeVisible();
   });
 });
 

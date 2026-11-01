@@ -59,11 +59,6 @@ function shortcutOwner(event: KeyboardEvent) {
     .sort(([, a], [, b]) => a.element.compareDocumentPosition(b.element) & Node.DOCUMENT_POSITION_PRECEDING ? 1 : -1)[0]?.[0];
 }
 
-export function sidebarShortcutLabel(shortcut: string) {
-  const labels: Record<string, string> = { mod: "Ctrl/⌘", ctrl: "Ctrl", meta: "⌘", alt: "Alt", shift: "Shift", space: "Space" };
-  return shortcut.split("+").map((part) => labels[part.trim().toLowerCase()] ?? part.trim().toUpperCase()).join(" + ");
-}
-
 const MOBILE_BREAKPOINT = 768;
 
 /**

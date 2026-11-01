@@ -285,6 +285,11 @@ import { Input, InputCount } from "@/components/ui/input";
 />
 <InputCount id="name-count" length={name.length} maxLength={40} />`,
   },
+  kbd: {
+    usage: `import { KbdGroup } from "@/components/ui/kbd";
+
+<KbdGroup keys="mod+k" size="sm" />`,
+  },
   morph: {
     usage: `import { Check, Copy } from "lucide-react";
 import { Morph } from "@/components/ui/morph";

@@ -1,3 +1,4 @@
+import { Kbd } from "@/registry/ui/kbd/kbd";
 import { cn } from "@/registry/lib/cn";
 import { LoadingIndicator } from "@/registry/lib/loader";
 import { useMergedRefs } from "@/registry/lib/refs";
@@ -21,7 +22,6 @@ import {
   CommandIcon,
   EscapeHint,
   FooterAction,
-  Kbd,
   snapFirstRowToTop,
 } from "./command-palette.chrome";
 import { PanelActionsContext, useFrozen } from "./command-palette.context";

@@ -1,0 +1,68 @@
+---
+title: Kbd
+description: Keyboard keycaps and groups with platform-aware labels and key sequences.
+---
+
+<ComponentReference name="kbd" />
+
+## API
+
+**Main exports:** `Kbd`, `KbdGroup`.
+
+| Prop | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — | A literal label, icon, or custom content. |
+| `keys` | `string` | — | Generate labels from key names, such as `mod+shift+k`. Takes precedence over children. |
+| `size` | `"sm" \| "md"` | Group size, then `"sm"` | Compact or medium keycap sizing. |
+| `asChild` | `boolean` | `false` | Merge styles and props onto one child element. |
+| `className` | `string` | — | Customize the keycap's appearance. |
+| `ref` | `Ref<HTMLElement>` | — | Access the rendered element. |
+
+Native `<kbd>` attributes and events are forwarded. The element exposes `data-slot="kbd"`
+and `data-size` for styling.
+
+`KbdGroup` accepts the same native attributes, refs, `size`, `className`, and `asChild`.
+It exposes `data-slot="kbd-group"` and `data-size`. Its `size` is inherited by child keycaps;
+an individual keycap or nested group can override it.
+
+| Group prop | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `keys` | `string` | — | Generate a separate keycap for each key. Spaces separate sequence steps. |
+| `separator` | `ReactNode` | `"then"` | Content between sequence steps; pass `null` to omit it. |
+| `children` | `ReactNode` | — | Manually composed keycaps when `keys` is omitted. |
+
+## Platform labels and sequences
+
+`keys="mod+k"` displays Command on Apple devices and Ctrl elsewhere. Explicit modifiers
+such as `ctrl` or `meta` retain their meaning. Common names and aliases include `shift`,
+`alt`, `option`, `enter`, `return`, `escape`, `esc`, `space`, and arrow directions.
+Labels use the appropriate symbols or words for the platform. Literal children stay unchanged.
+
+`KbdGroup keys="mod+k mod+c"` shows two combinations separated by “then”. A single `Kbd`
+can show the full sequence inside one cap; use the group to customize the separator.
+Use `plus` for the plus key, such as `mod+plus`.
+
+Server output uses Ctrl-style labels, then updates to the device's labels after hydration.
+With `asChild` and `keys`, provide one child element; its contents are replaced by the generated keys.
+
+## Context and icons
+
+Keycaps inherit their text color inside Buttons, highlighted rows, and Tooltips. Their fill
+adapts to those surfaces automatically. Highlighted rows include Base UI's `data-highlighted`
+and 4AF's `data-panel-active` and `data-frozen` states.
+
+Icons default to the keycap's text size. Explicit `size-*`, `w-*`, and `h-*` classes or inline
+dimensions preserve custom icon sizing.
+
+## Shortcuts and accessibility
+
+Use a group for a combination, or put the full combination inside one keycap.
+Supply readable labels such as `aria-label="Command"` when a symbol needs explanation.
+Use `aria-keyshortcuts` on the control that performs the action and register its keyboard
+handler where that action is owned.
+
+## Shared use
+
+Command Palette, Dropdown Menu shortcuts, and Sidebar shortcut hints use this component.
+Installing those components installs `kbd` automatically. Command Palette retains its
+existing `Kbd` export as an alias; new code can import directly from `@/components/ui/kbd`.

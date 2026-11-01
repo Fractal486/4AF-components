@@ -17,7 +17,7 @@ notes, and install/usage examples. The links below open the same owning document
 
 ## Installable catalog
 
-The catalog contains 50 installable UI items.
+The catalog contains 51 installable UI items.
 
 ### Actions
 
@@ -78,6 +78,7 @@ The catalog contains 50 installable UI items.
 | [`separator`](https://4af.selfsimilar.dev/docs/separator.md) | A horizontal or vertical hairline with rich labels, alignment, and decorative mode. |
 | [`scroll-area`](https://4af.selfsimilar.dev/docs/scroll-area.md) | A scroll container with the library's own scrollbar, hover-revealed or always shown, and edge fades on by default. |
 | [`command-palette`](https://4af.selfsimilar.dev/docs/command-palette.md) | Command search, nested lists, or custom panels, including async search. |
+| [`kbd`](https://4af.selfsimilar.dev/docs/kbd.md) | Keyboard keycaps and groups with platform-aware labels, sequences, shared compact or medium sizing, context-aware colors, custom icons, and custom element composition. Shared by Command Palette, Dropdown Menu, and Sidebar. |
 | [`sidebar`](https://4af.selfsimilar.dev/docs/sidebar.md) | Responsive navigation with split rail/panel layouts, configurable scoped shortcuts, mobile close-on-navigation, count or dot badges, and badge-replacement actions. Badge counts reuse BadgeCount, with number animation opt-in. |
 | [`sidebar-layout`](https://4af.selfsimilar.dev/docs/sidebar-layout.md) | A viewport and scrolling shell with a surface-colored header and custom title content. |
 
@@ -99,6 +100,9 @@ for row summaries and accepts `pageCount: -1` while the page count is unknown.
 | [`dropdown-menu`](https://4af.selfsimilar.dev/docs/dropdown-menu.md) | Action menus, checkable rows, submenus, or nested searchable selection panels. Shared payload handles, wrapping labels, state classes, and configurable portal/positioner parts. |
 
 ## Bundled composition choices
+
+Kbd and KbdGroup share the kbd install. Command Palette, Dropdown Menu, and Sidebar install and reuse it;
+Command Palette retains its existing Kbd re-export for compatibility.
 
 Loading controls accept a `loader` node or inherit `LoaderProvider`. Morph's hidden sizing
 copies reserve that slot without mounting its indicator, so idle controls do not run loader timers.
@@ -128,6 +132,7 @@ include the component name: for example, `.context.ts` means `select.context.ts`
 
 | Component | Public entry point | Internal siblings |
 | --- | --- | --- |
+| `kbd` | `kbd.tsx`: `Kbd`, `KbdGroup` | `.keys.ts`: parsing and platform labels; `.variants.ts` |
 | `number-animation` | `number-animation.tsx`: `NumberAnimation` | `.css`: rolling geometry, blur, and soft edges; `.variants.ts` |
 | `badge` | `badge.tsx`: `Badge`, icons provider, and re-exported parts | `.parts.tsx`: close, dot, count; `.presence.tsx`: visibility animation; `.motion.ts`, `.variants.ts` |
 | `input` | `input.tsx`: `Input` and re-exported `InputCount` | `input-count.tsx`: character count and announcements; `.variants.ts` |

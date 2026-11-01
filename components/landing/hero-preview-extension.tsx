@@ -5,7 +5,7 @@ import { Badge } from "@/registry/ui/badge/badge";
 import { Button } from "@/registry/ui/button/button";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/registry/ui/collapsible/collapsible";
-import { Kbd } from "@/registry/ui/command-palette/command-palette.chrome";
+import { Kbd } from "@/registry/ui/kbd/kbd";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/registry/ui/empty/empty";
 import { Input } from "@/registry/ui/input/input";
 import { Progress, ProgressLabel, ProgressValue } from "@/registry/ui/progress/progress";
@@ -175,7 +175,7 @@ const previews: Record<Area, Preview[]> = {
     </div> },
     { name: "export-warning", content: <Alert variant="warning" className="mt-0">Two assets need a name.</Alert> },
     { name: "duplicate-asset", className: "self-end w-56", content: <>
-      <div className={row}><span>Duplicate selection</span><Kbd>⌘ D</Kbd></div>
+      <div className={row}><span>Duplicate selection</span><Kbd keys="mod+d" /></div>
       <Button size="sm" variant="outline" className="mt-4"><Copy />Make a copy</Button>
     </> },
   ],

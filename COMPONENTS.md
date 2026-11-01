@@ -27,6 +27,8 @@ indicator. See [shared loading indicators](content/docs/reference/engineering.md
 for provider overrides and alternative loaders.
 Morph's hidden sizing copies reserve the loader slot without mounting its indicator.
 
+For keyboard hints, use [Kbd and KbdGroup](content/docs/kbd.mdx#api), with platform-aware key labels, sequences, shared sizing, and context-aware colors. Command Palette, Dropdown Menu shortcuts, and Sidebar share it; Command Palette preserves its existing re-export.
+
 For rolling numeric readouts, see [Number Animation](content/docs/number-animation.mdx#api), shared by Badge counts, Slider values, and Progress values.
 
 For removable tags, animated counts, dots, and interactive labels, see [Badge](content/docs/badge.mdx#api).

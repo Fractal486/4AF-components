@@ -43,6 +43,9 @@ to supply a custom indicator.
 `asChild` renders the button's styles onto its child, such as a link, which keeps its own
 semantics.
 
+The default root exposes `data-slot="button"`; composed triggers can supply their own slot.
+Nested [Kbd](/docs/kbd) shortcuts adapt to the button's text and background colors.
+
 ## Press behavior
 
 Buttons scale to `0.95` while pressed by default. A truthy `aria-haspopup` automatically disables

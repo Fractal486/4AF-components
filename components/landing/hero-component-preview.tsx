@@ -53,7 +53,8 @@ import { ClassicLoader } from "@/registry/ui/classic-loader/classic-loader";
 import { ButtonGroup } from "@/registry/ui/button-group/button-group";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/registry/ui/collapsible/collapsible";
-import { CommandIcon, Hint, Kbd } from "@/registry/ui/command-palette/command-palette.chrome";
+import { CommandIcon, Hint } from "@/registry/ui/command-palette/command-palette.chrome";
+import { Kbd } from "@/registry/ui/kbd/kbd";
 import { CommandRow } from "@/registry/ui/command-palette/command-palette.panels";
 import type { CommandGroup, CommandItem } from "@/registry/ui/command-palette/command-palette.types";
 import { CopyButton } from "@/registry/ui/copy-button/copy-button";
@@ -208,7 +209,7 @@ function PalettePreview() {
             tabIndex={-1}
             className="h-12 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-subtle-foreground"
           />
-          <Kbd>⌘ K</Kbd>
+          <Kbd keys="mod+k" />
         </div>
         <Autocomplete.List className="p-1.5">
           {(group: CommandGroup) => (
@@ -313,7 +314,7 @@ export function HeroComponentPreview({ className, entrance = false }: { classNam
                   </div>
                 </Panel>
                 <Panel name="tooltip" lift={6} className="flex flex-col items-start gap-2">
-                  <div className={OVERLAY_TOOLTIP}>Copy link <Kbd>⌘ C</Kbd></div>
+                  <div className={OVERLAY_TOOLTIP}>Copy link <Kbd keys="mod+c" /></div>
                   <Button variant="outline" size="icon-sm" aria-label="Copy link"><Link2 /></Button>
                 </Panel>
               </div>
@@ -665,9 +666,9 @@ export function HeroComponentPreview({ className, entrance = false }: { classNam
               <Panel name="shortcuts" lift={4}>
                 <p className="mb-3 text-xs font-medium">Shortcuts</p>
                 <div className="flex flex-col gap-2.5 text-xs text-muted-foreground">
-                  {[["Search", "⌘ K"], ["New project", "⌘ N"], ["Toggle sidebar", "⌘ B"]].map(([label, keys]) => (
+                  {[["Search", "mod+k"], ["New project", "mod+n"], ["Toggle sidebar", "mod+b"]].map(([label, keys]) => (
                     <div key={label} className="flex items-center justify-between">
-                      <span>{label}</span><Kbd>{keys}</Kbd>
+                      <span>{label}</span><Kbd keys={keys} />
                     </div>
                   ))}
                 </div>

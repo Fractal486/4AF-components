@@ -273,6 +273,7 @@ const demos: Record<DemoName, () => Promise<AnyEntry>> = {
   empty: async () => (await import("@/inspector/entries/empty")).emptyEntry,
   "hover-card": async () => (await import("@/inspector/entries/hover-card")).hoverCardEntry,
   input: async () => (await import("@/inspector/entries/input")).inputEntry,
+  kbd: async () => (await import("@/inspector/entries/kbd")).kbdEntry,
   "matrix-loader": async () => (await import("@/inspector/entries/matrix-loader")).matrixLoaderEntry,
   "classic-loader": async () => (await import("@/inspector/entries/classic-loader")).classicLoaderEntry,
   morph: async () => (await import("@/inspector/entries/morph")).morphEntry,

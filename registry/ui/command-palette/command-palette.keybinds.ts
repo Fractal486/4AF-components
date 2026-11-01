@@ -79,36 +79,6 @@ function parseKeybind(value: string): ParsedKeybind | null {
   return key ? { key, mod, ctrl, meta, alt, shift } : null;
 }
 
-export function formatKeybind(value: string): string[] {
-  return splitKeybind(value).map((part) => {
-    switch (part.toLowerCase()) {
-      case "mod":
-        return "Ctrl/⌘";
-      case "cmd":
-      case "command":
-      case "meta":
-      case "⌘":
-        return "⌘";
-      case "ctrl":
-      case "control":
-      case "⌃":
-        return "Ctrl";
-      case "alt":
-      case "option":
-      case "⌥":
-        return "Alt";
-      case "shift":
-      case "⇧":
-        return "Shift";
-      case "esc":
-        return "Esc";
-      case "backspace":
-        return "Backspace";
-      default:
-        return part.length === 1 ? part.toUpperCase() : part;
-    }
-  });
-}
 
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;

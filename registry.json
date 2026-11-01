@@ -1412,7 +1412,8 @@
         "https://4af.selfsimilar.dev/r/select.json",
         "https://4af.selfsimilar.dev/r/motion.json",
         "https://4af.selfsimilar.dev/r/refs.json",
-        "https://4af.selfsimilar.dev/r/scroll-area.json"
+        "https://4af.selfsimilar.dev/r/scroll-area.json",
+        "https://4af.selfsimilar.dev/r/kbd.json"
       ],
       "files": [
         {
@@ -1464,6 +1465,38 @@
           "path": "registry/ui/command-palette/command-palette.variants.ts",
           "type": "registry:ui",
           "target": "@ui/command-palette.variants.ts"
+        }
+      ]
+    },
+    {
+      "name": "kbd",
+      "type": "registry:ui",
+      "description": "Keyboard keycaps and groups with automatic platform labels, key sequences, shared sizes, context-aware colors, and custom icon sizing. Shared by Command Palette, Dropdown Menu, and Sidebar.",
+      "title": "Kbd",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/kbd (Markdown: https://4af.selfsimilar.dev/docs/kbd.md)",
+      "dependencies": [
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/slot.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/kbd/kbd.tsx",
+          "type": "registry:ui",
+          "target": "@ui/kbd.tsx"
+        },
+        {
+          "path": "registry/ui/kbd/kbd.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/kbd.variants.ts"
+        },
+        {
+          "path": "registry/ui/kbd/kbd.keys.ts",
+          "type": "registry:ui",
+          "target": "@ui/kbd.keys.ts"
         }
       ]
     },
@@ -1943,7 +1976,8 @@
         "https://4af.selfsimilar.dev/r/tooltip.json",
         "https://4af.selfsimilar.dev/r/use-action.json",
         "https://4af.selfsimilar.dev/r/loader.json",
-        "https://4af.selfsimilar.dev/r/scroll-area.json"
+        "https://4af.selfsimilar.dev/r/scroll-area.json",
+        "https://4af.selfsimilar.dev/r/kbd.json"
       ],
       "files": [
         {
@@ -2000,7 +2034,8 @@
         "https://4af.selfsimilar.dev/r/scroll-area.json",
         "https://4af.selfsimilar.dev/r/tabs.json",
         "https://4af.selfsimilar.dev/r/badge.json",
-        "https://4af.selfsimilar.dev/r/refs.json"
+        "https://4af.selfsimilar.dev/r/refs.json",
+        "https://4af.selfsimilar.dev/r/kbd.json"
       ],
       "files": [
         {

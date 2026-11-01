@@ -1,19 +1,10 @@
+import { Kbd, KbdGroup } from "@/registry/ui/kbd/kbd";
 import { cn } from "@/registry/lib/cn";
 import { useContext, type ComponentProps, type ReactNode } from "react";
 import { PaletteControlsContext } from "./command-palette.context";
-import { formatKeybind } from "./command-palette.keybinds";
 
-/**
- * A keycap.
- *
- * A translucent lift rather than a fixed token, because a keycap has to sit just above
- * *whatever* it's printed on, and that isn't one surface: the palette panel is
- * `surface-raised`, a menu row is `surface`. `foreground` at 8% steps up from either, and
- * flips direction on its own between themes — a pale wash on ink in dark, a grey one on
- * white in light. A fixed value can only be right on one of them.
- */
-export const KBD =
-  "shrink-0 rounded-xs bg-foreground/8 px-1.5 py-0.5 font-mono text-2xs text-subtle-foreground select-none";
+// Preserve the existing internal import path while sharing the standalone component.
+export { Kbd } from "@/registry/ui/kbd/kbd";
 
 /**
  * Reaching the top row scrolls the list all the way up.
@@ -86,25 +77,9 @@ export function EscapeHint() {
   );
 }
 
-export function Kbd({ children }: { children: ReactNode }) {
-  return (
-    <kbd className={cn(KBD, "flex min-w-4 items-center justify-center px-1")}>
-      {children}
-    </kbd>
-  );
-}
-
 export function CommandKeybindHint({ value }: { value: string }) {
-  const parts = formatKeybind(value);
-  if (parts.length === 0) return null;
-
-  return (
-    <span aria-label={value} className="flex shrink-0 items-center gap-0.5">
-      {parts.map((part, index) => (
-        <Kbd key={`${part}-${index}`}>{part}</Kbd>
-      ))}
-    </span>
-  );
+  if (!value.trim()) return null;
+  return <KbdGroup keys={value} aria-label={value} className="shrink-0 gap-0.5" />;
 }
 
 export function Hint({
@@ -125,11 +100,11 @@ export function Hint({
   trailingKeys?: boolean;
 }) {
   const chips = (
-    <span className="flex items-center gap-0.5">
+    <KbdGroup className="gap-0.5">
       {keys.map((key, i) => (
-        <Kbd key={i}>{key}</Kbd>
+        <Kbd key={i} keys={typeof key === "string" ? key : undefined}>{key}</Kbd>
       ))}
-    </span>
+    </KbdGroup>
   );
   const content = trailingKeys ? (
     <>

@@ -1,3 +1,4 @@
+import { Kbd } from "@/registry/ui/kbd/kbd";
 import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
 import { Tooltip, TooltipProvider } from "@/registry/ui/tooltip/tooltip";
@@ -5,7 +6,6 @@ import { PanelLeft, PanelRight } from "lucide-react";
 import { useContext, type ComponentProps, type ReactNode } from "react";
 import { SidebarSplitContext, useSidebar } from "./sidebar.context";
 import { sidebarRailButtonVariants } from "./sidebar.variants";
-import { sidebarShortcutLabel } from "./sidebar.provider";
 
 export function SidebarTrigger({
   className,
@@ -38,7 +38,7 @@ export function SidebarTrigger({
 
   return (
     <TooltipProvider delay={500}>
-      <Tooltip content={<kbd>{sidebarShortcutLabel(keyboardShortcut)}</kbd>} delay={500}>
+      <Tooltip content={<Kbd keys={keyboardShortcut} />} delay={500}>
         {button}
       </Tooltip>
     </TooltipProvider>

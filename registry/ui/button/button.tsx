@@ -184,6 +184,7 @@ export function Button({
 
   return (
     <BaseButton
+      data-slot="button"
       {...props}
       ref={ref}
       className={cn(

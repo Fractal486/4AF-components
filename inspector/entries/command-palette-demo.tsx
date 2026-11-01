@@ -29,6 +29,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { KbdGroup } from "@/registry/ui/kbd/kbd";
 import { Badge, type BadgeProps } from "@/registry/ui/badge/badge";
 import { Button } from "@/registry/ui/button/button";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
@@ -43,7 +44,6 @@ import {
   CommandPanelTabList,
   CommandPanelTabPanel,
   CommandPanelTabs,
-  Kbd,
   useCommandPanelHighlight,
   useCommandSearch,
   type CommandGroup,
@@ -452,11 +452,7 @@ export function CommandPaletteDemo({
       >
         Open palette
         {shortcut && (
-          <span className="ml-1 flex items-center gap-0.5 text-subtle-foreground">
-            <kbd className="rounded-xs border border-current/50 px-1 py-0.5 font-mono text-2xs">Ctrl/⌘</kbd>
-            <kbd className="rounded-xs border border-current/50 px-1 py-0.5 font-mono text-2xs">⇧</kbd>
-            <kbd className="rounded-xs border border-current/50 px-1 py-0.5 font-mono text-2xs">P</kbd>
-          </span>
+          <KbdGroup keys="mod+shift+p" className="ml-1 gap-0.5" />
         )}
       </Button>
 
@@ -513,9 +509,9 @@ const SHORTCUT_SECTIONS = [
     id: "projects",
     label: "Projects panel",
     shortcuts: [
-      { keys: ["Ctrl/⌘", "J"], action: "Show project actions" },
-      { keys: ["Ctrl/⌘", "D"], action: "Duplicate the selected project" },
-      { keys: ["Ctrl/⌘", "L"], action: "Copy the selected project's name" },
+      { keys: ["mod", "J"], action: "Show project actions" },
+      { keys: ["mod", "D"], action: "Duplicate the selected project" },
+      { keys: ["mod", "L"], action: "Copy the selected project's name" },
     ],
   },
 ] as const;
@@ -536,7 +532,7 @@ function ShortcutsPanel({ query, variant, openingShortcut }: {
       ...section,
       shortcuts: [
         ...(section.id === "general" && openingShortcut
-          ? [{ keys: ["Ctrl/⌘", "Shift", "P"], action: "Open or close the palette" }]
+          ? [{ keys: ["mod", "Shift", "P"], action: "Open or close the palette" }]
           : []),
         ...section.shortcuts,
       ].filter((shortcut) => shortcut.action.toLowerCase().includes(needle)),
@@ -567,9 +563,7 @@ function ShortcutsPanel({ query, variant, openingShortcut }: {
                     className="flex min-h-9 items-center justify-between gap-4 px-2.5 py-1.5 text-sm text-foreground"
                   >
                     {shortcut.action}
-                    <span className="flex items-center gap-0.5">
-                      {shortcut.keys.map((key) => <Kbd key={key}>{key}</Kbd>)}
-                    </span>
+                    <KbdGroup keys={shortcut.keys.join("+")} className="gap-0.5" />
                   </li>
                 ))}
               </ul>

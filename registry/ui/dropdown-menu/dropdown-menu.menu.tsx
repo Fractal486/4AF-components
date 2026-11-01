@@ -1,3 +1,4 @@
+import { Kbd, type KbdProps } from "@/registry/ui/kbd/kbd";
 import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { radioIndicatorVariants, radioVariants } from "@/registry/ui/radio/radio.variants";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
@@ -217,19 +218,8 @@ export function DropdownMenuSeparator({ className, ...props }: ComponentProps<ty
   );
 }
 
-export function DropdownMenuShortcut({ className, ...props }: ComponentProps<"kbd">) {
-  return (
-    <kbd
-      className={cn(
-        // The same keycap lift the command palette uses — 8% ink over whatever the row's
-        // surface happens to be. Not `bg-muted`: that's the row highlight, so a shortcut
-        // on a highlighted row would have disappeared into it.
-        "ml-auto flex min-w-4 shrink-0 self-start items-center justify-center rounded-xs bg-foreground/8 px-1 py-0.5 font-mono text-2xs text-subtle-foreground",
-        className,
-      )}
-      {...props}
-    />
-  );
+export function DropdownMenuShortcut({ className, ...props }: KbdProps) {
+  return <Kbd className={cn("ml-auto self-start", className)} {...props} />;
 }
 
 export interface DropdownMenuSubTriggerProps

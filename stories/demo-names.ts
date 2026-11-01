@@ -26,6 +26,7 @@ export const DEMO_NAMES = [
   "empty",
   "hover-card",
   "input",
+  "kbd",
   "morph",
   "popover",
   "progress",

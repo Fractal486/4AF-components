@@ -21,7 +21,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { ACTION_CLASS, CommandKeybindHint, Kbd } from "./command-palette.chrome";
+import { KbdGroup } from "@/registry/ui/kbd/kbd";
+import { ACTION_CLASS, CommandKeybindHint } from "./command-palette.chrome";
 import { ActionsOpenContext, PanelActionsContext } from "./command-palette.context";
 import { matchesKeybind } from "./command-palette.keybinds";
 import type { CommandGroup, CommandItem, CommandPanelActionsProps } from "./command-palette.types";
@@ -204,10 +205,7 @@ export function CommandPanelActions({
     >
       <SelectTrigger outline={false} chevron={false} className={cn(ACTION_CLASS, "h-auto")}>
         {label}
-        <span className="flex items-center gap-0.5">
-          <Kbd>Ctrl/⌘</Kbd>
-          <Kbd>{ACTIONS_HOTKEY.toUpperCase()}</Kbd>
-        </span>
+        <KbdGroup keys={`mod+${ACTIONS_HOTKEY}`} className="gap-0.5" />
       </SelectTrigger>
       <SelectContent
         // Opens upward off the footer and hangs from its right edge, so the panel grows
