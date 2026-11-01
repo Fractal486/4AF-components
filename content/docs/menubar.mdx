@@ -1,0 +1,117 @@
+---
+title: Menubar
+description: A desktop-style bar of menus with a sliding highlight and instant switching between open menus.
+---
+
+<ComponentReference name="menubar" />
+
+## API
+
+**Main exports:** `Menubar`, `MenubarMenu`, `MenubarTrigger`, `MenubarContent`, and the
+[Dropdown Menu](/docs/dropdown-menu) rows under `Menubar*` names.
+
+Each `MenubarMenu` is a Dropdown Menu. Rows, shortcuts, submenus, async actions, and nested
+select panels are the same parts with the same props. Installing `menubar` installs
+`dropdown-menu`.
+
+| Menubar part | Dropdown Menu part |
+| --- | --- |
+| `MenubarMenu` | `DropdownMenu` |
+| `MenubarItem`, `MenubarCheckboxItem`, `MenubarActionItem` | `DropdownMenuItem`, `DropdownMenuCheckboxItem`, `DropdownMenuActionItem` |
+| `MenubarRadioGroup`, `MenubarRadioItem` | `DropdownMenuRadioGroup`, `DropdownMenuRadioItem` |
+| `MenubarGroup`, `MenubarLabel`, `MenubarSeparator`, `MenubarShortcut` | `DropdownMenuGroup`, `DropdownMenuLabel`, `DropdownMenuSeparator`, `DropdownMenuShortcut` |
+| `MenubarSub`, `MenubarSubTrigger`, `MenubarSubContent` | `DropdownMenuSub`, `DropdownMenuSubTrigger`, `DropdownMenuSubContent` |
+| `MenubarSelect`, `MenubarSelectTrigger`, `MenubarSelectContent`, `MenubarSelectItem` | The matching `DropdownMenuSelect*` parts |
+| `MenubarPortal` | `DropdownMenuPortal` |
+
+Prop types are exported under the same names, such as `MenubarItemProps`.
+
+### Menubar
+
+| Prop | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `variant` | `"outline" \| "plain"` | `"outline"` | A bordered track like Tabs' outline appearance, or none for a bar inside an existing header. Both keep the same geometry. |
+| `size` | `"sm" \| "md"` | `"md"` | 30px or 34px bar, matching the sm and md control heights. |
+| `orientation` | `"horizontal" \| "vertical"` | `"horizontal"` | Stacks the triggers and moves arrow-key navigation to up and down. |
+| `disabled` | `boolean` | `false` | Disables every menu. |
+| `loopFocus` | `boolean` | `true` | Arrow keys wrap from the last menu to the first. |
+| `modal` | `boolean` | `true` | Blocks page scrolling and outside interaction while a menu is open. |
+| `className` | `string \| (state) => string` | — | State includes `orientation`, `modal`, and `hasSubmenuOpen`. |
+| `render` | `ReactElement \| (props, state) => ReactElement` | `<div>` | Replace the bar element. |
+
+Refs and native `<div>` props are forwarded. Give the bar an accessible name with `aria-label`.
+
+| Attribute | Purpose |
+| --- | --- |
+| `data-slot="menubar"` | The bar. |
+| `data-variant`, `data-size`, `data-orientation` | The resolved appearance and layout. |
+| `data-has-submenu-open` | Present while any menu in the bar is open. |
+| `data-slot="menubar-highlight"` | The sliding fill behind the open trigger; `data-visible` while a menu is open. |
+
+### MenubarMenu
+
+Accepts the [Dropdown Menu root props](/docs/dropdown-menu#api): `open`, `defaultOpen`,
+`onOpenChange`, `disabled`, and `loader`. Arrow keys skip a disabled menu.
+
+### MenubarTrigger
+
+Base UI's menu trigger, with `render` for element composition and state-based `className`.
+It sizes itself from the bar.
+
+| Attribute | Purpose |
+| --- | --- |
+| `data-slot="menubar-trigger"` | A trigger. |
+| `data-popup-open` | Present while its menu is open. |
+| `data-disabled` | Present when its menu or the bar is disabled. |
+| `data-icon-start` | A leading icon with a label; the leading padding is reduced by 2px. |
+| `data-icon-only` | A single icon; the trigger becomes square. Supply an `aria-label`. |
+
+### MenubarContent
+
+Accepts every [`DropdownMenuContent`](/docs/dropdown-menu#portals-and-positioning) prop.
+Only the defaults differ:
+
+| Prop | Horizontal default | Vertical default |
+| --- | --- | --- |
+| `side` | `"bottom"` | `"inline-end"` |
+| `align` | `"start"` | `"start"` |
+| `sideOffset` | `8` | `8` |
+| `alignOffset` | `-5` (md), `-7` (sm) | `-5` |
+
+The side offset clears the bar's border and padding with a 4px gap. With `align="start"`, the align
+offset lines up the rows' labels with the trigger's label (horizontal) or the first row with
+the trigger (vertical). Other alignments default to `0`.
+
+The popup has `data-slot="menubar-content"`. Base UI adds `data-instant="group"` to a panel
+opened or closed by moving between menus; such panels switch without transitions.
+
+## Moving between menus
+
+Once a menu is open, hovering another trigger or pressing an arrow key opens that menu and
+closes the previous one. The highlight slides from the old trigger to the new one; panels
+swap instantly. Opening from a closed bar and closing keep the Dropdown Menu's enter and exit
+motion. With reduced motion, the highlight moves without sliding.
+
+While a menu is open, hovered triggers show no fill of their own.
+
+## Overflow
+
+A horizontal bar is as wide as its triggers, up to its container. It then scrolls
+horizontally with a hidden scrollbar; a vertical bar scrolls vertically. The highlight
+scrolls with its trigger.
+
+## Keyboard
+
+| Key | Action |
+| --- | --- |
+| `Tab` | Moves focus into the bar and out of it. The bar is one tab stop. |
+| `←` `→` | Moves between triggers. With a menu open, opens the neighbouring menu. Vertical bars use `↑` `↓`. |
+| `Enter` `Space` `↓` | Opens the focused menu. |
+| `↑` `↓` | Moves between rows in an open menu. |
+| `→` | Opens a submenu from its trigger. |
+| `Esc` | Closes the menu and returns focus to its trigger. |
+
+## Accessibility
+
+The bar renders `role="menubar"` and each trigger is a `menuitem` that opens a `menu`.
+Name the bar with `aria-label`, and name icon-only triggers. The highlight is `aria-hidden`.

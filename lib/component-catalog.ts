@@ -29,6 +29,7 @@ export const COMPONENT_FAMILIES = [
   { name: "Input", slugs: ["input", "textarea"] },
   { name: "Kbd", slugs: ["kbd"] },
   { name: "Loader", slugs: ["ascii-loader", "matrix-loader", "classic-loader"] },
+  { name: "Menubar", slugs: ["menubar"] },
   { name: "Number Animation", slugs: ["number-animation"] },
   { name: "Popover", slugs: ["popover"] },
   { name: "Progress", slugs: ["progress"] },
@@ -132,6 +133,7 @@ export const COMPONENT_CATEGORIES = [
       "selection-toolbar",
       "hover-card",
       "dropdown-menu",
+      "menubar",
     ],
   },
 ] as const;
@@ -161,6 +163,7 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   "hover-card": "HoverCard, createHoverCardHandle, HoverCardSkeleton, and composable popup parts",
   input: "Input, InputCount",
   kbd: "Kbd, KbdGroup",
+  menubar: "Menubar, MenubarMenu, MenubarTrigger, MenubarContent, and item/checkbox/radio/action/submenu/select rows",
   morph: "Morph",
   popover: "Popover, createPopoverHandle, and composable popup parts",
   progress: "Progress, ProgressCircle, ProgressLabel, ProgressValue",

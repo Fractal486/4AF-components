@@ -20,7 +20,7 @@ export type { ComponentDemoName } from "./demo-names";
 
 const LOADER_DEMOS = new Set([
   "button", "action-button", "action-toggle", "copy-button", "delete-button",
-  "alert", "badge", "dropdown-menu", "command-palette", "selection-toolbar",
+  "alert", "badge", "dropdown-menu", "menubar", "command-palette", "selection-toolbar",
 ]);
 // Sizing belongs to the demo shell.
 const DEMO_WIDTHS: Partial<Record<ComponentDemoName, string>> = {
@@ -274,6 +274,7 @@ const demos: Record<DemoName, () => Promise<AnyEntry>> = {
   "hover-card": async () => (await import("@/inspector/entries/hover-card")).hoverCardEntry,
   input: async () => (await import("@/inspector/entries/input")).inputEntry,
   kbd: async () => (await import("@/inspector/entries/kbd")).kbdEntry,
+  menubar: async () => (await import("@/inspector/entries/menubar")).menubarEntry,
   "matrix-loader": async () => (await import("@/inspector/entries/matrix-loader")).matrixLoaderEntry,
   "classic-loader": async () => (await import("@/inspector/entries/classic-loader")).classicLoaderEntry,
   morph: async () => (await import("@/inspector/entries/morph")).morphEntry,

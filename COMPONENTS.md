@@ -41,6 +41,7 @@ see [Tooltip's shared and composable APIs](content/docs/tooltip.mdx#shared-toolt
 For smoothly resizing anchored panels, shared triggers, and custom portal composition, see [Popover](content/docs/popover.mdx#api). Tall panels use Scroll Area automatically.
 For shared link previews, stable placement, loading placeholders, and scrolling content, see [Hover Card](content/docs/hover-card.mdx#api). Hover Card and Popover install the shared `use-popup-height` utility for smooth sizing.
 For shared row-action menus, wrapping labels, custom popup containers, and state-based row styling, see [Dropdown Menu](content/docs/dropdown-menu.mdx#api).
+For an application menu bar whose menus reuse every Dropdown Menu row, with a sliding open-menu highlight and instant switching, see [Menubar](content/docs/menubar.mdx#api).
 For notification counts, status dots, and actions that replace badges on hover, see
 [Sidebar's badge and action composition](content/docs/sidebar.mdx#menu-badges-and-actions).
 Sidebar also closes mobile navigation after ordinary links and supports configurable, scoped shortcuts.

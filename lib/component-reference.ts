@@ -290,6 +290,37 @@ import { Input, InputCount } from "@/components/ui/input";
 
 <KbdGroup keys="mod+k" size="sm" />`,
   },
+  menubar: {
+    usage: `import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarSeparator,
+  MenubarShortcut,
+  MenubarTrigger,
+} from "@/components/ui/menubar";
+
+<Menubar aria-label="Editor">
+  <MenubarMenu>
+    <MenubarTrigger>File</MenubarTrigger>
+    <MenubarContent>
+      <MenubarItem>
+        New file
+        <MenubarShortcut keys="mod+n" />
+      </MenubarItem>
+      <MenubarSeparator />
+      <MenubarItem variant="destructive">Move to trash</MenubarItem>
+    </MenubarContent>
+  </MenubarMenu>
+  <MenubarMenu>
+    <MenubarTrigger>Edit</MenubarTrigger>
+    <MenubarContent>
+      <MenubarItem>Undo</MenubarItem>
+    </MenubarContent>
+  </MenubarMenu>
+</Menubar>`,
+  },
   morph: {
     usage: `import { Check, Copy } from "lucide-react";
 import { Morph } from "@/components/ui/morph";
