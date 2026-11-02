@@ -54,15 +54,16 @@ export const selectSearchEntry = defineEntry({
   controls: {
     size: select(["sm", "md"] as const, "sm"),
     tone: select(["neutral", "accent"], "neutral", "Focus"),
-    disabled: bool(false),
     multiple: bool(false),
     selected: bool(true, "Selected"),
-    scrollable: bool(false, "Scrollable"),
-    groups: bool(false, "Sections"),
     icons: bool(true),
-    invalid: bool(false),
+    groups: bool(false, "Sections"),
+    scrollable: bool(false, "Scrollable"),
+    state: select(["default", "disabled", "invalid"] as const, "default", "State"),
   },
-  render({ size, tone, disabled, multiple, selected, scrollable, groups, icons, invalid }) {
+  render({ size, tone, multiple, selected, scrollable, groups, icons, state }) {
+    const disabled = state === "disabled";
+    const invalid = state === "invalid";
     const items: readonly Fruit[] = scrollable ? ALL_FRUITS : FRUITS;
     const options = groups ? [
       { label: "Berries", items: items.filter((item) => item.value.endsWith("berry")) },

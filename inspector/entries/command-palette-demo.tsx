@@ -19,7 +19,6 @@ import {
   Pencil,
   Plus,
   Settings,
-  SlidersHorizontal,
   RefreshCw,
   Star,
   Sun,
@@ -30,9 +29,8 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { KbdGroup } from "@/registry/ui/kbd/kbd";
-import { Badge, type BadgeProps } from "@/registry/ui/badge/badge";
+import { Badge } from "@/registry/ui/badge/badge";
 import { Button } from "@/registry/ui/button/button";
-import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import {
   CommandPalette,
   CommandPanelRow,
@@ -57,7 +55,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/registry/ui/select/select";
-import { Slider } from "@/registry/ui/slider/slider";
 import { Switch } from "@/registry/ui/switch/switch";
 
 const DEMO_SHORTCUT_KEY = "p";
@@ -264,15 +261,11 @@ function PeopleSearchPanel({
 }
 
 export function CommandPaletteDemo({
-  shortcut,
   grouped,
   search,
-  tabs,
 }: {
-  shortcut: boolean;
   grouped: boolean;
   search: boolean;
-  tabs: "fill" | "underline";
 }) {
   const [open, setOpen] = useState(false);
   const [lastRun, setLastRun] = useState<string | null>(null);
@@ -280,8 +273,6 @@ export function CommandPaletteDemo({
   const run = (label: string) => () => setLastRun(label);
 
   useEffect(() => {
-    if (!shortcut) return;
-
     const onKeyDown = (event: KeyboardEvent) => {
       if (
         event.key.toLowerCase() !== DEMO_SHORTCUT_KEY ||
@@ -297,7 +288,7 @@ export function CommandPaletteDemo({
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [shortcut]);
+  }, []);
 
   // A mock server search: waits out a latency, honours the abort signal so superseded
   // keystrokes cancel, and returns already-ranked results (here, a plain substring match).
@@ -341,35 +332,6 @@ export function CommandPaletteDemo({
     { id: "new", label: "New File", icon: <Plus />, onSelect: run("New File") },
     { id: "copy", label: "Copy Link", icon: <Copy />, onSelect: run("Copy Link") },
     {
-      id: "rename",
-      label: "Rename Project…",
-      description: "A single-field form panel",
-      icon: <Pencil />,
-      panelInput: {
-        type: "text",
-        label: "Project name",
-        placeholder: "Enter a project name…",
-        defaultValue: "Untitled project",
-        form: "rename-project-form",
-        name: "name",
-        required: true,
-      },
-      // A panel item: drills into a form with its own fields and action bar.
-      panel: (helpers) => (
-        <RenamePanel helpers={helpers} onDone={(name) => setLastRun(`Renamed to “${name}”`)} />
-      ),
-    },
-    {
-      id: "project-settings",
-      label: "Project Settings…",
-      description: "Select, badge, slider, checkboxes and switches in a panel",
-      icon: <SlidersHorizontal />,
-      keywords: ["visibility", "storage", "notifications"],
-      panel: (helpers) => (
-        <SettingsPanel helpers={helpers} onDone={(summary) => setLastRun(summary)} />
-      ),
-    },
-    {
       id: "projects",
       label: "Projects…",
       description: "A project list with keyboard actions",
@@ -411,7 +373,7 @@ export function CommandPaletteDemo({
         label: "Search shortcuts",
         placeholder: "Search shortcuts…",
       },
-      panel: (helpers) => <ShortcutsPanel query={helpers.query} variant={tabs} openingShortcut={shortcut} />,
+      panel: (helpers) => <ShortcutsPanel query={helpers.query} />,
     },
     {
       id: "theme",
@@ -425,14 +387,6 @@ export function CommandPaletteDemo({
         { id: "theme-dark", label: "Dark", icon: <Moon />, onSelect: run("Theme: Dark") },
         { id: "theme-system", label: "System", icon: <Monitor />, onSelect: run("Theme: System") },
       ],
-    },
-    {
-      id: "delete",
-      label: "Delete Project",
-      icon: <Trash2 />,
-      keywords: ["remove"],
-      destructive: true,
-      onSelect: run("Delete Project"),
     },
   ];
 
@@ -448,12 +402,10 @@ export function CommandPaletteDemo({
       <Button
         variant="outline"
         onClick={() => setOpen(true)}
-        aria-keyshortcuts={shortcut ? "Control+Shift+P Meta+Shift+P" : undefined}
+        aria-keyshortcuts="Control+Shift+P Meta+Shift+P"
       >
         Open palette
-        {shortcut && (
-          <KbdGroup keys="mod+shift+p" className="ml-1 gap-0.5" />
-        )}
+        <KbdGroup keys="mod+shift+p" className="ml-1 gap-0.5" />
       </Button>
 
       <p className="flex h-5 items-center gap-1.5 text-sm text-muted-foreground">
@@ -465,13 +417,13 @@ export function CommandPaletteDemo({
         ) : search ? (
           "Type to search a mock server (try “report”, “settings”, or a name). Clear it for the commands."
         ) : (
-          "Try a search, a sub-page (Theme), or a form (Rename / Project Settings)."
+          "Try a search, a sub-list (Theme), or a custom panel (Projects, People, Shortcuts)."
         )}
       </p>
 
       <CommandPalette
         // Remounted per toggle so the demo rebuilds cleanly.
-        key={`${shortcut}-${grouped}-${search}-${tabs}`}
+        key={`${grouped}-${search}`}
         groups={groups}
         // With async on, the static groups become the resting state (shown while the query
         // is empty) and the mock server takes over the moment you type.
@@ -519,11 +471,7 @@ const SHORTCUT_SECTIONS = [
 // A tabbed panel: the tab row narrows to one section, and the header field filters within
 // whichever is selected. The tabs only re-filter one list, so a single tab panel whose
 // value follows the selection is all the wiring it needs.
-function ShortcutsPanel({ query, variant, openingShortcut }: {
-  query: string;
-  variant: "fill" | "underline";
-  openingShortcut: boolean;
-}) {
+function ShortcutsPanel({ query }: { query: string }) {
   const [tab, setTab] = useState("all");
   const needle = query.trim().toLowerCase();
   const sections = SHORTCUT_SECTIONS
@@ -531,7 +479,7 @@ function ShortcutsPanel({ query, variant, openingShortcut }: {
     .map((section) => ({
       ...section,
       shortcuts: [
-        ...(section.id === "general" && openingShortcut
+        ...(section.id === "general"
           ? [{ keys: ["mod", "Shift", "P"], action: "Open or close the palette" }]
           : []),
         ...section.shortcuts,
@@ -541,7 +489,7 @@ function ShortcutsPanel({ query, variant, openingShortcut }: {
 
   return (
     <CommandPanelTabs value={tab} onValueChange={(next) => setTab(next as string)}>
-      <CommandPanelTabList aria-label="Shortcut sections" variant={variant}>
+      <CommandPanelTabList aria-label="Shortcut sections">
         <CommandPanelTab value="all">All</CommandPanelTab>
         {SHORTCUT_SECTIONS.map((section) => (
           <CommandPanelTab key={section.id} value={section.id}>{section.label}</CommandPanelTab>
@@ -576,37 +524,11 @@ function ShortcutsPanel({ query, variant, openingShortcut }: {
   );
 }
 
-function RenamePanel({
-  helpers,
-  onDone,
-}: {
-  helpers: CommandPanelHelpers;
-  onDone: (name: string) => void;
-}) {
-  return (
-    // The form fills the panel and splits into a scrolling body and a pinned footer, so
-    // the action bar sits outside the scroll area while `type="submit"` still submits.
-    <form
-      id="rename-project-form"
-      className="flex min-h-0 flex-1 flex-col"
-      onSubmit={(event) => {
-        event.preventDefault();
-        onDone(helpers.inputValue.trim());
-        helpers.close();
-      }}
-    >
-      <CommandPanelBody className="flex flex-col gap-4">
-        <p className="text-sm text-muted-foreground">
-          Enter the new project name in the text field above.
-        </p>
-      </CommandPanelBody>
-
-      <CommandPanelFooter enter={{ label: "Save", type: "submit" }} />
-    </form>
-  );
-}
-
 const PROJECTS = ["Aurora", "Basecamp", "Cartography", "Deep Field", "Eventide"] as const;
+// Who owns each project, for the panel's underline tabs. Projects made in the demo are yours.
+const SHARED_PROJECTS = new Set<string>(["Basecamp", "Deep Field"]);
+const PROJECT_TABS = { all: "All", mine: "Mine", shared: "Shared" } as const;
+type ProjectTab = keyof typeof PROJECT_TABS;
 
 function ProjectsPanel({
   helpers,
@@ -619,8 +541,10 @@ function ProjectsPanel({
   const [selected, setSelected] = useState<string>(PROJECTS[0]);
   const query = helpers.query.trim();
   const normalizedQuery = query.toLowerCase();
+  const [tab, setTab] = useState<ProjectTab>("all");
   const visibleProjects = projects.filter((project) =>
-    project.toLowerCase().includes(normalizedQuery),
+    project.toLowerCase().includes(normalizedQuery) &&
+    (tab === "all" || (tab === "shared") === SHARED_PROJECTS.has(project)),
   );
 
   // Contextual actions target the checked project, independently of row highlight.
@@ -740,81 +664,76 @@ function ProjectsPanel({
   ];
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <CommandPanelList autoFocus={false} className="flex flex-col gap-0">
-        {visibleProjects.length > 0 ? (
-          <>
-            {!query && (
-              <CommandPanelRow
-                value="new-project"
-                icon={<Plus />}
-                onSelect={() =>
-                  helpers.openPanel({
-                    title: "New project",
-                    panelInput: {
-                      type: "text",
-                      label: "Project name",
-                      placeholder: "Enter a project name…",
-                      defaultValue: "Untitled project",
-                      form: "new-project-form",
-                      name: "name",
-                      required: true,
-                    },
-                    panel: (panelHelpers) => (
-                      <NewProjectPanel
-                        helpers={panelHelpers}
-                        onDone={(name, visibility) => {
-                          onDone(`Created “${name}” · ${VISIBILITY[visibility]}`);
-                        }}
-                      />
-                    ),
-                  })
-                }
-              >
-                New project
-              </CommandPanelRow>
-            )}
-            {visibleProjects.map((project) => (
-              <CommandPanelRow
-                key={project}
-                icon={<FolderOpen />}
-                selected={project === selected}
-                onSelect={() => setSelected(project)}
-                checkbox
-              >
-                {project}
-              </CommandPanelRow>
-            ))}
-            {!query && (
-              <CommandPanelRow
-                value="delete-selected-project"
-                icon={<Trash2 />}
-                destructive
-                onSelect={() => {
-                  onDone(`Deleted ${selected}`);
-                  helpers.close();
-                }}
-              >
-                Delete {selected}
-              </CommandPanelRow>
-            )}
-          </>
-        ) : query ? (
-          <CommandPanelRow
-            icon={<Plus />}
-            onSelect={() => {
-              onDone(`Created “${query}”`);
-              helpers.close();
-            }}
-          >
-            Create “{query}”
-          </CommandPanelRow>
-        ) : (
-          <p className="px-2.5 py-8 text-center text-sm text-muted-foreground">
-            No projects found.
-          </p>
-        )}
-      </CommandPanelList>
+    // The underline row narrows the list by owner; the header field still searches within it.
+    <CommandPanelTabs value={tab} onValueChange={(next) => setTab(next as ProjectTab)}>
+      <CommandPanelTabList aria-label="Project owner" variant="underline">
+        {(Object.keys(PROJECT_TABS) as ProjectTab[]).map((value) => (
+          <CommandPanelTab key={value} value={value}>{PROJECT_TABS[value]}</CommandPanelTab>
+        ))}
+      </CommandPanelTabList>
+      <CommandPanelTabPanel value={tab}>
+        <CommandPanelList autoFocus={false} className="flex flex-col gap-0">
+          {visibleProjects.length > 0 ? (
+            <>
+              {!query && (
+                <CommandPanelRow
+                  value="new-project"
+                  icon={<Plus />}
+                  onSelect={() =>
+                    helpers.openPanel({
+                      title: "New project",
+                      panelInput: {
+                        type: "text",
+                        label: "Project name",
+                        placeholder: "Enter a project name…",
+                        defaultValue: "Untitled project",
+                        form: "new-project-form",
+                        name: "name",
+                        required: true,
+                      },
+                      panel: (panelHelpers) => (
+                        <NewProjectPanel
+                          helpers={panelHelpers}
+                          onDone={(name, visibility) => {
+                            onDone(`Created “${name}” · ${VISIBILITY[visibility]}`);
+                          }}
+                        />
+                      ),
+                    })
+                  }
+                >
+                  New project
+                </CommandPanelRow>
+              )}
+              {visibleProjects.map((project) => (
+                <CommandPanelRow
+                  key={project}
+                  icon={<FolderOpen />}
+                  selected={project === selected}
+                  onSelect={() => setSelected(project)}
+                  checkbox
+                >
+                  {project}
+                </CommandPanelRow>
+              ))}
+            </>
+          ) : query ? (
+            <CommandPanelRow
+              icon={<Plus />}
+              onSelect={() => {
+                onDone(`Created “${query}”`);
+                helpers.close();
+              }}
+            >
+              Create “{query}”
+            </CommandPanelRow>
+          ) : (
+            <p className="px-2.5 py-8 text-center text-sm text-muted-foreground">
+              No projects found.
+            </p>
+          )}
+        </CommandPanelList>
+      </CommandPanelTabPanel>
 
       <CommandPanelFooter
         enter={{
@@ -826,7 +745,7 @@ function ProjectsPanel({
         }}
         actions={{ groups: actionGroups }}
       />
-    </div>
+    </CommandPanelTabs>
   );
 }
 
@@ -836,12 +755,6 @@ const VISIBILITY: Record<Visibility, string> = {
   private: "Private",
   team: "Team",
   public: "Public",
-};
-
-const VISIBILITY_STATUS: Record<Visibility, BadgeProps["status"]> = {
-  private: "neutral",
-  team: "info",
-  public: "success",
 };
 
 function NewProjectPanel({
@@ -895,114 +808,6 @@ function NewProjectPanel({
       </CommandPanelBody>
 
       <CommandPanelFooter enter={{ label: "Create", type: "submit" }} />
-    </form>
-  );
-}
-
-const FEATURES = [
-  { key: "favorite", label: "Favorite", icon: <Star className="size-4 text-subtle-foreground" /> },
-  { key: "watch", label: "Watch", icon: <Bell className="size-4 text-subtle-foreground" /> },
-  { key: "locked", label: "Lock", icon: <Lock className="size-4 text-subtle-foreground" /> },
-] as const;
-
-function SettingsPanel({
-  helpers,
-  onDone,
-}: {
-  helpers: CommandPanelHelpers;
-  onDone: (summary: string) => void;
-}) {
-  const [visibility, setVisibility] = useState<Visibility>("team");
-  const [storage, setStorage] = useState(20);
-  const [notifs, setNotifs] = useState({ updates: true, digest: false, mentions: true });
-  const [features, setFeatures] = useState({ favorite: true, watch: false, locked: false });
-
-  return (
-    <form
-      className="flex min-h-0 flex-1 flex-col"
-      onSubmit={(event) => {
-        event.preventDefault();
-        onDone(`Saved · ${VISIBILITY[visibility]}, ${storage} GB`);
-        helpers.close();
-      }}
-    >
-      <CommandPanelBody className="flex flex-col gap-5">
-        <div className="flex flex-col gap-1.5">
-          <span className="text-sm text-muted-foreground">Visibility</span>
-          <div className="flex items-center gap-2">
-            <Select
-              items={VISIBILITY}
-              value={visibility}
-              onValueChange={(value) => setVisibility(value as Visibility)}
-            >
-              {/* A fixed field width — the trigger is `w-full` by default, so without this
-                  it stretched across the panel. The popup matches it via `--anchor-width`. */}
-              <SelectTrigger className="w-44" aria-label="Visibility">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.keys(VISIBILITY) as Visibility[]).map((value) => (
-                  <SelectItem key={value} value={value}>
-                    {VISIBILITY[value]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Badge status={VISIBILITY_STATUS[visibility]} size="sm">
-              {VISIBILITY[visibility]}
-            </Badge>
-          </div>
-        </div>
-
-        <Slider
-          thumb="knob"
-          size="sm"
-          label="Storage limit (GB)"
-          min={5}
-          max={100}
-          step={5}
-          value={storage}
-          onValueChange={setStorage}
-        />
-
-        <div className="flex flex-col gap-2.5">
-          <span className="text-sm text-muted-foreground">Notifications</span>
-          <Checkbox
-            label="Product updates"
-            checked={notifs.updates}
-            onCheckedChange={(checked) => setNotifs((n) => ({ ...n, updates: checked }))}
-          />
-          <Checkbox
-            label="Weekly digest"
-            checked={notifs.digest}
-            onCheckedChange={(checked) => setNotifs((n) => ({ ...n, digest: checked }))}
-          />
-          <Checkbox
-            label="Mentions"
-            checked={notifs.mentions}
-            onCheckedChange={(checked) => setNotifs((n) => ({ ...n, mentions: checked }))}
-          />
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <span className="text-sm text-muted-foreground">Features</span>
-          {FEATURES.map(({ key, label, icon }) => (
-            <div key={key} className="flex items-center justify-between gap-4">
-              <span className="flex items-center gap-2 text-sm text-foreground">
-                {icon}
-                {label}
-              </span>
-              <Switch
-                aria-label={label}
-                checked={features[key]}
-                onCheckedChange={(checked) => setFeatures((f) => ({ ...f, [key]: checked }))}
-              />
-            </div>
-          ))}
-        </div>
-      </CommandPanelBody>
-
-      <CommandPanelFooter enter={{ label: "Save", type: "submit" }} />
     </form>
   );
 }

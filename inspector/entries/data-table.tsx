@@ -44,20 +44,31 @@ export const dataTableEntry = defineEntry({
     size: select(SIZES, "sm"),
     wrap: bool(false, "Wrap text"),
     pinned: bool(false, "Pinned columns"),
-    search: bool(true, "Search"),
-    filters: bool(false, "Column filter"),
-    visibility: bool(true, "Column visibility"),
-    pagination: bool(true, "Pagination"),
-    selectable: bool(true, "Checkbox column"),
-    selectionBar: bool(true, "Selection action row", (values) => !values.selectable),
-    actionColumn: bool(true, "Row actions column"),
     lines: multi(["horizontal", "vertical", "outline"], ["horizontal"], "Lines"),
-    loading: bool(false, "Loading"),
-    empty: bool(false, "Empty"),
+    // The controls above the table: the search field, the channel filter, and the column menu.
+    toolbar: multi(["search", "filter", "columns"], ["search", "columns"], "Toolbar"),
+    // Checkboxes alone, or with the action row that appears while rows are selected.
+    selection: select(["none", "checkbox", "actionRow"], "actionRow", "Selection"),
+    actionColumn: bool(true, "Row actions column"),
+    pagination: bool(true, "Pagination"),
+    state: select(["default", "loading", "empty"], "default", "State"),
     footer: bool(false, "Footer"),
     caption: bool(true, "Caption"),
   },
-  render(values) { return <DataTableDemo {...values} />; },
+  render({ toolbar, selection, state, ...values }) {
+    return (
+      <DataTableDemo
+        {...values}
+        search={toolbar.includes("search")}
+        filters={toolbar.includes("filter")}
+        visibility={toolbar.includes("columns")}
+        selectable={selection !== "none"}
+        selectionBar={selection === "actionRow"}
+        loading={state === "loading"}
+        empty={state === "empty"}
+      />
+    );
+  },
 });
 
 function DataTableDemo({ size, wrap, pinned, search, filters, visibility, pagination, selectable, selectionBar, actionColumn, lines, loading, empty, footer, caption }: {

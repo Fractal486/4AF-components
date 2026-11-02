@@ -83,20 +83,21 @@ export const selectEntry = defineEntry({
   slug: "select",
   name: "Select",
   controls: {
-    size: select(["xs", "sm", "md"] as const, "sm"),
-    disabled: bool(false),
-    multiple: bool(false),
-    selected: bool(true, "Selected"),
-    searchable: bool(false, "Search in panel"),
-    scrollable: bool(false, "Scrollable"),
-    groups: bool(false, "Sections"),
-    icons: bool(true),
     variant: select(["default", "ghost", "plain"] as const, "default", "Variant"),
     tone: select(["neutral", "accent"] as const, "neutral", "Open border", (v) => v.variant !== "default"),
+    size: select(["xs", "sm", "md"] as const, "sm"),
+    multiple: bool(false),
+    selected: bool(true, "Selected"),
     showLabel: bool(true, "Show label"),
-    invalid: bool(false),
+    icons: bool(true),
+    groups: bool(false, "Sections"),
+    scrollable: bool(false, "Scrollable"),
+    searchable: bool(false, "Search in panel"),
+    state: select(["default", "disabled", "invalid"] as const, "default", "State"),
   },
-  render({ size, disabled, multiple, selected, searchable, scrollable, groups, icons, variant, tone, showLabel, invalid }) {
+  render({ size, multiple, selected, searchable, scrollable, groups, icons, variant, tone, showLabel, state }) {
+    const disabled = state === "disabled";
+    const invalid = state === "invalid";
     const items = scrollable ? ALL_FRUITS : FRUITS;
     return (
       <div className="w-full max-w-56">

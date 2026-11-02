@@ -36,6 +36,15 @@ export type ControlDef =
       max?: number;
       step?: number;
       disabledWhen?: DisabledWhen;
+    }
+  | {
+      kind: "range";
+      defaultValue: readonly [number, number];
+      label?: string;
+      min: number;
+      max: number;
+      step?: number;
+      disabledWhen?: DisabledWhen;
     };
 
 export type ControlSchema = Record<string, ControlDef>;
@@ -54,7 +63,9 @@ type ValueOf<C extends ControlDef> = C extends {
       ? string
       : C extends { kind: "number" }
         ? number
-        : never;
+        : C extends { kind: "range" }
+          ? readonly [number, number]
+          : never;
 
 export type ControlValues<S extends ControlSchema> = {
   [K in keyof S]: ValueOf<S[K]>;
@@ -124,6 +135,22 @@ export function num(
   disabledWhen?: DisabledWhen;
 } {
   return { kind: "number", defaultValue, ...opts };
+}
+
+/** Two ends of one quantity — a minimum and a maximum — set on a single two-thumb rail. */
+export function range(
+  defaultValue: readonly [number, number],
+  opts: { min: number; max: number; step?: number; label?: string; disabledWhen?: DisabledWhen },
+): {
+  kind: "range";
+  defaultValue: readonly [number, number];
+  label?: string;
+  min: number;
+  max: number;
+  step?: number;
+  disabledWhen?: DisabledWhen;
+} {
+  return { kind: "range", defaultValue, ...opts };
 }
 
 export interface Entry<S extends ControlSchema = ControlSchema> {

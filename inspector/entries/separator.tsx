@@ -1,6 +1,6 @@
 import { Separator } from "@/registry/ui/separator/separator";
 import { CalendarDays } from "lucide-react";
-import { bool, defineEntry, select } from "../schema";
+import { defineEntry, select } from "../schema";
 
 const ORIENTATIONS = ["horizontal", "vertical"] as const;
 
@@ -9,15 +9,15 @@ export const separatorEntry = defineEntry({
   name: "Separator",
   controls: {
     orientation: select(ORIENTATIONS, "horizontal"),
-    label: bool(false, "Label"),
-    align: select(["start", "center", "end"], "center", "Align", (values) => !values.label),
-    icon: bool(false, "Icon", (values) => !values.label),
+    // Icon is the text label with an icon before it.
+    label: select(["none", "text", "icon"], "none", "Label"),
+    align: select(["start", "center", "end"], "center", "Align", (values) => values.label === "none"),
   },
-  render({ orientation, label, align, icon }) {
-    const content = label ? <>{icon && <CalendarDays aria-hidden="true" />}Or</> : undefined;
+  render({ orientation, label, align }) {
+    const content = label === "none" ? undefined : <>{label === "icon" && <CalendarDays aria-hidden="true" />}Or</>;
     if (orientation === "vertical") {
       return (
-        <div className={`flex w-full max-w-sm items-center gap-4 text-sm text-muted-foreground ${label ? "min-h-40" : "min-h-8"}`}>
+        <div className={`flex w-full max-w-sm items-center gap-4 text-sm text-muted-foreground ${label !== "none" ? "min-h-40" : "min-h-8"}`}>
           <span>Profile</span>
           <Separator orientation="vertical" label={content} align={align} className="min-w-0 data-[labeled]:flex-1" />
           <span>Billing</span>

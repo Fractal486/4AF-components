@@ -9,17 +9,28 @@ export const badgeEntry = defineEntry({
     status: select(["neutral", "info", "success", "warning", "danger", "loading"] as const, "success"),
     size: select(["sm", "md", "lg"] as const, "sm"),
     shape: select(["rounded", "pill"] as const, "rounded"),
-    icon: select(["icon", "dot", "none"] as const, "icon", "Icon"),
-    pulse: bool(false, "Pulse", values => values.icon !== "dot"),
+    icon: select(["icon", "dot", "pulse", "none"] as const, "icon", "Icon"),
     neutralText: bool(false, "Neutral text", values => values.variant === "filled"),
     overflow: select(["truncate", "wrap"] as const, "truncate", "Long labels"),
-    interactive: select(["none", "button", "link"] as const, "none", "Interactive", values => Boolean(values.removable)),
+    // A badge is one of these at a time: static, a button or link, or a removable tag.
+    interactive: select(["none", "button", "link", "removable"] as const, "none", "Interactive"),
+    content: select(["label", "count", "animatedCount"] as const, "label", "Content"),
     invalid: bool(false, "Invalid"),
-    removable: bool(false, "Removable"),
-    count: bool(false, "Count"),
-    animateCount: bool(false, "Animate count", values => !values.count),
   },
-  render({ icon, overflow, ...values }) {
-    return <BadgePreview {...values} label="Approved" showIcon={icon === "icon"} dot={icon === "dot"} wrap={overflow === "wrap"} />;
+  render({ icon, overflow, interactive, content, ...values }) {
+    return (
+      <BadgePreview
+        {...values}
+        label="Approved"
+        showIcon={icon === "icon"}
+        dot={icon === "dot" || icon === "pulse"}
+        pulse={icon === "pulse"}
+        wrap={overflow === "wrap"}
+        interactive={interactive === "removable" ? "none" : interactive}
+        removable={interactive === "removable"}
+        count={content !== "label"}
+        animateCount={content === "animatedCount"}
+      />
+    );
   },
 });

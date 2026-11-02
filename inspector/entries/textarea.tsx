@@ -3,7 +3,7 @@ import { Field } from "@base-ui/react/field";
 import { useState, type ComponentProps } from "react";
 import { Button } from "@/registry/ui/button/button";
 import { Textarea } from "@/registry/ui/textarea/textarea";
-import { bool, defineEntry, num, select, text } from "../schema";
+import { bool, defineEntry, range, select } from "../schema";
 
 const TONES = ["neutral", "accent"] as const;
 
@@ -13,25 +13,26 @@ export const textareaEntry = defineEntry({
   controls: {
     variant: select(["default", "plain"] as const, "default", "Variant"),
     tone: select(TONES, "neutral", "Focus tone"),
-    placeholder: text("Type something...", "Placeholder"),
-    autoResize: bool(true, "Auto grow"),
-    minRows: num(3, { min: 1, max: 12, label: "Minimum rows" }),
-    maxRows: num(10, { min: 1, max: 24, label: "Maximum rows", disabledWhen: (values) => !values.autoResize }),
-    resizable: bool(true, "Resize grip", (values) => Boolean(values.autoResize)),
+    // Grow follows the content between the row bounds; resizable adds a drag grip instead.
+    height: select(["grow", "resizable", "fixed"], "grow", "Height"),
+    // A fixed or resizable field opens at the lower bound; only growing reaches the upper.
+    rows: range([3, 10], { min: 1, max: 24, label: "Rows" }),
     submitOnShortcut: bool(false, "Submit shortcut"),
     description: bool(false, "Description"),
-    disabled: bool(false),
-    invalid: bool(false),
+    state: select(["default", "disabled", "invalid"], "default", "State"),
   },
-  render({ variant, tone, placeholder, autoResize, minRows, maxRows, resizable, submitOnShortcut, description, disabled, invalid }) {
+  render({ variant, tone, height, rows, submitOnShortcut, description, state }) {
+    const [minRows, maxRows] = rows;
+    const disabled = state === "disabled";
+    const invalid = state === "invalid";
     return (
       <div className="w-full max-w-sm">
         <TextareaPreview
           variant={variant}
           tone={tone}
-          placeholder={placeholder}
-          resizable={resizable}
-          autoResize={autoResize}
+          placeholder="Type something…"
+          resizable={height === "resizable"}
+          autoResize={height === "grow"}
           minRows={minRows}
           maxRows={maxRows}
           submitOnShortcut={submitOnShortcut}

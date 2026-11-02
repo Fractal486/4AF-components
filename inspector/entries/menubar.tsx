@@ -51,10 +51,10 @@ export const menubarEntry = defineEntry({
     variant: select(["outline", "plain"], "outline", "Variant"),
     orientation: select(["horizontal", "vertical"], "horizontal", "Orientation"),
     icons: bool(false, "Trigger icons"),
-    disabledMenu: bool(false, "Disable View"),
-    disabled: bool(false, "Disable bar"),
+    // One menu (View) or the whole bar.
+    disabled: select(["none", "menu", "bar"], "none", "Disabled"),
   },
-  render: ({ size, variant, orientation, icons, disabledMenu, disabled }) => (
+  render: ({ size, variant, orientation, icons, disabled }) => (
     <Menubar
       // Remounted per geometry so the highlight measures the new layout from a clean slate.
       key={`${size}-${orientation}`}
@@ -62,7 +62,7 @@ export const menubarEntry = defineEntry({
       size={size}
       variant={variant}
       orientation={orientation}
-      disabled={disabled}
+      disabled={disabled === "bar"}
     >
       <MenubarMenu>
         <MenubarTrigger>{icons && <FileText />}File</MenubarTrigger>
@@ -135,7 +135,7 @@ export const menubarEntry = defineEntry({
           </MenubarItem>
         </MenubarContent>
       </MenubarMenu>
-      <MenubarMenu disabled={disabledMenu}>
+      <MenubarMenu disabled={disabled === "menu"}>
         <MenubarTrigger>{icons && <Eye />}View</MenubarTrigger>
         <MenubarContent className="w-56">
           <MenubarCheckboxItem defaultChecked>Show toolbar</MenubarCheckboxItem>

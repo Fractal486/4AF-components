@@ -4,7 +4,7 @@ import { ActionButton } from "@/registry/ui/action-button/action-button";
 import { Button } from "@/registry/ui/button/button";
 import { Alert } from "@/registry/ui/alert/alert";
 import { Input, InputCount } from "@/registry/ui/input/input";
-import { bool, defineEntry, select, text } from "../schema";
+import { bool, defineEntry, select } from "../schema";
 
 const VARIANTS = ["default", "plain", "underline"] as const;
 const TONES = ["neutral", "accent"] as const;
@@ -18,16 +18,15 @@ export const inputEntry = defineEntry({
     tone: select(TONES, "neutral", "Focus tone"),
     type: select(TYPES, "text"),
     multiple: bool(false, "Multiple files", (values) => values.type !== "file"),
-    accept: select(["any", "images", "pdf"], "any", "Accepted files", (values) => values.type !== "file"),
-    placeholder: text("Type something...", "Placeholder"),
     startIcon: bool(false, "Leading icon"),
     endAction: select(["none", "icon", "label"], "none", "Trailing action", (values) => values.type === "number" || values.type === "file"),
     description: bool(false, "Description"),
     count: bool(false, "Character counter", (values) => !["text", "email", "password", "search", "url"].includes(values.type as string)),
-    disabled: bool(false),
-    invalid: bool(false),
+    state: select(["default", "disabled", "invalid"], "default", "State"),
   },
-  render({ variant, tone, type, multiple, accept, placeholder, startIcon, endAction, description, count, disabled, invalid }) {
+  render({ variant, tone, type, multiple, startIcon, endAction, description, count, state }) {
+    const disabled = state === "disabled";
+    const invalid = state === "invalid";
     return (
       <div className="w-full max-w-sm">
         <InputPreview
@@ -37,8 +36,7 @@ export const inputEntry = defineEntry({
           tone={tone}
           type={type}
           multiple={type === "file" ? multiple : undefined}
-          accept={type === "file" ? (accept === "images" ? "image/*" : accept === "pdf" ? ".pdf" : undefined) : undefined}
-          placeholder={placeholder}
+          placeholder="Type something…"
           startIcon={startIcon ? <Search /> : undefined}
           endAction={
             endAction === "icon" ? (

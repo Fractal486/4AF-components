@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { Bell } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription, AlertClose } from "@/registry/ui/alert/alert";
 import { Button } from "@/registry/ui/button/button";
-import { bool, defineEntry, select, text } from "../schema";
+import { bool, defineEntry, select } from "../schema";
 
 const VARIANTS = ["error", "warning", "success", "info", "loading"] as const;
 const MESSAGES: Record<(typeof VARIANTS)[number], string> = {
@@ -15,8 +15,8 @@ const MESSAGES: Record<(typeof VARIANTS)[number], string> = {
   loading: "Checking whether this address is reachable…",
 };
 
-function AlertPreview({ variant, message, title, dismissible, icon }: {
-  variant: (typeof VARIANTS)[number]; message: string; title: boolean;
+function AlertPreview({ variant, title, dismissible, icon }: {
+  variant: (typeof VARIANTS)[number]; title: boolean;
   dismissible: boolean; icon: "default" | "custom" | "none";
 }) {
   const [open, setOpen] = useState(true);
@@ -39,7 +39,7 @@ function AlertPreview({ variant, message, title, dismissible, icon }: {
       <Alert ref={setAlertElement} variant={variant} open={open} onOpenChange={changeOpen}
         icon={icon === "none" ? null : icon === "custom" ? <Bell /> : undefined}>
         {title && <AlertTitle>Email address</AlertTitle>}
-        <AlertDescription>{message || MESSAGES[variant]}</AlertDescription>
+        <AlertDescription>{MESSAGES[variant]}</AlertDescription>
         {dismissible && <AlertClose />}
       </Alert>
       {!open && !alertElement && <Button size="sm" variant="ghost"
@@ -54,7 +54,6 @@ export const alertEntry = defineEntry({
   name: "Alert",
   controls: {
     variant: select(VARIANTS, "error"),
-    message: text("", "Message", "Leave empty for the variant's own"),
     icon: select(["default", "custom", "none"] as const, "default", "Icon"),
     title: bool(false, "Title"),
     dismissible: bool(false, "Dismissible"),

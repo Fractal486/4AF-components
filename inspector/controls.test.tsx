@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { Controls, fitsPillTabs } from "./controls";
-import { num, select, text, type ControlValues } from "./schema";
+import { num, range, select, text, type ControlValues } from "./schema";
 
 // Long enough to stay a dropdown — a short enum renders as pill tabs instead, which the
 // "short enums" suite below covers.
@@ -139,5 +139,20 @@ describe("Controls disabledWhen", () => {
     expect(screen.getByRole("slider", { name: "Buttons" })).toBeDisabled();
     expect(screen.getByRole("textbox")).toBeDisabled();
     expect(screen.getByText("Placeholder").parentElement).toHaveClass("opacity-50");
+  });
+});
+
+describe("Controls range", () => {
+  it("sets both bounds on one two-thumb rail and shows them as a span", () => {
+    render(
+      <Controls
+        schema={{ rows: range([3, 10], { min: 1, max: 24, label: "Rows" }) }}
+        values={{ rows: [3, 10] }}
+        onChange={() => {}}
+      />,
+    );
+
+    expect(screen.getAllByRole("slider")).toHaveLength(2);
+    expect(screen.getByText("3–10")).toBeInTheDocument();
   });
 });

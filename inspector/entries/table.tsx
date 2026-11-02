@@ -42,12 +42,13 @@ export const tableEntry = defineEntry({
     alignment: select(["start", "center", "end"], "end", "Number alignment"),
     lines: multi(["horizontal", "vertical", "outline"], ["horizontal"], "Lines"),
     scroll: bool(true, "Bounded height"),
-    loading: bool(false, "Loading"),
-    empty: bool(false, "Empty"),
+    state: select(["default", "loading", "empty"], "default", "State"),
     footer: bool(false, "Footer"),
     caption: bool(true, "Caption"),
   },
-  render({ size, wrap, pinned, alignment, lines, scroll, loading, empty, footer, caption }) {
+  render({ size, wrap, pinned, alignment, lines, scroll, state, footer, caption }) {
+    const loading = state === "loading";
+    const empty = state === "empty";
     return (
       // `self-start` keeps the table at the top of the preview box rather than floating in
       // the middle of it — a table is read from its header down, not from its centre out.

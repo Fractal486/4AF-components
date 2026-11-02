@@ -9,8 +9,9 @@ export const actionButtonEntry = defineEntry({
     variant: select(CONTROL_VARIANTS, "primary"),
     size: select(TEXT_SIZES, "md"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
-    status: select(["automatic", "idle", "pending", "success", "error"], "automatic", "Status"),
-    fail: bool(false, "Make it fail"),
+    // Automatic runs the real action on click; the others pin the button in one state.
+    status: select(["automatic", "pending", "success", "error"], "automatic", "Status"),
+    fail: bool(false, "Fail on click", (values) => values.status !== "automatic"),
     withIcon: bool(true, "Show leading icon"),
     pendingMode: select(["label", "icon"], "label", "Pending content"),
     sizing: select(["widest", "current"], "widest", "Width"),

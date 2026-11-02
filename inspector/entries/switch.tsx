@@ -12,11 +12,11 @@ export const switchEntry = defineEntry({
     tone: select(TONES, "adaptive"),
     icons: bool(false, "On/off marks"),
     saving: select(["off", "success", "failure"], "off", "Saving"),
-    defaultChecked: bool(true, "On"),
-    disabled: bool(false),
-    invalid: bool(false),
+    state: select(["default", "disabled", "invalid"], "default", "State"),
   },
-  render({ tone, icons, saving, defaultChecked, disabled, invalid }) {
+  render({ tone, icons, saving, state }) {
+    const disabled = state === "disabled";
+    const invalid = state === "invalid";
     return (
       <label
         className="flex items-center gap-2 text-sm text-foreground"
@@ -28,7 +28,7 @@ export const switchEntry = defineEntry({
           onCheckedChange={saving === "off" ? undefined : () => new Promise<void>((resolve, reject) => {
             setTimeout(() => saving === "failure" ? reject(new Error("Could not save change.")) : resolve(), 1200);
           })}
-          defaultChecked={defaultChecked}
+          defaultChecked
           disabled={disabled}
         />
         <span data-disabled={disabled || undefined} className="data-disabled:opacity-50">

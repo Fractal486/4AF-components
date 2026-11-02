@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Checkbox, CheckboxGroup } from "@/registry/ui/checkbox/checkbox";
-import { bool, defineEntry, select, text } from "../schema";
+import { defineEntry, select } from "../schema";
 
 const CHANNELS = [
   { name: "Email", items: [{ value: "email-updates", label: "Product updates" }, { value: "email-replies", label: "Replies" }] },
@@ -42,24 +42,21 @@ export const checkboxEntry = defineEntry({
   name: "Checkbox",
   controls: {
     mode: select(["single", "group", "nested"], "single", "Mode"),
-    label: text("Accept terms and conditions", "Label", undefined, (values) => values.mode !== "single"),
-    defaultChecked: bool(true, "Checked", (values) => values.mode !== "single"),
-    indeterminate: bool(false, undefined, (values) => values.mode !== "single"),
-    disabled: bool(false),
-    invalid: bool(false),
+    // Groups derive the parent's mixed state from their children, so this is single-only.
+    checked: select(["unchecked", "checked", "indeterminate"], "checked", "Checked", (values) => values.mode !== "single"),
+    state: select(["default", "disabled", "invalid"], "default", "State"),
   },
-  render({ mode, label, defaultChecked, indeterminate, disabled, invalid }) {
+  render({ mode, checked, state }) {
+    const disabled = state === "disabled";
+    const invalid = state === "invalid";
     if (mode !== "single") return <GroupPreview nested={mode === "nested"} disabled={disabled} invalid={invalid} />;
-    const hasLabel = label.trim().length > 0;
     return (
       <Checkbox
-        label={hasLabel ? label : undefined}
-        defaultChecked={defaultChecked}
-        indeterminate={indeterminate}
+        label="Accept terms and conditions"
+        defaultChecked={checked === "checked"}
+        indeterminate={checked === "indeterminate"}
         disabled={disabled}
         aria-invalid={invalid || undefined}
-        // Only name it directly when there is no visible label.
-        aria-label={hasLabel ? undefined : "Preview checkbox"}
       />
     );
   },

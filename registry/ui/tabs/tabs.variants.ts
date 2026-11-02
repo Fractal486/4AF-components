@@ -119,7 +119,7 @@ export const tabVariants = cva(
       { variant: "segment", size: "sm", class: "rounded-[5px] px-2 py-1" },
       { variant: "pill", size: "md", class: "px-3.5 py-1.5" },
       { variant: "pill", size: "sm", class: "px-2.5 py-1.5" },
-      // Compact: the underline marks the label alone, so the tab needs only enough padding
+      // Compact: the underline marks the label (plus a small overhang), so the tab needs only enough padding
       // to space the labels apart and give the focus ring room.
       { variant: "underline", size: "md", class: "rounded-t-[6px] px-2.5 pt-1 pb-2" },
       { variant: "underline", size: "sm", class: "rounded-t-[5px] px-1.5 pt-0.5 pb-1" },
@@ -150,8 +150,8 @@ export const tabIndicatorVariants = cva([
     orientation: { horizontal: "", vertical: "" },
     appearance: { default: "", solid: "", outline: "" },
     size: {
-      md: "[--tabs-line-width:1.5px] [--tabs-label-x:--spacing(2.5)] [--tabs-label-top:--spacing(1)] [--tabs-label-bottom:--spacing(2)]",
-      sm: "[--tabs-line-width:1px] [--tabs-label-x:--spacing(1.5)] [--tabs-label-top:--spacing(0.5)] [--tabs-label-bottom:--spacing(1)]",
+      md: "[--tabs-line-width:1.5px] [--tabs-line-overhang:--spacing(1)] [--tabs-label-x:--spacing(2.5)] [--tabs-label-top:--spacing(1)] [--tabs-label-bottom:--spacing(2)]",
+      sm: "[--tabs-line-width:1px] [--tabs-line-overhang:--spacing(0.5)] [--tabs-label-x:--spacing(1.5)] [--tabs-label-top:--spacing(0.5)] [--tabs-label-bottom:--spacing(1)]",
     },
   },
   compoundVariants: [
@@ -164,7 +164,7 @@ export const tabIndicatorVariants = cva([
     { variant: "segment", appearance: "outline", size: "sm", class: "rounded-[3px]" },
     {
       variant: "underline", orientation: "horizontal",
-      class: "top-auto bottom-0 h-(--tabs-line-width) w-[calc(var(--active-tab-width)-var(--tabs-label-x)*2)] translate-x-[calc(var(--active-tab-left)+var(--tabs-label-x))] translate-y-0",
+      class: "top-auto bottom-0 h-(--tabs-line-width) w-[calc(var(--active-tab-width)-(var(--tabs-label-x)-var(--tabs-line-overhang))*2)] translate-x-[calc(var(--active-tab-left)+var(--tabs-label-x)-var(--tabs-line-overhang))] translate-y-0",
     },
     {
       variant: "underline", orientation: "vertical",

@@ -7,13 +7,13 @@ export const dialogEntry = defineEntry({
   controls: {
     showClose: bool(true, "Close button"),
     autoSize: bool(true, "Size to content"),
-    phases: bool(false, "Phased flow"),
-    content: select(["short", "long"], "short", "Content", (v) => Boolean(v.phases)),
-    nested: bool(false, "Nested dialog", (v) => Boolean(v.phases)),
+    // A short or long form, or a phased flow that steps between views of one dialog.
+    content: select(["short", "long", "phased"], "short", "Content"),
+    nested: bool(false, "Nested dialog", (v) => v.content === "phased"),
+    footerClose: bool(false, "Footer close button", (v) => v.content === "phased"),
     shared: bool(false, "Shared dialog"),
-    footerClose: bool(false, "Footer close button", (v) => Boolean(v.phases)),
   },
-  render(props) {
-    return <DialogDemo {...props} />;
+  render({ content, ...props }) {
+    return <DialogDemo {...props} phases={content === "phased"} content={content} />;
   },
 });

@@ -12,11 +12,13 @@ export const progressEntry = defineEntry({
     value: num(60, { min: 0, max: 100, step: 1, label: "Value", disabledWhen: (values) => !!values.indeterminate }),
     indeterminate: bool(false, "Indeterminate"),
     segments: bool(false, "Segments", (values) => values.shape !== "bar" || !!values.indeterminate),
-    showValue: bool(true, "Show value", (values) => values.shape === "circle" && (values.size === "xs" || values.size === "sm")),
-    animateValue: bool(false, "Animate value", values => !values.showValue || !!values.indeterminate || (values.shape === "circle" && (values.size === "xs" || values.size === "sm"))),
-    shimmer: bool(false, "Shimmer label", (values) => values.shape !== "bar" || !values.showValue),
+    // The two smallest circles are too small to hold a number.
+    valueLabel: select(["hidden", "static", "animated"], "static", "Value label", (values) => values.shape === "circle" && (values.size === "xs" || values.size === "sm")),
+    shimmer: bool(false, "Shimmer label", (values) => values.shape !== "bar" || values.valueLabel === "hidden"),
   },
-  render({ shape, color, size, value, indeterminate, segments, showValue, animateValue, shimmer }) {
+  render({ shape, color, size, value, indeterminate, segments, valueLabel, shimmer }) {
+    const showValue = valueLabel !== "hidden";
+    const animateValue = valueLabel === "animated" && !indeterminate;
     const fillColor = color === "colored" ? "var(--ring)" : undefined;
     if (shape === "circle") {
       const circleSize = { xs: "sm", sm: "md", md: "lg", lg: "xl" }[size] as "sm" | "md" | "lg" | "xl";

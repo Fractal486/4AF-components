@@ -17,7 +17,7 @@ export function ActionButtonDemo({
   variant: ControlVariant;
   size: TextSize;
   shape: "rectangular" | "pill";
-  status: "automatic" | "idle" | "pending" | "success" | "error";
+  status: "automatic" | "pending" | "success" | "error";
   fail: boolean;
   withIcon: boolean;
   pendingMode: "label" | "icon";

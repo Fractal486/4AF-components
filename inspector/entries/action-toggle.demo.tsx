@@ -9,28 +9,26 @@ export function ActionToggleDemo({
   size,
   shape,
   status,
-  duration,
   fail,
   sizing,
 }: {
   variant: ControlVariant;
   size: TextSize;
   shape: "rectangular" | "pill";
-  status: "automatic" | "idle" | "pending" | "error";
-  duration: number;
+  status: "automatic" | "pending" | "error";
   fail: boolean;
   sizing: "widest" | "current";
 }) {
   async function follow() {
     await new Promise((resolve, reject) =>
-      setTimeout(() => (fail ? reject(new Error("Network error")) : resolve(null)), duration),
+      setTimeout(() => (fail ? reject(new Error("Network error")) : resolve(null)), 1200),
     );
   }
 
   return (
     <ActionToggle
       // Changing a simulation setting starts a fresh demo action.
-      key={`${variant}-${size}-${duration}-${fail}-${status}`}
+      key={`${variant}-${size}-${fail}-${status}`}
       action={follow}
       status={status === "automatic" ? undefined : status}
       error={status === "error" ? new Error("Network error") : undefined}

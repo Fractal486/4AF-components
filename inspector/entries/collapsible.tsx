@@ -8,7 +8,6 @@ import {
 import { bool, defineEntry, select } from "../schema";
 
 const VARIANTS = ["plain", "card"] as const;
-const CHEVRONS = ["end", "start", "none"] as const;
 
 const SECTIONS = [
   {
@@ -26,11 +25,12 @@ export const collapsibleEntry = defineEntry({
   name: "Collapsible",
   controls: {
     variant: select(VARIANTS, "plain"),
-    chevron: select(CHEVRONS, "end", "Icon position"),
-    icon: select(["chevron", "folder"] as const, "chevron", "Icon", (values) => values.chevron === "none"),
+    icon: select(["chevron", "folder", "none"] as const, "chevron", "Icon"),
+    position: select(["end", "start"] as const, "end", "Icon position", (values) => values.icon === "none"),
     stacked: bool(true, "Two sections"),
   },
-  render({ variant, chevron, icon, stacked }) {
+  render({ variant, icon, position, stacked }) {
+    const chevron = icon === "none" ? "none" : position;
     const sections = stacked ? SECTIONS : SECTIONS.slice(0, 1);
 
     return (

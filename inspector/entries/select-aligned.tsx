@@ -54,17 +54,18 @@ export const selectAlignedEntry = defineEntry({
   slug: "select-aligned",
   name: "Select Aligned",
   controls: {
+    variant: select(["default", "ghost", "plain"] as const, "default", "Variant"),
     size: select(SIZES, "sm"),
     selected: bool(true, "Selected"),
-    variant: select(["default", "ghost", "plain"] as const, "default", "Variant"),
     showLabel: bool(true, "Show label"),
     sections: bool(false, "Sections"),
     scrollable: bool(false, "Scrollable"),
     searchable: bool(false, "Search field"),
-    disabled: bool(false, "Disabled"),
-    invalid: bool(false),
+    state: select(["default", "disabled", "invalid"] as const, "default", "State"),
   },
-  render({ size, selected, variant, showLabel, sections, scrollable, searchable, disabled, invalid }) {
+  render({ size, selected, variant, showLabel, sections, scrollable, searchable, state }) {
+    const disabled = state === "disabled";
+    const invalid = state === "invalid";
     return (
       <AlignedSelectDemo
         key={String(selected)}

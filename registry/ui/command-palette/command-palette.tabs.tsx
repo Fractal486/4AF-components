@@ -22,6 +22,9 @@ type Variant = NonNullable<CommandPanelTabListProps["variant"]>;
 
 const TabVariantContext = createContext<Variant>("fill");
 
+/** How far the underline reaches past each side of the label, into the tab's padding. */
+const UNDERLINE_OVERHANG_PX = 4;
+
 /**
  * Tabs for a custom panel, in a row directly under the panel's header.
  *
@@ -56,7 +59,7 @@ export function CommandPanelTabs({ className, ...props }: CommandPanelTabsProps)
  * movement too. A panel can be the page the palette opens on (`initialItemId`), so the
  * first measurement is often taken mid-entrance: bounding rects are scaled by that
  * transform, and dividing by the row's rendered-to-layout ratio takes it back out.
- * The underline spans the label, not the tab's padding, as Tabs' does.
+ * The underline spans the label plus a small overhang, not the tab's full padding.
  */
 export function CommandPanelTabList({
   variant = "fill",
@@ -102,8 +105,9 @@ export function CommandPanelTabList({
       }
       if (variant === "underline") {
         const { paddingLeft, paddingRight } = getComputedStyle(active);
-        const start = Number.parseFloat(paddingLeft) || 0;
-        const end = Number.parseFloat(paddingRight) || 0;
+        // Inset by the padding less a small overhang, so the line runs just past the label.
+        const start = Math.max((Number.parseFloat(paddingLeft) || 0) - UNDERLINE_OVERHANG_PX, 0);
+        const end = Math.max((Number.parseFloat(paddingRight) || 0) - UNDERLINE_OVERHANG_PX, 0);
         left += start;
         width = Math.max(width - start - end, 0);
       }

@@ -45,10 +45,9 @@ export const buttonGroupEntry = defineEntry({
     shape: select(["rectangular", "pill"], "rectangular", "Shape", (values) => picks(values).some((item) => item !== "buttons")),
     count: num(3, { min: 1, max: 5, label: "Buttons", disabledWhen: (values) => !picks(values).includes("buttons") }),
     icon: select(["none", "leading", "only"], "leading", undefined, (values) => !picks(values).includes("buttons")),
-    disableSecond: bool(false, "Disable the second button", (values) => !picks(values).includes("buttons") || Number(values.count) < 2),
     invalid: bool(false, "Invalid field", (values) => !picks(values).some((item) => item !== "buttons")),
   },
-  render({ content, variant, size, orientation, shape, count, icon, disableSecond, invalid }) {
+  render({ content, variant, size, orientation, shape, count, icon, invalid }) {
     const selected = Array.isArray(content) ? content : ["buttons"];
     const has = (kind: typeof CONTENT[number]) => selected.includes(kind);
     const hasFields = selected.some((item) => item !== "buttons");
@@ -109,11 +108,10 @@ export const buttonGroupEntry = defineEntry({
         )}
         {has("datePicker") && <DatePicker size={fieldSize} aria-label="Date" aria-invalid={invalid || undefined} />}
         {has("dateRangePicker") && <DateRangePicker size={fieldSize} aria-label="Date range" aria-invalid={invalid || undefined} />}
-        {has("buttons") && ACTIONS.slice(0, count).map(({ label, icon: Icon }, index) => (
+        {has("buttons") && ACTIONS.slice(0, count).map(({ label, icon: Icon }) => (
           <Button
             key={label}
             size={iconOnly ? ICON_SIZE[groupSize] : groupSize}
-            disabled={disableSecond && index === 1}
             aria-label={iconOnly ? label : undefined}
           >
             {icon !== "none" && <Icon />}

@@ -12,19 +12,13 @@ export const datePickerEntry = defineEntry({
     size: select(["xs", "sm", "md"], "md"),
     dateFormat: select(["medium", "numeric"], "medium", "Format"),
     footer: bool(true, "Footer"),
-    timeZone: select(["local", "Pacific/Kiritimati", "Pacific/Pago_Pago"], "local", "Time zone"),
     limitRange: bool(false, "Limit range to 1–7 nights", (values) => values.mode !== "range"),
-    disabledDays: select(["none", "weekends", "past"], "none", "Disabled days"),
   },
-  render({ mode, variant, tone, size, dateFormat, footer, timeZone, limitRange, disabledDays }) {
-    const zone = timeZone === "local" ? undefined : timeZone;
-    const dateLib = new DateLib({ timeZone: zone });
-    const disabled: CalendarProps["disabled"] = disabledDays === "weekends"
-      ? { dayOfWeek: [0, 6] }
-      : disabledDays === "past"
-        ? { before: dateLib.startOfDay(dateLib.today()) }
-        : undefined;
-    const calendarProps = { timeZone: zone, disabled };
+  render({ mode, variant, tone, size, dateFormat, footer, limitRange }) {
+    // Past days are always unavailable, so the demo shows disabled days without a setting.
+    const dateLib = new DateLib();
+    const disabled: CalendarProps["disabled"] = { before: dateLib.startOfDay(dateLib.today()) };
+    const calendarProps = { disabled };
     return mode === "range" ? (
       <DateRangePicker
         key="range"

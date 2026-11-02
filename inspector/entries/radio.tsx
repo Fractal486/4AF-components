@@ -1,5 +1,5 @@
 import { Radio, RadioGroup } from "@/registry/ui/radio/radio";
-import { bool, defineEntry, select } from "../schema";
+import { defineEntry, select } from "../schema";
 
 const SIZES = ["sm", "md", "lg"] as const;
 
@@ -8,10 +8,11 @@ export const radioEntry = defineEntry({
   name: "Radio",
   controls: {
     size: select(SIZES, "md", "Size"),
-    disabled: bool(false),
-    invalid: bool(false),
+    state: select(["default", "disabled", "invalid"], "default", "State"),
   },
-  render({ size, disabled, invalid }) {
+  render({ size, state }) {
+    const disabled = state === "disabled";
+    const invalid = state === "invalid";
     return (
       <RadioGroup size={size} defaultValue="standard" disabled={disabled} aria-label="Plan">
         <Radio value="standard" label="Standard" aria-invalid={invalid || undefined} />

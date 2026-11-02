@@ -1,6 +1,6 @@
 import { Button } from "@/registry/ui/button/button";
 import { Tooltip, TooltipGroup, TooltipProvider, TooltipTrigger } from "@/registry/ui/tooltip/tooltip";
-import { bool, defineEntry, num, select, text } from "../schema";
+import { bool, defineEntry, select } from "../schema";
 
 const SIDES = ["top", "right", "bottom", "left"] as const;
 const ALIGNS = ["start", "center", "end"] as const;
@@ -11,13 +11,13 @@ export const tooltipEntry = defineEntry({
   controls: {
     side: select(SIDES, "top"),
     align: select(ALIGNS, "center"),
-    content: text("Deploys to production", "Content"),
-    delay: num(200, { min: 0, max: 1000, step: 50, label: "Delay (ms)" }),
     trackCursorAxis: select(["none", "x", "y", "both"], "none", "Follow cursor"),
     shared: bool(false, "Shared tooltip"),
     disabled: bool(false, "Disabled"),
   },
-  render({ side, align, content, delay, trackCursorAxis, shared, disabled }) {
+  render({ side, align, trackCursorAxis, shared, disabled }) {
+    const content = "Deploys to production";
+    const delay = 200;
     if (shared) {
       return (
         <TooltipGroup side={side} align={align} delay={delay} trackCursorAxis={trackCursorAxis} disabled={disabled}>
