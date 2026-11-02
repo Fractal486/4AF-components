@@ -19,6 +19,7 @@ description: A single-date, multiple-date, or date-range field that opens a cale
 | `onValueChange` | — | Called with the new value. Clearing reports `[]` in multiple mode and `null` otherwise. |
 | `open` / `defaultOpen` / `onOpenChange` | — / `false` / — | Controlled or uncontrolled panel state. |
 | `variant` | `"default"` | `"default"` boxed field, `"ghost"`, or `"plain"` (no surface, border, or horizontal padding). `default` and `ghost` are as wide as the panel; `plain` fits its text. The calendar icon sits at the end of the field. |
+| `tone` | `"neutral"` | The open field's border, as Input's focus border without its outer ring: grey `"neutral"` or the blue `"accent"`. `default` variant only. |
 | `size` | `"md"` | `"xs"` (24px), `"sm"` (30px), or `"md"` (34px). |
 | `placeholder` | `"Pick a date"` / `"Pick dates"` / `"Pick a date range"` | Trigger text while empty, for single, multiple, or range selection. |
 | `title` | `"Select a date"` / `"Select dates"` | Popover accessible name. |
@@ -34,7 +35,7 @@ description: A single-date, multiple-date, or date-range field that opens a cale
 | `calendarProps` | — | Calendar options such as `disabled`, `startMonth`, `endMonth`, `captionLayout`, `weekStartsOn`, `timeZone`, range constraints (`min`, `max`, `excludeDisabled`), and `locale` (a react-day-picker locale). The picker owns `mode`, `selected`, `onSelect`, `required`, `numberOfMonths`, and initial focus; those are not exposed through this prop. |
 
 Other button props (`id`, `disabled`, `aria-*`, `className`, `ref`) go to the trigger. The trigger
-exposes `data-slot="date-picker-trigger"`, `data-variant`, `data-size`, `data-empty` while no value is
+exposes `data-slot="date-picker-trigger"`, `data-variant`, `data-tone`, `data-size`, `data-empty` while no value is
 set, and Base UI's `data-popup-open`.
 
 ### Calendar

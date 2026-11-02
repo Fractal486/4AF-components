@@ -5,17 +5,19 @@ import type { ReactElement, ReactNode } from "react";
 export const itemBase = dropdownMenuItemVariants();
 
 /**
- * The tick/dot slot, and it holds the same 14px box a leading icon does — `left-2.5` and
- * `size-3.5` against the row's `px-2.5` padding, so both run 10px to 24px and share a
- * centre.
+ * The trailing check slot shared by checkbox and radio rows. The leading edge belongs to
+ * icons, so a selection mark there would push a checkable row's label past every icon row's.
+ * The slot is always reserved so a label never shifts when its row is checked.
  *
- * It used to be `left-2 size-4`: 8px to 24px. The two boxes shared a right edge but not a
- * centre, so a ticked row's glyph sat a pixel left of an icon row's, which is exactly the
- * kind of drift you can see in a column of rows and can't name. The labels were always
- * fine — the row's `pl-8` is 10 + 14 + 8 — so only the glyph column was off.
+ * A shortcut is `ml-auto` too, and two auto margins split the free space between them —
+ * so after a shortcut the slot drops its own and sits at the row's edge, shortcuts aligned.
  */
-export const INDICATOR_SLOT =
-  "pointer-events-none absolute left-2.5 flex size-3.5 items-center justify-center";
+export const CHECK_SLOT =
+  "pointer-events-none ml-auto flex size-3.5 shrink-0 items-center justify-center text-foreground [[data-slot^=kbd]+&]:ml-0";
+
+/** The check itself, scaling in on `data-checked` — the same mark the select rows use. */
+export const CHECK_MARK =
+  "flex size-3.5 items-center justify-center scale-0 opacity-0 transition-[opacity,scale] duration-(--duration-fast) ease-out data-[checked]:scale-100 data-[checked]:opacity-100";
 
 export function DisabledReasonTooltip({
   disabled,

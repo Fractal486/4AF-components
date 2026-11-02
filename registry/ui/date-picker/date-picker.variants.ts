@@ -28,7 +28,7 @@ export const datePickerTriggerVariants = cva(
         default: [
           PANEL_WIDTH,
           "border border-border bg-surface",
-          "hover:border-border-strong data-[popup-open]:border-border-strong",
+          "hover:border-border-strong",
           "aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",
         ],
         ghost: [
@@ -49,9 +49,16 @@ export const datePickerTriggerVariants = cva(
         sm: "h-[30px] rounded-[6px] px-3 text-xs [&_svg]:size-3.5",
         md: "h-[34px] rounded-[8px] px-3 text-sm [&_svg]:size-4",
       },
+      // The open field's border, as Select's trigger: the inner edge of Input's focus ring,
+      // without the outer halo. Boxed `default` variant only.
+      tone: { neutral: "", accent: "" },
     },
-    compoundVariants: [{ variant: "plain", class: "px-0" }],
-    defaultVariants: { variant: "default", size: "md" },
+    compoundVariants: [
+      { variant: "plain", class: "px-0" },
+      { variant: "default", tone: "neutral", class: "data-[popup-open]:border-[oklch(0.719_0_0)]" },
+      { variant: "default", tone: "accent", class: "data-[popup-open]:border-ring" },
+    ],
+    defaultVariants: { variant: "default", size: "md", tone: "neutral" },
   },
 );
 

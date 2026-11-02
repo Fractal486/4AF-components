@@ -1,5 +1,4 @@
 import { cn, mergeStateClassName } from "@/registry/lib/cn";
-import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Input } from "@/registry/ui/input/input";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
@@ -23,7 +22,7 @@ import {
   DropdownMenuSubTrigger,
   type DropdownMenuContentProps,
 } from "./dropdown-menu.menu";
-import { DisabledReasonTooltip } from "./dropdown-menu.shared";
+import { CHECK_MARK, CHECK_SLOT, DisabledReasonTooltip } from "./dropdown-menu.shared";
 
 type DropdownMenuSelectValue<Value, Multiple extends boolean | undefined> = Multiple extends true
   ? Value[]
@@ -574,18 +573,19 @@ export function DropdownMenuSelectItem({
         render={(itemProps, state) => (
           <DisabledReasonTooltip disabled={isDisabled} reason={disabledReason}>
             <div {...itemProps}>
-              <Checkbox
-                checked={state.checked}
-                aria-hidden
-                tabIndex={-1}
-                className="pointer-events-none shrink-0"
-              />
               {icon && (
                 <span aria-hidden="true" className={selectItemIcon}>
                   {icon}
                 </span>
               )}
               <span className="min-w-0 flex-1 wrap-anywhere">{children}</span>
+              <span
+                data-slot="dropdown-menu-select-item-check"
+                data-checked={state.checked ? "" : undefined}
+                className={cn(CHECK_SLOT, CHECK_MARK)}
+              >
+                <Check className="size-3.5" />
+              </span>
             </div>
           </DisabledReasonTooltip>
         )}

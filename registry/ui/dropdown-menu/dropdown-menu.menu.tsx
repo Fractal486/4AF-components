@@ -1,13 +1,12 @@
 import { Kbd, type KbdProps } from "@/registry/ui/kbd/kbd";
 import { cn, mergeStateClassName } from "@/registry/lib/cn";
-import { radioIndicatorVariants, radioVariants } from "@/registry/ui/radio/radio.variants";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
-import { ChevronRight } from "lucide-react";
+import { Check, ChevronRight } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { LoaderProvider } from "@/registry/lib/loader";
 import { dropdownMenuPopupVariants, dropdownMenuPositionerVariants } from "./dropdown-menu.variants";
-import { DisabledReasonTooltip, INDICATOR_SLOT, itemBase } from "./dropdown-menu.shared";
+import { CHECK_MARK, CHECK_SLOT, DisabledReasonTooltip, itemBase } from "./dropdown-menu.shared";
 
 export interface DropdownMenuProps<Payload = unknown> extends BaseMenu.Root.Props<Payload> {
   loader?: ReactNode;
@@ -154,30 +153,21 @@ export function DropdownMenuRadioItem({
       data-slot="dropdown-menu-radio-item"
       className={mergeStateClassName(cn(
         itemBase,
-        "pr-2 pl-8",
         hasReason && "data-[disabled]:pointer-events-auto",
       ), className)}
       disabled={disabled}
       {...props}
     >
-      <span className={INDICATOR_SLOT}>
-        {/* Share Radio's visual styles without nesting another interactive control.
-            The menu keeps its compact 14px circle. */}
-        <span
-          data-slot="dropdown-menu-radio"
-          className={cn(radioVariants({ size: "sm" }), "size-3.5 cursor-default")}
-        >
-          {/* Base UI's own indicator, sharing the standalone Radio's selection ring. `keepMounted`
-              matters: without it the indicator is
-              transition-status-gated and can miss the group's initial value on first paint,
-              which is why it showed empty. It scales in when selected and out when not. */}
-          <BaseMenu.RadioItemIndicator
-            keepMounted
-            className={radioIndicatorVariants({ size: "sm" })}
-          />
-        </span>
-      </span>
       {children}
+      {/* `keepMounted` so the slot is reserved while unselected and the check can scale out;
+          without it the indicator is presence-gated and can miss the group's first value. */}
+      <BaseMenu.RadioItemIndicator
+        keepMounted
+        data-slot="dropdown-menu-radio-check"
+        className={cn(CHECK_SLOT, CHECK_MARK)}
+      >
+        <Check />
+      </BaseMenu.RadioItemIndicator>
     </BaseMenu.RadioItem>
   );
 

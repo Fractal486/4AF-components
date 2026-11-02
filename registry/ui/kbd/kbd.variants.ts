@@ -7,7 +7,6 @@ export const kbdVariants = cva(
     // Default icons follow the text; explicit size/width/height classes keep their sizing.
     "[&_svg:not([class*=size-]):not([class*=w-]):not([class*=h-])]:size-[1em]",
     "in-[button]:bg-current/10 in-[button]:text-inherit in-data-[slot=button]:bg-current/10 in-data-[slot=button]:text-inherit",
-    "in-data-highlighted:bg-surface in-data-highlighted:text-inherit in-data-panel-active:bg-surface in-data-panel-active:text-inherit in-data-frozen:bg-surface in-data-frozen:text-inherit",
     "in-data-[slot=tooltip-content]:bg-current/10 in-data-[slot=tooltip-content]:text-inherit",
   ],
   {

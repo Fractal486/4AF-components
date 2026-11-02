@@ -279,6 +279,29 @@ describe("Base UI Select", () => {
     expect(label).toHaveClass("text-muted-foreground");
   });
 
+  it("borders the open default trigger in Input's focus tone, without the outer ring", () => {
+    render(
+      <>
+        <Select items={FRUITS}>
+          <SelectTrigger aria-label="Neutral fruit" />
+          <FruitOptions />
+        </Select>
+        <Select items={FRUITS}>
+          <SelectTrigger aria-label="Accent fruit" tone="accent" />
+          <FruitOptions />
+        </Select>
+      </>,
+    );
+
+    const neutral = screen.getByRole("combobox", { name: "Neutral fruit" });
+    const accent = screen.getByRole("combobox", { name: "Accent fruit" });
+    expect(neutral).toHaveAttribute("data-tone", "neutral");
+    expect(neutral.className).toContain("data-[popup-open]:border-[oklch(0.719_0_0)]");
+    expect(neutral.className).not.toContain("data-[popup-open]:shadow-");
+    expect(accent.className).toContain("data-[popup-open]:border-ring");
+    expect(accent.className).not.toContain("data-[popup-open]:ring-");
+  });
+
   it("renders ghost triggers with default geometry and Button ghost colors", () => {
     render(
       <Select items={FRUITS}>
@@ -583,10 +606,10 @@ describe("Base UI Select", () => {
 
     await user.click(screen.getByRole("combobox", { name: "Fruits" }));
 
-    // A checkbox on a row that never stays ticked is a promise the row cannot keep.
+    // A check on a row that never stays selected is a promise the row cannot keep.
     const action = await screen.findByRole("option", { name: "Create a fruit" });
-    expect(action.querySelector("button")).toBeNull();
-    expect(screen.getByRole("option", { name: "Apple" }).querySelector("button")).not.toBeNull();
+    expect(action.querySelector("[data-slot=select-item-check]")).toBeNull();
+    expect(screen.getByRole("option", { name: "Apple" }).querySelector("[data-slot=select-item-check]")).not.toBeNull();
   });
 
   it("never flashes the empty state while a row tracks what is being typed", async () => {
@@ -858,7 +881,7 @@ describe("Base UI Select", () => {
     );
     expect(trigger).toHaveAttribute("aria-expanded", "true");
     expect(mango).toHaveAttribute("aria-selected", "true");
-    expect(mango.querySelector('[role="checkbox"]')).toHaveAttribute("aria-checked", "true");
+    expect(mango.querySelector("[data-slot=select-item-check]")).toHaveAttribute("data-selected");
     expect(subTrigger).toHaveAttribute("data-selected-count", "1");
     expect(selectedCount).toHaveTextContent("1");
   });
@@ -1219,11 +1242,10 @@ describe("Base UI Select", () => {
     expect(apple).toHaveAttribute("aria-selected", "true");
     expect(trigger).toHaveTextContent("2 selected");
 
-    const checkbox = apple.querySelector<HTMLElement>("[role=checkbox]");
-    expect(checkbox).toHaveAttribute("aria-hidden", "true");
-    expect(checkbox).toHaveAttribute("tabindex", "-1");
-    expect(checkbox).toHaveAttribute("aria-checked", "true");
-    expect(checkbox).toHaveAttribute("data-checked");
+    // A trailing check, not a checkbox: the option alone carries the selection.
+    const check = apple.querySelector<HTMLElement>("[data-slot=select-item-check]");
+    expect(check).toBe(apple.lastElementChild);
+    expect(check).toHaveAttribute("data-selected");
     expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
   });
 

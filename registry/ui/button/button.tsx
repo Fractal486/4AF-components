@@ -1,7 +1,7 @@
 "use client";
 
 import { Button as BaseButton } from "@base-ui/react/button";
-import { motion, useReducedMotion, type HTMLMotionProps } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion, type HTMLMotionProps } from "motion/react";
 import {
   Children,
   cloneElement,
@@ -12,10 +12,12 @@ import {
   type ReactElement,
   type ReactNode,
   type Ref,
+  useState,
 } from "react";
 import { cn } from "@/registry/lib/cn";
 import { PRESS_SCALE, spring } from "@/registry/lib/motion";
 import { LoadingIndicator } from "@/registry/lib/loader";
+import { morphVariants } from "@/registry/ui/morph/morph";
 import { useSlotChild } from "@/registry/lib/slot";
 import { buttonVariants, type ButtonVariants } from "./button.variants";
 
@@ -127,8 +129,15 @@ export function Button({
     asChild && isValidElement<{ children?: ReactNode }>(children)
       ? children.props.children
       : children;
-  const labelled = loading ? (
-    <ButtonLoading label={loadingLabel} loader={loader}>{innerContent}</ButtonLoading>
+  // A button that has never loaded keeps its plain children; the loading layer mounts on
+  // its first `loading` and stays, so the label can morph back in when loading ends.
+  const [mountedLoading] = useState(loading);
+  const [hasLoaded, setHasLoaded] = useState(loading);
+  if (loading && !hasLoaded) setHasLoaded(true);
+  const labelled = hasLoaded ? (
+    <ButtonLoading loading={loading} animateIn={!mountedLoading} label={loadingLabel} loader={loader}>
+      {innerContent}
+    </ButtonLoading>
   ) : (
     innerContent
   );
@@ -293,27 +302,53 @@ function flatten(children: ReactNode): ReactNode[] {
 }
 
 /**
- * The label keeps its place in the layout and fades out; the spinner is absolutely
- * positioned over it. Swapping the label *for* a spinner would resize the button
- * mid-click, moving the target out from under the cursor.
+ * The label keeps its place in the layout and morphs out; the spinner, absolutely
+ * positioned over it, morphs in — Morph's poses, so it reads like every other status swap.
+ * Swapping the label *for* a spinner would resize the button mid-click, moving the target
+ * out from under the cursor, so the label stays mounted and animates between poses.
  *
- * `aria-hidden` on the faded label plus a live-region-free status text means a
+ * `aria-hidden` on the hidden label plus a live-region-free status text means a
  * screen reader hears "Loading", not the stale label it can no longer act on.
+ *
+ * `animateIn` is false when the button mounted already loading: it appears in that state
+ * rather than playing a swap nobody triggered.
  */
-function ButtonLoading({ label, loader, children }: { label: string; loader?: ReactNode; children: ReactNode }) {
+function ButtonLoading({ loading, animateIn, label, loader, children }: {
+  loading: boolean; animateIn: boolean; label: string; loader?: ReactNode; children: ReactNode;
+}) {
+  const reduceMotion = useReducedMotion();
+  const transition = reduceMotion ? { duration: 0 } : spring.clean;
   return (
     <>
-      <span
-        aria-hidden="true"
-        className="inline-flex items-center gap-[inherit] opacity-0 transition-[opacity] duration-(--duration-fast) ease-out"
+      <motion.span
+        aria-hidden={loading || undefined}
+        className="inline-flex items-center gap-[inherit]"
+        variants={morphVariants}
+        initial={animateIn ? "animate" : false}
+        animate={loading ? "exit" : "animate"}
+        transition={transition}
       >
         {children}
-      </span>
-      <span className="absolute inset-0 inline-flex items-center justify-center">
-        {/* The button's size gives this box its icon size, in either loader style. */}
-        <LoadingIndicator loader={loader} />
-        <span className="sr-only">{label}</span>
-      </span>
+      </motion.span>
+      <AnimatePresence initial={animateIn}>
+        {loading && (
+          <motion.span
+            key="loader"
+            className="absolute inset-0 inline-flex items-center justify-center"
+            variants={morphVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={transition}
+          >
+            {/* The button's size gives this box its icon size, in either loader style. */}
+            <LoadingIndicator loader={loader} />
+          </motion.span>
+        )}
+      </AnimatePresence>
+      {/* Outside the exiting spinner, so the button's name drops "Loading" the moment
+          loading ends rather than after the spinner has animated away. */}
+      {loading && <span className="sr-only">{label}</span>}
     </>
   );
 }

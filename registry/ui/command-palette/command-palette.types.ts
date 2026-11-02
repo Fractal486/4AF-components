@@ -213,9 +213,9 @@ export interface CommandPanelRowProps
   /** Marks an irreversible row action; its label and icon use the destructive color. */
   destructive?: boolean;
   children?: ReactNode;
-  /** Optional trailing content, typically a `Badge`, aligned with the checkbox slot. */
+  /** Optional trailing content, typically a `Badge`, aligned with the check slot. */
   badge?: ReactNode;
-  /** Persistent selection state shown by the optional checkbox indicator. */
+  /** Persistent selection state shown by the optional check. */
   selected?: boolean;
   /** Select the row when it is clicked or activated with Enter/Space. */
   onSelect?: () => void;
@@ -224,7 +224,7 @@ export interface CommandPanelRowProps
    * whichever way it arrives. A right-click opens the panel's actions menu instead.
    */
   onActivate?: () => void;
-  /** Show a trailing checkbox indicator for the row's selection state. */
+  /** Show a trailing check for the row's selection state. */
   checkbox?: boolean;
   onKeyDown?: ComponentProps<"div">["onKeyDown"];
 }

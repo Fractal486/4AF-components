@@ -9,10 +9,13 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSelect,
   DropdownMenuSelectContent,
   DropdownMenuSelectItem,
   DropdownMenuSelectTrigger,
+  DropdownMenuShortcut,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -167,37 +170,64 @@ describe("DropdownMenu", () => {
     expect(item.querySelector("[data-slot=morph]")).not.toBeNull();
   });
 
-  it("gives the tick the same box a leading icon gets", async () => {
+  it("marks checked rows with a trailing check and leaves the leading edge to icons", async () => {
     const user = userEvent.setup();
 
     render(
       <DropdownMenu>
         <DropdownMenuTrigger aria-label="More actions" />
         <DropdownMenuContent>
-          <DropdownMenuItem>
-            <svg />
-            Settings
-          </DropdownMenuItem>
           <DropdownMenuCheckboxItem defaultChecked>Show toolbar</DropdownMenuCheckboxItem>
+          <DropdownMenuRadioGroup defaultValue="a">
+            <DropdownMenuRadioItem value="a">A</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="b">B</DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       </DropdownMenu>,
     );
 
     await user.click(screen.getByRole("button", { name: "More actions" }));
     const checkboxRow = await screen.findByRole("menuitemcheckbox");
-    const slot = checkboxRow.querySelector("span");
 
-    // 10px to 24px, the same run a leading icon takes from the row's `px-2.5`. `left-2`
-    // with `size-4` shares only the right edge, which puts the tick a pixel left of every
-    // icon row's glyph.
-    expect(slot?.className).toContain("left-2.5");
-    expect(slot?.className).toContain("size-3.5");
+    // No leading indent: labels line up with plain and icon rows.
+    expect(checkboxRow.className).not.toContain("pl-8");
+    const slot = checkboxRow.querySelector("[data-slot=dropdown-menu-checkbox-item-status]");
+    expect(slot).toBe(checkboxRow.lastElementChild);
+    expect(slot?.className).toContain("ml-auto");
+    const check = slot?.querySelector("[data-slot=dropdown-menu-checkbox-check]:not([aria-hidden=true] *)");
+    expect(check).toHaveAttribute("data-checked");
 
-    // The slot holds a drawn checkbox, checked here. Its tick is sized with an important
-    // class: the row sizes every svg, and `.row svg` would otherwise outrank it.
-    const box = slot?.querySelector('[data-slot="dropdown-menu-checkbox"]');
-    expect(box).toHaveAttribute("data-checked");
-    expect(box?.querySelector("svg")?.getAttribute("class")).toContain("size-[70%]!");
+    const [a, b] = screen.getAllByRole("menuitemradio");
+    expect(a!.className).not.toContain("pl-8");
+    // Kept mounted on both rows, so the slot is reserved and only the selected one shows.
+    expect(a!.lastElementChild).toHaveAttribute("data-slot", "dropdown-menu-radio-check");
+    expect(a!.lastElementChild).toHaveAttribute("data-checked");
+    expect(b!.lastElementChild).toHaveAttribute("data-slot", "dropdown-menu-radio-check");
+    expect(b!.lastElementChild).not.toHaveAttribute("data-checked");
+  });
+
+  it("keeps the check at the edge after a shortcut", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger aria-label="More actions" />
+        <DropdownMenuContent>
+          <DropdownMenuCheckboxItem>
+            Show sidebar
+            <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+          </DropdownMenuCheckboxItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+    const row = await screen.findByRole("menuitemcheckbox");
+    const slot = row.lastElementChild;
+
+    // Two auto margins split the free space; after a shortcut the slot drops its own.
+    expect(slot?.previousElementSibling).toHaveAttribute("data-slot", "kbd");
+    expect(slot?.className).toContain("[[data-slot^=kbd]+&]:ml-0");
   });
 
   it("keeps a glyph Morph centred in an icon slot rather than start-aligned", async () => {
@@ -421,7 +451,7 @@ describe("DropdownMenu", () => {
 
     await user.click(screen.getByRole("button", { name: "More actions" }));
     const row = await screen.findByRole("menuitemcheckbox");
-    expect(row.querySelector("[data-slot=dropdown-menu-checkbox]")).toBeNull();
+    expect(row.querySelector("[data-slot=dropdown-menu-checkbox-check]")).toBeNull();
     expect(row.querySelector("[data-testid=unmuted]")).not.toBeNull();
 
     fireEvent.click(row);

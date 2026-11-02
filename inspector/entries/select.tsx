@@ -92,10 +92,11 @@ export const selectEntry = defineEntry({
     groups: bool(false, "Sections"),
     icons: bool(true),
     variant: select(["default", "ghost", "plain"] as const, "default", "Variant"),
+    tone: select(["neutral", "accent"] as const, "neutral", "Open border", (v) => v.variant !== "default"),
     showLabel: bool(true, "Show label"),
     invalid: bool(false),
   },
-  render({ size, disabled, multiple, selected, searchable, scrollable, groups, icons, variant, showLabel, invalid }) {
+  render({ size, disabled, multiple, selected, searchable, scrollable, groups, icons, variant, tone, showLabel, invalid }) {
     const items = scrollable ? ALL_FRUITS : FRUITS;
     return (
       <div className="w-full max-w-56">
@@ -111,6 +112,7 @@ export const selectEntry = defineEntry({
             <SelectTrigger
               aria-label="Fruits"
               variant={variant}
+              tone={tone}
               label={showLabel ? "Fruit" : undefined}
               aria-invalid={invalid ? true : undefined}
               aria-describedby={invalid ? "select-error" : undefined}
@@ -137,6 +139,7 @@ export const selectEntry = defineEntry({
             <SelectTrigger
               aria-label="Fruit"
               variant={variant}
+              tone={tone}
               label={showLabel ? "Fruit" : undefined}
               aria-invalid={invalid ? true : undefined}
               aria-describedby={invalid ? "select-error" : undefined}

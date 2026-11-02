@@ -44,10 +44,10 @@ export const SIZE: Record<
 
 
 // The panel blurs and scales in from `--transform-origin`, and every select in the family
-// uses these same numbers: 0.95 and a 3px blur entering, a shorter 0.97 and 2px leaving, over
-// `--duration-base` on the expo curve. Three selects sat in one form that scale by different
+// uses these same numbers: 0.9 and a 4px blur entering over `--duration-slow` on `--ease-panel`,
+// a shorter 0.97 and 2px leaving over `--duration-base` on the expo curve. Three selects sat in one form that scale by different
 // amounts is the kind of difference you feel without being able to name.
-export const FADE_HIDDEN = { opacity: 0, scale: 0.95, filter: "blur(3px)" };
+export const FADE_HIDDEN = { opacity: 0, scale: 0.9, filter: "blur(4px)" };
 
 export const FADE_SHOW = { opacity: 1, scale: 1, filter: "blur(0px)" };
 

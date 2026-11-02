@@ -18,7 +18,6 @@ import {
 import { useMergedRefs } from "@/registry/lib/refs";
 import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { duration, ease, spring } from "@/registry/lib/motion";
-import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 
 /**
@@ -33,7 +32,7 @@ import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
  *
  * It looks like the Base UI `select.tsx` — same field, chevron and fade-in panel — but
  * the trigger is an editable input rather than a button, because searching is the point.
- * Pass `multiple` for an open checkbox list; whenever its input is not focused, the field
+ * Pass `multiple` for an open multi-select list; whenever its input is not focused, the field
  * summarizes the current choice as “N selected”.
  * Single selection dims only while focused; typed queries never overwrite the choice.
  * Closing discards the query. The panel opens on the selection, or the first row when
@@ -41,10 +40,10 @@ import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
  */
 
 // The panel blurs and scales in from `--transform-origin`, and every select in the family
-// uses these same numbers: 0.95 and a 3px blur entering, a shorter 0.97 and 2px leaving, over
-// `--duration-base` on the expo curve. Three selects sat in one form that scale by different
+// uses these same numbers: 0.9 and a 4px blur entering over `--duration-slow` on `--ease-panel`,
+// a shorter 0.97 and 2px leaving over `--duration-base` on the expo curve. Three selects sat in one form that scale by different
 // amounts is the kind of difference you feel without being able to name.
-const FADE_HIDDEN = { opacity: 0, scale: 0.95, filter: "blur(3px)" };
+const FADE_HIDDEN = { opacity: 0, scale: 0.9, filter: "blur(4px)" };
 const FADE_SHOW = { opacity: 1, scale: 1, filter: "blur(0px)" };
 // Leaving is its own pose, not the entrance reversed: less travel and less blur, so the panel
 // is gone before it can draw attention to going.
@@ -450,7 +449,11 @@ export function SearchSelectContent({
                     ? FADE_SHOW
                     : FADE_EXIT
               }
-              transition={reduceMotion ? { duration: 0 } : { duration: duration.base, ease: ease.out }}
+              transition={reduceMotion
+                ? { duration: 0 }
+                : open
+                  ? { duration: duration.slow, ease: ease.panel }
+                  : { duration: duration.base, ease: ease.out }}
             />
           }
           {...props}
@@ -561,13 +564,11 @@ export function SearchSelectItem({
 }
 
 /**
- * A checkbox row for `SearchSelect` in `multiple` mode.
- *
- * The option remains the interactive listbox element. The shared Checkbox is inert and
- * mirrors its selected state, preserving one keyboard and screen-reader interaction model.
+ * A row for `SearchSelect` in `multiple` mode: the single-select check, kept mounted so it
+ * scales in and out as rows toggle while the list stays open.
  */
 export type SearchMultiSelectItemProps = ComponentProps<typeof Combobox.Item> & {
-  /** An optional icon shown after the checkbox and before the label. */
+  /** An optional icon shown before the label. */
   icon?: ReactNode;
   children?: ReactNode;
 };
@@ -590,7 +591,7 @@ export function SearchMultiSelectItem({
     <Combobox.Item
       value={value}
       className={mergeStateClassName(cn(
-        "flex items-center gap-2.5 rounded-xs px-2.5 py-1.5 outline-none select-none",
+        "flex items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
         "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
@@ -598,22 +599,21 @@ export function SearchMultiSelectItem({
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50"), className)}
       {...props}
     >
+      <SearchSelectItemIcon icon={icon} size={size} />
+      <span className="flex-1 truncate">{children}</span>
       <Combobox.ItemIndicator
         keepMounted
-        className="shrink-0"
         render={(indicatorProps, state) => (
-          <span {...indicatorProps}>
-            <Checkbox
-              checked={state.selected}
-              aria-hidden
-              tabIndex={-1}
-              className="pointer-events-none shrink-0"
-            />
+          <span
+            {...indicatorProps}
+            data-slot="search-select-item-check"
+            data-selected={state.selected ? "" : undefined}
+            className="flex size-3.5 shrink-0 items-center justify-center text-foreground scale-0 opacity-0 transition-[opacity,scale] duration-(--duration-fast) ease-out data-[selected]:scale-100 data-[selected]:opacity-100"
+          >
+            <Check className="size-3.5" />
           </span>
         )}
       />
-      <SearchSelectItemIcon icon={icon} size={size} />
-      <span className="flex-1 truncate">{children}</span>
     </Combobox.Item>
   );
 }

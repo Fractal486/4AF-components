@@ -360,11 +360,10 @@ describe("Search Select", () => {
     );
     expect(screen.getByRole("listbox")).toBeVisible();
 
-    const checkbox = mango.querySelector<HTMLElement>("[role=checkbox]");
-    expect(checkbox).toHaveAttribute("aria-hidden", "true");
-    expect(checkbox).toHaveAttribute("tabindex", "-1");
-    expect(checkbox).toHaveAttribute("aria-checked", "true");
-    expect(checkbox).toHaveAttribute("data-checked");
+    // A trailing check, not a checkbox: the option alone carries the selection.
+    const check = mango.querySelector<HTMLElement>("[data-slot=search-select-item-check]");
+    expect(check).toBe(mango.lastElementChild);
+    expect(check).toHaveAttribute("data-selected");
     expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
 
     await user.keyboard("{Escape}");

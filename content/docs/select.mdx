@@ -56,6 +56,10 @@ Nested panels take their own `portalProps`; they do not inherit the parent panel
 The focus ring remains for keyboard users. `outline={false}` is still accepted as an alias for
 `variant="plain"`.
 
+While its panel is open, a `default` `SelectTrigger` takes Input's focus border, without the outer
+ring. `tone` picks it, as on Input: `neutral` (default) is grey, `accent` the blue `--ring`. The error
+border takes precedence over either.
+
 With neither `label` nor `showValue`, `SelectSortTrigger` shows only its glyph in a square box
 matching Button's icon sizes: 24, 30, or 34px for `xs`, `sm`, or `md`. A toolbar can switch this
 on the selection, so the chip names a filter only once one is set:
@@ -229,7 +233,8 @@ share the footer row evenly and take the same hover highlight as `clearable`. Ea
 `label`, an optional leading `icon`, `checked` to show a tick, and `keepOpen` to leave the panel
 open. `onSelect(event)` receives the button's React click event. `clearable` adds its button after them.
 
-`indicator={false}` hides the checkbox or tick; it does not prevent selection.
+Single and multi-select rows both mark the selection with a trailing check; in a multi-select it
+scales in and out as rows toggle. `indicator={false}` hides the check; it does not prevent selection.
 
 ```tsx
 <Select<string> multiple value={tags} onValueChange={setTags}>

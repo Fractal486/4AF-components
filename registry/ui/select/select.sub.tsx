@@ -704,8 +704,8 @@ export function SelectSubContent({
             onPointerLeave={handlePointerLeave}
             className={mergeStateClassName(cn(
               "flex max-h-[min(var(--available-height),18rem)] w-max min-w-50 flex-col overflow-hidden rounded-md border border-border bg-surface text-foreground shadow-overlay-drop outline-none",
-              "origin-[var(--transform-origin)] blur-0 transition-[opacity,scale,filter] duration-(--duration-base) ease-out",
-              "data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[starting-style]:blur-[3px]",
+              "origin-[var(--transform-origin)] blur-0 transition-[opacity,scale,filter] duration-(--duration-slow) ease-panel data-[ending-style]:duration-(--duration-base) data-[ending-style]:ease-out",
+              "data-[starting-style]:scale-90 data-[starting-style]:opacity-0 data-[starting-style]:blur-[4px]",
               "data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[ending-style]:blur-[2px]"), className)}
           >
             <ScrollArea className="min-h-0" viewportClassName="p-1" viewportProps={{ tabIndex: -1 }}>

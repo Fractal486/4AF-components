@@ -12,7 +12,7 @@ description: A searchable keyboard-first command surface composed from 4AF primi
 
 A keyboard-first command and search dialog with fuzzy ranking, groups, nested and custom panels,
 async, server-driven, and paginated search, header text fields, per-panel header actions, badges,
-checkboxes, keybinds, and destructive actions.
+selection checks, keybinds, and destructive actions.
 
 `loader={<MySpinner />}` supplies the palette's search, panel, and action indicators. Omit it to
 inherit [LoaderProvider](/docs/reference/engineering#shared-loading-indicators), with `ClassicLoader` as
@@ -51,7 +51,7 @@ The registry item includes:
   to go back;
 - per-panel `headerActions`, suitable for Select and Select Sort controls—use the default
   `size="sm"` so they fit the palette;
-- custom list rows with trailing badges or selection checkboxes;
+- custom list rows with trailing badges or selection checks (`checkbox` shows a trailing check);
 - grouped action panels with section labels, icons, keybinds, search, and destructive actions;
 - async or server-driven search: pass `onSearch` on the root with `groups` as the resting state,
   or call `useCommandSearch` in a custom panel and render `CommandPanelLoading` for its first-load
@@ -132,7 +132,7 @@ active row without an arrow press first.
 Selection and hover are separate states. The selected row carries `data-highlighted` and moves
 with the arrow keys and with presses. Hovering gives a row a weaker fill only, so moving the
 pointer across the list never changes what Enter runs. A press selects a row and runs it, so in a
-panel that stays open, such as a checkbox list, the selection follows the row you pressed.
+panel that stays open, such as a multi-select list, the selection follows the row you pressed.
 Moving the pointer out of the list leaves the selection where it was.
 
 On a `CommandPanelRow`, a click and Enter are the same activation: each runs `onSelect`, then

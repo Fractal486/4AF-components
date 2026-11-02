@@ -1,36 +1,12 @@
 import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { useAction, type ActionStatus } from "@/registry/lib/use-action";
 import { LoadingIndicator } from "@/registry/lib/loader";
-import { CheckboxMark } from "@/registry/ui/checkbox/checkbox";
-import { checkboxVariants } from "@/registry/ui/checkbox/checkbox.variants";
 import { Morph } from "@/registry/ui/morph/morph";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 import { Check, TriangleAlert } from "lucide-react";
 import { useState, type ComponentProps, type ReactNode } from "react";
 import { DropdownMenuItem, type DropdownMenuItemProps } from "./dropdown-menu.menu";
-import { DisabledReasonTooltip, INDICATOR_SLOT, itemBase } from "./dropdown-menu.shared";
-
-/**
- * The checkbox a checkbox row shows: Checkbox's own box and mark — the same border, fill,
- * dark-mode well, and the tick that draws itself in — drawn rather than nested, because a
- * real Checkbox is a button and a button inside a menu item splits focus and is invalid
- * markup. Sized down to the row's 14px glyph slot.
- *
- * The mark's size is marked important: `itemBase` sizes every svg in the row, and its
- * `.row svg` would otherwise outrank a class here.
- */
-function MenuCheckbox({ checked }: { checked: boolean }) {
-  return (
-    <span
-      data-slot="dropdown-menu-checkbox"
-      data-checked={checked ? "" : undefined}
-      data-unchecked={checked ? undefined : ""}
-      className={cn(checkboxVariants(), "size-3.5 cursor-default")}
-    >
-      <CheckboxMark checked={checked} className="size-[70%]!" />
-    </span>
-  );
-}
+import { CHECK_MARK, CHECK_SLOT, DisabledReasonTooltip, itemBase } from "./dropdown-menu.shared";
 
 /**
  * The 14px box a row's leading glyph sits in, so a Morph between glyphs centres where a plain
@@ -172,8 +148,8 @@ export interface DropdownMenuCheckboxItemProps
    */
   icon?: ReactNode | ((checked: boolean) => ReactNode);
   /**
-   * The built-in left tick and its `pl-8` indent. Turn it off when the toggle state is
-   * carried by the label/icon instead (the bookmark case).
+   * The trailing check. Turn it off when the toggle state is carried by the label/icon
+   * instead (the bookmark case).
    */
   indicator?: boolean;
   /**
@@ -268,44 +244,26 @@ export function DropdownMenuCheckboxItem({
         data-slot="dropdown-menu-checkbox-item"
         className={mergeStateClassName(cn(
           itemBase,
-          indicator && "pr-2 pl-8",
           hasReason && "data-[disabled]:pointer-events-auto",
           fillIcon && [
-            "[&_svg]:transition-[fill] [&_svg]:duration-(--duration-fast) [&_svg]:ease-out",
-            "data-[checked]:[&_svg]:fill-current",
+            // Not the check slot's glyphs: a filled check or warning triangle is a blob.
+            "[&_svg:not([data-slot=dropdown-menu-checkbox-item-status]_svg)]:transition-[fill]",
+            "[&_svg:not([data-slot=dropdown-menu-checkbox-item-status]_svg)]:duration-(--duration-fast)",
+            "[&_svg:not([data-slot=dropdown-menu-checkbox-item-status]_svg)]:ease-out",
+            "data-[checked]:[&_svg:not([data-slot=dropdown-menu-checkbox-item-status]_svg)]:fill-current",
           ],
         ), className)}
-        // Render function to read `checked`: the tick can Morph in and out (draw itself
-        // in, blur out) instead of snapping, and `children` can swap on it.
+        // Render function to read `checked`: the check and the icon follow it, and
+        // `children` can swap on it.
         render={(itemProps, state) => (
           <DisabledReasonTooltip disabled={disabled} reason={disabledReason}>
             <div {...itemProps}>
-              {indicator && (
-                <span className={INDICATOR_SLOT}>
-                  {/* The tick slot doubles as the status slot: while the action is in
-                      flight the loader sits exactly where the tick will land, which is
-                      what makes the wait read as "not yet" rather than as "nothing
-                      happened". Both extra keys are unreachable without an `action`.
-
-                      No size on the glyphs: `itemBase` sizes every svg in the row, and its
-                      `.row svg` beats a class on the element itself, so anything set here
-                      would be a statement the CSS quietly overrules. */}
-                  <Morph
-                    activeKey={status === "pending" || status === "error" ? status : "box"}
-                    items={{
-                      box: <MenuCheckbox checked={state.checked} />,
-                      pending: <LoadingIndicator loader={loader} />,
-                      error: <TriangleAlert />,
-                    }}
-                  />
-                </span>
-              )}
               {icon !== undefined && (
                 <span className={GLYPH_SLOT}>
-                  {/* Every glyph at once, so the slot never resizes between them. The tick
-                      slot reports status when there is one; otherwise this one does. */}
+                  {/* Every glyph at once, so the slot never resizes between them. */}
                   <Morph
                     activeKey={
+                      // The check slot reports status when there is one; otherwise this does.
                       !indicator && (status === "pending" || status === "error")
                         ? status
                         : typeof icon === "function"
@@ -323,16 +281,27 @@ export function DropdownMenuCheckboxItem({
                 </span>
               )}
               {typeof children === "function" ? children(state.checked, status) : children}
-              {deferred && !indicator && icon === undefined && (
-                // No tick and no icon leaves nowhere to report the wait, so a trailing slot
-                // does. Trailing rather than leading: an empty leading box would indent this
-                // label against every other row. The slot is reserved while idle so the
-                // label never shifts when the loader arrives.
-                <span data-slot="dropdown-menu-checkbox-item-status" className={cn(GLYPH_SLOT, "ml-auto")}>
+              {(indicator || (deferred && icon === undefined)) && (
+                // The check slot doubles as the status slot: while the action is in flight
+                // the loader sits exactly where the check will land, so the wait reads as
+                // "not yet" rather than "nothing happened". Without a check it is still the
+                // status slot when there's no icon to take the loader — reserved while idle
+                // so nothing shifts when the loader arrives.
+                <span data-slot="dropdown-menu-checkbox-item-status" className={CHECK_SLOT}>
                   <Morph
                     activeKey={status === "pending" || status === "error" ? status : "idle"}
                     items={{
-                      idle: undefined,
+                      idle: indicator
+                        ? (
+                          <span
+                            data-slot="dropdown-menu-checkbox-check"
+                            data-checked={state.checked ? "" : undefined}
+                            className={CHECK_MARK}
+                          >
+                            <Check />
+                          </span>
+                        )
+                        : undefined,
                       pending: <LoadingIndicator loader={loader} />,
                       error: <TriangleAlert />,
                     }}

@@ -10,7 +10,7 @@ description: A searchable Base UI select for larger option sets.
 **Main exports:** `SearchSelect`, `SearchSelectInput`, `SearchSelectContent`, `SearchSelectItem`,
 `SearchMultiSelectItem`, `SearchSelectGroup`, `SearchSelectGroupLabel`, `SearchSelectCollection`
 
-An editable Combobox-style trigger with live filtering, single or checkbox-based multi-selection,
+An editable Combobox-style trigger with live filtering, single or multi-selection,
 icons, and full keyboard and ARIA behaviour.
 
 ## Sections
@@ -56,7 +56,8 @@ In single-select mode:
   field loses focus.
 
 In multi-select mode the panel stays open for more choices. Use `SearchMultiSelectItem` for
-checkbox rows; `SearchSelectItem` keeps its trailing checkmark presentation in either mode.
+its rows: a trailing check that scales in and out as rows toggle. `SearchSelectItem` shows the same
+check in either mode.
 
 `inputValue` / `defaultInputValue` and `onInputValueChange` hold the search query, separately
 from `value` / `defaultValue` and `onValueChange`. `itemToStringLabel` also supplies the selected

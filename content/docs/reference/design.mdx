@@ -20,7 +20,7 @@ it must also remap the relevant ramps to change those exceptions.
 | Raised surface | White (`oklch(1 0 0)`) | Deep black (`oklch(0.120 0 0)`) | Dialogs, sheets, palettes, and popovers |
 | Foreground | Warm near-black (`oklch(0.155 0.006 70)`) | Warm near-white (`oklch(0.985 0.002 70)`) | Primary text and neutral actions |
 | Focus ring | Blue (`oklch(0.623 0.214 259.815)`) | The same blue | Focus and deliberate emphasis |
-| Destructive | Vivid red (`oklch(0.6 0.225 26)`) | The same red | Irreversible and failed actions |
+| Destructive | Apple systemRed (`oklch(0.654 0.232 28.7)`, `#FF3B30`) | Dark systemRed (`oklch(0.663 0.224 28.3)`, `#FF453A`) | Irreversible and failed actions |
 | Success | Deep green (`oklch(0.52 0.13 152)`) | The same green | Confirmed outcomes only |
 | Warning | Amber ramp text (`warning-700`) | Lighter amber (`warning-400`) | Status accents in Alert and Badge |
 
@@ -28,7 +28,7 @@ Primary is ink, not colour. Blue is used for focus and rare emphasis; destructiv
 success green appear only when they mean something. Quiet destructive actions, such as menu and
 toolbar rows, use red text without a red hover fill.
 
-The destructive fill deliberately favors a brighter red with white text. This pairing falls
+The destructive fill is Apple's systemRed with white text. This pairing, about 3.5:1, falls
 below the 4.5:1 contrast target for normal text; OKLCH lightness alone is not a contrast check.
 
 A component's fill communicates its layer. `background` is the page and sunk wells such as

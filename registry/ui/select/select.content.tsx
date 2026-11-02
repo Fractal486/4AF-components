@@ -387,7 +387,11 @@ export function SelectContent({
                     ? FADE_SHOW
                     : FADE_EXIT
               }
-              transition={reduceMotion ? { duration: 0 } : { duration: duration.base, ease: ease.out }}
+              transition={reduceMotion
+                ? { duration: 0 }
+                : open
+                  ? { duration: duration.slow, ease: ease.panel }
+                  : { duration: duration.base, ease: ease.out }}
             />
           }
           // When a panel search filters everything out there's no option left to keep

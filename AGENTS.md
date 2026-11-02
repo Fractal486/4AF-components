@@ -227,7 +227,7 @@ Two colour decisions worth not re-litigating:
 
 - **Primary is ink, not colour.** Colour is a signal; the neutral action is the default,
   while blue is reserved for the ring and other focused signals.
-- **Destructive uses `oklch(0.6 0.225 26)` with white text in both themes.** The design
+- **Destructive is Apple's systemRed with white text** — `#FF3B30` light, `#FF453A` dark. The design
   reference records the contrast tradeoff; OKLCH lightness alone does not establish WCAG contrast.
 
 Radii are **concentric**: `outer = inner + padding`. An `rounded-xl` (14px) card with

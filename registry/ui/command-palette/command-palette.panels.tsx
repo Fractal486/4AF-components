@@ -2,10 +2,9 @@ import { Kbd } from "@/registry/ui/kbd/kbd";
 import { cn } from "@/registry/lib/cn";
 import { LoadingIndicator } from "@/registry/lib/loader";
 import { useMergedRefs } from "@/registry/lib/refs";
-import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Autocomplete } from "@base-ui/react/autocomplete";
-import { ChevronRight, CornerDownLeft } from "lucide-react";
+import { Check, ChevronRight, CornerDownLeft } from "lucide-react";
 import {
   Fragment,
   useContext,
@@ -219,7 +218,7 @@ function usePointerSelection() {
  * A list row for custom panel content.
  *
  * Its inset, row height, hover treatment and icon slot match the main command list. The
- * checkbox is intentionally presentational — the row owns selection, while the containing
+ * check is intentionally presentational — the row owns selection, while the containing
  * `CommandPanelList` owns the shared arrow-key navigation and `selected` is the only
  * persistent state signal.
  *
@@ -304,12 +303,15 @@ export function CommandPanelRow({
         <span className="ml-auto -mr-1 flex shrink-0 items-center gap-1.5">
           {badge && <span className="shrink-0">{badge}</span>}
           {checkbox && (
-            <Checkbox
-              checked={selected}
-              tabIndex={-1}
+            // Kept mounted so the slot is reserved and the check scales in and out.
+            <span
               aria-hidden="true"
-              className="pointer-events-none"
-            />
+              data-slot="command-panel-row-check"
+              data-checked={selected ? "" : undefined}
+              className="flex size-4 shrink-0 items-center justify-center text-foreground scale-0 opacity-0 transition-[opacity,scale] duration-(--duration-fast) ease-out data-[checked]:scale-100 data-[checked]:opacity-100"
+            >
+              <Check className="size-4" />
+            </span>
           )}
         </span>
       )}

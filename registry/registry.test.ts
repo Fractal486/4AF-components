@@ -310,10 +310,7 @@ describe("registry", () => {
 
   it("ships every direct Dropdown Menu component dependency", () => {
     expect(items.get("dropdown-menu")?.registryDependencies).toEqual(
-      expect.arrayContaining([
-        `${SITE_URL}/r/checkbox.json`,
-        `${SITE_URL}/r/input.json`,
-      ]),
+      expect.arrayContaining([`${SITE_URL}/r/input.json`]),
     );
   });
 
@@ -398,7 +395,7 @@ describe("registry", () => {
     );
     expect(theme.cssVars?.light).toEqual(
       expect.objectContaining({
-        destructive: "oklch(0.6 0.225 26)",
+        destructive: "oklch(0.654 0.232 28.7)",
         success: "oklch(0.52 0.13 152)",
         "elevation-overlay-drop": "0 8px 16px -6px oklch(0 0 0 / 0.1), 0 16px 32px -8px oklch(0 0 0 / 0.12)",
       }),

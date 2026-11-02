@@ -10,6 +10,7 @@ import { SelectItemIcon, SIZE } from "./select.shared";
 import {
   selectSortTriggerVariants,
   selectTriggerVariants,
+  type SelectTriggerTone,
   type SelectTriggerVariant,
 } from "./select.variants";
 
@@ -74,12 +75,16 @@ export interface SelectTriggerProps
   label?: ReactNode;
   /** The trailing chevron. */
   chevron?: boolean;
+  /** The open field's border, as Input's focus border: grey `neutral` or the blue `accent`.
+      Boxed `default` variant only. @default "neutral" */
+  tone?: SelectTriggerTone;
 }
 
 export function SelectTrigger({
   className,
   children,
   variant,
+  tone = "neutral",
   outline,
   label,
   chevron = true,
@@ -101,12 +106,13 @@ export function SelectTrigger({
       ref={triggerRef}
       data-slot="select-trigger"
       data-variant={resolvedVariant}
+      data-tone={tone}
       className={mergeStateClassName(cn(
         // `md` (34px) matches Button's default and the Input — a select beside either in a
         // form row lines up with it. `sm` (30px, the default) is the compact toolbar size;
         // `xs` is the dense 24px control.
         SIZE[size].field,
-        selectTriggerVariants({ variant: resolvedVariant }),
+        selectTriggerVariants({ variant: resolvedVariant, tone }),
         SIZE[size].radius), className)}
       {...props}
     >

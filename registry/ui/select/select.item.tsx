@@ -1,5 +1,4 @@
 import { cn, mergeStateClassName } from "@/registry/lib/cn";
-import { Checkbox } from "@/registry/ui/checkbox/checkbox";
 import { Select as BaseSelect } from "@base-ui/react/select";
 import { Check } from "lucide-react";
 import {
@@ -15,6 +14,10 @@ import {
 import { SELECT_CLEAR_ACTION, SelectContext, SelectSubItemContext } from "./select.context";
 import { SIZE, SelectItemIcon } from "./select.shared";
 import { isEquivalentNode, setForwardedRef } from "./select.utils";
+
+/** A multi-select row's check: the single-select mark, scaling in and out on selection. */
+const MULTI_CHECK =
+  "flex size-3.5 shrink-0 items-center justify-center text-foreground scale-0 opacity-0 transition-[opacity,scale] duration-(--duration-fast) ease-out data-[selected]:scale-100 data-[selected]:opacity-100";
 
 /** Accessible section; filtering hides its heading when no visible options remain. */
 export function SelectGroup({ className, ...props }: ComponentProps<typeof BaseSelect.Group>) {
@@ -274,7 +277,7 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
         onPointerCancel={handlePointerCancel}
         onPointerDown={handlePointerDown}
         className={mergeStateClassName(cn(
-          "flex items-center gap-2.5 rounded-xs px-2.5 py-1.5 outline-none select-none",
+          "flex items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
           SIZE[size].row,
           "text-muted-foreground",
           nestedPanel
@@ -287,32 +290,26 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
           "data-[disabled]:pointer-events-none data-[disabled]:opacity-50"), className)}
         {...props}
       >
-        {end || !indicator ? (
-          <>
-            <SelectItemIcon icon={icon} size={size} />
-            <BaseSelect.ItemText className="flex-1 truncate">{children}</BaseSelect.ItemText>
-            {end}
-          </>
-        ) : (
-          <>
+        <SelectItemIcon icon={icon} size={size} />
+        <BaseSelect.ItemText className="flex-1 truncate">{children}</BaseSelect.ItemText>
+        {/* Kept mounted so the slot is reserved and the check scales in and out as rows
+            toggle while the panel stays open. `end` replaces it, as on single rows. */}
+        {end ??
+          (indicator ? (
             <BaseSelect.ItemIndicator
               keepMounted
-              className="shrink-0"
               render={(indicatorProps, state) => (
-                <span {...indicatorProps}>
-                  <Checkbox
-                    checked={state.selected}
-                    aria-hidden
-                    tabIndex={-1}
-                    className="pointer-events-none shrink-0"
-                  />
+                <span
+                  {...indicatorProps}
+                  data-slot="select-item-check"
+                  data-selected={state.selected ? "" : undefined}
+                  className={MULTI_CHECK}
+                >
+                  <Check className="size-3.5" />
                 </span>
               )}
             />
-            <SelectItemIcon icon={icon} size={size} />
-            <BaseSelect.ItemText className="flex-1 truncate">{children}</BaseSelect.ItemText>
-          </>
-        )}
+          ) : null)}
       </BaseSelect.Item>
     );
   }

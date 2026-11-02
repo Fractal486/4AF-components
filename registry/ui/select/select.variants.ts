@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
 export type SelectTriggerVariant = "default" | "ghost" | "plain";
+export type SelectTriggerTone = "neutral" | "accent";
 
 /** The standard field trigger: a boxed field, a ghost field, or a borderless text control. */
 export const selectTriggerVariants = cva(
@@ -16,7 +17,7 @@ export const selectTriggerVariants = cva(
       variant: {
         default: [
           "w-full justify-between border border-border bg-surface px-3.5",
-          "hover:border-border-strong data-[popup-open]:border-border-strong",
+          "hover:border-border-strong",
           "[&:is([aria-invalid=true],[data-invalid])]:border-destructive! [&:is([aria-invalid=true],[data-invalid])]:ring-[3px]! [&:is([aria-invalid=true],[data-invalid])]:ring-destructive/25!",
         ],
         ghost: [
@@ -34,8 +35,23 @@ export const selectTriggerVariants = cva(
           "[&:is([aria-invalid=true],[data-invalid])]:ring-[3px]! [&:is([aria-invalid=true],[data-invalid])]:ring-destructive/25!",
         ],
       },
+      // The open field wears the inner edge of Input's focus ring — its border colour, without
+      // the outer halo. Boxed `default` variant only.
+      tone: { neutral: "", accent: "" },
     },
-    defaultVariants: { variant: "default" },
+    compoundVariants: [
+      {
+        variant: "default",
+        tone: "neutral",
+        class: "data-[popup-open]:border-[oklch(0.719_0_0)]",
+      },
+      {
+        variant: "default",
+        tone: "accent",
+        class: "data-[popup-open]:border-ring",
+      },
+    ],
+    defaultVariants: { variant: "default", tone: "neutral" },
   },
 );
 

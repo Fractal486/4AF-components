@@ -13,6 +13,8 @@ export const ease = {
   out: [0.16, 1, 0.3, 1],
   /** Exits only. Accelerates away — reads as "leaving", not "being pushed". */
   in: [0.7, 0, 0.84, 0],
+  /** List panels opening: gentler than `out`, so the scale from the trigger stays visible. */
+  panel: [0.33, 1, 0.68, 1],
 } as const;
 
 /** Duration defaults in seconds (Motion's unit), matching the corresponding CSS tokens. */

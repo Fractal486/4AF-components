@@ -16,7 +16,7 @@ A Base UI menu with keyboard navigation, safe submenu pointer travel, and these 
 | Row | Parts | For |
 | --- | --- | --- |
 | Item | `DropdownMenuItem` | A command or link, optionally destructive or with a shortcut |
-| Checkbox | `DropdownMenuCheckboxItem` | An on/off setting, shown with a tick |
+| Checkbox | `DropdownMenuCheckboxItem` | An on/off setting, shown with a trailing check |
 | Toggle | `DropdownMenuCheckboxItem indicator={false}` | An on/off setting carried by its icon and label |
 | Radio | `DropdownMenuRadioGroup`, `DropdownMenuRadioItem` | One choice from a short set |
 | Action | `DropdownMenuActionItem` | Work that runs, confirms, and reverts |
@@ -93,10 +93,12 @@ aligned to the row’s trailing edge and first line.
 ## Checkbox and toggle rows
 
 `DropdownMenuCheckboxItem` is a `menuitemcheckbox`, controlled with `checked` and
-`onCheckedChange` or uncontrolled with `defaultChecked`. By default it shows Checkbox's box and
-its self-drawing tick in the leading slot.
+`onCheckedChange` or uncontrolled with `defaultChecked`. By default a check marks the checked
+state at the trailing edge; the slot stays reserved while unchecked. A leading icon and the label
+line up with every other row. With a `DropdownMenuShortcut`, the shortcut sits just before the
+check.
 
-`indicator={false}` drops the checkbox and its indent, so the row reads as a toggle and its icon
+`indicator={false}` drops the check, so the row reads as a toggle and its icon
 and label carry the state. `icon` and `children` may each be a function of checked state; the
 row morphs between the glyphs:
 
@@ -118,8 +120,8 @@ only fills in.
 
 An `action` makes the change wait on work, like Action Toggle. The row keeps its current state
 while pending and calls `onCheckedChange` only after success; on failure the state is unchanged.
-The loader takes the checkbox's slot, or the icon's slot on a toggle. A toggle with no icon
-shows it at the row's trailing edge, in a slot with `data-slot="dropdown-menu-checkbox-item-status"`:
+The loader takes the check's slot, `data-slot="dropdown-menu-checkbox-item-status"`. A toggle
+shows it in its icon's slot instead, or in the check's slot when it has no icon:
 
 ```tsx
 <DropdownMenuCheckboxItem
@@ -145,8 +147,8 @@ draws its own wait.
 ## Radio rows
 
 `DropdownMenuRadioGroup` holds one value across its `DropdownMenuRadioItem` rows, controlled
-with `value` and `onValueChange` or uncontrolled with `defaultValue`. Each row shares Radio's white selection ring with an open center
-in the leading slot. Head the group with a `DropdownMenuLabel`.
+with `value` and `onValueChange` or uncontrolled with `defaultValue`. The selected row shows a check at the trailing edge, as checkbox
+rows do. Head the group with a `DropdownMenuLabel`.
 
 ## Action rows
 
@@ -187,7 +189,7 @@ Dropdown Menu includes three nested-panel forms:
 - a navigation submenu (`DropdownMenuSub`);
 - a single-select panel with the chosen value shown in the parent row and a checkmark in the
   panel (`DropdownMenuSelect`);
-- a multi-select panel (`DropdownMenuSelect multiple`) using small Checkbox components and an
+- a multi-select panel (`DropdownMenuSelect multiple`) with the same trailing checkmark and an
   `N selected` parent label.
 
 Nested panels open immediately when their parent row is hovered by default; set the trigger's

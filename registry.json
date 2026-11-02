@@ -75,6 +75,7 @@
           "ease-out": "cubic-bezier(0.16, 1, 0.3, 1)",
           "ease-in": "cubic-bezier(0.7, 0, 0.84, 0)",
           "ease-in-out": "cubic-bezier(0.65, 0, 0.35, 1)",
+          "ease-panel": "cubic-bezier(0.33, 1, 0.68, 1)",
           "ease-press": "linear(0, 0.0353, 0.1195, 0.2279, 0.344, 0.4571, 0.561, 0.6527, 0.7309, 0.7959, 0.8485, 0.8904, 0.9229, 0.9476, 0.966, 0.9794, 0.9889, 0.9953, 0.9996, 1.0021, 1.0036, 1.0042, 1.0043, 1.0041, 1.0037, 1.0032, 1.0027, 1.0022, 1.0018, 1.0014, 1)",
           "duration-fast": "150ms",
           "duration-base": "200ms",
@@ -107,7 +108,7 @@
           "primary": "oklch(0.216 0.007 70)",
           "primary-foreground": "oklch(0.985 0.002 70)",
           "primary-hover": "oklch(0.288 0.008 70)",
-          "destructive": "oklch(0.6 0.225 26)",
+          "destructive": "oklch(0.654 0.232 28.7)",
           "destructive-foreground": "oklch(1 0 0)",
           "destructive-hover": "oklch(0.448 0.164 26)",
           "success": "oklch(0.52 0.13 152)",
@@ -132,7 +133,7 @@
           "primary": "oklch(0.968 0.004 70)",
           "primary-foreground": "oklch(0.155 0.006 70)",
           "primary-hover": "oklch(1 0 0)",
-          "destructive": "oklch(0.6 0.225 26)",
+          "destructive": "oklch(0.663 0.224 28.3)",
           "destructive-foreground": "oklch(1 0 0)",
           "destructive-hover": "oklch(0.62 0.208 25)",
           "success": "oklch(0.52 0.13 152)",
@@ -402,7 +403,8 @@
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/motion.json",
         "https://4af.selfsimilar.dev/r/loader.json",
-        "https://4af.selfsimilar.dev/r/slot.json"
+        "https://4af.selfsimilar.dev/r/slot.json",
+        "https://4af.selfsimilar.dev/r/morph.json"
       ],
       "files": [
         {
@@ -1338,7 +1340,6 @@
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/refs.json",
-        "https://4af.selfsimilar.dev/r/checkbox.json",
         "https://4af.selfsimilar.dev/r/button.json",
         "https://4af.selfsimilar.dev/r/input.json",
         "https://4af.selfsimilar.dev/r/scroll-area.json"
@@ -1406,7 +1407,6 @@
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/loader.json",
-        "https://4af.selfsimilar.dev/r/checkbox.json",
         "https://4af.selfsimilar.dev/r/morph.json",
         "https://4af.selfsimilar.dev/r/use-action.json",
         "https://4af.selfsimilar.dev/r/select.json",
@@ -1615,7 +1615,7 @@
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/refs.json",
-        "https://4af.selfsimilar.dev/r/checkbox.json",
+        "https://4af.selfsimilar.dev/r/motion.json",
         "https://4af.selfsimilar.dev/r/scroll-area.json"
       ],
       "files": [
@@ -1970,8 +1970,6 @@
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/morph.json",
-        "https://4af.selfsimilar.dev/r/checkbox.json",
-        "https://4af.selfsimilar.dev/r/radio.json",
         "https://4af.selfsimilar.dev/r/input.json",
         "https://4af.selfsimilar.dev/r/tooltip.json",
         "https://4af.selfsimilar.dev/r/use-action.json",

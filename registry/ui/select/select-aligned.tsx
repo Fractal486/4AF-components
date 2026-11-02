@@ -478,11 +478,12 @@ export function AlignedSelectContent({
             // position alone. A centre-origin scale would be wrong, and that difference is
             // the entire reason this reads as anchored.
             //
-            // `--duration-base` rather than `fast`: a scale needs a little longer to register
-            // than a bare fade, and selects budget 150–250ms.
+            // `--duration-base` on `--ease-panel`, and a smaller scale than the other panels:
+            // this one opens around the choice rather than out of the trigger, so it has less
+            // distance to cover and the family's slower, bigger entrance overshoots it.
             "origin-[var(--transform-origin)] blur-0",
-            "transition-[opacity,scale,filter] duration-(--duration-base) ease-out",
-            "data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[starting-style]:blur-[3px]",
+            "transition-[opacity,scale,filter] duration-(--duration-base) ease-panel data-[ending-style]:ease-out",
+            "data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[starting-style]:blur-[4px]",
             "data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[ending-style]:blur-[2px]"), className)}
           // Base UI hands focus to the popup itself when a query leaves no row to land on.
           // Bounce it back, or the caret leaves the field mid-word.

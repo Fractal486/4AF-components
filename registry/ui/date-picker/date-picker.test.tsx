@@ -77,6 +77,22 @@ describe("DatePicker", () => {
     expect(onValueChange).toHaveBeenCalledWith({ from: new Date(2026, 0, 15), to: may14 });
   });
 
+  it("borders the open default trigger in Input's focus tone", () => {
+    render(
+      <>
+        <DatePicker aria-label="Neutral date" />
+        <DateRangePicker aria-label="Accent range" tone="accent" />
+      </>,
+    );
+
+    const neutral = screen.getByRole("button", { name: "Neutral date" });
+    const accent = screen.getByRole("button", { name: "Accent range" });
+    expect(neutral).toHaveAttribute("data-tone", "neutral");
+    expect(neutral.className).toContain("data-[popup-open]:border-[oklch(0.719_0_0)]");
+    expect(accent).toHaveAttribute("data-tone", "accent");
+    expect(accent.className).toContain("data-[popup-open]:border-ring");
+  });
+
   it("shows the placeholder and marks the trigger empty until a date is chosen", () => {
     render(<DatePicker />);
     const trigger = screen.getByRole("button", { name: "Pick a date" });

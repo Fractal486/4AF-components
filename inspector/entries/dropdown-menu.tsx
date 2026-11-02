@@ -96,8 +96,12 @@ const ROWS_BY_KIND: Record<RowKind, () => ReactNode> = {
     <>
       <DropdownMenuLabel>View</DropdownMenuLabel>
       <DropdownMenuCheckboxItem defaultChecked>Show toolbar</DropdownMenuCheckboxItem>
-      <DropdownMenuCheckboxItem>Show sidebar</DropdownMenuCheckboxItem>
-      {/* Deferred: the tick holds and the loader runs in its slot until the work settles,
+      {/* A shortcut sits just before the check, so shortcuts still line up. */}
+      <DropdownMenuCheckboxItem>
+        Show sidebar
+        <DropdownMenuShortcut>⌘\</DropdownMenuShortcut>
+      </DropdownMenuCheckboxItem>
+      {/* Deferred: the check holds and the loader runs in its slot until the work settles,
           so the row never claims to be on before it is. */}
       <DropdownMenuCheckboxItem action={() => wait(1200)} announce={{ pending: "Updating sync" }}>
         Sync across devices
@@ -106,7 +110,7 @@ const ROWS_BY_KIND: Record<RowKind, () => ReactNode> = {
   ),
   toggles: () => (
     <>
-      {/* A toggle button: no left tick. `fillIcon` fills the one bookmark glyph on
+      {/* A toggle button: no check. `fillIcon` fills the one bookmark glyph on
           check (a fill transition, not a morph); the label text-morphs between states. */}
       <DropdownMenuCheckboxItem fillIcon indicator={false}>
         {(checked) => (
@@ -129,7 +133,7 @@ const ROWS_BY_KIND: Record<RowKind, () => ReactNode> = {
           <Morph activeKey={checked ? "on" : "off"} items={{ on: "Unmute thread", off: "Mute thread" }} />
         )}
       </DropdownMenuCheckboxItem>
-      {/* No tick and no icon: the loader shows at the row's trailing edge instead. */}
+      {/* No check and no icon: the loader still shows in the trailing slot. */}
       <DropdownMenuCheckboxItem
         indicator={false}
         action={() => wait(1200)}

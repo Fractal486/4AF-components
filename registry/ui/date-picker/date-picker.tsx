@@ -154,6 +154,7 @@ function DatePickerShell({
   className,
   variant,
   size,
+  tone,
   disabled,
   ...props
 }: DatePickerShellProps) {
@@ -180,9 +181,10 @@ function DatePickerShell({
   const triggerProps = {
     ...props,
     disabled,
-    className: cn(datePickerTriggerVariants({ variant, size }), className),
+    className: cn(datePickerTriggerVariants({ variant, size, tone }), className),
     "data-slot": "date-picker-trigger",
     "data-variant": variant ?? "default",
+    "data-tone": tone ?? "neutral",
     "data-size": size ?? "md",
     "data-empty": hasValue ? undefined : "",
     children: (

@@ -8,6 +8,7 @@ export const datePickerEntry = defineEntry({
   controls: {
     mode: select(["single", "multiple", "range"], "single"),
     variant: select(["default", "ghost", "plain"], "default"),
+    tone: select(["neutral", "accent"], "neutral", "Open border", (values) => values.variant !== "default"),
     size: select(["xs", "sm", "md"], "md"),
     dateFormat: select(["medium", "numeric"], "medium", "Format"),
     footer: bool(true, "Footer"),
@@ -15,7 +16,7 @@ export const datePickerEntry = defineEntry({
     limitRange: bool(false, "Limit range to 1–7 nights", (values) => values.mode !== "range"),
     disabledDays: select(["none", "weekends", "past"], "none", "Disabled days"),
   },
-  render({ mode, variant, size, dateFormat, footer, timeZone, limitRange, disabledDays }) {
+  render({ mode, variant, tone, size, dateFormat, footer, timeZone, limitRange, disabledDays }) {
     const zone = timeZone === "local" ? undefined : timeZone;
     const dateLib = new DateLib({ timeZone: zone });
     const disabled: CalendarProps["disabled"] = disabledDays === "weekends"
@@ -29,6 +30,7 @@ export const datePickerEntry = defineEntry({
         key="range"
         calendarProps={{ ...calendarProps, min: limitRange ? 1 : 0, max: limitRange ? 7 : 0 }}
         variant={variant}
+        tone={tone}
         size={size}
         dateFormat={dateFormat}
         clearable={footer}
@@ -40,6 +42,7 @@ export const datePickerEntry = defineEntry({
         mode={mode}
         calendarProps={calendarProps}
         variant={variant}
+        tone={tone}
         size={size}
         dateFormat={dateFormat}
         clearable={footer}

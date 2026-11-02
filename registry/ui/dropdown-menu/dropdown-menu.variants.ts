@@ -40,13 +40,13 @@ export const dropdownMenuPopupVariants = cva([
   // Scale-and-blur enter from the trigger edge; only these properties change, so only
   // these are named. Base UI unmounts on transitionend, which fires because it's set.
   //
-  // The Select family's numbers exactly — 0.95 and 3px in, 0.97 and 2px out, over
-  // `--duration-base`. A menu and a select panel are the same object to a user: a list of
+  // The Select family's numbers exactly — 0.9 and 4px in over `--duration-slow` on
+  // `--ease-panel`, 0.97 and 2px out over `--duration-base`. A menu and a select panel are the same object to a user: a list of
   // choices hanging off a control, often sat next to each other in the same toolbar. Two
   // lists that open at different speeds is a difference you feel without being able to name.
   "origin-[var(--transform-origin)] blur-0",
-  "transition-[opacity,scale,filter] duration-(--duration-base) ease-out",
-  "data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[starting-style]:blur-[3px]",
+  "transition-[opacity,scale,filter] duration-(--duration-slow) ease-panel data-[ending-style]:duration-(--duration-base) data-[ending-style]:ease-out",
+  "data-[starting-style]:scale-90 data-[starting-style]:opacity-0 data-[starting-style]:blur-[4px]",
   "data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[ending-style]:blur-[2px]",
 ]);
 

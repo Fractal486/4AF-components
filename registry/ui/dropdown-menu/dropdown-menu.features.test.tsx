@@ -141,6 +141,9 @@ it.each([false, true])("preserves state callbacks and portal mounting options in
   await user.hover(trigger);
   const row = await screen.findByRole(multiple ? "menuitemcheckbox" : "menuitemradio", { name: "Alpha" });
   expect(row).toHaveClass("chosen");
+  // Both modes mark the selection with a trailing check, never a checkbox.
+  expect(row.lastElementChild).toHaveAttribute("data-checked");
+  expect(row.querySelector("[role=checkbox]")).toBeNull();
   expect(trigger).toHaveClass("select-open");
   expect(row.closest('[role="menu"]')).toHaveClass("panel-open");
   await user.keyboard("{Escape}");
