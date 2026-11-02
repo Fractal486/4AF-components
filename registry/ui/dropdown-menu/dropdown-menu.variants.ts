@@ -36,7 +36,7 @@ export const dropdownMenuItemVariants = cva([
 export const dropdownMenuPopupVariants = cva([
   // Same floating-panel material as the Select/Popover panels.
   // The popup clips and `MenuScroll` scrolls, so the rows' `p-1` inset scrolls with them.
-  "z-50 flex max-h-[var(--available-height)] min-w-[min(12.5rem,var(--available-width,calc(100vw-1rem)))] max-w-[min(20rem,var(--available-width,calc(100vw-1rem)))] flex-col overflow-hidden rounded-md border border-border bg-surface text-foreground shadow-overlay-drop outline-none",
+  "z-50 flex max-h-[var(--available-height)] min-w-[min(12.5rem,var(--available-width,calc(100vw-1rem)))] max-w-[min(20rem,var(--available-width,calc(100vw-1rem)))] flex-col overflow-hidden rounded-md border border-border material-glass text-foreground shadow-overlay-drop outline-none",
   // Scale-and-blur enter from the trigger edge; only these properties change, so only
   // these are named. Base UI unmounts on transitionend, which fires because it's set.
   //

@@ -33,10 +33,15 @@ below the 4.5:1 contrast target for normal text; OKLCH lightness alone is not a 
 
 A component's fill communicates its layer. `background` is the page and sunk wells such as
 Input and Sidebar Inset. Checkbox and Radio use that layer in light mode and a fixed darker
-neutral ramp for their resting wells in dark mode. `surface` is chrome and anchored popups such as
-Sidebar, Dropdown Menu, and Hover Card. `surface-raised` is Dialog, Alert Dialog, Sheet, Command
-Palette, and Popover. A consuming project
-decides what those semantic roles resolve to.
+neutral ramp for their resting wells in dark mode. `surface` is chrome such as Sidebar.
+`surface-glass` is the translucent material of every floating panel: Dropdown Menu (with Context
+Menu and Menubar), the Select family, Popover and Date Picker, Hover Card, Dialog, Alert Dialog,
+Sheet, Command Palette, Tooltip, and Selection Toolbar. It is the page `background` at 80% opacity, applied with the
+`material-glass` utility, which adds a 12px backdrop blur and swaps `muted` for
+`muted-glass` inside: the app's own `muted`, darkened slightly (2% black in light, 12% in
+dark), at 92% opacity. `surface-raised` remains an opaque
+overlay fill for content that must cover what scrolls beneath it, such as a table's pinned cells
+inside a popover. A consuming project decides what those semantic roles resolve to.
 
 ## Typography
 

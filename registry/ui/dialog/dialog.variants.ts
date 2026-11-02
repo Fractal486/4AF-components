@@ -11,7 +11,7 @@ export const dialogBackdropVariants = cva([
 
 export const dialogPopupVariants = cva([
   "fixed top-1/2 left-1/2 z-50 max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg -translate-1/2",
-  "min-w-0 overflow-hidden rounded-md border border-border bg-surface-raised text-foreground shadow-overlay-drop outline-none",
+  "min-w-0 overflow-hidden rounded-md border border-border material-glass text-foreground shadow-overlay-drop outline-none",
   // Height is intentionally animated: the frame follows changing content around its centre.
   // The shorter surface transitions preserve the asymmetric scale-in / fade-out entrance.
   "opacity-100 scale-100 blur-none transition-[height,opacity,scale,translate,filter] ease-out",

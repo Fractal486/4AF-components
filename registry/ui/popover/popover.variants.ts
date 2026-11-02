@@ -4,7 +4,7 @@ export const popoverPositionerVariants = cva("isolate z-50 outline-none");
 
 export const popoverPopupVariants = cva([
   "flex min-h-0 min-w-0 flex-col w-72 max-w-[min(var(--available-width,100vw),calc(100vw-2rem))] max-h-[var(--available-height,calc(100dvh-2rem))]",
-  "overflow-hidden rounded-md border border-border bg-surface-raised p-4 text-sm text-foreground shadow-overlay-drop outline-none",
+  "overflow-hidden rounded-md border border-border material-glass p-4 text-sm text-foreground shadow-overlay-drop outline-none",
   "origin-[var(--transform-origin)] blur-0",
   // Height is intentional: changing content should grow the surface from its anchor edge.
   "transition-[opacity,scale,translate,filter,height] duration-(--duration-fast) ease-out",

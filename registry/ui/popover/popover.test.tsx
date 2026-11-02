@@ -32,7 +32,7 @@ it("preserves state classes, custom rendering, DOM props, and refs", async () =>
   expect(popupRef.current).toBe(popup);
   expect(popup.tagName).toBe("SECTION");
   expect(popup).toHaveAttribute("data-custom", "panel");
-  expect(popup).toHaveClass("is-open", "bg-surface-raised");
+  expect(popup).toHaveClass("is-open", "material-glass");
   expect(positionerRef.current).toHaveClass("positioned", "z-50");
   expect(portalRef.current).toContainElement(popup);
   expect(headerRef.current).toContainElement(screen.getByRole("heading"));

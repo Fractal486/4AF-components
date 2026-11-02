@@ -48,7 +48,7 @@ export const selectionToolbarButtonVariants = cva(
 
 /**
  * The bar itself, and it is deliberately the Tooltip's material rather than the Popover's:
- * the same `bg-surface` fill, the same hairline-plus-drop-shadow, the same fast duration.
+ * the same `material-glass` fill, the same hairline-plus-drop-shadow, the same fast duration.
  * A selection toolbar is a transient annotation on the text you just selected — the thing
  * a tooltip is — not a panel you opened and will dismiss. Reusing the Popover's real
  * border and heavier lift would make it read as a much bigger commitment than it is.
@@ -61,7 +61,7 @@ export const selectionToolbarButtonVariants = cva(
  * only 4px, so clipping here would shave the ring on the first and last action.
  */
 export const selectionToolbarVariants = cva([
-  "z-50 flex w-fit max-w-[calc(100vw-2rem)] items-center gap-0.5 rounded-[8px] bg-surface p-1",
+  "z-50 flex w-fit max-w-[calc(100vw-2rem)] items-center gap-0.5 rounded-[8px] material-glass p-1",
   "text-foreground outline-none",
   // A single faint 1px ring plus a soft drop shadow. rgba, not oklch, so the `/` alpha
   // can't trip Tailwind's arbitrary parser.

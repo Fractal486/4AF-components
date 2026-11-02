@@ -264,6 +264,7 @@
   --color-background: var(--background);
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
+  --color-surface-glass: var(--surface-glass);
   --color-muted: var(--muted);
 
   --color-foreground: var(--foreground);
@@ -292,7 +293,11 @@
   --background: var(--color-neutral-50);
   --surface: oklch(1 0 0);
   --surface-raised: oklch(1 0 0);
+  /* Translucent list panels — menus, selects, pickers, hover cards. Pair with `material-glass`. */
+  --surface-glass: color-mix(in oklab, var(--background) 80%, transparent);
   --muted: var(--color-neutral-100);
+  /* `muted` inside glass panels: the app's own hover colour a touch darker, 92% opaque. */
+  --muted-glass: color-mix(in oklab, color-mix(in oklab, var(--muted), black 2%) 92%, transparent);
 
   --foreground: var(--color-neutral-950);
   --muted-foreground: var(--color-neutral-600);
@@ -356,8 +361,10 @@
      only to the text sitting on them, where it's imperceptible. */
   --background: oklch(0.100 0 0); /* the page, and every component's ground */
   --surface: oklch(0.178 0 0); /* #111111 — component fill */
-  --surface-raised: oklch(0.120 0 0); /* overlays — dialog, sheet, command palette */
+  --surface-raised: oklch(0.120 0 0); /* opaque overlay fill, e.g. pinned table cells in a popover */
+  --surface-glass: color-mix(in oklab, var(--background) 80%, transparent);
   --muted: oklch(0.205 0 0); /* #171717 — hover ground, segmented-control track */
+  --muted-glass: color-mix(in oklab, color-mix(in oklab, var(--muted), black 12%) 92%, transparent);
 
   --foreground: var(--color-neutral-50);
   --muted-foreground: var(--color-neutral-400);
@@ -545,6 +552,15 @@
     --text-shimmer-display: block;
     --text-shimmer-mask: linear-gradient(white, white);
   }
+}
+
+/* The translucent panel material: the glass fill with the blur that keeps it legible. */
+@utility material-glass {
+  /* Every `bg-muted` inside — row highlights, hover fills — takes the glass step. */
+  --muted: var(--muted-glass);
+  background-color: var(--surface-glass);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
 }
 
 /* Utilities work with Tailwind's responsive variants, e.g. md:shimmer-none. */

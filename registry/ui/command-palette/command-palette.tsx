@@ -566,7 +566,7 @@ export function CommandPalette({
               // A fixed height, capped by the viewport: typing, an empty result, or opening a
               // panel changes what's inside, never the window, so the footer stays put.
               className={cn(
-                "fixed top-[14vh] left-1/2 z-50 flex h-[min(34rem,calc(100dvh-16vh))] w-[calc(100%-2rem)] max-w-[50rem] -translate-x-1/2 flex-col overflow-hidden rounded-md border border-border bg-surface-raised shadow-overlay-drop outline-none",
+                "fixed top-[14vh] left-1/2 z-50 flex h-[min(34rem,calc(100dvh-16vh))] w-[calc(100%-2rem)] max-w-[50rem] -translate-x-1/2 flex-col overflow-hidden rounded-md border border-border material-glass shadow-overlay-drop outline-none",
                 className,
               )}
               render={

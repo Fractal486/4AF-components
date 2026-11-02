@@ -368,7 +368,7 @@ export function SelectContent({
             `initial`/`animate` would only play once (the entrance would vanish on the 2nd
             open, until a reload remounted it). Animating on `open` re-runs it every time. */}
         <BaseSelect.Popup
-          className={mergeStateClassName("overflow-hidden rounded-md border border-border bg-surface shadow-overlay-drop", className)}
+          className={mergeStateClassName("overflow-hidden rounded-md border border-border material-glass shadow-overlay-drop", className)}
           render={
             <motion.div
               // The `min-width` floor lives on the popup — the visible bordered box — not

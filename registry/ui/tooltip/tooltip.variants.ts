@@ -3,9 +3,8 @@ import { cva } from "class-variance-authority";
 export const tooltipPositionerVariants = cva("z-50 max-w-(--available-width) outline-none");
 
 export const tooltipPopupVariants = cva([
-  // `bg-surface`: the same fill as an outline button at rest, so the tooltip reads as
-  // the same material as the control it describes.
-  "w-fit max-w-[min(var(--container-xs),var(--available-width))] wrap-anywhere rounded-md bg-surface px-2.5 py-1",
+  // The glass material every floating panel shares.
+  "w-fit max-w-[min(var(--container-xs),var(--available-width))] wrap-anywhere rounded-md material-glass px-2.5 py-1",
   "text-xs font-medium text-pretty text-foreground",
   // A single faint 1px ring instead of shadow-overlay's heavier one, plus a soft drop
   // shadow. rgba, not oklch, so the `/` alpha can't trip Tailwind's arbitrary parser.

@@ -22,7 +22,7 @@ it("preserves popup and positioner state classes, custom rendering, DOM props, a
   const popup=popupRef.current!;
   expect(popup.tagName).toBe("SECTION");
   expect(popup).toHaveAttribute("data-custom","preview");
-  expect(popup).toHaveClass("bg-surface","wrap-anywhere");
+  expect(popup).toHaveClass("material-glass","wrap-anywhere");
   expect(positionerRef.current).toHaveClass("z-50","positioned");
   expect(portalRef.current).toContainElement(popup);
   expect(popup.querySelector('[data-slot="hover-card-body"]')).toHaveClass("space-y-2");

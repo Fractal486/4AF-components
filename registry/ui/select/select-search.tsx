@@ -437,7 +437,7 @@ export function SearchSelectContent({
         {/* Fade driven off `open` (not Motion's mount) so it replays every open — Base UI
             keeps the popup mounted after the first one. */}
         <Combobox.Popup
-          className={mergeStateClassName("overflow-hidden rounded-md border border-border bg-surface shadow-overlay-drop", className)}
+          className={mergeStateClassName("overflow-hidden rounded-md border border-border material-glass shadow-overlay-drop", className)}
           render={
             <motion.div
               style={{ transformOrigin: "var(--transform-origin)" }}

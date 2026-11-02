@@ -52,7 +52,7 @@ it("preserves portal, positioner, and popup refs, DOM props, rendering, and stat
   expect(popupRef.current).toBe(popup);
   expect(popup.tagName).toBe("SECTION");
   expect(popup).toHaveAttribute("data-custom", "popup");
-  expect(popup).toHaveClass("open-panel", "bg-surface");
+  expect(popup).toHaveClass("open-panel", "material-glass");
   expect(positionerRef.current).toHaveClass("open-positioner", "z-50");
   expect(positionerRef.current).toHaveStyle({ position: "fixed" });
   expect(portalRef.current).toContainElement(popup);

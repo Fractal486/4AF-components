@@ -467,7 +467,7 @@ export function AlignedSelectContent({
         <BaseSelect.Popup
           data-slot="aligned-select-content"
           className={mergeStateClassName(cn(
-            "overflow-hidden rounded-md border border-border bg-surface shadow-overlay-drop",
+            "overflow-hidden rounded-md border border-border material-glass shadow-overlay-drop",
             // Grown out of the selected row, which is the one thing that must not move.
             //
             // Base UI publishes an origin for exactly this case: when the panel overlaps its
@@ -541,7 +541,7 @@ export function AlignedSelectContent({
           {/* Base UI needs these once the list is taller than the space it has: overlapping
               the trigger means the panel can't simply grow downward, so it scrolls, and
               these are how a pointer user reaches the ends of it. */}
-          <BaseSelect.ScrollUpArrow className="flex h-5 items-center justify-center bg-surface text-muted-foreground">
+          <BaseSelect.ScrollUpArrow className="flex h-5 items-center justify-center material-glass text-muted-foreground">
             <ChevronUp className="size-3.5" />
           </BaseSelect.ScrollUpArrow>
 
@@ -587,7 +587,7 @@ export function AlignedSelectContent({
             </div>
           )}
 
-          <BaseSelect.ScrollDownArrow className="flex h-5 items-center justify-center bg-surface text-muted-foreground">
+          <BaseSelect.ScrollDownArrow className="flex h-5 items-center justify-center material-glass text-muted-foreground">
             <ChevronDown className="size-3.5" />
           </BaseSelect.ScrollDownArrow>
         </BaseSelect.Popup>

@@ -13,6 +13,7 @@
           "color-background": "var(--background)",
           "color-surface": "var(--surface)",
           "color-surface-raised": "var(--surface-raised)",
+          "color-surface-glass": "var(--surface-glass)",
           "color-muted": "var(--muted)",
           "color-foreground": "var(--foreground)",
           "color-muted-foreground": "var(--muted-foreground)",
@@ -98,7 +99,9 @@
           "background": "oklch(0.985 0.002 70)",
           "surface": "oklch(1 0 0)",
           "surface-raised": "oklch(1 0 0)",
+          "surface-glass": "color-mix(in oklab, var(--background) 80%, transparent)",
           "muted": "oklch(0.968 0.004 70)",
+          "muted-glass": "color-mix(in oklab, color-mix(in oklab, var(--muted), black 2%) 92%, transparent)",
           "foreground": "oklch(0.155 0.006 70)",
           "muted-foreground": "oklch(0.472 0.01 70)",
           "subtle-foreground": "oklch(0.582 0.011 70)",
@@ -123,7 +126,9 @@
           "background": "oklch(0.100 0 0)",
           "surface": "oklch(0.178 0 0)",
           "surface-raised": "oklch(0.120 0 0)",
+          "surface-glass": "color-mix(in oklab, var(--background) 80%, transparent)",
           "muted": "oklch(0.205 0 0)",
+          "muted-glass": "color-mix(in oklab, color-mix(in oklab, var(--muted), black 12%) 92%, transparent)",
           "foreground": "oklch(0.985 0.002 70)",
           "muted-foreground": "oklch(0.716 0.01 70)",
           "subtle-foreground": "oklch(0.582 0.011 70)",
@@ -254,6 +259,12 @@
             "--text-shimmer-display": "block",
             "--text-shimmer-mask": "linear-gradient(white, white)"
           }
+        },
+        "@utility material-glass": {
+          "--muted": "var(--muted-glass)",
+          "background-color": "var(--surface-glass)",
+          "-webkit-backdrop-filter": "blur(12px)",
+          "backdrop-filter": "blur(12px)"
         },
         "@utility shimmer-none": {
           "--text-shimmer-display": "none",
