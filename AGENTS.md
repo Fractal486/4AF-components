@@ -77,7 +77,8 @@ rather than reimplementing installation logic.
 `content/docs/` is the public Fumadocs surface. Every installable `registry:ui` item has a
 `content/docs/<name>.mdx` page with frontmatter, an install/usage `<ComponentReference>`, an
 `## API` summary, and component-specific notes. The route renders the page as a playground: the
-demo on a canvas, the title, install actions and settings in a panel, and the MDX one tab away
+demo on a canvas, the title (with an info hover card for source lines and component dependencies,
+derived from `registry.json`), install actions and settings in a panel, and the MDX one tab away
 (`#docs`, or any heading's hash). Below `lg` the same parts stack as one page: title, demo,
 settings, then the docs. The MDX holds no demo. The site serves that page as plain
 Markdown at `/docs/<component>.md` for agents, with the install and usage blocks expanded.

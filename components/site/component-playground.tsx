@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, ExternalLink, Link as LinkIcon, Maximize2, Minimize2, RotateCcw, Terminal } from "lucide-react";
-import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { ArrowLeft, ArrowRight, ExternalLink, Info, Link as LinkIcon, Maximize2, Minimize2, RotateCcw, Terminal } from "lucide-react";
+import { Fragment, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import type { ComponentStats } from "@/lib/component-stats";
+import { InlineLink } from "@/components/inline-link";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/registry/ui/hover-card/hover-card";
 import { MobileToc } from "@/components/site/mobile-toc";
 import { Controls } from "@/inspector/controls";
 import { cn } from "@/registry/lib/cn";
@@ -75,6 +78,8 @@ export interface ComponentPlaygroundProps {
   markdownUrl: string;
   /** A standalone full-screen page for the component, when it has one. */
   fullscreenHref?: string;
+  /** Source size and the other components it installs, from the registry. */
+  stats?: ComponentStats;
   /** The rendered documentation. */
   children: ReactNode;
 }
@@ -101,6 +106,48 @@ export function ComponentPlayground({ demos, ...props }: ComponentPlaygroundProp
   );
 }
 
+/** Lines of source and the other components an install brings with it, behind an info icon. */
+function ComponentInfo({ title, stats }: { title: string; stats: ComponentStats }) {
+  return (
+    <HoverCard>
+      <HoverCardTrigger
+        delay={0}
+        render={
+          <button
+            type="button"
+            aria-label={`${title} size and dependencies`}
+            className="inline-flex size-4 shrink-0 cursor-default items-center justify-center rounded-full text-subtle-foreground/60 outline-none transition-[color] duration-(--duration-fast) hover:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+          />
+        }
+      >
+        <Info className="size-3.5" aria-hidden />
+      </HoverCardTrigger>
+      <HoverCardContent side="bottom" align="center" sideOffset={14} className="w-auto max-w-80 min-w-64 p-4">
+        <dl
+          data-slot="component-info"
+          className="grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-4 gap-y-2 text-sm text-pretty text-muted-foreground"
+        >
+          <dt className="text-subtle-foreground/60">LOC</dt>
+          <dd className="tabular-nums">
+            {stats.lines.toLocaleString("en-US")} in {stats.files} {stats.files === 1 ? "file" : "files"}
+          </dd>
+          <dt className="text-subtle-foreground/60">Deps</dt>
+          <dd>
+            {stats.dependencies.length > 0
+              ? stats.dependencies.map((dependency, index) => (
+                <Fragment key={dependency.name}>
+                  {index > 0 ? ", " : null}
+                  <InlineLink href={dependency.href}>{dependency.title}</InlineLink>
+                </Fragment>
+              ))
+              : "None"}
+          </dd>
+        </dl>
+      </HoverCardContent>
+    </HoverCard>
+  );
+}
+
 function PlaygroundFrame({
   title,
   icon,
@@ -116,6 +163,7 @@ function PlaygroundFrame({
   installCommand,
   markdownUrl,
   fullscreenHref,
+  stats,
   children,
 }: ComponentPlaygroundProps & {
   demoName: PlaygroundDemo["name"];
@@ -164,10 +212,17 @@ function PlaygroundFrame({
         ) : null}
 
         <header className="flex flex-col gap-3 px-5 pt-7 pb-5 max-lg:order-1 sm:px-10 lg:col-start-2 lg:row-start-1 lg:border-l lg:px-5 lg:pt-5">
-          <h1 className="flex items-center gap-2.5 text-xl font-semibold text-balance">
-            {icon}
-            {title}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="flex items-center gap-2.5 text-xl font-semibold text-balance">
+              {icon}
+              {title}
+            </h1>
+            {stats ? (
+              <div className="contents lg:hidden">
+                <ComponentInfo title={title} stats={stats} />
+              </div>
+            ) : null}
+          </div>
           {description ? (
             <p className="text-sm text-pretty text-muted-foreground">{description}</p>
           ) : null}
@@ -209,24 +264,27 @@ function PlaygroundFrame({
               view === "docs" && "lg:absolute lg:inset-x-0",
             )}
           >
-            <Tabs
-              variant="segment"
-              appearance="outline"
-              size="sm"
-              value={view}
-              onValueChange={(next) => {
-                if (next === "docs") setHash(DOCS_HASH);
-                else {
-                  setHash("");
-                  window.scrollTo({ top: 0 });
-                }
-              }}
-            >
-              <TabsList aria-label="View">
-                <TabsTab value="preview">Preview</TabsTab>
-                <TabsTab value="docs">Docs</TabsTab>
-              </TabsList>
-            </Tabs>
+            <div className="flex items-center gap-2.5">
+              <Tabs
+                variant="segment"
+                appearance="outline"
+                size="sm"
+                value={view}
+                onValueChange={(next) => {
+                  if (next === "docs") setHash(DOCS_HASH);
+                  else {
+                    setHash("");
+                    window.scrollTo({ top: 0 });
+                  }
+                }}
+              >
+                <TabsList aria-label="View">
+                  <TabsTab value="preview">Preview</TabsTab>
+                  <TabsTab value="docs">Docs</TabsTab>
+                </TabsList>
+              </Tabs>
+              {stats ? <ComponentInfo title={title} stats={stats} /> : null}
+            </div>
             <div className="flex items-center gap-1">
               {view === "preview" && demo.replayable ? (
                 <Tooltip content="Replay animation" delay={0}>

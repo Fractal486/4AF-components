@@ -9,6 +9,7 @@ import { ArticleColumn } from "@/components/site/article-column";
 import { ComponentPlayground } from "@/components/site/component-playground";
 import { NavIcon, hasNavIcon } from "@/components/site/nav-icons";
 import { PageFrame } from "@/components/site/page-frame";
+import { componentStats } from "@/lib/component-stats";
 import { siblings } from "@/lib/site-nav";
 import { source } from "@/lib/source";
 import { pageAlternates, publicInstallCommand, SITE_URL } from "@/lib/site";
@@ -59,6 +60,7 @@ export default async function Page({ params }: DocsPageProps) {
         markdownUrl={`${SITE_URL}${page.url}.md`}
         icon={hasNavIcon(page.url) ? <NavIcon href={page.url} className="size-5 text-muted-foreground" /> : undefined}
         fullscreenHref={page.url === "/docs/sidebar-layout" ? "/full/sidebar-layout" : undefined}
+        stats={componentStats(slug[0]!)}
       >
         <MdxContent components={getMDXComponents()} />
       </ComponentPlayground>
