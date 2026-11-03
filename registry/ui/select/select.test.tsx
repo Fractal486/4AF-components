@@ -65,6 +65,53 @@ describe("Base UI Select", () => {
     await waitFor(() => expect(screen.getByRole("option", { name: /^Alpha/ })).toHaveAttribute("data-panel-active"));
   });
 
+  it("lets a plain panel's row go dormant when the pointer leaves, then resumes from it", async () => {
+    const user = userEvent.setup();
+    render(
+      <Select items={FRUITS}>
+        <SelectTrigger aria-label="Fruit" />
+        <FruitOptions />
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    const banana = await screen.findByRole("option", { name: "Banana" });
+    await user.hover(banana);
+    await waitFor(() => expect(banana).toHaveAttribute("data-panel-active"));
+
+    // Leaving stops the paint, as a hover would, but the row is still the one to resume from.
+    await user.hover(screen.getByRole("combobox", { name: "Fruit" }));
+    await waitFor(() => expect(banana).toHaveAttribute("data-panel-dormant"));
+    expect(banana).toHaveAttribute("data-panel-active");
+
+    await user.keyboard("{ArrowDown}");
+    const mango = screen.getByRole("option", { name: "Mango" });
+    await waitFor(() => expect(mango).toHaveFocus());
+    expect(mango).toHaveAttribute("data-panel-active");
+    expect(mango).not.toHaveAttribute("data-panel-dormant");
+  });
+
+  it("keeps a searchable panel's row lit when the pointer leaves", async () => {
+    const user = userEvent.setup();
+    render(
+      <Select items={FRUITS}>
+        <SelectTrigger aria-label="Fruit" />
+        <SelectContent searchable>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectItem value="banana">Banana</SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    const banana = await screen.findByRole("option", { name: "Banana" });
+    await user.hover(banana);
+    await waitFor(() => expect(banana).toHaveAttribute("data-panel-active"));
+    await user.hover(screen.getByRole("combobox", { name: "Fruit" }));
+    expect(banana).toHaveAttribute("data-panel-active");
+    expect(banana).not.toHaveAttribute("data-panel-dormant");
+  });
+
   it.each([false, true])("lets an uncontrolled selection reject Clear (multiple=%s)", async (multiple) => {
     const user = userEvent.setup();
     const onValueChange = vi.fn((_value, details) => details.cancel());
@@ -1117,6 +1164,74 @@ describe("Base UI Select", () => {
       await advance(151);
       expect(trigger).toHaveAttribute("aria-expanded", "false");
     });
+  });
+
+  it("doesn't relight a nested panel's parent row when the pointer leaves through the panel", async () => {
+    const user = userEvent.setup();
+    render(
+      <Select items={FRUITS}>
+        <SelectTrigger aria-label="Fruit" />
+        <SelectContent>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectSub>
+            <SelectSubTrigger>More fruit</SelectSubTrigger>
+            <SelectSubContent>
+              <SelectItem value="banana">Banana</SelectItem>
+            </SelectSubContent>
+          </SelectSub>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    const parentRow = await screen.findByRole("option", { name: "More fruit" });
+    await user.hover(parentRow);
+    await waitFor(() => expect(parentRow).toHaveAttribute("aria-expanded", "true"));
+    await user.hover(await screen.findByRole("option", { name: "Banana" }));
+
+    await user.hover(screen.getByRole("combobox", { name: "Fruit" }));
+    await waitFor(() => expect(parentRow).toHaveAttribute("aria-expanded", "false"));
+    // Wherever Base UI puts focus once the nested panel closes — back on its row, or on another —
+    // a lit row would be a hover the pointer is no longer making.
+    const lit = screen
+      .getAllByRole("option", { hidden: true })
+      .filter((row) => row.hasAttribute("data-highlighted") || row.hasAttribute("data-panel-active"));
+    expect(lit.length).toBeGreaterThan(0);
+    for (const row of lit) expect(row).toHaveAttribute("data-panel-dormant");
+  });
+
+  it("swaps sibling nested panels with the short animation", async () => {
+    const user = userEvent.setup();
+    render(
+      <Select items={FRUITS}>
+        <SelectTrigger aria-label="Fruit" />
+        <SelectContent>
+          <SelectSub>
+            <SelectSubTrigger>Tropical</SelectSubTrigger>
+            <SelectSubContent>
+              <SelectItem value="mango">Mango</SelectItem>
+            </SelectSubContent>
+          </SelectSub>
+          <SelectSub>
+            <SelectSubTrigger>Orchard</SelectSubTrigger>
+            <SelectSubContent>
+              <SelectItem value="apple">Apple</SelectItem>
+            </SelectSubContent>
+          </SelectSub>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    await waitFor(() => expect(screen.getByRole("option", { name: "Tropical" })).toHaveFocus());
+    await user.keyboard("{ArrowRight}");
+    const mango = await screen.findByRole("option", { name: "Mango" });
+    // The first nested panel to open takes the full animation.
+    expect(mango.closest('[data-slot="select-sub-content"]')).not.toHaveAttribute("data-swap");
+
+    await user.keyboard("{ArrowLeft}{ArrowDown}{ArrowRight}");
+    const apple = await screen.findByRole("option", { name: "Apple" });
+    expect(apple.closest('[data-slot="select-sub-content"]')).toHaveAttribute("data-swap");
   });
 
   it("commits a nested option from the keyboard like a regular select item", async () => {

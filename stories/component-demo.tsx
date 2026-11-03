@@ -15,6 +15,7 @@ import { ClassicLoader } from "@/registry/ui/classic-loader/classic-loader";
 import { Button } from "@/registry/ui/button/button";
 import { cn } from "@/registry/lib/cn";
 import type { ComponentDemoName } from "./demo-names";
+import { NavIcon } from "@/components/site/nav-icons";
 
 export type { ComponentDemoName } from "./demo-names";
 
@@ -33,8 +34,18 @@ const DEMO_WIDTHS: Partial<Record<ComponentDemoName, string>> = {
   "table-of-contents": "max-w-2xl", "table-of-contents-lines": "max-w-2xl",
   sidebar: "max-w-full",
 };
+// Each loader's tab is its own sidebar icon.
 const LOADER_CONTROLS = {
-  loader: { kind: "select", options: ["ascii", "classic"], defaultValue: "classic", label: "Loader" },
+  loader: {
+    kind: "select",
+    options: ["ascii", "classic"],
+    defaultValue: "classic",
+    label: "Loader",
+    icons: {
+      ascii: <NavIcon href="/docs/ascii-loader" className="size-3.5" />,
+      classic: <NavIcon href="/docs/classic-loader" className="size-3.5" />,
+    },
+  },
 } as const;
 
 type DemoName = ComponentDemoName;

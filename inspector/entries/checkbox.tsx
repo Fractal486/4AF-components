@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Checkbox, CheckboxGroup } from "@/registry/ui/checkbox/checkbox";
-import { defineEntry, select } from "../schema";
+import { defineEntry, select, withIcons } from "../schema";
+import { CHECKBOX_CHECKED_ICONS, STATE_ICONS } from "../setting-icons";
 
 const CHANNELS = [
   { name: "Email", items: [{ value: "email-updates", label: "Product updates" }, { value: "email-replies", label: "Replies" }] },
@@ -43,8 +44,8 @@ export const checkboxEntry = defineEntry({
   controls: {
     mode: select(["single", "group", "nested"], "single", "Mode"),
     // Groups derive the parent's mixed state from their children, so this is single-only.
-    checked: select(["unchecked", "checked", "indeterminate"], "checked", "Checked", (values) => values.mode !== "single"),
-    state: select(["default", "disabled", "invalid"], "default", "State"),
+    checked: withIcons(select(["unchecked", "checked", "indeterminate"], "checked", "Checked", (values) => values.mode !== "single"), CHECKBOX_CHECKED_ICONS),
+    state: withIcons(select(["default", "disabled", "invalid"], "default", "State"), STATE_ICONS, { dropdown: true }),
   },
   render({ mode, checked, state }) {
     const disabled = state === "disabled";

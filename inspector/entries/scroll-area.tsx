@@ -1,5 +1,6 @@
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
-import { bool, defineEntry, select } from "../schema";
+import { bool, defineEntry, select, withIcons } from "../schema";
+import { SCROLL_AREA_ORIENTATION_ICONS } from "../setting-icons";
 
 const TAGS = Array.from({ length: 40 }, (_, index) => `v1.${40 - index}.0`);
 const ALBUMS = Array.from({ length: 12 }, (_, index) => `Album ${index + 1}`);
@@ -10,7 +11,7 @@ export const scrollAreaEntry = defineEntry({
   slug: "scroll-area",
   name: "Scroll Area",
   controls: {
-    orientation: select(["vertical", "horizontal", "both"], "vertical", "Orientation"),
+    orientation: withIcons(select(["vertical", "horizontal", "both"], "vertical", "Orientation"), SCROLL_AREA_ORIENTATION_ICONS),
     scrollbar: select(["auto", "always"], "auto", "Scrollbar"),
     fade: bool(true, "Edge fade"),
   },

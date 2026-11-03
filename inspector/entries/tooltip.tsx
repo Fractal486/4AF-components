@@ -1,6 +1,7 @@
 import { Button } from "@/registry/ui/button/button";
 import { Tooltip, TooltipGroup, TooltipProvider, TooltipTrigger } from "@/registry/ui/tooltip/tooltip";
-import { bool, defineEntry, select } from "../schema";
+import { bool, defineEntry, select, withIcons } from "../schema";
+import { ANCHORED_ALIGN_ICONS, ANCHORED_SIDE_ICONS } from "../setting-icons";
 
 const SIDES = ["top", "right", "bottom", "left"] as const;
 const ALIGNS = ["start", "center", "end"] as const;
@@ -9,8 +10,8 @@ export const tooltipEntry = defineEntry({
   slug: "tooltip",
   name: "Tooltip",
   controls: {
-    side: select(SIDES, "top"),
-    align: select(ALIGNS, "center"),
+    side: withIcons(select(SIDES, "top"), ANCHORED_SIDE_ICONS),
+    align: withIcons(select(ALIGNS, "center"), ANCHORED_ALIGN_ICONS),
     trackCursorAxis: select(["none", "x", "y", "both"], "none", "Follow cursor"),
     shared: bool(false, "Shared tooltip"),
     disabled: bool(false, "Disabled"),

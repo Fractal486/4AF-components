@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { NumberAnimation, type NumberAnimationTrend } from "@/registry/ui/number-animation/number-animation";
 import { Button } from "@/registry/ui/button/button";
-import { defineEntry, select } from "../schema";
+import { defineEntry, select, withIcons } from "../schema";
+import { NUMBER_FORMAT_ICONS } from "../setting-icons";
 
 const formats = {
   number: { maximumFractionDigits: 0 },
@@ -39,7 +40,7 @@ export const numberAnimationEntry = defineEntry({
   slug: "number-animation",
   name: "Number Animation",
   controls: {
-    format: select(["number", "decimal", "currency", "percent"], "number", "Format"),
+    format: withIcons(select(["number", "decimal", "currency", "percent"], "number", "Format"), NUMBER_FORMAT_ICONS),
     trend: select(["auto", "up", "down", "shortest"], "auto", "Direction"),
   },
   render: props => <NumberAnimationPreview {...props} />,

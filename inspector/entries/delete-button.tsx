@@ -4,7 +4,7 @@ import { defineEntry, select } from "../schema";
 
 // Delete Button accepts only the quiet variants: red text on a solid fill has nowhere to
 // escalate when it arms. Listed in the shared order.
-const VARIANTS = ["outline", "ghost", "plain"] as const;
+const VARIANTS = ["outline", "outline-ghost", "ghost", "plain"] as const;
 
 export const deleteButtonEntry = defineEntry({
   slug: "delete-button",

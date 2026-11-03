@@ -1,6 +1,7 @@
 import { Separator } from "@/registry/ui/separator/separator";
 import { CalendarDays } from "lucide-react";
-import { defineEntry, select } from "../schema";
+import { defineEntry, select, withIcons } from "../schema";
+import { SEPARATOR_ALIGN_ICONS, SEPARATOR_ORIENTATION_ICONS } from "../setting-icons";
 
 const ORIENTATIONS = ["horizontal", "vertical"] as const;
 
@@ -8,10 +9,10 @@ export const separatorEntry = defineEntry({
   slug: "separator",
   name: "Separator",
   controls: {
-    orientation: select(ORIENTATIONS, "horizontal"),
+    orientation: withIcons(select(ORIENTATIONS, "horizontal"), SEPARATOR_ORIENTATION_ICONS),
     // Icon is the text label with an icon before it.
     label: select(["none", "text", "icon"], "none", "Label"),
-    align: select(["start", "center", "end"], "center", "Align", (values) => values.label === "none"),
+    align: withIcons(select(["start", "center", "end"], "center", "Align", (values) => values.label === "none"), SEPARATOR_ALIGN_ICONS),
   },
   render({ orientation, label, align }) {
     const content = label === "none" ? undefined : <>{label === "icon" && <CalendarDays aria-hidden="true" />}Or</>;

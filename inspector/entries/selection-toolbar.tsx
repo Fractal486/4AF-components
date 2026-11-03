@@ -13,7 +13,8 @@ import {
   SelectionToolbarToggleGroup,
   useSelectionToolbar,
 } from "@/registry/ui/selection-toolbar/selection-toolbar";
-import { bool, defineEntry, select } from "../schema";
+import { bool, defineEntry, select, withIcons } from "../schema";
+import { ANCHORED_SIDE_ICONS } from "../setting-icons";
 
 const SIDES = ["top", "bottom"] as const;
 
@@ -185,7 +186,7 @@ export const selectionToolbarEntry = defineEntry({
   slug: "selection-toolbar",
   name: "Selection Toolbar",
   controls: {
-    side: select(SIDES, "top"),
+    side: withIcons(select(SIDES, "top"), ANCHORED_SIDE_ICONS),
     labels: bool(true, "Labels"),
     disabled: bool(false, "Disabled"),
   },

@@ -31,6 +31,10 @@ const FIELD_CLASSES = [
   "[&>:is([data-slot=input],[data-slot=input-wrapper],[data-slot=search-select-field],[data-slot=select-trigger],[data-slot=aligned-select-trigger],[data-slot=date-picker-trigger]):is([aria-invalid=true],:has([aria-invalid=true]))]:z-[5]",
   // The wrapper carries the overlap; a cloned margin on the input inside it is undone.
   "[&>:is([data-slot=input-wrapper],[data-slot=search-select-field])>:is([data-slot=input],[data-slot=search-select-input])]:m-0",
+  // The outline-styled triggers draw a `shadow-border` edge alone; in a group the group's frame
+  // and hairlines replace it, so it would double them. Only the edge shadow: rings still show.
+  "[&>:is([data-slot=select-trigger],[data-slot=aligned-select-trigger],[data-slot=date-picker-trigger])]:shadow-none",
+  "[&>[data-slot=search-select-field]>[data-slot=search-select-input]:not(:focus)]:shadow-none",
   // An offset ring paints page background over the neighbours, as on a button.
   "[&>:is([data-slot=select-trigger],[data-slot=aligned-select-trigger],[data-slot=date-picker-trigger])]:ring-offset-0",
   "[:is(&>:is([data-slot=input],[data-slot=select-trigger],[data-slot=aligned-select-trigger],[data-slot=date-picker-trigger]),&>:is([data-slot=input-wrapper],[data-slot=search-select-field])>:is([data-slot=input],[data-slot=search-select-input])):not(:focus,[aria-invalid=true])]:border-transparent",

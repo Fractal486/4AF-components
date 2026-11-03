@@ -31,6 +31,15 @@ export const datePickerTriggerVariants = cva(
           "hover:border-border-strong",
           "aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",
         ],
+        // Button's outline-ghost: the `shadow-border` edge with no fill of its own, so the
+        // background shows through; hover and open lay a translucent wash. The border stays,
+        // transparent, so the invalid state can colour an edge without changing the size.
+        "outline-ghost": [
+          PANEL_WIDTH,
+          "border border-transparent bg-transparent shadow-border",
+          "hover:bg-foreground/5 data-[popup-open]:bg-foreground/5",
+          "aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",
+        ],
         ghost: [
           PANEL_WIDTH,
           "border border-transparent bg-transparent text-muted-foreground",

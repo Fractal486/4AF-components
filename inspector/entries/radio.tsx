@@ -1,5 +1,6 @@
 import { Radio, RadioGroup } from "@/registry/ui/radio/radio";
-import { defineEntry, select } from "../schema";
+import { defineEntry, select, withIcons } from "../schema";
+import { STATE_ICONS } from "../setting-icons";
 
 const SIZES = ["sm", "md", "lg"] as const;
 
@@ -8,7 +9,7 @@ export const radioEntry = defineEntry({
   name: "Radio",
   controls: {
     size: select(SIZES, "md", "Size"),
-    state: select(["default", "disabled", "invalid"], "default", "State"),
+    state: withIcons(select(["default", "disabled", "invalid"], "default", "State"), STATE_ICONS, { dropdown: true }),
   },
   render({ size, state }) {
     const disabled = state === "disabled";

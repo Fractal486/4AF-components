@@ -4,7 +4,8 @@ import { ActionButton } from "@/registry/ui/action-button/action-button";
 import { Button } from "@/registry/ui/button/button";
 import { Alert } from "@/registry/ui/alert/alert";
 import { Input, InputCount } from "@/registry/ui/input/input";
-import { bool, defineEntry, select } from "../schema";
+import { bool, defineEntry, select, withIcons } from "../schema";
+import { INPUT_TYPE_ICONS, STATE_ICONS } from "../setting-icons";
 
 const VARIANTS = ["default", "plain", "underline"] as const;
 const TONES = ["neutral", "accent"] as const;
@@ -16,13 +17,13 @@ export const inputEntry = defineEntry({
   controls: {
     variant: select(VARIANTS, "default"),
     tone: select(TONES, "neutral", "Focus tone"),
-    type: select(TYPES, "text"),
+    type: withIcons(select(TYPES, "text"), INPUT_TYPE_ICONS),
     multiple: bool(false, "Multiple files", (values) => values.type !== "file"),
     startIcon: bool(false, "Leading icon"),
     endAction: select(["none", "icon", "label"], "none", "Trailing action", (values) => values.type === "number" || values.type === "file"),
     description: bool(false, "Description"),
     count: bool(false, "Character counter", (values) => !["text", "email", "password", "search", "url"].includes(values.type as string)),
-    state: select(["default", "disabled", "invalid"], "default", "State"),
+    state: withIcons(select(["default", "disabled", "invalid"], "default", "State"), STATE_ICONS, { dropdown: true }),
   },
   render({ variant, tone, type, multiple, startIcon, endAction, description, count, state }) {
     const disabled = state === "disabled";

@@ -22,6 +22,7 @@ type ButtonSize = NonNullable<ButtonProps["size"]>;
 /** What the join between two adjacent buttons is made of, per variant. */
 const SEAM: Record<ButtonVariant, NonNullable<ButtonGroupItemVariants["seam"]>> = {
   outline: "divider",
+  "outline-ghost": "divider",
   primary: "tint",
   destructive: "tint",
   ghost: "none",
@@ -136,7 +137,7 @@ export function ButtonGroup({
           orientation,
           // Asked of the children rather than of the group's own prop, so
           // `<ButtonGroup><Button variant="outline" /></ButtonGroup>` is framed too.
-          framed: variants.includes("outline"),
+          framed: variants.includes("outline") || variants.includes("outline-ghost"),
           radius:
             firstShape === "pill" ? "full" : LARGE_RADIUS.includes(sizes[0] ?? "md") ? "lg" : "md",
         }),

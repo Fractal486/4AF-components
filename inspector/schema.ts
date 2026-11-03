@@ -17,6 +17,10 @@ export type ControlDef =
       defaultValue: string;
       label?: string;
       disabledWhen?: DisabledWhen;
+      /** Draw each option as an icon-only tab; the option's name stays its accessible name. */
+      icons?: Readonly<Partial<Record<string, ReactNode>>>;
+      /** Keep a short icon setting as a dropdown, its icons beside the labels in its rows. */
+      iconsInDropdown?: boolean;
     }
   | {
       kind: "multiselect";
@@ -25,6 +29,8 @@ export type ControlDef =
       showCount?: boolean;
       label?: string;
       disabledWhen?: DisabledWhen;
+      /** An icon beside each option in the dropdown's rows. */
+      icons?: Readonly<Partial<Record<string, ReactNode>>>;
     }
   | { kind: "boolean"; defaultValue: boolean; label?: string; disabledWhen?: DisabledWhen }
   | { kind: "text"; defaultValue: string; label?: string; placeholder?: string; disabledWhen?: DisabledWhen }
@@ -90,6 +96,18 @@ export function select<const O extends readonly string[]>(
 }
 
 /** Any number of the options, including none: related on/off settings in one row. */
+/**
+ * Give a select's options icons: icon tabs for up to six options, otherwise icons in the
+ * dropdown's rows (always, for a multiselect, or with `dropdown`). Every option needs an icon.
+ */
+export function withIcons<D extends { kind: "select" | "multiselect"; options: readonly string[] }>(
+  def: D,
+  icons: Readonly<Record<D["options"][number], ReactNode>>,
+  { dropdown = false }: { dropdown?: boolean } = {},
+): D & { icons: Readonly<Record<string, ReactNode>>; iconsInDropdown: boolean } {
+  return { ...def, icons, iconsInDropdown: dropdown };
+}
+
 export function multi<const O extends readonly string[]>(
   options: O,
   defaultValue: readonly O[number][],

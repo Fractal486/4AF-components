@@ -1,3 +1,6 @@
+import type { ReactNode } from "react";
+import { NavIcon } from "@/components/site/nav-icons";
+import { DATE_RANGE_ICON } from "../setting-icons";
 import { Archive, Copy, Search, Share2, SquarePen, Trash2 } from "lucide-react";
 import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
@@ -13,7 +16,8 @@ import {
 } from "@/registry/ui/select/select-aligned";
 import { SearchSelect, SearchSelectContent, SearchSelectInput, SearchSelectItem } from "@/registry/ui/select/select-search";
 import { CONTROL_VARIANTS, TEXT_SIZES } from "../button-options";
-import { bool, defineEntry, multi, num, select } from "../schema";
+import { bool, defineEntry, multi, num, select, withIcons } from "../schema";
+import { BUTTON_GROUP_ORIENTATION_ICONS } from "../setting-icons";
 
 const ACTIONS = [
   { label: "Copy", icon: Copy },
@@ -28,6 +32,17 @@ const SEARCH_ITEMS = [
   { value: "marketing", label: "Marketing" },
 ];
 const CONTENT = ["buttons", "input", "select", "alignedSelect", "searchSelect", "datePicker", "dateRangePicker"] as const;
+// Each kind of content wears its component's sidebar icon in the Content dropdown.
+const CONTENT_ICONS = {
+  buttons: <NavIcon href="/docs/button" />,
+  input: <NavIcon href="/docs/input" />,
+  select: <NavIcon href="/docs/select" />,
+  alignedSelect: <NavIcon href="/docs/select-aligned" />,
+  searchSelect: <NavIcon href="/docs/select-search" />,
+  datePicker: <NavIcon href="/docs/date-picker" />,
+  // No page of its own: Date Picker's calendar, marked with a range.
+  dateRangePicker: DATE_RANGE_ICON,
+} satisfies Record<(typeof CONTENT)[number], ReactNode>;
 const ICON_SIZE = { xs: "icon-xs", sm: "icon-sm", md: "icon", lg: "icon-lg" } as const;
 
 function picks(values: Record<string, unknown>): readonly string[] {
@@ -38,10 +53,10 @@ export const buttonGroupEntry = defineEntry({
   slug: "button-group",
   name: "Button Group",
   controls: {
-    content: { ...multi(CONTENT, ["buttons"], "Content"), showCount: true },
+    content: withIcons({ ...multi(CONTENT, ["buttons"], "Content"), showCount: true }, CONTENT_ICONS),
     variant: select(CONTROL_VARIANTS, "outline"),
     size: select(TEXT_SIZES, "md", undefined, (values) => picks(values).includes("input")),
-    orientation: select(["horizontal", "vertical"], "horizontal"),
+    orientation: withIcons(select(["horizontal", "vertical"], "horizontal"), BUTTON_GROUP_ORIENTATION_ICONS),
     shape: select(["rectangular", "pill"], "rectangular", "Shape", (values) => picks(values).some((item) => item !== "buttons")),
     count: num(3, { min: 1, max: 5, label: "Buttons", disabledWhen: (values) => !picks(values).includes("buttons") }),
     icon: select(["none", "leading", "only"], "leading", undefined, (values) => !picks(values).includes("buttons")),

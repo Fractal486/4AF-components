@@ -15,7 +15,7 @@ Presses within 350ms of arming are ignored so a double-click cannot confirm. Esc
 Parent renders and a new inline `onArmedChange` callback do not restart that timeout. When
 it expires, the latest callback receives `false`.
 
-`variant` accepts `outline` (default), `ghost`, or `plain`, all with destructive text.
+`variant` accepts `outline` (default), `outline-ghost`, `ghost`, or `plain`, all with destructive text.
 `armed` / `onArmedChange` control the armed state, or use `defaultArmed` for an uncontrolled
 initial state. The button requests disarming before calling `onDelete`; it does not await that callback
 or show pending, success, or error states.

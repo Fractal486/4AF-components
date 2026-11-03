@@ -11,7 +11,7 @@ import {
   type ComponentProps,
   type ReactNode,
 } from "react";
-import { SELECT_CLEAR_ACTION, SelectContext, SelectSubItemContext } from "./select.context";
+import { SELECT_CLEAR_ACTION, SelectContext, SelectPanelDormantContext, SelectSubItemContext } from "./select.context";
 import { SIZE, SelectItemIcon } from "./select.shared";
 import { isEquivalentNode, setForwardedRef } from "./select.utils";
 
@@ -157,6 +157,9 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
     return () => unregisterOptionText(value);
   }, [disabled, optionText, parentValue, registerOptionText, unregisterOptionText, value]);
   const panelActive = open && Object.is(activeItem, value);
+  // Kept for the arrow keys once the pointer has left, but no longer painted. Nested panels
+  // paint by CSS hover and have nothing to keep.
+  const panelDormant = useContext(SelectPanelDormantContext) && panelActive && !nestedPanel;
 
   // The same shape as the label registration below, and for the same reason: an `<Icon />`
   // written inline is a new object on every render.
@@ -267,6 +270,7 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
         hidden={hiddenBySearch}
         render={renderProp}
         data-panel-active={panelActive || undefined}
+        data-panel-dormant={panelDormant || undefined}
         onClick={handleClick}
         onFocusCapture={(event) => {
           onFocusCapture?.(event);
@@ -284,8 +288,8 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
             ? "hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground"
             : !panelSearch &&
               !clearActionActive &&
-              "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
-          "data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
+              "data-[highlighted]:not-data-[panel-dormant]:bg-muted data-[highlighted]:not-data-[panel-dormant]:text-foreground",
+          "data-[panel-active]:not-data-[panel-dormant]:bg-muted data-[panel-active]:not-data-[panel-dormant]:text-foreground",
           "data-[selected]:text-foreground",
           "data-[disabled]:pointer-events-none data-[disabled]:opacity-50"), className)}
         {...props}
@@ -322,6 +326,7 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
       hidden={hiddenBySearch}
       render={renderProp}
       data-panel-active={panelActive || undefined}
+      data-panel-dormant={panelDormant || undefined}
       onClick={handleClick}
       onFocusCapture={(event) => {
         onFocusCapture?.(event);
@@ -342,8 +347,8 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
           ? "hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground"
           : !panelSearch &&
             !clearActionActive &&
-            "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
-        "data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
+            "data-[highlighted]:not-data-[panel-dormant]:bg-muted data-[highlighted]:not-data-[panel-dormant]:text-foreground",
+        "data-[panel-active]:not-data-[panel-dormant]:bg-muted data-[panel-active]:not-data-[panel-dormant]:text-foreground",
         "data-[selected]:text-foreground",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50"), className)}
       {...props}

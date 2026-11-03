@@ -1618,6 +1618,7 @@
       "description": "A searchable single or multi-select with filtered sections, state-based classes, Field error styling, and custom popup containers and positioning. The input fits its placeholder and the panel grows to its longest row.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/select-search (Markdown: https://4af.selfsimilar.dev/docs/select-search.md)",
       "dependencies": [
+        "class-variance-authority",
         "@base-ui/react",
         "lucide-react",
         "motion"
@@ -1634,6 +1635,11 @@
           "path": "registry/ui/select/select-search.tsx",
           "type": "registry:ui",
           "target": "@ui/select-search.tsx"
+        },
+        {
+          "path": "registry/ui/select/select-search.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/select-search.variants.ts"
         }
       ]
     },
@@ -2100,7 +2106,6 @@
         "https://4af.selfsimilar.dev/r/slot.json",
         "https://4af.selfsimilar.dev/r/button.json",
         "https://4af.selfsimilar.dev/r/input.json",
-        "https://4af.selfsimilar.dev/r/sheet.json",
         "https://4af.selfsimilar.dev/r/skeleton.json",
         "https://4af.selfsimilar.dev/r/tooltip.json",
         "https://4af.selfsimilar.dev/r/scroll-area.json",

@@ -241,7 +241,7 @@ export function Badge({
           {wrap ? (
             <span data-slot="badge-text" className="block min-w-0 break-words">{label}</span>
           ) : !hasCount ? (
-            <Morph activeKey={labelKey} sizing={fitLabel ? "current" : "widest"} items={{ [labelKey]: simpleLabel ? textLabel : label }} className="max-w-full [&>span]:block [&>span]:max-w-full [&>span]:truncate" />
+            <Morph activeKey={labelKey} sizing={fitLabel ? "current" : "widest"} items={{ [labelKey]: simpleLabel ? textLabel : label }} className="max-w-full [&>span]:block [&>span]:max-w-full [&>span]:truncate [&[data-resizing]>span]:max-w-none [&[data-resizing]>span]:text-clip" />
           ) : label}
         </span>
       )}

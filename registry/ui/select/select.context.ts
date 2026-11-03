@@ -1,4 +1,10 @@
 import { createContext, useContext, type MouseEvent, type ReactNode } from "react";
+
+/**
+ * Whether the pointer has left a panel without a search field. Its active row is kept for the
+ * arrow keys to resume from, but stops painting, as a hover does when the pointer moves away.
+ */
+export const SelectPanelDormantContext = createContext(false);
 import type { SelectSize } from "./select.shared";
 
 interface SelectContextValue {
@@ -119,7 +125,19 @@ interface SelectSubContextValue {
   /** The trigger was left at this point: hold the panel open while the pointer heads for it. */
   leaveTowardPanel: (x: number, y: number, fallbackDelay: number) => void;
   setPanelNode: (node: HTMLElement | null) => void;
+  /** Swapped in from (or out for) a sibling nested panel: animate briefly, not fully. */
+  swapping: boolean;
 }
+
+/** A nested panel as its siblings see it, for swapping between them quickly. */
+export interface SelectSubSibling {
+  open: boolean;
+  closedAt: number;
+  setSwapping: (swapping: boolean) => void;
+}
+
+/** The nested panels opened from one Select panel. */
+export const SelectSubSiblingsContext = createContext<Set<SelectSubSibling> | null>(null);
 
 export const SelectSubContext = createContext<SelectSubContextValue | null>(null);
 

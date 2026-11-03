@@ -86,11 +86,11 @@ export default async function Page({ params }: DocsPageProps) {
               <CopyButton
                 value={`${SITE_URL}${page.url}.md`}
                 icon={<LinkIcon />}
-                variant="outline"
+                variant="outline-ghost"
                 size="sm"
                 iconPosition="start"
                 swapLabel={false}
-                className="cursor-default bg-background"
+                className="cursor-default"
               >
                 Copy link
               </CopyButton>

@@ -3,7 +3,8 @@ import { Field } from "@base-ui/react/field";
 import { useState, type ComponentProps } from "react";
 import { Button } from "@/registry/ui/button/button";
 import { Textarea } from "@/registry/ui/textarea/textarea";
-import { bool, defineEntry, range, select } from "../schema";
+import { bool, defineEntry, range, select, withIcons } from "../schema";
+import { STATE_ICONS } from "../setting-icons";
 
 const TONES = ["neutral", "accent"] as const;
 
@@ -19,7 +20,7 @@ export const textareaEntry = defineEntry({
     rows: range([3, 10], { min: 1, max: 24, label: "Rows" }),
     submitOnShortcut: bool(false, "Submit shortcut"),
     description: bool(false, "Description"),
-    state: select(["default", "disabled", "invalid"], "default", "State"),
+    state: withIcons(select(["default", "disabled", "invalid"], "default", "State"), STATE_ICONS, { dropdown: true }),
   },
   render({ variant, tone, height, rows, submitOnShortcut, description, state }) {
     const [minRows, maxRows] = rows;

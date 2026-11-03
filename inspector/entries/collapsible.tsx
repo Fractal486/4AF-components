@@ -5,7 +5,8 @@ import {
   CollapsibleTrigger,
   CollapsibleTriggerIcon,
 } from "@/registry/ui/collapsible/collapsible";
-import { bool, defineEntry, select } from "../schema";
+import { bool, defineEntry, select, withIcons } from "../schema";
+import { COLLAPSIBLE_ICON_ICONS, COLLAPSIBLE_POSITION_ICONS } from "../setting-icons";
 
 const VARIANTS = ["plain", "card"] as const;
 
@@ -25,8 +26,8 @@ export const collapsibleEntry = defineEntry({
   name: "Collapsible",
   controls: {
     variant: select(VARIANTS, "plain"),
-    icon: select(["chevron", "folder", "none"] as const, "chevron", "Icon"),
-    position: select(["end", "start"] as const, "end", "Icon position", (values) => values.icon === "none"),
+    icon: withIcons(select(["chevron", "folder", "none"] as const, "chevron", "Icon"), COLLAPSIBLE_ICON_ICONS),
+    position: withIcons(select(["end", "start"] as const, "end", "Icon position", (values) => values.icon === "none"), COLLAPSIBLE_POSITION_ICONS),
     stacked: bool(true, "Two sections"),
   },
   render({ variant, icon, position, stacked }) {

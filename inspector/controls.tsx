@@ -32,6 +32,8 @@ const PILL_CHAR_PX = 6; // one `text-xs` character, averaged over mixed-case Lat
 const SETTINGS_FIELD_PX = 192; // `max-w-48`, the text control this lines up with
 // Wrap only when this label and control cannot fit together, regardless of panel width.
 const CONTROL_ROW = "flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-2";
+/** The most icon-only tabs a setting shows before its icons move into dropdown rows. */
+const MAX_ICON_TABS = 6;
 /** A setting that doesn't apply to the current configuration dims as a whole row. */
 const DISABLED_ROW = "cursor-not-allowed opacity-50";
 
@@ -130,7 +132,11 @@ function Control({
     const labelId = `${id}-label`;
     const selectedLabel = humanizeLabel(value as string);
 
-    if (fitsPillTabs(def.options.map(humanizeLabel))) {
+    const icons = def.icons;
+    // Icons stay tabs up to six options; past that a row of glyphs is a guessing game, so
+    // they move into the dropdown's rows beside their labels instead.
+    const iconTabs = icons !== undefined && !def.iconsInDropdown && def.options.length <= MAX_ICON_TABS;
+    if (iconTabs || (!icons && fitsPillTabs(def.options.map(humanizeLabel)))) {
       // The tab's value is the raw option, so picking one hands back exactly what the schema
       // declared — no round-trip through the display label and back.
       return (
@@ -148,8 +154,14 @@ function Control({
           >
             <TabsList aria-labelledby={labelId}>
               {def.options.map((option) => (
-                <TabsTab key={option} value={option} disabled={disabled}>
-                  {humanizeLabel(option)}
+                <TabsTab
+                  key={option}
+                  value={option}
+                  disabled={disabled}
+                  aria-label={iconTabs ? humanizeLabel(option) : undefined}
+                  title={iconTabs ? humanizeLabel(option) : undefined}
+                >
+                  {iconTabs ? icons[option] : humanizeLabel(option)}
                 </TabsTab>
               ))}
             </TabsList>
@@ -166,6 +178,8 @@ function Control({
         <Select<string>
           value={value as string}
           disabled={disabled}
+          // The rows only mount while open, so the closed trigger reads its icon from here.
+          iconForValue={icons ? (option) => icons[option] : undefined}
           onValueChange={(next) => {
             if (next !== null) onChange(next);
           }}
@@ -179,7 +193,7 @@ function Control({
           </SelectTrigger>
           <SelectContent>
             {def.options.map((option) => (
-              <SelectItem key={option} value={option}>
+              <SelectItem key={option} value={option} icon={icons?.[option]}>
                 {humanizeLabel(option)}
               </SelectItem>
             ))}
@@ -230,7 +244,7 @@ function Control({
           </SelectTrigger>
           <SelectContent>
             {def.options.map((option) => (
-              <SelectItem key={option} value={option}>
+              <SelectItem key={option} value={option} icon={def.icons?.[option]}>
                 {humanizeLabel(option)}
               </SelectItem>
             ))}

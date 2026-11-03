@@ -4,7 +4,8 @@ import { useRef, useState } from "react";
 import { Bell } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription, AlertClose } from "@/registry/ui/alert/alert";
 import { Button } from "@/registry/ui/button/button";
-import { bool, defineEntry, select } from "../schema";
+import { bool, defineEntry, select, withIcons } from "../schema";
+import { ALERT_VARIANT_ICONS } from "../setting-icons";
 
 const VARIANTS = ["error", "warning", "success", "info", "loading"] as const;
 const MESSAGES: Record<(typeof VARIANTS)[number], string> = {
@@ -53,7 +54,7 @@ export const alertEntry = defineEntry({
   slug: "alert",
   name: "Alert",
   controls: {
-    variant: select(VARIANTS, "error"),
+    variant: withIcons(select(VARIANTS, "error"), ALERT_VARIANT_ICONS),
     icon: select(["default", "custom", "none"] as const, "default", "Icon"),
     title: bool(false, "Title"),
     dismissible: bool(false, "Dismissible"),

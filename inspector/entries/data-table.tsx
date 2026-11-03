@@ -11,7 +11,8 @@ import {
   useDataTable, useDataTableContext, createDataTableColumns, type DataTableColumnMeta,
 } from "@/registry/ui/data-table/data-table";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/registry/ui/dropdown-menu/dropdown-menu";
-import { bool, defineEntry, multi, select } from "../schema";
+import { bool, defineEntry, multi, select, withIcons } from "../schema";
+import { TABLE_STATE_ICONS } from "../setting-icons";
 
 const SIZES = ["sm", "md"] as const;
 const RELEASES = [
@@ -51,7 +52,7 @@ export const dataTableEntry = defineEntry({
     selection: select(["none", "checkbox", "actionRow"], "actionRow", "Selection"),
     actionColumn: bool(true, "Row actions column"),
     pagination: bool(true, "Pagination"),
-    state: select(["default", "loading", "empty"], "default", "State"),
+    state: withIcons(select(["default", "loading", "empty"], "default", "State"), TABLE_STATE_ICONS, { dropdown: true }),
     footer: bool(false, "Footer"),
     caption: bool(true, "Caption"),
   },

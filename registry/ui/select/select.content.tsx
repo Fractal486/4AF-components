@@ -10,16 +10,17 @@ import {
   useContext,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type ComponentProps,
   type MouseEvent,
   type ReactNode,
 } from "react";
-import { SELECT_CLEAR_ACTION, SelectContext } from "./select.context";
+import { SELECT_CLEAR_ACTION, SelectContext, SelectPanelDormantContext, SelectSubSiblingsContext, type SelectSubSibling } from "./select.context";
 import { SelectSeparator } from "./select.item";
 import { FADE_EXIT, FADE_HIDDEN, FADE_SHOW, SIZE } from "./select.shared";
-import { focusPanelOption } from "./select.utils";
+import { focusPanelOption, resumeFromActiveOption } from "./select.utils";
 
 /**
  * The active-item key for one caller-supplied footer button.
@@ -241,6 +242,18 @@ export function SelectContent({
     return () => observer.disconnect();
   }, [positionerNode, open, searchable, searchQuery]);
 
+  // Without a search field the active row behaves like a hover: it stops painting when the
+  // pointer leaves the panel, and the arrow keys resume from it rather than from the top.
+  // A searchable panel keeps it lit — Enter in the field acts on it. Cleared on each open.
+  const [pointerLeft, setPointerLeft] = useState(false);
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) setPointerLeft(false);
+  }
+  const dormant = pointerLeft && !searchable;
+  const subPanels = useMemo(() => new Set<SelectSubSibling>(), []);
+
   const [openingItem, setOpeningItem] = useState<unknown>(undefined);
   useLayoutEffect(() => {
     if (!open) return;
@@ -398,6 +411,22 @@ export function SelectContent({
           // active, so Base UI falls back to focusing the popup itself — which yanks the
           // caret out of the field mid-word. Bounce it straight back. Guarded on the popup
           // being the actual target, so focus landing on a child is left alone.
+          onPointerLeave={(event) => {
+            if (!searchable && event.pointerType !== "touch") setPointerLeft(true);
+          }}
+          onPointerMove={() => {
+            if (pointerLeft) setPointerLeft(false);
+          }}
+          onKeyDownCapture={(event) => {
+            if (searchable) return;
+            if (pointerLeft) setPointerLeft(false);
+            // Only when the panel itself holds focus, where Base UI parks it after the pointer
+            // leaves. Keys from a nested panel bubble through here too, and are not ours.
+            if (event.target === event.currentTarget && resumeFromActiveOption(listRef.current, event.key)) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+          }}
           onFocus={(event) => {
             if (searchable && event.target === event.currentTarget) {
               searchInputRef.current?.focus();
@@ -435,7 +464,11 @@ export function SelectContent({
             viewportClassName="p-1"
             viewportProps={{ tabIndex: -1 }}
           >
-            <BaseSelect.List ref={listRef}>{children}</BaseSelect.List>
+            <SelectPanelDormantContext.Provider value={dormant}>
+              <SelectSubSiblingsContext.Provider value={subPanels}>
+                <BaseSelect.List ref={listRef}>{children}</BaseSelect.List>
+              </SelectSubSiblingsContext.Provider>
+            </SelectPanelDormantContext.Provider>
           </ScrollArea>
           {noResults && (
             <div
@@ -468,6 +501,7 @@ export function SelectContent({
                       variant="ghost"
                       size="xs"
                       data-panel-active={Object.is(activeItem, key) || undefined}
+                      data-panel-dormant={(dormant && Object.is(activeItem, key)) || undefined}
                       disabled={action.disabled}
                       onClick={(event) => {
                         action.onSelect(event);
@@ -483,7 +517,7 @@ export function SelectContent({
                         if (!searchable) event.currentTarget.focus({ preventScroll: true });
                       }}
                       // Flexible while the Button's xs size owns its compact geometry.
-                      className="min-w-0 flex-1 rounded-xs px-2.5 data-[panel-active]:bg-muted data-[panel-active]:text-foreground"
+                      className="min-w-0 flex-1 rounded-xs px-2.5 data-[panel-active]:not-data-[panel-dormant]:bg-muted data-[panel-active]:not-data-[panel-dormant]:text-foreground"
                     >
                       {action.icon}
                       {action.label}

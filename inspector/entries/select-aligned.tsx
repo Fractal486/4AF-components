@@ -10,7 +10,8 @@ import {
   AlignedSelectItem,
   AlignedSelectTrigger,
 } from "@/registry/ui/select/select-aligned";
-import { bool, defineEntry, select } from "../schema";
+import { bool, defineEntry, select, withIcons } from "../schema";
+import { STATE_ICONS } from "../setting-icons";
 
 const SIZES = ["xs", "sm", "md"] as const;
 
@@ -54,14 +55,14 @@ export const selectAlignedEntry = defineEntry({
   slug: "select-aligned",
   name: "Select Aligned",
   controls: {
-    variant: select(["default", "ghost", "plain"] as const, "default", "Variant"),
+    variant: select(["default", "outline-ghost", "ghost", "plain"] as const, "default", "Variant"),
     size: select(SIZES, "sm"),
     selected: bool(true, "Selected"),
     showLabel: bool(true, "Show label"),
     sections: bool(false, "Sections"),
     scrollable: bool(false, "Scrollable"),
     searchable: bool(false, "Search field"),
-    state: select(["default", "disabled", "invalid"] as const, "default", "State"),
+    state: withIcons(select(["default", "disabled", "invalid"] as const, "default", "State"), STATE_ICONS, { dropdown: true }),
   },
   render({ size, selected, variant, showLabel, sections, scrollable, searchable, state }) {
     const disabled = state === "disabled";
@@ -96,7 +97,7 @@ function AlignedSelectDemo({
 }: {
   size: (typeof SIZES)[number];
   selected: boolean;
-  variant: "default" | "ghost" | "plain";
+  variant: "default" | "outline-ghost" | "ghost" | "plain";
   showLabel: boolean;
   sections: boolean;
   scrollable: boolean;

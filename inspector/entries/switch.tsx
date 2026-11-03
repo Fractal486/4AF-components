@@ -1,7 +1,8 @@
 "use client";
 
 import { Switch } from "@/registry/ui/switch/switch";
-import { bool, defineEntry, select } from "../schema";
+import { bool, defineEntry, select, withIcons } from "../schema";
+import { STATE_ICONS } from "../setting-icons";
 
 const TONES = ["adaptive", "fixed"] as const;
 
@@ -12,7 +13,7 @@ export const switchEntry = defineEntry({
     tone: select(TONES, "adaptive"),
     icons: bool(false, "On/off marks"),
     saving: select(["off", "success", "failure"], "off", "Saving"),
-    state: select(["default", "disabled", "invalid"], "default", "State"),
+    state: withIcons(select(["default", "disabled", "invalid"], "default", "State"), STATE_ICONS, { dropdown: true }),
   },
   render({ tone, icons, saving, state }) {
     const disabled = state === "disabled";

@@ -11,7 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/registry/ui/table/table";
-import { bool, defineEntry, multi, select } from "../schema";
+import { bool, defineEntry, multi, select, withIcons } from "../schema";
+import { TABLE_STATE_ICONS, TEXT_ALIGN_ICONS } from "../setting-icons";
 
 const SIZES = ["sm", "md"] as const;
 
@@ -39,10 +40,10 @@ export const tableEntry = defineEntry({
     size: select(SIZES, "sm"),
     wrap: bool(false, "Wrap text"),
     pinned: bool(false, "Pinned columns"),
-    alignment: select(["start", "center", "end"], "end", "Number alignment"),
+    alignment: withIcons(select(["start", "center", "end"], "end", "Number alignment"), TEXT_ALIGN_ICONS),
     lines: multi(["horizontal", "vertical", "outline"], ["horizontal"], "Lines"),
     scroll: bool(true, "Bounded height"),
-    state: select(["default", "loading", "empty"], "default", "State"),
+    state: withIcons(select(["default", "loading", "empty"], "default", "State"), TABLE_STATE_ICONS, { dropdown: true }),
     footer: bool(false, "Footer"),
     caption: bool(true, "Caption"),
   },

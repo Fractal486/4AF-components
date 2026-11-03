@@ -7,7 +7,7 @@ export const datePickerEntry = defineEntry({
   name: "Date Picker",
   controls: {
     mode: select(["single", "multiple", "range"], "single"),
-    variant: select(["default", "ghost", "plain"], "default"),
+    variant: select(["default", "outline-ghost", "ghost", "plain"], "default"),
     tone: select(["neutral", "accent"], "neutral", "Open border", (values) => values.variant !== "default"),
     size: select(["xs", "sm", "md"], "md"),
     dateFormat: select(["medium", "numeric"], "medium", "Format"),

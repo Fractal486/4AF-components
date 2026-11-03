@@ -8,9 +8,10 @@
  * menu is a Dropdown Menu, so rows, shortcuts, submenus, async actions, and nested select
  * panels are the same parts with the same styling.
  *
- * Moving between open menus switches the panels instantly (Base UI marks them
- * `data-instant="group"`), and one highlight slides behind the triggers to show where the
- * open menu moved. Opening from a closed bar and closing keep the menu's normal motion.
+ * Moving between open menus swaps the panels with a short, slight animation (Base UI marks
+ * them `data-instant="group"`) — the same swap as between sibling submenus — and one highlight
+ * slides behind the triggers to show where the open menu moved. Opening from a closed bar and
+ * closing keep the menu's full motion.
  */
 
 import { Menu as BaseMenu } from "@base-ui/react/menu";
@@ -26,7 +27,7 @@ import {
   type ComponentProps,
   type ReactNode,
 } from "react";
-import { mergeStateClassName } from "@/registry/lib/cn";
+import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { useMergedRefs } from "@/registry/lib/refs";
 import {
   DropdownMenu,
@@ -149,7 +150,10 @@ export function MenubarContent({
       // The bar's border and padding plus a 4px gap.
       sideOffset={sideOffset ?? 8}
       alignOffset={alignOffset ?? (align === "start" ? labelOffset : 0)}
-      className={mergeStateClassName("data-[instant=group]:transition-none", className)}
+      className={mergeStateClassName(cn(
+        "data-[instant=group]:duration-(--duration-fast) data-[instant=group]:data-[ending-style]:duration-(--duration-fast)",
+        "data-[instant=group]:data-[starting-style]:scale-[0.98] data-[instant=group]:data-[starting-style]:blur-[1px]",
+      ), className)}
       {...props}
     />
   );

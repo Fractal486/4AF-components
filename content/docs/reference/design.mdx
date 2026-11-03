@@ -97,8 +97,10 @@ near-black. Real borders are kept for dividers and table cells.
   feedback. Joined buttons keep their outer box still while pressed, so seams don't open.
 - **Fields** sit on the background layer and strengthen their ring on focus. Invalid state is
   exposed to assistive technology, not only shown in red.
-- **Anchored panels** use the surface layer and enter with a scale, blur, and fade from the
-  trigger.
+- **Anchored panels** use the surface layer and share one entrance from the trigger: Select,
+  Select Aligned, Dropdown Menu, Context Menu, Menubar, Popover, and Hover Card scale from 90%,
+  blur from 4px, and fade in over `--duration-slow` on `--ease-panel`, then leave at 97% and 2px
+  over `--duration-base`.
 - **Overlays** use the raised layer and stronger elevation, with behaviour and focus management
   from Base UI.
 - **Status** colours are shared by alerts, badges, and action outcomes, so a state looks the

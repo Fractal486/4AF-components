@@ -31,7 +31,20 @@ state, and popups include open/side/alignment state. The placeholder sizer uses 
 resolved classes too, so state-based font and padding changes preserve its minimum width.
 
 The input styles both `aria-invalid="true"` and Field's `data-invalid`, including while focused
-or hovered. The error border and ring take precedence over either focus tone. Existing Field
+or hovered. The error border and ring take precedence over either focus tone.
+
+`SearchSelectInput` takes the same four looks as Select's trigger, set with `variant`; the input
+carries `data-variant`.
+
+| `variant` | Look |
+| --- | --- |
+| `default` | The boxed field. |
+| `outline-ghost` | Button's `outline-ghost`: the `shadow-border` edge with no fill, so the background shows through, and a translucent wash on hover. |
+| `ghost` | Button's muted ghost colours, filled `muted` on hover and while focused. |
+| `plain` | No surface, edge, focus ring, or horizontal padding; the caret marks focus, and the leading icon and chevron sit at the text's edges. |
+
+`tone` and the error border apply to `default` and `outline-ghost`; `ghost` and `plain` show the
+error ring. Existing Field
 labels, descriptions, and validation behavior remain connected.
 
 ## Popup placement

@@ -135,7 +135,9 @@ worth reusing; a component that skips a line here is a component we'll rewrite l
   value, checked, pressed, or open API.
 - **List panels open with an active row.** Activate the current selection, the most recent
   selected value for multi-select, or the first enabled row when nothing is selected.
-  A query activates the first match. Keep the active row when the pointer leaves.
+  A query activates the first match. When the pointer leaves, a searchable panel keeps its
+  active row lit (Enter in the field acts on it); a panel without search marks the row
+  `data-panel-dormant`, stops painting it, and resumes the arrow keys from it.
   Use `data-panel-active`, or Base UI's `data-highlighted` when it owns the highlight.
   `autoFocusFirstItem={false}` opts out for menu-like uses. See the
   [Select Search implementation notes](content/docs/select-search.mdx#highlight-implementation)

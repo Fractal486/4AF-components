@@ -1,6 +1,6 @@
 ---
 title: Menubar
-description: A desktop-style bar of menus with a sliding highlight and instant switching between open menus.
+description: A desktop-style bar of menus with a sliding highlight and quick switching between open menus.
 ---
 
 <ComponentReference name="menubar" />
@@ -83,13 +83,14 @@ offset lines up the rows' labels with the trigger's label (horizontal) or the fi
 the trigger (vertical). Other alignments default to `0`.
 
 The popup has `data-slot="menubar-content"`. Base UI adds `data-instant="group"` to a panel
-opened or closed by moving between menus; such panels switch without transitions.
+opened or closed by moving between menus; such panels switch with a short, slight animation
+(`--duration-fast`, 0.98 scale).
 
 ## Moving between menus
 
 Once a menu is open, hovering another trigger or pressing an arrow key opens that menu and
 closes the previous one. The highlight slides from the old trigger to the new one; panels
-swap instantly. Opening from a closed bar and closing keep the Dropdown Menu's enter and exit
+swap with a short, slight animation. Opening from a closed bar and closing keep the Dropdown Menu's enter and exit
 motion. With reduced motion, the highlight moves without sliding.
 
 While a menu is open, hovered triggers show no fill of their own.

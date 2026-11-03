@@ -1,8 +1,10 @@
+import type { ReactNode } from "react";
+import { vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { Controls, fitsPillTabs } from "./controls";
-import { num, range, select, text, type ControlValues } from "./schema";
+import { num, range, select, text, withIcons, type ControlValues } from "./schema";
 
 // Long enough to stay a dropdown — a short enum renders as pill tabs instead, which the
 // "short enums" suite below covers.
@@ -154,5 +156,44 @@ describe("Controls range", () => {
 
     expect(screen.getAllByRole("slider")).toHaveLength(2);
     expect(screen.getByText("3–10")).toBeInTheDocument();
+  });
+});
+
+describe("Controls icon tabs", () => {
+  it("draws each option as an icon tab named for the option", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const schema = {
+      side: withIcons(select(["top", "bottom"] as const, "top"), {
+        top: <svg data-testid="top-icon" />,
+        bottom: <svg data-testid="bottom-icon" />,
+      }),
+    };
+    render(<Controls schema={schema} values={{ side: "top" }} onChange={onChange} />);
+
+    const bottom = screen.getByRole("tab", { name: "Bottom" });
+    expect(screen.getByRole("tab", { name: "Top" })).toContainElement(screen.getByTestId("top-icon"));
+    expect(bottom).toContainElement(screen.getByTestId("bottom-icon"));
+    expect(bottom).not.toHaveTextContent("Bottom");
+
+    await user.click(bottom);
+    expect(onChange).toHaveBeenCalledWith("side", "bottom");
+  });
+});
+
+describe("Controls icon dropdown", () => {
+  it("keeps a long icon setting as a dropdown, with each row's icon beside its label", async () => {
+    const user = userEvent.setup();
+    const options = ["a", "b", "c", "d", "e", "f", "g"] as const;
+    const icons = Object.fromEntries(options.map((option) => [option, <svg key={option} data-testid={`icon-${option}`} />])) as Record<(typeof options)[number], ReactNode>;
+    render(<Controls schema={{ type: withIcons(select(options, "a", "Type"), icons) }} values={{ type: "a" }} onChange={() => {}} />);
+
+    expect(screen.queryByRole("tablist")).toBeNull();
+    // The closed trigger already shows the chosen option's icon before its label.
+    const trigger = screen.getByRole("combobox", { name: "Type" });
+    expect(trigger).toContainElement(screen.getByTestId("icon-a"));
+    await user.click(trigger);
+    const row = await screen.findByRole("option", { name: "G" });
+    expect(row).toContainElement(screen.getByTestId("icon-g"));
   });
 });

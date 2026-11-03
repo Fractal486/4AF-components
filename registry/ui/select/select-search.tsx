@@ -19,6 +19,7 @@ import { useMergedRefs } from "@/registry/lib/refs";
 import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { duration, ease, spring } from "@/registry/lib/motion";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
+import { searchSelectInputVariants, type SearchSelectInputVariant } from "./select-search.variants";
 
 /**
  * A searchable single or multi-select — type to filter the list, then pick one or more.
@@ -304,6 +305,7 @@ export function SearchSelectInput({
   ref,
   className,
   tone = "neutral",
+  variant = "default",
   placeholder,
   onFocus,
   onBlur,
@@ -316,6 +318,13 @@ export function SearchSelectInput({
    * `--ring` token, matching every other focusable control in the app.
    */
   tone?: "neutral" | "accent";
+  /**
+   * The same four looks as Select's trigger: `default` boxed field, `outline-ghost` (Button's
+   * edge, no fill), `ghost` (Button's ghost colours, filled while focused), and `plain` (no
+   * surface, edge or horizontal padding). `tone` applies to `default` and `outline-ghost`.
+   * @default "default"
+   */
+  variant?: SearchSelectInputVariant;
 }) {
   const { open, multiple, iconFor, size, selectedLabel, inputRef } = useContext(SearchContext);
   const mergedRef = useMergedRefs(inputRef, ref);
@@ -332,18 +341,13 @@ export function SearchSelectInput({
           const displayedPlaceholder = !focused && multiple && Array.isArray(selectedValue) && selectedValue.length > 0
             ? `${selectedValue.length} selected`
             : selectedLabel || placeholder;
+          const plain = variant === "plain";
           const inputClasses = mergeStateClassName(cn(
-            "col-start-1 row-start-1 min-w-0 w-full border border-border bg-surface pl-3.5 text-foreground",
             SIZE[size].field,
             SIZE[size].radius,
-            "outline-none placeholder:text-muted-foreground data-[selected-label]:placeholder:text-foreground",
-            "transition-[border-color,box-shadow,color] duration-(--duration-fast) ease-out",
-            "hover:border-border-strong disabled:cursor-not-allowed disabled:opacity-50",
-            "[&:is([aria-invalid=true],[data-invalid])]:border-destructive! [&:is([aria-invalid=true],[data-invalid])]:ring-[3px]! [&:is([aria-invalid=true],[data-invalid])]:ring-destructive/25! [&:is([aria-invalid=true],[data-invalid])]:shadow-none!",
-            selectedIcon && SIZE[size].iconPadding,
-            tone === "accent"
-              ? "focus:border-ring focus:ring-[3px] focus:ring-ring/25"
-              : "focus:border-[oklch(0.719_0_0)] focus:shadow-[0_0_0_3px_oklch(0.390_0_0_/_0.502)]"), className);
+            searchSelectInputVariants({ variant, tone, size }),
+            // A plain field's icon sits at the text edge, so it reserves only icon + 8px.
+            selectedIcon && (plain ? (size === "md" ? "pl-6" : "pl-5.5") : SIZE[size].iconPadding)), className);
 
           return (
             <>
@@ -352,13 +356,14 @@ export function SearchSelectInput({
                   ? <Search className="text-muted-foreground" />
                   : selectedIcon}
                 size={size}
-                // Match the popup border + list padding + row padding.
-                className="absolute top-1/2 left-[calc(var(--spacing)*3.5+1px)] -translate-y-1/2"
+                // Match the popup border + list padding + row padding; plain has no padding.
+                className={cn("absolute top-1/2 -translate-y-1/2", plain ? "left-0" : "left-[calc(var(--spacing)*3.5+1px)]")}
               />
               <Combobox.Input
                 ref={mergedRef}
                 size={1}
                 data-slot="search-select-input"
+                data-variant={variant}
                 data-selected-label={!focused && !multiple && selectedLabel ? "" : undefined}
                 className={inputClasses}
                 placeholder={displayedPlaceholder}
@@ -386,6 +391,8 @@ export function SearchSelectInput({
         className={cn(
           "absolute inset-y-0 right-0 flex cursor-pointer items-center justify-center border-r border-transparent pl-2 pr-3.5 text-muted-foreground outline-none",
           "disabled:cursor-not-allowed disabled:opacity-50",
+          // Plain owns no padding or edge, so the chevron ends at the text's edge.
+          variant === "plain" && "border-r-0 pr-0",
         )}
       >
         <motion.span

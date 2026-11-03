@@ -35,8 +35,9 @@ row offered when reopening. Calling it in `onOpenChange` retains the previous op
 
 ## Trigger variants
 
-`AlignedSelectTrigger` accepts `variant="default" | "ghost" | "plain"`. `default` is the
-full-width field. `ghost` uses Button's muted ghost colours with the default spacing, so the
+`AlignedSelectTrigger` accepts `variant="default" | "outline-ghost" | "ghost" | "plain"`. `default` is the
+full-width field. `outline-ghost` is Button's `outline-ghost`: the `shadow-border` edge with no fill,
+so the background shows through. `ghost` uses Button's muted ghost colours with the default spacing, so the
 value and glyph stay aligned. `plain` removes the background, border, and horizontal padding,
 leaving the glyph directly beside the label. The focus ring remains for keyboard users.
 `outline={false}` is still accepted as an alias for `variant="plain"`.
@@ -84,7 +85,9 @@ Add `searchable` to `AlignedSelectContent` for a search field pinned above the l
 focus when the panel opens, with an enabled row already active: the selected row, or the first
 enabled row when the selection is absent or disabled, so Enter takes it without an arrow press.
 Typing moves the active row to the first enabled match; no row is offered if every match is
-disabled. The active row carries `data-panel-active`, including after pointer exit. The arrow
+disabled. The active row carries `data-panel-active`. When the pointer leaves a panel without search, the
+row also takes `data-panel-dormant` and stops painting; the arrow keys resume from it. A
+searchable panel keeps it lit. The arrow
 keys move focus into the list, where Base UI handles navigation and the component keeps its
 active mark in sync. The query clears after the closing animation. `autoFocusFirstItem={false}`
 disables the automatic opening highlight; focusing a row can still activate it.

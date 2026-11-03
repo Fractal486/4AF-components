@@ -105,6 +105,21 @@ function DynamicMultiIcon() {
 }
 
 describe("Search Select", () => {
+  it("draws outline-ghost with Button's edge and no fill of its own", () => {
+    render(
+      <SearchSelect<Fruit> items={FRUITS}>
+        <SearchSelectInput aria-label="Ghost fruit" variant="outline-ghost" />
+        <SearchSelectContent>
+          {(item: Fruit) => <SearchSelectItem key={item.value} value={item}>{item.label}</SearchSelectItem>}
+        </SearchSelectContent>
+      </SearchSelect>,
+    );
+    const input = screen.getByRole("combobox", { name: "Ghost fruit" });
+    expect(input).toHaveAttribute("data-variant", "outline-ghost");
+    expect(input).toHaveClass("shadow-border", "bg-transparent", "border-transparent");
+    expect(input).not.toHaveClass("bg-surface");
+  });
+
   it("uses the shared 34px medium field and row size", async () => {
     const user = userEvent.setup();
     render(<FruitSearch size="md" />);

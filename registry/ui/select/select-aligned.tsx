@@ -126,6 +126,28 @@ const AlignedSelectActiveContext = createContext<{ value: unknown } | null>(null
 /** Moves that row, from whichever modality focused it. */
 const AlignedSelectActivateContext = createContext<(value: unknown) => void>(() => {});
 
+/**
+ * Whether the pointer has left a panel without a search field: its row is kept for the arrow
+ * keys to resume from, but stops painting, as a hover does when the pointer moves away.
+ */
+const AlignedSelectDormantContext = createContext(false);
+
+/**
+ * An arrow key while focus rests on the panel itself — where Base UI leaves it once the pointer
+ * has moved out — resumes from the active row rather than jumping back to the first.
+ */
+function resumeFromActiveRow(list: HTMLElement | null, key: string) {
+  if (!list || (key !== "ArrowDown" && key !== "ArrowUp")) return false;
+  const options = Array.from(list.querySelectorAll<HTMLElement>('[role="option"]:not([data-disabled])'));
+  const focused = list.ownerDocument.activeElement;
+  if (focused && options.some((option) => option.contains(focused))) return false;
+  const index = options.findIndex((option) => option.hasAttribute("data-panel-active"));
+  if (index < 0) return false;
+  const next = Math.min(Math.max(index + (key === "ArrowDown" ? 1 : -1), 0), options.length - 1);
+  options[next]?.focus();
+  return true;
+}
+
 /** Moves focus out of the search field and into the list, where Base UI's roving takes over. */
 function focusEdgeOption(list: HTMLElement | null, edge: "first" | "last") {
   const options = list?.querySelectorAll<HTMLElement>(
@@ -439,6 +461,16 @@ export function AlignedSelectContent({
   }
   const activeItem = autoFocusFirstItem ? (pointedItem ?? openingItem) : pointedItem;
 
+  // Without a search field the row behaves like a hover once the pointer leaves: unpainted,
+  // but kept for the arrows. A searchable panel keeps it lit — Enter in the field takes it.
+  const [pointerLeft, setPointerLeft] = useState(false);
+  const [lastOpenForPointer, setLastOpenForPointer] = useState(open);
+  if (lastOpenForPointer !== open) {
+    setLastOpenForPointer(open);
+    if (open) setPointerLeft(false);
+  }
+  const dormant = pointerLeft && !searchable;
+
   // Base UI opens by focusing the selected row, which is right without a search field and
   // wrong with one — the caret has to be where the typing is going to go.
   useEffect(() => {
@@ -478,17 +510,32 @@ export function AlignedSelectContent({
             // position alone. A centre-origin scale would be wrong, and that difference is
             // the entire reason this reads as anchored.
             //
-            // `--duration-base` on `--ease-panel`, and a smaller scale than the other panels:
-            // this one opens around the choice rather than out of the trigger, so it has less
-            // distance to cover and the family's slower, bigger entrance overshoots it.
+            // The same entrance and exit as every other panel: 0.9 and 4px in over
+            // `--duration-slow` on `--ease-panel`, 0.97 and 2px out over `--duration-base`.
             "origin-[var(--transform-origin)] blur-0",
-            "transition-[opacity,scale,filter] duration-(--duration-base) ease-panel data-[ending-style]:ease-out",
-            "data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[starting-style]:blur-[4px]",
+            "transition-[opacity,scale,filter] duration-(--duration-slow) ease-panel data-[ending-style]:duration-(--duration-base) data-[ending-style]:ease-out",
+            "data-[starting-style]:scale-90 data-[starting-style]:opacity-0 data-[starting-style]:blur-[4px]",
             "data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[ending-style]:blur-[2px]"), className)}
           // Base UI hands focus to the popup itself when a query leaves no row to land on.
           // Bounce it back, or the caret leaves the field mid-word.
           onFocus={(event) => {
             if (searchable && event.target === event.currentTarget) inputRef.current?.focus();
+          }}
+          onPointerLeave={(event) => {
+            if (!searchable && event.pointerType !== "touch") setPointerLeft(true);
+          }}
+          onPointerMove={() => {
+            if (pointerLeft) setPointerLeft(false);
+          }}
+          onKeyDownCapture={(event) => {
+            if (searchable) return;
+            if (pointerLeft) setPointerLeft(false);
+            // Only when the panel itself holds focus, where Base UI parks it after the pointer
+            // leaves. Keys from a nested panel bubble through here too, and are not ours.
+            if (event.target === event.currentTarget && resumeFromActiveRow(listRef.current, event.key)) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
           }}
           {...props}
         >
@@ -569,7 +616,9 @@ export function AlignedSelectContent({
           >
             <AlignedSelectActiveContext.Provider value={activeItem}>
               <AlignedSelectActivateContext.Provider value={setActiveItem}>
-                {children}
+                <AlignedSelectDormantContext.Provider value={dormant}>
+                  {children}
+                </AlignedSelectDormantContext.Provider>
               </AlignedSelectActivateContext.Provider>
             </AlignedSelectActiveContext.Provider>
           </ScrollArea>
@@ -655,6 +704,7 @@ export function AlignedSelectItem({
   const text = searchValue ?? (typeof children === "string" ? children : String(value));
   const filteredOut = !matches(text);
   const panelActive = activeItem !== null && Object.is(activeItem.value, value);
+  const panelDormant = useContext(AlignedSelectDormantContext) && panelActive;
 
   const itemNode = useRef<HTMLElement | null>(null);
   const mergedRef = useMergedRefs(ref, itemNode);
@@ -685,6 +735,7 @@ export function AlignedSelectItem({
       // palette carry — wearing the same fill, so "what Enter takes" reads identically
       // wherever the keyboard happens to be.
       data-panel-active={panelActive || undefined}
+      data-panel-dormant={panelDormant || undefined}
       // Hover focuses a row here and so do the arrows, so this one handler carries both.
       onFocusCapture={(event) => {
         onFocusCapture?.(event);
@@ -694,8 +745,8 @@ export function AlignedSelectItem({
         "flex items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
-        "data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
-        "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
+        "data-[panel-active]:not-data-[panel-dormant]:bg-muted data-[panel-active]:not-data-[panel-dormant]:text-foreground",
+        "data-[highlighted]:not-data-[panel-dormant]:bg-muted data-[highlighted]:not-data-[panel-dormant]:text-foreground",
         "data-[selected]:text-foreground",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50"), className)}
       {...props}

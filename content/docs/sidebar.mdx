@@ -33,7 +33,7 @@ toggles is open: the drawer on mobile, the sidebar on desktop.
 
 Below 768px, collapsible sidebars and split layouts render as a drawer. A non-split sidebar with
 `collapsible="none"` stays inline at every viewport size. For drawer layouts, `className` styles
-the desktop sidebar; style the drawer with `mobileClassName`.
+the desktop sidebar; style the drawer with `mobileClassName`. The drawer slides in from the sidebar's `side` over a dim backdrop and slides back out (Base UI Dialog with CSS transitions).
 
 ## Keyboard shortcut
 
@@ -43,13 +43,13 @@ turn it off, or another combination such as `"mod+shift+s"`. Supported modifiers
 elsewhere. Modifiers must match exactly. The trigger's hint follows this setting.
 
 When several sidebars share a shortcut, the one containing focus responds, including its
-mobile sheet. Outside all of them, the first matching sidebar in page order responds.
+mobile drawer. Outside all of them, the first matching sidebar in page order responds.
 Repeated, already-handled, and composing key events are ignored, as are shortcuts typed in
 inputs, textareas, selects, or rich text editors.
 
 ## Mobile navigation
 
-Following an ordinary link inside the mobile sheet closes it, including links handled by
+Following an ordinary link inside the mobile drawer closes it, including links handled by
 client-side routers. New-tab links, downloads, modified clicks, and `aria-disabled` links
 keep it open. Buttons and desktop navigation do not close the sidebar.
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ExternalLink, Info, Link as LinkIcon, Maximize2, Minimize2, RotateCcw, Terminal } from "lucide-react";
-import { Fragment, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
 import type { ComponentStats } from "@/lib/component-stats";
 import { InlineLink } from "@/components/inline-link";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/registry/ui/hover-card/hover-card";
@@ -106,14 +106,33 @@ export function ComponentPlayground({ demos, ...props }: ComponentPlaygroundProp
   );
 }
 
-/** Lines of source and the other components an install brings with it, behind an info icon. */
-function ComponentInfo({ title, stats }: { title: string; stats: ComponentStats }) {
+/**
+ * Lines of source and the other components an install brings with it, behind an info icon.
+ * The card's left edge is pinned to `edgeRef`'s: the tabs from `lg`, the title row below it.
+ */
+function ComponentInfo({
+  title,
+  stats,
+  edgeRef,
+}: {
+  title: string;
+  stats: ComponentStats;
+  edgeRef: RefObject<HTMLElement | null>;
+}) {
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const alignOffset = () => {
+    const edge = edgeRef.current?.getBoundingClientRect().left;
+    const icon = triggerRef.current?.getBoundingClientRect().left;
+    return edge === undefined || icon === undefined ? 0 : edge - icon;
+  };
+
   return (
     <HoverCard>
       <HoverCardTrigger
         delay={0}
         render={
           <button
+            ref={triggerRef}
             type="button"
             aria-label={`${title} size and dependencies`}
             className="inline-flex size-4 shrink-0 cursor-default items-center justify-center rounded-full text-subtle-foreground/60 outline-none transition-[color] duration-(--duration-fast) hover:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
@@ -122,14 +141,15 @@ function ComponentInfo({ title, stats }: { title: string; stats: ComponentStats 
       >
         <Info className="size-3.5" aria-hidden />
       </HoverCardTrigger>
-      <HoverCardContent side="bottom" align="center" sideOffset={14} className="w-auto max-w-80 min-w-64 p-4">
+      <HoverCardContent side="bottom" align="start" sideOffset={14} positionerProps={{ alignOffset }} className="w-auto max-w-80 min-w-64 p-4">
         <dl
           data-slot="component-info"
           className="grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-4 gap-y-2 text-sm text-pretty text-muted-foreground"
         >
           <dt className="text-subtle-foreground/60">LOC</dt>
           <dd className="tabular-nums">
-            {stats.lines.toLocaleString("en-US")} in {stats.files} {stats.files === 1 ? "file" : "files"}
+            {stats.lines.toLocaleString("en-US")} <span className="text-subtle-foreground/60">in</span> {stats.files}{" "}
+            {stats.files === 1 ? "file" : "files"}
           </dd>
           <dt className="text-subtle-foreground/60">Deps</dt>
           <dd>
@@ -137,7 +157,12 @@ function ComponentInfo({ title, stats }: { title: string; stats: ComponentStats 
               ? stats.dependencies.map((dependency, index) => (
                 <Fragment key={dependency.name}>
                   {index > 0 ? ", " : null}
-                  <InlineLink href={dependency.href}>{dependency.title}</InlineLink>
+                  <InlineLink
+                    href={dependency.href}
+                    className="text-muted-foreground transition-[color,text-decoration-color] hover:text-foreground"
+                  >
+                    {dependency.title}
+                  </InlineLink>
                 </Fragment>
               ))
               : "None"}
@@ -177,6 +202,9 @@ function PlaygroundFrame({
   const fullView = expanded && view === "preview";
   // From `lg` the docs scroll inside the frame, so the window never does; below it, the page.
   const docsRef = useRef<HTMLDivElement>(null);
+  // The left edges the info card is pinned to: the title row below `lg`, the tabs from it.
+  const titleRowRef = useRef<HTMLDivElement>(null);
+  const tabsRowRef = useRef<HTMLDivElement>(null);
 
   // Opening the docs at a heading: the docs were hidden when the browser or router tried to
   // scroll, so scroll once they are shown.
@@ -212,14 +240,14 @@ function PlaygroundFrame({
         ) : null}
 
         <header className="flex flex-col gap-3 px-5 pt-7 pb-5 max-lg:order-1 sm:px-10 lg:col-start-2 lg:row-start-1 lg:border-l lg:px-5 lg:pt-5">
-          <div className="flex items-center gap-2">
+          <div ref={titleRowRef} className="flex items-center gap-2">
             <h1 className="flex items-center gap-2.5 text-xl font-semibold text-balance">
               {icon}
               {title}
             </h1>
             {stats ? (
               <div className="contents lg:hidden">
-                <ComponentInfo title={title} stats={stats} />
+                <ComponentInfo title={title} stats={stats} edgeRef={titleRowRef} />
               </div>
             ) : null}
           </div>
@@ -230,22 +258,22 @@ function PlaygroundFrame({
             <CopyButton
               value={markdownUrl}
               icon={<LinkIcon />}
-              variant="outline"
+              variant="outline-ghost"
               size="sm"
               iconPosition="start"
               swapLabel={false}
-              className="min-w-0 cursor-default bg-background lg:grow"
+              className="min-w-0 cursor-default lg:grow"
             >
               Copy link
             </CopyButton>
             <CopyButton
               value={installCommand}
               icon={<Terminal />}
-              variant="outline"
+              variant="outline-ghost"
               size="sm"
               iconPosition="start"
               swapLabel={false}
-              className="min-w-0 cursor-default bg-background lg:grow"
+              className="min-w-0 cursor-default lg:grow"
             >
               Install command
             </CopyButton>
@@ -264,7 +292,7 @@ function PlaygroundFrame({
               view === "docs" && "lg:absolute lg:inset-x-0",
             )}
           >
-            <div className="flex items-center gap-2.5">
+            <div ref={tabsRowRef} className="flex items-center gap-2.5">
               <Tabs
                 variant="segment"
                 appearance="outline"
@@ -283,7 +311,7 @@ function PlaygroundFrame({
                   <TabsTab value="docs">Docs</TabsTab>
                 </TabsList>
               </Tabs>
-              {stats ? <ComponentInfo title={title} stats={stats} /> : null}
+              {stats ? <ComponentInfo title={title} stats={stats} edgeRef={tabsRowRef} /> : null}
             </div>
             <div className="flex items-center gap-1">
               {view === "preview" && demo.replayable ? (

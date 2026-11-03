@@ -39,7 +39,8 @@ import {
   MenubarSubTrigger,
   MenubarTrigger,
 } from "@/registry/ui/menubar/menubar";
-import { bool, defineEntry, select } from "../schema";
+import { bool, defineEntry, select, withIcons } from "../schema";
+import { MENUBAR_ORIENTATION_ICONS } from "../setting-icons";
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -49,7 +50,7 @@ export const menubarEntry = defineEntry({
   controls: {
     size: select(["sm", "md"], "md", "Size"),
     variant: select(["outline", "plain"], "outline", "Variant"),
-    orientation: select(["horizontal", "vertical"], "horizontal", "Orientation"),
+    orientation: withIcons(select(["horizontal", "vertical"], "horizontal", "Orientation"), MENUBAR_ORIENTATION_ICONS),
     icons: bool(false, "Trigger icons"),
     // One menu (View) or the whole bar.
     disabled: select(["none", "menu", "bar"], "none", "Disabled"),

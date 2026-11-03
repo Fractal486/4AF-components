@@ -71,6 +71,17 @@ export function Morph<K extends string>({
   const current = sizing === "current";
   const { box, width } = useItemWidths(keys, activeKey, current);
 
+  // While the width transitions between two measured sizes the box carries
+  // `data-resizing`, so callers can lift a truncation cap that would otherwise put an
+  // ellipsis on text mid-resize. Set when the width changes (adjusted during render),
+  // cleared when the box's own width transition ends — under reduced motion that is 1ms.
+  const [resizing, setResizing] = useState(false);
+  const [previousWidth, setPreviousWidth] = useState(width);
+  if (width !== previousWidth) {
+    setPreviousWidth(width);
+    if (previousWidth != null && width != null) setResizing(true);
+  }
+
   // A known box needs no sizing copies. A single state only needs one when fitting its
   // width, so changing text can be measured without scaling the visible content.
   // Keep the same presence lifecycle so fixed-size swaps retain their outgoing state.
@@ -112,7 +123,11 @@ export function Morph<K extends string>({
         current && "place-content-center transition-[width] duration-(--duration-base) ease-out",
         className,
       )}
+      data-resizing={resizing ? "" : undefined}
       style={width == null ? undefined : { width }}
+      onTransitionEnd={(event) => {
+        if (event.target === event.currentTarget && event.propertyName === "width") setResizing(false);
+      }}
     >
       {/* The sizers. Hidden, inert, and unreadable — they exist only to hold the box
           open at the width of the longest item, or under `"current"`, to be measured.

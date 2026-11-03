@@ -1,12 +1,13 @@
 import { Progress, ProgressCircle, ProgressLabel, ProgressValue } from "@/registry/ui/progress/progress";
 import { TextShimmer } from "@/registry/ui/text-shimmer/text-shimmer";
-import { bool, defineEntry, num, select } from "../schema";
+import { bool, defineEntry, num, select, withIcons } from "../schema";
+import { PROGRESS_SHAPE_ICONS } from "../setting-icons";
 
 export const progressEntry = defineEntry({
   slug: "progress",
   name: "Progress",
   controls: {
-    shape: select(["bar", "circle"], "bar", "Shape"),
+    shape: withIcons(select(["bar", "circle"], "bar", "Shape"), PROGRESS_SHAPE_ICONS),
     color: select(["neutral", "colored"], "neutral", "Color"),
     size: select(["xs", "sm", "md", "lg"], "md", "Size"),
     value: num(60, { min: 0, max: 100, step: 1, label: "Value", disabledWhen: (values) => !!values.indeterminate }),

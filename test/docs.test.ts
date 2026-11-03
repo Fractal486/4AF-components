@@ -250,7 +250,7 @@ describe("component documentation", () => {
         "iconForValue",
       ],
       "select-aligned": [
-        'variant="default" | "ghost" | "plain"',
+        'variant="default" | "outline-ghost" | "ghost" | "plain"',
         "default and ghost panels are at least the trigger's width",
         "Fruit: Banana",
       ],

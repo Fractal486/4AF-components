@@ -123,3 +123,31 @@ export const sidebarRailButtonVariants = cva([
   "disabled:pointer-events-none disabled:opacity-50",
   "[&>svg]:size-4 [&>svg]:shrink-0",
 ]);
+
+/**
+ * The mobile drawer: a panel that slides in from the sidebar's side over a plain dim
+ * backdrop, and slides back out — CSS transitions on Base UI's starting and ending styles,
+ * longer in than out, matching the docs site's navigation drawer. Translate and opacity only.
+ */
+export const sidebarMobileBackdropVariants = cva([
+  "fixed inset-0 z-40 bg-black/50 forced-colors:bg-[Canvas]/50",
+  "transition-[opacity] duration-(--duration-slower) ease-in-out",
+  "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 data-[ending-style]:duration-(--duration-slow)",
+]);
+
+export const sidebarMobilePopupVariants = cva(
+  [
+    "fixed inset-y-0 z-50 flex h-dvh max-w-[85vw] min-w-0 flex-col border-border bg-surface p-0 shadow-overlay-drop outline-none",
+    "forced-colors:border forced-colors:border-[CanvasText] forced-colors:bg-[Canvas] forced-colors:text-[CanvasText]",
+    "transition-[translate] duration-(--duration-slower) ease-in-out data-[ending-style]:duration-(--duration-slow)",
+  ],
+  {
+    variants: {
+      side: {
+        left: "left-0 border-r data-[starting-style]:-translate-x-full data-[ending-style]:-translate-x-full",
+        right: "right-0 border-l data-[starting-style]:translate-x-full data-[ending-style]:translate-x-full",
+      },
+    },
+    defaultVariants: { side: "left" },
+  },
+);

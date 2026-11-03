@@ -1,7 +1,8 @@
 import { ArrowRight, Plus } from "lucide-react";
 import { Button } from "@/registry/ui/button/button";
 import { BUTTON_VARIANTS, ICON_SIZES, TEXT_SIZES } from "../button-options";
-import { defineEntry, select } from "../schema";
+import { defineEntry, select, withIcons } from "../schema";
+import { BUTTON_STATE_ICONS } from "../setting-icons";
 
 export const buttonEntry = defineEntry({
   slug: "button",
@@ -11,7 +12,7 @@ export const buttonEntry = defineEntry({
     size: select([...TEXT_SIZES, ...ICON_SIZES], "md"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     icon: select(["none", "leading", "trailing"], "none", undefined, (values) => String(values.size).startsWith("icon")),
-    state: select(["default", "loading", "disabled"], "default", "State"),
+    state: withIcons(select(["default", "loading", "disabled"], "default", "State"), BUTTON_STATE_ICONS, { dropdown: true }),
   },
   render({ variant, size, shape, icon, state }) {
     const isIconOnly = size.startsWith("icon");

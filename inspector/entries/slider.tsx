@@ -1,5 +1,6 @@
 import { Slider } from "@/registry/ui/slider/slider";
-import { bool, defineEntry, num, select } from "../schema";
+import { bool, defineEntry, num, select, withIcons } from "../schema";
+import { SLIDER_FORMAT_ICONS, SLIDER_ORIENTATION_ICONS, SLIDER_THUMB_ICONS } from "../setting-icons";
 
 const THUMBS = ["bar", "circle", "knob"] as const;
 const SIZES = ["sm", "md"] as const;
@@ -10,9 +11,9 @@ export const sliderEntry = defineEntry({
   slug: "slider",
   name: "Slider",
   controls: {
-    thumb: select(THUMBS, "bar", "Thumb"),
+    thumb: withIcons(select(THUMBS, "bar", "Thumb"), SLIDER_THUMB_ICONS),
     size: select(SIZES, "md", "Size"),
-    orientation: select(["horizontal", "vertical"], "horizontal", "Orientation"),
+    orientation: withIcons(select(["horizontal", "vertical"], "horizontal", "Orientation"), SLIDER_ORIENTATION_ICONS),
     range: bool(false, "Range"),
     // Bar only: the other two rails are too thin to hold a line of text.
     inlineLabel: bool(false, "Inline label", (values) => values.thumb !== "bar" || values.orientation === "vertical"),
@@ -21,7 +22,7 @@ export const sliderEntry = defineEntry({
     showTicks: bool(true, "Show ticks", (values) => values.thumb === "knob"),
     showValueTooltip: bool(false, "Value tooltip"),
     animateValue: bool(false, "Animate value"),
-    format: select(["number", "currency", "unit"], "number", "Format"),
+    format: withIcons(select(["number", "currency", "unit"], "number", "Format"), SLIDER_FORMAT_ICONS),
     disabled: bool(false),
   },
   render({

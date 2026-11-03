@@ -108,4 +108,28 @@ describe("Morph", () => {
     report(() => 48);
     expect(box.style.width).toBe("48px");
   });
+
+  it("marks the box as resizing until its width transition ends", () => {
+    const report = stubResizeObserver();
+    const items = { off: "Follow", on: "Following" };
+    const { container, rerender } = render(<Morph activeKey="off" items={items} sizing="current" />);
+    const box = container.querySelector<HTMLElement>('[data-slot="morph"]')!;
+    report((target) => ((target as HTMLElement).dataset.morphSizer === "on" ? 72.5 : 48));
+    // The first measurement only sets the size; nothing was transitioning from.
+    expect(box).not.toHaveAttribute("data-resizing");
+
+    rerender(<Morph activeKey="on" items={items} sizing="current" />);
+    expect(box).toHaveAttribute("data-resizing");
+
+    // A child's transition bubbling up does not end the box's own.
+    act(() => {
+      box.firstElementChild!.dispatchEvent(Object.assign(new Event("transitionend", { bubbles: true }), { propertyName: "width" }));
+    });
+    expect(box).toHaveAttribute("data-resizing");
+
+    act(() => {
+      box.dispatchEvent(Object.assign(new Event("transitionend", { bubbles: true }), { propertyName: "width" }));
+    });
+    expect(box).not.toHaveAttribute("data-resizing");
+  });
 });

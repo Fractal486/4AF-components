@@ -94,8 +94,9 @@ describe("Menubar", () => {
     await waitFor(() => expect(help).toHaveAttribute("data-popup-open"));
     expect(file).not.toHaveAttribute("data-popup-open");
     expect(screen.getByRole("menuitem", { name: "Keyboard shortcuts" })).toBeInTheDocument();
-    // Switching menus marks the panel instant, so it swaps without the open transition.
+    // Switching menus marks the panel instant, so it swaps with the short animation.
     expect(screen.getByRole("menu")).toHaveAttribute("data-instant", "group");
+    expect(screen.getByRole("menu").className).toContain("data-[instant=group]:duration-(--duration-fast)");
     expect(highlight()).toHaveAttribute("data-visible");
 
     await user.keyboard("{Escape}");

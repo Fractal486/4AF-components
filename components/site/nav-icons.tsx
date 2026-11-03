@@ -193,11 +193,13 @@ const ICONS: Record<string, ReactNode> = {
   ),
 
   // Feedback and status
+  // An inline message with no card of its own: the ! it leads with, then its text.
   alert: (
     <>
-      <rect x="1.5" y="3" width="13" height="10" rx="2" />
-      <circle cx="5" cy="8" r="1.5" {...SOLID} />
-      <path d="M8 6.75h3.5M8 9.25h2.5" />
+      <path d="M3.25 4.25v4.75" strokeWidth={1.625} />
+      <circle cx="3.25" cy="11.625" r="1" {...SOLID} />
+      <path d="M7 6.25h7" />
+      <path d="M7 9.75h5" {...FAINT} />
     </>
   ),
   badge: (
@@ -284,6 +286,14 @@ const ICONS: Record<string, ReactNode> = {
       <path d="M6.5 6H8M1.5 10H3M11 10h1.5" {...FAINT} />
     </>
   ),
+  // Digits mid-roll: the current "10", the edges of its neighbours above and below.
+  "number-animation": (
+    <>
+      <path d="M3.75 6.25 5.5 5v6" />
+      <rect x="8.75" y="5" width="4" height="6" rx="2" />
+      <path d="M5.5 1.5v1M5.5 13.5v1M8.75 1.5a2 2 0 0 0 4 0M8.75 14.5a2 2 0 0 1 4 0" {...FAINT} />
+    </>
+  ),
   "blur-text": (
     <>
       <path d="M1.5 4.5h9" />
@@ -293,6 +303,19 @@ const ICONS: Record<string, ReactNode> = {
   ),
 
   // Layout and navigation
+  // A keycap: its face, the deeper lip along the bottom, and a ⌘ legend. The legend's
+  // loops close up at 1.25px, so it is drawn at 1px.
+  kbd: (
+    <>
+      <path d="M2.5 10.5V11a2.5 2.5 0 0 0 2.5 2.5h6a2.5 2.5 0 0 0 2.5-2.5v-.5Z" {...TONE} />
+      <rect x="2.5" y="2.5" width="11" height="11" rx="2.5" />
+      <path d="M2.5 10.5h11" {...FAINT} />
+      <path
+        d="M7 7h2v2H7ZM7 7V6a1 1 0 1 0-1 1h1M9 7V6a1 1 0 1 1 1 1H9M7 9v1a1 1 0 1 1-1-1h1M9 9v1a1 1 0 1 0 1-1H9"
+        strokeWidth={1}
+      />
+    </>
+  ),
   separator: (
     <>
       <path d="M1.5 8h13" />
@@ -313,11 +336,13 @@ const ICONS: Record<string, ReactNode> = {
       <path d="M4 9h10M4 12h7" {...FAINT} />
     </>
   ),
+  // A segmented track: the selected tab's chip and label, the next tab's label beside it.
   tabs: (
     <>
-      <rect x="1.5" y="4" width="13" height="8" rx="2" />
-      <rect x="3" y="5.5" width="5" height="5" rx="1" {...TONE} />
-      <path d="M10 8h2.5" {...FAINT} />
+      <rect x="1.5" y="4.5" width="13" height="7" rx="2" />
+      <rect x="3" y="6" width="5.5" height="4" rx="1" {...TONE} />
+      <path d="M4.5 8h2.5" />
+      <path d="M10.25 8h2.25" {...FAINT} />
     </>
   ),
   breadcrumb: (
@@ -342,10 +367,11 @@ const ICONS: Record<string, ReactNode> = {
       <rect x="2.75" y="11" width="1.5" height="1.5" rx="0.4" strokeWidth={1} />
     </>
   ),
+  // The list beside its rail, the rail marked at the current entry.
   "table-of-contents": (
     <>
-      <path d="M2 3.5h9M4.5 11h6" {...FAINT} />
-      <path d="M4.5 7.25h8" />
+      <path d="M2 2v12M4.5 3.5h8.5M7 11h5" {...FAINT} />
+      <path d="M2 5.75v3M7 7.25h6.5" />
     </>
   ),
   // The rail's ruler: lines of different reach, the current one strong.
@@ -402,6 +428,26 @@ const ICONS: Record<string, ReactNode> = {
       <rect x="1.5" y="6.5" width="13" height="8" rx="2" {...FILLED} />
       <path d="M4 9h7" />
       <path d="M4 12h5" {...FAINT} />
+    </>
+  ),
+  // The pointer, and the menu opened at it.
+  "context-menu": (
+    <>
+      <path d="M1.5 1.5 5.5 3 3.75 3.75 3 5.5Z" {...SOLID} />
+      <rect x="6" y="6" width="8.5" height="8.5" rx="2" {...FILLED} />
+      <path d="M8.5 9h3.5" />
+      <path d="M8.5 11.75h2.5" {...FAINT} />
+    </>
+  ),
+  // The bar of triggers, the first one open onto its menu.
+  menubar: (
+    <>
+      <rect x="1.5" y="1.5" width="13" height="3.5" rx="1.5" />
+      <path d="M4 3.25h2" />
+      <path d="M8.5 3.25h2" {...FAINT} />
+      <rect x="1.5" y="6.5" width="8" height="8" rx="2" {...FILLED} />
+      <path d="M4 9h3" />
+      <path d="M4 12h2" {...FAINT} />
     </>
   ),
   "selection-toolbar": (

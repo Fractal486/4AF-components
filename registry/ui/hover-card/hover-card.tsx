@@ -12,11 +12,23 @@ import { hoverCardPopupVariants, hoverCardPositionerVariants, hoverCardSkeletonV
 
 /** A supplemental preview. Base UI owns hover/focus timing, pointer travel, and dismissal. */
 export const HoverCard = BasePreviewCard.Root;
-export const HoverCardTrigger = BasePreviewCard.Trigger;
 export const createHoverCardHandle = BasePreviewCard.createHandle;
 export type HoverCardProps<Payload = unknown> = BasePreviewCard.Root.Props<Payload>;
 export type HoverCardTriggerProps<Payload = unknown> = BasePreviewCard.Trigger.Props<Payload>;
 export type HoverCardHandle<Payload = unknown> = BasePreviewCard.Handle<Payload>;
+
+/**
+ * Base UI's trigger, closing as soon as the pointer leaves rather than after its 300ms default.
+ * The pointer's trip from the trigger to the card is already covered by Base UI's safe polygon,
+ * which is what that delay otherwise buys; past it, a lingering card only reads as lag.
+ *
+ * A trigger that shares a card through `handle` keeps Base UI's default: there the delay is what
+ * holds the card open while the pointer crosses to the next trigger, so it moves instead of
+ * closing and opening again.
+ */
+export function HoverCardTrigger<Payload = unknown>({ closeDelay, ...props }: HoverCardTriggerProps<Payload>) {
+  return <BasePreviewCard.Trigger<Payload> closeDelay={closeDelay ?? (props.handle ? undefined : 0)} {...props} />;
+}
 
 export interface HoverCardSkeletonProps extends ComponentProps<"div"> {
   /** Keeps the avatar placeholder when the preview represents a profile or author. */

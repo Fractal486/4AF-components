@@ -41,7 +41,8 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/registry/ui/dropdown-menu/dropdown-menu";
-import { bool, defineEntry, select } from "../schema";
+import { bool, defineEntry, select, withIcons } from "../schema";
+import { ANCHORED_ALIGN_ICONS, ANCHORED_SIDE_ICONS } from "../setting-icons";
 import { SafeTriangleOverlay } from "./dropdown-menu.safe-triangle";
 
 const SIDES = ["bottom", "top", "right", "left"] as const;
@@ -231,8 +232,8 @@ export const dropdownMenuEntry = defineEntry({
   slug: "dropdown-menu",
   name: "Dropdown Menu",
   controls: {
-    side: select(SIDES, "bottom"),
-    align: select(ALIGNS, "start"),
+    side: withIcons(select(SIDES, "bottom"), ANCHORED_SIDE_ICONS),
+    align: withIcons(select(ALIGNS, "start"), ANCHORED_ALIGN_ICONS),
     longLabels: bool(false, "Long labels"),
     shared: bool(false, "Shared menu"),
     safeTriangle: bool(false, "Show safe triangle"),

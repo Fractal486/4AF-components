@@ -299,6 +299,24 @@ describe("AlignedSelect", () => {
     });
   });
 
+  it("lets a plain panel's row go dormant when the pointer leaves, then resumes from it", async () => {
+    const user = userEvent.setup();
+    render(<Fruits />);
+
+    await user.click(screen.getByRole("combobox"));
+    const banana = await screen.findByRole("option", { name: "Banana" });
+    await user.hover(banana);
+    await waitFor(() => expect(banana).toHaveAttribute("data-panel-active"));
+
+    await user.hover(screen.getByRole("combobox"));
+    await waitFor(() => expect(banana).toHaveAttribute("data-panel-dormant"));
+
+    await user.keyboard("{ArrowDown}");
+    const cherry = screen.getByRole("option", { name: "Cherry" });
+    await waitFor(() => expect(cherry).toHaveFocus());
+    expect(cherry).not.toHaveAttribute("data-panel-dormant");
+  });
+
   it("keeps the offer where the pointer left it", async () => {
     const user = userEvent.setup();
     render(<Fruits searchable />);

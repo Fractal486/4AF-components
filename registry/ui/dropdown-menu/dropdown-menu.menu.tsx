@@ -1,9 +1,11 @@
+"use client";
+
 import { Kbd, type KbdProps } from "@/registry/ui/kbd/kbd";
 import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 import { Check, ChevronRight } from "lucide-react";
-import type { ComponentProps, ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { LoaderProvider } from "@/registry/lib/loader";
 import { dropdownMenuPopupVariants, dropdownMenuPositionerVariants } from "./dropdown-menu.variants";
 import { CHECK_MARK, CHECK_SLOT, DisabledReasonTooltip, itemBase } from "./dropdown-menu.shared";
@@ -29,11 +31,68 @@ export const DropdownMenuGroup = BaseMenu.Group;
 
 export const DropdownMenuRadioGroup = BaseMenu.RadioGroup;
 
+/**
+ * Moving from one open submenu to a sibling swaps the panels quickly — Base UI only marks that
+ * case (`data-instant="group"`) for a menubar. Each panel keeps a registry of its submenus: one
+ * opening while a sibling is open, or still fading out, takes a short, slight entrance and
+ * shortens the sibling's exit. Ordinary opens and closes keep the full animation.
+ */
+const SWAP_WINDOW_MS = 300;
+
+interface SubmenuSibling {
+  open: boolean;
+  closedAt: number;
+  setSwapping: (swapping: boolean) => void;
+}
+
+const SubmenuSiblingsContext = createContext<Set<SubmenuSibling> | null>(null);
+const SubmenuSwapContext = createContext(false);
+
 export function DropdownMenuSub({
   highlightItemOnHover = false,
+  onOpenChange,
   ...props
 }: ComponentProps<typeof BaseMenu.SubmenuRoot>) {
-  return <BaseMenu.SubmenuRoot highlightItemOnHover={highlightItemOnHover} {...props} />;
+  const siblings = useContext(SubmenuSiblingsContext);
+  const [swapping, setSwapping] = useState(false);
+  const self = useRef<SubmenuSibling>(null);
+  useEffect(() => {
+    if (!siblings) return;
+    const entry: SubmenuSibling = { open: false, closedAt: -Infinity, setSwapping };
+    self.current = entry;
+    siblings.add(entry);
+    return () => {
+      siblings.delete(entry);
+    };
+  }, [siblings]);
+
+  return (
+    <SubmenuSwapContext.Provider value={swapping}>
+      <BaseMenu.SubmenuRoot
+        highlightItemOnHover={highlightItemOnHover}
+        onOpenChange={(open, details) => {
+          const me = self.current;
+          if (me && siblings) {
+            const now = performance.now();
+            if (open) {
+              const others = [...siblings].filter(
+                (other) => other !== me && (other.open || now - other.closedAt < SWAP_WINDOW_MS),
+              );
+              for (const other of others) other.setSwapping(true);
+              setSwapping(others.length > 0);
+            } else {
+              // An ordinary close fades out; a sibling opening next will cut it short.
+              me.closedAt = now;
+              setSwapping(false);
+            }
+            me.open = open;
+          }
+          onOpenChange?.(open, details);
+        }}
+        {...props}
+      />
+    </SubmenuSwapContext.Provider>
+  );
 }
 
 
@@ -63,9 +122,12 @@ export function DropdownMenuPositioner({ className, sideOffset = 6, collisionPad
 
 export type DropdownMenuPopupProps = ComponentProps<typeof BaseMenu.Popup>;
 export function DropdownMenuPopup({ className, children, ...props }: DropdownMenuPopupProps) {
+  const submenus = useMemo(() => new Set<SubmenuSibling>(), []);
   return <BaseMenu.Popup data-slot="dropdown-menu-content" {...props}
     className={mergeStateClassName(dropdownMenuPopupVariants(), className)}>
-    <MenuScroll>{children}</MenuScroll>
+    <SubmenuSiblingsContext.Provider value={submenus}>
+      <MenuScroll>{children}</MenuScroll>
+    </SubmenuSiblingsContext.Provider>
   </BaseMenu.Popup>;
 }
 
@@ -241,8 +303,15 @@ export function DropdownMenuSubTrigger({
 }
 
 export function DropdownMenuSubContent({
-  side = "right", align = "start", sideOffset = 8, alignOffset = -4, ...props
+  side = "right", align = "start", sideOffset = 8, alignOffset = -4, className, ...props
 }: DropdownMenuContentProps) {
+  // Swapped in from (or out for) a sibling submenu: a quick, slight entrance and exit instead
+  // of the full one, so sweeping across sibling rows doesn't wait on each panel.
+  const swapping = useContext(SubmenuSwapContext);
   return <DropdownMenuContent data-slot="dropdown-menu-sub-content" side={side} align={align}
-    sideOffset={sideOffset} alignOffset={alignOffset} {...props} />;
+    sideOffset={sideOffset} alignOffset={alignOffset} data-swap={swapping ? "" : undefined}
+    className={mergeStateClassName(cn(
+      "data-swap:duration-(--duration-fast) data-swap:data-[ending-style]:duration-(--duration-fast)",
+      "data-swap:data-[starting-style]:scale-[0.98] data-swap:data-[starting-style]:blur-[1px]",
+    ), className)} {...props} />;
 }

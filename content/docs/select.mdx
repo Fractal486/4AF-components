@@ -45,11 +45,12 @@ Nested panels take their own `portalProps`; they do not inherit the parent panel
 
 ### Trigger variants
 
-`SelectTrigger` and `SelectSortTrigger` accept `variant="default" | "ghost" | "plain"`:
+`SelectTrigger` and `SelectSortTrigger` accept `variant="default" | "outline-ghost" | "ghost" | "plain"`:
 
 | `variant` | Trigger |
 | --- | --- |
 | `default` | The boxed field or chip. |
+| `outline-ghost` | Button's `outline-ghost`: the `shadow-border` edge with no fill, so the background shows through, and a translucent wash on hover and while open. |
 | `ghost` | Button's muted ghost colours with the default spacing, so leading and trailing icons stay aligned. |
 | `plain` | No background, border, or horizontal padding; the dropdown icon follows the label or value directly. A sort trigger's `icon` stays leading. |
 
@@ -88,6 +89,10 @@ one in a multi-select), or the first enabled row when nothing is selected. Typin
 active row to the top enabled match. Disabled rows stay visible but are never the initial active
 row or the search field's Enter target; when every match is disabled, no row is active. Set
 `autoFocusFirstItem={false}` to opt out for menu-like controls such as a sort trigger.
+
+When the pointer leaves a panel without `searchable`, its active row takes `data-panel-dormant`
+and stops painting, as a hover does; the arrow keys resume from it rather than from the first row.
+A searchable panel keeps the row lit, because Enter in the field acts on it.
 
 The first row follows the rendered order, including after labels change, disabled rows become
 enabled, or options are inserted or reordered. Registration timing does not change the opening
@@ -130,7 +135,9 @@ items immediately before the chevron.
 
 Nested panels open immediately when their parent row is hovered. Pass a positive `delay` to
 `SelectSubTrigger` only when a deliberate hover pause is wanted. The initially focused nested row
-stays unhighlighted until it is hovered or reached through keyboard navigation.
+stays unhighlighted until it is hovered or reached through keyboard navigation. Moving from an open
+nested panel to a sibling's row swaps the panels with a short, slight animation
+(`--duration-fast`, 0.98 scale) instead of the full one; the swapped panels carry `data-swap`.
 
 A hover-opened panel has a safe triangle. Leaving its row with the mouse keeps the panel open
 while the pointer travels inside the triangle between the leave point and the panel's near edge,

@@ -53,6 +53,12 @@ interface DropdownMenuSelectContextValue {
 
 const DropdownMenuSelectContext = createContext<DropdownMenuSelectContextValue | null>(null);
 
+/**
+ * Whether the pointer has left a panel without a search field: its active row is kept for the
+ * arrow keys to resume from, but stops painting, as a hover does when the pointer moves away.
+ */
+const DropdownMenuSelectDormantContext = createContext(false);
+
 function useDropdownMenuSelectContext() {
   const context = useContext(DropdownMenuSelectContext);
 
@@ -267,7 +273,7 @@ export function DropdownMenuSelect<Value, Multiple extends boolean | undefined =
 
 const selectItemBase = cn(
   "relative flex min-w-0 items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-xs wrap-anywhere outline-none select-none",
-  "text-muted-foreground data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
+  "text-muted-foreground data-[panel-active]:not-data-[panel-dormant]:bg-muted data-[panel-active]:not-data-[panel-dormant]:text-foreground",
   "data-[checked]:text-foreground",
   "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
 );
@@ -278,7 +284,28 @@ const selectItemIcon =
 function enabledSelectItems(list: HTMLElement | null) {
   return Array.from(
     list?.querySelectorAll<HTMLElement>('[role="menuitemradio"], [role="menuitemcheckbox"]') ?? [],
-  ).filter((item) => !item.closest("[hidden]") && item.getAttribute("aria-disabled") !== "true");
+  ).filter((item) => {
+    // Hidden by a search inside the list, not by anything around it: Base UI can mark the
+    // whole positioner `hidden` while its anchor has no size, and the rows are still the rows.
+    const hidden = item.closest("[hidden]");
+    return !(hidden && list?.contains(hidden)) && item.getAttribute("aria-disabled") !== "true";
+  });
+}
+
+/**
+ * An arrow key while focus rests on the panel itself — where Base UI leaves it once the pointer
+ * has moved out — resumes from the active row rather than jumping back to the first.
+ */
+function resumeFromActiveRow(list: HTMLElement | null, key: string) {
+  if (!list || (key !== "ArrowDown" && key !== "ArrowUp")) return false;
+  const rows = enabledSelectItems(list);
+  const focused = list.ownerDocument.activeElement;
+  if (focused && rows.some((row) => row.contains(focused))) return false;
+  const index = rows.findIndex((row) => row.hasAttribute("data-panel-active"));
+  if (index < 0) return false;
+  const next = Math.min(Math.max(index + (key === "ArrowDown" ? 1 : -1), 0), rows.length - 1);
+  rows[next]?.focus();
+  return true;
 }
 
 export interface DropdownMenuSelectTriggerProps
@@ -376,6 +403,16 @@ export function DropdownMenuSelectContent({
     searchable && context.searchQuery.trim() !== "" && context.visibleOptionCount === 0;
 
   const { open, searchQuery, options, values, activate, clearActive } = context;
+
+  // Without a search field the active row behaves like a hover once the pointer leaves:
+  // unpainted, but kept for the arrows. A searchable panel keeps it lit for Enter.
+  const [pointerLeft, setPointerLeft] = useState(false);
+  const [wasOpen, setWasOpen] = useState(open);
+  if (wasOpen !== open) {
+    setWasOpen(open);
+    if (open) setPointerLeft(false);
+  }
+  const dormant = pointerLeft && !searchable;
   const previous = useRef({ open: false, query: "" });
   useEffect(() => {
     const opening = open && !previous.current.open;
@@ -484,6 +521,22 @@ export function DropdownMenuSelectContent({
           searchInputRef.current?.focus();
         }
       }}
+      onPointerLeave={(event) => {
+        if (!searchable && event.pointerType !== "touch") setPointerLeft(true);
+      }}
+      onPointerMove={() => {
+        if (pointerLeft) setPointerLeft(false);
+      }}
+      onKeyDownCapture={(event) => {
+        if (searchable) return;
+        if (pointerLeft) setPointerLeft(false);
+        // Only when the panel itself holds focus, where Base UI parks it after the pointer
+            // leaves. Keys from a nested panel bubble through here too, and are not ours.
+            if (event.target === event.currentTarget && resumeFromActiveRow(listRef.current, event.key)) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      }}
       {...props}
     >
       {searchable && searchPosition === "top" && searchField}
@@ -493,7 +546,7 @@ export function DropdownMenuSelectContent({
         className={cn("max-h-[min(var(--available-height),18rem)]", noResults && "hidden")}
         viewportClassName="p-1"
       >
-        {items}
+        <DropdownMenuSelectDormantContext.Provider value={dormant}>{items}</DropdownMenuSelectDormantContext.Provider>
       </ScrollArea>
       {noResults && (
         // `m-1` supplies the same 4px inset as the list's `p-1`; `h-7` matches one
@@ -554,9 +607,12 @@ export function DropdownMenuSelectItem({
     return () => unregisterOptionText(value);
   }, [optionText, registerOptionText, unregisterOptionText, value, isDisabled]);
 
+  const panelActive = context.activeValue !== null && Object.is(context.activeValue.value, value);
+  const panelDormant = useContext(DropdownMenuSelectDormantContext) && panelActive;
   const activationProps = {
     ref: itemRef,
-    "data-panel-active": context.activeValue && Object.is(context.activeValue.value, value) ? "" : undefined,
+    "data-panel-active": panelActive ? "" : undefined,
+    "data-panel-dormant": panelDormant ? "" : undefined,
     onFocus: () => { if (!isDisabled && !hiddenBySearch) context.activate(value); },
   };
 

@@ -25,8 +25,10 @@ supported API; do not assume every export accepts a ref, `asChild`, or controlle
 - A panel of rows (select, searchable menu, command palette) opens with a row already active:
   the current selection, or the most recent one when several are chosen, otherwise the first
   enabled row. Typing moves it to the top match. In the selects, hovering moves the active row; in the
-  command palette hover only highlights, and a press moves the selection. The pointer leaving
-  the panel keeps the active row. It carries `data-panel-active`, or Base UI's
+  command palette hover only highlights, and a press moves the selection. When the pointer
+  leaves, searchable panels keep the active row lit; panels without search mark it
+  `data-panel-dormant`, stop painting it, and resume the arrow keys from it. It carries
+  `data-panel-active`, or Base UI's
   `data-highlighted` where the primitive owns the highlight. `autoFocusFirstItem={false}` opts
   out where that prop is supported. Ordinary Dropdown Menu submenus opened by pointer hover
   start without a highlighted row; keyboard openings highlight the first enabled row.

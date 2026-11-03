@@ -10,7 +10,8 @@ import {
   SearchSelectCollection,
 } from "@/registry/ui/select/select-search";
 import { FruitIcon } from "./select-fruit-icons";
-import { bool, defineEntry, select } from "../schema";
+import { bool, defineEntry, select, withIcons } from "../schema";
+import { STATE_ICONS } from "../setting-icons";
 
 const FRUITS = [
   { value: "apple", label: "Apple" },
@@ -52,16 +53,18 @@ export const selectSearchEntry = defineEntry({
   slug: "select-search",
   name: "Select Search",
   controls: {
+    variant: select(["default", "outline-ghost", "ghost", "plain"] as const, "default", "Variant"),
+    // Focus tone colours the boxed looks' edge; ghost and plain have none.
     size: select(["sm", "md"] as const, "sm"),
-    tone: select(["neutral", "accent"], "neutral", "Focus"),
+    tone: select(["neutral", "accent"], "neutral", "Focus", (v) => v.variant === "ghost" || v.variant === "plain"),
     multiple: bool(false),
     selected: bool(true, "Selected"),
     icons: bool(true),
     groups: bool(false, "Sections"),
     scrollable: bool(false, "Scrollable"),
-    state: select(["default", "disabled", "invalid"] as const, "default", "State"),
+    state: withIcons(select(["default", "disabled", "invalid"] as const, "default", "State"), STATE_ICONS, { dropdown: true }),
   },
-  render({ size, tone, multiple, selected, scrollable, groups, icons, state }) {
+  render({ variant, size, tone, multiple, selected, scrollable, groups, icons, state }) {
     const disabled = state === "disabled";
     const invalid = state === "invalid";
     const items: readonly Fruit[] = scrollable ? ALL_FRUITS : FRUITS;
@@ -81,6 +84,7 @@ export const selectSearchEntry = defineEntry({
             disabled={disabled}
           >
             <SearchSelectInput
+              variant={variant}
               aria-label="Fruits"
               placeholder="Select an option"
               tone={tone}
@@ -99,6 +103,7 @@ export const selectSearchEntry = defineEntry({
             iconForValue={icons ? (value) => <FruitIcon value={value.value} /> : undefined}
           >
             <SearchSelectInput
+              variant={variant}
               aria-label="Fruit"
               placeholder="Select an option"
               tone={tone}

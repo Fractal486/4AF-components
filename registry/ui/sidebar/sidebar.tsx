@@ -1,13 +1,7 @@
 "use client";
 
+import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import { cn } from "@/registry/lib/cn";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/registry/ui/sheet/sheet";
 import {
   useCallback,
   useLayoutEffect,
@@ -22,6 +16,7 @@ import {
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { SidebarSplitContext, useSidebar, type SidebarSplitContextValue } from "./sidebar.context";
 import { SidebarRail } from "./sidebar.controls";
+import { sidebarMobileBackdropVariants, sidebarMobilePopupVariants } from "./sidebar.variants";
 
 // Keep the installable component's public API at this entry point.
 export { useSidebar } from "./sidebar.context";
@@ -83,8 +78,8 @@ export {
  * An application sidebar: a collapsible nav rail with a mobile drawer.
  *
  * There's no Base UI "sidebar" — it's a composition, and the parts that *do* have
- * primitives use them. The mobile drawer is our Sheet (Base UI Dialog: focus trap,
- * scroll lock, dismiss), the collapsed labels are our Tooltip (Base UI Tooltip), and
+ * primitives use them. The mobile drawer is Base UI's Dialog (focus trap, scroll lock,
+ * dismiss) with CSS slide transitions of its own, the collapsed labels are our Tooltip (Base UI Tooltip), and
  * the dividers are Base UI's Separator. What's left — a width, a breakpoint, and some
  * state — is genuinely just layout, and pretending otherwise would mean wrapping a
  * primitive around a `<div>`.
@@ -231,56 +226,56 @@ export function Sidebar({
 
   if (isMobile) {
     const mobileSidebar = (
-      <Sheet open={openMobile} onOpenChange={setOpenMobile}>
-        <SheetContent
-          side={side}
-          showClose={false}
-          data-slot="sidebar"
-          data-mobile="true"
-          data-sidebar-scope={shortcutScope}
-          onClick={(event) => {
-            // Client routers prevent the browser's default navigation before routing.
-            // The link still navigates, so defaultPrevented does not suppress this close.
-            if (isMobileNavigation(event)) setOpenMobile(false);
-          }}
-          className={cn(
-            isSplit
-              ? "w-[calc(var(--sidebar-width)+var(--sidebar-width-icon))]"
-              : "w-(--sidebar-width)",
-            "bg-surface p-0",
-            mobileClassName,
-          )}
-          style={
-            {
-              "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-              ...(isSplit
-                ? { "--sidebar-width-icon": SIDEBAR_WIDTH_SPLIT_RAIL }
-                : {}),
-            } as CSSProperties
-          }
-        >
-          {/* The drawer is a dialog and needs a name, but the nav is self-describing. */}
-          <SheetHeader className="sr-only">
-            <SheetTitle>Sidebar</SheetTitle>
-            <SheetDescription>Site navigation.</SheetDescription>
-          </SheetHeader>
-          {isSplit ? (
-            <div className="flex h-full w-full">
-              <ScrollArea
-                data-slot="sidebar-rail-column"
-                className="h-full w-(--sidebar-width-icon) shrink-0 border-r border-border bg-surface"
-                // `overflow-x-hidden` as on desktop: a wide rail item must not scroll sideways.
-                viewportClassName="flex flex-col items-center gap-2 overflow-x-hidden! p-2"
-              >
-                {rail}
-              </ScrollArea>
-              <div className="flex min-w-0 flex-1 flex-col">{children}</div>
-            </div>
-          ) : (
-            <div className="flex h-full w-full flex-col">{children}</div>
-          )}
-        </SheetContent>
-      </Sheet>
+      <BaseDialog.Root open={openMobile} onOpenChange={(open) => setOpenMobile(open)}>
+        <BaseDialog.Portal>
+          <BaseDialog.Backdrop className={sidebarMobileBackdropVariants()} />
+          <BaseDialog.Popup
+            data-slot="sidebar"
+            data-side={side}
+            data-mobile="true"
+            data-sidebar-scope={shortcutScope}
+            onClick={(event) => {
+              // Client routers prevent the browser's default navigation before routing.
+              // The link still navigates, so defaultPrevented does not suppress this close.
+              if (isMobileNavigation(event)) setOpenMobile(false);
+            }}
+            className={cn(
+              sidebarMobilePopupVariants({ side }),
+              isSplit
+                ? "w-[calc(var(--sidebar-width)+var(--sidebar-width-icon))]"
+                : "w-(--sidebar-width)",
+              mobileClassName,
+            )}
+            style={
+              {
+                "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+                ...(isSplit
+                  ? { "--sidebar-width-icon": SIDEBAR_WIDTH_SPLIT_RAIL }
+                  : {}),
+              } as CSSProperties
+            }
+          >
+            {/* The drawer is a dialog and needs a name, but the nav is self-describing. */}
+            <BaseDialog.Title className="sr-only">Sidebar</BaseDialog.Title>
+            <BaseDialog.Description className="sr-only">Site navigation.</BaseDialog.Description>
+            {isSplit ? (
+              <div className="flex h-full w-full">
+                <ScrollArea
+                  data-slot="sidebar-rail-column"
+                  className="h-full w-(--sidebar-width-icon) shrink-0 border-r border-border bg-surface"
+                  // `overflow-x-hidden` as on desktop: a wide rail item must not scroll sideways.
+                  viewportClassName="flex flex-col items-center gap-2 overflow-x-hidden! p-2"
+                >
+                  {rail}
+                </ScrollArea>
+                <div className="flex min-w-0 flex-1 flex-col">{children}</div>
+              </div>
+            ) : (
+              <div className="flex h-full w-full flex-col">{children}</div>
+            )}
+          </BaseDialog.Popup>
+        </BaseDialog.Portal>
+      </BaseDialog.Root>
     );
 
     return isSplit ? (

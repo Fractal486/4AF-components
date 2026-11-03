@@ -112,3 +112,13 @@ it("keeps keyboard focus on the link and dismisses on Escape", async () => {
   await user.keyboard('{Escape}');await waitFor(()=>expect(screen.queryByText('Preview')).not.toBeInTheDocument());
   expect(screen.getByRole('link')).toHaveFocus();
 });
+
+it("closes as soon as the pointer leaves, unless a shared card needs the crossing delay", async () => {
+  const user=userEvent.setup();
+  render(<><HoverCard><HoverCardTrigger href="#solo" delay={0}>Solo</HoverCardTrigger>
+    <HoverCardContent><p>Solo profile</p></HoverCardContent></HoverCard><span>Elsewhere</span></>);
+  await user.hover(screen.getByRole('link',{name:'Solo'}));await screen.findByText('Solo profile');
+  await user.hover(screen.getByText('Elsewhere'));
+  // Well inside Base UI's 300ms default, so only a zero close delay passes.
+  await waitFor(()=>expect(screen.queryByText('Solo profile')).not.toBeInTheDocument(),{timeout:150});
+});

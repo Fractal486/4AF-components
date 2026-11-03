@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
-export type SelectTriggerVariant = "default" | "ghost" | "plain";
+export type SelectTriggerVariant = "default" | "outline-ghost" | "ghost" | "plain";
 export type SelectTriggerTone = "neutral" | "accent";
 
 /** The standard field trigger: a boxed field, a ghost field, or a borderless text control. */
@@ -18,6 +18,14 @@ export const selectTriggerVariants = cva(
         default: [
           "w-full justify-between border border-border bg-surface px-3.5",
           "hover:border-border-strong",
+          "[&:is([aria-invalid=true],[data-invalid])]:border-destructive! [&:is([aria-invalid=true],[data-invalid])]:ring-[3px]! [&:is([aria-invalid=true],[data-invalid])]:ring-destructive/25!",
+        ],
+        // Button's outline-ghost: the `shadow-border` edge with no fill of its own, so the
+        // background shows through; hover and open lay a translucent wash. The border stays,
+        // transparent, so the invalid state can colour an edge without changing the size.
+        "outline-ghost": [
+          "w-full justify-between border border-transparent bg-transparent shadow-border px-3.5",
+          "hover:bg-foreground/5 data-[popup-open]:bg-foreground/5",
           "[&:is([aria-invalid=true],[data-invalid])]:border-destructive! [&:is([aria-invalid=true],[data-invalid])]:ring-[3px]! [&:is([aria-invalid=true],[data-invalid])]:ring-destructive/25!",
         ],
         ghost: [
@@ -71,6 +79,11 @@ export const selectSortTriggerVariants = cva(
           "border hover:border-border-strong",
           "[&:is([aria-invalid=true],[data-invalid])]:border-destructive!",
           "data-[popup-open]:border-border-strong data-[popup-open]:bg-muted",
+        ],
+        "outline-ghost": [
+          "border border-transparent bg-transparent shadow-border",
+          "hover:bg-foreground/5 data-[popup-open]:bg-foreground/5",
+          "[&:is([aria-invalid=true],[data-invalid])]:border-destructive!",
         ],
         ghost: [
           "border border-transparent bg-transparent text-muted-foreground",

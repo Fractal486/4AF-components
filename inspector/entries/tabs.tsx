@@ -1,6 +1,7 @@
 import { Bell, CreditCard, Plug, Shield, User, Users } from "lucide-react";
 import { Tabs, TabsCount, TabsList, TabsTab } from "@/registry/ui/tabs/tabs";
-import { bool, defineEntry, select } from "../schema";
+import { bool, defineEntry, select, withIcons } from "../schema";
+import { TABS_ORIENTATION_ICONS } from "../setting-icons";
 
 const VARIANTS = ["segment", "pill", "underline"] as const;
 const SIZES = ["sm", "md"] as const;
@@ -18,7 +19,7 @@ export const tabsEntry = defineEntry({
   controls: {
     variant: select(VARIANTS, "segment"),
     size: select(SIZES, "md", "Size"),
-    orientation: select(["horizontal", "vertical"], "horizontal", "Orientation"),
+    orientation: withIcons(select(["horizontal", "vertical"], "horizontal", "Orientation"), TABS_ORIENTATION_ICONS),
     overflow: bool(false, "Many tabs"),
     // The track treatment — segment/pill only, so it's disabled for underline.
     appearance: select(APPEARANCES, "default", "Appearance", (v) => v.variant === "underline"),

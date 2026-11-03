@@ -12,7 +12,8 @@ import {
   SelectValue,
 } from "@/registry/ui/select/select";
 import { FruitIcon } from "./select-fruit-icons";
-import { bool, defineEntry, select } from "../schema";
+import { bool, defineEntry, select, withIcons } from "../schema";
+import { STATE_ICONS } from "../setting-icons";
 
 const FRUITS = {
   apple: "Apple",
@@ -83,7 +84,7 @@ export const selectEntry = defineEntry({
   slug: "select",
   name: "Select",
   controls: {
-    variant: select(["default", "ghost", "plain"] as const, "default", "Variant"),
+    variant: select(["default", "outline-ghost", "ghost", "plain"] as const, "default", "Variant"),
     tone: select(["neutral", "accent"] as const, "neutral", "Open border", (v) => v.variant !== "default"),
     size: select(["xs", "sm", "md"] as const, "sm"),
     multiple: bool(false),
@@ -93,7 +94,7 @@ export const selectEntry = defineEntry({
     groups: bool(false, "Sections"),
     scrollable: bool(false, "Scrollable"),
     searchable: bool(false, "Search in panel"),
-    state: select(["default", "disabled", "invalid"] as const, "default", "State"),
+    state: withIcons(select(["default", "disabled", "invalid"] as const, "default", "State"), STATE_ICONS, { dropdown: true }),
   },
   render({ size, multiple, selected, searchable, scrollable, groups, icons, variant, tone, showLabel, state }) {
     const disabled = state === "disabled";

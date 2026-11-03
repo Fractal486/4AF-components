@@ -14,7 +14,7 @@ description: A hover and focus preview with smooth resizing, scrolling content, 
   `onOpenChangeComplete`, `actionsRef`, `handle`, and trigger payloads through Base UI.
   Open-change details include the reason and allow cancellation.
 - `HoverCardTrigger` renders a link by default. It accepts `href`, `delay` (600ms),
-  `closeDelay` (300ms), `handle`, `payload`, custom `render`, state-based classes, and a ref.
+  `closeDelay` (0ms, so the card closes as soon as the pointer leaves it or the trigger; Base UI's safe polygon covers the trip into the card. Triggers sharing a card through `handle` keep Base UI's 300ms, which lets the card move between them), `handle`, `payload`, custom `render`, state-based classes, and a ref.
 - `HoverCardContent` combines a portal, positioner, and popup. Placement defaults to
   `side="bottom"`, `align="center"`, and `sideOffset={6}`. The offset also accepts a function.
 - `positionerProps` forwards collision padding (8px by default), collision boundaries and
@@ -37,8 +37,8 @@ description: A hover and focus preview with smooth resizing, scrolling content, 
 Loaded or expanded content smoothly changes the card's height. Continuous size changes
 follow directly so an already-animating child does not lag. The height measurement is shared
 with Popover, while hover behavior remains Base UI Preview Card's. Height is intentionally
-animated because the frame must grow with the content; durations follow the motion tokens
-and reduced-motion setting.
+animated because the frame must grow with the content. The card opens and closes with the Select
+family's motion; durations follow the motion tokens and reduced-motion setting.
 
 Available space caps the card's height and width. Tall content uses the shared Scroll Area,
 including its scrollbar and edge fades. Scrollbars stay hidden during a height resize and return

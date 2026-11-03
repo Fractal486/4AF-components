@@ -11,7 +11,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/registry/ui/sheet/sheet";
-import { bool, defineEntry, select } from "../schema";
+import { bool, defineEntry, select, withIcons } from "../schema";
+import { EDGE_SIDE_ICONS } from "../setting-icons";
 
 const SIDES = ["right", "left", "top", "bottom"] as const;
 
@@ -19,7 +20,7 @@ export const sheetEntry = defineEntry({
   slug: "sheet",
   name: "Sheet",
   controls: {
-    side: select(SIDES, "right"),
+    side: withIcons(select(SIDES, "right"), EDGE_SIDE_ICONS),
     content: select(["short", "long"], "short", "Content"),
     showClose: bool(true, "Close button"),
   },

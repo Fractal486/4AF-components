@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
-export type AlignedSelectTriggerVariant = "default" | "ghost" | "plain";
+export type AlignedSelectTriggerVariant = "default" | "outline-ghost" | "ghost" | "plain";
 
 /** The aligned trigger: a field, a ghost field, or a borderless text control. */
 export const alignedSelectTriggerVariants = cva(
@@ -18,6 +18,14 @@ export const alignedSelectTriggerVariants = cva(
         default: [
           "w-full justify-between border border-border bg-surface px-3.5",
           "hover:border-border-strong data-[popup-open]:border-border-strong",
+          "[&:is([aria-invalid=true],[data-invalid])]:border-destructive!",
+        ],
+        // Button's outline-ghost: the `shadow-border` edge with no fill of its own, so the
+        // background shows through; hover and open lay a translucent wash. The border stays,
+        // transparent, so the invalid state can colour an edge without changing the size.
+        "outline-ghost": [
+          "w-full justify-between border border-transparent bg-transparent shadow-border px-3.5",
+          "hover:bg-foreground/5 data-[popup-open]:bg-foreground/5",
           "[&:is([aria-invalid=true],[data-invalid])]:border-destructive!",
         ],
         ghost: [

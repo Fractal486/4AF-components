@@ -41,18 +41,39 @@ export function setForwardedRef<T>(ref: ForwardedRef<T>, value: T | null) {
   }
 }
 
+function enabledPanelOptions(list: HTMLElement) {
+  return Array.from(list.querySelectorAll<HTMLElement>('[role="option"]')).filter(
+    (option) =>
+      !option.hidden &&
+      option.getAttribute("aria-disabled") !== "true" &&
+      !(option instanceof HTMLButtonElement && option.disabled),
+  );
+}
+
+/**
+ * An arrow key while focus rests on the panel itself — where Base UI leaves it once the pointer
+ * has moved out — resumes from the active row instead of jumping back to the first. Returns
+ * whether it moved focus, so the caller can keep Base UI from moving it again.
+ */
+export function resumeFromActiveOption(list: HTMLElement | null, key: string) {
+  if (!list || (key !== "ArrowDown" && key !== "ArrowUp")) return false;
+  const options = enabledPanelOptions(list);
+  const focused = list.ownerDocument.activeElement;
+  if (focused && options.some((option) => option.contains(focused))) return false;
+  const index = options.findIndex((option) => option.hasAttribute("data-panel-active"));
+  if (index < 0) return false;
+  const next = Math.min(Math.max(index + (key === "ArrowDown" ? 1 : -1), 0), options.length - 1);
+  options[next]?.focus();
+  return true;
+}
+
 export function focusPanelOption(
   list: HTMLElement | null,
   direction: "next" | "previous" | "active",
 ) {
   if (!list) return;
 
-  const options = Array.from(list.querySelectorAll<HTMLElement>('[role="option"]')).filter(
-    (option) =>
-      !option.hidden &&
-      option.getAttribute("aria-disabled") !== "true" &&
-      !(option instanceof HTMLButtonElement && option.disabled),
-  );
+  const options = enabledPanelOptions(list);
   // `active` reads the mark off the DOM rather than recomputing which row it should be, so
   // the row that paints as active is provably the row that takes focus.
   const option =

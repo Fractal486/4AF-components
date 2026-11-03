@@ -91,6 +91,10 @@ export const buttonVariants = cva(
             because the fill already says "you're on it", and moving both is two
             signals for one event. */
         outline: "bg-surface text-foreground shadow-border hover:bg-muted data-[popup-trigger]:aria-expanded:bg-muted",
+        /** Outline's edge with no fill of its own, so whatever it sits on shows through.
+            Hover lays a translucent wash rather than `muted`, which is opaque and would
+            replace that background instead of darkening it. */
+        "outline-ghost": "text-foreground shadow-border hover:bg-foreground/5 data-[popup-trigger]:aria-expanded:bg-foreground/5",
         ghost: "text-muted-foreground hover:bg-muted hover:text-foreground data-[popup-trigger]:aria-expanded:bg-muted data-[popup-trigger]:aria-expanded:text-foreground",
         plain: "bg-transparent text-foreground hover:bg-transparent",
         destructive:
