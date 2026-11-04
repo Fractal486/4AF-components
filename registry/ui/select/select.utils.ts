@@ -67,6 +67,44 @@ export function resumeFromActiveOption(list: HTMLElement | null, key: string) {
   return true;
 }
 
+function enabledFooterButtons(footer: HTMLElement | null) {
+  return footer ? Array.from(footer.querySelectorAll<HTMLButtonElement>("button:not(:disabled)")) : [];
+}
+
+/**
+ * ↓ from the last enabled row — focused, or marked active while the panel holds focus —
+ * moves to the first enabled footer button. Returns whether it moved focus.
+ */
+export function focusFooterFromLastRow(list: HTMLElement | null, footer: HTMLElement | null, target: Node) {
+  const first = enabledFooterButtons(footer)[0];
+  if (!list || !first) return false;
+  const options = enabledPanelOptions(list);
+  const last = options.at(-1);
+  if (!last) return false;
+  const onLast = last.contains(target) || (!options.some((option) => option.contains(target)) &&
+    !(target instanceof HTMLInputElement) && last.hasAttribute("data-panel-active"));
+  if (!onLast) return false;
+  first.focus();
+  return true;
+}
+
+/** ←/→ along the footer row, ↑ back to the last enabled row. Returns whether it handled the key. */
+export function moveFromFooter(list: HTMLElement | null, footer: HTMLElement | null, button: HTMLElement, key: string) {
+  if (key === "ArrowUp") {
+    const last = list ? enabledPanelOptions(list).at(-1) : undefined;
+    last?.focus();
+    return Boolean(last);
+  }
+  if (key === "ArrowDown") return true;
+  if (key !== "ArrowLeft" && key !== "ArrowRight") return false;
+  const buttons = enabledFooterButtons(footer);
+  const index = buttons.indexOf(button as HTMLButtonElement);
+  const rtl = getComputedStyle(button).direction === "rtl";
+  const step = (key === "ArrowRight") !== rtl ? 1 : -1;
+  buttons[Math.min(Math.max(index + step, 0), buttons.length - 1)]?.focus();
+  return true;
+}
+
 export function focusPanelOption(
   list: HTMLElement | null,
   direction: "next" | "previous" | "active",

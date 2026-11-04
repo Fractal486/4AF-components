@@ -100,6 +100,9 @@ describe("SelectionToolbar", () => {
     // One element, not a dialog wrapping a toolbar — the popup *is* the toolbar.
     expect(screen.getByRole("toolbar")).toHaveClass("rounded-[8px]");
     expect(screen.getByRole("button", { name: "Copy" })).toBeInTheDocument();
+    // Concentric with the 8px bar through its 4px padding.
+    expect(screen.getByRole("button", { name: "Copy" })).toHaveClass("rounded-[4px]");
+    expect(screen.getByRole("button", { name: "Copy" })).not.toHaveClass("rounded-[6px]");
   });
 
   it("survives the rest of the gesture that opened it", () => {

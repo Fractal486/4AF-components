@@ -1,4 +1,5 @@
 import { cn } from "@/registry/lib/cn";
+import { useMergedRefs } from "@/registry/lib/refs";
 import { Slot } from "@/registry/lib/slot";
 import { Button } from "@/registry/ui/button/button";
 import { BadgeCount } from "@/registry/ui/badge/badge";
@@ -6,10 +7,12 @@ import { Skeleton } from "@/registry/ui/skeleton/skeleton";
 import { Tooltip } from "@/registry/ui/tooltip/tooltip";
 import { Collapsible as BaseCollapsible } from "@base-ui/react/collapsible";
 import { ChevronDown } from "lucide-react";
-import type { ComponentProps, CSSProperties, ReactNode } from "react";
-import { useSidebar } from "./sidebar.context";
+import { useContext, useLayoutEffect, useRef, type ComponentProps, type CSSProperties, type ReactNode } from "react";
+import { SidebarContext, useSidebar } from "./sidebar.context";
 import {
   sidebarMenuButtonVariants,
+  sidebarMenuCollapsiblePanelVariants,
+  sidebarMenuCollapsibleContentVariants,
   sidebarMenuBadgeVariants,
   sidebarMenuReplacementActionVariants,
   sidebarMenuSubButtonVariants,
@@ -106,12 +109,22 @@ export function SidebarMenuButton({
     />
   );
 
-  // Only when there's nothing else to read. Expanded, the label is right there, and a
-  // tooltip repeating it is noise that follows the pointer around.
-  if (!tooltip || state !== "collapsed" || isMobile) return button;
+  if (!tooltip) return button;
 
   return (
-    <Tooltip content={tooltip} side="right">
+    <Tooltip
+      content={tooltip}
+      // Only when there's nothing else to read. Expanded, the label is right there, and a
+      // tooltip repeating it is noise that follows the pointer around. Disabled rather than
+      // left out, so collapsing doesn't change the tree: wrapping the row only once it
+      // collapsed remounted it in its collapsed state, so its label never faded and an `sm`
+      // row's height snapped to the rail's 32px instead of growing into it.
+      disabled={state !== "collapsed" || isMobile}
+      side="right"
+      // The collapsed rail shares one warm provider; keep each row's tooltip animating
+      // as the pointer runs down the icons instead of switching instantly.
+      className="data-instant:transition-[opacity,scale,translate,filter]"
+    >
       {button}
     </Tooltip>
   );
@@ -119,6 +132,9 @@ export function SidebarMenuButton({
 
 export interface SidebarMenuCollapsibleTriggerProps
   extends Omit<SidebarMenuButtonProps, "asChild"> {
+  /** For a page-like row, pass its selection state. Inactive rows open without closing;
+   * active rows toggle. Omit for a disclosure-only row that always toggles. */
+  isActive?: boolean;
   /**
    * Whether to render the standard trailing chevron. Pass `false` when supplying a
    * custom indicator inside the trigger.
@@ -133,15 +149,27 @@ export function SidebarMenuCollapsibleTrigger({
   children,
   chevron = true,
   disabled,
+  isActive,
+  onClick,
   ...props
 }: SidebarMenuCollapsibleTriggerProps) {
+  const separateChevron = chevron && isActive !== undefined;
   return (
+    <>
     <BaseCollapsible.Trigger
       disabled={disabled}
+      onClick={(event) => {
+        // Read the selection from before the caller changes pages. An already-open
+        // inactive page should stay open while the click selects it.
+        const keepOpen = isActive === false && event.currentTarget.getAttribute("aria-expanded") === "true";
+        onClick?.(event);
+        if (keepOpen) event.preventBaseUIHandler();
+      }}
       render={
         <SidebarMenuButton
           {...props}
           disabled={disabled}
+          isActive={isActive}
           className={cn(
             // Sibling badges and actions are positioned in slots immediately before the
             // chevron. Reset the generic action padding so the chevron can stay at the
@@ -163,16 +191,35 @@ export function SidebarMenuCollapsibleTrigger({
                 data-slot="sidebar-menu-action-spacer"
                 className="hidden w-7 shrink-0 group-data-[collapsible=icon]:hidden group-has-data-[slot=sidebar-menu-action]/menu-collapsible:block"
               />
-              <ChevronDown
+              {separateChevron ? <span aria-hidden="true" className="order-last ml-auto size-4 shrink-0 group-data-[collapsible=icon]:hidden" /> : <ChevronDown
                 aria-hidden="true"
                 data-slot="sidebar-menu-chevron"
                 className="order-last ml-auto shrink-0 -rotate-90 transition-[rotate] duration-(--duration-chevron) ease-out group-data-[collapsible=icon]:hidden [[data-panel-open]_&]:rotate-0"
-              />
+              />}
             </>
           )}
         </SidebarMenuButton>
       }
     />
+    {separateChevron && (
+      <BaseCollapsible.Trigger
+        disabled={disabled}
+        aria-label="Toggle section"
+        render={
+          <Button
+            variant="plain"
+            size="icon-sm"
+            pressScale={false}
+            data-slot="sidebar-menu-chevron-button"
+            className="absolute top-0 right-1 h-8 w-6 cursor-default rounded-[6px] p-0 text-muted-foreground hover:text-foreground peer-data-[size=sm]/menu-button:h-7 peer-data-[size=lg]/menu-button:h-12 group-data-[collapsible=icon]:hidden"
+          >
+            <ChevronDown aria-hidden="true" data-slot="sidebar-menu-chevron"
+              className="size-4 -rotate-90 transition-[rotate] duration-(--duration-chevron) ease-out [[data-panel-open]_&]:rotate-0" />
+          </Button>
+        }
+      />
+    )}
+    </>
   );
 }
 
@@ -186,14 +233,19 @@ export type SidebarMenuCollapsibleContentProps = Omit<
 /** The nested content controlled by SidebarMenuCollapsibleTrigger. */
 export function SidebarMenuCollapsibleContent({
   className,
+  children,
   ...props
 }: SidebarMenuCollapsibleContentProps) {
   return (
     <BaseCollapsible.Panel
       {...props}
       data-slot="sidebar-menu-collapsible-content"
-      className={cn("min-w-0", className)}
-    />
+      className={cn(sidebarMenuCollapsiblePanelVariants(), className)}
+    >
+      <div data-slot="sidebar-menu-collapsible-body" className={sidebarMenuCollapsibleContentVariants()}>
+        {children}
+      </div>
+    </BaseCollapsible.Panel>
   );
 }
 
@@ -263,15 +315,74 @@ export interface SidebarMenuBadgeProps extends ComponentProps<"div"> {
   tone?: "default" | "success" | "warning" | "destructive";
 }
 
+/** A CSS duration token in milliseconds, so JS timing follows the motion controls. */
+function durationToken(element: HTMLElement, name: string) {
+  const token = getComputedStyle(element).getPropertyValue(name).trim();
+  return (Number.parseFloat(token) || 0) * (token.endsWith("ms") ? 1 : 1000);
+}
+
+/**
+ * Collapsing into the icon rail, a badge is pinned to its row's right edge, which travels the
+ * whole width of the collapse, so a visible count would slide across with it. Instead the
+ * count fades out over the collapse's first half (`--duration-fast`, half of
+ * `--duration-slow`), held by `data-hold` because the rail's CSS would otherwise swap it for
+ * the dot in the first frame; at the midpoint it becomes the dot, which fades in over the
+ * second half. Expanding, the count comes back with the row's action: both are there from
+ * the first frame, the count fading in over `--duration-fast`. Only rail changes: an
+ * offcanvas sidebar slides away whole. Mount keeps the plain CSS state.
+ */
+function useSettleWithRail(ref: { current: HTMLElement | null }) {
+  // Optional: a badge also renders on its own, outside any sidebar.
+  const state = useContext(SidebarContext)?.state;
+  const previous = useRef<{ state: typeof state; rail: boolean } | null>(null);
+  useLayoutEffect(() => {
+    const element = ref.current;
+    const sidebar = element?.closest<HTMLElement>('[data-slot="sidebar"]');
+    const rail = sidebar?.dataset.collapsible === "icon";
+    const last = previous.current;
+    previous.current = { state, rail: state === "collapsed" ? rail : last?.rail ?? false };
+    if (!element || !last || last.state === state) return;
+    // Collapsing reads the mode it is entering; expanding, the mode it is leaving.
+    if (!(state === "collapsed" ? rail : last.rail)) return;
+    const clear = () => {
+      element.removeAttribute("data-hold");
+      element.removeAttribute("data-settling");
+    };
+    element.setAttribute("data-settling", "");
+    if (state === "collapsed") {
+      element.setAttribute("data-hold", "count");
+      const swap = setTimeout(clear, durationToken(element, "--duration-fast"));
+      return () => {
+        clearTimeout(swap);
+        clear();
+      };
+    }
+    // Expanding: faded for one painted frame, so the count fades in from the start.
+    let second = 0;
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(clear);
+    });
+    return () => {
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+      clear();
+    };
+  }, [ref, state]);
+}
+
 export function SidebarMenuBadge({
   className, count, max = 99, label, locales = "en-US", animated = false,
-  dot = false, tone = "default", children, ...props
+  dot = false, tone = "default", children, ref, ...props
 }: SidebarMenuBadgeProps) {
   const value = count === undefined ? undefined : Number.isFinite(count) ? Math.max(0, Math.floor(count)) : 0;
+  const badgeRef = useRef<HTMLDivElement>(null);
+  const mergedRef = useMergedRefs(badgeRef, ref);
+  useSettleWithRail(badgeRef);
   if (value === 0) return null;
 
   return (
     <div
+      ref={mergedRef}
       data-slot="sidebar-menu-badge"
       data-count={value}
       data-dot={dot || undefined}
@@ -286,11 +397,13 @@ export function SidebarMenuBadge({
         </>
       ) : value !== undefined ? (
         <>
-          <span className="group-data-[collapsible=icon]:sr-only">
+          {/* Which of the two shows is the badge's call (see its variants): the rail form
+              waits on `data-hold` while the old one fades out. `inline-block` so it scales. */}
+          <span data-part="count" className="inline-block">
             <BadgeCount value={value} max={max} locales={locales} animated={animated} />
             {label && <span className="sr-only"> {label}</span>}
           </span>
-          <span aria-hidden="true" className="hidden size-1.5 rounded-full bg-current group-data-[collapsible=icon]:block" />
+          <span aria-hidden="true" data-part="dot" className="hidden size-1.5 rounded-full bg-current" />
         </>
       ) : children}
     </div>
@@ -322,8 +435,9 @@ export function SidebarMenuSkeleton({
     <div
       data-slot="sidebar-menu-skeleton"
       className={cn(
-        "flex items-center gap-2 rounded-md px-2",
-        nested ? "h-7 w-full min-w-0 -translate-x-px" : "h-8",
+        "flex items-center gap-2 px-2",
+        // The corners of the rows it stands in for: 6px nested (`sm`), 8px otherwise.
+        nested ? "h-7 w-full min-w-0 -translate-x-px rounded-[6px]" : "h-8 rounded-[8px]",
         "group-data-[collapsible=icon]:hidden",
         className,
       )}

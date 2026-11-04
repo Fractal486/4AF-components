@@ -13,7 +13,7 @@ import {
   Star,
   Users,
 } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -24,7 +24,6 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarHeaderButton,
-  SidebarHeaderRow,
   SidebarInput,
   SidebarMenu,
   SidebarMenuAction,
@@ -47,7 +46,9 @@ import {
   SidebarTabsTab,
   useSidebar,
 } from "@/registry/ui/sidebar/sidebar";
+import { cn } from "@/registry/lib/cn";
 import { SidebarLayout } from "@/registry/ui/sidebar-layout/sidebar-layout";
+import { DesktopPreview, PHONE_FRAME, WireframePage } from "./wireframe";
 
 const NAV = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -65,8 +66,19 @@ const PERSONAL = [
 ] as const;
 
 /** With `tabs`, the header, panels and footer sit inside the tabs root; without, as they are. */
-function MaybeSidebarTabs({ tabs, children }: { tabs: boolean; children: ReactNode }) {
-  return tabs ? <SidebarTabs defaultValue="workspace">{children}</SidebarTabs> : <>{children}</>;
+export interface SidebarDemoTabsStyle {
+  variant: "segment" | "pill" | "underline";
+  appearance: "default" | "solid" | "outline";
+  size: "sm" | "md";
+}
+
+export interface SidebarDemoSearchStyle {
+  variant: "default" | "plain" | "underline";
+  tone: "neutral" | "accent";
+}
+
+function MaybeSidebarTabs({ tabs, style, children }: { tabs: boolean; style?: SidebarDemoTabsStyle; children: ReactNode }) {
+  return tabs ? <SidebarTabs defaultValue="workspace" {...style}>{children}</SidebarTabs> : <>{children}</>;
 }
 
 function MaybeSidebarTabsPanel({ tabs, value, children }: { tabs: boolean; value: string; children: ReactNode }) {
@@ -120,15 +132,24 @@ export function SidebarDemo({
   loading,
   customHeader = false,
   tabs = false,
-  fullscreen = false,
+  tabsStyle,
+  searchField = true,
+  searchStyle,
+  mobile = false,
 }: {
   variant: "sidebar" | "floating" | "inset" | "split" | "split-floating" | "split-inset";
   collapsible: "offcanvas" | "icon" | "none";
   loading: boolean;
   customHeader?: boolean;
   tabs?: boolean;
-  fullscreen?: boolean;
+  tabsStyle?: SidebarDemoTabsStyle;
+  /** The header's search field, in the default layout and the split Files panel. */
+  searchField?: boolean;
+  searchStyle?: SidebarDemoSearchStyle;
+  /** Renders the mobile layout, its drawer opening inside the window. */
+  mobile?: boolean;
 }) {
+  const [frame, setFrame] = useState<HTMLDivElement | null>(null);
   const [active, setActive] = useState<string>("dashboard");
   const [dashboardSelection, setDashboardSelection] = useState("overview");
   const [mailSelection, setMailSelection] = useState("inbox");
@@ -139,16 +160,19 @@ export function SidebarDemo({
 
   return (
     // The playground needs a containing block because the sidebar panel is fixed, and the
-    // window fills the canvas's height; the fullscreen route drops that frame so the shell
-    // can own the browser viewport instead. In dark mode the window's surfaces step down
+    // window fills the canvas's height. In dark mode the window's surfaces step down
     // toward the page background, so a whole app shell doesn't outshine the playground
     // around it; tooltips portal out and keep the real tokens.
+    // Both app-shell demos share the same canvas-fitted desktop and mobile windows.
+    <div className="flex h-full w-full items-center justify-center" style={{ containerType: "size" }}>
+    <DesktopPreview mobile={mobile}>
+    {/* Mobile is the same phone window as Sidebar Layout's. */}
     <div
-      className={
-        fullscreen
-          ? "relative h-dvh w-full overflow-hidden"
-          : "relative h-full min-h-[28rem] w-full overflow-hidden rounded-lg border border-border [contain:paint] dark:[--muted:oklch(0.165_0_0)] dark:[--surface:oklch(0.135_0_0)]"
-      }
+      ref={setFrame}
+      className={cn(
+        "relative overflow-hidden rounded-lg border border-border [contain:paint] dark:[--muted:oklch(0.165_0_0)] dark:[--surface:oklch(0.135_0_0)]",
+        mobile ? PHONE_FRAME : "h-full w-full",
+      )}
     >
       <SidebarLayout
         sidebar={
@@ -157,6 +181,7 @@ export function SidebarDemo({
             collapsible={collapsible}
             defaultActivePanel={split ? "mail" : undefined}
             className="h-full"
+            mobileContainer={frame}
             rail={
               split ? (
                 <div className="flex h-full flex-col items-center gap-2">
@@ -251,22 +276,14 @@ export function SidebarDemo({
                   <span className="mt-1 flex h-6 items-center px-1 text-sm font-medium text-foreground">
                     Emails
                   </span>
-                  <SidebarHeaderRow>
-                    <SidebarHeaderButton
-                      variant="primary"
-                      aria-label="Compose"
-                    >
-                      <Plus />
-                      <span>Compose</span>
-                    </SidebarHeaderButton>
-                    <SidebarHeaderButton
-                      variant="outline"
-                      aria-label="Search mail"
-                    >
-                      <Search />
-                      <span>Search</span>
-                    </SidebarHeaderButton>
-                  </SidebarHeaderRow>
+                  <SidebarHeaderButton
+                    variant="outline-ghost"
+                    size="sm"
+                    aria-label="Compose"
+                  >
+                    <Plus />
+                    <span>Compose</span>
+                  </SidebarHeaderButton>
                   </SidebarHeader>
                 <SidebarContent>
                   <SidebarGroup>
@@ -381,11 +398,14 @@ export function SidebarDemo({
                   <span className="mt-1 flex h-6 items-center px-1 text-sm font-medium text-foreground">
                     Files
                   </span>
-                  <SidebarInput
-                    className="mt-2"
-                    placeholder="Search files…"
-                    aria-label="Search files"
-                  />
+                  {searchField && (
+                    <SidebarInput
+                      {...searchStyle}
+                      className="mt-2"
+                      placeholder="Search files…"
+                      aria-label="Search files"
+                    />
+                  )}
                   </SidebarHeader>
                 <SidebarContent>
                   <SidebarGroup>
@@ -530,7 +550,7 @@ export function SidebarDemo({
               </SidebarPanel>
             </>
           ) : (
-            <MaybeSidebarTabs tabs={tabs}>
+            <MaybeSidebarTabs tabs={tabs} style={tabsStyle}>
           <SidebarHeader>
             <div className="flex items-center gap-2 px-1 py-1">
               <SidebarBrandButton />
@@ -544,9 +564,7 @@ export function SidebarDemo({
                 <SidebarTabsTab value="personal">Personal</SidebarTabsTab>
               </SidebarTabsList>
             )}
-            <div className="group-data-[collapsible=icon]:hidden">
-              <SidebarInput placeholder="Search…" aria-label="Search" />
-            </div>
+            {searchField && <SidebarInput {...searchStyle} placeholder="Search…" aria-label="Search" />}
           </SidebarHeader>
 
           <MaybeSidebarTabsPanel tabs={tabs} value="workspace">
@@ -696,18 +714,16 @@ export function SidebarDemo({
         // The demo is one page — persisting the rail state to a cookie would leak
         // between visits and fight the control panel.
         persist={false}
+        mobile={mobile}
+        style={{ "--sidebar-width": "12rem" } as CSSProperties}
         className="h-full min-h-0"
         contentClassName="gap-3 p-4"
       >
-        {/* A page's outline that fills whatever height the window has. */}
-        <div className="h-24 shrink-0 rounded-lg bg-muted" />
-        <div className="grid shrink-0 grid-cols-3 gap-3">
-          <div className="h-16 rounded-lg bg-muted" />
-          <div className="h-16 rounded-lg bg-muted" />
-          <div className="h-16 rounded-lg bg-muted" />
-        </div>
-        <div className="min-h-24 flex-1 rounded-lg bg-muted" />
+        {/* A page's outline, in the Sidebar Layout wireframe's style, filling the window's height. */}
+        <WireframePage />
       </SidebarLayout>
+    </div>
+    </DesktopPreview>
     </div>
   );
 }

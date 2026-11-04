@@ -1,6 +1,17 @@
 "use client";
 
+import { Button } from "@/registry/ui/button/button";
 import { Checkbox } from "@/registry/ui/checkbox/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/registry/ui/dropdown-menu/dropdown-menu";
 import { Input } from "@/registry/ui/input/input";
 import {
   Select,
@@ -12,6 +23,8 @@ import {
 import { Slider } from "@/registry/ui/slider/slider";
 import { Tabs, TabsList, TabsTab } from "@/registry/ui/tabs/tabs";
 import { cn } from "@/registry/lib/cn";
+import { Ellipsis } from "lucide-react";
+import { Fragment } from "react";
 import type { ControlDef, ControlSchema, ControlValues } from "./schema";
 
 /*
@@ -66,10 +79,12 @@ export function Controls<S extends ControlSchema>({
   onChange,
 }: ControlsProps<S>) {
   const entries = Object.entries(schema) as [keyof S & string, ControlDef][];
+  // Selects that live in a boolean's ⋯ menu render there, not as rows of their own.
+  const menuOf = (def: ControlDef) => (def.kind === "select" ? def.menuOf : undefined);
 
   return (
     <div className="flex w-full flex-col gap-3">
-      {entries.map(([key, def]) => (
+      {entries.filter(([, def]) => !menuOf(def)).map(([key, def]) => (
         <Control
           key={key}
           id={idPrefix ? `${idPrefix}-${key}` : key}
@@ -78,9 +93,78 @@ export function Controls<S extends ControlSchema>({
           value={values[key]}
           values={values as Record<string, unknown>}
           onChange={(v) => onChange(key, v)}
+          menu={entries
+            .filter(([, child]) => menuOf(child) === key)
+            .map(([childKey, child]) => ({
+              key: childKey,
+              def: child,
+              label: child.label ?? humanizeLabel(childKey),
+              value: values[childKey],
+              onChange: (v: unknown) => onChange(childKey, v),
+            }))}
         />
       ))}
     </div>
+  );
+}
+
+interface MenuSetting {
+  key: string;
+  def: ControlDef;
+  label: string;
+  value: unknown;
+  onChange: (value: unknown) => void;
+}
+
+/**
+ * The ⋯ beside a boolean: the styles of what it turns on, one radio group per setting.
+ * Outside the row's `<label>`, so opening it never toggles the checkbox.
+ */
+function SettingMenu({
+  label,
+  settings,
+  values,
+  disabled,
+}: {
+  label: string;
+  settings: MenuSetting[];
+  values: Record<string, unknown>;
+  disabled: boolean;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        disabled={disabled}
+        render={
+          <Button variant="plain" size="icon-xs" aria-label={`${label} styles`}>
+            <Ellipsis />
+          </Button>
+        }
+      />
+      <DropdownMenuContent align="end" className="w-44">
+        {settings.map((setting, index) => {
+          if (setting.def.kind !== "select") return null;
+          const def = setting.def;
+          const groupDisabled = def.disabledWhen?.(values) ?? false;
+          const value = setting.value === undefined ? def.defaultValue : setting.value;
+          return (
+            <Fragment key={setting.key}>
+              {index > 0 && <DropdownMenuSeparator />}
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>{setting.label}</DropdownMenuLabel>
+                <DropdownMenuRadioGroup value={value as string} onValueChange={(v) => setting.onChange(v)}>
+                  {def.options.map((option) => (
+                    <DropdownMenuRadioItem key={option} value={option} disabled={groupDisabled}>
+                      {humanizeLabel(option)}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuGroup>
+            </Fragment>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -91,6 +175,7 @@ function Control({
   value: rawValue,
   values,
   onChange,
+  menu = [],
 }: {
   id: string;
   def: ControlDef;
@@ -98,6 +183,7 @@ function Control({
   value: unknown;
   values: Record<string, unknown>;
   onChange: (value: unknown) => void;
+  menu?: MenuSetting[];
 }) {
   // Fall back to the def's own default when the stored value is missing. This keeps every
   // control *controlled* from its first render even if the persisted `values` predates
@@ -111,10 +197,12 @@ function Control({
   if (def.kind === "boolean") {
     // The whole row is the hit area (wrapping <label>), not a 16px square you aim at —
     // this mirrors the Checkbox's own label structure, so a row click toggles it.
-    return (
+    const row = (
       <label
         className={cn(
           "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-4",
+          // Room for the ⋯ that sits just before the checkbox.
+          menu.length > 0 && "gap-12",
           disabled ? DISABLED_ROW : "cursor-pointer",
         )}
       >
@@ -125,6 +213,19 @@ function Control({
           onCheckedChange={(checked) => onChange(checked)}
         />
       </label>
+    );
+    if (menu.length === 0) return row;
+    // The ⋯ is a sibling of the label, laid over the gap before the checkbox: a button inside
+    // a <label> would become the label's control, and a click on it would toggle the box.
+    // It applies only while the setting is on.
+    return (
+      <div className="relative min-w-0">
+        {/* First in the DOM, so Tab reaches it before the checkbox, the order they read in. */}
+        <div className="absolute top-1/2 right-6 z-10 -translate-y-1/2">
+          <SettingMenu label={label} settings={menu} values={values} disabled={disabled || value !== true} />
+        </div>
+        {row}
+      </div>
     );
   }
 

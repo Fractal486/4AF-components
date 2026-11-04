@@ -20,7 +20,7 @@ import {
 import { SELECT_CLEAR_ACTION, SelectContext, SelectPanelDormantContext, SelectSubSiblingsContext, type SelectSubSibling } from "./select.context";
 import { SelectSeparator } from "./select.item";
 import { FADE_EXIT, FADE_HIDDEN, FADE_SHOW, SIZE } from "./select.shared";
-import { focusPanelOption, resumeFromActiveOption } from "./select.utils";
+import { focusFooterFromLastRow, focusPanelOption, moveFromFooter, resumeFromActiveOption } from "./select.utils";
 
 /**
  * The active-item key for one caller-supplied footer button.
@@ -144,6 +144,7 @@ export function SelectContent({
   const width = widthProp ?? (triggerSizing === "content" ? "content" : "trigger");
   const align = alignProp ?? panelEdge;
   const listRef = useRef<HTMLDivElement>(null);
+  const footerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   // Whether real focus on a row is something the reader asked for. In a searchable panel
   // the caret belongs in the field and the highlight is `data-panel-active`, so focus
@@ -298,6 +299,9 @@ export function SelectContent({
         ]
       : []),
   ];
+  const footerActive = footerRow.some((action, index) =>
+    Object.is(activeItem, action.activeKey ?? selectFooterAction(index)));
+  const rowRest = footerActive ? "footer" : dormant ? "pointer" : false;
 
   // Built once and placed at whichever end `searchPosition` names, so the two layouts
   // can't drift apart. The hairline goes on the side facing the options.
@@ -418,6 +422,20 @@ export function SelectContent({
             if (pointerLeft) setPointerLeft(false);
           }}
           onKeyDownCapture={(event) => {
+            // ↓ off the last row continues into the footer. Only for keys from this panel's
+            // own rows or the panel itself; a nested panel is portaled outside it.
+            if (
+              event.key === "ArrowDown" &&
+              event.target instanceof Node &&
+              event.currentTarget.contains(event.target) &&
+              !footerRef.current?.contains(event.target) &&
+              focusFooterFromLastRow(listRef.current, footerRef.current, event.target)
+            ) {
+              event.preventDefault();
+              event.stopPropagation();
+              if (pointerLeft) setPointerLeft(false);
+              return;
+            }
             if (searchable) return;
             if (pointerLeft) setPointerLeft(false);
             // Only when the panel itself holds focus, where Base UI parks it after the pointer
@@ -464,7 +482,7 @@ export function SelectContent({
             viewportClassName="p-1"
             viewportProps={{ tabIndex: -1 }}
           >
-            <SelectPanelDormantContext.Provider value={dormant}>
+            <SelectPanelDormantContext.Provider value={rowRest}>
               <SelectSubSiblingsContext.Provider value={subPanels}>
                 <BaseSelect.List ref={listRef}>{children}</BaseSelect.List>
               </SelectSubSiblingsContext.Provider>
@@ -492,7 +510,7 @@ export function SelectContent({
               <SelectSeparator className="mx-0 my-0 w-full" />
               {/* One button fills the row, as the clear always has; several share it
                   evenly, so a two-action footer reads as a pair rather than as a list. */}
-              <div className="flex gap-1 p-1">
+              <div ref={footerRef} className="flex gap-1 p-1">
                 {footerRow.map((action, index) => {
                   const key = action.activeKey ?? selectFooterAction(index);
                   return (
@@ -507,6 +525,20 @@ export function SelectContent({
                         action.onSelect(event);
                         if (!action.keepOpen) setOpen(false);
                       }}
+                      onFocus={() => setActiveItem(key)}
+                      onKeyDown={(event) => {
+                        // The footer is a row of its own: ←/→ move along it, ↑ returns to
+                        // the last row. Kept from Base UI, whose list keys would otherwise
+                        // treat the button's keys as option navigation or typeahead.
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.stopPropagation();
+                          return;
+                        }
+                        if (moveFromFooter(listRef.current, footerRef.current, event.currentTarget, event.key)) {
+                          event.preventDefault();
+                          event.stopPropagation();
+                        }
+                      }}
                       onPointerMove={(event) => {
                         if (event.pointerType !== "mouse" || event.currentTarget.disabled) return;
                         setActiveItem(key);
@@ -517,7 +549,8 @@ export function SelectContent({
                         if (!searchable) event.currentTarget.focus({ preventScroll: true });
                       }}
                       // Flexible while the Button's xs size owns its compact geometry.
-                      className="min-w-0 flex-1 rounded-xs px-2.5 data-[panel-active]:not-data-[panel-dormant]:bg-muted data-[panel-active]:not-data-[panel-dormant]:text-foreground"
+                      // No focus ring: like a row, the active fill is the highlight.
+                      className="min-w-0 flex-1 rounded-xs px-2.5 focus-visible:ring-0 focus-visible:ring-offset-0 data-[panel-active]:not-data-[panel-dormant]:bg-muted data-[panel-active]:not-data-[panel-dormant]:text-foreground"
                     >
                       {action.icon}
                       {action.label}

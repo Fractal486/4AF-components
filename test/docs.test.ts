@@ -96,9 +96,9 @@ describe("component documentation", () => {
 
   it("provides a demo mapping for every installable component", () => {
     const demoNames = objectEntries("stories/component-demo.tsx", "demos").map(([name]) => name);
-    // Select Sort is a bundled Select composition with an additional demo. Sidebar Layout
-    // has its own key, even though its loader intentionally reuses the Sidebar entry.
-    expect(demoNames.sort()).toEqual([...installableNames, "select-sort"].sort());
+    // Rail demos are extra demos of one page, with no install of their own.
+    const RAIL_DEMOS = ["select-sort", "select-filter", "checkbox-group", "checkbox-nested", "skeleton-text", "skeleton-wrap", "skeleton-inline", "slider-circle", "slider-knob"];
+    expect(demoNames.sort()).toEqual([...installableNames, ...RAIL_DEMOS].sort());
   });
 
   it("keeps the agent catalog's category tables aligned with the component categories", () => {

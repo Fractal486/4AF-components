@@ -9,7 +9,7 @@ export const datePickerEntry = defineEntry({
     mode: select(["single", "multiple", "range"], "single"),
     variant: select(["default", "outline-ghost", "ghost", "plain"], "default"),
     tone: select(["neutral", "accent"], "neutral", "Open border", (values) => values.variant !== "default"),
-    size: select(["xs", "sm", "md"], "md"),
+    size: select(["xs", "sm", "md"], "sm"),
     dateFormat: select(["medium", "numeric"], "medium", "Format"),
     footer: bool(true, "Footer"),
     limitRange: bool(false, "Limit range to 1–7 nights", (values) => values.mode !== "range"),

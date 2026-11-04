@@ -31,7 +31,6 @@ for (const file of documents) {
   assert.match((await read(slug ? `${url}.html` : "index.html")).toString(), /<html/, `HTML missing: ${url}`);
 }
 await read("404.html");
-await read("full/sidebar-layout.html");
 
 // Check the agent index's links and every published install item, including utilities.
 const llms = (await read("llms.txt")).toString();

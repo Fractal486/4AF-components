@@ -157,9 +157,10 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
     return () => unregisterOptionText(value);
   }, [disabled, optionText, parentValue, registerOptionText, unregisterOptionText, value]);
   const panelActive = open && Object.is(activeItem, value);
-  // Kept for the arrow keys once the pointer has left, but no longer painted. Nested panels
-  // paint by CSS hover and have nothing to keep.
-  const panelDormant = useContext(SelectPanelDormantContext) && panelActive && !nestedPanel;
+  // Kept for the arrow keys once the pointer has left, but no longer painted; with a footer
+  // button active, no row paints. Nested panels paint by CSS hover and have nothing to keep.
+  const rest = useContext(SelectPanelDormantContext);
+  const panelDormant = ((rest === "pointer" && panelActive) || rest === "footer") && !nestedPanel;
 
   // The same shape as the label registration below, and for the same reason: an `<Icon />`
   // written inline is a new object on every render.

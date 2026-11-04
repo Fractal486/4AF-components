@@ -15,6 +15,8 @@ export const ease = {
   in: [0.7, 0, 0.84, 0],
   /** List panels opening: gentler than `out`, so the scale from the trigger stays visible. */
   panel: [0.33, 1, 0.68, 1],
+  /** A layout resizing on screen (the sidebar collapsing): between `out` and `panel`. */
+  collapse: [0.25, 1, 0.5, 1],
 } as const;
 
 /** Duration defaults in seconds (Motion's unit), matching the corresponding CSS tokens. */

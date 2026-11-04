@@ -545,7 +545,9 @@ import { Morph } from "@/components/ui/morph";
           <SidebarMenuAction replacesBadge aria-label="More inbox actions">…</SidebarMenuAction>
         </SidebarMenuItem>
         <SidebarMenuCollapsible defaultOpen>
+          {/* Page rows pass isActive and select via onClick; their chevron only toggles. */}
           <SidebarMenuCollapsibleTrigger>Projects</SidebarMenuCollapsibleTrigger>
+          {/* Content unfolds with a fade and blur using the motion tokens. */}
           <SidebarMenuCollapsibleContent>Navigation</SidebarMenuCollapsibleContent>
         </SidebarMenuCollapsible>
       </SidebarMenu>

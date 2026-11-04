@@ -54,6 +54,10 @@ describe("DatePicker", () => {
     render(<DatePicker defaultOpen defaultValue={new Date(2026, 0, 1)} clearable calendarProps={{ today: may14 }} onValueChange={onValueChange} />);
     const today = screen.getByRole("button", { name: "Today" });
     expect(today.nextElementSibling).toBe(screen.getByRole("button", { name: "Clear" }));
+    // Select's footer geometry: 3px buttons 4px inside the panel.
+    expect(today).toHaveClass("rounded-xs");
+    expect(screen.getByRole("button", { name: "Clear" })).toHaveClass("rounded-xs");
+    expect(today.parentElement).toHaveClass("p-1");
     await user.click(today);
     expect(onValueChange).not.toHaveBeenCalled();
     expect(screen.getByRole("grid")).toHaveAccessibleName("May 2026");
@@ -98,7 +102,7 @@ describe("DatePicker", () => {
     const trigger = screen.getByRole("button", { name: "Pick a date" });
     expect(trigger).toHaveAttribute("data-empty", "");
     expect(trigger).toHaveAttribute("data-variant", "default");
-    expect(trigger).toHaveAttribute("data-size", "md");
+    expect(trigger).toHaveAttribute("data-size", "sm");
   });
 
   it("shows the date as day / month / year numbers with numeric format, the icon last", () => {

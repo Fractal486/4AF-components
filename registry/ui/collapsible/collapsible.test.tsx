@@ -67,7 +67,7 @@ describe("Collapsible", () => {
       </Collapsible>,
     );
 
-    expect(screen.getByRole("button", { name: "Details" })).toHaveClass("rounded-[8px]");
+    expect(screen.getByRole("button", { name: "Details" })).toHaveClass("rounded-lg");
     expect(screen.getByText("Body")).toHaveClass("pb-2.5");
   });
 

@@ -16,6 +16,8 @@ export const DEMO_NAMES = [
   "button",
   "button-group",
   "checkbox",
+  "checkbox-group",
+  "checkbox-nested",
   "collapsible",
   "command-palette",
   "context-menu",
@@ -35,6 +37,7 @@ export const DEMO_NAMES = [
   "radio",
   "select",
   "select-sort",
+  "select-filter",
   "select-aligned",
   "select-search",
   "selection-toolbar",
@@ -44,7 +47,12 @@ export const DEMO_NAMES = [
   "sidebar",
   "sidebar-layout",
   "skeleton",
+  "skeleton-text",
+  "skeleton-wrap",
+  "skeleton-inline",
   "slider",
+  "slider-circle",
+  "slider-knob",
   "switch",
   "data-table",
   "table",
@@ -66,9 +74,25 @@ export interface PlaygroundDemo {
   label: string;
 }
 
-/** Demos a page offers after its own, switched from the playground's settings. */
+/** Demos a page offers after its own, switched from the canvas rail. */
 const EXTRA_DEMOS: Partial<Record<ComponentDemoName, PlaygroundDemo[]>> = {
-  select: [{ name: "select-sort", label: "Sort trigger" }],
+  checkbox: [
+    { name: "checkbox-group", label: "Group" },
+    { name: "checkbox-nested", label: "Nested" },
+  ],
+  select: [
+    { name: "select-sort", label: "Sort trigger" },
+    { name: "select-filter", label: "Filter trigger" },
+  ],
+  slider: [
+    { name: "slider-circle", label: "Circle" },
+    { name: "slider-knob", label: "Knob" },
+  ],
+  skeleton: [
+    { name: "skeleton-text", label: "Text" },
+    { name: "skeleton-wrap", label: "Wrap" },
+    { name: "skeleton-inline", label: "Inline" },
+  ],
 };
 
 const isDemoName = (name: string): name is ComponentDemoName =>

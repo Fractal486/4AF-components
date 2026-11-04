@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/registry/lib/cn";
+import { SIDEBAR_HEADER_FOLD, SIDEBAR_HEADER_FOLD_CLIP } from "./sidebar.structure";
 import { Tabs, TabsList, TabsTab, type TabsProps } from "@/registry/ui/tabs/tabs";
 import { Tabs as BaseTabs } from "@base-ui/react/tabs";
 import type { ComponentProps } from "react";
@@ -46,15 +47,22 @@ export function SidebarTabs({ appearance = "outline", size = "sm", className, ..
 
 /**
  * The tab row, the sidebar's full width with the tabs sharing it evenly. Collapsed to
- * icons there is no room for labels, so the row hides and the selected panel stays.
+ * icons there is no room for labels, so the row folds away and the selected panel stays.
+ *
+ * It folds with the collapse rather than in its first frame, so the rows below rise with the
+ * width instead of jumping; see `SIDEBAR_HEADER_FOLD`.
  */
 export function SidebarTabsList({ className, ...props }: ComponentProps<typeof TabsList>) {
   return (
-    <TabsList
-      data-slot="sidebar-tabs-list"
-      className={cn("w-full self-stretch group-data-[collapsible=icon]:hidden", className)}
-      {...props}
-    />
+    <div data-slot="sidebar-tabs-list-container" className={SIDEBAR_HEADER_FOLD}>
+      <div className={SIDEBAR_HEADER_FOLD_CLIP}>
+        <TabsList
+          data-slot="sidebar-tabs-list"
+          className={cn("w-full self-stretch", className)}
+          {...props}
+        />
+      </div>
+    </div>
   );
 }
 

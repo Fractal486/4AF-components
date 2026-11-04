@@ -26,14 +26,14 @@ describe("Component demo downloads", () => {
   it("continues background downloads after a rejection and caches successful demos", async () => {
     const idleTasks: Array<() => void> = [];
     vi.stubGlobal("requestIdleCallback", (task: () => void) => idleTasks.push(task));
-    const { rerender } = render(<Canvas key="ascii-loader" name="ascii-loader" />);
+    const { rerender } = render(<Canvas name="ascii-loader" />);
     await waitFor(() => expect(idleTasks).toHaveLength(1));
     // The first remaining demo rejects. Its rejection must be handled and the next scheduled.
     await act(async () => { idleTasks.shift()!(); });
     await waitFor(() => expect(idleTasks).toHaveLength(1));
     await act(async () => { idleTasks.shift()!(); });
     await waitFor(() => expect(idleTasks).toHaveLength(1));
-    rerender(<Canvas key="action-toggle" name="action-toggle" />);
+    rerender(<Canvas name="action-toggle" />);
     expect(screen.getByText("Downloaded toggle")).toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });

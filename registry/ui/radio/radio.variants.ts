@@ -39,8 +39,8 @@ export type RadioVariants = VariantProps<typeof radioVariants>;
 export const radioIndicatorVariants = cva(
   [
     "pointer-events-none absolute inset-0 rounded-full border-white",
-    "scale-0 opacity-0 transition-[scale,opacity] duration-(--duration-fast) ease-out",
-    "data-[checked]:scale-100 data-[checked]:opacity-100",
+    "scale-0 opacity-0 blur-[4px] transition-[scale,opacity,filter] duration-(--duration-slower) ease-out",
+    "data-[checked]:scale-100 data-[checked]:opacity-100 data-[checked]:blur-[0px]",
   ],
   {
     variants: {

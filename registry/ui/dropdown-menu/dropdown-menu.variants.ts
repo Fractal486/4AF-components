@@ -2,7 +2,8 @@ import { cva } from "class-variance-authority";
 
 export const dropdownMenuItemVariants = cva([
   // Compact rows: 12px text and 14px glyphs, a denser treatment than the 14px overlays.
-  "relative flex min-w-0 items-center gap-2 rounded-sm px-2.5 py-1.5 text-xs wrap-anywhere text-foreground outline-none select-none",
+  // `rounded-xs` (3px): concentric with the 7px panel through its 4px inset, as in Select.
+  "relative flex min-w-0 items-center gap-2 rounded-xs px-2.5 py-1.5 text-xs wrap-anywhere text-foreground outline-none select-none",
   // Instant — no transition, so the highlight tracks the keyboard rather than trailing it.
   "data-[highlighted]:bg-muted hover:bg-muted focus-visible:bg-muted data-[popup-open]:bg-muted",
   "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",

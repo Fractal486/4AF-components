@@ -67,7 +67,7 @@ export const datePickerTriggerVariants = cva(
       { variant: "default", tone: "neutral", class: "data-[popup-open]:border-[oklch(0.719_0_0)]" },
       { variant: "default", tone: "accent", class: "data-[popup-open]:border-ring" },
     ],
-    defaultVariants: { variant: "default", size: "md", tone: "neutral" },
+    defaultVariants: { variant: "default", size: "sm", tone: "neutral" },
   },
 );
 

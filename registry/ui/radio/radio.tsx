@@ -18,7 +18,7 @@ import { radioIndicatorVariants, radioVariants, type RadioVariants } from "./rad
  * It's the Checkbox's sibling and shares its look — the same recessed well, border and
  * focus ring — differing only where the two controls genuinely differ: a radio is a single
  * choice, so it keeps its outline and fills a white ring around an open center. The ring is CSS, a
- * scale/opacity transition off Base UI's `data-checked`; unlike the checkbox's self-drawing
+ * scale/opacity/blur transition off Base UI's `data-checked`; unlike the checkbox's self-drawing
  * tick there's no path to animate, so no runtime is needed. The circle gives the same
  * press-scale on tap and — deliberately — nothing on hover, matching the Checkbox.
  */

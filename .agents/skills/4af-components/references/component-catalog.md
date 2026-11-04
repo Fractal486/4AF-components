@@ -124,6 +124,11 @@ Use the host component's parts instead of rebuilding their state handling:
 
 ## Component modules
 
+Sidebar page-like collapsible triggers pass `isActive` and select their page in `onClick`.
+Inactive pages open or retain their section; active pages toggle it. Omit `isActive` for
+disclosure-only triggers that always toggle.
+The separate chevron on page-like rows only toggles the section; it never selects the page.
+
 An installable component can span several files. Consumers still import its public API from
 `@/components/ui/<name>`; follow that entry point's re-exports when locating implementation
 or prop types. Internal modules import their dependencies directly, without importing back

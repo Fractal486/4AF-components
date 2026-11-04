@@ -4,7 +4,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { Controls, fitsPillTabs } from "./controls";
-import { num, range, select, text, withIcons, type ControlValues } from "./schema";
+import { bool, inMenu, num, range, select, text, withIcons, type ControlValues } from "./schema";
 
 // Long enough to stay a dropdown — a short enum renders as pill tabs instead, which the
 // "short enums" suite below covers.
@@ -195,5 +195,52 @@ describe("Controls icon dropdown", () => {
     await user.click(trigger);
     const row = await screen.findByRole("option", { name: "G" });
     expect(row).toContainElement(screen.getByTestId("icon-g"));
+  });
+});
+
+describe("Controls ⋯ style menu", () => {
+  const menuSchema = {
+    tabs: bool(false, "Tabs"),
+    tabsVariant: inMenu(select(["segment", "pill", "underline"] as const, "segment", "Variant"), "tabs"),
+    tabsSize: inMenu(select(["sm", "md"] as const, "sm", "Size"), "tabs"),
+  };
+
+  function MenuHarness({ onChange }: { onChange?: (key: string, value: unknown) => void }) {
+    const [values, setValues] = useState<ControlValues<typeof menuSchema>>({ tabs: false, tabsVariant: "segment", tabsSize: "sm" });
+    return (
+      <Controls
+        schema={menuSchema}
+        values={values}
+        onChange={(key, value) => {
+          onChange?.(key as string, value);
+          setValues((current) => ({ ...current, [key]: value }) as ControlValues<typeof menuSchema>);
+        }}
+      />
+    );
+  }
+
+  it("keeps a boolean's style settings in its ⋯ menu, usable only while it is on", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<MenuHarness onChange={onChange} />);
+
+    // The styles are not rows of their own.
+    expect(screen.queryByText("Variant")).not.toBeInTheDocument();
+    const menu = screen.getByRole("button", { name: "Tabs styles" });
+    const checkbox = screen.getByRole("checkbox");
+    // Just before the checkbox.
+    expect(menu.compareDocumentPosition(checkbox) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(menu).toBeDisabled();
+
+    await user.click(checkbox);
+    expect(checkbox).toBeChecked();
+    expect(menu).toBeEnabled();
+
+    // Opening the menu never toggles the box it sits beside.
+    await user.click(menu);
+    expect(checkbox).toBeChecked();
+    await user.click(await screen.findByRole("menuitemradio", { name: "Pill" }));
+    expect(onChange).toHaveBeenLastCalledWith("tabsVariant", "pill");
+    expect(screen.getByRole("menuitemradio", { name: "Sm" })).toHaveAttribute("aria-checked", "true");
   });
 });

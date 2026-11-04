@@ -25,14 +25,14 @@ const LOADER_DEMOS = new Set([
 ]);
 // Sizing belongs to the demo shell.
 const DEMO_WIDTHS: Partial<Record<ComponentDemoName, string>> = {
-  input: "max-w-sm", textarea: "max-w-sm", slider: "max-w-sm",
-  progress: "max-w-sm", skeleton: "max-w-sm",
+  input: "max-w-sm", textarea: "max-w-sm", slider: "max-w-sm", "slider-circle": "max-w-sm", "slider-knob": "max-w-sm",
+  progress: "max-w-sm", skeleton: "max-w-sm", "skeleton-text": "max-w-sm", "skeleton-wrap": "max-w-sm",
   select: "max-w-56", "select-search": "max-w-56", "select-aligned": "max-w-56",
   "context-menu": "max-w-sm", empty: "max-w-md", collapsible: "max-w-md", tabs: "max-w-md",
   "scroll-area": "max-w-sm", separator: "max-w-xs", "selection-toolbar": "max-w-lg",
   table: "max-w-xl", "data-table": "max-w-xl",
   "table-of-contents": "max-w-2xl", "table-of-contents-lines": "max-w-2xl",
-  sidebar: "max-w-full",
+  sidebar: "max-w-full", "sidebar-layout": "max-w-full",
 };
 // Each loader's tab is its own sidebar icon.
 const LOADER_CONTROLS = {
@@ -110,6 +110,7 @@ export interface ComponentDemoState {
 }
 
 export function useComponentDemo(name: DemoName): ComponentDemoState {
+  const [activeName, setActiveName] = useState(name);
   // Nothing is loaded on the server or during hydration, so both render the placeholder.
   const [entry, setEntry] = useState<AnyEntry | undefined>(() =>
     typeof window === "undefined" ? undefined : loaded.get(name),
@@ -118,6 +119,17 @@ export function useComponentDemo(name: DemoName): ComponentDemoState {
   const [values, setValues] = useState<Values>();
   const [loader, setLoader] = useState<LoaderChoice>("classic");
   const [replayKey, setReplayKey] = useState(0);
+
+  // Reset the demo before committing the next render, while keeping the surrounding
+  // canvas rail mounted so its chevron can transition and its buttons retain focus.
+  if (activeName !== name) {
+    setActiveName(name);
+    setEntry(() => loaded.get(name));
+    setFailed(false);
+    setValues(undefined);
+    setLoader("classic");
+    setReplayKey(0);
+  }
 
   useEffect(() => {
     // Already here: the initial state picked it up, so only the background queue remains.
@@ -139,9 +151,7 @@ export function useComponentDemo(name: DemoName): ComponentDemoState {
     return () => {
       active = false;
     };
-    // Keyed by `name` at the call site, so `entry` only matters on mount.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name]);
+  }, [name, entry]);
 
   const defaults = (): Values => (entry ? initialValues(entry.controls) : {});
 
@@ -185,7 +195,7 @@ export function DemoCanvas({ demo }: { demo: ComponentDemoState }) {
   }
 
   const { entry, values, loader, replayKey } = demo;
-  const isAppShell = entry.slug === "sidebar";
+  const isAppShell = entry.slug === "sidebar" || entry.slug === "sidebar-layout";
   const demoWidth = DEMO_WIDTHS[entry.slug as ComponentDemoName];
   const remountSettings = entry.slug === "progress" ? { ...values, value: undefined }
     : entry.slug === "breadcrumb" ? { ...values, collapse: undefined }
@@ -220,7 +230,7 @@ export function DemoCanvas({ demo }: { demo: ComponentDemoState }) {
               isAppShell && "h-full min-h-0 items-stretch",
             )}
           >
-            <Fragment key={`${settingsKey}-${replayKey}`}>{entry.render(values)}</Fragment>
+            <Fragment key={`${entry.slug}-${settingsKey}-${replayKey}`}>{entry.render(values)}</Fragment>
           </div>
         </div>
       </LoaderProvider>
@@ -274,6 +284,8 @@ const demos: Record<DemoName, () => Promise<AnyEntry>> = {
   button: async () => (await import("@/inspector/entries/button")).buttonEntry,
   "button-group": async () => (await import("@/inspector/entries/button-group")).buttonGroupEntry,
   checkbox: async () => (await import("@/inspector/entries/checkbox")).checkboxEntry,
+  "checkbox-group": async () => (await import("@/inspector/entries/checkbox")).checkboxGroupEntry,
+  "checkbox-nested": async () => (await import("@/inspector/entries/checkbox")).checkboxNestedEntry,
   collapsible: async () => (await import("@/inspector/entries/collapsible")).collapsibleEntry,
   "command-palette": async () => (await import("@/inspector/entries/command-palette")).commandPaletteEntry,
   "context-menu": async () => (await import("@/inspector/entries/context-menu")).contextMenuEntry,
@@ -295,6 +307,7 @@ const demos: Record<DemoName, () => Promise<AnyEntry>> = {
   radio: async () => (await import("@/inspector/entries/radio")).radioEntry,
   select: async () => (await import("@/inspector/entries/select")).selectEntry,
   "select-sort": async () => (await import("@/inspector/entries/select-sort")).selectSortEntry,
+  "select-filter": async () => (await import("@/inspector/entries/select-sort")).selectFilterEntry,
   "select-aligned": async () => (await import("@/inspector/entries/select-aligned")).selectAlignedEntry,
   "select-search": async () => (await import("@/inspector/entries/select-search")).selectSearchEntry,
   "selection-toolbar": async () => (await import("@/inspector/entries/selection-toolbar")).selectionToolbarEntry,
@@ -302,9 +315,14 @@ const demos: Record<DemoName, () => Promise<AnyEntry>> = {
   separator: async () => (await import("@/inspector/entries/separator")).separatorEntry,
   sheet: async () => (await import("@/inspector/entries/sheet")).sheetEntry,
   sidebar: async () => (await import("@/inspector/entries/sidebar")).sidebarEntry,
-  "sidebar-layout": async () => (await import("@/inspector/entries/sidebar")).sidebarEntry,
+  "sidebar-layout": async () => (await import("@/inspector/entries/sidebar-layout")).sidebarLayoutEntry,
   skeleton: async () => (await import("@/inspector/entries/skeleton")).skeletonEntry,
+  "skeleton-text": async () => (await import("@/inspector/entries/skeleton")).skeletonTextEntry,
+  "skeleton-wrap": async () => (await import("@/inspector/entries/skeleton")).skeletonWrapEntry,
+  "skeleton-inline": async () => (await import("@/inspector/entries/skeleton")).skeletonInlineEntry,
   slider: async () => (await import("@/inspector/entries/slider")).sliderEntry,
+  "slider-circle": async () => (await import("@/inspector/entries/slider")).sliderCircleEntry,
+  "slider-knob": async () => (await import("@/inspector/entries/slider")).sliderKnobEntry,
   switch: async () => (await import("@/inspector/entries/switch")).switchEntry,
   "data-table": async () => (await import("@/inspector/entries/data-table")).dataTableEntry,
   table: async () => (await import("@/inspector/entries/table")).tableEntry,

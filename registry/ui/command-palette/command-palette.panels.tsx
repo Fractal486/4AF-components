@@ -131,7 +131,7 @@ export function CommandPanelList({
         viewportRef={ref}
         viewportProps={{ tabIndex: -1 }}
       >
-        <Autocomplete.List className={cn("p-1.5", className)}>{children}</Autocomplete.List>
+        <Autocomplete.List className={cn("p-1", className)}>{children}</Autocomplete.List>
       </ScrollArea>
     </>
   );
@@ -274,7 +274,7 @@ export function CommandPanelRow({
       // indistinguishable rather than merely similar.
       data-frozen={frozen ? "" : undefined}
       className={cn(
-        "group flex min-h-9 items-center gap-2.5 rounded-sm px-2.5 text-sm text-muted-foreground outline-none select-none",
+        "group flex min-h-9 items-center gap-2.5 rounded-xs px-2.5 text-sm text-muted-foreground outline-none select-none",
         badge ? "py-1.5" : "py-2",
         "cursor-default",
         destructive
@@ -394,7 +394,7 @@ export function CommandRow({
       // same attribute), applied instantly with no transition so it keeps up with a fast
       // ↑↓ and doesn't smear across rows under the pointer.
       className={cn(
-        "group flex min-h-9 cursor-default items-center gap-2.5 rounded-sm px-2.5 text-sm text-muted-foreground outline-none select-none",
+        "group flex min-h-9 cursor-default items-center gap-2.5 rounded-xs px-2.5 text-sm text-muted-foreground outline-none select-none",
         compactRow ? "py-1.5" : "py-2",
         item.destructive
           ? "data-highlighted:bg-muted text-destructive data-highlighted:text-destructive data-frozen:bg-muted data-frozen:text-destructive"

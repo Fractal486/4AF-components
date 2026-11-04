@@ -91,6 +91,10 @@ export {
  * relayout is the feature. It's bounded: two elements, one user-initiated transition,
  * on click rather than on hover or scroll. The durations come from `--duration-slow`
  * like everything else, which also means reduced motion collapses it to 1ms for free.
+ * Every part of the collapse shares `ease-collapse` (quart-out): it moves from the first
+ * frame and settles promptly. The library's front-loaded `ease-out` did most of the width in
+ * the first frames, then crawled; `ease-in-out` was slow to start, and `ease-panel` slow to
+ * settle. Fades keep `ease-out`.
  *
  * Row highlights are instant — no transition on the hover or active background. A
  * highlight that fades in trails the pointer as it runs down a list.
@@ -143,6 +147,11 @@ export interface SidebarProps extends ComponentProps<"div"> {
    * continues to use `className` on mobile.
    */
   mobileClassName?: string;
+  /**
+   * Opens the mobile drawer inside this element instead of the document body. The drawer
+   * and its backdrop are then positioned against it, so give it `position: relative`.
+   */
+  mobileContainer?: HTMLElement | null;
 }
 
 export function Sidebar({
@@ -155,11 +164,17 @@ export function Sidebar({
   onActivePanelChange,
   hideCollapseHandle = false,
   mobileClassName,
+  mobileContainer,
   className,
   children,
   ...props
 }: SidebarProps) {
-  const { isMobile, state, openMobile, setOpenMobile, shortcutScope } = useSidebar();
+  const { isMobile, mobileOverride, state, openMobile, setOpenMobile, shortcutScope } = useSidebar();
+  // Forced desktop shows at every width; otherwise the desktop shell waits for the
+  // breakpoint, so a phone's first paint (before the viewport is read) never shows it.
+  const desktopBlock = mobileOverride === false ? "block" : "hidden md:block";
+  const desktopFlex = mobileOverride === false ? "flex" : "hidden md:flex";
+  const contained = mobileContainer != null;
   const [uncontrolledActivePanel, setUncontrolledActivePanel] = useState(defaultActivePanel);
   const isActivePanelControlled = activePanel !== undefined;
   const currentActivePanel = isActivePanelControlled ? activePanel : uncontrolledActivePanel;
@@ -213,8 +228,11 @@ export function Sidebar({
     return (
       <div
         data-slot="sidebar"
+        data-side={side}
         className={cn(
           "flex h-full w-(--sidebar-width) flex-col bg-surface text-foreground",
+          // The same edge rule the collapsible sidebars draw against the content.
+          side === "left" ? "border-r border-border" : "border-l border-border",
           className,
         )}
         {...props}
@@ -227,8 +245,8 @@ export function Sidebar({
   if (isMobile) {
     const mobileSidebar = (
       <BaseDialog.Root open={openMobile} onOpenChange={(open) => setOpenMobile(open)}>
-        <BaseDialog.Portal>
-          <BaseDialog.Backdrop className={sidebarMobileBackdropVariants()} />
+        <BaseDialog.Portal container={mobileContainer ?? undefined}>
+          <BaseDialog.Backdrop className={sidebarMobileBackdropVariants({ contained })} />
           <BaseDialog.Popup
             data-slot="sidebar"
             data-side={side}
@@ -240,7 +258,7 @@ export function Sidebar({
               if (isMobileNavigation(event)) setOpenMobile(false);
             }}
             className={cn(
-              sidebarMobilePopupVariants({ side }),
+              sidebarMobilePopupVariants({ side, contained }),
               isSplit
                 ? "w-[calc(var(--sidebar-width)+var(--sidebar-width-icon))]"
                 : "w-(--sidebar-width)",
@@ -290,7 +308,7 @@ export function Sidebar({
   if (isSplit) {
     const splitSidebar = (
       <div
-        className="group peer hidden text-foreground md:block"
+        className={cn("group peer text-foreground", desktopBlock)}
         style={{ "--sidebar-width-icon": SIDEBAR_WIDTH_SPLIT_RAIL } as CSSProperties}
         data-state={splitCollapsed ? "collapsed" : "expanded"}
         // `offcanvas`, not `icon`. The split panel doesn't *become* a rail when it
@@ -307,7 +325,7 @@ export function Sidebar({
         <div
           data-slot="sidebar-gap"
           className={cn(
-            "relative bg-transparent transition-[width] duration-(--duration-slow) ease-out",
+            "relative bg-transparent transition-[width] duration-(--duration-slow) ease-collapse",
             splitExpandedWidth,
             splitCollapsedWidth,
           )}
@@ -315,7 +333,8 @@ export function Sidebar({
         <div
           data-slot="sidebar-container"
           className={cn(
-            "fixed inset-y-0 z-10 hidden h-svh md:flex border-border transition-[width,border-color] duration-(--duration-slow) ease-out",
+            "fixed inset-y-0 z-10 h-svh border-border transition-[width,border-color] duration-(--duration-slow) ease-collapse",
+            desktopFlex,
             splitExpandedWidth,
             splitCollapsedWidth,
             splitFloating && "p-2",
@@ -366,7 +385,7 @@ export function Sidebar({
               className={cn(
                 "flex h-full shrink-0 flex-col overflow-hidden bg-surface",
                 splitPanelWidth,
-                "transition-[width,opacity,visibility] duration-(--duration-slow) ease-out",
+                "transition-[width,opacity,visibility] duration-(--duration-slow) ease-collapse",
                 "group-data-[state=collapsed]:pointer-events-none group-data-[state=collapsed]:invisible",
                 "group-data-[state=collapsed]:w-0 group-data-[state=collapsed]:opacity-0",
               )}
@@ -396,7 +415,7 @@ export function Sidebar({
 
   return (
     <div
-      className="group peer hidden text-foreground md:block"
+      className={cn("group peer text-foreground", desktopBlock)}
       data-state={state}
       data-collapsible={state === "collapsed" ? collapsible : ""}
       data-variant={variant}
@@ -411,7 +430,7 @@ export function Sidebar({
         data-slot="sidebar-gap"
         className={cn(
           "relative w-(--sidebar-width) bg-transparent",
-          "transition-[width] duration-(--duration-slow) ease-out",
+          "transition-[width] duration-(--duration-slow) ease-collapse",
           "group-data-[collapsible=offcanvas]:w-0",
           "group-data-[side=right]:rotate-180",
           variant === "floating" || variant === "inset"
@@ -422,8 +441,9 @@ export function Sidebar({
       <div
         data-slot="sidebar-container"
         className={cn(
-          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) md:flex",
-          "transition-[left,right,width] duration-(--duration-slow) ease-out",
+          "fixed inset-y-0 z-10 h-svh w-(--sidebar-width)",
+          desktopFlex,
+          "transition-[left,right,width] duration-(--duration-slow) ease-collapse",
           side === "left"
             ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
             : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",

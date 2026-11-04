@@ -170,3 +170,34 @@ describe("Sidebar count and dot badges", () => {
     expect(screen.getByText("Connected")).toHaveClass("sr-only");
   });
 });
+
+describe("Sidebar viewport override", () => {
+  it("opens a forced-mobile drawer inside its container at a desktop width", async () => {
+    const user = userEvent.setup();
+    const container = document.createElement("div");
+    document.body.append(container);
+    render(<SidebarProvider persist={false} mobile>
+      <SidebarTrigger />
+      <Sidebar mobileContainer={container}><button>Inside</button></Sidebar>
+    </SidebarProvider>);
+    expect(screen.queryByText("Inside")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Toggle sidebar" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(container).toContainElement(dialog);
+    expect(dialog).toHaveClass("absolute", "max-w-[85%]");
+    expect(dialog).not.toHaveClass("fixed", "h-dvh");
+    container.remove();
+  });
+
+  it("keeps a forced-desktop sidebar shown below the breakpoint", () => {
+    const original = window.matchMedia;
+    vi.spyOn(window, "matchMedia").mockImplementation(query => ({
+      ...original(query), matches: query === "(max-width: 767px)",
+    }));
+    render(<SidebarProvider persist={false} mobile={false}><Sidebar><button>Inline</button></Sidebar></SidebarProvider>);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByText("Inline").closest('[data-slot="sidebar"]')).toHaveClass("block");
+    expect(screen.getByText("Inline").closest('[data-slot="sidebar"]')).not.toHaveClass("hidden");
+    vi.restoreAllMocks();
+  });
+});

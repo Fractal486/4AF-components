@@ -11,6 +11,9 @@ const TONE = { fill: "currentColor", fillOpacity: 0.3, stroke: "none" } as const
 const SOLID = { fill: "currentColor", stroke: "none" } as const;
 const FAINT = { strokeOpacity: 0.4 } as const;
 
+/** Loading, everywhere a setting has it: the Classic Loader's sidebar icon (a still drawing). */
+const LOADING = <NavIcon href="/docs/classic-loader" />;
+
 /** `wide` draws on a 32x16 grid at the tab's height, for shapes that read as long lines. */
 function Icon({ children, wide = false }: { children: ReactNode; wide?: boolean }) {
   return (
@@ -72,6 +75,12 @@ export const TABS_ORIENTATION_ICONS = {
   vertical: <Icon><rect x="3.5" y="1.5" width="9" height="13" rx="2" /><rect x="5" y="3" width="6" height="4" rx="1" {...TONE} /><path d="M6.5 5h3" /><path d="M6.5 9.5h3M6.5 12.5h3" {...FAINT} /></Icon>,
 } satisfies Record<string, ReactNode>;
 
+/** Which layout an app shell renders: a monitor on its stand, or a phone. Screens shaded. */
+export const VIEWPORT_ICONS = {
+  desktop: <Icon><rect x="1.5" y="2.5" width="13" height="8.5" rx="1.5" {...FILLED} /><path d="M8 11v2.5M5.5 13.5h5" /></Icon>,
+  mobile: <Icon><rect x="4.5" y="1.5" width="7" height="13" rx="1.75" {...FILLED} /><path d="M7 12.5h2" /></Icon>,
+} satisfies Record<string, ReactNode>;
+
 /* Alignment: three meanings, three sets. */
 
 /** Where a popup sits along its trigger: the outlined trigger above the filled panel. */
@@ -118,14 +127,14 @@ export const NUMBER_FORMAT_ICONS = {
   percent: <Icon><path d="M12.5 3.5 3.5 12.5" /><circle cx="4.5" cy="4.5" r="2" {...FILLED} /><circle cx="11.5" cy="11.5" r="2" {...FILLED} /></Icon>,
 } satisfies Record<string, ReactNode>;
 
-/** Badge's statuses, as two-tone versions of the glyphs Badge itself shows (a still spinner for loading). */
+/** Badge's statuses, as two-tone versions of the glyphs Badge itself shows; loading is the Classic Loader. */
 export const BADGE_STATUS_ICONS = {
   neutral: <Icon><circle cx="8" cy="8" r="6.5" {...FILLED} /></Icon>,
   info: <Icon><circle cx="8" cy="8" r="6.5" {...FILLED} /><path d="M8 7.5v3.75" /><circle cx="8" cy="5" r="0.875" {...SOLID} /></Icon>,
   success: <Icon><circle cx="8" cy="8" r="6.5" {...FILLED} /><path d="m5.25 8.25 1.75 1.75 3.75-4" /></Icon>,
   warning: <Icon><path d="M6.7 2.6a1.5 1.5 0 0 1 2.6 0l5.1 9.15A1.5 1.5 0 0 1 13.1 14H2.9a1.5 1.5 0 0 1-1.3-2.25Z" {...FILLED} /><path d="M8 6v3.25" /><circle cx="8" cy="11.5" r="0.875" {...SOLID} /></Icon>,
   danger: <Icon><path d="M5.4 1.5h5.2l3.9 3.9v5.2l-3.9 3.9H5.4l-3.9-3.9V5.4Z" {...FILLED} /><path d="M8 4.75V8.5" /><circle cx="8" cy="11" r="0.875" {...SOLID} /></Icon>,
-  loading: <Icon><circle cx="8" cy="8" r="6" {...FAINT} /><path d="M8 2a6 6 0 0 1 6 6" /></Icon>,
+  loading: LOADING,
 } satisfies Record<string, ReactNode>;
 
 /** Alert's variants: the same glyphs as Badge's statuses, which Alert shares. */
@@ -141,13 +150,6 @@ export const ALERT_VARIANT_ICONS = {
 export const PROGRESS_SHAPE_ICONS = {
   bar: <Icon wide><rect x="1.5" y="6" width="29" height="4" rx="2" {...TONE} /><rect x="1.5" y="6" width="18" height="4" rx="2" {...SOLID} /></Icon>,
   circle: <Icon><circle cx="8" cy="8" r="6" strokeWidth={2} {...FAINT} /><path d="M8 2a6 6 0 1 1-3.53 10.85" strokeWidth={2} /></Icon>,
-} satisfies Record<string, ReactNode>;
-
-/** Slider's thumbs, each on its own rail (all on the wide grid): the filled part shaded deeper. */
-export const SLIDER_THUMB_ICONS = {
-  bar: <Icon wide><rect x="1.5" y="3" width="29" height="10" rx="2.5" {...TONE} /><rect x="1.5" y="3" width="17.5" height="10" rx="2.5" {...TONE} /><path d="M16 5.5v5" /></Icon>,
-  circle: <Icon wide><rect x="1.5" y="4" width="29" height="8" rx="4" {...TONE} /><rect x="1.5" y="4" width="18.5" height="8" rx="4" {...TONE} /><circle cx="16" cy="8" r="2.5" {...SOLID} /></Icon>,
-  knob: <Icon wide><path d="M1.5 8h29" {...FAINT} /><path d="M1.5 8H17" /><circle cx="18" cy="8" r="2.25" {...SOLID} /></Icon>,
 } satisfies Record<string, ReactNode>;
 
 /** Slider's value formats: Number Animation's `#` and `$`, and °C for the demo's unit. */
@@ -207,14 +209,20 @@ export const STATE_ICONS = {
   invalid: <Icon>{POINTER}<circle cx="12" cy="4" r="3" className="text-destructive" /></Icon>,
 } satisfies Record<string, ReactNode>;
 
-/** Loading, everywhere a state has it: the Classic Loader's sidebar icon (a still drawing). */
-const LOADING = <NavIcon href="/docs/classic-loader" />;
 
 /** Button's states: the pointer, the Classic Loader, and the not-allowed pointer. */
 export const BUTTON_STATE_ICONS = {
   default: STATE_ICONS.default,
   loading: LOADING,
   disabled: STATE_ICONS.disabled,
+} satisfies Record<string, ReactNode>;
+
+/** Action Button's and Action Toggle's statuses: the pointer (a click runs it), the Classic Loader, and Badge's success and danger. */
+export const ACTION_STATUS_ICONS = {
+  automatic: STATE_ICONS.default,
+  pending: LOADING,
+  success: BADGE_STATUS_ICONS.success,
+  error: BADGE_STATUS_ICONS.danger,
 } satisfies Record<string, ReactNode>;
 
 /** Table's states, as the sidebar icons of a table, the Classic Loader, and Empty. */

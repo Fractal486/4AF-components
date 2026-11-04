@@ -211,7 +211,11 @@ export function SelectSortTrigger({
         resolvedVariant === "default" &&
           (isUnset
             ? "border-dashed border-border-strong bg-surface"
-            : "border-border bg-muted")), className)}
+            : "border-border bg-muted"),
+        // The shadow edge can't dash, so an unset chip trades it for its (otherwise
+        // transparent) border. Set, it returns to the solid shadow edge with no fill.
+        resolvedVariant === "outline-ghost" && isUnset &&
+          "border-dashed border-border-strong shadow-none"), className)}
       {...props}
     >
       {icon && (

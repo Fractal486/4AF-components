@@ -32,7 +32,8 @@ their navigation available. `SidebarTrigger` sets `aria-expanded` to whether the
 toggles is open: the drawer on mobile, the sidebar on desktop.
 
 Below 768px, collapsible sidebars and split layouts render as a drawer. A non-split sidebar with
-`collapsible="none"` stays inline at every viewport size. For drawer layouts, `className` styles
+`collapsible="none"` stays inline at every viewport size, with the same edge rule against the
+content as the collapsible sidebars. For drawer layouts, `className` styles
 the desktop sidebar; style the drawer with `mobileClassName`. The drawer slides in from the sidebar's `side` over a dim backdrop and slides back out (Base UI Dialog with CSS transitions).
 
 ## Keyboard shortcut
@@ -53,10 +54,18 @@ Following an ordinary link inside the mobile drawer closes it, including links h
 client-side routers. New-tab links, downloads, modified clicks, and `aria-disabled` links
 keep it open. Buttons and desktop navigation do not close the sidebar.
 
+| Prop | Part | Notes |
+| --- | --- | --- |
+| `mobile` | `SidebarProvider` | `true` forces the mobile drawer and `false` the desktop sidebar at any width. Omitted, the 768px breakpoint decides. `SidebarLayout` passes it through. |
+| `mobileContainer` | `Sidebar` | An element to open the drawer inside instead of `document.body`. The drawer and backdrop are positioned absolutely against it, so it needs `position: relative`; the drawer takes its height and at most 85% of its width. |
+
 ## Menu badges and actions
 
 `SidebarMenuBadge` keeps accepting custom children. Its count and dot props add notification
-indicators that remain visible as a small dot when the sidebar collapses to icons.
+indicators that remain visible as a small dot when the sidebar collapses to icons. Collapsing
+into the icon rail, the count fades out over the first half (held by `data-hold`), becomes the
+dot at the midpoint, and the dot fades in over the second half. Expanding, the count returns
+with the row's `SidebarMenuAction`, fading in from the first frame.
 
 | Prop | Type | Default | Notes |
 | --- | --- | --- | --- |
@@ -79,7 +88,8 @@ and its Number Animation dependency. Existing text badges and actions keep their
 ## Menu control geometry
 
 `SidebarMenuButton` supports `size="sm"`, `size="default"`, and `size="lg"`. The compact
-`sm` row uses a 6px radius; `default` and `lg` use an 8px radius. Nested
+`sm` row uses a 6px radius; `default` and `lg` use an 8px radius. In the icon rail, rows are
+32px wide; `default` and `lg` rows are 32px tall, and `sm` rows keep their 28px height. Nested
 `SidebarMenuSubButton` rows use a 6px radius, and fixed split-rail buttons are 32px squares
 with an 8px radius.
 
@@ -114,6 +124,21 @@ slot before both, so they never overlap. Hovering a nested row highlights only t
 collapsible root accepts Base UI's `defaultOpen`, `open`, `onOpenChange`, and `disabled`
 props.
 
+For a row that also selects a page, pass `isActive={currentPage === "folders"}` and select
+the page in `onClick`. Clicking an inactive page opens its section, or leaves it open if it
+already is. Clicking the active page toggles the section. Omit `isActive` for a disclosure-only
+row that always toggles. This applies to pointer and keyboard activation.
+On page-like rows, the chevron is a separate keyboard-accessible button: it only toggles
+the section and never calls the page's `onClick` or changes its selection.
+
+Sections unfold and fold over `--duration-slow`: the panel animates its measured height so
+the rows below move with it, while its submenu rows fade and clear a 4px blur without sliding.
+The submenu's vertical separator stays stationary as the rows animate.
+Height animation is intentional here because the navigation layout changes. Base UI retains
+the panel through its exit; rapid toggles reverse the transition. Reduced motion uses the
+shared 1ms duration tokens. `className` and refs still target the outer panel; the inner
+content wrapper exposes `data-slot="sidebar-menu-collapsible-body"`.
+
 ## Header composition
 
 A header contains one full-width `SidebarHeaderButton`, or two wrapped in `SidebarHeaderRow`:
@@ -128,9 +153,14 @@ A header contains one full-width `SidebarHeaderButton`, or two wrapped in `Sideb
 </SidebarHeader>
 ```
 
-The row owns spacing, divides width evenly, and stacks its buttons when the sidebar collapses to
+The row owns spacing, sizes buttons from their content and shares the remaining space equally,
+and stacks its buttons when the sidebar collapses to
 icons. Add `className="flex-none"` when a button should retain its own width. Compose menus with
 Dropdown Menu rather than embedding a separate menu implementation in Sidebar.
+
+`SidebarInput` folds away when the sidebar collapses to icons, sliding up under the header
+row above it, so it needs no hiding wrapper. Its `className` applies to the input; the fold is
+on a `sidebar-input-container` around it, which also drops the header's 8px gap.
 
 ### Header tabs
 
@@ -155,7 +185,7 @@ header, the panels, and the footer; each `SidebarTabsPanel` usually holds a `Sid
 | Part | Notes |
 | --- | --- |
 | `SidebarTabs` | A [Tabs](/docs/tabs) root. `value`, `defaultValue`, `onValueChange`, and `variant` pass through; `appearance` defaults to `outline` and `size` to `sm`. |
-| `SidebarTabsList` | Full width, tabs sharing it evenly. Hidden when the sidebar collapses to icons; the selected panel stays. |
+| `SidebarTabsList` | Full width, tabs sharing it evenly. Folds away as the sidebar collapses to icons, sliding up under the header row above it (in a `sidebar-tabs-list-container`, which also drops the header's 8px gap); the selected panel stays. |
 | `SidebarTabsTab` | One tab, by `value`. |
 | `SidebarTabsPanel` | One tab's contents. Inactive panels stay mounted and hidden, keeping scroll position and open sections. |
 

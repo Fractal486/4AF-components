@@ -797,7 +797,7 @@ export function CommandPalette({
               viewportRef={snapFirstRowToTop}
               viewportProps={{ tabIndex: -1 }}
             >
-              <Autocomplete.List className="p-1.5">
+              <Autocomplete.List className="p-1">
                 {(group: { heading?: string; items: CommandItem[] }) => (
                   <Autocomplete.Group
                     key={group.heading ?? "group"}

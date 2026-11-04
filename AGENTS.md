@@ -150,7 +150,9 @@ worth reusing; a component that skips a line here is a component we'll rewrite l
   changing the layout is part of the intended interaction, and document the reason.
   Existing uses include Collapsible's height transition, Dialog's measured frame height, Calendar's measured month height
   as week rows change, Sidebar's shell dimensions and offcanvas position, its collapsing
-  menu rows (width, height, padding) and group labels (margin), Morph's opt-in
+  menu rows (width, height, padding), group labels (margin), group padding and gaps, and
+  open sections folding into the rail (height), the header search field and tab row folding
+  away (margin, grid rows), Morph's opt-in
   `sizing="current"` width, and Menubar's open-menu highlight size as it slides between
   triggers of different widths. Sidebar's row geometry and label spacing transition so the
   navigation reflows smoothly into the icon rail without leaving gaps for hidden labels.

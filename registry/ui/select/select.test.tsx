@@ -462,6 +462,27 @@ describe("Base UI Select", () => {
     );
   });
 
+  it("dashes an unset outline-ghost sort trigger and restores its shadow edge once set", () => {
+    const { rerender } = render(
+      <Select items={FRUITS} value={null}>
+        <SelectSortTrigger variant="outline-ghost" label="Sort" aria-label="Sort fruit" />
+        <FruitOptions />
+      </Select>,
+    );
+    const trigger = screen.getByRole("combobox", { name: "Sort fruit" });
+    expect(trigger).toHaveClass("border-dashed", "border-border-strong", "shadow-none");
+    expect(trigger).not.toHaveClass("shadow-border");
+
+    rerender(
+      <Select items={FRUITS} value="banana">
+        <SelectSortTrigger variant="outline-ghost" label="Sort" aria-label="Sort fruit" />
+        <FruitOptions />
+      </Select>,
+    );
+    expect(trigger).toHaveClass("shadow-border", "border-transparent", "bg-transparent");
+    expect(trigger).not.toHaveClass("border-dashed");
+  });
+
   it("renders a presentational separator without adding a selectable option", async () => {
     const user = userEvent.setup();
 
@@ -587,6 +608,66 @@ describe("Base UI Select", () => {
     await user.click(archive);
     expect(onArchive).toHaveBeenCalledTimes(1);
     await waitFor(() => { expect(trigger).toHaveAttribute("aria-expanded", "false"); });
+  });
+
+  it.each([false, true])("reaches the footer with the arrow keys (searchable: %s)", async (searchable) => {
+    const user = userEvent.setup();
+    const onArchive = vi.fn();
+
+    render(
+      <Select multiple items={FRUITS} defaultValue={["banana"]}>
+        <SelectTrigger aria-label="Fruits">
+          <SelectValue placeholder="Pick fruits" />
+        </SelectTrigger>
+        <SelectContent
+          searchable={searchable}
+          clearable
+          footerActions={[{ key: "archive", label: "Archive", onSelect: onArchive }]}
+        >
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectItem value="banana">Banana</SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruits" }));
+    const banana = await screen.findByRole("option", { name: "Banana" });
+    if (searchable) {
+      await user.keyboard("{ArrowDown}{ArrowDown}");
+    }
+    await waitFor(() => expect(banana).toHaveFocus());
+
+    // ↓ off the last row lands on the first footer button, which takes the active mark.
+    await user.keyboard("{ArrowDown}");
+    const archive = screen.getByRole("button", { name: "Archive" });
+    const clear = screen.getByRole("button", { name: "Clear" });
+    expect(archive).toHaveFocus();
+    expect(archive).toHaveAttribute("data-panel-active");
+    // The fill is the highlight, as on a row; no focus ring.
+    expect(archive).toHaveClass("focus-visible:ring-0");
+    // Base UI keeps its highlight on the row focus left; rows rest so it doesn't paint.
+    for (const option of screen.getAllByRole("option")) {
+      expect(option).not.toHaveAttribute("data-panel-active");
+      expect(option).toHaveAttribute("data-panel-dormant");
+    }
+
+    // ←/→ move along the footer; ↓ stays put there.
+    await user.keyboard("{ArrowRight}");
+    expect(clear).toHaveFocus();
+    expect(clear).toHaveAttribute("data-panel-active");
+    await user.keyboard("{ArrowDown}");
+    expect(clear).toHaveFocus();
+    await user.keyboard("{ArrowLeft}");
+    expect(archive).toHaveFocus();
+
+    // ↑ returns to the last row.
+    await user.keyboard("{ArrowUp}");
+    await waitFor(() => expect(banana).toHaveFocus());
+    expect(banana).toHaveAttribute("data-panel-active");
+
+    // Enter on a footer button runs it rather than toggling an option.
+    await user.keyboard("{ArrowDown}{Enter}");
+    expect(onArchive).toHaveBeenCalledTimes(1);
   });
 
   it("survives an option whose label and icon are rebuilt on every render", async () => {
@@ -1229,7 +1310,11 @@ describe("Base UI Select", () => {
     // The first nested panel to open takes the full animation.
     expect(mango.closest('[data-slot="select-sub-content"]')).not.toHaveAttribute("data-swap");
 
-    await user.keyboard("{ArrowLeft}{ArrowDown}{ArrowRight}");
+    await user.keyboard("{ArrowLeft}");
+    await waitFor(() => expect(screen.getByRole("option", { name: "Tropical" })).toHaveFocus());
+    await user.keyboard("{ArrowDown}");
+    await waitFor(() => expect(screen.getByRole("option", { name: "Orchard" })).toHaveFocus());
+    await user.keyboard("{ArrowRight}");
     const apple = await screen.findByRole("option", { name: "Apple" });
     expect(apple.closest('[data-slot="select-sub-content"]')).toHaveAttribute("data-swap");
   });

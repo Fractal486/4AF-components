@@ -36,6 +36,9 @@ Badge text uses Morph’s measured `current` sizing for smooth width changes, in
 For inline messages with titles, descriptions, and controlled dismissal, see [Alert](content/docs/alert.mdx#api).
 
 For custom application frames, see [Sidebar Layout's header slots](content/docs/sidebar-layout.mdx#api).
+`SidebarHeaderRow` sizes its buttons from their content and shares leftover width equally; use `flex-none` to keep a button at its content width.
+For page-like `SidebarMenuCollapsibleTrigger` rows, pass `isActive` and select the page in `onClick`: inactive pages open their section, while active pages toggle it. Omit `isActive` for disclosure-only rows.
+Page-like rows have a separate chevron button that toggles the section without selecting the page.
 For shared hints across several triggers, cursor tracking, and separately composed popup parts,
 see [Tooltip's shared and composable APIs](content/docs/tooltip.mdx#shared-tooltips).
 For smoothly resizing anchored panels, shared triggers, and custom portal composition, see [Popover](content/docs/popover.mdx#api). Tall panels use Scroll Area automatically.

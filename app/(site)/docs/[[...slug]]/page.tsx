@@ -59,7 +59,6 @@ export default async function Page({ params }: DocsPageProps) {
         installCommand={publicInstallCommand(slug[0]!)}
         markdownUrl={`${SITE_URL}${page.url}.md`}
         icon={hasNavIcon(page.url) ? <NavIcon href={page.url} className="size-5 text-muted-foreground" /> : undefined}
-        fullscreenHref={page.url === "/docs/sidebar-layout" ? "/full/sidebar-layout" : undefined}
         stats={componentStats(slug[0]!)}
       >
         <MdxContent components={getMDXComponents()} />

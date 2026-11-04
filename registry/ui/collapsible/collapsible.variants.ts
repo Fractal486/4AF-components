@@ -9,9 +9,8 @@ export const collapsibleVariants = cva("", {
   variants: {
     variant: {
       plain: "",
-      // The card is a 14px surface; its trigger follows the shared 8px medium/large
-      // button tier rather than inheriting the surface's larger radius. shadow-border,
-      // not border — it's elevation, not separation.
+      // The card is a 14px surface; its trigger is concentric with it, 10px inside the
+      // 4px padding. shadow-border, not border — it's elevation, not separation.
       card: "rounded-xl bg-surface p-1 shadow-border",
     },
   },
@@ -38,7 +37,7 @@ export const collapsibleTriggerVariants = cva(
            the text. A row with no surface shouldn't indent itself. */
         plain:
           "-mx-2 rounded-[6px] px-2 py-1.5 text-muted-foreground hover:text-foreground data-[panel-open]:text-foreground",
-        card: "rounded-[8px] px-3 py-2 text-foreground hover:bg-muted",
+        card: "rounded-lg px-3 py-2 text-foreground hover:bg-muted",
       },
     },
     defaultVariants: { variant: "plain" },

@@ -42,23 +42,35 @@ export const checkboxEntry = defineEntry({
   slug: "checkbox",
   name: "Checkbox",
   controls: {
-    mode: select(["single", "group", "nested"], "single", "Mode"),
-    // Groups derive the parent's mixed state from their children, so this is single-only.
-    checked: withIcons(select(["unchecked", "checked", "indeterminate"], "checked", "Checked", (values) => values.mode !== "single"), CHECKBOX_CHECKED_ICONS),
+    checked: withIcons(select(["unchecked", "checked", "indeterminate"], "checked", "Checked"), CHECKBOX_CHECKED_ICONS),
     state: withIcons(select(["default", "disabled", "invalid"], "default", "State"), STATE_ICONS, { dropdown: true }),
   },
-  render({ mode, checked, state }) {
-    const disabled = state === "disabled";
-    const invalid = state === "invalid";
-    if (mode !== "single") return <GroupPreview nested={mode === "nested"} disabled={disabled} invalid={invalid} />;
+  render({ checked, state }) {
     return (
       <Checkbox
         label="Accept terms and conditions"
         defaultChecked={checked === "checked"}
         indeterminate={checked === "indeterminate"}
-        disabled={disabled}
-        aria-invalid={invalid || undefined}
+        disabled={state === "disabled"}
+        aria-invalid={state === "invalid" || undefined}
       />
     );
   },
 });
+
+/** A parent checkbox over a flat list, or over nested groups; the parent's mixed state comes from its children. */
+function groupEntry(nested: boolean) {
+  return defineEntry({
+    slug: nested ? "checkbox-nested" : "checkbox-group",
+    name: nested ? "Nested" : "Group",
+    controls: {
+      state: withIcons(select(["default", "disabled", "invalid"], "default", "State"), STATE_ICONS, { dropdown: true }),
+    },
+    render({ state }) {
+      return <GroupPreview nested={nested} disabled={state === "disabled"} invalid={state === "invalid"} />;
+    },
+  });
+}
+
+export const checkboxGroupEntry = groupEntry(false);
+export const checkboxNestedEntry = groupEntry(true);

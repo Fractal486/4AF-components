@@ -18,12 +18,12 @@ export const kbdEntry = defineEntry({
     const keycaps = content === "icons"
       ? <KbdGroup size={size}>
           <Kbd aria-label="Command"><Command aria-hidden="true" /></Kbd>
-          <Kbd aria-label="Enter"><CornerDownLeft aria-hidden="true" className="size-4" /></Kbd>
+          <Kbd aria-label="Enter"><CornerDownLeft aria-hidden="true" /></Kbd>
         </KbdGroup>
       : grouped && content !== "key" ? <KbdGroup size={size} keys={keys} /> : <Kbd size={size} keys={keys} />;
-    if (context === "button") return <Button>Shortcut {keycaps}</Button>;
-    if (context === "tooltip") return <Tooltip content={<span className="inline-flex items-center gap-2">Shortcut {keycaps}</span>}>
-      <Button variant="outline">Show shortcut</Button>
+    if (context === "button") return <Button variant="outline-ghost">Shortcut {keycaps}</Button>;
+    if (context === "tooltip") return <Tooltip delay={0} content={<span className="inline-flex items-center gap-2">Shortcut {keycaps}</span>}>
+      <Button variant="outline-ghost">Show shortcut</Button>
     </Tooltip>;
     return keycaps;
   },

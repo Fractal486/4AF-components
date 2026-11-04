@@ -185,7 +185,7 @@ function DatePickerShell({
     "data-slot": "date-picker-trigger",
     "data-variant": variant ?? "default",
     "data-tone": tone ?? "neutral",
-    "data-size": size ?? "md",
+    "data-size": size ?? "sm",
     "data-empty": hasValue ? undefined : "",
     children: (
       <>
@@ -213,7 +213,7 @@ function DatePickerShell({
       variant="ghost"
       size="xs"
       data-slot="date-picker-today"
-      className="me-auto"
+      className="me-auto rounded-xs"
       disabled={todayDisabled}
       onClick={() => {
         navigation.onMonthChange(dateLib.startOfMonth(today));
@@ -231,6 +231,7 @@ function DatePickerShell({
         variant="ghost"
         size="xs"
         data-slot="date-picker-clear"
+        className="rounded-xs"
         onClick={() => {
           onClear();
           close();
@@ -255,7 +256,8 @@ function DatePickerShell({
       >
         <div data-slot="date-picker-content">{children(close, navigation)}</div>
         {todayButton || clearButton ? (
-          <div className="flex justify-end border-t border-border p-1.5">
+          <div className="flex justify-end border-t border-border p-1">
+            {/* Select's footer: a 4px inset holding 3px buttons, concentric with the 7px panel. */}
             {todayButton}{clearButton}
           </div>
         ) : null}

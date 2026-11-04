@@ -109,7 +109,7 @@ function PageArea({ holdFeedback, disabled }: DemoProps) {
         </ContextMenuCheckboxItem>
         <ContextMenuSeparator />
         <ContextMenuSub>
-          <ContextMenuSubTrigger inset>More tools</ContextMenuSubTrigger>
+          <ContextMenuSubTrigger>More tools</ContextMenuSubTrigger>
           <ContextMenuSubContent className="w-52">
             <ContextMenuItem>
               Save page as…
@@ -146,8 +146,7 @@ function FileList({ holdFeedback, disabled }: DemoProps) {
 
   return (
     <div className="flex w-full flex-col gap-3">
-      {/* Concentric: 10px rows in 4px of padding round to 14px. */}
-      <div className="flex min-h-[46px] flex-col gap-0.5 rounded-[14px] bg-surface p-1 shadow-border">
+      <div className="flex min-h-[46px] flex-col gap-0.5">
         {files.map((file) => (
           <FileRow
             key={file.name}
@@ -160,7 +159,7 @@ function FileList({ holdFeedback, disabled }: DemoProps) {
         ))}
       </div>
       <Button
-        variant="outline"
+        variant="ghost"
         size="sm"
         className="self-start"
         disabled={removed.length === 0}
@@ -188,7 +187,7 @@ function FileRow({
       {/* The open row keeps the hover fill, so it's clear which file the menu acts on. */}
       <ContextMenuTrigger
         holdFeedback={holdFeedback}
-        className="flex items-center gap-3 rounded-[10px] px-3 py-2 text-sm text-foreground hover:bg-muted data-[popup-open]:bg-muted [&_svg]:size-4 [&_svg]:text-muted-foreground"
+        className="flex items-center gap-3 rounded-[10px] px-3 py-2 text-sm text-foreground hover:bg-muted/50 data-[popup-open]:bg-muted/50 [&_svg]:size-4 [&_svg]:text-muted-foreground"
       >
         <Icon aria-hidden />
         <span className="min-w-0 flex-1 truncate">{name}</span>
@@ -213,6 +212,7 @@ function FileRow({
           Download
         </ContextMenuActionItem>
         <ContextMenuCheckboxItem checked={starred} onCheckedChange={setStarred}>
+          <Star />
           Starred
         </ContextMenuCheckboxItem>
         <ContextMenuSub>
@@ -235,7 +235,6 @@ function FileRow({
         <ContextMenuItem variant="destructive" onClick={onDelete}>
           <Trash2 />
           Delete
-          <ContextMenuShortcut keys="mod+backspace" />
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>

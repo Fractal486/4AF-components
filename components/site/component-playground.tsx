@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, ExternalLink, Info, Link as LinkIcon, Maximize2, Minimize2, RotateCcw, Terminal } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronRight, Info, Link as LinkIcon, Maximize2, Minimize2, RotateCcw, Terminal } from "lucide-react";
 import { Fragment, useEffect, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
 import type { ComponentStats } from "@/lib/component-stats";
 import { InlineLink } from "@/components/inline-link";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/registry/ui/hover-card/hover-card";
 import { MobileToc } from "@/components/site/mobile-toc";
-import { Controls } from "@/inspector/controls";
 import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
 import { CopyButton } from "@/registry/ui/copy-button/copy-button";
@@ -69,15 +68,13 @@ export interface ComponentPlaygroundProps {
   /** Drawn before the title: the page's sidebar icon. */
   icon?: ReactNode;
   description?: string;
-  /** The page's own demo first; more are offered as a "Demo" setting. */
+  /** The page's own demo first; more are offered in the canvas rail. */
   demos: PlaygroundDemo[];
   previous?: PageLink;
   next?: PageLink;
   toc: TocItem[];
   installCommand: string;
   markdownUrl: string;
-  /** A standalone full-screen page for the component, when it has one. */
-  fullscreenHref?: string;
   /** Source size and the other components it installs, from the registry. */
   stats?: ComponentStats;
   /** The rendered documentation. */
@@ -94,8 +91,6 @@ export function ComponentPlayground({ demos, ...props }: ComponentPlaygroundProp
 
   return (
     <PlaygroundFrame
-      // A different demo starts from its own defaults.
-      key={demoName}
       {...props}
       demos={demos}
       demoName={demoName}
@@ -187,7 +182,6 @@ function PlaygroundFrame({
   toc,
   installCommand,
   markdownUrl,
-  fullscreenHref,
   stats,
   children,
 }: ComponentPlaygroundProps & {
@@ -329,15 +323,6 @@ function PlaygroundFrame({
               ) : null}
               {previous ? <PageButton link={previous} direction="previous" /> : null}
               {next ? <PageButton link={next} direction="next" /> : null}
-              {fullscreenHref ? (
-                <Tooltip content="Open in new tab" delay={0}>
-                  <Button asChild variant="ghost" size="icon-sm">
-                    <a href={fullscreenHref} target="_blank" rel="noreferrer" aria-label={`Open ${title} full screen in a new tab`}>
-                      <ExternalLink />
-                    </a>
-                  </Button>
-                </Tooltip>
-              ) : null}
               {view === "preview" ? (
                 <Tooltip content={fullView ? "Exit full view" : "Full view"} delay={0}>
                   <Button
@@ -372,16 +357,35 @@ function PlaygroundFrame({
               className="h-[24rem] lg:h-auto lg:flex-1"
               viewportClassName="*:h-full"
             >
-              <DemoCanvas demo={demo} />
+              <div className="relative h-full min-h-full">
+                {demos.length > 1 && (
+                  <div role="group" aria-label="Variants" className="absolute top-1/2 left-2 z-10 flex w-28 -translate-y-1/2 flex-col items-stretch">
+                    <p className="mb-2.5 pr-2 text-2xs text-subtle-foreground">Variants</p>
+                    <div className="relative flex flex-col items-stretch">
+                      <span aria-hidden className="pointer-events-none absolute top-0 left-0 flex h-[30px] items-center text-foreground transition-[translate] duration-(--duration-slow) ease-out"
+                        style={{ translate: `0 ${demos.findIndex((option) => option.name === demoName) * 100}%` }}>
+                        <ChevronRight className="size-3" />
+                      </span>
+                      {demos.map((option) => (
+                        <Button key={option.name} type="button" variant="plain" size="sm"
+                          aria-pressed={demoName === option.name}
+                          className="cursor-default justify-start pr-2 pl-4 text-muted-foreground duration-(--duration-slow) hover:text-foreground aria-pressed:text-foreground"
+                          onClick={() => onDemoChange(option.name)}>
+                          {option.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <DemoCanvas demo={demo} />
+              </div>
             </ScrollArea>
             {hasDemoSettings(demo) || demos.length > 1 ? (
               <div className="mx-auto w-full max-w-[400px] px-3 pt-2 pb-5 lg:hidden">
                 <PlaygroundSettings
                   title={title}
                   demo={demo}
-                  demos={demos}
                   demoName={demoName}
-                  onDemoChange={onDemoChange}
                   idPrefix="playground-box"
                 />
               </div>
@@ -429,9 +433,7 @@ function PlaygroundFrame({
           <PlaygroundSettings
             title={title}
             demo={demo}
-            demos={demos}
             demoName={demoName}
-            onDemoChange={onDemoChange}
             idPrefix="playground"
           />
           {demo.status === "ready" && !hasDemoSettings(demo) && demos.length < 2 ? (
@@ -468,46 +470,24 @@ function PlaygroundFrame({
   );
 }
 
-/**
- * The demo switch and the demo's own settings. Rendered twice, once per layout (the side panel
- * from `lg`, the demo's box below it), so each takes its own id prefix.
- */
+/** Settings appear in the side panel on desktop and below the canvas on mobile. */
 function PlaygroundSettings({
   title,
   demo,
-  demos,
   demoName,
-  onDemoChange,
   idPrefix,
 }: {
   title: string;
   demo: ReturnType<typeof useComponentDemo>;
-  demos: readonly PlaygroundDemo[];
   demoName: PlaygroundDemo["name"];
-  onDemoChange: (name: PlaygroundDemo["name"]) => void;
   idPrefix: string;
 }) {
-  const demoLabels = demos.map((option) => option.label);
   return (
     <section aria-label={`${title} settings`} className="@container flex flex-col gap-3">
-      {demos.length > 1 ? (
-        <Controls
-          idPrefix={`${idPrefix}-demo`}
-          schema={{
-            demo: { kind: "select", options: demoLabels, defaultValue: demoLabels[0]!, label: "Demo" },
-          }}
-          values={{ demo: demos.find((option) => option.name === demoName)!.label }}
-          onChange={(_key, label) => {
-            const option = demos.find((candidate) => candidate.label === label);
-            if (option) onDemoChange(option.name);
-          }}
-        />
-      ) : null}
       <DemoSettings demo={demo} idPrefix={`${idPrefix}-${demoName}`} />
     </section>
   );
 }
-
 /** The narrow layout's neighbouring-page link, at the foot of the page. */
 function PageCard({ link, direction }: { link: PageLink; direction: "previous" | "next" }) {
   const previous = direction === "previous";

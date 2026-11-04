@@ -54,7 +54,7 @@ export const alertEntry = defineEntry({
   slug: "alert",
   name: "Alert",
   controls: {
-    variant: withIcons(select(VARIANTS, "error"), ALERT_VARIANT_ICONS),
+    variant: withIcons(select(VARIANTS, "error"), ALERT_VARIANT_ICONS, { dropdown: true }),
     icon: select(["default", "custom", "none"] as const, "default", "Icon"),
     title: bool(false, "Title"),
     dismissible: bool(false, "Dismissible"),

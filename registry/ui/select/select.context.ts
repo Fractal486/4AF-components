@@ -1,10 +1,12 @@
 import { createContext, useContext, type MouseEvent, type ReactNode } from "react";
 
 /**
- * Whether the pointer has left a panel without a search field. Its active row is kept for the
- * arrow keys to resume from, but stops painting, as a hover does when the pointer moves away.
+ * Why a panel's rows rest. `pointer`: the pointer has left a panel without a search field; its
+ * active row is kept for the arrow keys to resume from, but stops painting, as a hover does when
+ * the pointer moves away. `footer`: a footer button holds the active mark, so no row paints —
+ * including the row Base UI still highlights after focus moved down off it.
  */
-export const SelectPanelDormantContext = createContext(false);
+export const SelectPanelDormantContext = createContext<"pointer" | "footer" | false>(false);
 import type { SelectSize } from "./select.shared";
 
 interface SelectContextValue {

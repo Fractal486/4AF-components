@@ -202,8 +202,9 @@ variant it:
 - shows the selected label or labels from Select context;
 - rotates its chevron like the normal Select trigger.
 
-It takes the same `variant="ghost"` and `variant="plain"` options as `SelectTrigger`; those
-variants do not draw the dashed selection border.
+It takes the same `variant` options as `SelectTrigger`. `outline-ghost` also dashes its edge
+while unset, then returns to the solid `shadow-border` edge with no fill once a value is
+selected. `variant="ghost"` and `variant="plain"` do not draw the dashed selection border.
 
 When `multiple` is enabled, the same trigger becomes a filter control and supports the nested
 `SelectSub` panels described above. Nested rows participate in the multi-selection and keep the
@@ -212,6 +213,8 @@ panel open while choices are toggled.
 Add `clearable` to `SelectContent` for a clear footer: a compact `xs` ghost reset button with a
 `SelectSeparator` above it. The button is disabled when nothing is selected, and clearing keeps
 the panel open. Hovering it moves the active-row highlight from the list to the button.
+↓ from the last enabled row moves focus to the first footer button; ←/→ move along the
+footer, ↑ returns to the last row, and Enter or Space runs the button.
 
 Clear calls `onValueChange(null, details)` for a single selection or
 `onValueChange([], details)` for multiple selections. The details use `reason: "none"` and

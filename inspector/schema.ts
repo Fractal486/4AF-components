@@ -21,6 +21,8 @@ export type ControlDef =
       icons?: Readonly<Partial<Record<string, ReactNode>>>;
       /** Keep a short icon setting as a dropdown, its icons beside the labels in its rows. */
       iconsInDropdown?: boolean;
+      /** The boolean setting whose ⋯ menu holds this one, instead of a row of its own. */
+      menuOf?: string;
     }
   | {
       kind: "multiselect";
@@ -106,6 +108,14 @@ export function withIcons<D extends { kind: "select" | "multiselect"; options: r
   { dropdown = false }: { dropdown?: boolean } = {},
 ): D & { icons: Readonly<Record<string, ReactNode>>; iconsInDropdown: boolean } {
   return { ...def, icons, iconsInDropdown: dropdown };
+}
+
+/**
+ * Move a select into a boolean setting's ⋯ menu: the styles of something the boolean turns on,
+ * picked beside its checkbox rather than as rows of their own. Its value stays a normal key.
+ */
+export function inMenu<D extends { kind: "select" }>(def: D, owner: string): D & { menuOf: string } {
+  return { ...def, menuOf: owner };
 }
 
 export function multi<const O extends readonly string[]>(

@@ -5,6 +5,7 @@ import {
   Bell,
   BellOff,
   Bookmark,
+  ChevronRight,
   CreditCard,
   Download,
   Ellipsis,
@@ -192,7 +193,7 @@ const ROWS_BY_KIND: Record<RowKind, () => ReactNode> = {
       <DropdownMenuSub>
         <DropdownMenuSubTrigger>
           <Upload />
-          Transfer (menu)
+          Single
         </DropdownMenuSubTrigger>
         <DropdownMenuSubContent className="w-56">
           <DropdownMenuItem>
@@ -206,7 +207,7 @@ const ROWS_BY_KIND: Record<RowKind, () => ReactNode> = {
         </DropdownMenuSubContent>
       </DropdownMenuSub>
       <DropdownMenuSelect<string> defaultValue="import">
-        <DropdownMenuSelectTrigger icon={<Upload />} placeholder="Transfer" aria-label="Transfer" />
+        <DropdownMenuSelectTrigger icon={<Upload />} label="Single search" placeholder="Transfer" aria-label="Single search" />
         <DropdownMenuSelectContent className="w-56" searchable searchPlaceholder="Search transfers">
           <DropdownMenuSelectItem value="import" icon={<Upload />}>
             Import
@@ -217,7 +218,7 @@ const ROWS_BY_KIND: Record<RowKind, () => ReactNode> = {
         </DropdownMenuSelectContent>
       </DropdownMenuSelect>
       <DropdownMenuSelect<string, true> multiple defaultValue={["pdf", "csv"]}>
-        <DropdownMenuSelectTrigger icon={<Download />} placeholder="Formats" aria-label="Transfer formats" />
+        <DropdownMenuSelectTrigger icon={<Download />} label="Multi search" placeholder="Formats" aria-label="Multi search" />
         <DropdownMenuSelectContent className="w-56" searchable searchPlaceholder="Search formats">
           <DropdownMenuSelectItem value="pdf">PDF</DropdownMenuSelectItem>
           <DropdownMenuSelectItem value="csv">CSV</DropdownMenuSelectItem>
@@ -264,33 +265,44 @@ function DropdownMenuDemo({
     <>
       {/* The row type picks which menu the trigger opens; the current one reads at full
           strength, the rest muted. Pinned to the middle of the canvas's left edge, at the
-          toolbar's inset, so the trigger stays centred. */}
+          compact inset, so the trigger stays centred. */}
       <div
         role="group"
         aria-labelledby="dropdown-menu-variants"
-        className="absolute top-1/2 left-3 z-10 flex w-28 -translate-y-1/2 flex-col items-stretch"
+        className="absolute top-1/2 left-2 z-10 flex w-28 -translate-y-1/2 flex-col items-stretch"
       >
         <p
           id="dropdown-menu-variants"
-          className="mb-2.5 px-2 text-2xs text-subtle-foreground"
+          className="mb-2.5 pr-2 text-2xs text-subtle-foreground"
         >
           Variants
         </p>
-        {ROWS.map((kind) => (
-          <Button
-            key={kind}
-            type="button"
-            variant="plain"
-            size="sm"
-            aria-pressed={rows === kind}
-            // The rail's pace for the same muted-to-full change; the button's own fast hover
-            // reads as a snap on text alone.
-            className="justify-start px-2 text-muted-foreground duration-(--duration-slow) hover:text-foreground aria-pressed:text-foreground"
-            onClick={() => setRows(kind)}
+        <div className="relative flex flex-col items-stretch">
+          {/* One chevron for the column, moved a whole row per step: the box is a row tall
+              (Button `sm`, 30px), so a percentage translate lands it on the picked row. */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute top-0 left-0 flex h-[30px] items-center text-foreground transition-[translate] duration-(--duration-slow) ease-out"
+            style={{ translate: `0 ${ROWS.indexOf(rows) * 100}%` }}
           >
-            {ROW_LABELS[kind]}
-          </Button>
-        ))}
+            <ChevronRight className="size-3" />
+          </span>
+          {ROWS.map((kind) => (
+            <Button
+              key={kind}
+              type="button"
+              variant="plain"
+              size="sm"
+              aria-pressed={rows === kind}
+              // The rail's pace for the same muted-to-full change; the button's own fast hover
+              // reads as a snap on text alone.
+              className="cursor-default justify-start pr-2 pl-4 text-muted-foreground duration-(--duration-slow) hover:text-foreground aria-pressed:text-foreground"
+              onClick={() => setRows(kind)}
+            >
+              {ROW_LABELS[kind]}
+            </Button>
+          ))}
+        </div>
       </div>
       <div className="flex gap-2">
         {(shared ? ["Alex", "Taylor"] : ["Options"]).map(name => (

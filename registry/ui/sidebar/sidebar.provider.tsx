@@ -88,6 +88,11 @@ export interface SidebarProviderProps extends ComponentProps<"div"> {
   persist?: boolean;
   /** A key combination such as `mod+b` or `ctrl+shift+s`; null disables it. */
   keyboardShortcut?: string | null;
+  /**
+   * Forces the mobile drawer (`true`) or the desktop sidebar (`false`) at any viewport
+   * width. Omitted, the layout follows the 768px breakpoint.
+   */
+  mobile?: boolean;
 }
 
 export function SidebarProvider({
@@ -96,6 +101,7 @@ export function SidebarProvider({
   onOpenChange,
   persist = true,
   keyboardShortcut = SIDEBAR_KEYBOARD_SHORTCUT,
+  mobile,
   className,
   style,
   children,
@@ -105,7 +111,8 @@ export function SidebarProvider({
   const shortcutScope = useId();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const wrapperRefs = useMergedRefs(wrapperRef, ref);
-  const isMobile = useIsMobile();
+  const viewportIsMobile = useIsMobile();
+  const isMobile = mobile ?? viewportIsMobile;
   const [openMobile, setOpenMobile] = useState(false);
   const [uncontrolled, setUncontrolled] = useState(defaultOpen);
   const isControlled = openProp !== undefined;
@@ -163,9 +170,10 @@ export function SidebarProvider({
       openMobile,
       setOpenMobile,
       isMobile,
+      mobileOverride: mobile,
       toggleSidebar,
     }),
-    [open, setOpen, openMobile, isMobile, toggleSidebar, shortcutScope, keyboardShortcut],
+    [open, setOpen, openMobile, isMobile, mobile, toggleSidebar, shortcutScope, keyboardShortcut],
   );
 
   return (

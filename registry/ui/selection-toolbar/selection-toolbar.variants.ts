@@ -20,7 +20,7 @@ import { cva } from "class-variance-authority";
  */
 export const selectionToolbarButtonVariants = cva(
   [
-    "h-6 px-2.5",
+    "h-6 rounded-[4px] px-2.5",
     // The optical shave the button scale applies at `sm`, rescaled: 2px off whichever side
     // the icon is on, measured from this bar's padding rather than `sm`'s.
     "data-[icon-start]:ps-2 data-[icon-end]:pe-2",
@@ -53,9 +53,8 @@ export const selectionToolbarButtonVariants = cva(
  * a tooltip is — not a panel you opened and will dismiss. Reusing the Popover's real
  * border and heavier lift would make it read as a much bigger commitment than it is.
  *
- * The shell uses the shared 8px button radius. The 6px action corners sit inside `p-1`
- * (4px) of padding; the slight difference keeps the transient bar compact without inventing
- * a one-off radius for it.
+ * The shell uses the shared 8px button radius. Its actions are concentric with it: 4px
+ * corners inside the `p-1` (4px) padding, as in Menubar's bar.
  *
  * No `overflow-hidden`: a focus ring is drawn 2px outside its button and the padding is
  * only 4px, so clipping here would shave the ring on the first and last action.

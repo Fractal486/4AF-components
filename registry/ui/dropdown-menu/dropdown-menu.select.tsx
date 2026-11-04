@@ -544,14 +544,16 @@ export function DropdownMenuSelectContent({
         viewportRef={listRef}
         viewportProps={{ tabIndex: -1 }}
         className={cn("max-h-[min(var(--available-height),18rem)]", noResults && "hidden")}
-        viewportClassName="p-1"
+        // The menu panel already insets its content 4px, the same as its own rows, so the list
+        // adds only the gap on the search field's side — where the field cancels that inset.
+        viewportClassName={searchable ? (searchPosition === "bottom" ? "pb-1" : "pt-1") : undefined}
       >
         <DropdownMenuSelectDormantContext.Provider value={dormant}>{items}</DropdownMenuSelectDormantContext.Provider>
       </ScrollArea>
       {noResults && (
-        // `m-1` supplies the same 4px inset as the list's `p-1`; `h-7` matches one
-        // select row, keeping the full panel height identical to a single result.
-        <div className="m-1 flex h-7 items-center justify-center px-2.5 text-center text-xs text-muted-foreground">
+        // The same gap beside the field as the list's; `h-7` matches one select row, keeping
+        // the full panel height identical to a single result.
+        <div className={cn("flex h-7 items-center justify-center px-2.5 text-center text-xs text-muted-foreground", searchPosition === "bottom" ? "mb-1" : "mt-1")}>
           {emptyMessage}
         </div>
       )}

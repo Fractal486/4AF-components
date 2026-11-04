@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
+import { createRef, useState } from "react";
 import {
   SidebarHeader,
   SidebarHeaderButton,
@@ -9,6 +10,7 @@ import {
   SidebarMenuAction,
   SidebarMenuBadge,
   SidebarMenuButton,
+  SidebarMenuItem,
   SidebarMenuCollapsible,
   SidebarMenuCollapsibleContent,
   SidebarMenuCollapsibleTrigger,
@@ -266,7 +268,7 @@ describe("SidebarHeaderButton", () => {
     const button = screen.getByRole("button", { name: "Compose" });
     expect(button.className).toContain("w-full");
     expect(button.className).toContain("mt-2");
-    expect(button.className).not.toContain("flex-1");
+    expect(button.className).not.toContain("flex-auto");
   });
 
   it("splits the row with a second button, and drops the margin each carried alone", () => {
@@ -289,9 +291,9 @@ describe("SidebarHeaderButton", () => {
 
     for (const name of ["Compose", "Search"]) {
       const button = screen.getByRole("button", { name });
-      expect(button.className).toContain("flex-1");
+      expect(button.className).toContain("flex-auto");
       expect(button.className).not.toContain("mt-2");
-      // `flex-1` has to survive the merge with the Button's own `shrink-0`, or both
+      // `flex-auto` has to survive the merge with the Button's own `shrink-0`, or both
       // buttons hold their label width and overflow the sidebar.
       expect(button.classList.contains("shrink-0")).toBe(false);
     }
@@ -335,6 +337,83 @@ describe("Sidebar button geometry", () => {
 });
 
 describe("SidebarMenuCollapsible", () => {
+  it.each([false, true])("toggles only the section from the separate chevron (page active: %s)", async (isActive) => {
+    const user = userEvent.setup();
+    const selectPage = vi.fn();
+    render(<SidebarProvider persist={false}>
+      <SidebarMenuCollapsible defaultOpen>
+        <SidebarMenuCollapsibleTrigger isActive={isActive} onClick={selectPage}>Folders</SidebarMenuCollapsibleTrigger>
+        <SidebarMenuCollapsibleContent>Children</SidebarMenuCollapsibleContent>
+      </SidebarMenuCollapsible>
+    </SidebarProvider>);
+    const page = screen.getByRole("button", { name: "Folders" });
+    const toggle = screen.getByRole("button", { name: "Toggle section" });
+    expect(page).not.toContainElement(toggle);
+    await user.click(toggle);
+    expect(page).toHaveAttribute("aria-expanded", "false");
+    expect(selectPage).not.toHaveBeenCalled();
+    await user.keyboard("{Enter}");
+    expect(page).toHaveAttribute("aria-expanded", "true");
+    expect(selectPage).not.toHaveBeenCalled();
+    expect(page.hasAttribute("data-active")).toBe(isActive);
+  });
+
+  it.each([false, true])("selects an inactive page and keeps its section open (initial open: %s)", async (defaultOpen) => {
+    const user = userEvent.setup();
+    function Pages() {
+      const [active, setActive] = useState(false);
+      return <SidebarProvider persist={false}>
+        <SidebarMenuCollapsible defaultOpen={defaultOpen}>
+          <SidebarMenuCollapsibleTrigger isActive={active} onClick={() => setActive(true)}>Folders</SidebarMenuCollapsibleTrigger>
+          <SidebarMenuCollapsibleContent>Children</SidebarMenuCollapsibleContent>
+        </SidebarMenuCollapsible>
+        <button onClick={() => setActive(false)}>Other page</button>
+      </SidebarProvider>;
+    }
+    render(<Pages />);
+    const trigger = screen.getByRole("button", { name: "Folders" });
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute("data-active");
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await user.click(screen.getByRole("button", { name: "Other page" }));
+    trigger.focus();
+    await user.keyboard("{Enter}");
+    expect(trigger).toHaveAttribute("data-active");
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await user.keyboard(" ");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("preserves the panel ref and mounted content across controlled reversals", async () => {
+    const ref = createRef<HTMLDivElement>();
+    const view = (open: boolean) => (
+      <SidebarProvider persist={false}>
+        <SidebarMenu>
+          <SidebarMenuCollapsible open={open}>
+            <SidebarMenuCollapsibleTrigger>Projects</SidebarMenuCollapsibleTrigger>
+            <SidebarMenuCollapsibleContent ref={ref} keepMounted className="custom-panel">
+              <a href="/project">Project</a>
+            </SidebarMenuCollapsibleContent>
+          </SidebarMenuCollapsible>
+        </SidebarMenu>
+      </SidebarProvider>
+    );
+    const { rerender } = render(view(true));
+    const panel = ref.current!;
+    const link = screen.getByRole("link", { name: "Project" });
+    expect(panel).toHaveAttribute("data-slot", "sidebar-menu-collapsible-content");
+    expect(panel).toHaveClass("custom-panel");
+    expect(panel).toContainElement(link);
+    rerender(view(false));
+    expect(screen.getByRole("button", { name: "Projects" })).toHaveAttribute("aria-expanded", "false");
+    rerender(view(true));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Projects" })).toHaveAttribute("aria-expanded", "true"));
+    expect(ref.current).toBe(panel);
+    expect(screen.getByRole("link", { name: "Project" })).toBe(link);
+  });
+
   it("includes a trailing chevron and rotates it from the Base UI open state", async () => {
     const user = userEvent.setup();
 
@@ -456,6 +535,76 @@ describe("SidebarMenuCollapsible", () => {
     );
   });
 
+  it.each(["icon", "offcanvas"] as const)("steps a badge out for the length of a collapse (collapsible=%s)", (collapsible) => {
+    vi.useFakeTimers();
+    try {
+      document.documentElement.style.setProperty("--duration-slow", "300ms");
+      document.documentElement.style.setProperty("--duration-fast", "150ms");
+      const tree = (open: boolean) => (
+        <SidebarProvider open={open} persist={false}>
+          <Sidebar collapsible={collapsible}>
+            <SidebarMenu><SidebarMenuItem>
+              <SidebarMenuButton>Inbox</SidebarMenuButton>
+              <SidebarMenuBadge count={4} label="unread" />
+            </SidebarMenuItem></SidebarMenu>
+          </Sidebar>
+        </SidebarProvider>
+      );
+      const { container, rerender } = render(tree(true));
+      const badge = container.ownerDocument.querySelector('[data-slot="sidebar-menu-badge"]')!;
+      // Not on mount: a badge shown from the start never waits.
+      expect(badge).not.toHaveAttribute("data-settling");
+
+      for (const open of [false, true]) {
+        rerender(tree(open));
+        if (collapsible === "offcanvas") {
+          // An offcanvas sidebar slides away whole; the badge goes with it.
+          expect(badge).not.toHaveAttribute("data-settling");
+          continue;
+        }
+        expect(badge).toHaveAttribute("data-settling");
+        if (open) {
+          // Expanding: the count is back in the first frame, with the row's action, and
+          // fades in from the next one.
+          expect(badge).not.toHaveAttribute("data-hold");
+          act(() => vi.advanceTimersByTime(40));
+          expect(badge).not.toHaveAttribute("data-settling");
+          continue;
+        }
+        // Collapsing: the count is held while it fades out over the first half; at the
+        // midpoint it becomes the dot, which fades in over the second.
+        expect(badge).toHaveAttribute("data-hold", "count");
+        act(() => vi.advanceTimersByTime(149));
+        expect(badge).toHaveAttribute("data-hold");
+        act(() => vi.advanceTimersByTime(1));
+        expect(badge).not.toHaveAttribute("data-hold");
+        expect(badge).not.toHaveAttribute("data-settling");
+      }
+    } finally {
+      document.documentElement.style.removeProperty("--duration-slow");
+      document.documentElement.style.removeProperty("--duration-fast");
+      vi.useRealTimers();
+    }
+  });
+
+  it("keeps a row with a tooltip mounted through a collapse, so its transitions can run", () => {
+    const tree = (open: boolean) => (
+      <SidebarProvider open={open} persist={false}>
+        <Sidebar collapsible="icon">
+          <SidebarMenu><SidebarMenuItem>
+            <SidebarMenuButton tooltip="Settings" size="sm"><span>Settings</span></SidebarMenuButton>
+          </SidebarMenuItem></SidebarMenu>
+        </Sidebar>
+      </SidebarProvider>
+    );
+    const { container, rerender } = render(tree(true));
+    const row = container.ownerDocument.querySelector('[data-slot="sidebar-menu-button"]');
+    rerender(tree(false));
+    expect(container.ownerDocument.querySelector('[data-slot="sidebar-menu-button"]')).toBe(row);
+    rerender(tree(true));
+    expect(container.ownerDocument.querySelector('[data-slot="sidebar-menu-button"]')).toBe(row);
+  });
+
   it("reports whether the sidebar it toggles is open", async () => {
     const user = userEvent.setup();
     const { container } = render(
@@ -508,7 +657,10 @@ describe("SidebarTabs", () => {
   it("spans the row evenly and hides it in the icon rail", () => {
     render(<Tabbed />);
     const list = screen.getByRole("tablist", { name: "Sections" });
-    expect(list).toHaveClass("w-full", "border", "group-data-[collapsible=icon]:hidden");
+    expect(list).toHaveClass("w-full", "border");
+    // Folds with the collapse rather than vanishing in its first frame.
+    const fold = list.closest('[data-slot="sidebar-tabs-list-container"]');
+    expect(fold).toHaveClass("group-data-[collapsible=icon]:grid-rows-[0fr]", "group-data-[collapsible=icon]:invisible");
     expect(screen.getByRole("tab", { name: "Personal" })).toHaveClass("flex-1", "text-xs");
   });
 });
