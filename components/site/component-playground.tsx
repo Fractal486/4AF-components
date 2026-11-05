@@ -5,7 +5,7 @@ import { ArrowLeft, ArrowRight, ChevronRight, Info, Link as LinkIcon, Maximize2,
 import { Fragment, useEffect, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
 import type { ComponentStats } from "@/lib/component-stats";
 import { InlineLink } from "@/components/inline-link";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/registry/ui/hover-card/hover-card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/registry/ui/popover/popover";
 import { MobileToc } from "@/components/site/mobile-toc";
 import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
@@ -103,6 +103,8 @@ export function ComponentPlayground({ demos, ...props }: ComponentPlaygroundProp
 
 /**
  * Lines of source and the other components an install brings with it, behind an info icon.
+ * A popover that also opens on hover: a hover card never opens from a tap, and this is the
+ * only place the page shows these facts.
  * The card's left edge is pinned to `edgeRef`'s: the tabs from `lg`, the title row below it.
  */
 function ComponentInfo({
@@ -122,9 +124,11 @@ function ComponentInfo({
   };
 
   return (
-    <HoverCard>
-      <HoverCardTrigger
+    <Popover>
+      <PopoverTrigger
+        openOnHover
         delay={0}
+        closeDelay={0}
         render={
           <button
             ref={triggerRef}
@@ -135,8 +139,8 @@ function ComponentInfo({
         }
       >
         <Info className="size-3.5" aria-hidden />
-      </HoverCardTrigger>
-      <HoverCardContent side="bottom" align="start" sideOffset={14} positionerProps={{ alignOffset }} className="w-auto max-w-80 min-w-64 p-4">
+      </PopoverTrigger>
+      <PopoverContent side="bottom" align="start" sideOffset={14} positionerProps={{ alignOffset }} className="w-auto max-w-80 min-w-64 p-4">
         <dl
           data-slot="component-info"
           className="grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-4 gap-y-2 text-sm text-pretty text-muted-foreground"
@@ -163,8 +167,8 @@ function ComponentInfo({
               : "None"}
           </dd>
         </dl>
-      </HoverCardContent>
-    </HoverCard>
+      </PopoverContent>
+    </Popover>
   );
 }
 

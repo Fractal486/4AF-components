@@ -604,7 +604,14 @@ export function SiteRail({
         <Sheet actionsRef={menuActions}>
           <SheetTrigger
             render={
-              <Button variant="ghost" size="icon-sm" aria-label="Open navigation" className="text-muted-foreground hover:text-foreground [&_svg]:size-4">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Open navigation"
+                // A popup trigger has no press scale, so it needs no standing layer; on one,
+                // Chrome draws the icon a fraction of a pixel below the bar's centre.
+                className="text-muted-foreground will-change-auto hover:text-foreground [&_svg]:size-4"
+              >
                 <SidebarIcon />
               </Button>
             }
@@ -623,8 +630,10 @@ export function SiteRail({
             />
           </SiteNavigationContent>
         </Sheet>
+        {/* A page's contents menu, portalled in by `MobileToc`; it also pushes the rest to the end. */}
+        <div data-slot="site-header-toc" className="flex min-w-0 flex-1" />
         {/* The rail's footer, moved up into the bar's far end beside the logo. */}
-        <Button asChild variant="ghost" size="icon-sm" className="ms-auto text-muted-foreground hover:text-foreground">
+        <Button asChild variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-foreground">
           <a href={repository} target="_blank" rel="noopener noreferrer" aria-label="GitHub">
             <GitHubMark />
           </a>

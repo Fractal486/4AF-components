@@ -75,9 +75,9 @@ export function DesktopPreview({ mobile, children }: { mobile: boolean; children
   );
 }
 
-/** A line of text, drawn as a light bar. */
+/** A line of text, drawn as a light bar, never wider than its box (it wraps short, like text). */
 export function Line({ width }: { width: number }) {
-  return <span aria-hidden="true" className="inline-block h-2 shrink-0 rounded-full bg-foreground/10 align-middle" style={{ width }} />;
+  return <span aria-hidden="true" className="inline-block h-2 max-w-full shrink-0 rounded-full bg-foreground/10 align-middle" style={{ width }} />;
 }
 
 /** A page's outline: a heading, three cards, and a block that takes the remaining height. */

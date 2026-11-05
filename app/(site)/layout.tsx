@@ -10,7 +10,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
   return (
     // Full width: component pages fill the main area; reading pages centre an ArticleColumn.
     <div className="w-full lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start">
-      <div className="sticky top-0 z-30 border-b bg-background lg:h-dvh lg:border-b-0">
+      <div data-slot="site-header" className="sticky top-0 z-30 border-b bg-background lg:h-dvh lg:border-b-0">
         <SiteRail
           nav={siteNav()}
           repository={REPOSITORY}
