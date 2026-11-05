@@ -23,10 +23,10 @@ import {
 } from "@/registry/ui/sidebar/sidebar";
 import { Tooltip } from "@/registry/ui/tooltip/tooltip";
 import { SidebarLayout, useSidebarLayoutRailSlot } from "@/registry/ui/sidebar-layout/sidebar-layout";
-import { bool, defineEntry, select, withIcons } from "../schema";
+import { bool, defineEntry, onMobile, select, withIcons } from "../schema";
 import { VIEWPORT_ICONS } from "../setting-icons";
 import { resolveSidebarVariant } from "./sidebar";
-import { DesktopPreview, Line, PHONE_FRAME, WireframePage } from "./wireframe";
+import { DesktopPreview, Line, WireframePage } from "./wireframe";
 
 const NAV = [
   { label: "Dashboard", icon: LayoutDashboard, width: 64 },
@@ -179,7 +179,7 @@ function SidebarLayoutBlueprint({
         ref={setFrame}
         className={cn(
           "relative overflow-hidden rounded-lg border [contain:paint]",
-          mobile ? PHONE_FRAME : "h-full w-full",
+          "h-full w-full",
           // Floating and inset draw their own outlines inside, so the window's edge steps back.
           variant === "default" || mobile ? "border-border" : "border-border/50",
           BLUEPRINT,
@@ -234,12 +234,14 @@ export const sidebarLayoutEntry = defineEntry({
   controls: {
     // Split adds the fixed icon rail; the default keeps one navigation column.
     // The desktop shell, or the mobile drawer (opened from the header's trigger).
-    viewport: withIcons(select(["desktop", "mobile"] as const, "desktop", "Viewport"), VIEWPORT_ICONS),
+    // Mobile on a phone-width screen, where the desktop shell doesn't fit.
+    viewport: onMobile(withIcons(select(["desktop", "mobile"] as const, "desktop", "Viewport"), VIEWPORT_ICONS), "mobile"),
     layout: select(["default", "split"] as const, "default", "Layout"),
     // The drawer has no variants.
     variant: select(["default", "floating", "inset"] as const, "default", "Variant", (values) => values.viewport === "mobile"),
     // Split has no collapse modes: its panel closes and the icon rail stays.
-    collapsible: select(["offcanvas", "icon", "none"] as const, "icon", undefined, (values) => values.layout === "split"),
+    // The mobile drawer opens and closes whole, so collapse modes don't apply to it.
+    collapsible: select(["offcanvas", "icon", "none"] as const, "icon", undefined, (values) => values.layout === "split" || values.viewport === "mobile"),
     // The title, or `headerContent` in its place (a breadcrumb here).
     header: select(["title", "custom"] as const, "title", "Header content"),
     headerActions: bool(true, "Header actions"),

@@ -23,6 +23,8 @@ export type ControlDef =
       iconsInDropdown?: boolean;
       /** The boolean setting whose ⋯ menu holds this one, instead of a row of its own. */
       menuOf?: string;
+      /** The starting value on a phone-width screen, when it differs from `defaultValue`. */
+      mobileDefault?: string;
     }
   | {
       kind: "multiselect";
@@ -118,6 +120,14 @@ export function inMenu<D extends { kind: "select" }>(def: D, owner: string): D &
   return { ...def, menuOf: owner };
 }
 
+/** Start a select on `value` when the page is opened on a phone-width screen. */
+export function onMobile<D extends { kind: "select"; options: readonly string[] }>(
+  def: D,
+  value: D["options"][number],
+): D & { mobileDefault: string } {
+  return { ...def, mobileDefault: value };
+}
+
 export function multi<const O extends readonly string[]>(
   options: O,
   defaultValue: readonly O[number][],
@@ -194,8 +204,14 @@ export function defineEntry<S extends ControlSchema>(entry: Entry<S>): Entry<S> 
   return entry;
 }
 
-export function initialValues<S extends ControlSchema>(schema: S): ControlValues<S> {
+/** The settings a demo starts on; `mobile` picks each select's `mobileDefault` where it has one. */
+export function initialValues<S extends ControlSchema>(
+  schema: S,
+  { mobile = false }: { mobile?: boolean } = {},
+): ControlValues<S> {
   const out: Record<string, unknown> = {};
-  for (const [key, def] of Object.entries(schema)) out[key] = def.defaultValue;
+  for (const [key, def] of Object.entries(schema)) {
+    out[key] = mobile && def.kind === "select" && def.mobileDefault !== undefined ? def.mobileDefault : def.defaultValue;
+  }
   return out as ControlValues<S>;
 }

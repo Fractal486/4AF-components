@@ -153,7 +153,9 @@ export function useComponentDemo(name: DemoName): ComponentDemoState {
     };
   }, [name, entry]);
 
-  const defaults = (): Values => (entry ? initialValues(entry.controls) : {});
+  // Demos load in the browser, so the screen can pick the starting settings without a
+  // hydration mismatch: below the sidebar's 768px breakpoint, app-shell demos open on mobile.
+  const defaults = (): Values => (entry ? initialValues(entry.controls, { mobile: isPhoneWidth() }) : {});
 
   return {
     status: entry ? "ready" : failed ? "failed" : "loading",
@@ -168,6 +170,10 @@ export function useComponentDemo(name: DemoName): ComponentDemoState {
     replayKey,
     replay: () => setReplayKey((current) => current + 1),
   };
+}
+
+function isPhoneWidth() {
+  return typeof window !== "undefined" && window.matchMedia?.("(max-width: 767px)").matches === true;
 }
 
 /**

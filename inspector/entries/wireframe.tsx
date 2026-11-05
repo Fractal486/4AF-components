@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, type ReactNode } from "react";
+import { useCallback, useState, useSyncExternalStore, type ReactNode } from "react";
 
 /* Wireframe pieces shared by the app-shell demos: outlines, with light bars for text. */
 
@@ -9,6 +9,21 @@ import { useCallback, useState, type ReactNode } from "react";
  * the canvas has room and scaled to fit when it doesn't. Its parent must be a size container.
  */
 export const PHONE_FRAME = "aspect-[390/844] h-[min(100cqh,calc(100cqw*844/390),52.75rem)]";
+// On a phone-width screen the phone UI is laid out at this fraction of the frame and scaled up
+// to fill it, so a phone squeezed onto a small screen keeps readable controls. On a desktop it
+// is a true 390x844 window, shrinking only when the canvas is smaller.
+const PHONE_LAYOUT = 0.7;
+const PHONE_WIDTH = 390;
+const PHONE_HEIGHT = 844;
+/** The sidebar's own mobile breakpoint. */
+const PHONE_SCREEN = "(max-width: 767px)";
+
+function subscribePhoneScreen(onChange: () => void) {
+  const query = window.matchMedia?.(PHONE_SCREEN);
+  query?.addEventListener("change", onChange);
+  return () => query?.removeEventListener("change", onChange);
+}
+const isPhoneScreen = () => window.matchMedia?.(PHONE_SCREEN).matches === true;
 
 /** Shared desktop window, between the former wide and tall previews, fitted to the canvas. */
 export const DESKTOP_FRAME = "aspect-[3/2] w-[min(100cqw,calc(100cqh*3/2),60rem)]";
@@ -18,13 +33,22 @@ const DESKTOP_SCALE = 0.9;
 const DESKTOP_WIDTH = 960 / DESKTOP_SCALE;
 const DESKTOP_HEIGHT = 640 / DESKTOP_SCALE;
 
-/** Scale the desktop UI down slightly without changing the preview window's size. */
+/**
+ * The app-shell window, laid out at a fixed size and scaled to fit the canvas: the desktop's
+ * 960x640 (slightly reduced), or a phone's 390x844 (enlarged on a phone-width screen; see
+ * `PHONE_LAYOUT`). Its UI shrinks with the window rather than keeping full-size controls in a
+ * smaller one. `children` fills the window.
+ */
 export function DesktopPreview({ mobile, children }: { mobile: boolean; children: ReactNode }) {
-  const [scale, setScale] = useState(DESKTOP_SCALE);
+  const phoneScreen = useSyncExternalStore(subscribePhoneScreen, isPhoneScreen, () => false);
+  const layout = mobile && phoneScreen ? PHONE_LAYOUT : 1;
+  const base = mobile ? PHONE_WIDTH : 960;
+  const rest = mobile ? 1 / layout : DESKTOP_SCALE;
+  const [scale, setScale] = useState(rest);
   const measure = useCallback((node: HTMLDivElement | null) => {
     if (!node) return;
     const update = (width: number) => {
-      if (width > 0) setScale(Math.min(1, width / 960) * DESKTOP_SCALE);
+      if (width > 0) setScale(Math.min(1, width / base) * rest);
     };
     update(node.clientWidth);
     const observer = new ResizeObserver(([entry]) => {
@@ -32,13 +56,19 @@ export function DesktopPreview({ mobile, children }: { mobile: boolean; children
     });
     observer.observe(node);
     return () => observer.disconnect();
-  }, []);
-
-  if (mobile) return children;
+  }, [base, rest]);
 
   return (
-    <div ref={measure} className={`relative shrink-0 ${DESKTOP_FRAME}`}>
-      <div data-slot="desktop-demo-viewport" className="absolute top-0 left-0 origin-top-left" style={{ width: DESKTOP_WIDTH, height: DESKTOP_HEIGHT, transform: `scale(${scale})` }}>
+    <div ref={measure} className={`relative shrink-0 ${mobile ? PHONE_FRAME : DESKTOP_FRAME}`}>
+      <div
+        data-slot={mobile ? "mobile-demo-viewport" : "desktop-demo-viewport"}
+        className="absolute top-0 left-0 origin-top-left"
+        style={{
+          width: mobile ? PHONE_WIDTH * layout : DESKTOP_WIDTH,
+          height: mobile ? PHONE_HEIGHT * layout : DESKTOP_HEIGHT,
+          transform: `scale(${scale})`,
+        }}
+      >
         {children}
       </div>
     </div>

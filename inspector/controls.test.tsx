@@ -4,7 +4,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { Controls, fitsPillTabs } from "./controls";
-import { bool, inMenu, num, range, select, text, withIcons, type ControlValues } from "./schema";
+import { bool, initialValues, inMenu, num, onMobile, range, select, text, withIcons, type ControlValues } from "./schema";
 
 // Long enough to stay a dropdown — a short enum renders as pill tabs instead, which the
 // "short enums" suite below covers.
@@ -242,5 +242,16 @@ describe("Controls ⋯ style menu", () => {
     await user.click(await screen.findByRole("menuitemradio", { name: "Pill" }));
     expect(onChange).toHaveBeenLastCalledWith("tabsVariant", "pill");
     expect(screen.getByRole("menuitemradio", { name: "Sm" })).toHaveAttribute("aria-checked", "true");
+  });
+});
+
+describe("initialValues", () => {
+  it("starts a select on its phone-width value only when asked", () => {
+    const schema = {
+      viewport: onMobile(select(["desktop", "mobile"] as const, "desktop"), "mobile"),
+      size: select(["sm", "md"] as const, "md"),
+    };
+    expect(initialValues(schema)).toEqual({ viewport: "desktop", size: "md" });
+    expect(initialValues(schema, { mobile: true })).toEqual({ viewport: "mobile", size: "md" });
   });
 });

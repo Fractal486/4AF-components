@@ -1,4 +1,4 @@
-import { bool, defineEntry, inMenu, select, withIcons } from "../schema";
+import { bool, defineEntry, inMenu, onMobile, select, withIcons } from "../schema";
 import { VIEWPORT_ICONS } from "../setting-icons";
 import { SidebarDemo } from "./sidebar-demo";
 
@@ -36,15 +36,17 @@ export const sidebarEntry = defineEntry({
   name: "Sidebar",
   controls: {
     // The desktop shell, or the mobile drawer (opened from the header's trigger).
-    viewport: withIcons(select(["desktop", "mobile"] as const, "desktop", "Viewport"), VIEWPORT_ICONS),
+    // Mobile on a phone-width screen, where the desktop shell doesn't fit.
+    viewport: onMobile(withIcons(select(["desktop", "mobile"] as const, "desktop", "Viewport"), VIEWPORT_ICONS), "mobile"),
     // Split adds the fixed icon rail; the default keeps one navigation column.
     layout: select(LAYOUTS, "default", "Layout"),
     // `default` sits flush against the page edge; `floating` and `inset` inset it.
     // The drawer has no variants.
     variant: select(VARIANTS, "default", "Variant", (values) => values.viewport === "mobile"),
     // What's left behind when it collapses: nothing, an icon rail, or no collapse at all.
-    // Split has no collapse modes: its panel closes and the icon rail stays.
-    collapsible: select(COLLAPSIBLE, "icon", undefined, (values) => values.layout === "split"),
+    // Split has no collapse modes: its panel closes and the icon rail stays. The mobile drawer
+    // has none either: it opens and closes whole.
+    collapsible: select(COLLAPSIBLE, "icon", undefined, (values) => values.layout === "split" || values.viewport === "mobile"),
     // Swaps the nav rows for their loading skeletons.
     loading: bool(false, "Loading"),
     customHeader: bool(false, "Custom header"),

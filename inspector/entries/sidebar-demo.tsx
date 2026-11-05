@@ -48,7 +48,7 @@ import {
 } from "@/registry/ui/sidebar/sidebar";
 import { cn } from "@/registry/lib/cn";
 import { SidebarLayout } from "@/registry/ui/sidebar-layout/sidebar-layout";
-import { DesktopPreview, PHONE_FRAME, WireframePage } from "./wireframe";
+import { DesktopPreview, WireframePage } from "./wireframe";
 
 const NAV = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -171,7 +171,7 @@ export function SidebarDemo({
       ref={setFrame}
       className={cn(
         "relative overflow-hidden rounded-lg border border-border [contain:paint] dark:[--muted:oklch(0.165_0_0)] dark:[--surface:oklch(0.135_0_0)]",
-        mobile ? PHONE_FRAME : "h-full w-full",
+        "h-full w-full",
       )}
     >
       <SidebarLayout
