@@ -21,7 +21,7 @@ export function CopyLine({ value, className, children }: { value: string; classN
 
   return (
     // Controlled, so the tooltip opens only on a copy, never on hover.
-    <Tooltip content="Copied!" open={copied}>
+    <Tooltip content="Copied!" open={copied} className="data-instant:transition-[opacity,scale,translate,filter]">
       <button
         type="button"
         aria-label={`Copy: ${value}`}

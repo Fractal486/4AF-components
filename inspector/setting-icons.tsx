@@ -191,22 +191,32 @@ export const DATE_RANGE_ICON = (
 );
 
 /*
- * Interactive state: the pointer, then the pointer with a red mark at its upper right — a filled circle with an
- * "x" for disabled (the not-allowed sign), a red ring for invalid (the error ring fields wear).
+ * Interactive state, after the Windows 11 cursor concept: the pointer, the pointer with a filled
+ * red badge and "x" at its upper right for disabled (the "unavailable" cursor), and for invalid the error state fields wear: a red border
+ * inside a faint red ring. Invalid isn't a pointer state, so it has no cursor.
  */
-// Set low and left, leaving the upper right clear for the state's red mark.
-const POINTER = <path d="M2 3.5v9.75l2.75-2.5 1.75 3.75 1.75-.8-1.75-3.7H10.25Z" {...FILLED} />;
+// The Windows 11 cursor concept's pointer: a stubby, tail-less wedge with rounded corners, set
+// low and left so the upper right stays clear for the state's red mark.
+const POINTER = <path d="M2 4.5 9.5 10.75 6 11.75 2.75 15Z" {...FILLED} />;
 
 export const STATE_ICONS = {
   default: <Icon>{POINTER}</Icon>,
   disabled: (
     <Icon>
       {POINTER}
-      <circle cx="12" cy="4" r="3.5" className="text-destructive" fill="currentColor" stroke="none" />
-      <path d="m10.6 2.6 2.8 2.8m0-2.8-2.8 2.8" className="text-destructive-foreground" />
+      {/* The concept's "unavailable" cursor: a large red badge beside the pointer, its ✕ in the
+          pointer's own colour. */}
+      <circle cx="11.5" cy="4.5" r="4" className="text-destructive" fill="currentColor" stroke="none" />
+      <path d="m10.1 3.1 2.8 2.8m0-2.8-2.8 2.8" />
     </Icon>
   ),
-  invalid: <Icon>{POINTER}<circle cx="12" cy="4" r="3" className="text-destructive" /></Icon>,
+  invalid: (
+    <Icon>
+      {/* The field's red border, and the faint 3px red ring just outside it. */}
+      <circle cx="8" cy="8" r="6" className="text-destructive" strokeWidth={2.5} strokeOpacity={0.25} />
+      <circle cx="8" cy="8" r="4" className="text-destructive" />
+    </Icon>
+  ),
 } satisfies Record<string, ReactNode>;
 
 
