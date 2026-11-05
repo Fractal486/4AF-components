@@ -15,9 +15,6 @@ export const itemBase = dropdownMenuItemVariants();
 export const CHECK_SLOT =
   "pointer-events-none ml-auto flex size-3.5 shrink-0 items-center justify-center text-foreground [[data-slot^=kbd]+&]:ml-0";
 
-/** The check itself, scaling in on `data-checked` — the same mark the select rows use. */
-export const CHECK_MARK =
-  "flex size-3.5 items-center justify-center scale-0 opacity-0 transition-[opacity,scale] duration-(--duration-fast) ease-out data-[checked]:scale-100 data-[checked]:opacity-100";
 
 export function DisabledReasonTooltip({
   disabled,

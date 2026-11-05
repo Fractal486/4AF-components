@@ -45,6 +45,7 @@ export const sidebarMenuButtonVariants = cva(
     // A sibling action should highlight this row when it is hovered, but a broad
     // parent-group hover would also fire while a collapsible row's nested children are hovered.
     "group-has-[>_[data-slot=sidebar-menu-action]:hover]/menu-item:bg-muted group-has-[>_[data-slot=sidebar-menu-action]:hover]/menu-item:text-foreground",
+    "group-has-[>_[data-slot=sidebar-menu-chevron-button]:hover]/menu-item:bg-muted group-has-[>_[data-slot=sidebar-menu-chevron-button]:hover]/menu-item:text-foreground",
     "active:bg-muted active:text-foreground",
     "data-active:bg-muted data-active:font-medium data-active:text-foreground data-active:[&>svg]:stroke-[2.5]",
     "disabled:pointer-events-none disabled:opacity-50",

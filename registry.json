@@ -401,6 +401,24 @@
       ]
     },
     {
+      "name": "check-mark",
+      "type": "registry:lib",
+      "description": "The drawn tick list rows mark their selection with: strokes in when selected, fades out when not.",
+      "dependencies": [
+        "motion"
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/motion.json"
+      ],
+      "files": [
+        {
+          "path": "registry/lib/check-mark.tsx",
+          "type": "registry:lib",
+          "target": "@lib/check-mark.tsx"
+        }
+      ]
+    },
+    {
       "name": "button",
       "type": "registry:ui",
       "description": "Six variants, eight sizes, optical icon alignment, focus-preserving loading, and popup triggers that automatically stay still and retain their open-state styling.",
@@ -712,7 +730,8 @@
         "https://4af.selfsimilar.dev/r/button.json",
         "https://4af.selfsimilar.dev/r/morph.json",
         "https://4af.selfsimilar.dev/r/use-action.json",
-        "https://4af.selfsimilar.dev/r/loader.json"
+        "https://4af.selfsimilar.dev/r/loader.json",
+        "https://4af.selfsimilar.dev/r/check-mark.json"
       ],
       "files": [
         {
@@ -1354,7 +1373,8 @@
         "https://4af.selfsimilar.dev/r/refs.json",
         "https://4af.selfsimilar.dev/r/button.json",
         "https://4af.selfsimilar.dev/r/input.json",
-        "https://4af.selfsimilar.dev/r/scroll-area.json"
+        "https://4af.selfsimilar.dev/r/scroll-area.json",
+        "https://4af.selfsimilar.dev/r/check-mark.json"
       ],
       "files": [
         {
@@ -1425,7 +1445,8 @@
         "https://4af.selfsimilar.dev/r/motion.json",
         "https://4af.selfsimilar.dev/r/refs.json",
         "https://4af.selfsimilar.dev/r/scroll-area.json",
-        "https://4af.selfsimilar.dev/r/kbd.json"
+        "https://4af.selfsimilar.dev/r/kbd.json",
+        "https://4af.selfsimilar.dev/r/check-mark.json"
       ],
       "files": [
         {
@@ -1598,7 +1619,8 @@
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/input.json",
         "https://4af.selfsimilar.dev/r/refs.json",
-        "https://4af.selfsimilar.dev/r/scroll-area.json"
+        "https://4af.selfsimilar.dev/r/scroll-area.json",
+        "https://4af.selfsimilar.dev/r/check-mark.json"
       ],
       "files": [
         {
@@ -1629,7 +1651,8 @@
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/refs.json",
         "https://4af.selfsimilar.dev/r/motion.json",
-        "https://4af.selfsimilar.dev/r/scroll-area.json"
+        "https://4af.selfsimilar.dev/r/scroll-area.json",
+        "https://4af.selfsimilar.dev/r/check-mark.json"
       ],
       "files": [
         {
@@ -1993,7 +2016,8 @@
         "https://4af.selfsimilar.dev/r/use-action.json",
         "https://4af.selfsimilar.dev/r/loader.json",
         "https://4af.selfsimilar.dev/r/scroll-area.json",
-        "https://4af.selfsimilar.dev/r/kbd.json"
+        "https://4af.selfsimilar.dev/r/kbd.json",
+        "https://4af.selfsimilar.dev/r/check-mark.json"
       ],
       "files": [
         {
@@ -2088,6 +2112,11 @@
           "path": "registry/ui/menubar/menubar.highlight.ts",
           "type": "registry:ui",
           "target": "@ui/menubar.highlight.ts"
+        },
+        {
+          "path": "registry/ui/menubar/menubar.handoff.ts",
+          "type": "registry:ui",
+          "target": "@ui/menubar.handoff.ts"
         }
       ]
     },

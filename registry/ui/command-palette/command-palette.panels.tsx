@@ -4,7 +4,8 @@ import { LoadingIndicator } from "@/registry/lib/loader";
 import { useMergedRefs } from "@/registry/lib/refs";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Autocomplete } from "@base-ui/react/autocomplete";
-import { Check, ChevronRight, CornerDownLeft } from "lucide-react";
+import { CheckMark } from "@/registry/lib/check-mark";
+import { ChevronRight, CornerDownLeft } from "lucide-react";
 import {
   Fragment,
   useContext,
@@ -303,14 +304,14 @@ export function CommandPanelRow({
         <span className="ml-auto -mr-1 flex shrink-0 items-center gap-1.5">
           {badge && <span className="shrink-0">{badge}</span>}
           {checkbox && (
-            // Kept mounted so the slot is reserved and the check scales in and out.
+            // Kept mounted so the slot is reserved and the tick draws in and fades out.
             <span
               aria-hidden="true"
               data-slot="command-panel-row-check"
               data-checked={selected ? "" : undefined}
-              className="flex size-4 shrink-0 items-center justify-center text-foreground scale-0 opacity-0 transition-[opacity,scale] duration-(--duration-fast) ease-out data-[checked]:scale-100 data-[checked]:opacity-100"
+              className="flex size-4 shrink-0 items-center justify-center text-foreground"
             >
-              <Check className="size-4" />
+              <CheckMark checked={!!selected} className="size-4" />
             </span>
           )}
         </span>

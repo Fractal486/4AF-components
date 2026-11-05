@@ -4,41 +4,18 @@ import { TriangleAlert } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
-import { duration, ease, spring } from "@/registry/lib/motion";
+import { spring } from "@/registry/lib/motion";
 import { useAction, type ActionStatus, type ActionRevertAfter } from "@/registry/lib/use-action";
+import { CheckMark } from "@/registry/lib/check-mark";
 import { LoadingIndicator } from "@/registry/lib/loader";
 import { Button, type ButtonProps } from "@/registry/ui/button/button";
 import { Morph, morphVariants } from "@/registry/ui/morph/morph";
 
 export type { ActionStatus, ActionRevertAfter };
 
+/** The shared drawn tick, sized by Button's icon rules; it lets the swap land, then strokes. */
 function AnimatedCheck() {
-  const reduceMotion = useReducedMotion();
-
-  return (
-    <motion.svg
-      data-slot="action-button-check"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <motion.path
-        d="M4 12.5l5 5L20 6.5"
-        initial={reduceMotion ? false : { pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={
-          reduceMotion
-            ? { duration: 0 }
-            // Let the success icon appear before drawing its stroke.
-            : { duration: duration.base, ease: ease.out, delay: 0.05 }
-        }
-      />
-    </motion.svg>
-  );
+  return <CheckMark checked appear delay={0.05} className="" data-slot="action-button-check" />;
 }
 
 export interface ActionButtonProps

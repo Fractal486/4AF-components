@@ -3,10 +3,11 @@ import { useAction, type ActionStatus } from "@/registry/lib/use-action";
 import { LoadingIndicator } from "@/registry/lib/loader";
 import { Morph } from "@/registry/ui/morph/morph";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
-import { Check, TriangleAlert } from "lucide-react";
+import { TriangleAlert } from "lucide-react";
 import { useState, type ComponentProps, type ReactNode } from "react";
 import { DropdownMenuItem, type DropdownMenuItemProps } from "./dropdown-menu.menu";
-import { CHECK_MARK, CHECK_SLOT, DisabledReasonTooltip, itemBase } from "./dropdown-menu.shared";
+import { CHECK_SLOT, DisabledReasonTooltip, itemBase } from "./dropdown-menu.shared";
+import { CheckMark } from "@/registry/lib/check-mark";
 
 /**
  * The 14px box a row's leading glyph sits in, so a Morph between glyphs centres where a plain
@@ -101,7 +102,7 @@ export function DropdownMenuActionItem({
             items={{
               idle: icon,
               pending: glyph(icons?.pending, <LoadingIndicator loader={loader} />),
-              success: glyph(icons?.success, <Check />),
+              success: glyph(icons?.success, <CheckMark checked appear />),
               error: glyph(icons?.error, <TriangleAlert />),
             }}
           />
@@ -296,9 +297,9 @@ export function DropdownMenuCheckboxItem({
                           <span
                             data-slot="dropdown-menu-checkbox-check"
                             data-checked={state.checked ? "" : undefined}
-                            className={CHECK_MARK}
+                            className="flex size-3.5 items-center justify-center"
                           >
-                            <Check />
+                            <CheckMark checked={state.checked} />
                           </span>
                         )
                         : undefined,

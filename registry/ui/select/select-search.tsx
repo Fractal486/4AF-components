@@ -2,7 +2,8 @@
 
 import { Combobox } from "@base-ui/react/combobox";
 import { useRender } from "@base-ui/react/use-render";
-import { Check, ChevronDown, Search } from "lucide-react";
+import { CheckMark } from "@/registry/lib/check-mark";
+import { ChevronDown, Search } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import {
   createContext,
@@ -563,8 +564,8 @@ export function SearchSelectItem({
     >
       <SearchSelectItemIcon icon={icon} size={size} />
       <span className="flex-1 truncate">{children}</span>
-      <Combobox.ItemIndicator className="shrink-0 text-foreground">
-        <Check className="size-3.5" />
+      <Combobox.ItemIndicator className="flex shrink-0 text-foreground">
+        <CheckMark checked />
       </Combobox.ItemIndicator>
     </Combobox.Item>
   );
@@ -615,9 +616,9 @@ export function SearchMultiSelectItem({
             {...indicatorProps}
             data-slot="search-select-item-check"
             data-selected={state.selected ? "" : undefined}
-            className="flex size-3.5 shrink-0 items-center justify-center text-foreground scale-0 opacity-0 transition-[opacity,scale] duration-(--duration-fast) ease-out data-[selected]:scale-100 data-[selected]:opacity-100"
+            className="flex size-3.5 shrink-0 items-center justify-center text-foreground"
           >
-            <Check className="size-3.5" />
+            <CheckMark checked={state.selected} />
           </span>
         )}
       />

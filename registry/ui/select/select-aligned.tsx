@@ -1,7 +1,8 @@
 "use client";
 
 import { Select as BaseSelect } from "@base-ui/react/select";
-import { Check, ChevronDown, ChevronsUpDown, ChevronUp } from "lucide-react";
+import { CheckMark } from "@/registry/lib/check-mark";
+import { ChevronDown, ChevronsUpDown, ChevronUp } from "lucide-react";
 import {
   createContext,
   useCallback,
@@ -755,8 +756,8 @@ export function AlignedSelectItem({
       {/* A reserved slot, occupied or not, so a row's label sits at the same x whether or
           not it is the selected one. */}
       <span className="flex size-3.5 shrink-0 items-center justify-center">
-        <BaseSelect.ItemIndicator className="text-foreground">
-          <Check className="size-3.5" />
+        <BaseSelect.ItemIndicator className="flex text-foreground">
+          <CheckMark checked />
         </BaseSelect.ItemIndicator>
       </span>
     </BaseSelect.Item>

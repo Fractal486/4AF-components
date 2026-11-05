@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { House, Image as ImageIcon, ImageOff, Moon, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -80,13 +81,23 @@ export default function SiteSearchDialog(props: SharedProps) {
         {"::highlight(fd-search){color:var(--color-fd-primary);text-decoration-line:underline}"}
       </style>
       <SearchDialogOverlay />
-      <SearchDialogContent>
+      {/* The library's glass panel material. `bg-(--surface-glass)` replaces Fumadocs'
+          `bg-fd-popover` through its class merge, and the active row takes the glass hover
+          tone, as the library's own glass panels do. */}
+      <SearchDialogContent className="material-glass bg-(--surface-glass) [&_[aria-selected=true]]:bg-(--muted-glass)">
         <SearchDialogHeader>
           <SearchDialogIcon />
           <SearchDialogInput />
           <SearchDialogClose />
         </SearchDialogHeader>
-        <SearchDialogList items={items} />
+        {/* The library's scrollbar: Fumadocs' list grows to its full height inside, and this
+            caps it at Fumadocs' 460px. The list's animated height still drives the panel's. */}
+        <ScrollArea className="max-h-[460px]" viewportProps={{ tabIndex: -1 }}>
+          <SearchDialogList
+            items={items}
+            className="[&>#fd-search-list]:max-h-none [&>#fd-search-list]:overflow-visible"
+          />
+        </ScrollArea>
       </SearchDialogContent>
       <SearchDialogFooter />
     </SearchDialog>

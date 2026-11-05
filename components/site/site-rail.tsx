@@ -51,23 +51,22 @@ function Brand({ onNavigate }: { onNavigate?: () => void }) {
 function SearchField({ onOpen }: { onOpen?: () => void }) {
   const { setOpenSearch, hotKey } = useSearchContext();
   return (
-    <button
+    <Button
       type="button"
+      variant="outline-ghost"
+      size="sm"
       onClick={() => {
         onOpen?.();
         setOpenSearch(true);
       }}
-      className={cn(
-        "flex h-7 w-full items-center gap-2 rounded-md bg-surface px-2.5 text-sm text-subtle-foreground shadow-border transition-[color] duration-(--duration-fast) hover:text-muted-foreground",
-        FOCUS,
-      )}
+      className="h-7 w-full cursor-default justify-start px-2.5 text-subtle-foreground hover:text-muted-foreground"
     >
       <Search className="size-3.5" aria-hidden />
       Search
-      <Kbd className="ms-auto bg-transparent p-0">
+      <Kbd className="ms-auto">
         {hotKey.map((key, index) => <span key={index}>{key.display}</span>)}
       </Kbd>
-    </button>
+    </Button>
   );
 }
 

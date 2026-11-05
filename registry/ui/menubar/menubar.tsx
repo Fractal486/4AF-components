@@ -8,10 +8,12 @@
  * menu is a Dropdown Menu, so rows, shortcuts, submenus, async actions, and nested select
  * panels are the same parts with the same styling.
  *
- * Moving between open menus swaps the panels with a short, slight animation (Base UI marks
- * them `data-instant="group"`) — the same swap as between sibling submenus — and one highlight
- * slides behind the triggers to show where the open menu moved. Opening from a closed bar and
- * closing keep the menu's full motion.
+ * Moving between open menus hands the panel over: it slides and resizes from one menu to the
+ * next while their rows cross over (see `menubar.handoff.ts`), and one highlight slides behind
+ * the triggers to show where the open menu moved. Without Web Animations, or under reduced
+ * motion, the panels swap with a short, slight animation instead (Base UI marks them
+ * `data-instant="group"`), the same swap as between sibling submenus. Opening from a closed
+ * bar and closing keep the menu's full motion.
  */
 
 import { Menu as BaseMenu } from "@base-ui/react/menu";
@@ -24,6 +26,7 @@ import {
   useContext,
   useMemo,
   useRef,
+  useState,
   type ComponentProps,
   type ReactNode,
 } from "react";
@@ -35,6 +38,7 @@ import {
   type DropdownMenuContentProps,
   type DropdownMenuProps,
 } from "@/registry/ui/dropdown-menu/dropdown-menu";
+import { createMenubarHandoffGroup, useMenubarHandoff, type MenubarHandoffGroup } from "./menubar.handoff";
 import { useMenubarHighlight } from "./menubar.highlight";
 import {
   menubarHighlightVariants,
@@ -48,9 +52,10 @@ export type MenubarOrientation = "horizontal" | "vertical";
 interface MenubarContextValue {
   size: MenubarSize;
   orientation: MenubarOrientation;
+  handoff: MenubarHandoffGroup | null;
 }
 
-const MenubarContext = createContext<MenubarContextValue>({ size: "md", orientation: "horizontal" });
+const MenubarContext = createContext<MenubarContextValue>({ size: "md", orientation: "horizontal", handoff: null });
 
 export interface MenubarProps extends ComponentProps<typeof BaseMenubar> {
   /** Tabs' outlined track, or none for a bar inside an existing header. @default "outline" */
@@ -72,7 +77,8 @@ export function Menubar({
   const highlightRef = useRef<HTMLSpanElement>(null);
   const mergedRef = useMergedRefs(ref, barRef);
   useMenubarHighlight(barRef, highlightRef);
-  const context = useMemo(() => ({ size, orientation }), [size, orientation]);
+  const [handoff] = useState(createMenubarHandoffGroup);
+  const context = useMemo(() => ({ size, orientation, handoff }), [size, orientation, handoff]);
 
   return (
     <MenubarContext.Provider value={context}>
@@ -134,9 +140,12 @@ export function MenubarContent({
   sideOffset,
   alignOffset,
   className,
+  ref,
   ...props
 }: DropdownMenuContentProps) {
-  const { size, orientation } = useContext(MenubarContext);
+  const { size, orientation, handoff } = useContext(MenubarContext);
+  const handoffRef = useMenubarHandoff(handoff);
+  const popupRef = useMergedRefs<HTMLDivElement>(ref, handoffRef);
   const vertical = orientation === "vertical";
   // Popup border (1px) + scroll padding (4px), then the row's 10px label inset against
   // the trigger's 10px (md) or 8px (sm).
@@ -144,6 +153,7 @@ export function MenubarContent({
 
   return (
     <DropdownMenuContent
+      ref={popupRef}
       data-slot="menubar-content"
       side={side ?? (vertical ? "inline-end" : "bottom")}
       align={align}
@@ -153,6 +163,8 @@ export function MenubarContent({
       className={mergeStateClassName(cn(
         "data-[instant=group]:duration-(--duration-fast) data-[instant=group]:data-[ending-style]:duration-(--duration-fast)",
         "data-[instant=group]:data-[starting-style]:scale-[0.98] data-[instant=group]:data-[starting-style]:blur-[1px]",
+        // Taking over from another menu's panel: no entrance of its own, the handoff moves it.
+        "data-handoff:transition-none data-handoff:data-[starting-style]:scale-100 data-handoff:data-[starting-style]:opacity-100 data-handoff:data-[starting-style]:blur-0",
       ), className)}
       {...props}
     />

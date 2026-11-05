@@ -73,7 +73,7 @@ describe("ActionButton", () => {
     expect(checks).toHaveLength(2);
     expect(checks[1]?.querySelector("path")).toHaveAttribute(
       "d",
-      "M4 12.5l5 5L20 6.5",
+      "M4 12l5 5L20 6",
     );
   });
 

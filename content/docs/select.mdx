@@ -244,7 +244,7 @@ share the footer row evenly and take the same hover highlight as `clearable`. Ea
 open. `onSelect(event)` receives the button's React click event. `clearable` adds its button after them.
 
 Single and multi-select rows both mark the selection with a trailing check; in a multi-select it
-scales in and out as rows toggle. `indicator={false}` hides the check; it does not prevent selection.
+draws in as a row is selected and fades out as it is cleared. `indicator={false}` hides the check; it does not prevent selection.
 
 ```tsx
 <Select<string> multiple value={tags} onValueChange={setTags}>

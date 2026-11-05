@@ -10,7 +10,8 @@ import {
   useSelectSearch,
 } from "@/registry/ui/select/select";
 import { Select as BaseSelect } from "@base-ui/react/select";
-import { Check, TriangleAlert } from "lucide-react";
+import { CheckMark } from "@/registry/lib/check-mark";
+import { TriangleAlert } from "lucide-react";
 import {
   createContext,
   useCallback,
@@ -374,7 +375,7 @@ function CommandActionRow({ item, end }: { item: CommandItem; end?: ReactNode })
           off: item.icon,
           on: item.icons?.checked ?? item.icon,
           pending: item.icons?.pending ?? <LoadingIndicator loader={item.loader} />,
-          success: item.icons?.success ?? <Check />,
+          success: item.icons?.success ?? <CheckMark checked appear className="size-4" />,
           error: item.icons?.error ?? <TriangleAlert />,
           armed: item.confirm?.icon ?? item.icon,
         }}

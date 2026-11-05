@@ -2,7 +2,7 @@ import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { Input } from "@/registry/ui/input/input";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
-import { Check } from "lucide-react";
+import { CheckMark } from "@/registry/lib/check-mark";
 import {
   createContext,
   useCallback,
@@ -22,7 +22,7 @@ import {
   DropdownMenuSubTrigger,
   type DropdownMenuContentProps,
 } from "./dropdown-menu.menu";
-import { CHECK_MARK, CHECK_SLOT, DisabledReasonTooltip } from "./dropdown-menu.shared";
+import { CHECK_SLOT, DisabledReasonTooltip } from "./dropdown-menu.shared";
 
 type DropdownMenuSelectValue<Value, Multiple extends boolean | undefined> = Multiple extends true
   ? Value[]
@@ -640,9 +640,9 @@ export function DropdownMenuSelectItem({
               <span
                 data-slot="dropdown-menu-select-item-check"
                 data-checked={state.checked ? "" : undefined}
-                className={cn(CHECK_SLOT, CHECK_MARK)}
+                className={CHECK_SLOT}
               >
-                <Check className="size-3.5" />
+                <CheckMark checked={state.checked} />
               </span>
             </div>
           </DisabledReasonTooltip>
@@ -668,14 +668,13 @@ export function DropdownMenuSelectItem({
       <span className="min-w-0 flex-1 wrap-anywhere">{children}</span>
       <BaseMenu.RadioItemIndicator
         keepMounted
-        className={cn(
-          "ml-auto flex size-3.5 shrink-0 items-center justify-center text-foreground",
-          "scale-0 opacity-0 transition-[opacity,scale] duration-(--duration-fast) ease-out",
-          "data-[checked]:scale-100 data-[checked]:opacity-100",
+        className="ml-auto flex size-3.5 shrink-0 items-center justify-center text-foreground"
+        render={(indicatorProps, state) => (
+          <span {...indicatorProps}>
+            <CheckMark checked={state.checked} />
+          </span>
         )}
-      >
-        <Check className="size-3.5" />
-      </BaseMenu.RadioItemIndicator>
+      />
     </BaseMenu.RadioItem>
   );
 

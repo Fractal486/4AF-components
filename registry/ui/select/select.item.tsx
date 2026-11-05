@@ -1,6 +1,6 @@
 import { cn, mergeStateClassName } from "@/registry/lib/cn";
+import { CheckMark } from "@/registry/lib/check-mark";
 import { Select as BaseSelect } from "@base-ui/react/select";
-import { Check } from "lucide-react";
 import {
   forwardRef,
   useCallback,
@@ -15,9 +15,8 @@ import { SELECT_CLEAR_ACTION, SelectContext, SelectPanelDormantContext, SelectSu
 import { SIZE, SelectItemIcon } from "./select.shared";
 import { isEquivalentNode, setForwardedRef } from "./select.utils";
 
-/** A multi-select row's check: the single-select mark, scaling in and out on selection. */
-const MULTI_CHECK =
-  "flex size-3.5 shrink-0 items-center justify-center text-foreground scale-0 opacity-0 transition-[opacity,scale] duration-(--duration-fast) ease-out data-[selected]:scale-100 data-[selected]:opacity-100";
+/** The trailing slot a row's check sits in, reserved whether or not the row is selected. */
+const CHECK_SLOT = "flex size-3.5 shrink-0 items-center justify-center text-foreground";
 
 /** Accessible section; filtering hides its heading when no visible options remain. */
 export function SelectGroup({ className, ...props }: ComponentProps<typeof BaseSelect.Group>) {
@@ -297,7 +296,7 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
       >
         <SelectItemIcon icon={icon} size={size} />
         <BaseSelect.ItemText className="flex-1 truncate">{children}</BaseSelect.ItemText>
-        {/* Kept mounted so the slot is reserved and the check scales in and out as rows
+        {/* Kept mounted so the slot is reserved and the tick draws in and rubs out as rows
             toggle while the panel stays open. `end` replaces it, as on single rows. */}
         {end ??
           (indicator ? (
@@ -308,9 +307,9 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
                   {...indicatorProps}
                   data-slot="select-item-check"
                   data-selected={state.selected ? "" : undefined}
-                  className={MULTI_CHECK}
+                  className={CHECK_SLOT}
                 >
-                  <Check className="size-3.5" />
+                  <CheckMark checked={state.selected} />
                 </span>
               )}
             />
@@ -360,9 +359,11 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
           trailing content such as an action's keybind hint. */}
       {end ??
         (indicator ? (
-          <span className="flex size-3.5 shrink-0 items-center justify-center">
-            <BaseSelect.ItemIndicator className="text-foreground">
-              <Check className="size-3.5" />
+          // Picking closes the panel, so a single row's tick is only ever seen drawn: the
+          // indicator mounts with its row's selection, as before.
+          <span className={CHECK_SLOT}>
+            <BaseSelect.ItemIndicator className="flex">
+              <CheckMark checked />
             </BaseSelect.ItemIndicator>
           </span>
         ) : null)}

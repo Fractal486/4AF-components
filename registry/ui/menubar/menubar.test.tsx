@@ -104,6 +104,48 @@ describe("Menubar", () => {
     expect(help).toHaveFocus();
   });
 
+  it("hands the open panel over to the next menu, with the old rows leaving as an inert copy", async () => {
+    // jsdom has no Web Animations; stand in for them, finishing on demand.
+    const finishers: (() => void)[] = [];
+    const animate = vi.fn(() => {
+      let resolve!: () => void;
+      const finished = new Promise<void>((done) => (resolve = done));
+      finishers.push(resolve);
+      return { finished, cancel: vi.fn() } as unknown as Animation;
+    });
+    const original = Element.prototype.animate;
+    Element.prototype.animate = animate;
+    try {
+      const user = userEvent.setup();
+      render(<EditorBar disableView />);
+      const file = screen.getByRole("menuitem", { name: "File" });
+      file.focus();
+      await user.keyboard("{Enter}");
+      const filePanel = await screen.findByRole("menu");
+      // Opening from a closed bar is an ordinary open, not a handoff.
+      expect(filePanel).not.toHaveAttribute("data-handoff");
+
+      await user.keyboard("{ArrowRight}");
+      const helpPanel = await screen.findByRole("menu", { name: "Help" });
+      // The new panel skips its entrance and takes over from the old one, which hides.
+      expect(helpPanel).toHaveAttribute("data-handoff");
+      await waitFor(() => expect(helpPanel.querySelector("[data-slot=menubar-handoff-copy]")).not.toBeNull());
+      const copy = helpPanel.querySelector("[data-slot=menubar-handoff-copy]")!;
+      expect(copy).toHaveAttribute("aria-hidden", "true");
+      expect(copy).toHaveAttribute("inert");
+      expect(copy).toHaveTextContent("Save");
+      expect(filePanel.style.visibility).toBe("hidden");
+      expect(animate).toHaveBeenCalled();
+
+      // Once everything lands, nothing is left behind.
+      finishers.forEach((finish) => finish());
+      await waitFor(() => expect(helpPanel).not.toHaveAttribute("data-handoff"));
+      expect(helpPanel.querySelector("[data-slot=menubar-handoff-copy]")).toBeNull();
+    } finally {
+      Element.prototype.animate = original;
+    }
+  });
+
   it("marks icon triggers for optical spacing and square icon-only shapes", () => {
     render(
       <Menubar aria-label="Project">

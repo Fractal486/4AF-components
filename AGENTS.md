@@ -153,8 +153,9 @@ worth reusing; a component that skips a line here is a component we'll rewrite l
   menu rows (width, height, padding), group labels (margin), group padding and gaps, and
   open sections folding into the rail (height), the header search field and tab row folding
   away (margin, grid rows), Morph's opt-in
-  `sizing="current"` width, and Menubar's open-menu highlight size as it slides between
-  triggers of different widths. Sidebar's row geometry and label spacing transition so the
+  `sizing="current"` width, Menubar's open-menu highlight size as it slides between
+  triggers of different widths, and its panel's width and height as it hands over from one
+  menu to the next. Sidebar's row geometry and label spacing transition so the
   navigation reflows smoothly into the icon rail without leaving gaps for hidden labels.
 - **Name the properties you transition.** `transition-[scale,opacity]`, never bare
   `transition` or `transition: all` (which is `transition-property: all` — the browser then

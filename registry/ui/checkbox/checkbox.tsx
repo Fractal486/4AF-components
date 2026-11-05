@@ -79,7 +79,7 @@ export function CheckboxMark({ checked, indeterminate = false, ...props }: Check
         />
       ) : (
         <motion.path
-          d="M4.5 12.75l6 6 9-13.5"
+          d="M4.5 12.75l6 6 9.6-14.4"
           strokeLinecap="round"
           strokeLinejoin="round"
           initial={false}

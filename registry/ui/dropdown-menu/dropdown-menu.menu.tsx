@@ -4,11 +4,12 @@ import { Kbd, type KbdProps } from "@/registry/ui/kbd/kbd";
 import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
-import { Check, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { LoaderProvider } from "@/registry/lib/loader";
 import { dropdownMenuPopupVariants, dropdownMenuPositionerVariants } from "./dropdown-menu.variants";
-import { CHECK_MARK, CHECK_SLOT, DisabledReasonTooltip, itemBase } from "./dropdown-menu.shared";
+import { CHECK_SLOT, DisabledReasonTooltip, itemBase } from "./dropdown-menu.shared";
+import { CheckMark } from "@/registry/lib/check-mark";
 
 export interface DropdownMenuProps<Payload = unknown> extends BaseMenu.Root.Props<Payload> {
   loader?: ReactNode;
@@ -221,15 +222,18 @@ export function DropdownMenuRadioItem({
       {...props}
     >
       {children}
-      {/* `keepMounted` so the slot is reserved while unselected and the check can scale out;
+      {/* `keepMounted` so the slot is reserved while unselected and the tick can fade out;
           without it the indicator is presence-gated and can miss the group's first value. */}
       <BaseMenu.RadioItemIndicator
         keepMounted
         data-slot="dropdown-menu-radio-check"
-        className={cn(CHECK_SLOT, CHECK_MARK)}
-      >
-        <Check />
-      </BaseMenu.RadioItemIndicator>
+        className={CHECK_SLOT}
+        render={(indicatorProps, state) => (
+          <span {...indicatorProps}>
+            <CheckMark checked={state.checked} />
+          </span>
+        )}
+      />
     </BaseMenu.RadioItem>
   );
 

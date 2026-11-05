@@ -151,7 +151,7 @@ include the component name: for example, `.context.ts` means `select.context.ts`
 | `select` | `select.tsx`: root state and option registration | `.context.ts`, `.shared.tsx`, `.utils.ts`, `.trigger.tsx`, `.content.tsx`, `.sub.tsx`, `.item.tsx`, `.variants.ts` |
 | `dropdown-menu` | `dropdown-menu.tsx`: public re-exports | `.menu.tsx`, `.select.tsx`, `.actions.tsx`, `.shared.tsx`, `.variants.ts` |
 | `context-menu` | `context-menu.tsx`: root, trigger with hold feedback, content, positioner, and `ContextMenu*` aliases of the Dropdown Menu rows | `.variants.ts`: trigger hold feedback |
-| `menubar` | `menubar.tsx`: bar, menu, trigger, content, and `Menubar*` aliases of the Dropdown Menu rows | `.highlight.ts`: open-trigger measurement for the sliding highlight; `.variants.ts` |
+| `menubar` | `menubar.tsx`: bar, menu, trigger, content, and `Menubar*` aliases of the Dropdown Menu rows | `.highlight.ts`: open-trigger measurement for the sliding highlight; `.handoff.ts`: the panel handoff between menus; `.variants.ts` |
 | `tooltip` | `tooltip.tsx`: Tooltip, composable parts, shared groups, and typed handles | `.variants.ts`: popup and positioner styles |
 | `popover` | `popover.tsx`: root, shared handles, and composable popup parts | `.height.ts`: wrapper for the shared `use-popup-height` utility; `.variants.ts`: panel and typography styles |
 | `hover-card` | `hover-card.tsx`: root, shared handles, preview parts, and skeleton | `.position.ts`: stable-side lifecycle; `.variants.ts`: panel styles; installs shared `use-popup-height` for sizing |

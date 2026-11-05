@@ -83,15 +83,21 @@ offset lines up the rows' labels with the trigger's label (horizontal) or the fi
 the trigger (vertical). Other alignments default to `0`.
 
 The popup has `data-slot="menubar-content"`. Base UI adds `data-instant="group"` to a panel
-opened or closed by moving between menus; such panels switch with a short, slight animation
-(`--duration-fast`, 0.98 scale).
+opened or closed by moving between menus. A panel taking over from another carries
+`data-handoff` until it lands, and the outgoing rows move inside it as an inert
+`data-slot="menubar-handoff-copy"`.
 
 ## Moving between menus
 
 Once a menu is open, hovering another trigger or pressing an arrow key opens that menu and
-closes the previous one. The highlight slides from the old trigger to the new one; panels
-swap with a short, slight animation. Opening from a closed bar and closing keep the Dropdown Menu's enter and exit
-motion. With reduced motion, the highlight moves without sliding.
+closes the previous one. The highlight slides from the old trigger to the new one, and the
+panel slides with it: the new menu's panel starts at the old one's place and size and moves and
+resizes to its own on a spring, while the old rows slide 6px away and fade and the new rows
+slide 6px in and fade up, both clipped by the moving panel. The timings scale with
+`--duration-slow`. Without Web Animations, or with reduced motion, the panels swap with a
+short, slight animation instead (`--duration-fast`, 0.98 scale), and the highlight moves
+without sliding. Opening from a closed bar and closing keep the Dropdown Menu's enter and exit
+motion.
 
 While a menu is open, hovered triggers show no fill of their own.
 
