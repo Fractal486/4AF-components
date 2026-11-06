@@ -26,6 +26,9 @@ function Icon({ children, wide = false }: { children: ReactNode; wide?: boolean 
   );
 }
 
+/** "None", everywhere a setting has it: a faintly filled circle, struck through. */
+const NONE = <Icon><circle cx="8" cy="8" r="6" {...FILLED} /><path d="M3.75 12.25l8.5-8.5" /></Icon>;
+
 /** Which side of its trigger a popup opens on: the panel, filled, beside the outlined trigger. */
 export const ANCHORED_SIDE_ICONS = {
   top: <Icon><rect x="1.5" y="1.5" width="13" height="7.5" rx="2" {...FILLED} /><rect x="5" y="11.5" width="6" height="3" rx="1.5" /></Icon>,
@@ -109,9 +112,8 @@ export const TEXT_ALIGN_ICONS = {
 export const COLLAPSIBLE_ICON_ICONS = {
   chevron: <Icon><path d="m4 6 4 4 4-4" /></Icon>,
   folder: <Icon><path d="M1.5 4a1 1 0 0 1 1-1h3.25l1.5 1.5h6.25a1 1 0 0 1 1 1V12a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1Z" {...FILLED} /></Icon>,
-  // No glyph: the usual "none" mark, a circle crossed through.
-  // The circle is inset so the stroke runs past it at both ends.
-  none: <Icon><circle cx="8" cy="8" r="5" {...FAINT} /><path d="m3.25 12.75 9.5-9.5" /></Icon>,
+  // No glyph: the shared "none" mark.
+  none: NONE,
 } satisfies Record<string, ReactNode>;
 
 export const COLLAPSIBLE_POSITION_ICONS = {
@@ -252,4 +254,11 @@ export const SCRUB_SLIDER_QUANTITY_ICONS = {
   rotation: <Icon><path d="M2 13.5h5.5a5.5 5.5 0 0 0-1.6-3.9Z" {...TONE} /><path d="M2 13.5h12M2 13.5l9-9" /><path d="M7.5 13.5a5.5 5.5 0 0 0-1.6-3.9" {...FAINT} /></Icon>,
   // A square growing toward its corner.
   scale: <Icon><rect x="1.5" y="1.5" width="13" height="13" rx="2" {...FAINT} /><rect x="1.5" y="7.5" width="7" height="7" rx="2" {...FILLED} /><path d="M10 2.5h3.5V6M13.5 2.5 9.5 6.5" /></Icon>,
+} satisfies Record<string, ReactNode>;
+
+/** Field's marker conventions: a plain asterisk, a pair of parentheses, and a struck-out circle. */
+export const FIELD_MARKER_ICONS = {
+  required: <Icon><path d="M8 3v10M3.67 5.5l8.66 5M3.67 10.5l8.66-5" /></Icon>,
+  optional: <Icon><path d="M5.5 2.5a8 8 0 0 0 0 11M10.5 2.5a8 8 0 0 1 0 11" /><path d="M7.25 8h1.5" {...FAINT} /></Icon>,
+  none: NONE,
 } satisfies Record<string, ReactNode>;

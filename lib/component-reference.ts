@@ -570,6 +570,54 @@ import { SidebarLayout } from "@/components/ui/sidebar-layout";
   Page content
 </SidebarLayout>`,
   },
+  field: {
+    usage: `import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+  FieldStatus,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+
+// The label reads \`required\` from the control and draws "Email *".
+<Field>
+  <FieldLabel>Email</FieldLabel>
+  <Input type="email" required />
+  <FieldDescription>We only use it to reply.</FieldDescription>
+  <FieldError match="valueMissing">Enter an email address.</FieldError>
+</Field>
+
+// In a mostly-required form, mark the optional fields instead, once for the whole set.
+<FieldSet indicator="optional">
+  <FieldLegend>Profile</FieldLegend>
+  <FieldGroup>
+    <Field>
+      <FieldLabel>Nickname</FieldLabel>  {/* "Nickname (optional)" */}
+      <Input />
+    </Field>
+    <Field validationMode="onBlur">
+      <FieldLabel>Handle</FieldLabel>
+      <Input required pattern="[a-z0-9_]+" endAction={<FieldStatus />} />
+      <FieldError errors={serverErrors} />
+    </Field>
+  </FieldGroup>
+</FieldSet>
+
+// A control beside its label and description.
+<Field orientation="horizontal">
+  <Switch />
+  <FieldContent>
+    <FieldLabel>Email updates</FieldLabel>
+    <FieldDescription>A weekly summary.</FieldDescription>
+  </FieldContent>
+</Field>`,
+  },
   skeleton: {
     usage: `import { Skeleton } from "@/components/ui/skeleton";
 

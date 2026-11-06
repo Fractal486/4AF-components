@@ -27,6 +27,7 @@ export const DEMO_NAMES = [
   "dialog",
   "dropdown-menu",
   "empty",
+  "field",
   "hover-card",
   "input",
   "kbd",

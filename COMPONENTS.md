@@ -70,6 +70,7 @@ see [Dialog](content/docs/dialog.mdx#api). Its portal, backdrop, and popup can a
 For content-sized placeholders and text loading lines, see [Skeleton](content/docs/skeleton.mdx#api).
 For compact empty states, staggered entrances, semantic headings, and rich descriptions, see [Empty](content/docs/empty.mdx#api).
 For color-aware text highlights with one-time playback, active and responsive controls, see [Text Shimmer](content/docs/text-shimmer.mdx#api).
+For labels that mark required or optional controls, with descriptions and errors tied to any control, see [Field](content/docs/field.mdx#api).
 For vertical controls, draggable ranges, and formatted numeric values, see [Slider](content/docs/slider.mdx#api).
 For design-tool values such as sizes and angles, scrubbed along a ruler with edge scrolling, typed after a click, or nudged by chevrons, see [Scrub Slider](content/docs/scrub-slider.mdx#api).
 For single dates, multiple separate dates, or a continuous range, see [Date Picker](content/docs/date-picker.mdx#api).

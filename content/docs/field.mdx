@@ -1,0 +1,70 @@
+---
+title: Field
+description: A labelled form field that marks required or optional controls, with descriptions, errors, a status mark, horizontal rows, and fieldsets.
+---
+
+<ComponentReference name="field" />
+
+## API
+
+**Main exports:** `Field`, `FieldLabel`, `FieldDescription`, `FieldError`, `FieldStatus`, `FieldContent`, `FieldGroup`, `FieldSet`, `FieldLegend`
+
+Built on Base UI's Field. Any control inside it — Input, Textarea, Select, Checkbox, Radio,
+Switch, Slider, Scrub Slider, Date Picker — is named by the label, described by the
+description and error, and shares the field's validity and disabled state.
+
+| Part | Prop | Default | Purpose |
+| --- | --- | --- | --- |
+| `Field` | `indicator` | inherited, else `"required"` | `"required"` marks fields whose control is required with `*`; `"optional"` marks fields whose control is not with "(optional)"; `"none"` marks neither. Inherited from the nearest `FieldGroup` or `FieldSet`. Exposed as `data-indicator`. |
+| `Field` | `optionalText` | inherited, else `"(optional)"` | The text `indicator="optional"` adds, for other wording or languages. Inherited like `indicator`. |
+| `Field` | `orientation` | `"vertical"` | `"horizontal"` puts the control first with a `FieldContent` beside it, for a Switch, Checkbox, or Radio row. A 16px Checkbox or Radio is nudged 2px down to centre on the label's first line. Exposed as `data-orientation`. |
+| `Field` | `invalid` | — | Forces the invalid state, for errors from a server or outside validation. |
+| `Field` | `validate` / `validationMode` | — / `"onSubmit"` | Base UI's validation: a function returning error text, run on submit, blur, or change. |
+| `Field` | `disabled` / `name` | — | Disables the label and control together; names the value in a Base UI `Form`. |
+| `FieldLabel` | `required` | detected | Overrides whether the control counts as required. |
+| `FieldLabel` | `optionalText` | inherited | Overrides the "(optional)" text for one label. |
+| `FieldError` | `match` | — | Which validity state shows this message (`"valueMissing"`, `"typeMismatch"`, …), or `true` to show it whenever the field is invalid. Without children it shows the browser's or `validate`'s message. |
+| `FieldError` | `errors` | — | Messages from a form library or server: strings or `{ message }`. Empty entries and repeats are dropped; one shows as text, several as a list. Any message shows the error without `match`; set `invalid` on the `Field` too so the control is marked invalid. |
+| `FieldStatus` | — | — | A 16px check (once the field is edited and valid) or alert (while invalid), for a control's trailing edge such as Input's `endAction`. Decorative (`aria-hidden`). It follows `validationMode`; use `"onChange"` or `"onBlur"` for it to respond before submit. |
+| `FieldContent` | — | — | Stacks the label, description, and error beside the control of a horizontal field. |
+| `FieldGroup` | `indicator` / `optionalText` | — | Stacks fields 20px apart and sets the marker convention for every field inside. |
+| `FieldSet` | `indicator` / `optionalText` / `disabled` | — | A `<fieldset>` (Base UI Fieldset) named by its `FieldLegend`; sets the marker convention and disables every field inside. For checkbox and radio groups and form sections. |
+| `FieldLegend` | `variant` | `"legend"` | `"legend"` titles a section (16px semibold); `"label"` matches a field label, for a group of options. Exposed as `data-variant`. |
+
+All parts forward props and refs. The Base UI parts (`Field`, `FieldLabel`, `FieldDescription`,
+`FieldError`, `FieldSet`, `FieldLegend`) take `className` as a string or `(state) => string`.
+
+## Behavior
+
+- The label reads `required` (or `aria-required="true"` on custom controls such as Checkbox) from
+  the control inside the field, so it is declared once, on the control. It follows the control
+  as it changes. Detection runs after mount; pass `required` to `FieldLabel` to draw the marker in
+  a server-rendered first paint.
+- The `*` is `aria-hidden`: the control's `required` is already announced. "(optional)" is part
+  of the label's text, so it is read with the name ("Nickname (optional)").
+- Mark the minority: use `indicator="required"` when most fields are optional, and
+  `indicator="optional"` when most are required. Use one convention per form.
+- Markers are `muted-foreground`; only the error and the status alert use `destructive`. The
+  status check is `muted-foreground`.
+- `FieldStatus` reads the field's state attributes: the check needs `data-dirty` and `data-valid`,
+  the alert `data-invalid`. Each fades and scales in; on the way out it only fades.
+- The error fades and unblurs in, and on the way out only fades and blurs. Under reduced motion
+  both are instant.
+- Inside a Base UI `Form`, submitting validates every field and shows the matching errors.
+- A `FieldDescription` placed directly in a `FieldSet` describes the fieldset (`aria-describedby`).
+  Outside any `Field` or `FieldSet`, `FieldDescription` is a plain paragraph and `FieldLabel` a
+  plain `<label>` in the same styles, with no marker.
+
+## State attributes
+
+| Part | Attribute | Present when |
+| --- | --- | --- |
+| `Field` | `data-indicator` | Always: the marker convention. |
+| `Field` | `data-invalid`, `data-valid`, `data-touched`, `data-dirty`, `data-filled`, `data-focused`, `data-disabled` | Base UI's field state. |
+| `Field` | `data-orientation` | Always: `vertical` or `horizontal`. |
+| `FieldLabel` | `data-required` | The control is required (detected or overridden). |
+| `FieldSet` | `data-disabled` | The fieldset is disabled. |
+| `FieldLegend` | `data-variant` | Always: `legend` or `label`. |
+
+Parts carry `data-slot`: `field`, `field-label`, `field-marker`, `field-description`,
+`field-error`, `field-status`, `field-content`, `field-group`, `field-set`, and `field-legend`.

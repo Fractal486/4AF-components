@@ -151,6 +151,14 @@ const ICONS: Record<string, ReactNode> = {
       <circle cx="9.5" cy="8" r="2.25" {...SOLID} />
     </>
   ),
+  // A label line over a field, its required mark beside the label.
+  field: (
+    <>
+      <path d="M2 3.5h6" />
+      <path d="M10 2.5v2M9.13 3l1.74 1M9.13 4l1.74-1" {...FAINT} />
+      <rect x="1.5" y="7" width="13" height="6" rx="2" {...FILLED} />
+    </>
+  ),
   // A ruler with the indicator standing over it, its neighbours lifted. Thinner than the
   // other icons' strokes, like the ruler's hairlines.
   "scrub-slider": (

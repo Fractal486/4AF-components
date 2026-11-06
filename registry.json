@@ -476,6 +476,34 @@
       ]
     },
     {
+      "name": "field",
+      "type": "registry:ui",
+      "description": "A labelled form field on Base UI's Field and Fieldset: the label marks required controls with * or optional ones with \"(optional)\", read from the control's own required attribute; descriptions, animated errors (including server error lists), a validity status mark, horizontal control rows, and fieldsets and groups that set the marker convention for every field inside.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/field (Markdown: https://4af.selfsimilar.dev/docs/field.md)",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/refs.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/field/field.tsx",
+          "type": "registry:ui",
+          "target": "@ui/field.tsx"
+        },
+        {
+          "path": "registry/ui/field/field.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/field.variants.ts"
+        }
+      ]
+    },
+    {
       "name": "input",
       "type": "registry:ui",
       "description": "A Base UI input with automatic native validation styling, a character counter, optional leading icon and trailing action, accessible descriptions, number steppers, and default, plain, and underline variants.",

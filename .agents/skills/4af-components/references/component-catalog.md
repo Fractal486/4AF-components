@@ -17,7 +17,7 @@ notes, and install/usage examples. The links below open the same owning document
 
 ## Installable catalog
 
-The catalog contains 54 installable UI items.
+The catalog contains 55 installable UI items.
 
 ### Actions
 
@@ -36,6 +36,7 @@ The catalog contains 54 installable UI items.
 
 | Install name and docs | Choose it for |
 | --- | --- |
+| [`field`](https://4af.selfsimilar.dev/docs/field.md) | A label, description, and error around any form control; marks required controls with `*` or optional ones with "(optional)", read from the control's `required`. Also server error lists, a validity status mark, horizontal Switch/Checkbox rows, and fieldsets and groups that set the marker convention once. |
 | [`input`](https://4af.selfsimilar.dev/docs/input.md) | Text or number entry with automatic native validation styling, `InputCount`, optional leading icons, and a trailing action button. |
 | [`textarea`](https://4af.selfsimilar.dev/docs/textarea.md) | Auto-growing multiline entry with row limits, Base UI Field integration, native validation styling, and optional submit shortcuts. |
 | [`switch`](https://4af.selfsimilar.dev/docs/switch.md) | An on/off setting with dragging, optimistic async saves, shared loaders, on/off marks, and custom rendering. |

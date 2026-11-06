@@ -26,6 +26,7 @@ export const COMPONENT_FAMILIES = [
   { name: "Dialog", slugs: ["dialog", "alert-dialog"] },
   { name: "Dropdown Menu", slugs: ["dropdown-menu"] },
   { name: "Empty", slugs: ["empty"] },
+  { name: "Field", slugs: ["field"] },
   { name: "Hover Card", slugs: ["hover-card"] },
   { name: "Input", slugs: ["input", "textarea"] },
   { name: "Kbd", slugs: ["kbd"] },
@@ -76,6 +77,7 @@ export const COMPONENT_CATEGORIES = [
   {
     name: "Fields and selection",
     slugs: [
+      "field",
       "input",
       "textarea",
       "switch",
@@ -182,6 +184,7 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   sidebar: "SidebarProvider, Sidebar, SidebarPanel, SidebarHeaderButton, SidebarTabs, menu/group/submenu parts",
   "sidebar-layout": "SidebarLayout",
   skeleton: "Skeleton, SkeletonText",
+  field: "Field, FieldLabel, FieldDescription, FieldError, FieldStatus, FieldContent, FieldGroup, FieldSet, FieldLegend",
   slider: "Slider",
   "scrub-slider": "ScrubSlider",
   switch: "Switch",

@@ -25,7 +25,7 @@ const LOADER_DEMOS = new Set([
 ]);
 // Sizing belongs to the demo shell.
 const DEMO_WIDTHS: Partial<Record<ComponentDemoName, string>> = {
-  input: "max-w-sm", textarea: "max-w-sm", slider: "max-w-sm", "slider-circle": "max-w-sm", "slider-knob": "max-w-sm", "scrub-slider": "max-w-sm",
+  input: "max-w-sm", textarea: "max-w-sm", field: "max-w-sm", slider: "max-w-sm", "slider-circle": "max-w-sm", "slider-knob": "max-w-sm", "scrub-slider": "max-w-sm",
   progress: "max-w-sm", skeleton: "max-w-sm", "skeleton-text": "max-w-sm", "skeleton-wrap": "max-w-sm",
   select: "max-w-56", "select-search": "max-w-56", "select-aligned": "max-w-56",
   "context-menu": "max-w-sm", empty: "max-w-md", collapsible: "max-w-md", tabs: "max-w-md",
@@ -300,6 +300,7 @@ const demos: Record<DemoName, () => Promise<AnyEntry>> = {
   dialog: async () => (await import("@/inspector/entries/dialog")).dialogEntry,
   "dropdown-menu": async () => (await import("@/inspector/entries/dropdown-menu")).dropdownMenuEntry,
   empty: async () => (await import("@/inspector/entries/empty")).emptyEntry,
+  field: async () => (await import("@/inspector/entries/field")).fieldEntry,
   "hover-card": async () => (await import("@/inspector/entries/hover-card")).hoverCardEntry,
   input: async () => (await import("@/inspector/entries/input")).inputEntry,
   kbd: async () => (await import("@/inspector/entries/kbd")).kbdEntry,
