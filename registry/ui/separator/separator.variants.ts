@@ -2,7 +2,7 @@ import { cva } from "class-variance-authority";
 
 export const separatorVariants = cva(
   [
-    "group/separator shrink-0 bg-border forced-colors:bg-[CanvasText] data-[labeled]:flex data-[labeled]:items-center data-[labeled]:gap-3 data-[labeled]:bg-transparent forced-colors:data-[labeled]:bg-transparent",
+    "group/separator shrink-0 bg-border data-[labeled]:flex data-[labeled]:items-center data-[labeled]:gap-3 data-[labeled]:bg-transparent",
     "[--separator-hairline:1px] [@media(min-resolution:2dppx)]:[--separator-hairline:0.5px] [@media(min-resolution:3dppx)]:[--separator-hairline:0.333333px]",
   ],
   {
@@ -17,7 +17,7 @@ export const separatorVariants = cva(
 );
 
 export const separatorLineVariants = cva(
-  "flex-1 bg-border forced-colors:bg-[CanvasText] group-data-[orientation=horizontal]/separator:h-(--separator-hairline) group-data-[orientation=horizontal]/separator:min-w-4 group-data-[orientation=vertical]/separator:w-(--separator-hairline) group-data-[orientation=vertical]/separator:min-h-4",
+  "flex-1 bg-border group-data-[orientation=horizontal]/separator:h-(--separator-hairline) group-data-[orientation=horizontal]/separator:min-w-4 group-data-[orientation=vertical]/separator:w-(--separator-hairline) group-data-[orientation=vertical]/separator:min-h-4",
   {
     variants: {
       side: {

@@ -53,7 +53,7 @@ export const sliderControlVariants = cva(
  * The rail, clipped to its own shape so the fill rounds with it. `circle` and `bar` fill the
  * control; `knob` is a thin centred line (4px at md, 2px at sm) that its dot overhangs.
  */
-export const sliderRailVariants = cva("absolute overflow-hidden forced-colors:outline forced-colors:outline-1 forced-colors:outline-[CanvasText]", {
+export const sliderRailVariants = cva("absolute overflow-hidden", {
   variants: {
     thumb: { bar: "inset-0 rounded-md", circle: "inset-0 rounded-full", knob: "rounded-full" },
     size: sizes,

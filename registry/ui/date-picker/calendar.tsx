@@ -905,7 +905,6 @@ const dayButtonClassName = cn(
   "data-[range-start]:text-primary-foreground data-[range-start]:before:bg-primary data-[range-start]:hover:before:bg-primary-hover",
   "data-[range-end]:text-primary-foreground data-[range-end]:before:bg-primary data-[range-end]:hover:before:bg-primary-hover",
   "data-[range-middle]:hover:before:bg-foreground/6",
-  "forced-colors:data-[selected-single]:outline-2 forced-colors:data-[range-start]:outline-2 forced-colors:data-[range-end]:outline-2",
 );
 
 export function CalendarDayButton({ className, day, modifiers, ...props }: DayButtonProps) {

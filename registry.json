@@ -892,7 +892,7 @@
     {
       "name": "slider",
       "type": "registry:ui",
-      "description": "A horizontal or vertical slider with bar, knob, and circle variants, optional whole-range dragging, editable values, formatted tooltips, custom spoken values, high-contrast support, and a customizable root. Base UI behaviour with spring motion and a custom fill colour.",
+      "description": "A horizontal or vertical slider with bar, knob, and circle variants, optional whole-range dragging, editable values, formatted tooltips, custom spoken values, and a customizable root. Base UI behaviour with spring motion and a custom fill colour.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/slider (Markdown: https://4af.selfsimilar.dev/docs/slider.md)",
       "dependencies": [
         "@base-ui/react",

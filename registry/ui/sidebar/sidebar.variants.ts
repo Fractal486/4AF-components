@@ -178,7 +178,7 @@ export const sidebarRailButtonVariants = cva([
  */
 export const sidebarMobileBackdropVariants = cva(
   [
-    "inset-0 z-40 bg-black/50 forced-colors:bg-[Canvas]/50",
+    "inset-0 z-40 bg-black/50",
     "transition-[opacity] duration-(--duration-slower) ease-in-out",
     "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 data-[ending-style]:duration-(--duration-slow)",
   ],
@@ -194,7 +194,6 @@ export const sidebarMobileBackdropVariants = cva(
 export const sidebarMobilePopupVariants = cva(
   [
     "inset-y-0 z-50 flex min-w-0 flex-col border-border bg-surface p-0 shadow-overlay-drop outline-none",
-    "forced-colors:border forced-colors:border-[CanvasText] forced-colors:bg-[Canvas] forced-colors:text-[CanvasText]",
     "transition-[translate] duration-(--duration-slower) ease-in-out data-[ending-style]:duration-(--duration-slow)",
   ],
   {

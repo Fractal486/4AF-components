@@ -1,9 +1,9 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
-export const progressColorVariants = cva("text-primary forced-colors:text-[Highlight]");
+export const progressColorVariants = cva("text-primary");
 
 export const progressTrackVariants = cva(
-  "relative w-full overflow-hidden rounded-full bg-muted forced-colors:outline forced-colors:outline-1",
+  "relative w-full overflow-hidden rounded-full bg-muted",
   {
     variants: { size: { xs: "h-0.5", sm: "h-1", md: "h-2", lg: "h-3" } },
     defaultVariants: { size: "md" },
@@ -41,7 +41,7 @@ export const progressCircleSvgVariants = cva(
 );
 
 export const progressCircleTrackVariants = cva(
-  "stroke-muted [stroke-width:var(--progress-stroke)] forced-colors:stroke-[CanvasText]",
+  "stroke-muted [stroke-width:var(--progress-stroke)]",
 );
 
 export const progressCircleIndicatorVariants = cva([

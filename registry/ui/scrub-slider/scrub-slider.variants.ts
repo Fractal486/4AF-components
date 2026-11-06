@@ -21,7 +21,7 @@ export const scrubSliderVariants = cva(
   {
     variants: {
       layout: {
-        card: "overflow-hidden forced-colors:outline forced-colors:outline-1 forced-colors:outline-[CanvasText]",
+        card: "overflow-hidden",
         inline: "flex items-center gap-2 rounded-md",
       },
       size: sizes,
@@ -151,7 +151,7 @@ export const scrubSliderTicksVariants = cva(
  * values set from outside) they glide.
  */
 export const scrubSliderTickVariants = cva(
-  "absolute bottom-0 left-0 h-full w-px origin-bottom bg-foreground transition-[translate,scale,opacity] duration-(--duration-fast) ease-out group-data-[dragging]/scrub-slider:transition-none forced-colors:bg-[CanvasText]",
+  "absolute bottom-0 left-0 h-full w-px origin-bottom bg-foreground transition-[translate,scale,opacity] duration-(--duration-fast) ease-out group-data-[dragging]/scrub-slider:transition-none",
 );
 
 /**
@@ -163,7 +163,7 @@ export const scrubSliderTickVariants = cva(
  */
 export const scrubSliderIndicatorVariants = cva(
   [
-    "absolute bottom-0 left-0 h-full w-0.5 origin-bottom scale-y-50 rounded-full bg-foreground forced-colors:bg-[Highlight]",
+    "absolute bottom-0 left-0 h-full w-0.5 origin-bottom scale-y-50 rounded-full bg-foreground",
     "transition-[translate,opacity,scale] duration-(--duration-fast) ease-out",
     "group-data-[active]/scrub-slider:scale-y-100 group-data-[active]/scrub-slider:opacity-100 group-data-[active]/scrub-slider:[transition-delay:0s]",
     "group-data-[dragging]/scrub-slider:transition-[opacity,scale]",

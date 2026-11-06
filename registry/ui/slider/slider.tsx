@@ -135,17 +135,17 @@ function BarThumb({
       data-slot="slider-thumb"
       data-grabbed={stretched ? "" : undefined}
       data-dodged={dodged ? "" : undefined}
-      className="absolute inset-0 rounded-full drop-shadow-sm forced-colors:outline forced-colors:outline-[CanvasText] group-has-[[type=range]:focus-visible]:ring-4 group-has-[[type=range]:focus-visible]:ring-ring/40 forced-colors:group-has-[[type=range]:focus-visible]:outline-offset-2 forced-colors:group-has-[[type=range]:focus-visible]:outline-2 forced-colors:group-has-[[type=range]:focus-visible]:outline-[Highlight]"
+      className="absolute inset-0 rounded-full drop-shadow-sm group-has-[[type=range]:focus-visible]:ring-4 group-has-[[type=range]:focus-visible]:ring-ring/40"
       animate={{ opacity: dodged ? DODGE_OPACITY : 1 }}
       transition={reduceMotion ? { duration: 0 } : { duration: duration.fast, ease: ease.out }}
     >
       <motion.span
-        className="absolute inset-x-0 top-0 aspect-square rounded-full bg-foreground forced-colors:bg-[Canvas]"
+        className="absolute inset-x-0 top-0 aspect-square rounded-full bg-foreground"
         animate={{ y: stretched ? -reach : 0, scale: stretched ? BAR_GRAB_WIDEN : 1 }}
         transition={transition}
       />
       <motion.span
-        className="absolute inset-x-0 bg-foreground forced-colors:bg-[Canvas]"
+        className="absolute inset-x-0 bg-foreground"
         style={{ top: capRadius, bottom: capRadius }}
         animate={{
           scaleY: stretched ? middleScale : 1,
@@ -154,7 +154,7 @@ function BarThumb({
         transition={transition}
       />
       <motion.span
-        className="absolute inset-x-0 bottom-0 aspect-square rounded-full bg-foreground forced-colors:bg-[Canvas]"
+        className="absolute inset-x-0 bottom-0 aspect-square rounded-full bg-foreground"
         animate={{ y: stretched ? reach : 0, scale: stretched ? BAR_GRAB_WIDEN : 1 }}
         transition={transition}
       />
@@ -450,7 +450,7 @@ const DODGE_OPACITY = 0.15;
 // `--slider-fill-strength`: 15%, or 8% on the edge-only `outline-ghost` rail. The bar's in-use step mixes in 8% foreground, so a custom colour deepens (or, in the
 // dark theme, lightens) the same way the default grey steps up to about 20%.
 const FILL_COLOR =
-  "[--slider-fill-rest:var(--slider-fill,color-mix(in_oklab,var(--color-foreground)_var(--slider-fill-strength,15%),transparent))] [--slider-fill-active:color-mix(in_oklab,var(--slider-fill-rest),var(--color-foreground)_8%)] bg-(color:--slider-fill-rest) forced-colors:bg-[Highlight]! forced-colors:forced-color-adjust-none";
+  "[--slider-fill-rest:var(--slider-fill,color-mix(in_oklab,var(--color-foreground)_var(--slider-fill-strength,15%),transparent))] [--slider-fill-active:color-mix(in_oklab,var(--slider-fill-rest),var(--color-foreground)_8%)] bg-(color:--slider-fill-rest)";
 
 // "In use" for the bar: hovered, dragged, or keyboard-focused. Focus means the slider's own
 // range input, not anything focused inside the control, so typing into the editable value
@@ -1250,11 +1250,10 @@ export function Slider({
               data-slot="slider-thumb"
               data-dodged={inline && dodged[index] ? "" : undefined}
               className={cn(
-                "absolute inset-0 origin-center bg-foreground shadow-sm forced-colors:bg-[Canvas] forced-colors:outline forced-colors:outline-[CanvasText]",
+                "absolute inset-0 origin-center bg-foreground shadow-sm",
                 // A round knob: the circle the height of the rail, or the dot on its line.
                 sliderThumbVariants({ thumb, size }),
                 "group-has-[[type=range]:focus-visible]:ring-4 group-has-[[type=range]:focus-visible]:ring-ring/40",
-                "forced-colors:group-has-[[type=range]:focus-visible]:outline-offset-2 forced-colors:group-has-[[type=range]:focus-visible]:outline-2 forced-colors:group-has-[[type=range]:focus-visible]:outline-[Highlight]",
               )}
               // A round thumb can't stretch one axis without going oval, so it grabs by
               // growing evenly (the bar stretches; see BarThumb). Keep this on the inner shape
