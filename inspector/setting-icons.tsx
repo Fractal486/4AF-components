@@ -6,16 +6,16 @@ import { NavIcon } from "@/components/site/nav-icons";
  * own `orientation`. 16px grid, 1.25 strokes, surfaces at 30%, secondary lines at 40%.
  */
 
-const FILLED = { fill: "currentColor", fillOpacity: 0.3 } as const;
-const TONE = { fill: "currentColor", fillOpacity: 0.3, stroke: "none" } as const;
-const SOLID = { fill: "currentColor", stroke: "none" } as const;
-const FAINT = { strokeOpacity: 0.4 } as const;
+export const FILLED = { fill: "currentColor", fillOpacity: 0.3 } as const;
+export const TONE = { fill: "currentColor", fillOpacity: 0.3, stroke: "none" } as const;
+export const SOLID = { fill: "currentColor", stroke: "none" } as const;
+export const FAINT = { strokeOpacity: 0.4 } as const;
 
 /** Loading, everywhere a setting has it: the Classic Loader's sidebar icon (a still drawing). */
 const LOADING = <NavIcon href="/docs/classic-loader" />;
 
 /** `wide` draws on a 32x16 grid at the tab's height, for shapes that read as long lines. */
-function Icon({ children, wide = false }: { children: ReactNode; wide?: boolean }) {
+export function Icon({ children, wide = false }: { children: ReactNode; wide?: boolean }) {
   return (
     <svg viewBox={wide ? "0 0 32 16" : "0 0 16 16"} fill="none" stroke="currentColor" strokeWidth={1.25}
       strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
@@ -27,7 +27,83 @@ function Icon({ children, wide = false }: { children: ReactNode; wide?: boolean 
 }
 
 /** "None", everywhere a setting has it: a faintly filled circle, struck through. */
-const NONE = <Icon><circle cx="8" cy="8" r="6" {...FILLED} /><path d="M3.75 12.25l8.5-8.5" /></Icon>;
+export const NONE = <Icon><circle cx="8" cy="8" r="6" {...FILLED} /><path d="M3.75 12.25l8.5-8.5" /></Icon>;
+
+/** Icon content and placement: one solid mark shows where the glyph sits. */
+export const ICON_PROP_ICONS: Readonly<Record<string, ReactNode>> = {
+  none: NONE,
+  leading: <Icon><rect x="1.5" y="3.5" width="13" height="9" rx="2" {...FAINT} /><circle cx="5" cy="8" r="1.5" {...SOLID} /><path d="M8.5 8h3" {...FAINT} /></Icon>,
+  trailing: <Icon><rect x="1.5" y="3.5" width="13" height="9" rx="2" {...FAINT} /><path d="M4.5 8h3" {...FAINT} /><circle cx="11" cy="8" r="1.5" {...SOLID} /></Icon>,
+  only: <Icon><rect x="2.5" y="2.5" width="11" height="11" rx="2.5" {...FILLED} /><circle cx="8" cy="8" r="2" {...SOLID} /></Icon>,
+  default: <Icon><circle cx="8" cy="8" r="6" {...FILLED} /><path d="M8 7.5v3.5" /><circle cx="8" cy="5" r="0.75" {...SOLID} /></Icon>,
+  custom: <Icon><path d="M3.5 6a4.5 4.5 0 0 1 9 0v3l1.5 2.5H2L3.5 9Z" {...FILLED} /><path d="M6.5 14h3" /></Icon>,
+  icon: <Icon><path d="m8 1.5 2 4.25 4.5.75-3.25 3.25.75 4.75-4-2.25-4 2.25.75-4.75L1.5 6.5 6 5.75Z" {...FILLED} /></Icon>,
+  dot: <Icon><circle cx="8" cy="8" r="4.5" {...TONE} /><circle cx="8" cy="8" r="2.25" {...SOLID} /></Icon>,
+  pulse: <Icon><circle cx="8" cy="8" r="6.5" {...FAINT} /><circle cx="8" cy="8" r="4.5" {...TONE} /><circle cx="8" cy="8" r="2.25" {...SOLID} /></Icon>,
+};
+
+/** Toggle's pressed fill: shade the bookmark, its button surface, or both. */
+export const TOGGLE_PRESSED_FILL_ICONS = {
+  icon: <Icon><rect x="1.5" y="1.5" width="13" height="13" rx="2.5" {...FAINT} /><path d="M5 4h6v8l-3-2-3 2Z" {...SOLID} /></Icon>,
+  background: <Icon><rect x="1.5" y="1.5" width="13" height="13" rx="2.5" {...FILLED} /><path d="M5 4h6v8l-3-2-3 2Z" /></Icon>,
+  both: <Icon><rect x="1.5" y="1.5" width="13" height="13" rx="2.5" {...FILLED} /><path d="M5 4h6v8l-3-2-3 2Z" {...SOLID} /></Icon>,
+  none: NONE,
+} satisfies Record<string, ReactNode>;
+
+const RECTANGULAR_SHAPE = <Icon><rect x="1.5" y="3.5" width="13" height="9" rx="2" {...FILLED} /><path d="M5.5 8h5" /></Icon>;
+
+/** The same surface and centre mark, with corners matching each shape. */
+export const SHAPE_ICONS: Readonly<Record<string, ReactNode>> = {
+  rectangular: RECTANGULAR_SHAPE,
+  rounded: RECTANGULAR_SHAPE,
+  pill: <Icon><rect x="1.5" y="3.5" width="13" height="9" rx="4.5" {...FILLED} /><path d="M5.5 8h5" /></Icon>,
+};
+
+const FILLED_VARIANT = <Icon><path d="M3.5 3.5h9a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2ZM5 7.25v1.5h6v-1.5Z" fillRule="evenodd" {...SOLID} /></Icon>;
+const OUTLINE_VARIANT = <Icon><rect x="1.5" y="3.5" width="13" height="9" rx="2" /><path d="M5.5 8h5" /></Icon>;
+
+/** Visual treatments shared by the Variant, Style, and Pattern dropdowns. */
+export const VARIANT_ICONS: Readonly<Record<string, ReactNode>> = {
+  primary: FILLED_VARIANT,
+  filled: FILLED_VARIANT,
+  default: OUTLINE_VARIANT,
+  outline: OUTLINE_VARIANT,
+  "outline-ghost": <Icon><rect x="1.5" y="3.5" width="13" height="9" rx="2" {...FAINT} /><path d="M5.5 8h5" /></Icon>,
+  ghost: <Icon><rect x="1.5" y="3.5" width="13" height="9" rx="2" {...TONE} /><path d="M5.5 8h5" /></Icon>,
+  plain: <Icon><path d="M3.5 8h9" /><path d="M5.5 11h5" {...FAINT} /></Icon>,
+  destructive: <Icon><rect x="1.5" y="3.5" width="13" height="9" rx="2" {...FILLED} /><path d="m6 6 4 4m0-4-4 4" /></Icon>,
+  link: <Icon><path d="M7 9a2.75 2.75 0 0 0 4 0l2-2a2.75 2.75 0 0 0-4-4l-1 1" /><path d="M9 7a2.75 2.75 0 0 0-4 0l-2 2a2.75 2.75 0 0 0 4 4l1-1" {...FAINT} /></Icon>,
+  solid: <Icon><rect x="1.5" y="3.5" width="13" height="9" rx="2" {...FILLED} /><path d="M5.5 8h5" /></Icon>,
+  card: <Icon><rect x="2.5" y="1.5" width="11" height="11" rx="2" {...FILLED} /><path d="M5.5 7h5" /><path d="M4 14.5h8" {...FAINT} /></Icon>,
+  underline: <Icon><path d="M2 12h12" /><path d="M4 5h8M4 8h5" {...FAINT} /></Icon>,
+  segment: <Icon><rect x="1.5" y="4.5" width="13" height="7" rx="2" {...FAINT} /><rect x="3" y="6" width="5" height="4" rx="1" {...TONE} /><path d="M4.5 8h2" /><path d="M10.5 8h2" {...FAINT} /></Icon>,
+  pill: <Icon><rect x="1.5" y="4.5" width="8" height="7" rx="3.5" {...FILLED} /><path d="M4 8h3" /><path d="M12 8h2.5" {...FAINT} /></Icon>,
+  floating: <Icon><rect x="1.5" y="1.5" width="13" height="13" rx="2" {...FAINT} /><rect x="3.5" y="3.5" width="4" height="9" rx="1" {...FILLED} /><path d="M10 5h2M10 8h2" {...FAINT} /></Icon>,
+  inset: <Icon><rect x="1.5" y="1.5" width="13" height="13" rx="2" {...TONE} /><rect x="7" y="3.5" width="5.5" height="9" rx="1" /><path d="M3.5 5h1M3.5 8h1" {...FAINT} /></Icon>,
+  span: <Icon><path d="M2.5 2v12M6 4h7M6 8h5M6 12h7" {...FAINT} /><rect x="1.5" y="3" width="2" height="6" rx="1" {...SOLID} /><path d="M6 4h7M6 8h5" /></Icon>,
+  single: <Icon><path d="M2.5 2v12M6 8h5M6 12h7" {...FAINT} /><rect x="1.5" y="3" width="2" height="2" rx="1" {...SOLID} /><path d="M6 4h7" /></Icon>,
+  scan: <Icon><rect x="2.5" y="2.5" width="11" height="11" rx="2" {...FAINT} /><path d="M5.5 5v6M10.5 5v6" {...FAINT} /><rect x="1.5" y="6.5" width="13" height="3" rx="1.5" {...TONE} /><path d="M2.5 8h11" /></Icon>,
+  twinkle: <Icon><circle cx="3.5" cy="3.5" r="1.5" {...TONE} /><circle cx="12.5" cy="12.5" r="1.5" {...TONE} /><path d="m9.5 2 1.25 3.25L14 6.5l-3.25 1.25L9.5 11 8.25 7.75 5 6.5l3.25-1.25Z" {...FILLED} /><circle cx="3.5" cy="12.5" r="1" {...SOLID} /></Icon>,
+};
+
+/** Sidebar's default is a flush panel, rather than an outlined field. */
+export const SIDEBAR_VARIANT_ICONS: Readonly<Record<string, ReactNode>> = {
+  default: <Icon><path d="M6 2.5H3.5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2H6Z" {...TONE} /><rect x="1.5" y="2.5" width="13" height="11" rx="2" /><path d="M6 2.5v11" /></Icon>,
+  floating: VARIANT_ICONS.floating,
+  inset: VARIANT_ICONS.inset,
+};
+
+/** Size steps share a centre: text sizes grow as bars, icon-only sizes as squares. */
+export const SIZE_ICONS: Readonly<Record<string, ReactNode>> = {
+  xs: <Icon><rect x="4" y="5.5" width="8" height="5" rx="1.5" {...FILLED} /><path d="M6.5 8h3" /></Icon>,
+  sm: <Icon><rect x="3" y="4.5" width="10" height="7" rx="1.75" {...FILLED} /><path d="M6 8h4" /></Icon>,
+  md: <Icon><rect x="2" y="3.5" width="12" height="9" rx="2" {...FILLED} /><path d="M5.5 8h5" /></Icon>,
+  lg: <Icon><rect x="1.5" y="2.5" width="13" height="11" rx="2" {...FILLED} /><path d="M5 8h6" /></Icon>,
+  "icon-xs": <Icon><rect x="5" y="5" width="6" height="6" rx="1.5" {...FILLED} /><circle cx="8" cy="8" r="1" {...SOLID} /></Icon>,
+  "icon-sm": <Icon><rect x="4" y="4" width="8" height="8" rx="1.75" {...FILLED} /><circle cx="8" cy="8" r="1.25" {...SOLID} /></Icon>,
+  icon: <Icon><rect x="3" y="3" width="10" height="10" rx="2" {...FILLED} /><circle cx="8" cy="8" r="1.5" {...SOLID} /></Icon>,
+  "icon-lg": <Icon><rect x="1.5" y="1.5" width="13" height="13" rx="2.5" {...FILLED} /><circle cx="8" cy="8" r="2" {...SOLID} /></Icon>,
+};
 
 /** Which side of its trigger a popup opens on: the panel, filled, beside the outlined trigger. */
 export const ANCHORED_SIDE_ICONS = {
@@ -242,6 +318,12 @@ export const TABLE_STATE_ICONS = {
   default: <NavIcon href="/docs/table" />,
   loading: LOADING,
   empty: <NavIcon href="/docs/empty" />,
+} satisfies Record<string, ReactNode>;
+
+/** Scrub Slider's ruler below its label and value, or beside the value in one row. */
+export const SCRUB_SLIDER_LAYOUT_ICONS = {
+  card: <Icon><rect x="1.5" y="2.5" width="13" height="11" rx="2" {...FILLED} /><path d="M4 5.5h2M10 5.5h2M4 10v1M12 10v1" {...FAINT} /><path d="M8 8.5V11" /></Icon>,
+  inline: <Icon><rect x="1.5" y="4.5" width="13" height="7" rx="2" {...FILLED} /><path d="M4 7v2M6.5 6.5v3M9 7v2" {...FAINT} /><path d="M11.5 8H13" /></Icon>,
 } satisfies Record<string, ReactNode>;
 
 /** Scrub Slider's demo quantities: what each one measures, drawn beside its name. */

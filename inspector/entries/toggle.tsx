@@ -1,7 +1,8 @@
 import { Bell, Bookmark, Heart, Star } from "lucide-react";
 import { Toggle } from "@/registry/ui/toggle/toggle";
 import { CONTROL_VARIANTS, ICON_SIZES } from "../button-options";
-import { defineEntry, select } from "../schema";
+import { defineEntry, select, withIcons } from "../schema";
+import { TOGGLE_PRESSED_FILL_ICONS } from "../setting-icons";
 
 export const toggleEntry = defineEntry({
   slug: "toggle",
@@ -11,7 +12,7 @@ export const toggleEntry = defineEntry({
     size: select(ICON_SIZES, "icon"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     // What changes when a toggle is pressed. The star starts pressed to show it.
-    pressedFill: select(["icon", "background", "both", "none"], "icon", "Pressed fill"),
+    pressedFill: withIcons(select(["icon", "background", "both", "none"], "icon", "Pressed fill"), TOGGLE_PRESSED_FILL_ICONS),
   },
   render({ variant, size, shape, pressedFill }) {
     const fillIcon = pressedFill === "icon" || pressedFill === "both";

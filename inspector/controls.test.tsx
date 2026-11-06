@@ -132,7 +132,7 @@ describe("Controls range", () => {
 });
 
 describe("Controls short icon dropdown", () => {
-  it("preserves icons in the selected value and options", async () => {
+  it("shows option icons only in the panel, including after it has opened", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const schema = {
@@ -144,14 +144,16 @@ describe("Controls short icon dropdown", () => {
     render(<Controls schema={schema} values={{ side: "top" }} onChange={onChange} />);
     expect(screen.queryByRole("tablist")).toBeNull();
     const trigger = screen.getByRole("combobox", { name: "Side" });
-    expect(trigger).toContainElement(screen.getByTestId("top-icon"));
+    expect(screen.queryByTestId("top-icon")).not.toBeInTheDocument();
     expect(trigger).toHaveTextContent("Top");
     await user.click(trigger);
     const bottom = await screen.findByRole("option", { name: "Bottom" });
     expect(bottom).toContainElement(screen.getByTestId("bottom-icon"));
     expect(bottom).toHaveTextContent("Bottom");
+    expect(trigger.querySelector('[data-testid="top-icon"]')).toBeNull();
     await user.click(bottom);
     expect(onChange).toHaveBeenCalledWith("side", "bottom");
+    expect(trigger.querySelector('[data-testid="top-icon"]')).toBeNull();
   });
 });
 
@@ -163,12 +165,13 @@ describe("Controls icon dropdown", () => {
     render(<Controls schema={{ type: withIcons(select(options, "a", "Type"), icons) }} values={{ type: "a" }} onChange={() => {}} />);
 
     expect(screen.queryByRole("tablist")).toBeNull();
-    // The closed trigger already shows the chosen option's icon before its label.
+    // The trigger stays text-only; the panel rows carry the icons.
     const trigger = screen.getByRole("combobox", { name: "Type" });
-    expect(trigger).toContainElement(screen.getByTestId("icon-a"));
+    expect(screen.queryByTestId("icon-a")).not.toBeInTheDocument();
     await user.click(trigger);
     const row = await screen.findByRole("option", { name: "G" });
     expect(row).toContainElement(screen.getByTestId("icon-g"));
+    expect(trigger.querySelector('[data-testid="icon-a"]')).toBeNull();
   });
 });
 
@@ -231,9 +234,12 @@ describe("initialValues", () => {
 });
 
 describe("Controls order", () => {
-  it("puts choices first, amounts second, switches last, and Disabled at the end", () => {
+  it.each([
+    { disabled: bool(false), order: ["Size", "Tone", "Step", "Rows", "Loading", "Disabled"] },
+    { disabled: select(["none", "menu", "bar"], "none"), order: ["Size", "Tone", "Disabled", "Step", "Rows", "Loading"] },
+  ])("keeps Disabled last in its $disabled.kind group", ({ disabled, order }) => {
     const schema = {
-      disabled: bool(false),
+      disabled,
       loading: bool(false, "Loading"),
       step: num(5, { min: 1, max: 10, label: "Step" }),
       size: select(["sm", "lg"], "sm", "Size"),
@@ -244,7 +250,6 @@ describe("Controls order", () => {
       <Controls schema={schema} values={initialValues(schema)} onChange={() => {}} />,
     );
     const labels = Array.from(container.firstElementChild!.children, (row) => row.textContent ?? "");
-    const order = ["Size", "Tone", "Step", "Rows", "Loading", "Disabled"];
     expect(order.map((label) => labels.findIndex((text) => text.startsWith(label)))).toEqual([0, 1, 2, 3, 4, 5]);
   });
 });

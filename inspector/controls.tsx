@@ -26,6 +26,7 @@ import { cn } from "@/registry/lib/cn";
 import { Ellipsis } from "lucide-react";
 import { Fragment } from "react";
 import type { ControlDef, ControlSchema, ControlValues } from "./schema";
+import { settingIcons } from "./control-icons";
 
 // Wrap only when this label and control cannot fit together, regardless of panel width.
 const CONTROL_ROW = "flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-2";
@@ -41,8 +42,7 @@ interface ControlsProps<S extends ControlSchema> {
 }
 
 /** Where a setting sorts: dropdowns and tabs, then sliders and fields, then switches. */
-function controlRank(key: string, def: ControlDef) {
-  if (key === "disabled") return 3;
+function controlRank(def: ControlDef) {
   if (def.kind === "select" || def.kind === "multiselect") return 0;
   if (def.kind === "boolean") return 2;
   return 1;
@@ -54,10 +54,11 @@ export function Controls<S extends ControlSchema>({
   values,
   onChange,
 }: ControlsProps<S>) {
-  // Every panel reads the same way: choices first, amounts second, switches last, and
-  // Disabled at the very end. A stable sort, so each group keeps the order its demo wrote.
+  // Choices first, amounts second, switches last. Disabled sorts last within its own
+  // group; the remaining settings keep the order their demo wrote.
   const entries = (Object.entries(schema) as [keyof S & string, ControlDef][]).sort(
-    ([keyA, a], [keyB, b]) => controlRank(keyA, a) - controlRank(keyB, b),
+    ([keyA, a], [keyB, b]) =>
+      controlRank(a) - controlRank(b) || Number(keyA === "disabled") - Number(keyB === "disabled"),
   );
   // Selects that live in a boolean's ⋯ menu render there, not as rows of their own.
   const menuOf = (def: ControlDef) => (def.kind === "select" ? def.menuOf : undefined);
@@ -125,6 +126,7 @@ function SettingMenu({
         {settings.map((setting, index) => {
           if (setting.def.kind !== "select") return null;
           const def = setting.def;
+          const icons = settingIcons(def, setting.label);
           const groupDisabled = def.disabledWhen?.(values) ?? false;
           const value = setting.value === undefined ? def.defaultValue : setting.value;
           return (
@@ -135,6 +137,7 @@ function SettingMenu({
                 <DropdownMenuRadioGroup value={value as string} onValueChange={(v) => setting.onChange(v)}>
                   {def.options.map((option) => (
                     <DropdownMenuRadioItem key={option} value={option} disabled={groupDisabled}>
+                      {icons?.[option]}
                       {humanizeLabel(option)}
                     </DropdownMenuRadioItem>
                   ))}
@@ -212,7 +215,7 @@ function Control({
   if (def.kind === "select") {
     const labelId = `${id}-label`;
     const selectedLabel = humanizeLabel(value as string);
-    const icons = def.icons;
+    const icons = settingIcons(def, label);
 
     return (
       <div className={row}>
@@ -222,8 +225,6 @@ function Control({
         <Select<string>
           value={value as string}
           disabled={disabled}
-          // The rows only mount while open, so the closed trigger reads its icon from here.
-          iconForValue={icons ? (option) => icons[option] : undefined}
           onValueChange={(next) => {
             if (next !== null) onChange(next);
           }}
@@ -233,7 +234,8 @@ function Control({
             variant="plain"
             className="ml-auto max-w-full shrink-0"
           >
-            <SelectValue>{() => selectedLabel}</SelectValue>
+            {/* A custom value element keeps option icons in the panel only. */}
+            <SelectValue render={<span />}>{() => selectedLabel}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             {def.options.map((option) => (
@@ -249,6 +251,7 @@ function Control({
 
   if (def.kind === "multiselect") {
     const labelId = `${id}-label`;
+    const icons = settingIcons(def, label);
     const selected = Array.isArray(value) ? value as readonly string[] : def.defaultValue;
 
     // A compact count can summarize longer option lists without widening the setting.
@@ -288,7 +291,7 @@ function Control({
           </SelectTrigger>
           <SelectContent>
             {def.options.map((option) => (
-              <SelectItem key={option} value={option} icon={def.icons?.[option]}>
+              <SelectItem key={option} value={option} icon={icons?.[option]}>
                 {humanizeLabel(option)}
               </SelectItem>
             ))}
