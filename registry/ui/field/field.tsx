@@ -2,7 +2,7 @@
 
 import { Field as BaseField } from "@base-ui/react/field";
 import { Fieldset as BaseFieldset } from "@base-ui/react/fieldset";
-import { CircleAlert, CircleCheck } from "lucide-react";
+import { CircleCheck, OctagonAlert } from "lucide-react";
 import {
   createContext,
   useContext,
@@ -359,7 +359,8 @@ export function FieldStatus({ className, ...props }: ComponentProps<"span">) {
   return (
     <span aria-hidden data-slot="field-status" className={cn(fieldStatusVariants(), className)} {...props}>
       <CircleCheck className={fieldStatusIconVariants({ status: "valid" })} />
-      <CircleAlert className={fieldStatusIconVariants({ status: "invalid" })} />
+      {/* The library's error mark, as in Alert and Badge. */}
+      <OctagonAlert className={fieldStatusIconVariants({ status: "invalid" })} />
     </span>
   );
 }
