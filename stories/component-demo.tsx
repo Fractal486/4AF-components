@@ -25,7 +25,7 @@ const LOADER_DEMOS = new Set([
 ]);
 // Sizing belongs to the demo shell.
 const DEMO_WIDTHS: Partial<Record<ComponentDemoName, string>> = {
-  input: "max-w-sm", textarea: "max-w-sm", slider: "max-w-sm", "slider-circle": "max-w-sm", "slider-knob": "max-w-sm",
+  input: "max-w-sm", textarea: "max-w-sm", slider: "max-w-sm", "slider-circle": "max-w-sm", "slider-knob": "max-w-sm", "scrub-slider": "max-w-sm",
   progress: "max-w-sm", skeleton: "max-w-sm", "skeleton-text": "max-w-sm", "skeleton-wrap": "max-w-sm",
   select: "max-w-56", "select-search": "max-w-56", "select-aligned": "max-w-56",
   "context-menu": "max-w-sm", empty: "max-w-md", collapsible: "max-w-md", tabs: "max-w-md",
@@ -329,6 +329,7 @@ const demos: Record<DemoName, () => Promise<AnyEntry>> = {
   slider: async () => (await import("@/inspector/entries/slider")).sliderEntry,
   "slider-circle": async () => (await import("@/inspector/entries/slider")).sliderCircleEntry,
   "slider-knob": async () => (await import("@/inspector/entries/slider")).sliderKnobEntry,
+  "scrub-slider": async () => (await import("@/inspector/entries/scrub-slider")).scrubSliderEntry,
   switch: async () => (await import("@/inspector/entries/switch")).switchEntry,
   "data-table": async () => (await import("@/inspector/entries/data-table")).dataTableEntry,
   table: async () => (await import("@/inspector/entries/table")).tableEntry,

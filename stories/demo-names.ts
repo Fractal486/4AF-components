@@ -53,6 +53,7 @@ export const DEMO_NAMES = [
   "slider",
   "slider-circle",
   "slider-knob",
+  "scrub-slider",
   "switch",
   "data-table",
   "table",

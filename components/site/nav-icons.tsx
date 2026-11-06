@@ -151,6 +151,14 @@ const ICONS: Record<string, ReactNode> = {
       <circle cx="9.5" cy="8" r="2.25" {...SOLID} />
     </>
   ),
+  // A ruler with the indicator standing over it, its neighbours lifted.
+  "scrub-slider": (
+    <>
+      <rect x="1.5" y="3.5" width="13" height="9" rx="2.5" {...TONE} />
+      <path d="M4 10.5v-1M5.75 10.5v-1.5M10.25 10.5v-1.5M12 10.5v-1" {...FAINT} />
+      <path d="M8 11V6.5" />
+    </>
+  ),
   select: (
     <>
       <rect x="1.5" y="4.5" width="13" height="7" rx="2" />

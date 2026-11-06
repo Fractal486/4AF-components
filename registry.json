@@ -930,6 +930,38 @@
       ]
     },
     {
+      "name": "scrub-slider",
+      "type": "registry:ui",
+      "description": "A card-shaped number scrubber: drag along a ruler whose ticks lift around the indicator, with an edge zone that keeps scrolling for long ranges; click to type a value, or nudge it with chevrons. Label and dimmed unit inside, card or outline-ghost style, and Base UI keyboard, ARIA, and form behaviour.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/scrub-slider (Markdown: https://4af.selfsimilar.dev/docs/scrub-slider.md)",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/scrub-slider/scrub-slider.tsx",
+          "type": "registry:ui",
+          "target": "@ui/scrub-slider.tsx"
+        },
+        {
+          "path": "registry/ui/scrub-slider/scrub-slider-geometry.ts",
+          "type": "registry:ui",
+          "target": "@ui/scrub-slider-geometry.ts"
+        },
+        {
+          "path": "registry/ui/scrub-slider/scrub-slider.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/scrub-slider.variants.ts"
+        }
+      ]
+    },
+    {
       "name": "progress",
       "type": "registry:ui",
       "description": "Accessible progress bars, stacked segments, and circular rings with custom colors, indeterminate states, and composable label and value parts.",

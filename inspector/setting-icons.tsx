@@ -241,3 +241,15 @@ export const TABLE_STATE_ICONS = {
   loading: LOADING,
   empty: <NavIcon href="/docs/empty" />,
 } satisfies Record<string, ReactNode>;
+
+/** Scrub Slider's demo quantities: what each one measures, drawn beside its name. */
+export const SCRUB_SLIDER_QUANTITY_ICONS = {
+  // A span between two edges.
+  width: <Icon><path d="M1.5 3.5v9M14.5 3.5v9" {...FAINT} /><path d="M4 6.5h8v3H4Z" {...TONE} /><path d="M4 8h8M6 6 4 8l2 2M10 6l2 2-2 2" /></Icon>,
+  // A solid square under a see-through one.
+  opacity: <Icon><rect x="1.5" y="1.5" width="8.5" height="8.5" rx="2" {...FILLED} /><rect x="6" y="6" width="8.5" height="8.5" rx="2" {...FAINT} /></Icon>,
+  // An angle, its sweep shaded.
+  rotation: <Icon><path d="M2 13.5h5.5a5.5 5.5 0 0 0-1.6-3.9Z" {...TONE} /><path d="M2 13.5h12M2 13.5l9-9" /><path d="M7.5 13.5a5.5 5.5 0 0 0-1.6-3.9" {...FAINT} /></Icon>,
+  // A square growing toward its corner.
+  scale: <Icon><rect x="1.5" y="1.5" width="13" height="13" rx="2" {...FAINT} /><rect x="1.5" y="7.5" width="7" height="7" rx="2" {...FILLED} /><path d="M10 2.5h3.5V6M13.5 2.5 9.5 6.5" /></Icon>,
+} satisfies Record<string, ReactNode>;

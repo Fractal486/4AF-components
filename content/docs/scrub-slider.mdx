@@ -1,0 +1,86 @@
+---
+title: Scrub Slider
+description: A card-shaped number scrubber with a ruler, an edge zone that keeps scrolling the value, click-to-type editing, and step chevrons.
+---
+
+<ComponentReference name="scrub-slider" />
+
+## API
+
+**Main export:** `ScrubSlider`
+
+| Prop | Default | Purpose |
+| --- | --- | --- |
+| `label` | — | Text at the start of the card. Names the slider unless `aria-label` or `aria-labelledby` is set. |
+| `unit` | — | Shown after the value in `muted-foreground`. A string or number unit is appended to the spoken value. |
+| `value` / `defaultValue` | — / `min` | Controlled and uncontrolled value. |
+| `onValueChange` | — | `(value, details) => void`. `details.reason` is `"track-press"`, `"drag"`, `"keyboard"`, or `"none"` for a typed value or a chevron; `details.cancel()` rejects a change. |
+| `onValueCommitted` | — | Runs when a scrub ends with a changed value, on each keyboard change, and when a typed value or a chevron changes it. A canceled pointer gesture does not commit. |
+| `min` / `max` / `step` | `0` / `100` / `1` | The scale. One ruler tick is one `step`; values snap to the step grid that starts at `min`. |
+| `largeStep` | `10` | Shift+Arrow and PageUp/PageDown step. |
+| `format` / `locale` | — | `Intl.NumberFormatOptions` and locale for the displayed and spoken value. Unless it sets `minimumFractionDigits` or `maximumFractionDigits`, values show the full decimal places of `step` and `min` (`1.40` with `step={0.01}`), so tabular figures keep the number's width. |
+| `getAriaValueText` | — | `(formattedValue, value) => string`. Replaces the default spoken value, the formatted value and unit. |
+| `variant` | `"card"` | `"card"` (a faint `muted` fill) or `"outline-ghost"` (a `shadow-border` edge alone). Exposed as `data-variant`. |
+| `size` | `"md"` | `"md"` (60px card) or `"sm"` (48px card). |
+| `disabled` | `false` | Also follows a disabling Base UI `Field.Root`. |
+| `name` | — | Submits the value with a form. |
+| `className` | — | A string or `(state) => string` with Base UI's slider state. |
+
+Other Base UI `Slider.Root` props are forwarded to the card.
+
+## Behavior
+
+- The ruler is a fixed scale, one `step` per tick (6px at `md`, 5px at `sm`), ending at `min` and
+  `max`. A press that moves 3px becomes a scrub: the value is set to the tick where the press
+  went down (`details.reason` `"track-press"`) without moving the ruler, then changes by one
+  `step` per tick crossed. Only the edge zones scroll the ruler.
+- Chevrons either side of the value nudge it one `step` down or up per click
+  (`details.reason` `"none"`, committed at once). They are out of the tab order, since the arrow
+  keys already step, and carry `aria-disabled` at `min` and `max`. A nudge shows the ruler with a
+  half-height indicator gliding to the new value's tick, for a second after the last click. Their
+  presses never scrub or open the editor. They dim to 25% while editing, and while dragging as
+  the label row lifts. In RTL they point the other way.
+- A click (released before moving 3px), or Enter while the slider has focus, turns the number
+  into a text input with the ruler hidden. Enter or leaving the field commits the typed value,
+  clamped to the range and snapped to the step (`details.reason` `"none"`); unreadable text is
+  dropped, and Escape cancels. Enter and Escape return focus to the slider, without the focus
+  ring when the edit was opened by a click.
+- The indicator follows the pointer and stops at the ticks for `min` and `max`.
+- Within 40px (or 15% of a narrow card) of either end, the ruler scrolls under the pointer and the
+  value keeps changing while the pointer rests. Speed rises with depth into the zone and with time
+  spent there (up to 8×). At `min` or `max` the value stops, and the ruler scrolls on until that
+  end sits 40px (the edge zone) in from the edge, so blank space past it marks the end. A value at
+  either end starts with the same gap.
+- Mouse or pen hover shows the plain ruler, dimmed, without the indicator or the lens; the label
+  and value stay put. Touch and disabled sliders show no hover state.
+- While active, the label and value lift and the ruler shows in full with its indicator. On
+  release it returns to the hover state, or fades and blurs out.
+- Ticks within five ticks of the indicator grow and brighten, falling off smoothly with
+  distance. Every fifth and tenth value, counted from zero, has a taller tick.
+- Keyboard: arrows step, Shift+arrows and PageUp/PageDown take `largeStep`, Home/End go to
+  `min`/`max`. Keyboard focus shows the ruler; a stepped value outside the view scrolls the ruler
+  so it stays clear of the edges.
+- Horizontal direction follows the surrounding `DirectionProvider`; in RTL the ruler increases
+  to the left.
+- Touch drags keep vertical page scrolling (`touch-action: pan-y`).
+- Under reduced motion the lift and ruler fade are instant. The edge scroll still runs, since it is
+  the value changing.
+
+## State attributes
+
+| Attribute | Present when |
+| --- | --- |
+| `data-active` | Dragging, or the input has keyboard focus. |
+| `data-hovered` | A mouse or pen hovers an enabled slider that isn't active or editing. |
+| `data-editing` | The number is open for typing. |
+| `data-nudged` | For a second after a chevron nudge, while not active or editing. |
+| `data-dragging` | A pointer is scrubbing. |
+| `data-scrolling` | The ruler is scrolling at an edge; the unit dims to 50% opacity. |
+| `data-disabled` | Disabled, directly or by its field. |
+
+Parts carry `data-slot`: `scrub-slider`, `scrub-slider-content`, `scrub-slider-label`,
+`scrub-slider-value`, `scrub-slider-unit`, `scrub-slider-ruler`, `scrub-slider-ticks`,
+`scrub-slider-indicator`, `scrub-slider-decrement`, `scrub-slider-increment`,
+`scrub-slider-input` (while editing), and `scrub-slider-thumb` (Base UI's thumb holding the hidden
+range input).
+Ticks carry `data-level` (`0`, `1` on fifths, `2` on tenths).

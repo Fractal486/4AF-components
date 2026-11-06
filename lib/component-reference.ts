@@ -588,6 +588,15 @@ import { SidebarLayout } from "@/components/ui/sidebar-layout";
 
 <Slider label="Volume" defaultValue={60} inlineLabel />`,
   },
+  "scrub-slider": {
+    usage: `import { ScrubSlider } from "@/components/ui/scrub-slider";
+
+<ScrubSlider label="Width" unit="px" min={0} max={2000} defaultValue={307} />
+
+<ScrubSlider label="Scale" unit="×" min={0.1} max={4} step={0.01} defaultValue={1} />
+
+<ScrubSlider label="Opacity" unit="%" value={opacity} onValueChange={setOpacity} size="sm" variant="outline-ghost" />`,
+  },
   switch: {
     usage: `import { Switch } from "@/components/ui/switch";
 

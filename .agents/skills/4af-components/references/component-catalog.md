@@ -17,7 +17,7 @@ notes, and install/usage examples. The links below open the same owning document
 
 ## Installable catalog
 
-The catalog contains 53 installable UI items.
+The catalog contains 54 installable UI items.
 
 ### Actions
 
@@ -42,6 +42,7 @@ The catalog contains 53 installable UI items.
 | [`checkbox`](https://4af.selfsimilar.dev/docs/checkbox.md) | Boolean or indeterminate selection; CheckboxGroup shares values with select-all parents and controlled nested groups. |
 | [`radio`](https://4af.selfsimilar.dev/docs/radio.md) | One choice from a visible group; custom rendering, state-based classes, and Field validation styling. |
 | [`slider`](https://4af.selfsimilar.dev/docs/slider.md) | A numeric value or draggable range along a horizontal or vertical rail, with formatted and spoken values. |
+| [`scrub-slider`](https://4af.selfsimilar.dev/docs/scrub-slider.md) | A number in a compact card with a label and dimmed unit: drag along a ruler (edge scrolling for long ranges), click to type, or nudge with chevrons; design-tool properties such as width, opacity, or angle. |
 | [`select`](https://4af.selfsimilar.dev/docs/select.md) | Single or multiple selection from a button trigger; named sections, panel search, nested options, state-based classes, Field errors, and popup containers. |
 | [`select-search`](https://4af.selfsimilar.dev/docs/select-search.md) | Single or multiple selection with an editable search field, filtered sections, state-based classes, Field errors, and popup containers. |
 | [`select-aligned`](https://4af.selfsimilar.dev/docs/select-aligned.md) | Single selection aligned over its trigger, searchable sections, state-based classes, Field errors, and popup containers. |
@@ -159,6 +160,7 @@ include the component name: for example, `.context.ts` means `select.context.ts`
 | `selection-toolbar` | `selection-toolbar.tsx`: selection tracking and positioning | `.context.ts`, `.controls.tsx`, `.variants.ts` |
 | `date-picker` | `date-picker.tsx`: `DatePicker`, `DateRangePicker`, re-exported `Calendar` | `calendar.tsx`, `.utils.ts`, `.variants.ts` |
 | `slider` | `slider.tsx`: `Slider` | `slider-geometry.ts`: thumb and fill positioning; `slider-range-drag.ts`: whole-range pointer gestures; `.variants.ts` |
+| `scrub-slider` | `scrub-slider.tsx`: `ScrubSlider` | `scrub-slider-geometry.ts`: ruler, lens, and edge-scroll maths; `.variants.ts` |
 | `sheet` | `sheet.tsx`: root and composition parts | `.motion.tsx`: animated custom surfaces; `.variants.ts` |
 | `dialog` | `dialog.tsx`: root, shared handles, and composition re-exports | `.shared.tsx`: visual parts and nesting shared with Alert Dialog; `.frame.ts`: natural content measurement; `.steps.tsx`: validated multi-step flows; `.variants.ts` |
 | `alert-dialog` | `alert-dialog.tsx`: confirmation surfaces, media, and public re-exports | `.root.tsx`: async coordination and modal root; `.actions.tsx`: action/cancel controls; `.footer.tsx`: Base UI composite navigation; `.variants.ts` |
