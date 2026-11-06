@@ -291,7 +291,7 @@ function DropdownMenuDemo({
             <Button
               key={kind}
               type="button"
-              variant="outline-ghost"
+              variant="plain"
               size="sm"
               aria-pressed={rows === kind}
               // The rail's pace for the same muted-to-full change; the button's own fast hover

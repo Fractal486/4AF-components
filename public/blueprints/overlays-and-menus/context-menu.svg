@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" fill="none" role="img" aria-labelledby="cm-bp-title cm-bp-desc">
+  <title id="cm-bp-title">Context Menu spacing blueprint</title>
+  <desc id="cm-bp-desc">An open context menu with five actions, with Open highlighted. At three times size, the chosen panel is 224 by 150 CSS pixels. Rows are 28 pixels high, with 4 pixels of panel padding, 10 pixels of horizontal row padding, 6 pixels of vertical padding, 14 pixel icons, and an 8 pixel icon-to-label gap. Adjacent rows have no gap.</desc>
+  <!-- Sources: registry/ui/context-menu/context-menu.tsx and context-menu.variants.ts;
+       registry/ui/dropdown-menu/dropdown-menu.variants.ts and dropdown-menu.menu.tsx;
+       inspector/entries/context-menu.tsx; app/globals.css; node_modules/tailwindcss/theme.css.
+       State: ordinary open menu, first item highlighted, five single-line action rows.
+       Representative caller width: w-56 = 224px, as in the area demo; not a fixed component width.
+       No separators, shortcuts, or submenus in this composition. Scale: 3 SVG units / CSS px.
+       Assumes the ordinary 16px root: spacing unit .25rem = 4px.
+       text-xs = 12px, line-height 1.3333 = approximately 16px (rounded from 15.9996).
+       Row height = 16px line box + 2 * 6px padding = 28px; icons 14px fit inside it.
+       Panel height = 2 * 1px border + 2 * 4px inset + 5 * 28px = 150px.
+       Panel radius 7px; row radius 3px. Border outer bounds: (264,170) to (936,620).
+       Row bounds: x279..921, y185..605. Icon slot x309..351; text begins x375.
+       Background: current dark background token oklch(0.100 0 0), rounded to sRGB #030303.
+       ContextMenuContent anchors at the pointer with sideOffset=0; trigger has no intrinsic size.
+       The trigger is omitted because its geometry is supplied by the caller.
+       Cursor tip (264,170) marks the panel's pointer anchor. -->
+  <defs>
+    <style>
+      #cm-bp-root text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #cm-bp-root .option { fill: #92948d; font-size: 36px; }
+      #cm-bp-root .label { fill: #6889ff; font-size: 18px; }
+      #cm-bp-root .measure { stroke: #6889ff; stroke-width: 1.5; }
+      #cm-bp-root .spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      #cm-bp-root .icon { stroke: #a7a8a2; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+      @keyframes cm-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes cm-bp-reveal { from { opacity: 0; } }
+      /* Static and reduced-motion states retain all intended final opacities and dashes.
+         Outline 0..400ms, details 250..600ms, annotations 700..900ms, each once. */
+      @media (prefers-reduced-motion: no-preference) {
+        #cm-bp-root .draw { stroke-dasharray: 1; animation: cm-bp-draw 200ms ease-out var(--line-delay, 0ms) both; }
+        #cm-bp-root .outline { animation-duration: 400ms; }
+        #cm-bp-root .measure, #cm-bp-root .spacing, #cm-bp-root .label { animation: cm-bp-reveal 200ms ease-out 700ms both; }
+      }
+    </style>
+  </defs>
+  <g id="cm-bp-root">
+    <rect width="1200" height="800" fill="#030303"/>
+    <rect x="265.5" y="171.5" width="669" height="447" rx="19.5" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="draw outline"/>
+    <rect x="279" y="185" width="642" height="84" rx="9" fill="#353632"/>
+
+    <!-- Overlays above the active fill, below glyphs and labels. -->
+    <rect x="279" y="185" width="642" height="420" class="spacing"/>
+    <path d="M279 269H921 M279 353H921 M279 437H921 M279 521H921" class="spacing"/>
+    <path d="M309 185V605 M375 185V605" class="spacing"/>
+    <rect x="309" y="374" width="42" height="42" class="spacing"/>
+
+    <text x="375" y="239" class="option" style="fill:#c7c7c2">Open</text>
+    <text x="375" y="323" class="option">Rename</text>
+    <text x="375" y="407" class="option">Duplicate</text>
+    <text x="375" y="491" class="option">Copy link</text>
+    <text x="375" y="575" class="option">Download</text>
+
+    <!-- Hand-authored action icons, each occupying a 14px CSS slot. -->
+    <g class="icon" style="stroke:#c7c7c2;--line-delay:250ms">
+      <path d="M313 240V213H326L332 219H347V240Z" pathLength="1" class="draw"/>
+    </g>
+    <g class="icon" style="--line-delay:275ms">
+      <path d="M314 326 317 314 338 293 347 302 326 323Z" pathLength="1" class="draw"/>
+      <path d="M333 298 342 307" pathLength="1" class="draw"/>
+    </g>
+    <g class="icon" style="--line-delay:300ms">
+      <rect x="323" y="387" width="24" height="25" rx="3" pathLength="1" class="draw"/>
+      <path d="M317 403H313V378H338V382" pathLength="1" class="draw"/>
+    </g>
+    <g class="icon" style="--line-delay:325ms">
+      <path d="m326 483 10-10" pathLength="1" class="draw"/>
+      <path d="M324 474 317 481A8 8 0 0 0 328 492L335 485" pathLength="1" class="draw"/>
+      <path d="M326 473 333 466A8 8 0 0 1 344 477L337 484" pathLength="1" class="draw"/>
+    </g>
+    <g class="icon" style="--line-delay:350ms">
+      <path d="M330 546V570 M320 560 330 570 340 560" pathLength="1" class="draw"/>
+      <path d="M313 570V580H347V570" pathLength="1" class="draw" style="--line-delay:375ms"/>
+    </g>
+
+    <!-- Cursor at the opening point, with the same background knockout as the canvas. -->
+    <path d="m264 170 9 30 6-10 11 11 5-5-11-11 11-5Z" fill="#030303" stroke="#a7a8a2" stroke-width="2.5" stroke-linejoin="round" pathLength="1" class="draw" style="--line-delay:400ms"/>
+
+    <!-- Six measurements retain the useful dimensions and horizontal spacing. -->
+    <path d="M264 96V118 M936 96V118 M264 107H936" class="measure"/>
+    <text x="600" y="90" text-anchor="middle" class="label">224 px</text>
+    <path d="M974 185H996 M974 269H996 M985 185V269" class="measure"/>
+    <text x="1007" y="233" class="label">28 px</text>
+
+    <!-- Icon slot height. -->
+    <path d="M296 374H309 M296 416H309 M299 374V416 M299 395H251" class="measure"/>
+    <text x="239" y="401" text-anchor="end" class="label">14 px</text>
+
+    <!-- Panel inset, row padding, and icon-to-label gap. -->
+    <path d="M267 620V666 M279 605V666 M309 605V666 M351 605V666 M375 605V666" class="spacing"/>
+    <path d="M267 655H309 M267 647V663 M279 647V663 M309 647V663 M351 655H375 M351 647V663 M375 647V663" class="measure"/>
+    <path d="M273 666 246 699H201" class="measure"/>
+    <text x="187" y="705" text-anchor="end" class="label">4 px</text>
+    <path d="M294 666V731H326" class="measure"/>
+    <text x="340" y="737" class="label">10 px</text>
+    <path d="M363 666 396 699H434" class="measure"/>
+    <text x="448" y="705" class="label">8 px</text>
+  </g>
+</svg>

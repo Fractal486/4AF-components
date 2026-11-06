@@ -1,0 +1,174 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="number-animation-bp" width="740" height="440" viewBox="0 0 740 440" fill="none" role="img" aria-labelledby="number-animation-bp-title number-animation-bp-desc">
+  <title id="number-animation-bp-title">Number Animation spacing</title>
+  <desc id="number-animation-bp-desc">The number rolls upward from 96 through 97, 98, and 99 to 100 in one continuous motion, with blur and fading that clear as it settles. The tens digit carries to zero and a leading one appears. Drawn at three times CSS size. At the demo's 36 pixel font size each digit cell is 50.4 pixels tall. The rolling window extends 9.72 pixels above and below the cell, for a total of 69.84 pixels. Adjacent digit cells have no gap. Dashed blue lines show invisible cell and window boundaries, not visible component borders. Reduced motion shows 100 immediately.</desc>
+  <!-- Sources: registry/ui/number-animation/number-animation.tsx,
+       registry/ui/number-animation/number-animation.variants.ts,
+       registry/ui/number-animation/number-animation.css;
+       inspector/entries/number-animation.tsx; app/globals.css;
+       node_modules/tailwindcss/theme.css;
+       lib/component-catalog.ts: Feedback and status.
+
+       State: one update from 96 to 100, rolling through 97, 98, and 99;
+       en-US, number format, trend auto.
+       No size or variant API. Font is inherited. Use the demo's text-4xl
+       font-medium: 2.25rem = 36px at a 16px root, weight 500.
+       Tailwind text-4xl has 40px line height, but each digit's sizing pseudo
+       element and strip cell explicitly use 1.4em height AND line height.
+       Cell = 36 * 1.4 = 50.4px. Bleed = (1.4 - .86) * 36 / 2 = 9.72px.
+       Window = 50.4 + 2 * 9.72 = 69.84px; it is absolutely positioned
+       and does not increase the root's layout height. Padding, border, gap = 0.
+       The default resting mask fades only through the bleed outside the cell.
+
+       Scale 3x: cell height 151.2; bleed 29.16; window height 209.52.
+       Cell y=144.4..295.6; window y=115.24..324.76.
+       Width is content/font dependent, not a prescribed component dimension.
+       Representative local Segoe UI digit advance at 36px, measured using
+       System.Drawing GenericTypographic: 19.40625px; three cells total 58.21875px.
+       Drawing cell width 58.21875, total 174.65625; no width ruler is asserted.
+       Final cells start at x=282.671875, 340.890625, 399.109375.
+       Glyphs remain natural sans-serif text, without textLength stretching.
+       Segoe UI em=2048, ascent=2210, descent=514; baseline within the cell:
+       (50.4 + (2210 - 514) * 36 / 2048) / 2 = 40.10625px.
+       Drawing baseline = 144.4 + 3 * 40.10625 = 264.71875.
+       Dark background oklch(.100 0 0): sRGB .01292, rounded to #030303.
+
+       This text-only component has no solid outline, icon, or divider strokes.
+       Do not invent a frame for phase one. Instead show the defining digit roll:
+       the units strip rolls through 6, 7, 8, 9, 0, carrying the tens 9 to 0
+       and revealing the new hundreds 1 during the last cell of travel.
+       Each row is 151.2 drawing units apart. Start at +604.8 and end at 0.
+       Hold a sharp, fully visible 96 for the first 120ms. Then one uninterrupted
+       520ms roll uses the source easing across all four cells, finishing at
+       640ms with no intermediate holds or easing restarts. It ends before
+       annotations appear. Source blur depth for delta=4 at this scale:
+       min(1,4/4) * 36 * .09 * 3 = 9.72 drawing units, peaking at 15% and
+       clearing by 62%. Opacity dips to .6 with the blur, then returns to 1.
+       The resting soft-edge mask uses the source's default opacity stops.
+       Carry begins at 75% of travel: 122.2105ms into the roll, 242.2105ms overall.
+       The remaining Bezier segment is normalized to (.106773,.696726,.319766,1)
+       over 397.7895ms, keeping the tens carry synchronized with the units.
+       The number recenters as the hundreds digit fades into place.
+       No loop. The static state is sharp and fully opaque.
+       All annotations reveal together at 700ms and finish at 900ms.
+       Reduced motion and static renderers show the completed drawing.
+  -->
+  <defs>
+    <linearGradient id="number-animation-bp-soft-edge" gradientUnits="userSpaceOnUse" x1="0" y1="115.24" x2="0" y2="324.76">
+      <stop offset="0" stop-color="white" stop-opacity="0"/>
+      <stop offset="2.7835%" stop-color="white" stop-opacity=".0343"/>
+      <stop offset="4.8711%" stop-color="white" stop-opacity=".06"/>
+      <stop offset="6.9588%" stop-color="white" stop-opacity=".2145"/>
+      <stop offset="9.4639%" stop-color="white" stop-opacity=".4"/>
+      <stop offset="11.1340%" stop-color="white" stop-opacity=".651"/>
+      <stop offset="12.5258%" stop-color="white" stop-opacity=".86"/>
+      <stop offset="13.9175%" stop-color="white"/>
+      <stop offset="86.0825%" stop-color="white"/>
+      <stop offset="87.4742%" stop-color="white" stop-opacity=".86"/>
+      <stop offset="88.8660%" stop-color="white" stop-opacity=".651"/>
+      <stop offset="90.5361%" stop-color="white" stop-opacity=".4"/>
+      <stop offset="93.0412%" stop-color="white" stop-opacity=".2145"/>
+      <stop offset="95.1289%" stop-color="white" stop-opacity=".06"/>
+      <stop offset="97.2165%" stop-color="white" stop-opacity=".0343"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="number-animation-bp-window" maskUnits="userSpaceOnUse" x="253" y="115.24" width="205" height="209.52">
+      <rect x="253" y="115.24" width="205" height="209.52" fill="url(#number-animation-bp-soft-edge)"/>
+    </mask>
+    <style>
+      #number-animation-bp text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #number-animation-bp .na-content { fill: #92948d; font-size: 108px; font-weight: 500; font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; }
+      #number-animation-bp .na-label { fill: #6889ff; font-size: 18px; }
+      #number-animation-bp .na-ruler { stroke: #6889ff; stroke-width: 1.5; }
+      #number-animation-bp .na-guide { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      @keyframes number-animation-bp-reveal { from { opacity: 0; } }
+      @keyframes number-animation-bp-roll {
+        from { transform: translateY(604.8px); }
+        to { transform: translateY(0); }
+      }
+      @keyframes number-animation-bp-soften {
+        0% { filter: blur(0px); opacity: 1; }
+        15% { filter: blur(9.72px); opacity: .6; }
+        62%, 100% { filter: blur(0px); opacity: 1; }
+      }
+      @keyframes number-animation-bp-carry {
+        from { transform: translateY(151.2px); }
+        to { transform: translateY(0); }
+      }
+      @keyframes number-animation-bp-enter {
+        from { opacity: 0; filter: blur(9.72px); }
+        to { opacity: 1; filter: blur(0px); }
+      }
+      @keyframes number-animation-bp-center {
+        from { transform: translateX(-29.109375px); }
+        to { transform: translateX(0); }
+      }
+      @keyframes number-animation-bp-carry-soften {
+        0%, 100% { filter: blur(0px); opacity: 1; }
+        15% { filter: blur(2.43px); opacity: .6; }
+        62% { filter: blur(0px); opacity: 1; }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        #number-animation-bp .na-strip {
+          animation: number-animation-bp-roll 520ms cubic-bezier(.32,.72,0,1) 120ms both,
+                     number-animation-bp-soften 520ms linear 120ms both;
+        }
+        #number-animation-bp .na-carry {
+          animation: number-animation-bp-carry 397.7895ms cubic-bezier(.106773,.696726,.319766,1) 242.2105ms both,
+                     number-animation-bp-carry-soften 397.7895ms linear 242.2105ms both;
+        }
+        #number-animation-bp .na-hundreds {
+          animation: number-animation-bp-enter 397.7895ms ease-out 242.2105ms both;
+        }
+        #number-animation-bp .na-number {
+          animation: number-animation-bp-center 397.7895ms cubic-bezier(.106773,.696726,.319766,1) 242.2105ms both;
+        }
+        #number-animation-bp .na-guide,
+        #number-animation-bp .na-ruler,
+        #number-animation-bp .na-label {
+          animation: number-animation-bp-reveal 200ms ease-out 700ms both;
+        }
+      }
+    </style>
+  </defs>
+  <rect width="740" height="440" fill="#030303"/>
+
+  <!-- Absolute rolling window, with cell boundaries inside it. -->
+  <rect x="282.671875" y="115.24" width="174.65625" height="209.52" class="na-guide"/>
+  <path d="M282.671875 144.4H457.328125 M282.671875 295.6H457.328125 M340.890625 115.24V324.76 M399.109375 115.24V324.76" class="na-guide"/>
+  <!-- Units roll continuously; the carry joins the final cell of travel. -->
+  <g mask="url(#number-animation-bp-window)">
+    <g class="na-number na-content" aria-hidden="true">
+      <text x="282.671875" y="264.71875" class="na-hundreds">1</text>
+      <g class="na-carry">
+        <text x="340.890625" y="113.51875">9</text>
+        <text x="340.890625" y="264.71875">0</text>
+      </g>
+      <g class="na-strip">
+        <text x="399.109375" y="-340.08125">6</text>
+        <text x="399.109375" y="-188.88125">7</text>
+        <text x="399.109375" y="-37.68125">8</text>
+        <text x="399.109375" y="113.51875">9</text>
+        <text x="399.109375" y="264.71875">0</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Full rolling window: 209.52 / 3 = 69.84px. -->
+  <path d="M234 115.24H275 M234 324.76H275" class="na-guide"/>
+  <path d="M223 115.24H245 M234 115.24V324.76 M223 324.76H245" class="na-ruler"/>
+  <text x="212" y="226" text-anchor="end" class="na-label">69.84 px</text>
+
+  <!-- In-flow digit cell: 151.2 / 3 = 50.4px. -->
+  <path d="M465 144.4H491 M465 295.6H491" class="na-guide"/>
+  <path d="M469 144.4H491 M480 144.4V295.6 M469 295.6H491" class="na-ruler"/>
+  <text x="502" y="226" class="na-label">50.4 px</text>
+
+  <!-- Top bleed; the identical lower bleed is deliberately not repeated. -->
+  <path d="M465 115.24H491" class="na-guide"/>
+  <path d="M469 115.24H491 M480 115.24V144.4 M480 129.82H520L538 104H565" class="na-ruler"/>
+  <text x="577" y="110" class="na-label">9.72 px</text>
+
+  <!-- Connected leader ends at the shared cell edge: zero inter-cell gap. -->
+  <path d="M399.109375 295.6V368H429" class="na-ruler"/>
+  <text x="442" y="374" class="na-label">0 px</text>
+</svg>
