@@ -111,8 +111,17 @@ export interface ScrubSliderProps
   /** Spoken value: `(formattedValue, value) => string`. Defaults to the value and a text unit. */
   getAriaValueText?: (formattedValue: string, value: number) => string;
   size?: "md" | "sm";
-  /** `card` (a faint fill) or `outline-ghost` (an edge alone). */
-  variant?: "card" | "outline-ghost";
+  /** `card` (a faint fill), `outline-ghost` (an edge alone), or `plain` (neither). */
+  variant?: "card" | "outline-ghost" | "plain";
+  /**
+   * `card` stacks the label and value over a ruler that shows on hover and in use. `inline`
+   * is one row for dense panels: an always-visible ruler, its indicator resting at half
+   * height, then the value. Inline, `label` only names the slider; place a visible label
+   * beside it.
+   */
+  layout?: "card" | "inline";
+  /** The one-step chevrons either side of the value. */
+  chevrons?: boolean;
 }
 
 /** Where a pointer is along the ruler, from its inline-start edge. */
@@ -153,6 +162,8 @@ export function ScrubSlider({
   getAriaValueText,
   size = "md",
   variant = "card",
+  layout = "card",
+  chevrons = true,
   className,
   "aria-label": ariaLabel,
   "aria-labelledby": ariaLabelledBy,
@@ -312,7 +323,8 @@ export function ScrubSlider({
    * A press is a click until the pointer moves `DRAG_THRESHOLD_PX` from where it went down:
    * released before then, it opens the number for typing; moved past it, it scrubs.
    */
-  const press = useRef<{ pointerId: number; clientX: number } | null>(null);
+  const press = useRef<{ pointerId: number; clientX: number; onValue: boolean } | null>(null);
+  const valueElement = useRef<HTMLSpanElement>(null);
 
   const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     // `data-disabled` also covers a slider disabled by its Base UI `Field.Root`.
@@ -320,7 +332,11 @@ export function ScrubSlider({
     // While editing, a press on the card only ends the edit, which the input's blur does.
     if (blocked || editing || event.button !== 0 || !event.isPrimary || drag.current || press.current) return;
     event.currentTarget.setPointerCapture?.(event.pointerId);
-    press.current = { pointerId: event.pointerId, clientX: event.clientX };
+    const onValue = valueElement.current?.contains(event.target as Node) ?? false;
+    // Inline, a press on the ruler can't become an edit, so it scrubs at once: the ruler
+    // activates on the press, and a release in place commits the value it set.
+    if (layout === "inline" && !onValue) return startDrag(event, event.clientX);
+    press.current = { pointerId: event.pointerId, clientX: event.clientX, onValue };
   };
 
   const startDrag = (event: ReactPointerEvent<HTMLDivElement>, startClientX: number) => {
@@ -385,6 +401,8 @@ export function ScrubSlider({
     if (pending && event.pointerId === pending.pointerId) {
       press.current = null;
       // A click, not a canceled or interrupted press, opens the editor.
+      // A click opens the editor: anywhere on the card, only the number inline (a press on
+      // the inline ruler never gets here; it scrubs from the start).
       if (commit && event.type === "pointerup") openEditor("pointer");
       return;
     }
@@ -538,6 +556,7 @@ export function ScrubSlider({
       disabled={disabled}
       data-slot="scrub-slider"
       data-variant={variant}
+      data-layout={layout}
       data-active={active ? "" : undefined}
       data-hovered={hovered && !active && !editing ? "" : undefined}
       data-editing={editing ? "" : undefined}
@@ -546,8 +565,8 @@ export function ScrubSlider({
       data-scrolling={scrolling ? "" : undefined}
       className={
         typeof className === "function"
-          ? (state) => cn(scrubSliderVariants({ size, variant }), className(state))
-          : cn(scrubSliderVariants({ size, variant }), className)
+          ? (state) => cn(scrubSliderVariants({ layout, size, variant }), className(state))
+          : cn(scrubSliderVariants({ layout, size, variant }), className)
       }
       {...props}
       onPointerDown={(event) => {
@@ -581,15 +600,23 @@ export function ScrubSlider({
         end(event, true);
       }}
     >
-      <div data-slot="scrub-slider-content" className={scrubSliderContentVariants({ size })}>
+      <div data-slot="scrub-slider-content" className={scrubSliderContentVariants({ layout, size })}>
         {label != null && (
-          <span id={labelId} data-slot="scrub-slider-label" className={scrubSliderLabelVariants({ size })}>
+          <span
+            id={labelId}
+            data-slot="scrub-slider-label"
+            className={layout === "inline" ? "sr-only" : scrubSliderLabelVariants({ size })}
+          >
             {label}
           </span>
         )}
         <span className="ms-auto flex shrink-0 items-center gap-1">
-        {stepper(-1)}
-        <span data-slot="scrub-slider-value" className={scrubSliderValueVariants({ size })}>
+        {chevrons && stepper(-1)}
+        <span
+          ref={valueElement}
+          data-slot="scrub-slider-value"
+          className={scrubSliderValueVariants({ layout, size })}
+        >
           {editing ? (
             <input
               autoFocus
@@ -628,7 +655,7 @@ export function ScrubSlider({
             </span>
           )}
         </span>
-        {stepper(1)}
+        {chevrons && stepper(1)}
         </span>
       </div>
 
@@ -636,15 +663,15 @@ export function ScrubSlider({
         ref={rulerRef}
         aria-hidden
         data-slot="scrub-slider-ruler"
-        className={scrubSliderRulerVariants({ size })}
+        className={scrubSliderRulerVariants({ layout, size })}
       >
-        <div data-slot="scrub-slider-ticks" className={scrubSliderTicksVariants()}>
+        <div data-slot="scrub-slider-ticks" className={scrubSliderTicksVariants({ layout })}>
           {ticks}
         </div>
         {ready && (
           <span
             data-slot="scrub-slider-indicator"
-            className={scrubSliderIndicatorVariants()}
+            className={scrubSliderIndicatorVariants({ layout })}
             style={{ translate: `${physical(indicator) - 1}px 0` }}
           />
         )}

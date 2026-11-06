@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/registry/ui/select/select";
 import { Slider } from "@/registry/ui/slider/slider";
+import { ScrubSlider } from "@/registry/ui/scrub-slider/scrub-slider";
 import { Tabs, TabsList, TabsTab } from "@/registry/ui/tabs/tabs";
 import { cn } from "@/registry/lib/cn";
 import { Ellipsis } from "lucide-react";
@@ -384,30 +385,26 @@ function Control({
   }
 
   if (def.kind === "number") {
-    // Keep the label, rail, and value in one compact row so numeric props follow their
-    // names instead of taking a full-width line in the settings strip.
+    // Keep the label, ruler, and value in one compact row so numeric props follow their
+    // names instead of taking a full-width line in the settings strip. The inline scrub
+    // slider takes the old rail and readout's width; a click on it types a value.
     return (
       <div className={row}>
         <span className="min-w-0 text-sm text-muted-foreground">{label}</span>
-        <div className="ml-auto flex min-w-0 max-w-full shrink-0 items-center gap-2">
-          <Slider
-            aria-label={label}
-            className="w-28 shrink-0"
-            thumb="knob"
-            size="sm"
-            showTicks={false}
-            showValue={false}
-            min={def.min}
-            max={def.max}
-            step={def.step}
-            disabled={disabled}
-            value={value as number}
-            onValueChange={onChange}
-          />
-          <output className="min-w-8 text-right text-sm tabular-nums text-foreground">
-            {value as number}
-          </output>
-        </div>
+        <ScrubSlider
+          aria-label={label}
+          layout="inline"
+          variant="plain"
+          size="sm"
+          chevrons={false}
+          className="ml-auto w-38 max-w-full shrink-0"
+          min={def.min}
+          max={def.max}
+          step={def.step}
+          disabled={disabled}
+          value={value as number}
+          onValueChange={(next) => onChange(next)}
+        />
       </div>
     );
   }

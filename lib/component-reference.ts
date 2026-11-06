@@ -597,7 +597,10 @@ import { SidebarLayout } from "@/components/ui/sidebar-layout";
 
 <ScrubSlider label="Scale" unit="×" min={0.1} max={4} step={0.01} defaultValue={1} />
 
-<ScrubSlider label="Opacity" unit="%" value={opacity} onValueChange={setOpacity} size="sm" variant="outline-ghost" />`,
+<ScrubSlider label="Opacity" unit="%" value={opacity} onValueChange={setOpacity} size="sm" variant="outline-ghost" />
+
+// One row for dense panels: label outside, ruler and value inside.
+<ScrubSlider aria-label="Gap" layout="inline" variant="plain" chevrons={false} size="sm" min={0} max={48} defaultValue={8} />`,
   },
   switch: {
     usage: `import { Switch } from "@/components/ui/switch";

@@ -509,3 +509,72 @@ describe("ScrubSlider precision", () => {
     expect(screen.getByText("1.4")).toBeInTheDocument();
   });
 });
+
+describe("ScrubSlider inline layout", () => {
+  it("shows the ruler and a half-height indicator at rest, with no chevrons when off", () => {
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(100);
+    const { container } = render(
+      <ScrubSlider label="Gap" layout="inline" variant="plain" chevrons={false} size="sm" defaultValue={8} />,
+    );
+    const root = container.querySelector<HTMLElement>('[data-slot="scrub-slider"]')!;
+    expect(root).toHaveAttribute("data-layout", "inline");
+    expect(root).toHaveAttribute("data-variant", "plain");
+    expect(screen.getByRole("slider", { name: "Gap" })).toBeInTheDocument();
+    expect(screen.getByText("Gap")).toHaveClass("sr-only");
+    expect(screen.queryByRole("button", { name: /Increase|Decrease/ })).not.toBeInTheDocument();
+
+    const ruler = container.querySelector('[data-slot="scrub-slider-ruler"]')!;
+    expect(ruler).not.toHaveClass("opacity-0");
+    const indicator = container.querySelector('[data-slot="scrub-slider-indicator"]')!;
+    expect(indicator).toHaveClass("opacity-100", "scale-y-50");
+  });
+
+  it("still scrubs and edits", async () => {
+    const user = userEvent.setup();
+    const change = vi.fn();
+    const { container } = render(
+      <ScrubSlider aria-label="Gap" layout="inline" chevrons={false} defaultValue={8} onValueChange={change} />,
+    );
+    const root = geometry(container);
+
+    fireEvent.pointerDown(root, { ...pointer, clientX: 150 });
+    fireEvent.pointerMove(root, { ...pointer, clientX: 150 + SPACING * 2 });
+    expect(change).toHaveBeenLastCalledWith(10, expect.anything());
+    fireEvent.pointerUp(root, { ...pointer, clientX: 150 + SPACING * 2 });
+    // A drag focuses the slider a frame later; let that land before the next click.
+    await act(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
+
+    const number = container.querySelector('[data-slot="scrub-slider-value"]')!;
+    fireEvent.pointerDown(number, { ...pointer, clientX: 150 });
+    fireEvent.pointerUp(number, { ...pointer, clientX: 150 });
+    await user.clear(screen.getByRole("textbox", { name: "Edit Gap" }));
+    await user.type(screen.getByRole("textbox", { name: "Edit Gap" }), "20{Enter}");
+    expect(change).toHaveBeenLastCalledWith(20, expect.anything());
+  });
+});
+
+describe("ScrubSlider inline clicks", () => {
+  it("edits only from the number; a press on the ruler scrubs at once", () => {
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(RULER_WIDTH);
+    const change = vi.fn();
+    const commit = vi.fn();
+    const { container } = render(
+      <ScrubSlider aria-label="Gap" layout="inline" chevrons={false} defaultValue={50} onValueChange={change} onValueCommitted={commit} />,
+    );
+    const root = geometry(container);
+
+    // The value is centred at 150px; a click 12px right of it lands two ticks up.
+    fireEvent.pointerDown(root, { ...pointer, clientX: 162 });
+    expect(root).toHaveAttribute("data-dragging");
+    expect(root).toHaveAttribute("data-active");
+    expect(change).toHaveBeenLastCalledWith(52, expect.objectContaining({ reason: "track-press" }));
+    fireEvent.pointerUp(root, { ...pointer, clientX: 162 });
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+    expect(commit).toHaveBeenLastCalledWith(52, expect.anything());
+
+    const number = container.querySelector('[data-slot="scrub-slider-value"]')!;
+    fireEvent.pointerDown(number, { ...pointer, clientX: 290 });
+    fireEvent.pointerUp(number, { ...pointer, clientX: 290 });
+    expect(screen.getByRole("textbox", { name: "Edit Gap" })).toHaveFocus();
+  });
+});

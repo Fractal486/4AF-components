@@ -20,7 +20,9 @@ description: A card-shaped number scrubber with a ruler, an edge zone that keeps
 | `largeStep` | `10` | Shift+Arrow and PageUp/PageDown step. |
 | `format` / `locale` | — | `Intl.NumberFormatOptions` and locale for the displayed and spoken value. Unless it sets `minimumFractionDigits` or `maximumFractionDigits`, values show the full decimal places of `step` and `min` (`1.40` with `step={0.01}`), so tabular figures keep the number's width. |
 | `getAriaValueText` | — | `(formattedValue, value) => string`. Replaces the default spoken value, the formatted value and unit. |
-| `variant` | `"card"` | `"card"` (a faint `muted` fill) or `"outline-ghost"` (a `shadow-border` edge alone). Exposed as `data-variant`. |
+| `variant` | `"card"` | `"card"` (a faint `muted` fill), `"outline-ghost"` (a `shadow-border` edge alone), or `"plain"` (neither). Exposed as `data-variant`. |
+| `layout` | `"card"` | `"card"` stacks the label and value over a ruler shown on hover and in use. `"inline"` is one row (28px at `md`, 24px at `sm`): an always-visible ruler with a 12px edge fade, its indicator at half height at rest and full height while active, then the value (at least 32px wide). Inline, `label` only names the slider; place a visible label beside it. Exposed as `data-layout`. |
+| `chevrons` | `true` | Shows the one-step chevrons either side of the value. |
 | `size` | `"md"` | `"md"` (60px card) or `"sm"` (48px card). |
 | `disabled` | `false` | Also follows a disabling Base UI `Field.Root`. |
 | `name` | — | Submits the value with a form. |
@@ -41,7 +43,9 @@ Other Base UI `Slider.Root` props are forwarded to the card.
   presses never scrub or open the editor. They dim to 25% while editing, and while dragging as
   the label row lifts. In RTL they point the other way.
 - A click (released before moving 3px), or Enter while the slider has focus, turns the number
-  into a text input with the ruler hidden. Enter or leaving the field commits the typed value,
+  into a text input with the ruler hidden. With `layout="inline"` only a click on the number does
+  (it shows a text cursor); a press on the ruler scrubs at once, with no 3px wait, so the ruler
+  activates on the press and a release in place commits the value at that tick. Enter or leaving the field commits the typed value,
   clamped to the range and snapped to the step (`details.reason` `"none"`); unreadable text is
   dropped, and Escape cancels. Enter and Escape return focus to the slider, without the focus
   ring when the edit was opened by a click.
