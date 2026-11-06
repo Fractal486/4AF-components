@@ -55,7 +55,7 @@ export const selectAlignedEntry = defineEntry({
   slug: "select-aligned",
   name: "Select Aligned",
   controls: {
-    variant: select(["default", "outline-ghost", "ghost", "plain"] as const, "default", "Variant"),
+    variant: select(["default", "outline-ghost", "ghost", "plain"] as const, "outline-ghost", "Variant"),
     size: select(SIZES, "sm"),
     selected: bool(true, "Selected"),
     showLabel: bool(true, "Show label"),

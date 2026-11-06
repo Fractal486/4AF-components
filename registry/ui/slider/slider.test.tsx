@@ -566,7 +566,7 @@ describe("Slider", () => {
     const fill = container.querySelector('[data-slot="slider-fill"]')!;
     expect(fill.className).toContain("bg-(color:--slider-fill-rest)");
     expect(fill.className).toContain(
-      "[--slider-fill-rest:var(--slider-fill,color-mix(in_oklab,var(--color-foreground)_15%,transparent))]",
+      "[--slider-fill-rest:var(--slider-fill,color-mix(in_oklab,var(--color-foreground)_var(--slider-fill-strength,15%),transparent))]",
     );
   });
 

@@ -26,8 +26,8 @@ export function BadgePreview({ label, removable, count, animateCount, interactiv
         {removable && <BadgeClose />}
       </Badge>)}
     </div>
-    {count && <div className="flex gap-2"><Button size="sm" variant="ghost" onClick={() => setValue(v => Math.max(0, v - 1))}>−1</Button><Button size="sm" variant="ghost" onClick={() => setValue(v => v + 1)}>+1</Button><Button size="sm" variant="ghost" onClick={() => setValue(v => v + 10)}>+10</Button></div>}
-    {removable && <Button size="sm" variant="ghost" onClick={() => setTags([0, 1, 2])}>Reset badges</Button>}
+    {count && <div className="flex gap-2"><Button size="sm" variant="outline-ghost" onClick={() => setValue(v => Math.max(0, v - 1))}>−1</Button><Button size="sm" variant="outline-ghost" onClick={() => setValue(v => v + 1)}>+1</Button><Button size="sm" variant="outline-ghost" onClick={() => setValue(v => v + 10)}>+10</Button></div>}
+    {removable && <Button size="sm" variant="outline-ghost" onClick={() => setTags([0, 1, 2])}>Reset badges</Button>}
     {!removable && !count && <CyclingBadge variant={badgeProps.variant} size={badgeProps.size} shape={badgeProps.shape} showIcon={badgeProps.showIcon} dot={badgeProps.dot} pulse={badgeProps.pulse} neutralText={badgeProps.neutralText} />}
   </div>;
 }

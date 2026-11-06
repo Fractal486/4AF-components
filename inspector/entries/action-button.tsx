@@ -7,7 +7,7 @@ export const actionButtonEntry = defineEntry({
   slug: "action-button",
   name: "Action Button",
   controls: {
-    variant: select(CONTROL_VARIANTS, "primary"),
+    variant: select(CONTROL_VARIANTS, "outline-ghost"),
     size: select(TEXT_SIZES, "md"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     // Automatic runs the real action on click; the others pin the button in one state.

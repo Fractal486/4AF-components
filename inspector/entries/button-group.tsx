@@ -54,7 +54,7 @@ export const buttonGroupEntry = defineEntry({
   name: "Button Group",
   controls: {
     content: withIcons({ ...multi(CONTENT, ["buttons"], "Content"), showCount: true }, CONTENT_ICONS),
-    variant: select(CONTROL_VARIANTS, "outline"),
+    variant: select(CONTROL_VARIANTS, "outline-ghost"),
     size: select(TEXT_SIZES, "md", undefined, (values) => picks(values).includes("input")),
     orientation: withIcons(select(["horizontal", "vertical"], "horizontal"), BUTTON_GROUP_ORIENTATION_ICONS),
     shape: select(["rectangular", "pill"], "rectangular", "Shape", (values) => picks(values).some((item) => item !== "buttons")),
@@ -94,7 +94,7 @@ export const buttonGroupEntry = defineEntry({
         )}
         {has("select") && (
           <Select size={fieldSize} defaultValue="open">
-            <SelectTrigger aria-label="Status" aria-invalid={invalid || undefined}>
+            <SelectTrigger variant="outline-ghost" aria-label="Status" aria-invalid={invalid || undefined}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -105,7 +105,7 @@ export const buttonGroupEntry = defineEntry({
         )}
         {has("alignedSelect") && (
           <AlignedSelect size={fieldSize} defaultValue="day">
-            <AlignedSelectTrigger aria-label="Group by" aria-invalid={invalid || undefined} />
+            <AlignedSelectTrigger variant="outline-ghost" aria-label="Group by" aria-invalid={invalid || undefined} />
             <AlignedSelectContent>
               <AlignedSelectItem value="day">Day</AlignedSelectItem>
               <AlignedSelectItem value="week">Week</AlignedSelectItem>
@@ -115,14 +115,14 @@ export const buttonGroupEntry = defineEntry({
         )}
         {has("searchSelect") && (
           <SearchSelect size={fieldSize === "xs" ? "sm" : fieldSize} items={SEARCH_ITEMS}>
-            <SearchSelectInput aria-label="Team" placeholder="Team…" aria-invalid={invalid || undefined} />
+            <SearchSelectInput variant="outline-ghost" aria-label="Team" placeholder="Team…" aria-invalid={invalid || undefined} />
             <SearchSelectContent>
               {(item: typeof SEARCH_ITEMS[number]) => <SearchSelectItem key={item.value} value={item}>{item.label}</SearchSelectItem>}
             </SearchSelectContent>
           </SearchSelect>
         )}
-        {has("datePicker") && <DatePicker size={fieldSize} aria-label="Date" aria-invalid={invalid || undefined} />}
-        {has("dateRangePicker") && <DateRangePicker size={fieldSize} aria-label="Date range" aria-invalid={invalid || undefined} />}
+        {has("datePicker") && <DatePicker variant="outline-ghost" size={fieldSize} aria-label="Date" aria-invalid={invalid || undefined} />}
+        {has("dateRangePicker") && <DateRangePicker variant="outline-ghost" size={fieldSize} aria-label="Date range" aria-invalid={invalid || undefined} />}
         {has("buttons") && ACTIONS.slice(0, count).map(({ label, icon: Icon }) => (
           <Button
             key={label}

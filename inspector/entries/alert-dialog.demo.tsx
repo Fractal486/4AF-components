@@ -16,7 +16,7 @@ export function AlertDialogDemo({ destructive, icon, asyncAction, fail, outsideD
   const Icon = destructive ? Trash2 : Send;
   return (
     <AlertDialog disablePointerDismissal={!outsideDismiss} onOpenChange={open => { if (open) setError(false); }}>
-      <AlertDialogTrigger render={<Button variant={destructive ? "destructive" : "outline"} />}>
+      <AlertDialogTrigger render={<Button variant={destructive ? "destructive" : "outline-ghost"} />}>
         {destructive ? "Delete project" : "Publish changes"}
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -32,8 +32,8 @@ export function AlertDialogDemo({ destructive, icon, asyncAction, fail, outsideD
           </AlertDialogHeader>
         </AlertDialogBody>
         <AlertDialogFooter>
-          <AlertDialogCancel />
-          <AlertDialogAction variant={destructive ? "destructive" : "primary"}
+          <AlertDialogCancel variant="outline-ghost" />
+          <AlertDialogAction variant={destructive ? "destructive" : "outline-ghost"}
             onClick={() => {
               setError(false);
               if (asyncAction) return new Promise<void>((resolve, reject) => {

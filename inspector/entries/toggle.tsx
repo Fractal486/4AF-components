@@ -7,7 +7,7 @@ export const toggleEntry = defineEntry({
   slug: "toggle",
   name: "Toggle",
   controls: {
-    variant: select(CONTROL_VARIANTS, "ghost"),
+    variant: select(CONTROL_VARIANTS, "outline-ghost"),
     size: select(ICON_SIZES, "icon"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     // What changes when a toggle is pressed. The star starts pressed to show it.

@@ -23,8 +23,8 @@ export const tooltipEntry = defineEntry({
       return (
         <TooltipGroup side={side} align={align} delay={delay} trackCursorAxis={trackCursorAxis} disabled={disabled}>
           <div className="flex items-center gap-3">
-            <TooltipTrigger content={content} render={<Button variant="outline" />}>Hover me</TooltipTrigger>
-            <TooltipTrigger content="Preview deployment" render={<Button variant="outline" />}>And me</TooltipTrigger>
+            <TooltipTrigger content={content} render={<Button variant="outline-ghost" />}>Hover me</TooltipTrigger>
+            <TooltipTrigger content="Preview deployment" render={<Button variant="outline-ghost" />}>And me</TooltipTrigger>
           </div>
         </TooltipGroup>
       );
@@ -35,10 +35,10 @@ export const tooltipEntry = defineEntry({
       <TooltipProvider delay={delay} closeDelay={0}>
         <div className="flex items-center gap-3">
           <Tooltip content={content} side={side} align={align} trackCursorAxis={trackCursorAxis} disabled={disabled}>
-            <Button variant="outline">Hover me</Button>
+            <Button variant="outline-ghost">Hover me</Button>
           </Tooltip>
           <Tooltip content="Preview deployment" side={side} align={align} trackCursorAxis={trackCursorAxis} disabled={disabled}>
-            <Button variant="outline">And me</Button>
+            <Button variant="outline-ghost">And me</Button>
           </Tooltip>
         </div>
       </TooltipProvider>

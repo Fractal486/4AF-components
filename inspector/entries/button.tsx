@@ -8,7 +8,7 @@ export const buttonEntry = defineEntry({
   slug: "button",
   name: "Button",
   controls: {
-    variant: select(BUTTON_VARIANTS, "primary"),
+    variant: select(BUTTON_VARIANTS, "outline-ghost"),
     size: select([...TEXT_SIZES, ...ICON_SIZES], "md"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     icon: select(["none", "leading", "trailing"], "none", undefined, (values) => String(values.size).startsWith("icon")),

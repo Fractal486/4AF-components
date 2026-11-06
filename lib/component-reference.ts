@@ -586,7 +586,9 @@ import { SidebarLayout } from "@/components/ui/sidebar-layout";
 
 <Slider label="Amount" min={0.5} max={10.5} step={1} defaultValue={3.5} />
 
-<Slider label="Volume" defaultValue={60} inlineLabel />`,
+<Slider label="Volume" defaultValue={60} inlineLabel />
+
+<Slider label="Brightness" thumb="circle" variant="outline-ghost" defaultValue={40} />`,
   },
   "scrub-slider": {
     usage: `import { ScrubSlider } from "@/components/ui/scrub-slider";

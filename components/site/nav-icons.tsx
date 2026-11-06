@@ -151,12 +151,16 @@ const ICONS: Record<string, ReactNode> = {
       <circle cx="9.5" cy="8" r="2.25" {...SOLID} />
     </>
   ),
-  // A ruler with the indicator standing over it, its neighbours lifted.
+  // A ruler with the indicator standing over it, its neighbours lifted. Thinner than the
+  // other icons' strokes, like the ruler's hairlines.
   "scrub-slider": (
     <>
-      <rect x="1.5" y="3.5" width="13" height="9" rx="2.5" {...TONE} />
-      <path d="M4 10.5v-1M5.75 10.5v-1.5M10.25 10.5v-1.5M12 10.5v-1" {...FAINT} />
-      <path d="M8 11V6.5" />
+      <path
+        d="M1.5 11.5V10M3.5 11.5v-2M5.5 11.5V8.5M10.5 11.5V8.5M12.5 11.5v-2M14.5 11.5V10"
+        strokeWidth={1}
+        {...FAINT}
+      />
+      <path d="M8 11.5v-7" strokeWidth={1} />
     </>
   ),
   select: (

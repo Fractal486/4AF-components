@@ -202,8 +202,8 @@ function SidebarLayoutBlueprint({
           headerContent={header === "custom" ? crumbs : undefined}
           headerActions={headerActions ? (
             <>
-              <Button variant="outline" size="icon-sm" aria-label="Alerts"><Bell /></Button>
-              <Button variant="outline" size="sm" aria-label="New"><Plus data-icon-start="" /><Line width={28} /></Button>
+              <Button variant="outline-ghost" size="icon-sm" aria-label="Alerts"><Bell /></Button>
+              <Button variant="outline-ghost" size="sm" aria-label="New"><Plus data-icon-start="" /><Line width={28} /></Button>
             </>
           ) : undefined}
           // The trigger's own tooltip shows the shortcut's keys, so the blueprint drops the

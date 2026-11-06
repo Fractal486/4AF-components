@@ -39,7 +39,7 @@ export const emptyEntry = defineEntry({
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <Button>
+          <Button variant="outline-ghost">
             <Plus />
             Compose
           </Button>

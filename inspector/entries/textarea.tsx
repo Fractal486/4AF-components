@@ -60,7 +60,7 @@ function TextareaPreview({ invalid, ...props }: ComponentProps<typeof Textarea> 
     </Field.Root>
     {props.submitOnShortcut && <div className="flex items-center justify-between gap-3">
       <span role="status" className="text-xs text-muted-foreground">{submitted ? "Submitted" : "Ctrl / ⌘ + Enter to submit"}</span>
-      <Button type="submit" size="sm" disabled={props.disabled}>Submit</Button>
+      <Button variant="outline-ghost" type="submit" size="sm" disabled={props.disabled}>Submit</Button>
     </div>}
   </form>;
 }

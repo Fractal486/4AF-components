@@ -32,14 +32,16 @@ interface DemoProps {
   disabled: boolean;
   inlineLabel?: boolean;
   showTicks?: boolean;
+  variant?: "default" | "outline-ghost";
 }
 
-function SliderDemo({ thumb, size, orientation, range, step, showValueTooltip, animateValue, format, disabled, inlineLabel = false, showTicks = false }: DemoProps) {
+function SliderDemo({ thumb, size, orientation, range, step, showValueTooltip, animateValue, format, disabled, inlineLabel = false, showTicks = false, variant = "default" }: DemoProps) {
   return (
     <div className={orientation === "vertical" ? "h-64" : "w-full max-w-sm"}>
       <Slider
         key={`${size}-${range}-${step}-${showTicks}-${showValueTooltip}-${disabled}-${inlineLabel}`}
         thumb={thumb}
+        variant={variant}
         size={size}
         orientation={orientation}
         range={range}
@@ -65,6 +67,7 @@ export const sliderEntry = defineEntry({
   slug: "slider",
   name: "Slider",
   controls: {
+    variant: select(["default", "outline-ghost"], "outline-ghost", "Style"),
     ...shared(),
     showTicks: bool(true, "Show ticks"),
     // Bar only: the other two rails are too thin to hold a line of text.
@@ -77,6 +80,7 @@ export const sliderCircleEntry = defineEntry({
   slug: "slider-circle",
   name: "Circle",
   controls: {
+    variant: select(["default", "outline-ghost"], "outline-ghost", "Style"),
     ...shared(),
     showTicks: bool(true, "Show ticks"),
   },

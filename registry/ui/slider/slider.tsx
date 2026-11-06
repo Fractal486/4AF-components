@@ -402,6 +402,11 @@ export interface SliderProps
   thumb?: "bar" | "circle" | "knob";
   /** Overall scale. `sm` is a more compact rail — useful in dense panels. */
   size?: "sm" | "md";
+  /**
+   * `default` is a muted rail; `outline-ghost` is a shadow-border edge with no fill of its own.
+   * The `knob` thumb's thin rail ignores it.
+   */
+  variant?: "default" | "outline-ghost";
 }
 
 // Every size-dependent pixel value in one place, keyed by shape then size: the numbers the
@@ -442,10 +447,10 @@ const DODGE_APPROACH_PX = 8;
 const DODGE_OPACITY = 0.15;
 
 // The fill colour. `--slider-fill` sets it from outside; by default it is the foreground at
-// 15%. The bar's in-use step mixes in 8% foreground, so a custom colour deepens (or, in the
+// `--slider-fill-strength`: 15%, or 8% on the edge-only `outline-ghost` rail. The bar's in-use step mixes in 8% foreground, so a custom colour deepens (or, in the
 // dark theme, lightens) the same way the default grey steps up to about 20%.
 const FILL_COLOR =
-  "[--slider-fill-rest:var(--slider-fill,color-mix(in_oklab,var(--color-foreground)_15%,transparent))] [--slider-fill-active:color-mix(in_oklab,var(--slider-fill-rest),var(--color-foreground)_8%)] bg-(color:--slider-fill-rest) forced-colors:bg-[Highlight]! forced-colors:forced-color-adjust-none";
+  "[--slider-fill-rest:var(--slider-fill,color-mix(in_oklab,var(--color-foreground)_var(--slider-fill-strength,15%),transparent))] [--slider-fill-active:color-mix(in_oklab,var(--slider-fill-rest),var(--color-foreground)_8%)] bg-(color:--slider-fill-rest) forced-colors:bg-[Highlight]! forced-colors:forced-color-adjust-none";
 
 // "In use" for the bar: hovered, dragged, or keyboard-focused. Focus means the slider's own
 // range input, not anything focused inside the control, so typing into the editable value
@@ -479,6 +484,7 @@ export function Slider({
   inlineLabel = false,
   thumb = "bar",
   size = "md",
+  variant = "default",
   range = false,
   draggableRange = false,
   minStepsBetweenValues = 0,
@@ -999,6 +1005,7 @@ export function Slider({
       disabled={disabled}
       orientation={orientation}
       data-slot="slider"
+      data-variant={variant}
       data-range={isRange ? "true" : undefined}
       data-range-dragging={rangeGesture.dragging ? "" : undefined}
       aria-label={ariaLabel}
@@ -1062,7 +1069,7 @@ export function Slider({
         {/* The rail — clipped to its own shape so the fill rounds with it. The visual thumb
             sits above this clip, while the knob can still overhang its thin rail. */}
         <div className={sliderVisualVariants({ orientation })} style={vertical ? { width: controlWidth, height: controlThickness } : undefined}>
-        <div className={sliderRailVariants({ thumb, size })}>
+        <div className={sliderRailVariants({ thumb, size, variant })}>
           {/* Fill — the single bar's is a whole box slid along the rail, its straight edge
               the value (see `faderFillX`); otherwise a clip that reaches past a thumb it
               holds, rounded for the circle, or ends at the thumb's centre (knob). */}

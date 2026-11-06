@@ -35,10 +35,10 @@ export function DialogDemo({ showClose, autoSize, phases, content, nested, share
   return (
     <>
       <div className="flex flex-wrap justify-center gap-3">
-        <DialogTrigger handle={handle} payload={PROFILES[0]} render={<Button variant="outline" />}>
+        <DialogTrigger handle={handle} payload={PROFILES[0]} render={<Button variant="outline-ghost" />}>
           {shared ? "Edit Alex" : "Open dialog"}
         </DialogTrigger>
-        {shared && <DialogTrigger handle={handle} payload={PROFILES[1]} render={<Button variant="outline" />}>Edit Taylor</DialogTrigger>}
+        {shared && <DialogTrigger handle={handle} payload={PROFILES[1]} render={<Button variant="outline-ghost" />}>Edit Taylor</DialogTrigger>}
       </div>
       <Dialog handle={handle}>
         {({ payload = PROFILES[0] }) => (
@@ -58,7 +58,7 @@ export function DialogDemo({ showClose, autoSize, phases, content, nested, share
                   ))}
                   {nested && (
                     <Dialog>
-                      <DialogTrigger render={<Button variant="outline" />}>Profile visibility</DialogTrigger>
+                      <DialogTrigger render={<Button variant="outline-ghost" />}>Profile visibility</DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
                           <DialogTitle>Profile visibility</DialogTitle>
@@ -71,8 +71,8 @@ export function DialogDemo({ showClose, autoSize, phases, content, nested, share
                   )}
                 </DialogBody>
                 <DialogFooter showCloseButton={footerClose}>
-                  {!footerClose && <DialogClose render={<Button variant="ghost">Cancel</Button>} />}
-                  <DialogClose render={<Button variant="primary">Save changes</Button>} />
+                  {!footerClose && <DialogClose render={<Button variant="outline-ghost">Cancel</Button>} />}
+                  <DialogClose render={<Button variant="outline-ghost">Save changes</Button>} />
                 </DialogFooter>
               </>
             )}

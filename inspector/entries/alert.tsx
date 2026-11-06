@@ -43,7 +43,7 @@ function AlertPreview({ variant, title, dismissible, icon }: {
         <AlertDescription>{MESSAGES[variant]}</AlertDescription>
         {dismissible && <AlertClose />}
       </Alert>
-      {!open && !alertElement && <Button size="sm" variant="ghost"
+      {!open && !alertElement && <Button size="sm" variant="outline-ghost"
         className="absolute start-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-(--duration-base) starting:opacity-0"
         onClick={() => changeOpen(true)}>Show alert</Button>}
     </div>

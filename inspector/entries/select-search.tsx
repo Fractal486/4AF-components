@@ -53,7 +53,7 @@ export const selectSearchEntry = defineEntry({
   slug: "select-search",
   name: "Select Search",
   controls: {
-    variant: select(["default", "outline-ghost", "ghost", "plain"] as const, "default", "Variant"),
+    variant: select(["default", "outline-ghost", "ghost", "plain"] as const, "outline-ghost", "Variant"),
     // Focus tone colours the boxed looks' edge; ghost and plain have none.
     size: select(["sm", "md"] as const, "sm"),
     tone: select(["neutral", "accent"], "neutral", "Focus", (v) => v.variant === "ghost" || v.variant === "plain"),

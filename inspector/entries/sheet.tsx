@@ -27,7 +27,7 @@ export const sheetEntry = defineEntry({
   render({ side, content, showClose }) {
     return (
       <Sheet>
-        <SheetTrigger render={<Button variant="outline">Open sheet</Button>} />
+        <SheetTrigger render={<Button variant="outline-ghost">Open sheet</Button>} />
         <SheetContent side={side} showClose={showClose}>
           <SheetHeader>
             <SheetTitle>Edit profile</SheetTitle>
@@ -55,8 +55,8 @@ export const sheetEntry = defineEntry({
           </SheetBody>
 
           <SheetFooter>
-            <SheetClose render={<Button variant="ghost">Cancel</Button>} />
-            <SheetClose render={<Button variant="primary">Save changes</Button>} />
+            <SheetClose render={<Button variant="outline-ghost">Cancel</Button>} />
+            <SheetClose render={<Button variant="outline-ghost">Save changes</Button>} />
           </SheetFooter>
         </SheetContent>
       </Sheet>

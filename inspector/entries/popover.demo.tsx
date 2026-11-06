@@ -27,7 +27,7 @@ export function PopoverDemo({ side, modal, content, shared, autoSize }: {
   const [expanded, setExpanded] = useState(false);
   const trigger = (name: string) => (
     <PopoverTrigger key={name} handle={handle} payload={name}
-      render={(props, state) => <Button {...props} variant="outline" pressed={state.open}>{name}</Button>} />
+      render={(props, state) => <Button {...props} variant="outline-ghost" pressed={state.open}>{name}</Button>} />
   );
 
   return (
@@ -59,7 +59,7 @@ export function PopoverDemo({ side, modal, content, shared, autoSize }: {
               <div className="grid grid-cols-[5rem_minmax(0,1fr)] items-center gap-3">
                 <span className="text-sm text-muted-foreground">Units</span>
                 <Select items={UNITS} defaultValue="px" size="sm">
-                  <SelectTrigger aria-label="Units"><SelectValue /></SelectTrigger>
+                  <SelectTrigger variant="outline-ghost" aria-label="Units"><SelectValue /></SelectTrigger>
                   <SelectContent width="trigger">
                     {UNITS.map((unit) => <SelectItem key={unit.value} value={unit.value}>{unit.label}</SelectItem>)}
                   </SelectContent>
@@ -78,10 +78,10 @@ export function PopoverDemo({ side, modal, content, shared, autoSize }: {
               </div>
             )}
             <div className="mt-4 flex justify-between gap-2">
-              <Button variant="ghost" size="sm" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
+              <Button variant="outline-ghost" size="sm" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
                 {expanded ? "Fewer options" : "More options"}
               </Button>
-              <PopoverClose render={<Button size="sm">Done</Button>} />
+              <PopoverClose render={<Button variant="outline-ghost" size="sm">Done</Button>} />
             </div>
           </PopoverContent>
         )}

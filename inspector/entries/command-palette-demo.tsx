@@ -72,7 +72,7 @@ function PaletteHeaderActions() {
   return (
     <>
       <Select<string, true> multiple defaultValue={[]}>
-        <SelectSortTrigger
+        <SelectSortTrigger variant="outline-ghost"
           icon={<ListFilter />}
           showValue={false}
           aria-label="Filter by status"
@@ -85,7 +85,7 @@ function PaletteHeaderActions() {
       </Select>
 
       <Select<string> defaultValue="updated" items={SORT_OPTIONS}>
-        <SelectSortTrigger
+        <SelectSortTrigger variant="outline-ghost"
           icon={<ArrowUpDown />}
           aria-label="Sort projects"
         />
@@ -400,7 +400,7 @@ export function CommandPaletteDemo({
   return (
     <div className="flex flex-col items-center gap-4">
       <Button
-        variant="outline"
+        variant="outline-ghost"
         onClick={() => setOpen(true)}
         aria-keyshortcuts="Control+Shift+P Meta+Shift+P"
       >
@@ -785,7 +785,7 @@ function NewProjectPanel({
             value={visibility}
             onValueChange={(value) => setVisibility(value as Visibility)}
           >
-            <SelectTrigger className="w-44" aria-label="Visibility">
+            <SelectTrigger variant="outline-ghost" className="w-44" aria-label="Visibility">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

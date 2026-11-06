@@ -33,7 +33,7 @@ function createTriggerEntry(multiple: boolean) {
     slug: multiple ? "select-filter" : "select-sort",
     name: multiple ? "Filter trigger" : "Sort trigger",
     controls: {
-      variant: select(["default", "outline-ghost", "ghost", "plain"] as const, "default", "Variant"),
+      variant: select(["default", "outline-ghost", "ghost", "plain"] as const, "outline-ghost", "Variant"),
       size: select(["xs", "sm", "md"] as const, "sm", "Size"),
       selected: bool(true, "Selected"),
       showValue: bool(true, "Show value"),

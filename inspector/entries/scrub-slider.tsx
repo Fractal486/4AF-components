@@ -18,7 +18,7 @@ export const scrubSliderEntry = defineEntry({
   name: "Scrub Slider",
   controls: {
     quantity: withIcons(select(["width", "opacity", "rotation", "scale"], "width", "Quantity"), SCRUB_SLIDER_QUANTITY_ICONS, { dropdown: true }),
-    variant: select(["card", "outline-ghost"], "card", "Style"),
+    variant: select(["card", "outline-ghost"], "outline-ghost", "Style"),
     size: select(["sm", "md"], "md", "Size"),
     disabled: bool(false),
   },

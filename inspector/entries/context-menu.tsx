@@ -159,7 +159,7 @@ function FileList({ holdFeedback, disabled }: DemoProps) {
         ))}
       </div>
       <Button
-        variant="ghost"
+        variant="outline-ghost"
         size="sm"
         className="self-start"
         disabled={removed.length === 0}

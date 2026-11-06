@@ -10,7 +10,7 @@ export const deleteButtonEntry = defineEntry({
   slug: "delete-button",
   name: "Delete Button",
   controls: {
-    variant: select(VARIANTS, "outline"),
+    variant: select(VARIANTS, "outline-ghost"),
     size: select(TEXT_SIZES, "md"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     sizing: select(["widest", "current"], "widest", "Width"),

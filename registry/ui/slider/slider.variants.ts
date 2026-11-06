@@ -53,16 +53,25 @@ export const sliderControlVariants = cva(
  * The rail, clipped to its own shape so the fill rounds with it. `circle` and `bar` fill the
  * control; `knob` is a thin centred line (4px at md, 2px at sm) that its dot overhangs.
  */
-export const sliderRailVariants = cva("absolute overflow-hidden bg-muted forced-colors:outline forced-colors:outline-1 forced-colors:outline-[CanvasText]", {
+export const sliderRailVariants = cva("absolute overflow-hidden forced-colors:outline forced-colors:outline-1 forced-colors:outline-[CanvasText]", {
   variants: {
     thumb: { bar: "inset-0 rounded-md", circle: "inset-0 rounded-full", knob: "rounded-full" },
     size: sizes,
+    /**
+     * `default` is a muted rail. `outline-ghost` follows Button's variant of that name: a
+     * shadow-border edge with no fill of its own, so the background shows through around the
+     * fill. The knob's thin rail has no room for an edge and stays muted.
+     */
+    variant: { default: "bg-muted", "outline-ghost": "" },
   },
   compoundVariants: [
+    // A fainter default fill, since nothing behind it sets it off.
+    { variant: "outline-ghost", thumb: ["bar", "circle"], class: "shadow-border [--slider-fill-strength:8%]" },
+    { variant: "outline-ghost", thumb: "knob", class: "bg-muted" },
     { thumb: "knob", size: "md", class: "inset-x-0 top-1/2 h-1 -translate-y-1/2" },
     { thumb: "knob", size: "sm", class: "inset-x-0 top-1/2 h-0.5 -translate-y-1/2" },
   ],
-  defaultVariants: { thumb: "bar", size: "md" },
+  defaultVariants: { thumb: "bar", size: "md", variant: "default" },
 });
 
 /** The thumb's drawn shape, also the size of Base UI's hidden thumb under it. */

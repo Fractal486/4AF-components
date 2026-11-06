@@ -169,3 +169,20 @@ describe("shiftSliderRange", () => {
     expect(shiftSliderRange([2e-7, 5e-7], 1e-7, 0, 1e-6, 1e-7)).toEqual([3e-7, 6e-7]);
   });
 });
+
+describe("Slider variants", () => {
+  it("draws an outline-ghost rail with an edge and no fill, except on the knob", () => {
+    const { container, rerender } = render(<Slider aria-label="Volume" variant="outline-ghost" />);
+    const rail = () => container.querySelector<HTMLElement>('[data-slot="slider-control"] .overflow-hidden')!;
+    expect(container.querySelector('[data-slot="slider"]')).toHaveAttribute("data-variant", "outline-ghost");
+    expect(rail()).toHaveClass("shadow-border");
+    expect(rail()).not.toHaveClass("bg-muted");
+
+    rerender(<Slider aria-label="Volume" variant="outline-ghost" thumb="knob" />);
+    expect(rail()).toHaveClass("bg-muted");
+    expect(rail()).not.toHaveClass("shadow-border");
+
+    rerender(<Slider aria-label="Volume" />);
+    expect(rail()).toHaveClass("bg-muted");
+  });
+});

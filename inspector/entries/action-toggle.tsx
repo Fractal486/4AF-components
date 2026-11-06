@@ -7,7 +7,7 @@ export const actionToggleEntry = defineEntry({
   slug: "action-toggle",
   name: "Action Toggle",
   controls: {
-    variant: select(CONTROL_VARIANTS, "outline"),
+    variant: select(CONTROL_VARIANTS, "outline-ghost"),
     size: select(TEXT_SIZES, "md"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     // Automatic runs the real action on click; the others pin the toggle in one state.

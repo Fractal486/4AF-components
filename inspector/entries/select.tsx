@@ -84,7 +84,7 @@ export const selectEntry = defineEntry({
   slug: "select",
   name: "Select",
   controls: {
-    variant: select(["default", "outline-ghost", "ghost", "plain"] as const, "default", "Variant"),
+    variant: select(["default", "outline-ghost", "ghost", "plain"] as const, "outline-ghost", "Variant"),
     tone: select(["neutral", "accent"] as const, "neutral", "Open border", (v) => v.variant !== "default"),
     size: select(["xs", "sm", "md"] as const, "sm"),
     multiple: bool(false),

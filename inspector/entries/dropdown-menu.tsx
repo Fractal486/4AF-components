@@ -291,7 +291,7 @@ function DropdownMenuDemo({
             <Button
               key={kind}
               type="button"
-              variant="plain"
+              variant="outline-ghost"
               size="sm"
               aria-pressed={rows === kind}
               // The rail's pace for the same muted-to-full change; the button's own fast hover
@@ -308,7 +308,7 @@ function DropdownMenuDemo({
         {(shared ? ["Alex", "Taylor"] : ["Options"]).map(name => (
           <DropdownMenuTrigger key={name} handle={handle} payload={name}
             render={(props, state) => (
-              <Button {...props} variant={shared ? "outline" : "plain"} size={shared ? "sm" : "icon"}
+              <Button {...props} variant="outline-ghost" size={shared ? "sm" : "icon"}
                 aria-label={shared ? `Options for ${name}` : "Options"} pressed={state.open} pressScale={false}
                 className="transition-[background-color,box-shadow,color,opacity,scale] active:scale-[0.95] motion-reduce:active:scale-100 data-[popup-open]:scale-[0.95] motion-reduce:data-[popup-open]:scale-100">
                 {shared ? <><User />{name}</> : <Ellipsis />}

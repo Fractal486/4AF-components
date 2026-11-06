@@ -1,7 +1,7 @@
 /**
  * The Button family's demo options, in one order, so every button-like demo lists the same
- * variants and sizes the same way. A demo offers everything its component supports; only the
- * starting value differs, and it matches the component's own default.
+ * variants and sizes the same way. A demo offers everything its component supports and
+ * starts on outline-ghost wherever it is available.
  */
 
 /** Every Button variant. */

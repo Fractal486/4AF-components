@@ -28,9 +28,9 @@ function NumberAnimationPreview({ format, trend }: {
         className="text-4xl font-medium text-foreground"
       />
       <div className="flex gap-2">
-        <Button size="sm" variant="ghost" onClick={() => setValue(current => current - 1)}>−1</Button>
-        <Button size="sm" variant="ghost" onClick={() => setValue(current => current + 1)}>+1</Button>
-        <Button size="sm" variant="ghost" onClick={() => setValue(current => current + 10)}>+10</Button>
+        <Button size="sm" variant="outline-ghost" onClick={() => setValue(current => current - 1)}>−1</Button>
+        <Button size="sm" variant="outline-ghost" onClick={() => setValue(current => current + 1)}>+1</Button>
+        <Button size="sm" variant="outline-ghost" onClick={() => setValue(current => current + 10)}>+10</Button>
       </div>
     </div>
   );

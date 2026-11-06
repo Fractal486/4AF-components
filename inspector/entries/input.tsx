@@ -41,12 +41,12 @@ export const inputEntry = defineEntry({
           startIcon={startIcon ? <Search /> : undefined}
           endAction={
             endAction === "icon" ? (
-              <Button variant="ghost" size="icon-xs" aria-label="Clear" disabled={disabled}>
+              <Button variant="outline-ghost" size="icon-xs" aria-label="Clear" disabled={disabled}>
                 <X />
               </Button>
             ) : endAction === "label" ? (
               <ActionButton
-                variant="ghost"
+                variant="outline-ghost"
                 size="xs"
                 icon={<TicketPercent />}
                 action={() => new Promise((resolve) => setTimeout(resolve, 900))}

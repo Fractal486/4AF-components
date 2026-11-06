@@ -45,7 +45,7 @@ export const skeletonWrapEntry = defineEntry({
           <Skeleton loading={loading}><h3 className="text-sm font-medium">Alex Morgan</h3></Skeleton>
           <Skeleton loading={loading}><p className="text-sm text-muted-foreground">Design engineer</p></Skeleton>
         </div>
-        <Skeleton loading={loading}><Button variant="outline" size="sm">Follow</Button></Skeleton>
+        <Skeleton loading={loading}><Button variant="outline-ghost" size="sm">Follow</Button></Skeleton>
       </div>
     );
   },

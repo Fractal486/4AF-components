@@ -11,6 +11,7 @@ description: A horizontal or vertical slider with three thumb styles, draggable 
 
 | Prop | Default | Purpose |
 | --- | --- | --- |
+| `variant` | `"default"` | `"default"` (a `muted` rail) or `"outline-ghost"` (a `shadow-border` edge with no fill of its own, and a fainter default fill at 8% foreground). The `knob` thumb's thin rail ignores it. Exposed as `data-variant`. |
 | `orientation` | `"horizontal"` | `"horizontal"` or `"vertical"`. Give a vertical slider or its parent an explicit height. |
 | `draggableRange` | `false` | Drag between two handles to move the selected interval while preserving its width. |
 | `animateValue` | `false` | Opt in to rolling digits and blur for the displayed values and thumb tooltips. |
@@ -35,7 +36,7 @@ from step to step instead, from 0.05s for small steps up to 0.25s for steps half
 wide. Track clicks, keyboard steps, and values set from outside
 glide on a softer spring. Under reduced motion every change is instant.
 
-Set `--slider-fill` to change the fill colour; it defaults to the foreground at 15%. While the bar
+Set `--slider-fill` to change the fill colour; it defaults to the foreground at 15% (8% with `variant="outline-ghost"`). While the bar
 is in use, the fill mixes in 8% foreground.
 
 ```tsx

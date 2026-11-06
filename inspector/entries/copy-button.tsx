@@ -8,7 +8,7 @@ export const copyButtonEntry = defineEntry({
   slug: "copy-button",
   name: "Copy Button",
   controls: {
-    variant: select(CONTROL_VARIANTS, "outline"),
+    variant: select(CONTROL_VARIANTS, "outline-ghost"),
     size: select(TEXT_SIZES, "md"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     withLabel: bool(false, "Show a label"),
