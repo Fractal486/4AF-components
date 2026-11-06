@@ -13,7 +13,7 @@ export const switchEntry = defineEntry({
     tone: select(TONES, "adaptive"),
     icons: bool(false, "On/off marks"),
     saving: select(["off", "success", "failure"], "off", "Saving"),
-    state: withIcons(select(["default", "disabled", "invalid"], "default", "State"), STATE_ICONS, { dropdown: true }),
+    state: withIcons(select(["default", "disabled", "invalid"], "default", "State"), STATE_ICONS),
   },
   render({ tone, icons, saving, state }) {
     const disabled = state === "disabled";

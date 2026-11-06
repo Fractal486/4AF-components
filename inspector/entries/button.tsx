@@ -12,7 +12,7 @@ export const buttonEntry = defineEntry({
     size: select([...TEXT_SIZES, ...ICON_SIZES], "md"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     icon: select(["none", "leading", "trailing"], "none", undefined, (values) => String(values.size).startsWith("icon")),
-    state: withIcons(select(["default", "loading", "disabled"], "default", "State"), BUTTON_STATE_ICONS, { dropdown: true }),
+    state: withIcons(select(["default", "loading", "disabled"], "default", "State"), BUTTON_STATE_ICONS),
   },
   render({ variant, size, shape, icon, state }) {
     const isIconOnly = size.startsWith("icon");

@@ -23,7 +23,7 @@ export const inputEntry = defineEntry({
     endAction: select(["none", "icon", "label"], "none", "Trailing action", (values) => values.type === "number" || values.type === "file"),
     description: bool(false, "Description"),
     count: bool(false, "Character counter", (values) => !["text", "email", "password", "search", "url"].includes(values.type as string)),
-    state: withIcons(select(["default", "disabled", "invalid"], "default", "State"), STATE_ICONS, { dropdown: true }),
+    state: withIcons(select(["default", "disabled", "invalid"], "default", "State"), STATE_ICONS),
   },
   render({ variant, tone, type, multiple, startIcon, endAction, description, count, state }) {
     const disabled = state === "disabled";

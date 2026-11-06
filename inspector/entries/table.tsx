@@ -43,7 +43,7 @@ export const tableEntry = defineEntry({
     alignment: withIcons(select(["start", "center", "end"], "end", "Number alignment"), TEXT_ALIGN_ICONS),
     lines: multi(["horizontal", "vertical", "outline"], ["horizontal"], "Lines"),
     scroll: bool(true, "Bounded height"),
-    state: withIcons(select(["default", "loading", "empty"], "default", "State"), TABLE_STATE_ICONS, { dropdown: true }),
+    state: withIcons(select(["default", "loading", "empty"], "default", "State"), TABLE_STATE_ICONS),
     footer: bool(false, "Footer"),
     caption: bool(true, "Caption"),
   },

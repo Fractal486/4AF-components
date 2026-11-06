@@ -7,7 +7,7 @@ export const badgeEntry = defineEntry({
   name: "Badge",
   controls: {
     variant: select(["plain", "solid", "outline", "filled"] as const, "solid"),
-    status: withIcons(select(["neutral", "info", "success", "warning", "danger", "loading"] as const, "success"), BADGE_STATUS_ICONS, { dropdown: true }),
+    status: withIcons(select(["neutral", "info", "success", "warning", "danger", "loading"] as const, "success"), BADGE_STATUS_ICONS),
     size: select(["sm", "md", "lg"] as const, "sm"),
     shape: select(["rounded", "pill"] as const, "rounded"),
     icon: select(["icon", "dot", "pulse", "none"] as const, "icon", "Icon"),

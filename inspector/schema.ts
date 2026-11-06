@@ -17,10 +17,8 @@ export type ControlDef =
       defaultValue: string;
       label?: string;
       disabledWhen?: DisabledWhen;
-      /** Draw each option as an icon-only tab; the option's name stays its accessible name. */
+      /** An icon beside the selected value and each option in the dropdown. */
       icons?: Readonly<Partial<Record<string, ReactNode>>>;
-      /** Keep a short icon setting as a dropdown, its icons beside the labels in its rows. */
-      iconsInDropdown?: boolean;
       /** The boolean setting whose ⋯ menu holds this one, instead of a row of its own. */
       menuOf?: string;
       /** The starting value on a phone-width screen, when it differs from `defaultValue`. */
@@ -99,17 +97,14 @@ export function select<const O extends readonly string[]>(
   return { kind: "select", options, defaultValue, label, disabledWhen };
 }
 
-/** Any number of the options, including none: related on/off settings in one row. */
 /**
- * Give a select's options icons: icon tabs for up to six options, otherwise icons in the
- * dropdown's rows (always, for a multiselect, or with `dropdown`). Every option needs an icon.
+ * Give a select's dropdown options icons. Every option needs an icon.
  */
 export function withIcons<D extends { kind: "select" | "multiselect"; options: readonly string[] }>(
   def: D,
   icons: Readonly<Record<D["options"][number], ReactNode>>,
-  { dropdown = false }: { dropdown?: boolean } = {},
-): D & { icons: Readonly<Record<string, ReactNode>>; iconsInDropdown: boolean } {
-  return { ...def, icons, iconsInDropdown: dropdown };
+): D & { icons: Readonly<Record<string, ReactNode>> } {
+  return { ...def, icons };
 }
 
 /**
@@ -128,6 +123,7 @@ export function onMobile<D extends { kind: "select"; options: readonly string[] 
   return { ...def, mobileDefault: value };
 }
 
+/** Any number of the options, including none: related on/off settings in one row. */
 export function multi<const O extends readonly string[]>(
   options: O,
   defaultValue: readonly O[number][],

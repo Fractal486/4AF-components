@@ -43,7 +43,7 @@ export const checkboxEntry = defineEntry({
   name: "Checkbox",
   controls: {
     checked: withIcons(select(["unchecked", "checked", "indeterminate"], "checked", "Checked"), CHECKBOX_CHECKED_ICONS),
-    state: withIcons(select(["default", "disabled", "invalid"], "default", "State"), STATE_ICONS, { dropdown: true }),
+    state: withIcons(select(["default", "disabled", "invalid"], "default", "State"), STATE_ICONS),
   },
   render({ checked, state }) {
     return (
@@ -64,7 +64,7 @@ function groupEntry(nested: boolean) {
     slug: nested ? "checkbox-nested" : "checkbox-group",
     name: nested ? "Nested" : "Group",
     controls: {
-      state: withIcons(select(["default", "disabled", "invalid"], "default", "State"), STATE_ICONS, { dropdown: true }),
+      state: withIcons(select(["default", "disabled", "invalid"], "default", "State"), STATE_ICONS),
     },
     render({ state }) {
       return <GroupPreview nested={nested} disabled={state === "disabled"} invalid={state === "invalid"} />;

@@ -94,7 +94,7 @@ export const selectEntry = defineEntry({
     groups: bool(false, "Sections"),
     scrollable: bool(false, "Scrollable"),
     searchable: bool(false, "Search in panel"),
-    state: withIcons(select(["default", "disabled", "invalid"] as const, "default", "State"), STATE_ICONS, { dropdown: true }),
+    state: withIcons(select(["default", "disabled", "invalid"] as const, "default", "State"), STATE_ICONS),
   },
   render({ size, multiple, selected, searchable, scrollable, groups, icons, variant, tone, showLabel, state }) {
     const disabled = state === "disabled";

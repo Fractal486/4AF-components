@@ -22,48 +22,15 @@ import {
 } from "@/registry/ui/select/select";
 import { Slider } from "@/registry/ui/slider/slider";
 import { ScrubSlider } from "@/registry/ui/scrub-slider/scrub-slider";
-import { Tabs, TabsList, TabsTab } from "@/registry/ui/tabs/tabs";
 import { cn } from "@/registry/lib/cn";
 import { Ellipsis } from "lucide-react";
 import { Fragment } from "react";
 import type { ControlDef, ControlSchema, ControlValues } from "./schema";
 
-/*
- * A short enum reads better as pill tabs than as a dropdown: every choice is visible, and
- * picking one is a single click instead of open-then-choose. That only holds while the whole
- * run still fits where a settings field goes — past that it crowds the label or wraps, and the
- * dropdown is the better trade.
- *
- * So the decision is made on the width the run would take, not on how many options there are:
- * four two-letter sizes fit comfortably where three seven-letter variants do not. The numbers
- * are the `sm` pill's own metrics from `tabs.variants.ts`, measured against the width of the
- * text input in the row above.
- */
-const PILL_TRACK_PX = 4; // `p-0.5` on the list
-const PILL_GAP_PX = 2; // `gap-0.5` between tabs
-const PILL_TAB_PX = 20; // `px-2.5` on a tab
-const PILL_CHAR_PX = 6; // one `text-xs` character, averaged over mixed-case Latin
-const SETTINGS_FIELD_PX = 192; // `max-w-48`, the text control this lines up with
 // Wrap only when this label and control cannot fit together, regardless of panel width.
 const CONTROL_ROW = "flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-2";
-/** The most icon-only tabs a setting shows before its icons move into dropdown rows. */
-const MAX_ICON_TABS = 6;
 /** A setting that doesn't apply to the current configuration dims as a whole row. */
 const DISABLED_ROW = "cursor-not-allowed opacity-50";
-
-export function fitsPillTabs(labels: readonly string[]): boolean {
-  // One option is not a choice, and a lone pill reads as a button that does nothing.
-  if (labels.length < 2) return false;
-
-  const characters = labels.reduce((total, label) => total + label.length, 0);
-  const width =
-    PILL_TRACK_PX +
-    labels.length * PILL_TAB_PX +
-    (labels.length - 1) * PILL_GAP_PX +
-    characters * PILL_CHAR_PX;
-
-  return width <= SETTINGS_FIELD_PX;
-}
 
 interface ControlsProps<S extends ControlSchema> {
   /** Prefixes DOM ids when several settings panels are rendered on one page. */
@@ -73,13 +40,25 @@ interface ControlsProps<S extends ControlSchema> {
   onChange: (key: keyof S, value: unknown) => void;
 }
 
+/** Where a setting sorts: dropdowns and tabs, then sliders and fields, then switches. */
+function controlRank(key: string, def: ControlDef) {
+  if (key === "disabled") return 3;
+  if (def.kind === "select" || def.kind === "multiselect") return 0;
+  if (def.kind === "boolean") return 2;
+  return 1;
+}
+
 export function Controls<S extends ControlSchema>({
   idPrefix,
   schema,
   values,
   onChange,
 }: ControlsProps<S>) {
-  const entries = Object.entries(schema) as [keyof S & string, ControlDef][];
+  // Every panel reads the same way: choices first, amounts second, switches last, and
+  // Disabled at the very end. A stable sort, so each group keeps the order its demo wrote.
+  const entries = (Object.entries(schema) as [keyof S & string, ControlDef][]).sort(
+    ([keyA, a], [keyB, b]) => controlRank(keyA, a) - controlRank(keyB, b),
+  );
   // Selects that live in a boolean's ⋯ menu render there, not as rows of their own.
   const menuOf = (def: ControlDef) => (def.kind === "select" ? def.menuOf : undefined);
 
@@ -233,44 +212,7 @@ function Control({
   if (def.kind === "select") {
     const labelId = `${id}-label`;
     const selectedLabel = humanizeLabel(value as string);
-
     const icons = def.icons;
-    // Icons stay tabs up to six options; past that a row of glyphs is a guessing game, so
-    // they move into the dropdown's rows beside their labels instead.
-    const iconTabs = icons !== undefined && !def.iconsInDropdown && def.options.length <= MAX_ICON_TABS;
-    if (iconTabs || (!icons && fitsPillTabs(def.options.map(humanizeLabel)))) {
-      // The tab's value is the raw option, so picking one hands back exactly what the schema
-      // declared — no round-trip through the display label and back.
-      return (
-        <div className={row}>
-          <span id={labelId} className="min-w-0 text-sm text-muted-foreground">
-            {label}
-          </span>
-          <Tabs
-            variant="pill"
-            appearance="outline"
-            size="sm"
-            className="ml-auto max-w-full shrink-0"
-            value={value as string}
-            onValueChange={(next) => onChange(next)}
-          >
-            <TabsList aria-labelledby={labelId}>
-              {def.options.map((option) => (
-                <TabsTab
-                  key={option}
-                  value={option}
-                  disabled={disabled}
-                  aria-label={iconTabs ? humanizeLabel(option) : undefined}
-                  title={iconTabs ? humanizeLabel(option) : undefined}
-                >
-                  {iconTabs ? icons[option] : humanizeLabel(option)}
-                </TabsTab>
-              ))}
-            </TabsList>
-          </Tabs>
-        </div>
-      );
-    }
 
     return (
       <div className={row}>

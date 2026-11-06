@@ -48,6 +48,9 @@ const LOADER_CONTROLS = {
   },
 } as const;
 
+/** The Loader setting's key among a demo's own; prefixed so it can't collide with one. */
+const LOADER_KEY = "__loader";
+
 type DemoName = ComponentDemoName;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyEntry = Entry<any>;
@@ -251,25 +254,21 @@ export function hasDemoSettings(demo: ComponentDemoState) {
 /** The demo's settings rows; nothing until the demo has loaded. */
 export function DemoSettings({ demo, idPrefix }: { demo: ComponentDemoState; idPrefix: string }) {
   if (!demo.entry) return null;
-  const schema: ControlSchema = demo.entry.controls;
+  // The shared Loader setting joins the demo's own, so it sorts with the other dropdowns.
+  const schema: ControlSchema = demo.hasLoaderSetting
+    ? { ...demo.entry.controls, [LOADER_KEY]: LOADER_CONTROLS.loader }
+    : demo.entry.controls;
+  const values = demo.hasLoaderSetting ? { ...demo.values, [LOADER_KEY]: demo.loader } : demo.values;
 
   return (
-    <>
-      <Controls
-        idPrefix={idPrefix}
-        schema={schema}
-        values={demo.values}
-        onChange={(key, value) => demo.setValue(key as string, value)}
-      />
-      {demo.hasLoaderSetting && (
-        <Controls
-          idPrefix={`${idPrefix}-loader`}
-          schema={LOADER_CONTROLS}
-          values={{ loader: demo.loader }}
-          onChange={(_key, value) => demo.setLoader(value as LoaderChoice)}
-        />
-      )}
-    </>
+    <Controls
+      idPrefix={idPrefix}
+      schema={schema}
+      values={values}
+      onChange={(key, value) =>
+        key === LOADER_KEY ? demo.setLoader(value as LoaderChoice) : demo.setValue(key as string, value)
+      }
+    />
   );
 }
 

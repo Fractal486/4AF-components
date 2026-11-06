@@ -11,7 +11,7 @@ export const actionToggleEntry = defineEntry({
     size: select(TEXT_SIZES, "md"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     // Automatic runs the real action on click; the others pin the toggle in one state.
-    status: withIcons(select(["automatic", "pending", "error"], "automatic", "Status"), ACTION_STATUS_ICONS, { dropdown: true }),
+    status: withIcons(select(["automatic", "pending", "error"], "automatic", "Status"), ACTION_STATUS_ICONS),
     fail: bool(false, "Fail on click", (values) => values.status !== "automatic"),
     sizing: select(["widest", "current"], "widest", "Width"),
   },

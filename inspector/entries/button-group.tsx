@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { NavIcon } from "@/components/site/nav-icons";
 import { DATE_RANGE_ICON } from "../setting-icons";
-import { Archive, Copy, Search, Share2, SquarePen, Trash2 } from "lucide-react";
+import { Copy, Search, Share2, SquarePen } from "lucide-react";
 import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
 import { ButtonGroup } from "@/registry/ui/button-group/button-group";
@@ -16,15 +16,13 @@ import {
 } from "@/registry/ui/select/select-aligned";
 import { SearchSelect, SearchSelectContent, SearchSelectInput, SearchSelectItem } from "@/registry/ui/select/select-search";
 import { CONTROL_VARIANTS, TEXT_SIZES } from "../button-options";
-import { bool, defineEntry, multi, num, select, withIcons } from "../schema";
+import { bool, defineEntry, multi, select, withIcons } from "../schema";
 import { BUTTON_GROUP_ORIENTATION_ICONS } from "../setting-icons";
 
 const ACTIONS = [
   { label: "Copy", icon: Copy },
   { label: "Edit", icon: SquarePen },
   { label: "Share", icon: Share2 },
-  { label: "Archive", icon: Archive },
-  { label: "Delete", icon: Trash2 },
 ];
 const SEARCH_ITEMS = [
   { value: "design", label: "Design" },
@@ -58,11 +56,10 @@ export const buttonGroupEntry = defineEntry({
     size: select(TEXT_SIZES, "md", undefined, (values) => picks(values).includes("input")),
     orientation: withIcons(select(["horizontal", "vertical"], "horizontal"), BUTTON_GROUP_ORIENTATION_ICONS),
     shape: select(["rectangular", "pill"], "rectangular", "Shape", (values) => picks(values).some((item) => item !== "buttons")),
-    count: num(3, { min: 1, max: 5, label: "Buttons", disabledWhen: (values) => !picks(values).includes("buttons") }),
     icon: select(["none", "leading", "only"], "leading", undefined, (values) => !picks(values).includes("buttons")),
     invalid: bool(false, "Invalid field", (values) => !picks(values).some((item) => item !== "buttons")),
   },
-  render({ content, variant, size, orientation, shape, count, icon, invalid }) {
+  render({ content, variant, size, orientation, shape, icon, invalid }) {
     const selected = Array.isArray(content) ? content : ["buttons"];
     const has = (kind: typeof CONTENT[number]) => selected.includes(kind);
     const hasFields = selected.some((item) => item !== "buttons");
@@ -123,7 +120,7 @@ export const buttonGroupEntry = defineEntry({
         )}
         {has("datePicker") && <DatePicker variant="outline-ghost" size={fieldSize} aria-label="Date" aria-invalid={invalid || undefined} />}
         {has("dateRangePicker") && <DateRangePicker variant="outline-ghost" size={fieldSize} aria-label="Date range" aria-invalid={invalid || undefined} />}
-        {has("buttons") && ACTIONS.slice(0, count).map(({ label, icon: Icon }) => (
+        {has("buttons") && ACTIONS.map(({ label, icon: Icon }) => (
           <Button
             key={label}
             size={iconOnly ? ICON_SIZE[groupSize] : groupSize}

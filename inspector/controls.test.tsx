@@ -3,11 +3,9 @@ import { vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
-import { Controls, fitsPillTabs } from "./controls";
+import { Controls } from "./controls";
 import { bool, initialValues, inMenu, num, onMobile, range, select, text, withIcons, type ControlValues } from "./schema";
 
-// Long enough to stay a dropdown — a short enum renders as pill tabs instead, which the
-// "short enums" suite below covers.
 const schema = {
   variant: select(
     ["primary", "outline", "ghost", "plain", "destructive"] as const,
@@ -80,42 +78,16 @@ describe("Controls short enums", () => {
     thumb: select(["bar", "circle", "knob"] as const, "bar", "Thumb"),
   };
 
-  it("offers a short enum as pill tabs instead of a dropdown", async () => {
+  it("offers a short enum as a dropdown and returns the raw option on pick", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-
     render(<Controls schema={thumbs} values={{ thumb: "bar" }} onChange={onChange} />);
-
-    // Every choice visible, one click to pick — and no dropdown to open.
-    expect(screen.queryByRole("combobox")).toBeNull();
-    const list = screen.getByRole("tablist");
-    expect(list).toHaveAccessibleName("Thumb");
-    expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
-      "Bar",
-      "Circle",
-      "Knob",
-    ]);
-    expect(screen.getByRole("tab", { name: "Bar" })).toHaveAttribute("aria-selected", "true");
-
-    await user.click(screen.getByRole("tab", { name: "Knob" }));
-
-    // The raw option the schema declared, not its display label.
+    expect(screen.queryByRole("tablist")).toBeNull();
+    const trigger = screen.getByRole("combobox", { name: "Thumb" });
+    expect(trigger).toHaveTextContent("Bar");
+    await user.click(trigger);
+    await user.click(await screen.findByRole("option", { name: "Knob" }));
     expect(onChange).toHaveBeenCalledWith("thumb", "knob");
-  });
-
-  it("decides on the width of the run, not the number of options", () => {
-    // Same count, opposite answers: four two-letter sizes fit where four side names do not.
-    expect(fitsPillTabs(["Xs", "Sm", "Md", "Lg"])).toBe(true);
-    expect(fitsPillTabs(["Top", "Right", "Bottom", "Left"])).toBe(false);
-
-    // And two options can still be too wide to lay out.
-    expect(fitsPillTabs(["Bottom Right", "Bottom Center"])).toBe(false);
-
-    // The case the rule is cut to: three one-word labels, inside a settings field.
-    expect(fitsPillTabs(["Bar", "Circle", "Knob"])).toBe(true);
-
-    // A lone option is not a choice.
-    expect(fitsPillTabs(["Only"])).toBe(false);
   });
 });
 
@@ -135,7 +107,7 @@ describe("Controls disabledWhen", () => {
       />,
     );
 
-    for (const tab of screen.getAllByRole("tab")) expect(tab).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByRole("combobox", { name: "Icon" })).toBeDisabled();
     expect(screen.getByText("Icon").parentElement).toHaveClass("opacity-50");
     expect(screen.getByText("Buttons").parentElement).toHaveClass("opacity-50");
     expect(screen.getByRole("slider", { name: "Buttons" })).toBeDisabled();
@@ -159,8 +131,8 @@ describe("Controls range", () => {
   });
 });
 
-describe("Controls icon tabs", () => {
-  it("draws each option as an icon tab named for the option", async () => {
+describe("Controls short icon dropdown", () => {
+  it("preserves icons in the selected value and options", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const schema = {
@@ -170,12 +142,14 @@ describe("Controls icon tabs", () => {
       }),
     };
     render(<Controls schema={schema} values={{ side: "top" }} onChange={onChange} />);
-
-    const bottom = screen.getByRole("tab", { name: "Bottom" });
-    expect(screen.getByRole("tab", { name: "Top" })).toContainElement(screen.getByTestId("top-icon"));
+    expect(screen.queryByRole("tablist")).toBeNull();
+    const trigger = screen.getByRole("combobox", { name: "Side" });
+    expect(trigger).toContainElement(screen.getByTestId("top-icon"));
+    expect(trigger).toHaveTextContent("Top");
+    await user.click(trigger);
+    const bottom = await screen.findByRole("option", { name: "Bottom" });
     expect(bottom).toContainElement(screen.getByTestId("bottom-icon"));
-    expect(bottom).not.toHaveTextContent("Bottom");
-
+    expect(bottom).toHaveTextContent("Bottom");
     await user.click(bottom);
     expect(onChange).toHaveBeenCalledWith("side", "bottom");
   });
@@ -253,5 +227,24 @@ describe("initialValues", () => {
     };
     expect(initialValues(schema)).toEqual({ viewport: "desktop", size: "md" });
     expect(initialValues(schema, { mobile: true })).toEqual({ viewport: "mobile", size: "md" });
+  });
+});
+
+describe("Controls order", () => {
+  it("puts choices first, amounts second, switches last, and Disabled at the end", () => {
+    const schema = {
+      disabled: bool(false),
+      loading: bool(false, "Loading"),
+      step: num(5, { min: 1, max: 10, label: "Step" }),
+      size: select(["sm", "lg"], "sm", "Size"),
+      rows: range([2, 4], { min: 1, max: 8, label: "Rows" }),
+      tone: select(["light", "dark", "dim", "high", "low", "mid", "auto"], "light", "Tone"),
+    };
+    const { container } = render(
+      <Controls schema={schema} values={initialValues(schema)} onChange={() => {}} />,
+    );
+    const labels = Array.from(container.firstElementChild!.children, (row) => row.textContent ?? "");
+    const order = ["Size", "Tone", "Step", "Rows", "Loading", "Disabled"];
+    expect(order.map((label) => labels.findIndex((text) => text.startsWith(label)))).toEqual([0, 1, 2, 3, 4, 5]);
   });
 });

@@ -52,7 +52,7 @@ export const dataTableEntry = defineEntry({
     selection: select(["none", "checkbox", "actionRow"], "actionRow", "Selection"),
     actionColumn: bool(true, "Row actions column"),
     pagination: bool(true, "Pagination"),
-    state: withIcons(select(["default", "loading", "empty"], "default", "State"), TABLE_STATE_ICONS, { dropdown: true }),
+    state: withIcons(select(["default", "loading", "empty"], "default", "State"), TABLE_STATE_ICONS),
     footer: bool(false, "Footer"),
     caption: bool(true, "Caption"),
   },

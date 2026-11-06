@@ -11,7 +11,7 @@ export const actionButtonEntry = defineEntry({
     size: select(TEXT_SIZES, "md"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     // Automatic runs the real action on click; the others pin the button in one state.
-    status: withIcons(select(["automatic", "pending", "success", "error"], "automatic", "Status"), ACTION_STATUS_ICONS, { dropdown: true }),
+    status: withIcons(select(["automatic", "pending", "success", "error"], "automatic", "Status"), ACTION_STATUS_ICONS),
     fail: bool(false, "Fail on click", (values) => values.status !== "automatic"),
     withIcon: bool(true, "Show leading icon"),
     pendingMode: select(["label", "icon"], "label", "Pending content"),

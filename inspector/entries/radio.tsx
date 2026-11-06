@@ -9,7 +9,7 @@ export const radioEntry = defineEntry({
   name: "Radio",
   controls: {
     size: select(SIZES, "md", "Size"),
-    state: withIcons(select(["default", "disabled", "invalid"], "default", "State"), STATE_ICONS, { dropdown: true }),
+    state: withIcons(select(["default", "disabled", "invalid"], "default", "State"), STATE_ICONS),
   },
   render({ size, state }) {
     const disabled = state === "disabled";

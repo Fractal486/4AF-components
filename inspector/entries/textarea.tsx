@@ -20,7 +20,7 @@ export const textareaEntry = defineEntry({
     rows: range([3, 10], { min: 1, max: 24, label: "Rows" }),
     submitOnShortcut: bool(false, "Submit shortcut"),
     description: bool(false, "Description"),
-    state: withIcons(select(["default", "disabled", "invalid"], "default", "State"), STATE_ICONS, { dropdown: true }),
+    state: withIcons(select(["default", "disabled", "invalid"], "default", "State"), STATE_ICONS),
   },
   render({ variant, tone, height, rows, submitOnShortcut, description, state }) {
     const [minRows, maxRows] = rows;

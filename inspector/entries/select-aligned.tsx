@@ -62,7 +62,7 @@ export const selectAlignedEntry = defineEntry({
     sections: bool(false, "Sections"),
     scrollable: bool(false, "Scrollable"),
     searchable: bool(false, "Search field"),
-    state: withIcons(select(["default", "disabled", "invalid"] as const, "default", "State"), STATE_ICONS, { dropdown: true }),
+    state: withIcons(select(["default", "disabled", "invalid"] as const, "default", "State"), STATE_ICONS),
   },
   render({ size, selected, variant, showLabel, sections, scrollable, searchable, state }) {
     const disabled = state === "disabled";
