@@ -70,7 +70,7 @@
          Collapsed header hides search+gap (40px); group label removes 32px.
          First four rows therefore move down (40+32)*2=144 units on expansion.
          Header brand and footer stay fixed. Real geometry changes, no scaled text.
-         Expansion 250..650ms; rulers/spacing 700..900ms. */
+         Expansion 250..550ms; rulers/spacing 700..900ms. */
       @keyframes sidebar-bp-width { from { width: 94px; } to { width: 510px; } }
       @keyframes sidebar-bp-clip-width { from { width: 96px; } to { width: 512px; } }
       @keyframes sidebar-bp-selection { from { width: 64px; y: 264px; } to { width: 478px; y: 408px; } }
@@ -135,12 +135,13 @@
       }
       @media (prefers-reduced-motion: no-preference) {
         .sidebar-bp-button-press { animation: sidebar-bp-button-press 500ms linear 150ms both; }
-        #sidebar-bp-root .sidebar-bp-width { stroke-dasharray: 1; animation: sidebar-bp-width 400ms ease-out 250ms both, sidebar-bp-draw-line 400ms ease-out both; }
-        .sidebar-bp-clip-width { animation: sidebar-bp-clip-width 400ms ease-out 250ms both; }
-        #sidebar-bp-root .sidebar-bp-selection { animation: sidebar-bp-selection 400ms ease-out 250ms both; }
-        #sidebar-bp-root .sidebar-bp-menu { animation: sidebar-bp-menu 400ms ease-out 250ms both; }
-        #sidebar-bp-root .sidebar-bp-heading-in { animation: sidebar-bp-heading-in 400ms ease-out 250ms both; }
-        #sidebar-bp-root .sidebar-bp-content-in { animation: sidebar-bp-reveal 250ms ease-out 400ms both; }
+        #sidebar-bp-root .sidebar-bp-width { stroke-dasharray: 1; animation: sidebar-bp-width 300ms cubic-bezier(0.25, 1, 0.5, 1) 250ms both, sidebar-bp-draw-line 400ms ease-out both; }
+        .sidebar-bp-clip-width { animation: sidebar-bp-clip-width 300ms cubic-bezier(0.25, 1, 0.5, 1) 250ms both; }
+        #sidebar-bp-root .sidebar-bp-selection { animation: sidebar-bp-selection 300ms cubic-bezier(0.25, 1, 0.5, 1) 250ms both; }
+        #sidebar-bp-root .sidebar-bp-menu { animation: sidebar-bp-menu 300ms cubic-bezier(0.25, 1, 0.5, 1) 250ms both; }
+        #sidebar-bp-root .sidebar-bp-heading-in { animation: sidebar-bp-heading-in 300ms cubic-bezier(0.25, 1, 0.5, 1) 250ms both; }
+        #sidebar-bp-root .sidebar-bp-content-in { animation: sidebar-bp-reveal 300ms cubic-bezier(0.16, 1, 0.3, 1) 250ms both; }
+        #sidebar-bp-root .sidebar-bp-search-in { animation: sidebar-bp-reveal 300ms cubic-bezier(0.25, 1, 0.5, 1) 250ms both; }
         #sidebar-bp-root .sidebar-bp-draw,
         .sidebar-bp-icon > * {
           stroke-dasharray: 1;
@@ -190,7 +191,7 @@
       <rect x="321" y="153" width="510" height="702" stroke="#a7a8a2" stroke-width="2" pathLength="1" class="sidebar-bp-width"/>
     </g>
     <rect x="336" y="408" width="478" height="64" rx="16" fill="#353632" class="sidebar-bp-selection"/>
-    <g class="sidebar-bp-content-in">
+    <g class="sidebar-bp-search-in">
     <rect x="337" y="249" width="476" height="62" rx="15" stroke="#a7a8a2" stroke-width="2" pathLength="1" class="sidebar-bp-draw" style="--sidebar-bp-delay:250ms"/>
 
     </g>
@@ -215,7 +216,7 @@
     <path d="M362 250V310" class="sidebar-bp-spacing"/>
     <path d="M336 776H814 M336 840H814 M352 776V840 M384 776V840 M400 776V840" class="sidebar-bp-spacing"/>
 
-    <text x="362" y="290" class="sidebar-bp-text sidebar-bp-content-in">Search…</text>
+    <text x="362" y="290" class="sidebar-bp-text sidebar-bp-search-in">Search…</text>
     <text x="352" y="384" class="sidebar-bp-heading sidebar-bp-heading-in">Workspace</text>
 
     <!-- Four flush menu rows expand downward as header and group labels return. -->
