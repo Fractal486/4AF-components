@@ -436,11 +436,15 @@ function RailNav({
     };
   }, [nav]);
 
-  // Long lists put the current page below the fold; bring it into the rail's view.
+  // Long lists put the current page below the fold; bring it into the rail's view. The first
+  // load jumps there; a later navigation glides, unless reduced motion is on.
+  const scrolledOnce = useRef(false);
   useEffect(() => {
+    const glide = scrolledOnce.current && !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    scrolledOnce.current = true;
     ref.current
       ?.querySelector("[aria-current=page]")
-      ?.scrollIntoView({ block: "nearest" });
+      ?.scrollIntoView({ block: "nearest", behavior: glide ? "smooth" : "auto" });
   }, [pathname]);
 
   return (
