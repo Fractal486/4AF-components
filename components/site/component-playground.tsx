@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ChevronRight, Info, Link as LinkIcon, Maximize2, Minimize2, RotateCcw, Terminal } from "lucide-react";
-import { Fragment, useEffect, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
 import type { ComponentStats } from "@/lib/component-stats";
 import { InlineLink } from "@/components/inline-link";
 import { Popover, PopoverContent, PopoverTrigger } from "@/registry/ui/popover/popover";
@@ -11,6 +11,7 @@ import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
 import { CopyButton } from "@/registry/ui/copy-button/copy-button";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/registry/ui/select/select";
 import { TableOfContents, type TocItem } from "@/registry/ui/table-of-contents/table-of-contents";
 import { Tabs, TabsList, TabsTab } from "@/registry/ui/tabs/tabs";
 import { Tooltip } from "@/registry/ui/tooltip/tooltip";
@@ -172,6 +173,51 @@ function ComponentInfo({
   );
 }
 
+/** The variants rail's footprint beside the demo: its 8px inset, 112px width, and an 8px gap. */
+const RAIL_SPACE = 128;
+const DESKTOP = "(min-width: 1024px)";
+
+/**
+ * Whether the variants rail fits beside the demo without covering it. From `lg` it always
+ * shows, as before; below it, the demo's width is measured against the canvas, and a demo
+ * too wide for the rail beside it gets the dropdown row instead. Rechecked as the canvas
+ * resizes and as the demo's content swaps in.
+ */
+function useRailFits(stageRef: RefObject<HTMLElement | null>) {
+  const [fits, setFits] = useState(true);
+  useLayoutEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const desktop = window.matchMedia(DESKTOP);
+    let content: Element | null = null;
+    const resize = new ResizeObserver(() => measure());
+    const measure = () => {
+      const next = stage.querySelector('[data-slot="demo-content"]');
+      if (next !== content) {
+        if (content) resize.unobserve(content);
+        if (next) resize.observe(next);
+        content = next;
+      }
+      if (desktop.matches) return setFits(true);
+      // Still loading: keep the last answer, so the row doesn't flicker between demos.
+      if (!content) return;
+      const room = (stage.clientWidth - content.getBoundingClientRect().width) / 2;
+      setFits(room >= RAIL_SPACE);
+    };
+    const mutations = new MutationObserver(measure);
+    resize.observe(stage);
+    mutations.observe(stage, { childList: true, subtree: true });
+    desktop.addEventListener("change", measure);
+    measure();
+    return () => {
+      resize.disconnect();
+      mutations.disconnect();
+      desktop.removeEventListener("change", measure);
+    };
+  }, [stageRef]);
+  return fits;
+}
+
 function PlaygroundFrame({
   title,
   icon,
@@ -203,6 +249,9 @@ function PlaygroundFrame({
   // The left edges the info card is pinned to: the title row below `lg`, the tabs from it.
   const titleRowRef = useRef<HTMLDivElement>(null);
   const tabsRowRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const railFits = useRailFits(stageRef);
+  const variantRow = demos.length > 1 && !railFits;
 
   // Opening the docs at a heading: the docs were hidden when the browser or router tried to
   // scroll, so scroll once they are shown.
@@ -356,13 +405,37 @@ function PlaygroundFrame({
               view === "docs" && "lg:hidden",
             )}
           >
+            {/* Where the rail would cover the demo, the variants take a row of their own. */}
+            {variantRow ? (
+              <div className={cn("flex h-11 shrink-0 items-center justify-center", demo.replayable ? "px-12" : "px-2")}>
+                <Select<PlaygroundDemo["name"]>
+                  value={demoName}
+                  onValueChange={(next) => {
+                    if (next !== null) onDemoChange(next);
+                  }}
+                >
+                  <SelectTrigger aria-label="Variant" variant="plain" className="max-w-full">
+                    <SelectValue render={<span />}>
+                      {() => demos.find((option) => option.name === demoName)?.label}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {demos.map((option) => (
+                      <SelectItem key={option.name} value={option.name}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
             <ScrollArea
               orientation="both"
               className="h-[24rem] lg:h-auto lg:flex-1"
               viewportClassName="*:h-full"
             >
-              <div className="relative h-full min-h-full">
-                {demos.length > 1 && (
+              <div ref={stageRef} className="relative h-full min-h-full">
+                {demos.length > 1 && !variantRow && (
                   <div role="group" aria-label="Variants" className="absolute top-1/2 left-2 z-10 flex w-28 -translate-y-1/2 flex-col items-stretch">
                     <p className="mb-2.5 pr-2 text-2xs text-subtle-foreground">Variants</p>
                     <div className="relative flex flex-col items-stretch">
@@ -400,7 +473,7 @@ function PlaygroundFrame({
                 variant="ghost"
                 size="icon-sm"
                 aria-label={`Replay ${title} animation`}
-                className="absolute top-2 right-2 lg:hidden"
+                className={cn("absolute right-2 lg:hidden", variantRow ? "top-[7px]" : "top-2")}
                 onClick={demo.replay}
               >
                 <RotateCcw />

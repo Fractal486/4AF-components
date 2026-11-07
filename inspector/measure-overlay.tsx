@@ -7,7 +7,8 @@ import { useEffect, type RefObject } from "react";
  * blueprint blocks labelled with their size, padding and gaps are hatched and measured,
  * content boxes are dashed, and text turns into skeleton bars. The demo and any popup it has
  * open are measured afresh every frame, so an entrance animation reads out as it settles.
- * Letting go fades the layer away.
+ * Letting go fades the layer away. On touch, where a drag scrolls the page, the measurement
+ * starts from a press held still for a moment, and then follows the finger.
  *
  * Everything is painted onto one fixed canvas clipped to the selection, so the page itself is
  * never restyled. Open popups stay open: Base UI dismisses them on a mouse click, not a press,
@@ -32,6 +33,12 @@ export function MeasureOverlay({
     let palette: Palette | null = null;
     let frame = 0;
     let removeTimer = 0;
+    // A touch press on empty space, waiting to see if it's held still long enough to measure.
+    let hold: { pointerId: number; x0: number; y0: number; target: Element; bounds: Rect; timer: number } | null = null;
+    const cancelHold = () => {
+      if (hold) window.clearTimeout(hold.timer);
+      hold = null;
+    };
 
     // The hover trigger the selection covers most, held open so its panel shows in the x-ray.
     let peeked: Element | null = null;
@@ -119,10 +126,30 @@ export function MeasureOverlay({
     };
 
     const onPointerDown = (event: PointerEvent) => {
-      if (replaying || drag || event.button !== 0 || event.pointerType === "touch") return;
+      if (replaying || drag || hold || event.button !== 0) return;
       const target = event.target;
       const bounds = target instanceof Element ? pressBounds(target, event, canvasEl, content) : null;
       if (!bounds || !(target instanceof Element)) return;
+      if (event.pointerType === "touch") {
+        // The press goes through untouched, so a tap still taps and a swipe still scrolls;
+        // only one held still becomes a measurement.
+        const { pointerId, clientX, clientY } = event;
+        hold = {
+          pointerId,
+          x0: clientX,
+          y0: clientY,
+          target,
+          bounds,
+          timer: window.setTimeout(() => {
+            if (!hold) return;
+            drag = { pointerId, x0: clientX, y0: clientY, x: clientX, y: clientY, active: true, target, bounds };
+            hold = null;
+            navigator.vibrate?.(8);
+            show();
+          }, TOUCH_HOLD_MS),
+        };
+        return;
+      }
       // Hold the press back until it's known to be a click: Select and Menu dismiss on the press
       // itself. Preventing it also keeps text selection and focus where they are.
       event.preventDefault();
@@ -140,6 +167,11 @@ export function MeasureOverlay({
     };
 
     const onPointerMove = (event: PointerEvent) => {
+      if (hold && event.pointerId === hold.pointerId) {
+        // Moved before the hold landed: it's a scroll or a swipe, not a measurement.
+        if (Math.hypot(event.clientX - hold.x0, event.clientY - hold.y0) >= TOUCH_SLOP) cancelHold();
+        return;
+      }
       if (!drag || event.pointerId !== drag.pointerId) return;
       follow(drag, event);
       if (!drag.active && Math.hypot(drag.x - drag.x0, drag.y - drag.y0) >= DRAG_THRESHOLD) {
@@ -156,6 +188,7 @@ export function MeasureOverlay({
     };
 
     const onPointerUp = (event: PointerEvent) => {
+      if (hold && event.pointerId === hold.pointerId) return cancelHold();
       if (!drag || event.pointerId !== drag.pointerId) return;
       const wasActive = drag.active;
       follow(drag, event);
@@ -170,6 +203,7 @@ export function MeasureOverlay({
     };
 
     const onPointerCancel = (event: PointerEvent) => {
+      if (hold && event.pointerId === hold.pointerId) return cancelHold();
       if (!drag || event.pointerId !== drag.pointerId) return;
       const wasActive = drag.active;
       drag = null;
@@ -182,6 +216,15 @@ export function MeasureOverlay({
       if (!drag || replaying) return;
       event.preventDefault();
       event.stopPropagation();
+    };
+
+    // Once a touch measurement has begun, the finger draws the selection: it must not scroll
+    // the page (which would also cancel the pointer) or open the long-press menu.
+    const onTouchMove = (event: TouchEvent) => {
+      if (drag?.active) event.preventDefault();
+    };
+    const onContextMenu = (event: Event) => {
+      if (hold || drag?.active) event.preventDefault();
     };
 
     const onKeyDown = (event: KeyboardEvent) => {
@@ -203,6 +246,8 @@ export function MeasureOverlay({
     window.addEventListener("keydown", onKeyDown, true);
     window.addEventListener("mousedown", onHeldPress, true);
     window.addEventListener("selectstart", onHeldPress, true);
+    window.addEventListener("touchmove", onTouchMove, { capture: true, passive: false });
+    window.addEventListener("contextmenu", onContextMenu, true);
     return () => {
       window.removeEventListener("pointerdown", onPointerDown, true);
       window.removeEventListener("pointermove", onPointerMove, true);
@@ -211,6 +256,9 @@ export function MeasureOverlay({
       window.removeEventListener("keydown", onKeyDown, true);
       window.removeEventListener("mousedown", onHeldPress, true);
       window.removeEventListener("selectstart", onHeldPress, true);
+      window.removeEventListener("touchmove", onTouchMove, true);
+      window.removeEventListener("contextmenu", onContextMenu, true);
+      cancelHold();
       window.cancelAnimationFrame(frame);
       window.clearTimeout(removeTimer);
       peek(null);
@@ -224,6 +272,9 @@ export function MeasureOverlay({
 /* -- Pointer ------------------------------------------------------------------------- */
 
 const DRAG_THRESHOLD = 4;
+/** How long a touch press must stay still to start measuring, and how far it may drift. */
+const TOUCH_HOLD_MS = 350;
+const TOUCH_SLOP = 8;
 
 interface Drag {
   pointerId: number;

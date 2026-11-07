@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useRef, type ReactNode } from "react";
 import { vi } from "vitest";
@@ -9,7 +9,7 @@ import { Tooltip, TooltipProvider } from "@/registry/ui/tooltip/tooltip";
 import { CommandPaletteDemo } from "./entries/command-palette-demo";
 import { MeasureOverlay } from "./measure-overlay";
 
-function Harness({ children }: { children: ReactNode }) {
+function Harness({ children }: { children?: ReactNode }) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   return (
@@ -186,4 +186,48 @@ it("ends a text edit in the demo on a plain click elsewhere, as a real press wou
   await user.click(canvas());
   expect(blur).toHaveBeenCalledOnce();
   expect(field).not.toHaveFocus();
+});
+
+describe("touch", () => {
+  const touch = { pointerType: "touch", pointerId: 7, button: 0, isPrimary: true };
+  const live = () => (overlay() as HTMLElement | null)?.style.opacity === "1";
+
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  it("measures from a press held still, without blocking the press itself", () => {
+    render(<Harness />);
+    vi.spyOn(canvas(), "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 200, 200));
+    const down = fireEvent.pointerDown(canvas(), { ...touch, clientX: 10, clientY: 10 });
+    expect(down).toBe(true);
+    expect(live()).toBe(false);
+
+    act(() => vi.advanceTimersByTime(400));
+    expect(live()).toBe(true);
+    fireEvent.pointerMove(canvas(), { ...touch, clientX: 80, clientY: 60 });
+    // The finger draws the selection instead of scrolling the page.
+    const move = new TouchEvent("touchmove", { bubbles: true, cancelable: true });
+    canvas().dispatchEvent(move);
+    expect(move.defaultPrevented).toBe(true);
+    fireEvent.pointerUp(canvas(), { ...touch, clientX: 80, clientY: 60 });
+    expect(live()).toBe(false);
+  });
+
+  it("leaves a swipe to scroll and a tap to tap", () => {
+    render(<Harness />);
+    vi.spyOn(canvas(), "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 200, 200));
+    fireEvent.pointerDown(canvas(), { ...touch, clientX: 10, clientY: 10 });
+    fireEvent.pointerMove(canvas(), { ...touch, clientX: 10, clientY: 40 });
+    act(() => vi.advanceTimersByTime(400));
+    expect(live()).toBe(false);
+    const move = new TouchEvent("touchmove", { bubbles: true, cancelable: true });
+    canvas().dispatchEvent(move);
+    expect(move.defaultPrevented).toBe(false);
+    fireEvent.pointerUp(canvas(), { ...touch, clientX: 10, clientY: 40 });
+
+    fireEvent.pointerDown(canvas(), { ...touch, clientX: 10, clientY: 10 });
+    fireEvent.pointerUp(canvas(), { ...touch, clientX: 10, clientY: 10 });
+    act(() => vi.advanceTimersByTime(400));
+    expect(live()).toBe(false);
+  });
 });
