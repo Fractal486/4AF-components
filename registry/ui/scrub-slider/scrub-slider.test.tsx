@@ -553,17 +553,17 @@ describe("ScrubSlider inline layout", () => {
   });
 });
 
-describe("ScrubSlider sliding ruler", () => {
+describe("ScrubSlider fixed indicator", () => {
   it("keeps the indicator centred and moves the ruler under it", () => {
     vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(RULER_WIDTH);
     const change = vi.fn();
     const commit = vi.fn();
     const { container } = render(
-      <ScrubSlider aria-label="Gap" layout="inline" ruler="sliding" chevrons={false} defaultValue={50} onValueChange={change} onValueCommitted={commit} />,
+      <ScrubSlider aria-label="Gap" layout="inline" indicator="fixed" chevrons={false} defaultValue={50} onValueChange={change} onValueCommitted={commit} />,
     );
     const root = geometry(container);
     const indicator = container.querySelector<HTMLElement>('[data-slot="scrub-slider-indicator"]')!;
-    expect(root).toHaveAttribute("data-ruler", "sliding");
+    expect(root).toHaveAttribute("data-indicator", "fixed");
     expect(indicator).toHaveClass("opacity-100");
     expect(indicator.style.translate).toBe(`${RULER_WIDTH / 2 - 1}px 0`);
 

@@ -1,6 +1,6 @@
 import { ScrubSlider } from "@/registry/ui/scrub-slider/scrub-slider";
 import { bool, defineEntry, select, withIcons } from "../schema";
-import { SCRUB_SLIDER_LAYOUT_ICONS, SCRUB_SLIDER_QUANTITY_ICONS } from "../setting-icons";
+import { SCRUB_SLIDER_LAYOUT_ICONS, SCRUB_SLIDER_QUANTITY_ICONS, SCRUB_SLIDER_INDICATOR_ICONS } from "../setting-icons";
 
 /**
  * Each quantity shows a different scale: a long pixel range that needs the edge scroll, a
@@ -19,13 +19,13 @@ export const scrubSliderEntry = defineEntry({
   controls: {
     quantity: withIcons(select(["width", "opacity", "rotation", "scale"], "width", "Quantity"), SCRUB_SLIDER_QUANTITY_ICONS),
     layout: withIcons(select(["card", "inline"], "card", "Layout"), SCRUB_SLIDER_LAYOUT_ICONS),
-    ruler: select(["fixed", "sliding"], "fixed", "Ruler"),
+    indicator: withIcons(select(["sliding", "fixed"], "sliding", "Indicator"), SCRUB_SLIDER_INDICATOR_ICONS),
     variant: select(["card", "outline-ghost", "plain"], "outline-ghost", "Style"),
     size: select(["sm", "md"], "md", "Size"),
     chevrons: bool(true, "Chevrons"),
     disabled: bool(false),
   },
-  render: ({ quantity, layout, ruler, variant, size, chevrons, disabled }) => {
+  render: ({ quantity, layout, indicator, variant, size, chevrons, disabled }) => {
     const { defaultValue, ...scale } = QUANTITIES[quantity];
     return (
       <ScrubSlider
@@ -33,7 +33,7 @@ export const scrubSliderEntry = defineEntry({
         {...scale}
         defaultValue={defaultValue}
         layout={layout}
-        ruler={ruler}
+        indicator={indicator}
         variant={variant}
         size={size}
         chevrons={chevrons}

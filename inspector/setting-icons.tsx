@@ -342,6 +342,14 @@ export const SCRUB_SLIDER_LAYOUT_ICONS = {
   inline: <Icon><rect x="1.5" y="4.5" width="13" height="7" rx="2" {...FILLED} /><path d="M4 7v2M6.5 6.5v3M9 7v2" {...FAINT} /><path d="M11.5 8H13" /></Icon>,
 } satisfies Record<string, ReactNode>;
 
+/** Scrub Slider's indicator: a playhead over the ticks, off to one side where it slides with
+ * the pointer, centred where it stays put and the ruler slides either way beneath it. */
+const SCRUB_RULER_TICKS = <path d="M3 13.5v-3M5.5 13.5v-1.5M8 13.5v-3M10.5 13.5v-1.5M13 13.5v-3" {...FAINT} />;
+export const SCRUB_SLIDER_INDICATOR_ICONS = {
+  sliding: <Icon>{SCRUB_RULER_TICKS}<path d="M10.5 4.5v9" /><circle cx="10.5" cy="4" r="2" {...SOLID} /></Icon>,
+  fixed: <Icon>{SCRUB_RULER_TICKS}<path d="M8 4.5v9" /><circle cx="8" cy="4" r="2" {...SOLID} /><path d="M3.75 2.5 2.25 4l1.5 1.5M12.25 2.5 13.75 4l-1.5 1.5" {...FAINT} /></Icon>,
+} satisfies Record<string, ReactNode>;
+
 /** Scrub Slider's demo quantities: what each one measures, drawn beside its name. */
 export const SCRUB_SLIDER_QUANTITY_ICONS = {
   // A span between two edges.

@@ -419,7 +419,7 @@ function PlaygroundFrame({
                       {() => demos.find((option) => option.name === demoName)?.label}
                     </SelectValue>
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent align="center">
                     {demos.map((option) => (
                       <SelectItem key={option.name} value={option.name}>
                         {option.label}

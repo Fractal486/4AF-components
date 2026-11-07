@@ -64,7 +64,7 @@ import {
  * end of the ruler, the ruler scrolls under a resting pointer and the value keeps changing,
  * faster the deeper into the edge and the longer it stays there.
  *
- * With `ruler="sliding"` the indicator instead stays at the ruler's centre and a drag
+ * With `indicator="fixed"` the indicator instead stays at the ruler's centre and a drag
  * moves the ruler under it, as if pulling a tape past a fixed mark: there is no press-to-set
  * and no edge zone, and the value is whatever tick sits under the line.
  *
@@ -127,10 +127,10 @@ export interface ScrubSliderProps
   /** The one-step chevrons either side of the value. */
   chevrons?: boolean;
   /**
-   * `fixed`: the ruler stays put and the indicator follows the pointer. `sliding`: the
+   * `sliding`: the indicator follows the pointer over a ruler that stays put. `fixed`: the
    * indicator always shows at the centre and a drag slides the ruler behind it.
    */
-  ruler?: "fixed" | "sliding";
+  indicator?: "sliding" | "fixed";
 }
 
 /** Where a pointer is along the ruler, from its inline-start edge. */
@@ -152,7 +152,7 @@ interface DragState {
   scrolling: boolean;
   event: PointerEvent;
   target: Element;
-  /** Sliding ruler: where the drag started, and the offset the ruler had then. */
+  /** Fixed indicator: where the drag started, and the offset the ruler had then. */
   origin: number;
   originOffset: number;
 }
@@ -176,7 +176,7 @@ export function ScrubSlider({
   variant = "card",
   layout = "card",
   chevrons = true,
-  ruler = "fixed",
+  indicator = "sliding",
   className,
   "aria-label": ariaLabel,
   "aria-labelledby": ariaLabelledBy,
@@ -190,7 +190,7 @@ export function ScrubSlider({
   ...props
 }: ScrubSliderProps) {
   const dims = DIMS[size];
-  const sliding = ruler === "sliding";
+  const centred = indicator === "fixed";
   const rtl = useDirection() === "rtl";
   const scale: ScrubScale = useMemo(() => ({ min, max, step }), [min, max, step]);
   const endTick = lastTick(scale);
@@ -243,12 +243,12 @@ export function ScrubSlider({
   // Outside a drag, keep the value's tick on screen and clear of the edges; the first
   // measurement centres it. Adjusted during render, so a keyboard step and the scroll it
   // causes land in the same frame.
-  // A sliding ruler always puts the value's tick under the centre line.
+  // A fixed indicator always has the value's tick under it, at the centre.
   const centreTicks = width / dims.spacing / 2;
   const settledOffset =
     dragging || width <= 0
       ? offset
-      : sliding
+      : centred
         ? currentTick - centreTicks
         : clampOffset(
           offset === null
@@ -387,7 +387,7 @@ export function ScrubSlider({
       origin: logicalX(startClientX, rect, rtl),
       originOffset: offset ?? currentTick - pressed / dims.spacing,
     };
-    if (sliding) {
+    if (centred) {
       // Nothing changes on the press: the line already reads the value.
       state.offset = state.originOffset = offset ?? currentTick - rect.width / dims.spacing / 2;
     }
@@ -396,7 +396,7 @@ export function ScrubSlider({
     setWidth(rect.width);
     setOffset(state.offset);
     setDragging(true);
-    if (sliding) return slide(state, event.clientX);
+    if (centred) return slide(state, event.clientX);
     // The value is set where the press went down, the indicator stopping at `min` or `max`,
     // and then follows the pointer from there.
     follow(state, "track-press");
@@ -406,7 +406,7 @@ export function ScrubSlider({
   };
 
   /**
-   * Sliding ruler: moves the ruler with the pointer, one tick per tick travelled, keeping an
+   * Fixed indicator: moves the ruler with the pointer, one tick per tick travelled, keeping an
    * end of the scale from passing the centre line, and reads the value under the line.
    */
   const slide = (state: DragState, clientX: number) => {
@@ -429,7 +429,7 @@ export function ScrubSlider({
     if (!state || event.pointerId !== state.pointerId) return;
     if (event.currentTarget.hasAttribute("data-disabled")) return end(event, false);
     state.event = event.nativeEvent;
-    if (sliding) return slide(state, event.clientX);
+    if (centred) return slide(state, event.clientX);
     state.pointer = clamp(logicalX(event.clientX, state.rect, rtl), 0, state.rect.width);
     follow(state);
   };
@@ -518,7 +518,7 @@ export function ScrubSlider({
   const active = (dragging || focusVisible) && !editing;
   const ready = offset !== null && width > 0;
   const view = offset ?? 0;
-  const indicator = sliding ? width / 2 : (head ?? (currentTick - view) * dims.spacing);
+  const indicatorX = centred ? width / 2 : (head ?? (currentTick - view) * dims.spacing);
   const physical = (x: number) => (rtl ? width - x : x);
 
   const ticks: ReactNode[] = [];
@@ -530,7 +530,7 @@ export function ScrubSlider({
       const x = (tick - view) * dims.spacing;
       const level = tickLevel(tick, scale);
       // The lens belongs to the indicator, so a hover preview shows the plain ruler.
-      const lens = active ? lensAt(x - indicator, dims.spacing) : 0;
+      const lens = active ? lensAt(x - indicatorX, dims.spacing) : 0;
       const rest = dims.heights[level];
       const height = rest + lens * (dims.lensHeight - rest);
       const opacity = TICK_OPACITY[level] + lens * (LENS_OPACITY - TICK_OPACITY[level]);
@@ -595,7 +595,7 @@ export function ScrubSlider({
       data-slot="scrub-slider"
       data-variant={variant}
       data-layout={layout}
-      data-ruler={ruler}
+      data-indicator={indicator}
       data-active={active ? "" : undefined}
       data-hovered={hovered && !active && !editing ? "" : undefined}
       data-editing={editing ? "" : undefined}
@@ -710,8 +710,8 @@ export function ScrubSlider({
         {ready && (
           <span
             data-slot="scrub-slider-indicator"
-            className={scrubSliderIndicatorVariants({ layout, ruler })}
-            style={{ translate: `${physical(indicator) - 1}px 0` }}
+            className={scrubSliderIndicatorVariants({ layout, indicator })}
+            style={{ translate: `${physical(indicatorX) - 1}px 0` }}
           />
         )}
       </div>

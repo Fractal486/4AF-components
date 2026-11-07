@@ -159,7 +159,7 @@ export const scrubSliderTickVariants = cva(
  * at rest only after a chevron nudge, gliding to the new value's tick; on hover alone the
  * ruler is a preview, without it. Leaving either state it only fades: the return to half
  * height waits until it has gone. Inline, it always shows, so a drag grows it from the
- * resting half height and a release shrinks it back. A sliding ruler's indicator is its fixed
+ * resting half height and a release shrinks it back. A `fixed` indicator is the ruler's
  * centre mark, so it shows whenever the ruler does, hover included.
  */
 export const scrubSliderIndicatorVariants = cva(
@@ -172,18 +172,18 @@ export const scrubSliderIndicatorVariants = cva(
   {
     variants: {
       layout: { card: "", inline: "" },
-      ruler: { fixed: "", sliding: "" },
+      indicator: { sliding: "", fixed: "" },
     },
     compoundVariants: [
       {
         layout: "card",
-        ruler: "fixed",
+        indicator: "sliding",
         class: "opacity-0 [transition-delay:0s,0s,var(--duration-fast)] group-data-[nudged]/scrub-slider:opacity-100",
       },
       { layout: "inline", class: "opacity-100" },
-      { ruler: "sliding", class: "opacity-100" },
+      { indicator: "fixed", class: "opacity-100" },
     ],
-    defaultVariants: { layout: "card", ruler: "fixed" },
+    defaultVariants: { layout: "card", indicator: "sliding" },
   },
 );
 
