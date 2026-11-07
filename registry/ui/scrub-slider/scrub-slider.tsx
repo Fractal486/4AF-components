@@ -64,6 +64,10 @@ import {
  * end of the ruler, the ruler scrolls under a resting pointer and the value keeps changing,
  * faster the deeper into the edge and the longer it stays there.
  *
+ * With `ruler="sliding"` the indicator instead stays at the ruler's centre and a drag
+ * moves the ruler under it, as if pulling a tape past a fixed mark: there is no press-to-set
+ * and no edge zone, and the value is whatever tick sits under the line.
+ *
  * Ticks near the indicator grow and brighten, falling off with distance, like the site
  * rail's lens.
  */
@@ -122,6 +126,11 @@ export interface ScrubSliderProps
   layout?: "card" | "inline";
   /** The one-step chevrons either side of the value. */
   chevrons?: boolean;
+  /**
+   * `fixed`: the ruler stays put and the indicator follows the pointer. `sliding`: the
+   * indicator always shows at the centre and a drag slides the ruler behind it.
+   */
+  ruler?: "fixed" | "sliding";
 }
 
 /** Where a pointer is along the ruler, from its inline-start edge. */
@@ -143,6 +152,9 @@ interface DragState {
   scrolling: boolean;
   event: PointerEvent;
   target: Element;
+  /** Sliding ruler: where the drag started, and the offset the ruler had then. */
+  origin: number;
+  originOffset: number;
 }
 
 export function ScrubSlider({
@@ -164,6 +176,7 @@ export function ScrubSlider({
   variant = "card",
   layout = "card",
   chevrons = true,
+  ruler = "fixed",
   className,
   "aria-label": ariaLabel,
   "aria-labelledby": ariaLabelledBy,
@@ -177,6 +190,7 @@ export function ScrubSlider({
   ...props
 }: ScrubSliderProps) {
   const dims = DIMS[size];
+  const sliding = ruler === "sliding";
   const rtl = useDirection() === "rtl";
   const scale: ScrubScale = useMemo(() => ({ min, max, step }), [min, max, step]);
   const endTick = lastTick(scale);
@@ -229,10 +243,14 @@ export function ScrubSlider({
   // Outside a drag, keep the value's tick on screen and clear of the edges; the first
   // measurement centres it. Adjusted during render, so a keyboard step and the scroll it
   // causes land in the same frame.
+  // A sliding ruler always puts the value's tick under the centre line.
+  const centreTicks = width / dims.spacing / 2;
   const settledOffset =
     dragging || width <= 0
       ? offset
-      : clampOffset(
+      : sliding
+        ? currentTick - centreTicks
+        : clampOffset(
           offset === null
             ? currentTick - width / dims.spacing / 2
             : offsetKeepingInView(offset, currentTick, width, dims.spacing),
@@ -366,18 +384,37 @@ export function ScrubSlider({
       scrolling: false,
       event: event.nativeEvent,
       target: event.currentTarget,
+      origin: logicalX(startClientX, rect, rtl),
+      originOffset: offset ?? currentTick - pressed / dims.spacing,
     };
+    if (sliding) {
+      // Nothing changes on the press: the line already reads the value.
+      state.offset = state.originOffset = offset ?? currentTick - rect.width / dims.spacing / 2;
+    }
     drag.current = state;
     valueRef.current = current;
     setWidth(rect.width);
     setOffset(state.offset);
     setDragging(true);
+    if (sliding) return slide(state, event.clientX);
     // The value is set where the press went down, the indicator stopping at `min` or `max`,
     // and then follows the pointer from there.
     follow(state, "track-press");
     state.pointer = clamp(logicalX(event.clientX, rect, rtl), 0, rect.width);
     follow(state);
     state.frame = requestAnimationFrame(loop);
+  };
+
+  /**
+   * Sliding ruler: moves the ruler with the pointer, one tick per tick travelled, keeping an
+   * end of the scale from passing the centre line, and reads the value under the line.
+   */
+  const slide = (state: DragState, clientX: number) => {
+    const centre = state.rect.width / dims.spacing / 2;
+    const travelled = (logicalX(clientX, state.rect, rtl) - state.origin) / dims.spacing;
+    state.offset = clamp(state.originOffset - travelled, -centre, endTick - centre);
+    setOffset(state.offset);
+    change(valueAtTick(state.offset + centre, scale), state, "drag");
   };
 
   const onPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -392,6 +429,7 @@ export function ScrubSlider({
     if (!state || event.pointerId !== state.pointerId) return;
     if (event.currentTarget.hasAttribute("data-disabled")) return end(event, false);
     state.event = event.nativeEvent;
+    if (sliding) return slide(state, event.clientX);
     state.pointer = clamp(logicalX(event.clientX, state.rect, rtl), 0, state.rect.width);
     follow(state);
   };
@@ -480,7 +518,7 @@ export function ScrubSlider({
   const active = (dragging || focusVisible) && !editing;
   const ready = offset !== null && width > 0;
   const view = offset ?? 0;
-  const indicator = head ?? (currentTick - view) * dims.spacing;
+  const indicator = sliding ? width / 2 : (head ?? (currentTick - view) * dims.spacing);
   const physical = (x: number) => (rtl ? width - x : x);
 
   const ticks: ReactNode[] = [];
@@ -557,6 +595,7 @@ export function ScrubSlider({
       data-slot="scrub-slider"
       data-variant={variant}
       data-layout={layout}
+      data-ruler={ruler}
       data-active={active ? "" : undefined}
       data-hovered={hovered && !active && !editing ? "" : undefined}
       data-editing={editing ? "" : undefined}
@@ -671,7 +710,7 @@ export function ScrubSlider({
         {ready && (
           <span
             data-slot="scrub-slider-indicator"
-            className={scrubSliderIndicatorVariants({ layout })}
+            className={scrubSliderIndicatorVariants({ layout, ruler })}
             style={{ translate: `${physical(indicator) - 1}px 0` }}
           />
         )}

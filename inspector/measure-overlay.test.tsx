@@ -172,3 +172,18 @@ it("starts on a demo's empty layout space, but not on its surfaces, text, or con
   expect(drag(screen.getByTestId("text"))).toBe(false);
   expect(drag(screen.getByRole("button", { name: "Action" }))).toBe(false);
 });
+
+it("ends a text edit in the demo on a plain click elsewhere, as a real press would", async () => {
+  const user = userEvent.setup();
+  const blur = vi.fn();
+  render(
+    <Harness>
+      <input aria-label="Value" onBlur={blur} />
+    </Harness>,
+  );
+  const field = screen.getByRole("textbox", { name: "Value" });
+  field.focus();
+  await user.click(canvas());
+  expect(blur).toHaveBeenCalledOnce();
+  expect(field).not.toHaveFocus();
+});

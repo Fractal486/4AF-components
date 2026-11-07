@@ -553,6 +553,36 @@ describe("ScrubSlider inline layout", () => {
   });
 });
 
+describe("ScrubSlider sliding ruler", () => {
+  it("keeps the indicator centred and moves the ruler under it", () => {
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(RULER_WIDTH);
+    const change = vi.fn();
+    const commit = vi.fn();
+    const { container } = render(
+      <ScrubSlider aria-label="Gap" layout="inline" ruler="sliding" chevrons={false} defaultValue={50} onValueChange={change} onValueCommitted={commit} />,
+    );
+    const root = geometry(container);
+    const indicator = container.querySelector<HTMLElement>('[data-slot="scrub-slider-indicator"]')!;
+    expect(root).toHaveAttribute("data-ruler", "sliding");
+    expect(indicator).toHaveClass("opacity-100");
+    expect(indicator.style.translate).toBe(`${RULER_WIDTH / 2 - 1}px 0`);
+
+    // A press off-centre sets nothing; dragging toward the end pulls lower values under the line.
+    fireEvent.pointerDown(root, { ...pointer, clientX: 40 });
+    expect(change).not.toHaveBeenCalled();
+    fireEvent.pointerMove(root, { ...pointer, clientX: 40 + SPACING * 3 });
+    expect(change).toHaveBeenLastCalledWith(47, expect.objectContaining({ reason: "drag" }));
+    expect(indicator.style.translate).toBe(`${RULER_WIDTH / 2 - 1}px 0`);
+    // Past min the ruler stops with min under the line.
+    fireEvent.pointerMove(root, { ...pointer, clientX: 40 + SPACING * 80 });
+    expect(change).toHaveBeenLastCalledWith(0, expect.anything());
+    fireEvent.pointerMove(root, { ...pointer, clientX: 40 - SPACING * 5 });
+    expect(change).toHaveBeenLastCalledWith(55, expect.anything());
+    fireEvent.pointerUp(root, { ...pointer, clientX: 40 - SPACING * 5 });
+    expect(commit).toHaveBeenCalledExactlyOnceWith(55, expect.anything());
+  });
+});
+
 describe("ScrubSlider inline clicks", () => {
   it("edits only from the number; a press on the ruler scrubs at once", () => {
     vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(RULER_WIDTH);

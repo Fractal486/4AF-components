@@ -163,7 +163,7 @@ export function MeasureOverlay({
         draw();
         swallowNextClick();
       } else {
-        replayPress(drag.target, event);
+        replayPress(drag.target, event, canvasEl);
       }
       drag = null;
       if (wasActive) hide();
@@ -337,15 +337,40 @@ function hover(trigger: Element, direction: "in" | "out", outside: Element) {
  * Re-sends a held-back press that ended without a drag, just before its release, so the click
  * dismisses popups exactly as it would have: on the press, or on the click that follows.
  */
-function replayPress(target: Element, at: PointerEvent) {
+function replayPress(target: Element, at: PointerEvent, canvasEl: HTMLElement) {
   const init = { bubbles: true, cancelable: true, composed: true, clientX: at.clientX, clientY: at.clientY, button: 0, buttons: 1 };
   const Pointer = typeof PointerEvent === "function" ? PointerEvent : MouseEvent;
   replaying = true;
   try {
     target.dispatchEvent(new Pointer("pointerdown", { ...init, pointerId: at.pointerId, pointerType: at.pointerType || "mouse", isPrimary: true }));
-    target.dispatchEvent(new MouseEvent("mousedown", init));
+    const down = new MouseEvent("mousedown", init);
+    target.dispatchEvent(down);
+    // A synthetic press has no default action, so do the focus change a real one would:
+    // focus what was pressed, or end a text edit when nothing focusable was hit.
+    if (!down.defaultPrevented) pressFocus(target, canvasEl);
   } finally {
     replaying = false;
+  }
+}
+
+const FOCUSABLE =
+  'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), a[href], summary, [tabindex], [contenteditable=""], [contenteditable="true"]';
+
+function pressFocus(target: Element, canvasEl: HTMLElement) {
+  const focusable = target.closest<HTMLElement>(FOCUSABLE);
+  if (focusable) {
+    if (document.activeElement !== focusable) focusable.focus({ preventScroll: true });
+    return;
+  }
+  // Only a text field in the canvas itself is blurred: a popup's focus sits behind its own
+  // focus trap, which a blur would trip, so it would then ignore the click dismissing it.
+  const active = document.activeElement;
+  if (
+    active instanceof HTMLElement &&
+    canvasEl.contains(active) &&
+    active.matches('input, textarea, [contenteditable=""], [contenteditable="true"]')
+  ) {
+    active.blur();
   }
 }
 

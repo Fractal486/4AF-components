@@ -22,6 +22,7 @@ description: A card-shaped number scrubber with a ruler, an edge zone that keeps
 | `getAriaValueText` | — | `(formattedValue, value) => string`. Replaces the default spoken value, the formatted value and unit. |
 | `variant` | `"card"` | `"card"` (a faint `muted` fill), `"outline-ghost"` (a `shadow-border` edge alone), or `"plain"` (neither). Exposed as `data-variant`. |
 | `layout` | `"card"` | `"card"` stacks the label and value over a ruler shown on hover and in use. `"inline"` is one row (28px at `md`, 24px at `sm`): an always-visible ruler with a 12px edge fade, its indicator at half height at rest and full height while active, then the value (at least 32px wide). Inline, `label` only names the slider; place a visible label beside it. Exposed as `data-layout`. |
+| `ruler` | `"fixed"` | `"fixed"`: the ruler stays put and the indicator follows the pointer. `"sliding"`: the indicator stays at the ruler's centre, showing whenever the ruler does, and a drag slides the ruler behind it. Exposed as `data-ruler`. |
 | `chevrons` | `true` | Shows the one-step chevrons either side of the value. |
 | `size` | `"md"` | `"md"` (60px card) or `"sm"` (48px card). |
 | `disabled` | `false` | Also follows a disabling Base UI `Field.Root`. |
@@ -36,6 +37,10 @@ Other Base UI `Slider.Root` props are forwarded to the card.
   `max`. A press that moves 3px becomes a scrub: the value is set to the tick where the press
   went down (`details.reason` `"track-press"`) without moving the ruler, then changes by one
   `step` per tick crossed. Only the edge zones scroll the ruler.
+- With `ruler="sliding"` the value's tick always sits under the centre line. A drag moves the
+  ruler with the pointer, one `step` per tick travelled (dragging toward the end lowers the
+  value), until `min` or `max` reaches the line. A press sets nothing, there is no edge zone, and
+  on release the ruler glides to the snapped tick. Inline, a release in place commits nothing.
 - Chevrons either side of the value nudge it one `step` down or up per click
   (`details.reason` `"none"`, committed at once). They are out of the tab order, since the arrow
   keys already step, and carry `aria-disabled` at `min` and `max`. A nudge shows the ruler with a

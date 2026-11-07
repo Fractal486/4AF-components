@@ -19,12 +19,13 @@ export const scrubSliderEntry = defineEntry({
   controls: {
     quantity: withIcons(select(["width", "opacity", "rotation", "scale"], "width", "Quantity"), SCRUB_SLIDER_QUANTITY_ICONS),
     layout: withIcons(select(["card", "inline"], "card", "Layout"), SCRUB_SLIDER_LAYOUT_ICONS),
+    ruler: select(["fixed", "sliding"], "fixed", "Ruler"),
     variant: select(["card", "outline-ghost", "plain"], "outline-ghost", "Style"),
     size: select(["sm", "md"], "md", "Size"),
     chevrons: bool(true, "Chevrons"),
     disabled: bool(false),
   },
-  render: ({ quantity, layout, variant, size, chevrons, disabled }) => {
+  render: ({ quantity, layout, ruler, variant, size, chevrons, disabled }) => {
     const { defaultValue, ...scale } = QUANTITIES[quantity];
     return (
       <ScrubSlider
@@ -32,6 +33,7 @@ export const scrubSliderEntry = defineEntry({
         {...scale}
         defaultValue={defaultValue}
         layout={layout}
+        ruler={ruler}
         variant={variant}
         size={size}
         chevrons={chevrons}

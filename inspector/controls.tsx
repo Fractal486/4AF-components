@@ -339,6 +339,7 @@ function Control({
         <ScrubSlider
           aria-label={label}
           layout="inline"
+          ruler="sliding"
           variant="plain"
           size="sm"
           chevrons={false}
