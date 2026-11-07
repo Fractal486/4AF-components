@@ -27,7 +27,7 @@ export type HoverCardHandle<Payload = unknown> = BasePreviewCard.Handle<Payload>
  * closing and opening again.
  */
 export function HoverCardTrigger<Payload = unknown>({ closeDelay, ...props }: HoverCardTriggerProps<Payload>) {
-  return <BasePreviewCard.Trigger<Payload> closeDelay={closeDelay ?? (props.handle ? undefined : 0)} {...props} />;
+  return <BasePreviewCard.Trigger<Payload> data-slot="hover-card-trigger" closeDelay={closeDelay ?? (props.handle ? undefined : 0)} {...props} />;
 }
 
 export interface HoverCardSkeletonProps extends ComponentProps<"div"> {

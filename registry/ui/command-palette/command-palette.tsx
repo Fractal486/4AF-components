@@ -519,8 +519,9 @@ export function CommandPalette({
         {isOpen && (
           // keepMounted on the Portal keeps the subtree in the DOM so AnimatePresence, not
           // Base UI, owns when it's torn down.
-          <BaseDialog.Portal keepMounted>
+          <BaseDialog.Portal keepMounted data-slot="command-palette-portal">
             <BaseDialog.Backdrop
+              data-slot="command-palette-backdrop"
               render={
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -532,6 +533,7 @@ export function CommandPalette({
               }
             />
             <BaseDialog.Popup
+              data-slot="command-palette-content"
               onKeyDown={(event) => {
                 if (
                   !panelNode || event.defaultPrevented || event.key !== "Tab" ||

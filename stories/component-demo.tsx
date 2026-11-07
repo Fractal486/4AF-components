@@ -1,7 +1,8 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { Controls } from "@/inspector/controls";
+import { MeasureOverlay } from "@/inspector/measure-overlay";
 import {
   defineEntry,
   initialValues,
@@ -185,6 +186,8 @@ function isPhoneWidth() {
  * collapse setting update in place so their transitions remain visible.
  */
 export function DemoCanvas({ demo }: { demo: ComponentDemoState }) {
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   if (demo.status === "failed") {
     return (
       <div className="grid h-full min-h-full place-items-center">
@@ -216,6 +219,7 @@ export function DemoCanvas({ demo }: { demo: ComponentDemoState }) {
 
   return (
     <div
+      ref={canvasRef}
       className={cn(
         // Safe centring: a demo taller than the canvas starts at the top and scrolls, rather
         // than overflowing above it where it can't be reached.
@@ -233,6 +237,7 @@ export function DemoCanvas({ demo }: { demo: ComponentDemoState }) {
           )}
         >
           <div
+            ref={contentRef}
             className={cn(
               "flex min-w-0 w-fit max-w-full items-center justify-center",
               demoWidth && "w-full",
@@ -243,6 +248,8 @@ export function DemoCanvas({ demo }: { demo: ComponentDemoState }) {
           </div>
         </div>
       </LoaderProvider>
+      {/* Dragging across the empty canvas x-rays the demo under the selection. */}
+      <MeasureOverlay canvasRef={canvasRef} contentRef={contentRef} />
     </div>
   );
 }
