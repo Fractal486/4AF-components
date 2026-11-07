@@ -176,6 +176,14 @@ export function MeasureOverlay({
       if (wasActive) hide();
     };
 
+    // A held press must not start or collapse a text selection either: the Selection Toolbar
+    // closes the moment its selection goes, before it could be measured.
+    const onHeldPress = (event: Event) => {
+      if (!drag || replaying) return;
+      event.preventDefault();
+      event.stopPropagation();
+    };
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape" || !drag) return;
       const wasActive = drag.active;
@@ -193,12 +201,16 @@ export function MeasureOverlay({
     window.addEventListener("pointerup", onPointerUp, true);
     window.addEventListener("pointercancel", onPointerCancel, true);
     window.addEventListener("keydown", onKeyDown, true);
+    window.addEventListener("mousedown", onHeldPress, true);
+    window.addEventListener("selectstart", onHeldPress, true);
     return () => {
       window.removeEventListener("pointerdown", onPointerDown, true);
       window.removeEventListener("pointermove", onPointerMove, true);
       window.removeEventListener("pointerup", onPointerUp, true);
       window.removeEventListener("pointercancel", onPointerCancel, true);
       window.removeEventListener("keydown", onKeyDown, true);
+      window.removeEventListener("mousedown", onHeldPress, true);
+      window.removeEventListener("selectstart", onHeldPress, true);
       window.cancelAnimationFrame(frame);
       window.clearTimeout(removeTimer);
       peek(null);
@@ -360,7 +372,8 @@ function normalize(drag: Drag): Rect {
 function collectRoots(canvasEl: HTMLElement, content: HTMLElement): Element[] {
   const roots = Array.from(content.children);
   const portals: Element[] = [];
-  for (const portal of document.querySelectorAll('[data-slot$="-portal"], [data-slot$="-positioner"]')) {
+  // Base UI marks every portal it renders, so a popup is found whether or not it carries slots.
+  for (const portal of document.querySelectorAll('[data-base-ui-portal], [data-slot$="-portal"], [data-slot$="-positioner"]')) {
     // A positioner inside a portal already walked is part of it.
     if (canvasEl.contains(portal) || portals.some((outer) => outer.contains(portal))) continue;
     portals.push(portal);
@@ -427,14 +440,17 @@ function measure(roots: Element[]): Scene {
   const leafSizes: LabelRequest[] = [];
   const spaces: LabelRequest[] = [];
   const containerSizes: LabelRequest[] = [];
+  // A wrapper exactly the size of what it holds would repeat the same pill over it.
+  const sized = new Set<string>();
   const range = document.createRange();
 
-  const visit = (el: Element, isRoot: boolean, clip: Rect | undefined): boolean => {
+  /** `labelled` is false inside a repeat of an earlier sibling: drawn, but measured once. */
+  const visit = (el: Element, isRoot: boolean, clip: Rect | undefined, labelled: boolean): boolean => {
     const style = getComputedStyle(el);
     if (style.display === "none" || style.visibility === "hidden" || Number(style.opacity) === 0) return false;
     if (style.display === "contents") {
       let any = false;
-      for (const child of el.children) any = visit(child, isRoot, clip) || any;
+      for (const child of el.children) any = visit(child, isRoot, clip, labelled) || any;
       return any;
     }
     const box = el.getBoundingClientRect();
@@ -471,6 +487,7 @@ function measure(roots: Element[]): Scene {
       }
     }
 
+    if (!labelled) spaces.length = spaceStart;
     if (clip) {
       for (let i = opStart; i < ops.length; i++) ops[i]!.clip = clip;
       for (let i = spaceStart; i < spaces.length; i++) spaces[i]!.clip = clip;
@@ -488,10 +505,19 @@ function measure(roots: Element[]): Scene {
 
     let hasChildren = false;
     if (!replaced && !childrenHidden) {
-      for (const child of el.children) hasChildren = visit(child, false, childClip) || hasChildren;
+      // Rows, cells, days: siblings built the same way are measured on the first only.
+      const seen = new Set<string>();
+      for (const child of el.children) {
+        const signature = `${child.tagName}|${child.getAttribute("class") ?? ""}`;
+        const repeat = seen.has(signature);
+        seen.add(signature);
+        hasChildren = visit(child, false, childClip, labelled && !repeat) || hasChildren;
+      }
     }
 
-    if ((painted || isRoot) && visible) {
+    const key = `${Math.round(rect.x)},${Math.round(rect.y)},${Math.round(rect.w)},${Math.round(rect.h)}`;
+    if ((painted || isRoot) && visible && labelled && !sized.has(key)) {
+      sized.add(key);
       const text = `${format(width)} × ${format(height)}`;
       if (hasChildren) containerSizes.push({ text, tone: "size", places: containerPlaces(rect), clip });
       else leafSizes.push({ text, tone: "size", places: leafPlaces(rect), clip });
@@ -499,7 +525,7 @@ function measure(roots: Element[]): Scene {
     return true;
   };
 
-  for (const root of roots) visit(root, true, undefined);
+  for (const root of roots) visit(root, true, undefined, true);
   return { ops, labels: [...leafSizes, ...spaces, ...containerSizes] };
 }
 
@@ -516,9 +542,10 @@ function measurePadding(style: CSSStyleDeclaration, rect: Rect, radius: number, 
   const cx = inner.x + inner.w / 2;
   const cy = inner.y + inner.h / 2;
   if (pl >= 1) spaces.push(spaceLabel(pl, [outer.x, cy], [inner.x, cy]));
-  if (pr >= 1) spaces.push(spaceLabel(pr, [inner.x + inner.w, cy], [outer.x + outer.w, cy]));
+  // Equal opposite sides read from one label.
+  if (pr >= 1 && pr !== pl) spaces.push(spaceLabel(pr, [inner.x + inner.w, cy], [outer.x + outer.w, cy]));
   if (pt >= 1) spaces.push(spaceLabel(pt, [cx, outer.y], [cx, inner.y]));
-  if (pb >= 1) spaces.push(spaceLabel(pb, [cx, inner.y + inner.h], [cx, outer.y + outer.h]));
+  if (pb >= 1 && pb !== pt) spaces.push(spaceLabel(pb, [cx, inner.y + inner.h], [cx, outer.y + outer.h]));
 }
 
 /** Gaps between in-flow children: flex and block flow along their axis, grids both ways. */
@@ -530,6 +557,8 @@ function measureGaps(el: Element, style: CSSStyleDeclaration, scale: number, ops
   const children = flowChildren(el, !flex && !grid);
   if (children.length < 2) return;
 
+  // Every gap is hatched; each distinct value along an axis is labelled once.
+  const shown = new Set<string>();
   const between = (a: Rect, b: Rect, axis: "x" | "y") => {
     const aEnd = axis === "x" ? a.x + a.w : a.y + a.h;
     const bStart = axis === "x" ? b.x : b.y;
@@ -539,12 +568,15 @@ function measureGaps(el: Element, style: CSSStyleDeclaration, scale: number, ops
     const hi = axis === "x" ? Math.min(a.y + a.h, b.y + b.h) : Math.min(a.x + a.w, b.x + b.w);
     if (hi - lo < 1) return;
     const mid = (lo + hi) / 2;
+    const value = gap / scale;
+    const label = !shown.has(`${axis}${format(value)}`);
+    shown.add(`${axis}${format(value)}`);
     if (axis === "x") {
       ops.push({ kind: "hatch", rect: { x: aEnd, y: lo, w: gap, h: hi - lo }, radius: 0 });
-      spaces.push(spaceLabel(gap / scale, [aEnd, mid], [bStart, mid]));
+      if (label) spaces.push(spaceLabel(value, [aEnd, mid], [bStart, mid]));
     } else {
       ops.push({ kind: "hatch", rect: { x: lo, y: aEnd, w: hi - lo, h: gap }, radius: 0 });
-      spaces.push(spaceLabel(gap / scale, [mid, aEnd], [mid, bStart]));
+      if (label) spaces.push(spaceLabel(value, [mid, aEnd], [mid, bStart]));
     }
   };
 
@@ -713,6 +745,8 @@ interface Palette {
 
 const LABEL_H = 14;
 const LABEL_PAD = 4;
+/** The least space between two labels; closer ones drop the later label. */
+const LABEL_GAP = 6;
 const HATCH = 6;
 const GRID = 8;
 
@@ -756,7 +790,7 @@ function paint(ctx: CanvasRenderingContext2D, scene: Scene, selection: Rect, bou
         ctx.beginPath();
         shape();
         ctx.clip();
-        grid(ctx, rect, palette.line, dark ? 0.1 : 0.12);
+        grid(ctx, rect, palette.line, dark ? 0.05 : 0.06);
         ctx.restore();
         stroke(ctx, palette.line, 0.55, shape);
         break;
@@ -768,15 +802,15 @@ function paint(ctx: CanvasRenderingContext2D, scene: Scene, selection: Rect, bou
         break;
       }
       case "hatch":
-        hatch(ctx, op, palette.line, dark ? 0.3 : 0.35);
+        hatch(ctx, op, palette.line, dark ? 0.2 : 0.22);
         break;
       case "dash":
         ctx.setLineDash([3, 3]);
-        stroke(ctx, palette.line, 0.7, () => ctx.rect(rect.x + 0.5, rect.y + 0.5, rect.w - 1, rect.h - 1));
+        stroke(ctx, palette.line, 0.4, () => ctx.rect(rect.x + 0.5, rect.y + 0.5, rect.w - 1, rect.h - 1));
         ctx.setLineDash([]);
         break;
       case "bar":
-        fill(ctx, palette.ink, dark ? 0.16 : 0.14, () => ctx.roundRect(rect.x, rect.y, rect.w, rect.h, rect.h / 2));
+        fill(ctx, palette.ink, dark ? 0.1 : 0.09, () => ctx.roundRect(rect.x, rect.y, rect.w, rect.h, rect.h / 2));
         break;
     }
     ctx.restore();
@@ -790,7 +824,7 @@ function paint(ctx: CanvasRenderingContext2D, scene: Scene, selection: Rect, bou
       // A label for something partly scrolled away must sit over the part still in view.
       if (!centre || (label.clip && !contains(label.clip, centre))) continue;
       const box = { x: Math.round(centre[0] - w / 2), y: Math.round(centre[1] - LABEL_H / 2), w, h: LABEL_H };
-      if (taken.some((other) => intersects(other, box, 2))) continue;
+      if (taken.some((other) => intersects(other, box, LABEL_GAP))) continue;
       taken.push(box);
       if (label.ruler) {
         const { clip } = label;

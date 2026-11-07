@@ -308,9 +308,8 @@ function DropdownMenuDemo({
         {(shared ? ["Alex", "Taylor"] : ["Options"]).map(name => (
           <DropdownMenuTrigger key={name} handle={handle} payload={name}
             render={(props, state) => (
-              <Button {...props} variant="outline-ghost" size={shared ? "sm" : "icon"}
-                aria-label={shared ? `Options for ${name}` : "Options"} pressed={state.open} pressScale={false}
-                className="transition-[background-color,box-shadow,color,opacity,scale] active:scale-[0.95] motion-reduce:active:scale-100 data-[popup-open]:scale-[0.95] motion-reduce:data-[popup-open]:scale-100">
+              <Button {...props} variant="plain" size={shared ? "sm" : "icon"}
+                aria-label={shared ? `Options for ${name}` : "Options"} pressed={state.open} pressScale={false}>
                 {shared ? <><User />{name}</> : <Ellipsis />}
               </Button>
             )} />

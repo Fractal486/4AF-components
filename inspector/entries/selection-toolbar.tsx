@@ -234,7 +234,7 @@ function SelectionToolbarDemo({
             {/* Async, so the confirmation is drawn where the press happened. This is the
                 one action that must not dismiss the bar — a check on a surface that has
                 already gone is no confirmation at all. */}
-            <SelectionToolbarActionButton variant="outline-ghost"
+            <SelectionToolbarActionButton
               size={size}
               aria-label={named("Copy")}
               icon={<Copy />}
@@ -263,7 +263,7 @@ function SelectionToolbarDemo({
               onValueChange={([next]) => next && setTone(next as Tone)}
             >
               {(Object.keys(TONES) as Tone[]).map((key) => (
-                <SelectionToolbarToggle variant="outline-ghost"
+                <SelectionToolbarToggle
                   key={key}
                   value={key}
                   size="icon-sm"
@@ -323,7 +323,7 @@ function HighlightToggle({
   const pressed = overlaps(spans, here);
 
   return (
-    <SelectionToolbarActionToggle variant="outline-ghost"
+    <SelectionToolbarActionToggle
       size={labels ? "sm" : "icon-sm"}
       aria-label={labels ? undefined : "Highlight"}
       icon={<Highlighter />}
