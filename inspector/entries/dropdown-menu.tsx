@@ -20,6 +20,7 @@ import {
 import { useState, type ReactNode } from "react";
 import { Button } from "@/registry/ui/button/button";
 import { Morph } from "@/registry/ui/morph/morph";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/registry/ui/select/select";
 import {
   DropdownMenu,
   createDropdownMenuHandle,
@@ -263,13 +264,34 @@ function DropdownMenuDemo({
 
   return (
     <>
+      {/* Below `lg` the row type is a select across the top of the canvas, as the playground's
+          own variants are: the rail would sit under the open menu. */}
+      <div className="absolute inset-x-0 top-0 z-10 flex h-11 items-center justify-center px-2 lg:hidden">
+        <Select<RowKind>
+          value={rows}
+          onValueChange={(next) => {
+            if (next !== null) setRows(next);
+          }}
+        >
+          <SelectTrigger aria-label="Variant" variant="plain" className="max-w-full">
+            <SelectValue render={<span />}>{() => ROW_LABELS[rows]}</SelectValue>
+          </SelectTrigger>
+          <SelectContent align="center">
+            {ROWS.map((kind) => (
+              <SelectItem key={kind} value={kind}>
+                {ROW_LABELS[kind]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       {/* The row type picks which menu the trigger opens; the current one reads at full
           strength, the rest muted. Pinned to the middle of the canvas's left edge, at the
           compact inset, so the trigger stays centred. */}
       <div
         role="group"
         aria-labelledby="dropdown-menu-variants"
-        className="absolute top-1/2 left-2 z-10 flex w-28 -translate-y-1/2 flex-col items-stretch"
+        className="absolute top-1/2 left-2 z-10 flex w-28 -translate-y-1/2 flex-col items-stretch max-lg:hidden"
       >
         <p
           id="dropdown-menu-variants"
