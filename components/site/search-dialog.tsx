@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from "react";
+import { ClassicLoader } from "@/registry/ui/classic-loader/classic-loader";
+import { registryComponents } from "@/lib/component-catalog";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { House, Image as ImageIcon, ImageOff, Moon, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -21,9 +23,44 @@ import {
   SearchDialogIcon,
   SearchDialogInput,
   SearchDialogList,
+  SearchDialogListItem,
   SearchDialogOverlay,
   type SharedProps,
 } from "fumadocs-ui/components/dialog/search";
+
+/** Pinned above the index's results, so a component's own page comes before its snippets. */
+const PINNED_COMPONENTS = 5;
+
+function matchingComponents(words: string[]) {
+  if (words.length === 0) return [];
+  const query = words.join(" ");
+  return registryComponents
+    .filter(({ name, title }) => words.every((word) => `${title} ${name}`.toLowerCase().includes(word)))
+    // Names that start with the query first, then alphabetical.
+    .sort((a, b) => Number(!a.title.toLowerCase().startsWith(query)) - Number(!b.title.toLowerCase().startsWith(query))
+      || a.title.localeCompare(b.title))
+    .slice(0, PINNED_COMPONENTS)
+    .map(({ name, title }) => ({
+      id: `component-${name}`,
+      type: "page" as const,
+      url: `/docs/${name}`,
+      content: title as ReactNode,
+    }));
+}
+
+/** Debounced keystrokes load for ~100ms each; only a load that lasts shows the header loader. */
+function useLasting(active: boolean, delayMs = 150) {
+  const [lasting, setLasting] = useState(false);
+  useEffect(() => {
+    if (!active) return;
+    const timer = setTimeout(() => setLasting(true), delayMs);
+    return () => {
+      clearTimeout(timer);
+      setLasting(false);
+    };
+  }, [active, delayMs]);
+  return active && lasting;
+}
 
 export default function SiteSearchDialog(props: SharedProps) {
   const router = useRouter();
@@ -68,8 +105,17 @@ export default function SiteSearchDialog(props: SharedProps) {
         onSelect: () => setBlueprintPreviewsEnabled(!previewsEnabled),
       }]
       : [];
-    return [...home, ...actions, ...previewActions, ...(search.data?.items ?? [])];
+    const components = matchingComponents(words);
+    const allActions = [...home, ...actions, ...previewActions];
+    // Each pinned group opens with a label row; the index's results follow unlabelled.
+    const sections = new Map([
+      [components[0]?.id, "Components"],
+      [allActions[0]?.id, "Actions"],
+    ].filter((entry): entry is [string, string] => entry[0] !== undefined));
+    return { sections, all: [...components, ...allActions, ...(search.data?.items ?? [])] };
   }, [search.search, search.data, resolvedTheme, setTheme, router, previewsEnabled]);
+  // With rows on screen the header carries the loader; an empty panel carries it centred.
+  const refreshing = useLasting(search.isLoading && items.all.length > 0);
 
   return (
     <SearchDialog {...search} {...props}>
@@ -88,13 +134,31 @@ export default function SiteSearchDialog(props: SharedProps) {
         <SearchDialogHeader>
           <SearchDialogIcon />
           <SearchDialogInput />
+          {refreshing ? <ClassicLoader size="sm" className="text-muted-foreground" /> : null}
           <SearchDialogClose />
         </SearchDialogHeader>
         {/* The library's scrollbar: Fumadocs' list grows to its full height inside, and this
             caps it at Fumadocs' 460px. The list's animated height still drives the panel's. */}
         <ScrollArea className="max-h-[460px]" viewportProps={{ tabIndex: -1 }}>
           <SearchDialogList
-            items={items}
+            items={items.all}
+            Empty={() => search.isLoading ? (
+              <div role="status" aria-label="Searching" className="flex justify-center py-12 text-muted-foreground">
+                <ClassicLoader />
+              </div>
+            ) : (
+              <div role="status" className="py-12 text-center text-sm text-fd-muted-foreground">No results found</div>
+            )}
+            Item={(itemProps) => items.sections.has(itemProps.item.id) ? (
+              <Fragment>
+                <div aria-hidden className="px-2.5 pt-1.5 pb-1 text-xs font-medium text-fd-muted-foreground not-first:mt-1.5">
+                  {items.sections.get(itemProps.item.id)}
+                </div>
+                <SearchDialogListItem {...itemProps} />
+              </Fragment>
+            ) : (
+              <SearchDialogListItem {...itemProps} />
+            )}
             className="[&>#fd-search-list]:max-h-none [&>#fd-search-list]:overflow-visible"
           />
         </ScrollArea>
