@@ -1,7 +1,7 @@
 "use client";
 
 import { useRender } from "@base-ui/react/use-render";
-import { ChevronRight, MoreHorizontal } from "lucide-react";
+import { Check, ChevronRight, ChevronsUpDown, MoreHorizontal } from "lucide-react";
 import {
   cloneElement,
   createContext,
@@ -17,9 +17,40 @@ import {
   type ReactElement,
   type ReactNode,
 } from "react";
-import { cn } from "@/registry/lib/cn";
+import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { Slot, useSlotChild } from "@/registry/lib/slot";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  type DropdownMenuContentProps,
+  type DropdownMenuItemProps,
+} from "@/registry/ui/dropdown-menu/dropdown-menu";
 import { breadcrumbListVariants, type BreadcrumbListVariants } from "./breadcrumb.variants";
+
+/* -- Separator glyphs ---------------------------------------------------------------- */
+
+export type BreadcrumbSeparatorKind = "slash" | "chevron" | "line" | "dot";
+
+/** Same 24px grid and 2px stroke as the lucide chevron, so every glyph sizes from the list. */
+function Glyph({ children }: { children: ReactNode }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden>
+      {children}
+    </svg>
+  );
+}
+
+const separatorGlyphs: Record<BreadcrumbSeparatorKind, ReactNode> = {
+  // An upright typographic slash, not lucide's 45-degree diagonal.
+  slash: <Glyph><path d="M15 4 9 20" /></Glyph>,
+  chevron: <ChevronRight className="rtl:-scale-x-100" />,
+  line: <Glyph><path d="M12 5v14" /></Glyph>,
+  dot: <Glyph><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" /></Glyph>,
+};
+
+const SeparatorContext = createContext<BreadcrumbSeparatorKind>("chevron");
 
 /**
  * A breadcrumb trail.
@@ -44,6 +75,9 @@ interface CollapseContextValue {
 }
 
 const CollapseContext = createContext<CollapseContextValue | null>(null);
+
+/** Set inside a `variant="menu"` collapse's panel, where crumbs render as menu rows. */
+const InMenuContext = createContext(false);
 
 /** Marks an item or separator as part of a collapse group, and hidden while it's closed. */
 function useCollapseAttributes() {
@@ -73,10 +107,15 @@ export function Breadcrumb({
   });
 }
 
-export interface BreadcrumbListProps extends BreadcrumbPartProps<"ol">, BreadcrumbListVariants {}
+export interface BreadcrumbListProps extends BreadcrumbPartProps<"ol">, BreadcrumbListVariants {
+  /** The default glyph for every `BreadcrumbSeparator` without children. */
+  separator?: BreadcrumbSeparatorKind;
+}
 
-export function BreadcrumbList({ className, size, asChild = false, render, ref, ...props }: BreadcrumbListProps) {
-  return useRender({
+export function BreadcrumbList({
+  className, size, separator = "chevron", asChild = false, render, ref, ...props
+}: BreadcrumbListProps) {
+  const element = useRender({
     defaultTagName: "ol",
     render: asChild ? <Slot /> : render,
     ref,
@@ -84,12 +123,14 @@ export function BreadcrumbList({ className, size, asChild = false, render, ref, 
       ...props,
       "data-slot": "breadcrumb-list",
       "data-size": size ?? "md",
+      "data-separator": separator,
       className: cn(breadcrumbListVariants({ size }), className),
     },
   });
+  return <SeparatorContext.Provider value={separator}>{element}</SeparatorContext.Provider>;
 }
 
-export function BreadcrumbItem({ className, asChild = false, render, ref, ...props }: BreadcrumbPartProps<"li">) {
+function TrailItem({ className, asChild = false, render, ref, ...props }: BreadcrumbPartProps<"li">) {
   const collapseAttributes = useCollapseAttributes();
   return useRender({
     defaultTagName: "li",
@@ -106,7 +147,7 @@ export function BreadcrumbItem({ className, asChild = false, render, ref, ...pro
 
 export type BreadcrumbLinkProps = BreadcrumbPartProps<"a">;
 
-export function BreadcrumbLink({ asChild = false, className, render, ref, ...props }: BreadcrumbLinkProps) {
+function TrailLink({ asChild = false, className, render, ref, ...props }: BreadcrumbLinkProps) {
   return useRender({
     defaultTagName: "a",
     render: asChild ? <Slot /> : render,
@@ -126,7 +167,7 @@ export function BreadcrumbLink({ asChild = false, className, render, ref, ...pro
   });
 }
 
-export function BreadcrumbPage({ className, asChild = false, render, ref, ...props }: BreadcrumbPartProps<"span">) {
+function TrailPage({ className, asChild = false, render, ref, ...props }: BreadcrumbPartProps<"span">) {
   return useRender({
     defaultTagName: "span",
     render: asChild ? <Slot /> : render,
@@ -143,8 +184,9 @@ export function BreadcrumbPage({ className, asChild = false, render, ref, ...pro
   });
 }
 
-export function BreadcrumbSeparator({ children, className, asChild = false, render, ref, ...props }: BreadcrumbPartProps<"li">) {
+function TrailSeparator({ children, className, asChild = false, render, ref, ...props }: BreadcrumbPartProps<"li">) {
   const collapseAttributes = useCollapseAttributes();
+  const kind = useContext(SeparatorContext);
   return useRender({
     defaultTagName: "li",
     render: asChild ? <Slot /> : render,
@@ -155,7 +197,8 @@ export function BreadcrumbSeparator({ children, className, asChild = false, rend
       ...props,
       "data-slot": "breadcrumb-separator",
       ...collapseAttributes,
-      children: children ?? <ChevronRight className="rtl:-scale-x-100" />,
+      "data-separator": children == null ? kind : undefined,
+      children: children ?? separatorGlyphs[kind],
       className: cn(
         "inline-flex shrink-0 items-center text-subtle-foreground select-none [&>svg]:pointer-events-none",
         // Inside a closed collapse, a separator goes when the crumb after it goes. The last one
@@ -167,8 +210,63 @@ export function BreadcrumbSeparator({ children, className, asChild = false, rend
   });
 }
 
+/* -- Crumbs inside a menu collapse --------------------------------------------------- */
+
+/*
+ * A `variant="menu"` collapse renders its children in a Dropdown Menu panel. The same parts
+ * then become menu rows: a link is a link row, a page a row marked current, and items and
+ * separators drop their list markup. Sibling menus are omitted, since a row can't hold one.
+ */
+
+const menuRowClassName = "cursor-default";
+
+function MenuLink({ asChild = false, render, className, children, ref, ...props }: BreadcrumbLinkProps) {
+  const child = asChild && isValidElement(children) ? (children as ReactElement<{ children?: ReactNode }>) : null;
+  const target = child
+    ? cloneElement(child, { children: undefined })
+    : isValidElement(render) ? cloneElement(render as ReactElement<object>, props) : <a {...props} />;
+  return (
+    <DropdownMenuItem
+      ref={ref as never}
+      render={target}
+      data-slot="breadcrumb-link"
+      className={cn(menuRowClassName, typeof className === "string" ? className : undefined)}
+    >
+      {child ? child.props.children : children}
+    </DropdownMenuItem>
+  );
+}
+
+function MenuPage({ children, className }: BreadcrumbPartProps<"span">) {
+  return (
+    <DropdownMenuItem aria-current="page" data-current="" data-slot="breadcrumb-page"
+      className={cn(menuRowClassName, typeof className === "string" ? className : undefined)}>
+      {children}
+    </DropdownMenuItem>
+  );
+}
+
+export function BreadcrumbItem(props: BreadcrumbPartProps<"li">) {
+  return useContext(InMenuContext) ? <>{props.children}</> : <TrailItem {...props} />;
+}
+
+export function BreadcrumbLink(props: BreadcrumbLinkProps) {
+  return useContext(InMenuContext) ? <MenuLink {...props} /> : <TrailLink {...props} />;
+}
+
+export function BreadcrumbPage(props: BreadcrumbPartProps<"span">) {
+  return useContext(InMenuContext) ? <MenuPage {...props} /> : <TrailPage {...props} />;
+}
+
+export function BreadcrumbSeparator(props: BreadcrumbPartProps<"li">) {
+  return useContext(InMenuContext) ? null : <TrailSeparator {...props} />;
+}
+
 const ellipsisClassName = cn(
   "relative inline-flex size-6 shrink-0 items-center justify-center rounded-[6px] outline-none",
+  // The box is 4px taller than the text line at both sizes; the negative block margin keeps
+  // it from setting the row height, so the trail doesn't move as the ellipsis comes and goes.
+  "-my-0.5",
   "[&>svg]:pointer-events-none [&>svg]:shrink-0",
   // Interactive only when it is rendered onto a button or link (`asChild`, or a menu trigger's
   // `render`): then it takes a hover fill, a focus ring, an open state, and a 40px hit area.
@@ -217,6 +315,115 @@ export function BreadcrumbEllipsis({
       children: children ?? dots,
     },
   });
+}
+
+/* -- Siblings ------------------------------------------------------------------------ */
+
+/**
+ * A breadcrumb menu opens on its `current` row, or the first enabled one. Base UI places its
+ * own initial focus first; focusing the row a frame later makes it Base UI's highlight too.
+ */
+function useOpenOnActiveRow(open: boolean) {
+  const popupRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const frame = requestAnimationFrame(() => {
+      const rows = Array.from(popupRef.current?.querySelectorAll<HTMLElement>(
+        '[role^="menuitem"]:not([data-disabled])',
+      ) ?? []);
+      (rows.find((row) => row.hasAttribute("data-current")) ?? rows[0])?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [open]);
+  return popupRef;
+}
+
+export interface BreadcrumbSiblingsProps {
+  /** `BreadcrumbSibling` rows: the pages beside this crumb, itself included as `current`. */
+  children?: ReactNode;
+  open?: boolean;
+  defaultOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** The trigger button's accessible name. */
+  label?: string;
+  /** Props for the menu panel: placement, classes, portal and positioner options. */
+  contentProps?: Omit<DropdownMenuContentProps, "children">;
+}
+
+/**
+ * A menu of sibling pages, opened from a small button after the crumb's link or page. Place
+ * it inside a `BreadcrumbItem`. The panel opens on the `current` row, or the first one.
+ */
+function TrailSiblings({
+  children,
+  open: openProp,
+  defaultOpen = false,
+  onOpenChange,
+  label = "Sibling pages",
+  contentProps,
+}: BreadcrumbSiblingsProps) {
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
+  const open = openProp ?? uncontrolledOpen;
+  const popupRef = useOpenOnActiveRow(open);
+
+  return (
+    <DropdownMenu
+      open={open}
+      onOpenChange={(next) => {
+        if (openProp === undefined) setUncontrolledOpen(next);
+        onOpenChange?.(next);
+      }}
+    >
+      <DropdownMenuTrigger
+        aria-label={label}
+        data-slot="breadcrumb-siblings-trigger"
+        className={cn(
+          "relative inline-flex shrink-0 items-center justify-center rounded-[4px] outline-none",
+          "transition-[background-color,color,box-shadow] duration-(--duration-fast) ease-out",
+          "hover:bg-muted hover:text-foreground data-[popup-open]:bg-muted data-[popup-open]:text-foreground",
+          "focus-visible:z-10 focus-visible:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
+          "[&>svg]:pointer-events-none [&>svg]:shrink-0",
+          // A 40px-tall hit area that doesn't reach sideways over the crumb's own link.
+          "after:absolute after:inset-x-0 after:top-1/2 after:h-10 after:-translate-y-1/2",
+        )}
+      >
+        <ChevronsUpDown aria-hidden />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent {...contentProps} ref={popupRef}>
+        {children}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+export function BreadcrumbSiblings(props: BreadcrumbSiblingsProps) {
+  return useContext(InMenuContext) ? null : <TrailSiblings {...props} />;
+}
+
+export interface BreadcrumbSiblingProps extends DropdownMenuItemProps {
+  href?: string;
+  /** The page this crumb names: marked `aria-current="page"`, checked, and opened on. */
+  current?: boolean;
+}
+
+/**
+ * One sibling page. Renders an `<a href>`; `render` swaps in a framework link instead.
+ */
+export function BreadcrumbSibling({ href, current = false, render, className, children, ...props }: BreadcrumbSiblingProps) {
+  return (
+    <DropdownMenuItem
+      render={render ?? <a href={href} />}
+      aria-current={current ? "page" : undefined}
+      {...props}
+      // A menu row, not an inline link: the default cursor, like every other menu row.
+      className={mergeStateClassName("cursor-default", className)}
+      data-slot="breadcrumb-sibling"
+      data-current={current ? "" : undefined}
+    >
+      {children}
+      {current ? <span className="ms-auto flex shrink-0"><Check aria-hidden /></span> : null}
+    </DropdownMenuItem>
+  );
 }
 
 /* -- Collapse ------------------------------------------------------------------------ */
@@ -276,6 +483,11 @@ interface RunningAnimation {
 export interface BreadcrumbCollapseProps {
   /** The hidden run: `BreadcrumbItem`s and `BreadcrumbSeparator`s, ending in a separator. */
   children?: ReactNode;
+  /**
+   * `expand` reveals the hidden crumbs in place; `menu` lists them in a dropdown from the
+   * ellipsis. In `menu`, `open` is the menu's open state.
+   */
+  variant?: "expand" | "menu";
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -288,13 +500,53 @@ export interface BreadcrumbCollapseProps {
  * `BreadcrumbList` where the hidden crumbs would sit, after the preceding separator; end the
  * group with a separator so one remains between the ellipsis and the crumb that follows.
  */
-export function BreadcrumbCollapse({
+export function BreadcrumbCollapse({ variant = "expand", ...props }: BreadcrumbCollapseProps) {
+  return variant === "menu" ? <CollapseMenu {...props} /> : <CollapseExpand {...props} />;
+}
+
+function CollapseMenu({
   children,
   open: openProp,
   defaultOpen = false,
   onOpenChange,
   label = "Show full path",
-}: BreadcrumbCollapseProps) {
+}: Omit<BreadcrumbCollapseProps, "variant">) {
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
+  const open = openProp ?? uncontrolledOpen;
+  const popupRef = useOpenOnActiveRow(open);
+
+  return (
+    <>
+      <li data-slot="breadcrumb-collapse" data-variant="menu" data-state={open ? "open" : "closed"}
+        className="inline-flex shrink-0 items-center">
+        <DropdownMenu
+          open={open}
+          onOpenChange={(next) => {
+            if (openProp === undefined) setUncontrolledOpen(next);
+            onOpenChange?.(next);
+          }}
+        >
+          <BreadcrumbEllipsis asChild className="[&:is(a,button)]:cursor-default">
+            <DropdownMenuTrigger aria-label={label} />
+          </BreadcrumbEllipsis>
+          <DropdownMenuContent ref={popupRef}>
+            <InMenuContext.Provider value>{children}</InMenuContext.Provider>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </li>
+      {/* The group's separators render as nothing in the panel; this one stays in the trail. */}
+      <TrailSeparator />
+    </>
+  );
+}
+
+function CollapseExpand({
+  children,
+  open: openProp,
+  defaultOpen = false,
+  onOpenChange,
+  label = "Show full path",
+}: Omit<BreadcrumbCollapseProps, "variant">) {
   const group = useId();
   const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
   const open = openProp ?? uncontrolledOpen;
@@ -412,6 +664,7 @@ export function BreadcrumbCollapse({
       <li
         ref={triggerRef}
         data-slot="breadcrumb-collapse"
+        data-variant="expand"
         data-state={open ? "open" : "closed"}
         data-collapsed={open && settled ? "" : undefined}
         data-transitioning={settled ? undefined : ""}

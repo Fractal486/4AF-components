@@ -153,7 +153,7 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   "classic-loader": "ClassicLoader",
   "number-animation": "NumberAnimation",
   badge: "Badge, BadgeClose, BadgeDot, BadgeCount, BadgeIconsProvider",
-  breadcrumb: "Breadcrumb, BreadcrumbList, item/link/page/separator parts, BreadcrumbEllipsis, BreadcrumbCollapse",
+  breadcrumb: "Breadcrumb, BreadcrumbList, item/link/page/separator parts, BreadcrumbEllipsis, BreadcrumbCollapse, BreadcrumbSiblings, BreadcrumbSibling",
   button: "Button",
   "button-group": "ButtonGroup",
   checkbox: "Checkbox, CheckboxGroup",

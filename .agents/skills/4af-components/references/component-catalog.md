@@ -70,7 +70,7 @@ The catalog contains 55 installable UI items.
 
 | Install name and docs | Choose it for |
 | --- | --- |
-| [`breadcrumb`](https://4af.selfsimilar.dev/docs/breadcrumb.md) | A navigation trail with custom element composition and animated expansion/collapse of middle items, with focus transferred after the transition. |
+| [`breadcrumb`](https://4af.selfsimilar.dev/docs/breadcrumb.md) | A navigation trail with custom element composition, separator styles (slash, chevron, line, dot), sibling-page dropdowns, and middle items collapsed into a dropdown or an animated in-place expansion, with focus transferred after the transition. |
 | [`tabs`](https://4af.selfsimilar.dev/docs/tabs.md) | Horizontal or vertical view switching with automatic overflow scrolling, icons, counts, state-based styling, and custom panel elements. |
 | [`collapsible`](https://4af.selfsimilar.dev/docs/collapsible.md) | Showing or hiding a section, with custom trigger icons, state-based styling, and gap-aware collapsing. |
 | [`table`](https://4af.selfsimilar.dev/docs/table.md) | Presenting rows with pinned columns, wrapping text, cell alignment, and row headings. |

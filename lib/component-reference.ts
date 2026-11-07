@@ -98,10 +98,12 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
+  BreadcrumbSibling,
+  BreadcrumbSiblings,
 } from "@/components/ui/breadcrumb";
 
 <Breadcrumb>
-  <BreadcrumbList>
+  <BreadcrumbList separator="slash">
     <BreadcrumbItem>
       <BreadcrumbLink render={<a href="/" />}>Home</BreadcrumbLink>
     </BreadcrumbItem>
@@ -114,6 +116,10 @@ import {
     </BreadcrumbCollapse>
     <BreadcrumbItem>
       <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+      <BreadcrumbSiblings label="Navigation pages">
+        <BreadcrumbSibling href="/docs/breadcrumb" current>Breadcrumb</BreadcrumbSibling>
+        <BreadcrumbSibling href="/docs/menubar">Menubar</BreadcrumbSibling>
+      </BreadcrumbSiblings>
     </BreadcrumbItem>
   </BreadcrumbList>
 </Breadcrumb>`,

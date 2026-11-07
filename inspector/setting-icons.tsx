@@ -176,6 +176,22 @@ export const SEPARATOR_ALIGN_ICONS = {
   end: <Icon><rect x="9.5" y="6" width="5" height="4" rx="2" {...FILLED} /><path d="M1.5 8H7" {...FAINT} /></Icon>,
 } satisfies Record<string, ReactNode>;
 
+/** How Breadcrumb's middle crumbs collapse: shown, folded into an ellipsis, or into a menu. */
+export const BREADCRUMB_COLLAPSE_ICONS = {
+  none: <Icon><path d="M1.5 8h2.5M6.75 8h2.5M12 8h2.5" /></Icon>,
+  expand: <Icon><path d="M1.5 8h2.5M12 8h2.5" {...FAINT} /><circle cx="6.5" cy="8" r="0.75" {...SOLID} /><circle cx="9.5" cy="8" r="0.75" {...SOLID} /><path d="m5 5-1.5 3L5 11M11 5l1.5 3L11 11" /></Icon>,
+  menu: <Icon><path d="M1.5 4h2.5M12 4h2.5" {...FAINT} /><circle cx="6.5" cy="4" r="0.75" {...SOLID} /><circle cx="9.5" cy="4" r="0.75" {...SOLID} /><rect x="4" y="7" width="8" height="7.5" rx="1.5" {...FILLED} /><path d="M6 9.5h4M6 12h2.5" /></Icon>,
+} satisfies Record<string, ReactNode>;
+
+/** Breadcrumb's separator glyph, solid between two faint crumbs. */
+const CRUMBS = <path d="M1.5 8h3.5M11 8h3.5" {...FAINT} />;
+export const BREADCRUMB_SEPARATOR_ICONS = {
+  slash: <Icon>{CRUMBS}<path d="M9 4.5 7 11.5" /></Icon>,
+  chevron: <Icon>{CRUMBS}<path d="m7 5 3 3-3 3" /></Icon>,
+  line: <Icon>{CRUMBS}<path d="M8 4.5v7" /></Icon>,
+  dot: <Icon>{CRUMBS}<circle cx="8" cy="8" r="1.25" {...SOLID} /></Icon>,
+} satisfies Record<string, ReactNode>;
+
 /** How a column's text lines up: lines of different lengths sharing an edge, or centred. */
 export const TEXT_ALIGN_ICONS = {
   start: <Icon><path d="M2 4.5h9" /><path d="M2 8h12M2 11.5h6" {...FAINT} /></Icon>,

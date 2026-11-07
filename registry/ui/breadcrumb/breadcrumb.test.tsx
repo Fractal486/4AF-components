@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createRef, useState } from "react";
 import { vi } from "vitest";
@@ -11,12 +11,14 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
+  BreadcrumbSibling,
+  BreadcrumbSiblings,
 } from "./breadcrumb";
 
 function Trail({
   collapse,
 }: {
-  collapse?: { open?: boolean; defaultOpen?: boolean; onOpenChange?: (open: boolean) => void };
+  collapse?: { open?: boolean; defaultOpen?: boolean; onOpenChange?: (open: boolean) => void; variant?: "expand" | "menu" };
 }) {
   return (
     <Breadcrumb>
@@ -45,6 +47,54 @@ function Trail({
   );
 }
 
+function SiblingTrail(props: { onOpenChange?: (open: boolean) => void; current?: boolean }) {
+  return (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+          <BreadcrumbSiblings label="Components" onOpenChange={props.onOpenChange}>
+            <BreadcrumbSibling href="/docs/badge">Badge</BreadcrumbSibling>
+            <BreadcrumbSibling href="/docs/breadcrumb" current={props.current ?? true}>Breadcrumb</BreadcrumbSibling>
+            <BreadcrumbSibling href="/docs/button">Button</BreadcrumbSibling>
+          </BreadcrumbSiblings>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
+}
+
+describe("BreadcrumbSiblings", () => {
+  it("opens a menu of sibling links on the current page", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(<SiblingTrail onOpenChange={onOpenChange} />);
+    const trigger = screen.getByRole("button", { name: "Components" });
+    expect(trigger).toHaveAttribute("data-slot", "breadcrumb-siblings-trigger");
+    await user.click(trigger);
+
+    const current = await screen.findByRole("menuitem", { name: "Breadcrumb" });
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+    expect(current).toHaveAttribute("href", "/docs/breadcrumb");
+    expect(current).toHaveAttribute("aria-current", "page");
+    expect(current).toHaveAttribute("data-current");
+    await waitFor(() => expect(current).toHaveFocus());
+    expect(current).toHaveAttribute("data-highlighted");
+    expect(screen.getByRole("menuitem", { name: "Badge" })).not.toHaveAttribute("aria-current");
+
+    await user.keyboard("{ArrowDown}");
+    expect(screen.getByRole("menuitem", { name: "Button" })).toHaveFocus();
+  });
+
+  it("opens on the first row when no sibling is current", async () => {
+    const user = userEvent.setup();
+    render(<SiblingTrail current={false} />);
+    await user.click(screen.getByRole("button", { name: "Components" }));
+    const first = await screen.findByRole("menuitem", { name: "Badge" });
+    await waitFor(() => expect(first).toHaveFocus());
+  });
+});
+
 describe("Breadcrumb", () => {
   it("is a labelled nav landmark with an ordered list and the current page marked", () => {
     render(<Trail />);
@@ -60,6 +110,33 @@ describe("Breadcrumb", () => {
     expect(separator).toHaveAttribute("aria-hidden", "true");
     expect(separator).toHaveAttribute("role", "presentation");
     expect(separator.querySelector("svg")).not.toBeNull();
+  });
+
+  it("chooses every default separator glyph from the list", () => {
+    const { container, rerender } = render(
+      <BreadcrumbList>
+        <BreadcrumbSeparator />
+        <BreadcrumbSeparator>|</BreadcrumbSeparator>
+      </BreadcrumbList>,
+    );
+    const list = container.querySelector("ol")!;
+    const [first, custom] = container.querySelectorAll('[data-slot="breadcrumb-separator"]');
+    expect(list).toHaveAttribute("data-separator", "chevron");
+    expect(first).toHaveAttribute("data-separator", "chevron");
+    expect(custom).not.toHaveAttribute("data-separator");
+    expect(custom).toHaveTextContent("|");
+
+    for (const kind of ["slash", "line", "dot"] as const) {
+      rerender(
+        <BreadcrumbList separator={kind}>
+          <BreadcrumbSeparator />
+        </BreadcrumbList>,
+      );
+      const separator = container.querySelector('[data-slot="breadcrumb-separator"]')!;
+      expect(container.querySelector("ol")).toHaveAttribute("data-separator", kind);
+      expect(separator).toHaveAttribute("data-separator", kind);
+      expect(separator.querySelector("svg")).not.toBeNull();
+    }
   });
 
   it("renders a link's styles onto its child with asChild", () => {
@@ -272,6 +349,34 @@ describe("BreadcrumbCollapse animation lifecycle", () => {
     next.unmount();
     expect(running.every(({ cancel }) => cancel.mock.calls.length === 1)).toBe(true);
     await animations.finish();
+  });
+});
+
+describe("BreadcrumbCollapse menu variant", () => {
+  it("lists the hidden crumbs in a dropdown and keeps one separator in the trail", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const { container } = render(<Trail collapse={{ variant: "menu", onOpenChange }} />);
+    const list = container.querySelector("ol")!;
+    expect(screen.queryByRole("link", { name: "Docs" })).toBeNull();
+    // Home, separator, collapse, separator, page.
+    expect(list.children).toHaveLength(5);
+    expect(list.querySelector('[data-slot="breadcrumb-collapse"]')).toHaveAttribute("data-variant", "menu");
+
+    const trigger = screen.getByRole("button", { name: "Show full path" });
+    await user.click(trigger);
+    const docs = await screen.findByRole("menuitem", { name: "Docs" });
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+    expect(docs.tagName).toBe("A");
+    expect(docs).toHaveAttribute("href", "/docs");
+    expect(screen.getByRole("menuitem", { name: "Components" })).toHaveAttribute("href", "/docs/components");
+    expect(screen.getAllByRole("menuitem")).toHaveLength(2);
+    await waitFor(() => expect(docs).toHaveFocus());
+    expect(docs).toHaveAttribute("data-highlighted");
+
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
   });
 });
 

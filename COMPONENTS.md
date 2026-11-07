@@ -74,7 +74,7 @@ For labels that mark required or optional controls, with descriptions and errors
 For vertical controls, draggable ranges, and formatted numeric values, see [Slider](content/docs/slider.mdx#api).
 For design-tool values such as sizes and angles, scrubbed along a ruler with edge scrolling, typed after a click, or nudged by chevrons, see [Scrub Slider](content/docs/scrub-slider.mdx#api).
 For single dates, multiple separate dates, or a continuous range, see [Date Picker](content/docs/date-picker.mdx#api).
-For custom breadcrumb elements and animated expansion or collapse with focus transfer, see [Breadcrumb](content/docs/breadcrumb.mdx#api).
+For custom breadcrumb elements, separator styles, sibling-page menus, and middle crumbs collapsed into a menu or an animated expansion with focus transfer, see [Breadcrumb](content/docs/breadcrumb.mdx#api).
 For disclosures with custom icons, state-based styling, and gap-aware collapsing, see [Collapsible](content/docs/collapsible.mdx#api).
 For horizontal or vertical tabs, automatic overflow scrolling, icons, and custom panels, see [Tabs](content/docs/tabs.mdx#api).
 

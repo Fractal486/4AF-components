@@ -1,6 +1,6 @@
 ---
 title: Breadcrumb
-description: A trail of links to the current page, with an optional ellipsis that reveals collapsed crumbs in place.
+description: A trail of links to the current page, with separator styles, sibling-page menus, and an optional ellipsis that reveals collapsed crumbs in place.
 ---
 
 <ComponentReference name="breadcrumb" />
@@ -8,9 +8,9 @@ description: A trail of links to the current page, with an optional ellipsis tha
 ## API
 
 **Main exports:** `Breadcrumb`, `BreadcrumbList`, `BreadcrumbItem`, `BreadcrumbLink`, `BreadcrumbPage`,
-`BreadcrumbSeparator`, `BreadcrumbEllipsis`, `BreadcrumbCollapse`
+`BreadcrumbSeparator`, `BreadcrumbEllipsis`, `BreadcrumbCollapse`, `BreadcrumbSiblings`, `BreadcrumbSibling`
 
-All parts except `BreadcrumbCollapse` accept native attributes and refs, plus `render` (an element or
+All parts except `BreadcrumbCollapse`, `BreadcrumbSiblings`, and `BreadcrumbSibling` accept native attributes and refs, plus `render` (an element or
 render function) and `asChild`. Both replace the underlying element while keeping the part's styling,
 attributes, event handlers, and refs. `asChild` takes precedence when both are supplied. Keep appropriate
 navigation and list semantics when choosing replacement elements.
@@ -18,19 +18,22 @@ navigation and list semantics when choosing replacement elements.
 | Part | Element | Notes |
 | --- | --- | --- |
 | `Breadcrumb` | `nav` | `aria-label="Breadcrumb"` by default. |
-| `BreadcrumbList` | `ol` | `size="sm" \| "md"` (default `md`): text, gap, and the separator, icon, and ellipsis sizes. Wraps onto further lines. |
+| `BreadcrumbList` | `ol` | `size="sm" \| "md"` (default `md`): text, gap, and the separator, icon, and ellipsis sizes. `separator="slash" \| "chevron" \| "line" \| "dot"` (default `chevron`): the default glyph for every separator; reflected as `data-separator`. Wraps onto further lines. |
 | `BreadcrumbItem` | `li` | One crumb. |
-| `BreadcrumbLink` | `a` | `render` or `asChild` renders onto a framework link. Hover and focus bring it to `foreground`. |
-| `BreadcrumbPage` | `span` | The current page; `aria-current="page"`. |
-| `BreadcrumbSeparator` | `li` | Presentational, hidden from assistive technology. Defaults to a chevron mirrored in RTL; pass children to replace it. |
+| `BreadcrumbLink` | `a` | `render` or `asChild` renders onto a framework link. Hover and focus bring it to `foreground`. A child `svg` is a leading icon, sized by the list's `size` (14px `sm`, 16px `md`). |
+| `BreadcrumbPage` | `span` | The current page; `aria-current="page"`. Takes a leading `svg` icon, sized like a link's. |
+| `BreadcrumbSeparator` | `li` | Presentational, hidden from assistive technology. Renders the list's `separator` glyph and carries it as `data-separator`; the chevron mirrors in RTL. Children replace the glyph and omit `data-separator`. |
 | `BreadcrumbEllipsis` | `span` | Decorative alone. With `render` or `asChild` it can become a `button`, link, or menu trigger, gaining a hover fill, focus ring, open state (`aria-expanded` / `data-popup-open`), and a 40px hit area. An empty `asChild` child gets the dots. Give interactive ellipses an accessible name. |
-| `BreadcrumbCollapse` | `li` + children | Hides its children behind an ellipsis button until pressed. |
+| `BreadcrumbCollapse` | `li` + children | Hides its children behind an ellipsis, revealed in place or listed in a menu. |
+| `BreadcrumbSiblings` | `button` + menu | A menu of sibling pages, opened from a button after the crumb's label. |
+| `BreadcrumbSibling` | `a` | One row in that menu. Takes a leading `svg` icon, sized and muted as a Dropdown Menu row icon. |
 
 ### BreadcrumbCollapse
 
 | Prop | Default | Description |
 | --- | --- | --- |
-| `open` / `defaultOpen` / `onOpenChange` | — / `false` / — | Controlled or uncontrolled. The ellipsis only opens; close it by setting `open={false}`. |
+| `variant` | `"expand"` | `"expand"` reveals the crumbs in place; `"menu"` lists them in a dropdown from the ellipsis. Reflected as `data-variant`. |
+| `open` / `defaultOpen` / `onOpenChange` | — / `false` / — | Controlled or uncontrolled. With `expand`, the ellipsis only opens; close it by setting `open={false}`. With `menu`, this is the menu's open state. |
 | `label` | `"Show full path"` | The ellipsis button's accessible name. |
 
 Place it inside `BreadcrumbList` after the separator that precedes the hidden crumbs, and end the group
@@ -55,10 +58,51 @@ finishes. When the ellipsis had focus, opening moves focus to the first visible 
 animation settles; closing while focus is in the group returns it to the ellipsis after the exit finishes.
 Moving focus elsewhere during an animation cancels that transfer.
 
-For a menu of the hidden crumbs instead of an in-place reveal, render `BreadcrumbEllipsis asChild` onto a
-`DropdownMenu` trigger.
+With `variant="menu"`, the group's children render inside a [Dropdown Menu](/docs/dropdown-menu) panel,
+written the same way: each `BreadcrumbLink` becomes a link row (`render` and `asChild` targets included),
+a `BreadcrumbPage` a row marked `aria-current="page"`, and items and separators render no markup.
+Icons in links and pages become the rows' leading icons.
+`BreadcrumbSiblings` inside the group is omitted. One separator stays in the trail after the ellipsis.
+The ellipsis is the menu trigger; the panel opens with the first enabled row highlighted.
+
+### BreadcrumbSiblings
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `open` / `defaultOpen` / `onOpenChange` | — / `false` / — | Controlled or uncontrolled menu state. |
+| `label` | `"Sibling pages"` | The trigger button's accessible name. |
+| `contentProps` | — | Passed to [Dropdown Menu](/docs/dropdown-menu)'s `DropdownMenuContent`: `side`, `align`, offsets, `className`, `portalProps`, `positionerProps`. |
+
+### BreadcrumbSibling
+
+Accepts `DropdownMenuItem` props.
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `href` | — | The link target. |
+| `render` | `<a href>` | Replaces the anchor, e.g. with a framework link. |
+| `current` | `false` | Marks the row `aria-current="page"` and `data-current`, with a trailing check. |
+
+Place `BreadcrumbSiblings` inside a `BreadcrumbItem`, after its `BreadcrumbLink` or `BreadcrumbPage`:
+
+```tsx
+<BreadcrumbItem>
+  <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+  <BreadcrumbSiblings label="Navigation pages">
+    <BreadcrumbSibling href="/docs/breadcrumb" current>Breadcrumb</BreadcrumbSibling>
+    <BreadcrumbSibling href="/docs/menubar">Menubar</BreadcrumbSibling>
+  </BreadcrumbSiblings>
+</BreadcrumbItem>
+```
+
+The trigger carries `data-slot="breadcrumb-siblings-trigger"` and Base UI's `data-popup-open`, and is sized
+by the list's `size`. The menu opens with the `current` row highlighted and focused, or the first enabled row
+when none is current. Keyboard navigation, typeahead, dismissal, and focus return come from Dropdown Menu,
+which installs with Breadcrumb.
 
 ## Motion
+
+These apply to `variant="expand"`; the menu variant uses Dropdown Menu's panel motion.
 
 - Crumbs expand and fade in, or shrink and fade out, before being hidden. The ellipsis makes the opposite
   transition. Changing direction mid-animation continues from the current widths and opacity.

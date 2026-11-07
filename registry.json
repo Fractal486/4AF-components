@@ -1964,7 +1964,7 @@
     {
       "name": "breadcrumb",
       "type": "registry:ui",
-      "description": "A composable breadcrumb trail with custom elements and animated expansion and collapse of middle items.",
+      "description": "A composable breadcrumb trail with separator styles, sibling-page menus, and middle items collapsed into a dropdown or an animated in-place expansion.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/breadcrumb (Markdown: https://4af.selfsimilar.dev/docs/breadcrumb.md)",
       "dependencies": [
         "@base-ui/react",
@@ -1974,7 +1974,8 @@
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
-        "https://4af.selfsimilar.dev/r/slot.json"
+        "https://4af.selfsimilar.dev/r/slot.json",
+        "https://4af.selfsimilar.dev/r/dropdown-menu.json"
       ],
       "files": [
         {

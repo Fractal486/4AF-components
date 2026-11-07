@@ -207,7 +207,7 @@ export function DemoCanvas({ demo }: { demo: ComponentDemoState }) {
   const isAppShell = entry.slug === "sidebar" || entry.slug === "sidebar-layout";
   const demoWidth = DEMO_WIDTHS[entry.slug as ComponentDemoName];
   const remountSettings = entry.slug === "progress" ? { ...values, value: undefined }
-    : entry.slug === "breadcrumb" ? { ...values, collapse: undefined }
+    : entry.slug === "breadcrumb" ? { ...values, collapse: undefined, siblings: undefined }
     : values;
   const settingsKey = JSON.stringify([
     remountSettings,
