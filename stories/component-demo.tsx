@@ -238,7 +238,6 @@ export function DemoCanvas({ demo }: { demo: ComponentDemoState }) {
         >
           <div
             ref={contentRef}
-            data-slot="demo-content"
             className={cn(
               "flex min-w-0 w-fit max-w-full items-center justify-center",
               demoWidth && "w-full",
