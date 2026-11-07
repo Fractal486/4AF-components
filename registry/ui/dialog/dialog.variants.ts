@@ -1,12 +1,17 @@
 import { cva } from "class-variance-authority";
 
 // Each portal is a layer: a nested backdrop must sit above the parent's popup.
-export const dialogPortalVariants = cva("relative z-50");
+// Fixed and zero-size rather than `relative`: Base UI nests child portals (a Select or
+// Menu inside the dialog) in this node, so it is their containing block. An in-flow node
+// sits below the page, and a popup placed there before positioning scrolls the document.
+export const dialogPortalVariants = cva("fixed top-0 left-0 z-50");
 
 export const dialogBackdropVariants = cva([
   "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm data-nested:bg-black/25",
   "opacity-100 transition-[opacity] duration-(--duration-slow) ease-out",
-  "data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-(--duration-fast)",
+  // The exit eases gently, as the command palette's does. The theme's expo `ease-out` sheds
+  // ~85% of a full-screen dark layer in two frames, so the dialog reads as vanishing.
+  "data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-(--duration-fast) data-ending-style:ease-[ease-out]",
 ]);
 
 export const dialogPopupVariants = cva([

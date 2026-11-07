@@ -418,8 +418,15 @@ export function SelectContent({
           onPointerLeave={(event) => {
             if (!searchable && event.pointerType !== "touch") setPointerLeft(true);
           }}
-          onPointerMove={() => {
-            if (pointerLeft) setPointerLeft(false);
+          onPointerMove={(event) => {
+            if (searchable || event.pointerType === "touch") return;
+            // A footer action that cannot be taken is not a place to rest the highlight:
+            // the last row would stay lit as if it were the thing under the pointer.
+            const target = event.target instanceof Element ? event.target : null;
+            const overInertFooter = Boolean(
+              target && footerRef.current?.contains(target) && !target.closest("button:not(:disabled)"),
+            );
+            if (overInertFooter !== pointerLeft) setPointerLeft(overInertFooter);
           }}
           onKeyDownCapture={(event) => {
             // ↓ off the last row continues into the footer. Only for keys from this panel's
