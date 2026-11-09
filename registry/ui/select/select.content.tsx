@@ -17,10 +17,10 @@ import {
   type MouseEvent,
   type ReactNode,
 } from "react";
-import { SELECT_CLEAR_ACTION, SelectContext, SelectPanelDormantContext, SelectSubSiblingsContext, type SelectSubSibling } from "./select.context";
+import { SELECT_CLEAR_ACTION, SelectActiveItemContext, SelectContext, SelectSearchContext, SelectPanelDormantContext, SelectSubSiblingsContext, type SelectSubSibling } from "./select.context";
 import { SelectSeparator } from "./select.item";
 import { FADE_EXIT, FADE_HIDDEN, FADE_SHOW, SIZE } from "./select.shared";
-import { focusFooterFromLastRow, focusPanelOption, moveFromFooter, resumeFromActiveOption } from "./select.utils";
+import { focusFooterFromLastRow, focusPanelOption, moveFromFooter, resumeFromActiveRow } from "./select.utils";
 
 /**
  * The active-item key for one caller-supplied footer button.
@@ -131,16 +131,13 @@ export function SelectContent({
     values,
     clear,
     size,
-    hasVisibleItems,
-    getOpeningItem,
-    activeItem,
     setActiveItem,
     setPanelSearch,
-    searchQuery,
-    setSearchQuery,
     triggerSizing,
     panelEdge,
   } = useContext(SelectContext);
+  const { hasVisibleItems, getOpeningItem, searchQuery, setSearchQuery } = useContext(SelectSearchContext);
+  const activeItem = useContext(SelectActiveItemContext);
   const width = widthProp ?? (triggerSizing === "content" ? "content" : "trigger");
   const align = alignProp ?? panelEdge;
   const listRef = useRef<HTMLDivElement>(null);
@@ -447,7 +444,7 @@ export function SelectContent({
             if (pointerLeft) setPointerLeft(false);
             // Only when the panel itself holds focus, where Base UI parks it after the pointer
             // leaves. Keys from a nested panel bubble through here too, and are not ours.
-            if (event.target === event.currentTarget && resumeFromActiveOption(listRef.current, event.key)) {
+            if (event.target === event.currentTarget && resumeFromActiveRow(listRef.current, event.key)) {
               event.preventDefault();
               event.stopPropagation();
             }

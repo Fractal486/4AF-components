@@ -113,6 +113,12 @@ checked rows, and the selection offered on reopening all retain the accepted val
 </Select>
 ```
 
+## Rendering long lists
+
+Highlight and search updates reuse unchanged row contents. Search still checks every option;
+rows update when their visibility, highlight, selection, or caller props change. For long lists,
+keep item values, icons, and render callbacks stable when their contents have not changed.
+
 ## Sizing
 
 The Select family uses the shared control scale: `size="xs"` is 24px for dense controls,
@@ -138,6 +144,10 @@ Nested panels open immediately when their parent row is hovered. Pass a positive
 stays unhighlighted until it is hovered or reached through keyboard navigation. Moving from an open
 nested panel to a sibling's row swaps the panels with a short, slight animation
 (`--duration-fast`, 0.98 scale) instead of the full one; the swapped panels carry `data-swap`.
+
+| Prop | Part | Default | Description |
+| --- | --- | --- | --- |
+| `openOnHover` | `SelectSubTrigger` | `true` | Opens the nested panel as the mouse enters the row. Set `false` to use click or keyboard activation only. |
 
 A hover-opened panel has a safe triangle. Leaving its row with the mouse keeps the panel open
 while the pointer travels inside the triangle between the leave point and the panel's near edge,
@@ -180,6 +190,10 @@ Use `SelectSeparator` directly between option groups. It is backed by Base UI's 
 separator, carries `role="presentation"` so the listbox contains only options and groups for
 assistive technology, and is not treated as a selectable row by
 keyboard navigation or selection.
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `orientation` | `"horizontal"` | `"horizontal"` or `"vertical"`; controls the divider's direction. |
 
 ```tsx
 import { SelectContent, SelectItem, SelectSeparator } from "@/components/ui/select";
@@ -279,3 +293,7 @@ its icon on first paint:
 `SelectItem`'s own `icon` only registers once the panel has mounted, so a closed trigger can't
 show it on first load. Use `iconForValue` when the icon is computed rather than declared.
 Resolution order is the mounted item, then `iconForValue`, then `items`.
+
+Mounted item labels (used by `SelectSortTrigger`) and icons (used by `SelectValue`) are
+restored when React replays effects in StrictMode or reveals an `Activity` subtree. Inline
+JSX labels and icons are supported without repeatedly updating the Select's display state.

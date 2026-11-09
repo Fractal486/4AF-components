@@ -11,6 +11,10 @@ description: A clipboard action with transient success feedback and icon morphin
 
 An Action Button that copies text to the clipboard, with visual and screen-reader confirmation.
 
+| Prop | Default | Description |
+| --- | --- | --- |
+| `labels` | `{ copy: "Copy", copied: "Copied", failed: "Couldn't copy" }` | Replace all three strings for translation. `copy` names an icon-only button; `copied` announces success and replaces a visible label when `swapLabel` is true; `failed` announces an error. |
+
 It inherits ActionButton's controlled `status` / `onStatusChange` and separate success/error
 `revertAfter` durations. Errors stay visible while hovered or focused; the remaining reset
 countdown resumes after both leave.

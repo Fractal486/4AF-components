@@ -204,6 +204,16 @@ Select-style triggers keep their label or placeholder on the left and show the s
 selection count, dimmed, immediately before the chevron. `searchable` adds a plain search field
 without a leading icon; the no-results state is the same height as one option row.
 
+| Prop | Part | Default | Description |
+| --- | --- | --- | --- |
+| `open` / `defaultOpen` / `onOpenChange` | `DropdownMenuSelect` | — / `false` / — | Controlled or uncontrolled nested-panel visibility; the callback receives a boolean. |
+| `searchable` | `DropdownMenuSelectContent` | `false` | Adds the panel's filter field. |
+| `searchPosition` | `DropdownMenuSelectContent` | `"top"` | Places the filter field at `top` or `bottom`. |
+| `searchPlaceholder` | `DropdownMenuSelectContent` | `"Search…"` | Placeholder in the filter field. |
+| `emptyMessage` | `DropdownMenuSelectContent` | `"No results."` | React node shown when filtering matches no options. |
+| `autoFocusFirstItem` | `DropdownMenuSelectContent` | `true` | Activates the selected or first enabled row and focuses the search field when present. |
+| `searchValue` | `DropdownMenuSelectItem` | String children, then the item's label | Text matched by the filter, useful when children contain JSX. Without string children or an explicit `label`, the fallback is `String(value)`. This is item text, not a controlled search-query prop. |
+
 Select panels open with the selected row active, the most recent enabled selection for
 multi-select, or the first enabled row in document order. They mark it with `data-panel-active`
 and keep it when the pointer leaves. Without `searchable`, the row then takes

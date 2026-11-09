@@ -275,6 +275,7 @@ export function CommandPalette({
   useEffect(() => {
     if (!shortcut) return;
     const onKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat || event.isComposing) return;
       if (event.key.toLowerCase() === "k" && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
         setOpen(!isOpen);

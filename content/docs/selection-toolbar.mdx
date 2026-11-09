@@ -16,6 +16,23 @@ selected range, so it follows the text while scrolling, and Base UI Toolbar hand
 focus. Pressing an item doesn't collapse the selection. Use the toolbar's item components to
 join that keyboard navigation and receive the captured text and range through their action APIs.
 
+### Root props
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `children` | Required | The region whose text selections are watched; selections elsewhere are ignored. |
+| `actions` | Required | React node containing toolbar buttons, toggles, separators, or other content. |
+| `asChild` | `false` | Attaches the watched region to the child element instead of adding a wrapping `div`. |
+| `disabled` | `false` | Stops watching selections and closes an open toolbar. |
+| `label` | `"Selection actions"` | Accessible toolbar name, announced when focus enters it. |
+| `side` | `"top"` | Preferred side of the selected range, using Base UI's Popover positioning. |
+| `align` | `"center"` | Alignment along that side: `start`, `center`, or `end`. |
+| `sideOffset` | `8` | Gap from the selection, in pixels. |
+| `className` | — | Classes for the watched region. |
+| `toolbarClassName` | — | Classes for the floating toolbar. |
+| `onOpenChange` | — | `(open: boolean) => void`; reports committed visibility changes. |
+| `ref` | — | Ref to the watched region, not the floating toolbar. |
+
 `onOpenChange(open)` reports each committed visibility change once: opening on selection,
 closing when selection collapses or leaves the region, dismissal by an action or Escape, and
 closing when disabled. Repeated selection events and cancelled outside presses do not notify

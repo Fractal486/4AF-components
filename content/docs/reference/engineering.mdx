@@ -4,7 +4,7 @@ description: The component contract, repository boundaries, motion rules, and do
 ---
 
 Use this contract when adding or refining a component. Each component page documents its
-supported API; do not assume every export accepts a ref, `asChild`, or controlled state.
+supported API; do not assume every export accepts a ref, `asChild`, `render`, or controlled state.
 
 ## Component contract
 
@@ -12,7 +12,11 @@ supported API; do not assume every export accepts a ref, `asChild`, or controlle
   focus, dialogs, popups, collision handling, dismissal, and ARIA wiring. Calendar uses
   react-day-picker because Base UI has no calendar primitive.
 - Components forward props and refs, support controlled and uncontrolled state where relevant,
-  and allow element replacement when the underlying element may reasonably change.
+  and allow element replacement when the underlying element may reasonably change. Base UI-backed
+  parts use `render`; standalone parts use `asChild` through the shared Slot helper. Some existing
+  parts support both, and wrappers may intentionally fix their element. Check the owning page's
+  API and the agent catalog's swap-prop column before composing a custom element. For example,
+  Button accepts `asChild`, while Toggle accepts `render`.
 - Variant definitions live beside the component in a `.variants.ts` file and use CVA.
   Wrappers may reuse their underlying component's variants; parts without variants do not
   need a separate definitions file.

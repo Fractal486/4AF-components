@@ -31,9 +31,16 @@ import { useRender } from "@base-ui/react/use-render";
 import { motion, useReducedMotion } from "motion/react";
 import { useLayoutEffect, useRef, useSyncExternalStore, type ComponentProps, type Ref } from "react";
 import { tabbable } from "tabbable";
+import { duration } from "@/registry/lib/motion";
 import { badgeSpringEase, badgeOutEase } from "./badge.motion";
 
 const subscribe = () => () => {};
+
+function durationMs(style: CSSStyleDeclaration, token: "fast" | "base" | "slow") {
+  const raw = style.getPropertyValue(`--duration-${token}`).trim();
+  const ms = raw.endsWith("ms") ? parseFloat(raw) : raw.endsWith("s") ? parseFloat(raw) * 1000 : NaN;
+  return Number.isFinite(ms) ? Math.max(0, ms) : duration[token] * 1000;
+}
 
 /** Base UI owns state/presence; this surface supplies HextaUI's width collapse and fade. */
 export function BadgeSurface({ state, render, ref, panelRef, motionProps, onOpenChangeComplete, ...props }: Record<string, unknown> & {
@@ -81,9 +88,11 @@ export function BadgeSurface({ state, render, ref, panelRef, motionProps, onOpen
       }
     }
     if (skipEnter || reduced || typeof element.animate !== 'function') { finish(); return; }
+    // Read on each open/close so inherited overrides and the inspector's motion scale apply.
+    const style = getComputedStyle(element);
     const animations: Animation[] = [];
     if (open) {
-      animations.push(element.animate([{ opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1 }], { duration: 200, easing: badgeOutEase }));
+      animations.push(element.animate([{ opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1 }], { duration: durationMs(style, "base"), easing: badgeOutEase }));
     } else {
       const parentStyle = element.parentElement && getComputedStyle(element.parentElement);
       const flowsInline = parentStyle && (parentStyle.display.includes('grid') || (parentStyle.display.includes('flex') && parentStyle.flexDirection.startsWith('row')));
@@ -91,8 +100,8 @@ export function BadgeSurface({ state, render, ref, panelRef, motionProps, onOpen
       animations.push(element.animate([
         { width: `${element.offsetWidth}px`, height: `${element.offsetHeight}px`, minWidth: '0px' },
         { width: '0px', height: `${element.offsetHeight}px`, minWidth: '0px', paddingInline: '0px', borderInlineWidth: '0px', marginInlineEnd: `${-gap}px` },
-      ], { duration: 260, easing: badgeSpringEase, fill: 'forwards' }));
-      animations.push(element.animate([{ opacity: 1, scale: 1 }, { opacity: 0, scale: 0.9 }], { duration: 140, easing: badgeOutEase, fill: 'forwards' }));
+      ], { duration: durationMs(style, "slow"), easing: badgeSpringEase, fill: 'forwards' }));
+      animations.push(element.animate([{ opacity: 1, scale: 1 }, { opacity: 0, scale: 0.9 }], { duration: durationMs(style, "fast"), easing: badgeOutEase, fill: 'forwards' }));
     }
     let canceled = false;
     Promise.all(animations.map(animation => animation.finished)).then(() => { if (!canceled) finish(); }, () => {});

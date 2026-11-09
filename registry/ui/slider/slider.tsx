@@ -2,6 +2,7 @@
 
 import { Slider as BaseSlider } from "@base-ui/react/slider";
 import { useDirection } from "@base-ui/react/direction-provider";
+import { createChangeEventDetails, createGenericEventDetails } from "@base-ui/react/internals/createBaseUIEventDetails";
 import {
   animate,
   motion,
@@ -21,6 +22,7 @@ import {
   type ComponentProps,
   type CSSProperties,
   type ReactNode,
+  type SyntheticEvent,
 } from "react";
 import { cn } from "@/registry/lib/cn";
 import { duration, ease, spring } from "@/registry/lib/motion";
@@ -237,7 +239,7 @@ function EditableValue({
   max: number;
   step: number;
   label: string;
-  onCommit: (index: number, value: number) => void;
+  onCommit: (index: number, value: number, event: Event) => void;
   animateValue: boolean;
   locale?: Intl.LocalesArgument;
   format?: Intl.NumberFormatOptions;
@@ -247,11 +249,11 @@ function EditableValue({
   // Escape unmounts the input, and a blur fired on the way out must not commit the draft.
   const cancelledRef = useRef(false);
 
-  const commit = () => {
+  const commit = (event: SyntheticEvent<HTMLInputElement>) => {
     if (draft === null) return;
     if (!cancelledRef.current) {
       const next = parseTypedValue(draft, min, max, step);
-      if (next !== null && next !== value) onCommit(index, next);
+      if (next !== null && next !== value) onCommit(index, next, event.nativeEvent);
     }
     cancelledRef.current = false;
     setDraft(null);
@@ -272,7 +274,7 @@ function EditableValue({
         onKeyDown={(event) => {
           // Kept from the slider, whose arrow keys would otherwise move the thumb as well.
           event.stopPropagation();
-          if (event.key === "Enter") commit();
+          if (event.key === "Enter") commit(event);
           if (event.key === "Escape") {
             cancelledRef.current = true;
             setDraft(null);
@@ -849,10 +851,17 @@ export function Slider({
       : `Edit ${valueName}`;
   // A typed value moves its thumb like any value from outside: it glides there. In a range it
   // can't cross the other thumb; it stops at it.
-  const commitTypedValue = (index: number, typed: number) => {
-    if (!isRange) return handleValueChange(typed);
+  const commitTypedValue = (index: number, typed: number, event: Event) => {
     const [low, high] = normalizedThumbValues;
-    handleValueChange(index === 0 ? [Math.min(typed, high), high] : [low, Math.max(typed, low)]);
+    const next = isRange
+      ? index === 0 ? [Math.min(typed, high), high] : [low, Math.max(typed, low)]
+      : typed;
+    const details = createChangeEventDetails("none", event, controlRef.current ?? undefined, {
+      activeThumbIndex: index,
+    });
+    if (handleValueChange(next, details)) {
+      onValueCommitted?.(next, createGenericEventDetails("none", event));
+    }
   };
   const renderValue = (className: string) => {
     if (!editableValue && !animateValue) return <BaseSlider.Value className={cn("tabular", className)} />;

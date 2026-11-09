@@ -16,7 +16,7 @@ description: A card-shaped number scrubber with a ruler, an edge zone that keeps
 | `value` / `defaultValue` | — / `min` | Controlled and uncontrolled value. |
 | `onValueChange` | — | `(value, details) => void`. `details.reason` is `"track-press"`, `"drag"`, `"keyboard"`, or `"none"` for a typed value or a chevron; `details.cancel()` rejects a change. |
 | `onValueCommitted` | — | Runs when a scrub ends with a changed value, on each keyboard change, and when a typed value or a chevron changes it. A canceled pointer gesture does not commit. |
-| `min` / `max` / `step` | `0` / `100` / `1` | The scale. One ruler tick is one `step`; values snap to the step grid that starts at `min`. |
+| `min` / `max` / `step` | `0` / `100` / `1` | The scale. One ruler tick is one `step`; values snap to the step grid that starts at `min`. A non-finite `min` falls back to `0`; a non-finite `max` or one not greater than `min` falls back to `min + 1`; a non-finite or non-positive `step` falls back to `1`. |
 | `largeStep` | `10` | Shift+Arrow and PageUp/PageDown step. |
 | `format` / `locale` | — | `Intl.NumberFormatOptions` and locale for the displayed and spoken value. Unless it sets `minimumFractionDigits` or `maximumFractionDigits`, values show the full decimal places of `step` and `min` (`1.40` with `step={0.01}`), so tabular figures keep the number's width. |
 | `getAriaValueText` | — | `(formattedValue, value) => string`. Replaces the default spoken value, the formatted value and unit. |
@@ -32,6 +32,11 @@ description: A card-shaped number scrubber with a ruler, an edge zone that keeps
 Other Base UI `Slider.Root` props are forwarded to the card.
 
 ## Behavior
+
+With `value`, the parent remains the source of truth: ignored or clamped change requests do
+not become the starting value for later edits or nudges. A drag commits only when the accepted
+value differs from its starting value. Use `details.cancel()` to reject a change before the
+immediate typed, chevron, or keyboard commit callback runs.
 
 - The ruler is a fixed scale, one `step` per tick (6px at `md`, 5px at `sm`), ending at `min` and
   `max`. A press that moves 3px becomes a scrub: the value is set to the tick where the press

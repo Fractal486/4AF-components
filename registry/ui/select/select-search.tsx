@@ -10,6 +10,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ComponentProps,
@@ -239,10 +240,12 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
     [isControlled, multiple, onOpenChange],
   );
 
+  const context = useMemo(() => ({
+    open: isOpen, multiple: Boolean(multiple), size, selectedLabel, inputRef, registerIcon, unregisterIcon, iconFor,
+  }), [isOpen, multiple, size, selectedLabel, registerIcon, unregisterIcon, iconFor]);
+
   return (
-    <SearchContext.Provider
-      value={{ open: isOpen, multiple: Boolean(multiple), size, selectedLabel, inputRef, registerIcon, unregisterIcon, iconFor }}
-    >
+    <SearchContext.Provider value={context}>
       <Combobox.Root<Value, Multiple>
         open={isOpen}
         onOpenChange={handleOpenChange}

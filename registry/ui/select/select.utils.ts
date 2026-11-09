@@ -41,12 +41,17 @@ export function setForwardedRef<T>(ref: ForwardedRef<T>, value: T | null) {
   }
 }
 
-function enabledPanelOptions(list: HTMLElement) {
-  return Array.from(list.querySelectorAll<HTMLElement>('[role="option"]')).filter(
-    (option) =>
-      !option.hidden &&
-      option.getAttribute("aria-disabled") !== "true" &&
-      !(option instanceof HTMLButtonElement && option.disabled),
+function enabledPanelOptions(list: HTMLElement, optionSelector = '[role="option"]') {
+  return Array.from(list.querySelectorAll<HTMLElement>(optionSelector)).filter(
+    (option) => {
+      // Ignore search-hidden rows/groups inside the list. A hidden positioner outside
+      // the list can be Base UI's temporary anchor-measurement state.
+      const hidden = option.closest("[hidden]");
+      return !(hidden && list.contains(hidden)) &&
+        !option.hasAttribute("data-disabled") &&
+        option.getAttribute("aria-disabled") !== "true" &&
+        !(option instanceof HTMLButtonElement && option.disabled);
+    },
   );
 }
 
@@ -55,9 +60,9 @@ function enabledPanelOptions(list: HTMLElement) {
  * has moved out — resumes from the active row instead of jumping back to the first. Returns
  * whether it moved focus, so the caller can keep Base UI from moving it again.
  */
-export function resumeFromActiveOption(list: HTMLElement | null, key: string) {
+export function resumeFromActiveRow(list: HTMLElement | null, key: string, optionSelector = '[role="option"]') {
   if (!list || (key !== "ArrowDown" && key !== "ArrowUp")) return false;
-  const options = enabledPanelOptions(list);
+  const options = enabledPanelOptions(list, optionSelector);
   const focused = list.ownerDocument.activeElement;
   if (focused && options.some((option) => option.contains(focused))) return false;
   const index = options.findIndex((option) => option.hasAttribute("data-panel-active"));

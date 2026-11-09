@@ -14,6 +14,22 @@ Shortcut hints use the shared [Kbd](/docs/kbd) component, installed automaticall
 
 A responsive application sidebar.
 
+### SidebarProvider
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `open` / `defaultOpen` / `onOpenChange` | — / `true` / — | Controlled or uncontrolled desktop open state; the callback requests a new boolean state. |
+| `persist` | `true` | Writes the accepted desktop open state to the `sidebar_state` cookie when it changes. Set `false` to disable writes. |
+| `keyboardShortcut` | `"mod+b"` | Global toggle shortcut; `null` disables it. |
+| `mobile` | — | Overrides the viewport breakpoint: `true` forces the drawer, `false` the desktop sidebar. |
+
+The cookie stores `true` or `false`, uses `path=/`, and expires after seven days
+(`max-age=604800`). There is no write on initial mount or when a controlled parent rejects
+a toggle. The provider does not read the cookie automatically; an app that restores it must
+read it and pass the result as `defaultOpen` or `open`. Mobile drawer state is separate.
+
+### Sidebar layouts
+
 - `variant`: `sidebar`, `floating`, `inset`, `split`, `split-floating`, or `split-inset`.
 - Controlled or uncontrolled collapse, menu sections, nested rows, collapsible menu rows, badges,
   and loading skeletons.

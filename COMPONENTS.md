@@ -22,6 +22,12 @@ Component APIs, examples, and composition guidance belong on the matching page u
 count are generated from the registry. Demo entries illustrate usage and do not define install
 boundaries.
 
+For element replacement, Base UI-backed parts generally accept `render`; standalone parts
+use `asChild`. Some parts support both, while wrappers can fix their element. The
+[agent catalog](.agents/skills/4af-components/references/component-catalog.md#installable-catalog)
+lists the supported swap props for each install. Check the specific part's API before use:
+`Button` supports `asChild`, and `Toggle` supports `render`.
+
 Loading components install the shared loader utility and `ClassicLoader` as their default
 indicator. See [shared loading indicators](content/docs/reference/engineering.mdx#shared-loading-indicators)
 for provider overrides and alternative loaders.

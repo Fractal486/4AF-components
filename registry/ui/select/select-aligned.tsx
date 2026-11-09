@@ -19,6 +19,7 @@ import { useMergedRefs } from "@/registry/lib/refs";
 import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { Input } from "@/registry/ui/input/input";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
+import { resumeFromActiveRow } from "./select.utils";
 import {
   alignedSelectTriggerVariants,
   type AlignedSelectTriggerVariant,
@@ -132,22 +133,6 @@ const AlignedSelectActivateContext = createContext<(value: unknown) => void>(() 
  * keys to resume from, but stops painting, as a hover does when the pointer moves away.
  */
 const AlignedSelectDormantContext = createContext(false);
-
-/**
- * An arrow key while focus rests on the panel itself — where Base UI leaves it once the pointer
- * has moved out — resumes from the active row rather than jumping back to the first.
- */
-function resumeFromActiveRow(list: HTMLElement | null, key: string) {
-  if (!list || (key !== "ArrowDown" && key !== "ArrowUp")) return false;
-  const options = Array.from(list.querySelectorAll<HTMLElement>('[role="option"]:not([data-disabled])'));
-  const focused = list.ownerDocument.activeElement;
-  if (focused && options.some((option) => option.contains(focused))) return false;
-  const index = options.findIndex((option) => option.hasAttribute("data-panel-active"));
-  if (index < 0) return false;
-  const next = Math.min(Math.max(index + (key === "ArrowDown" ? 1 : -1), 0), options.length - 1);
-  options[next]?.focus();
-  return true;
-}
 
 /** Moves focus out of the search field and into the list, where Base UI's roving takes over. */
 function focusEdgeOption(list: HTMLElement | null, edge: "first" | "last") {

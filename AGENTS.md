@@ -126,8 +126,11 @@ worth reusing; a component that skips a line here is a component we'll rewrite l
   subtly different `data-state` vocabularies — invisible at three components, miserable at
   twenty. (`registry/lib/slot.tsx` is ours only because `asChild` is too small to import a
   primitive for.)
-- **Composable.** `ref` forwarded, props spread, `asChild` wherever an element swap is
-  plausible (use `registry/lib/slot.tsx`).
+- **Composable.** Forward refs and spread props. Where element replacement is supported,
+  Base UI-backed parts use Base UI's `render` prop; standalone parts use `asChild` via
+  `registry/lib/slot.tsx`. Preserve existing parts that support both. Wrappers may intentionally
+  fix their element, so check the component page and agent catalog for the supported swap prop;
+  do not assume every component accepts `asChild`.
 - **Variants in a sibling `.variants.ts`** via CVA. That file holds the variant definitions.
 - **State on the element.** `data-variant`, `data-loading`, `data-state`. Styling and tests
   hook off attributes, not off conditional `className` strings.
@@ -214,7 +217,7 @@ Plus one-off sources for specific jobs (loaders, charts). Same loop applies.
    existing `cn` utility, so inspect those changes before refinement.
 2. **Rebuild to the contract.** Don't polish the download; rewrite it. Most public
    components fail on `transition: all`, hardcoded durations, hex colours, and missing
-   `asChild`.
+   element-composition support (`render` for Base UI parts, `asChild` for standalone parts).
 3. **Tokens only.** No hex, no `slate-*`/`zinc-*`. Use semantic tokens (`bg-surface`,
    `text-muted-foreground`, `shadow-border`) by default. The ramp exceptions are status
    accents (such as warning ink and fills) and fixed neutral control states (such as

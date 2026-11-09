@@ -1692,6 +1692,11 @@
           "path": "registry/ui/select/select-aligned.variants.ts",
           "type": "registry:ui",
           "target": "@ui/select-aligned.variants.ts"
+        },
+        {
+          "path": "registry/ui/select/select.utils.ts",
+          "type": "registry:ui",
+          "target": "@ui/select.utils.ts"
         }
       ]
     },
@@ -2110,6 +2115,11 @@
           "path": "registry/ui/dropdown-menu/dropdown-menu.variants.ts",
           "type": "registry:ui",
           "target": "@ui/dropdown-menu.variants.ts"
+        },
+        {
+          "path": "registry/ui/select/select.utils.ts",
+          "type": "registry:ui",
+          "target": "@ui/select.utils.ts"
         }
       ]
     },

@@ -9,6 +9,14 @@ description: A destructive action button with deliberate confirmation feedback.
 
 **Main export:** `DeleteButton`
 
+| Prop | Default | Description |
+| --- | --- | --- |
+| `children` | `"Delete"` | Resting label; accepts a React node. |
+| `confirmLabel` | `"Confirm"` | Label while armed; accepts a React node. |
+| `icon` | `Trash2` | Resting glyph; accepts a React node. |
+| `confirmIcon` | `Check` | Glyph while armed; accepts a React node. |
+| `announce` | `"Press again to confirm"` | Screen-reader announcement when the button arms. |
+
 A destructive confirmation button: the first press arms it and a later press calls `onDelete`.
 Presses within 350ms of arming are ignored so a double-click cannot confirm. Escape, blur, and
 `resetAfter` disarm it; the timeout defaults to 3000ms, and `resetAfter={0}` disables the timeout.

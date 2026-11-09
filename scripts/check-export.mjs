@@ -15,7 +15,7 @@ async function filesIn(directory) {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const file = path.join(directory, entry.name);
     if (entry.isDirectory()) files.push(...await filesIn(file));
-    else files.push(file);
+    else if (entry.isFile()) files.push(file);
   }
   return files;
 }
@@ -39,7 +39,13 @@ for (const match of llms.matchAll(/\]\((https:\/\/[^)]+\.md)\)/g)) {
 }
 const registry = JSON.parse(await readFile(path.join(root, "registry.json"), "utf8"));
 const exportedRegistry = JSON.parse(await read("r/registry.json"));
-assert.equal(exportedRegistry.items.length, registry.items.length);
+const itemNames = registry.items.map((item) => item.name).sort();
+assert.deepEqual(exportedRegistry.items.map((item) => item.name).sort(), itemNames);
+assert.deepEqual(
+  (await readdir(path.join(output, "r"))).filter((file) => file.endsWith(".json")).sort(),
+  [...itemNames, "registry"].map((name) => `${name}.json`).sort(),
+  "Exported registry contains missing or stale items",
+);
 for (const item of registry.items) {
   const installed = JSON.parse(await read(`r/${item.name}.json`));
   assert.equal(installed.name, item.name);
@@ -70,15 +76,20 @@ while (archive.readUInt32LE(offset) === 0x04034b50) {
   const start = offset + 30 + nameSize + extraSize;
   const data = archive.subarray(start, start + size);
   assert.ok(method === 0 || method === 8);
+  assert.ok(!archived.has(name), `Duplicate archive entry: ${name}`);
   archived.set(name, method === 8 ? inflateRawSync(data) : data);
   offset = start + size;
 }
 const skillRoot = path.join(root, ".agents", "skills", "4af-components");
-const skillFiles = await filesIn(skillRoot);
-assert.equal(archived.size, skillFiles.length);
-for (const file of skillFiles) {
-  const name = `4af-components/${path.relative(skillRoot, file).replaceAll(path.sep, "/")}`;
-  assert.deepEqual(archived.get(name), await readFile(file), `Archive differs: ${name}`);
+// Deliberately independent of the packager: every published file must be a named
+// skill entry point or a non-hidden Markdown reference. Extra local files stay local.
+const referenceNames = (await filesIn(path.join(skillRoot, "references")))
+  .map((file) => path.relative(skillRoot, file).replaceAll(path.sep, "/"))
+  .filter((file) => file.endsWith(".md") && !file.split("/").some((part) => part.startsWith(".")));
+const skillNames = ["SKILL.md", ...referenceNames];
+assert.deepEqual([...archived.keys()].sort(), skillNames.map((name) => `4af-components/${name}`).sort());
+for (const name of skillNames) {
+  assert.deepEqual(archived.get(`4af-components/${name}`), await readFile(path.join(skillRoot, name)), `Archive differs: ${name}`);
 }
 
 // Optionally check the actual Workers preview, including routing, caching and security headers.

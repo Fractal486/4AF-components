@@ -29,7 +29,9 @@ description: A single-date, multiple-date, or date-range field that opens a cale
 | `clearLabel` | `"Clear"` | Clear action text. |
 | `todayLabel` | `"Today"` | Current-month navigation action text. Shown on the left with an Undo2 icon; Clear stays on the right. |
 | `showToday` | `true` | Shows the Today action. Set `false` to hide it; the footer disappears when neither Today nor Clear is visible. |
-| `name` | — | Renders a hidden input: `YYYY-MM-DD` for single, comma-separated ISO dates in selection order for multiple, or `YYYY-MM-DD/YYYY-MM-DD` for a range. Empty selections submit an empty string. |
+| `name` | — | Renders a hidden input: `YYYY-MM-DD` for single, comma-separated ISO dates in selection order for multiple, or `YYYY-MM-DD/YYYY-MM-DD` for a range. Empty selections are omitted from form submission, including after Clear. |
+| `form` | — | Associates the trigger and hidden input with a form by its `id`, including when the picker is outside that form. |
+| `disabled` | `false` | Disables the trigger and omits the selection from form submission. Re-enabling restores submission of the retained value. |
 | `calendarProps.min` / `calendarProps.max` | — | In multiple mode, minimum selected count when deselecting and maximum count when adding. At maximum, further additions are ignored and existing selections remain. In range mode these constrain nights. |
 | `calendarProps.disabled` | — | Days that cannot be selected. Accepts react-day-picker's `Matcher \| Matcher[]`: dates, date ranges, before/after bounds, weekdays, predicates, or booleans. For ranges, set `calendarProps.excludeDisabled` to also reject spans containing disabled days. |
 | `calendarProps` | — | Calendar options such as `disabled`, `startMonth`, `endMonth`, `captionLayout`, `weekStartsOn`, `timeZone`, range constraints (`min`, `max`, `excludeDisabled`), and `locale` (a react-day-picker locale). The picker owns `mode`, `selected`, `onSelect`, `required`, `numberOfMonths`, and initial focus; those are not exposed through this prop. |

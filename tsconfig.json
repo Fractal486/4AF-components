@@ -24,6 +24,7 @@
       "@/registry/ui/ui/button.variants": ["./registry/ui/button/button.variants.ts"],
       "@/registry/ui/ui/table.variants": ["./registry/ui/table/table.variants.ts"],
       "@/registry/ui/ui/dialog.shared": ["./registry/ui/dialog/dialog.shared.tsx"],
+      "@/registry/ui/ui/select.utils": ["./registry/ui/select/select.utils.ts"],
       "@/registry/*": ["./registry/*"],
       "@/inspector/*": ["./inspector/*"],
       "@/app/*": ["./app/*"],

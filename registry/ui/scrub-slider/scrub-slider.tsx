@@ -162,9 +162,9 @@ export function ScrubSlider({
   defaultValue,
   onValueChange,
   onValueCommitted,
-  min = 0,
-  max = 100,
-  step = 1,
+  min: minProp = 0,
+  max: maxProp = 100,
+  step: stepProp = 1,
   largeStep = 10,
   label,
   unit,
@@ -192,18 +192,23 @@ export function ScrubSlider({
   const dims = DIMS[size];
   const centred = indicator === "fixed";
   const rtl = useDirection() === "rtl";
+  const min = Number.isFinite(minProp) ? minProp : 0;
+  const max = Number.isFinite(maxProp) && maxProp > min ? maxProp : min + 1;
+  const step = Number.isFinite(stepProp) && stepProp > 0 ? stepProp : 1;
   const scale: ScrubScale = useMemo(() => ({ min, max, step }), [min, max, step]);
   const endTick = lastTick(scale);
 
   const controlled = value !== undefined;
   const [internal, setInternal] = useState(() => snapValue(defaultValue ?? min, scale));
-  const current = clamp(controlled ? value : internal, min, max);
+  const candidate = controlled ? value : internal;
+  const current = clamp(Number.isFinite(candidate) ? candidate : min, min, max);
   const currentTick = tickOfValue(current, scale);
-  // The value as last set, read by the drag loop between renders.
+  // Between renders, uncontrolled drags track their latest change; controlled drags
+  // track only the value the parent accepted, never a proposed value it rejected.
   const valueRef = useRef(current);
   useLayoutEffect(() => {
     valueRef.current = current;
-  }, [current]);
+  });
 
   const labelId = useId();
   const rulerRef = useRef<HTMLDivElement>(null);
@@ -258,7 +263,9 @@ export function ScrubSlider({
           dims.spacing,
           scale,
         );
-  if (settledOffset !== offset) setOffset(settledOffset);
+  if (settledOffset !== null && Number.isFinite(settledOffset) && settledOffset !== offset) {
+    setOffset(settledOffset);
+  }
 
   useEffect(
     () => () => {
@@ -292,8 +299,10 @@ export function ScrubSlider({
     });
     onValueChange?.(next, details);
     if (details.isCanceled) return false;
-    valueRef.current = next;
-    if (!controlled) setInternal(next);
+    if (!controlled) {
+      valueRef.current = next;
+      setInternal(next);
+    }
     return true;
   };
 
@@ -480,8 +489,10 @@ export function ScrubSlider({
     const details = createChangeEventDetails("none", event, trigger, { activeThumbIndex: 0 });
     onValueChange?.(next, details);
     if (details.isCanceled) return;
-    valueRef.current = next;
-    if (!controlled) setInternal(next);
+    if (!controlled) {
+      valueRef.current = next;
+      setInternal(next);
+    }
     onValueCommitted?.(next, createGenericEventDetails("none", event));
   };
 
@@ -511,8 +522,10 @@ export function ScrubSlider({
     const nextValue = snapValue(Array.isArray(next) ? next[0]! : (next as number), scale);
     onValueChange?.(nextValue, details);
     if (details.isCanceled) return;
-    valueRef.current = nextValue;
-    if (!controlled) setInternal(nextValue);
+    if (!controlled) {
+      valueRef.current = nextValue;
+      setInternal(nextValue);
+    }
   };
 
   const active = (dragging || focusVisible) && !editing;

@@ -14,6 +14,25 @@ A keyboard-first command and search dialog with fuzzy ranking, groups, nested an
 async, server-driven, and paginated search, header text fields, per-panel header actions, badges,
 selection checks, keybinds, and destructive actions.
 
+### Root props
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `groups` | Required | `CommandGroup[]` shown at rest and filtered locally unless `onSearch` supplies results. |
+| `open` / `defaultOpen` / `onOpenChange` | — / `false` / — | Controlled or uncontrolled visibility; the callback receives the requested boolean state. |
+| `placeholder` | `"Type a command or search…"` | Placeholder in the root search input. |
+| `onCreate` | — | `(query: string) => void`. Adds a keyboard-accessible Create row for a nonempty root query, even when other results match. Receives the trimmed query when that row is activated. |
+| `footer` | `true` | Shows the root list's keyboard hint bar. Custom panels use their own `CommandPanelFooter`. |
+| `emptyMessage` | Two-line no-results message | React node used when no results or Create row are available: by default, `No results for “<query>”` and `Try a different search`. |
+| `shortcut` | `true` | Binds Command+K / Ctrl+K to toggle the palette. |
+| `initialItemId` | — | Item id to open directly into a custom panel or sub-list; `null` uses the root. Read on each opening. |
+| `onSearch` | — | `(query, signal) => Promise<CommandGroup[]>` for root results. Returned order is preserved. |
+| `searchDebounce` | `200` | Delay before async search, in milliseconds. |
+| `loadingMessage` | `"Searching…"` | React node shown while waiting for results. |
+| `searchErrorMessage` | `"Search failed. Change your query to retry."` | React node or `(error: unknown) => ReactNode` for failed searches. |
+| `loader` | Inherited | Default indicator for searches, panels, and actions. |
+| `className` | — | Classes for the palette panel. |
+
 `loader={<MySpinner />}` supplies the palette's search, panel, and action indicators. Omit it to
 inherit [LoaderProvider](/docs/reference/engineering#shared-loading-indicators), with `ClassicLoader` as
 the fallback. `CommandItem` data and `CommandPanelLoading` accept their own `loader`; a custom
@@ -21,6 +40,8 @@ the fallback. `CommandItem` data and `CommandPanelLoading` accept their own `loa
 
 `shortcut` is on by default and binds `⌘K` / `Ctrl+K` to toggle the palette. The demo on this
 page uses `⌘⇧P` / `Ctrl+Shift+P` instead, so it doesn't clash with the site search.
+The palette toggle, `⌘J` / `Ctrl+J` actions-menu toggle, and panel action keybinds ignore held-key
+repeats and text-composition events; each fresh press can toggle or run its action once.
 
 `useCommandSearch` discards results from cancelled requests, even when the search callback
 ignores its abort signal. Clearing the query or disabling search resets the results, and a late

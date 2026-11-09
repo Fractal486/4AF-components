@@ -51,11 +51,12 @@ next available sibling close button, then the previous one, then another nearby 
 Focus elsewhere is preserved. Use a noninteractive badge root when it contains `BadgeClose`;
 buttons cannot be nested inside a button or link.
 
-Removal follows HextaUI's animation: the badge shrinks horizontally over 260ms while fading and
-scaling to 0.9 over 140ms. Its neighbors move into the gap. New client-mounted and restored badges
-fade and scale in over 200ms; server-rendered initial badges stay still. Reduced motion skips these
-animations. Width, padding, border, and margin changes are deliberate layout-animation exceptions
-to close the space between tags.
+Removal keeps HextaUI's easing: the badge shrinks horizontally over `--duration-slow` (300ms by
+default) while fading and scaling to 0.9 over `--duration-fast` (150ms). Its neighbors move into
+the gap. New client-mounted and restored badges fade and scale in over `--duration-base` (200ms);
+server-rendered initial badges stay still. Durations read the current CSS tokens on each open or
+close, including motion-speed overrides. Reduced motion skips these animations. Width, padding,
+border, and margin changes are deliberate layout-animation exceptions to close the space between tags.
 
 ### Counts and dots
 

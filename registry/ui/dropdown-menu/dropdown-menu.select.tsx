@@ -1,6 +1,7 @@
 import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { Input } from "@/registry/ui/input/input";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
+import { resumeFromActiveRow } from "@/registry/ui/ui/select.utils";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 import { CheckMark } from "@/registry/lib/check-mark";
 import {
@@ -292,22 +293,6 @@ function enabledSelectItems(list: HTMLElement | null) {
   });
 }
 
-/**
- * An arrow key while focus rests on the panel itself — where Base UI leaves it once the pointer
- * has moved out — resumes from the active row rather than jumping back to the first.
- */
-function resumeFromActiveRow(list: HTMLElement | null, key: string) {
-  if (!list || (key !== "ArrowDown" && key !== "ArrowUp")) return false;
-  const rows = enabledSelectItems(list);
-  const focused = list.ownerDocument.activeElement;
-  if (focused && rows.some((row) => row.contains(focused))) return false;
-  const index = rows.findIndex((row) => row.hasAttribute("data-panel-active"));
-  if (index < 0) return false;
-  const next = Math.min(Math.max(index + (key === "ArrowDown" ? 1 : -1), 0), rows.length - 1);
-  rows[next]?.focus();
-  return true;
-}
-
 export interface DropdownMenuSelectTriggerProps
   extends Omit<
     ComponentProps<typeof BaseMenu.SubmenuTrigger>,
@@ -531,8 +516,10 @@ export function DropdownMenuSelectContent({
         if (searchable) return;
         if (pointerLeft) setPointerLeft(false);
         // Only when the panel itself holds focus, where Base UI parks it after the pointer
-            // leaves. Keys from a nested panel bubble through here too, and are not ours.
-            if (event.target === event.currentTarget && resumeFromActiveRow(listRef.current, event.key)) {
+        // leaves. Keys from a nested panel bubble through here too, and are not ours.
+        if (event.target === event.currentTarget && resumeFromActiveRow(
+          listRef.current, event.key, '[role="menuitemradio"], [role="menuitemcheckbox"]',
+        )) {
           event.preventDefault();
           event.stopPropagation();
         }

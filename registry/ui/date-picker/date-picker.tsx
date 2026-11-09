@@ -148,6 +148,7 @@ function DatePickerShell({
   showToday = true,
   calendarProps,
   name,
+  form,
   onClear,
   focusDate,
   children,
@@ -181,6 +182,7 @@ function DatePickerShell({
   const triggerProps = {
     ...props,
     disabled,
+    form,
     className: cn(datePickerTriggerVariants({ variant, size, tone }), className),
     "data-slot": "date-picker-trigger",
     "data-variant": variant ?? "default",
@@ -241,7 +243,9 @@ function DatePickerShell({
       </Button>
     ) : null;
 
-  const hidden = name !== undefined ? <input type="hidden" name={name} value={hiddenValue ?? ""} /> : null;
+  const hidden = name !== undefined ? (
+    <input type="hidden" name={name} value={hiddenValue ?? ""} form={form} disabled={disabled || !hiddenValue} />
+  ) : null;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

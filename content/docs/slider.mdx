@@ -22,7 +22,7 @@ description: A horizontal or vertical slider with three thumb styles, draggable 
 | `className` | — | A string or `(state) => string`, including orientation, values, disabled, and dragging state. |
 | `render` | `<div>` | A replacement element or `(props, state) => element`; forward the supplied props and ref. |
 | `onValueChange` | — | `(value, details) => void`. Receives a number or range tuple; `details.cancel()` rejects a change. |
-| `onValueCommitted` | — | Runs when a pointer interaction finishes or a keyboard change commits. |
+| `onValueCommitted` | — | Runs when a pointer interaction finishes, a keyboard change commits, or a typed edit is accepted on Enter or blur. Typed edits use `details.reason: "none"` and retain the original keyboard or focus event. |
 
 A controlled or uncontrolled numeric slider. Defaults are `thumb="bar"`, `size="md"`,
 `min={0}`, `max={100}`, and `step={1}`. `showValue` and `showTicks` default to `true`;
@@ -54,6 +54,10 @@ A range shows one editable number per thumb, and a typed value stops at the othe
 Snapping starts at `min` and preserves its decimal precision as well as the step's, including
 steps such as `1e-7`. For example, `min={0.5}` and `step={1}` snap a typed `3` to `3.5`.
 After Escape, clicking the value starts a fresh edit that can be committed normally.
+
+A typed edit calls `onValueChange` before `onValueCommitted`, passing the snapped and clamped
+number or range pair. Calling `details.cancel()` in `onValueChange` prevents the commit callback.
+Invalid text, an unchanged value, and Escape do not commit.
 
 | `thumb` | Shape |
 | --- | --- |

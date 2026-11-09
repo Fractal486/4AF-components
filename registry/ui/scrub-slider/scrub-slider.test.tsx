@@ -96,6 +96,86 @@ describe("ScrubSlider geometry", () => {
 });
 
 describe("ScrubSlider", () => {
+  it("keeps rejected drag values out of commits and subsequent edits", () => {
+    const change = vi.fn();
+    const commit = vi.fn();
+    const { container } = render(
+      <ScrubSlider label="Width" value={50} onValueChange={change} onValueCommitted={commit} />,
+    );
+    const root = geometry(container);
+
+    fireEvent.pointerDown(root, { ...pointer, clientX: 150 });
+    fireEvent.pointerMove(root, { ...pointer, clientX: 210 });
+    expect(change).toHaveBeenLastCalledWith(60, expect.anything());
+    change.mockClear();
+    // The parent did not accept 60, so trying it again must still request a change.
+    fireEvent.pointerMove(root, { ...pointer, clientX: 210 });
+    expect(change).toHaveBeenCalledWith(60, expect.anything());
+    fireEvent.pointerUp(root, { ...pointer, clientX: 210 });
+    expect(commit).not.toHaveBeenCalled();
+    expect(screen.getByRole("slider")).toHaveAttribute("aria-valuenow", "50");
+
+    fireEvent.keyDown(screen.getByRole("slider"), { key: "Enter" });
+    expect(screen.getByRole("textbox", { name: "Edit Width" })).toHaveValue("50");
+  });
+
+  it("commits the value accepted by a clamping controlled parent", () => {
+    const commit = vi.fn();
+    function Clamped() {
+      const [value, setValue] = useState(50);
+      return <ScrubSlider label="Width" value={value} onValueChange={(next) => setValue(Math.min(next, 55))} onValueCommitted={commit} />;
+    }
+    const { container } = render(<Clamped />);
+    const root = geometry(container);
+    fireEvent.pointerDown(root, { ...pointer, clientX: 150 });
+    fireEvent.pointerMove(root, { ...pointer, clientX: 210 });
+    // Another rejected move must not overwrite the accepted value between renders.
+    fireEvent.pointerMove(root, { ...pointer, clientX: 216 });
+    fireEvent.pointerUp(root, { ...pointer, clientX: 216 });
+    expect(commit).toHaveBeenCalledExactlyOnceWith(55, expect.objectContaining({ reason: "drag" }));
+  });
+
+  it.each(["chevron", "keyboard", "editor"] as const)("uses the controlled value after a rejected %s change", async (source) => {
+    const user = userEvent.setup();
+    const change = vi.fn();
+    render(<ScrubSlider label="Width" value={50} onValueChange={change} />);
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (source === "chevron") await user.click(screen.getByRole("button", { name: "Increase Width" }));
+      if (source === "keyboard") fireEvent.keyDown(screen.getByRole("slider"), { key: "ArrowRight" });
+      if (source === "editor") {
+        fireEvent.keyDown(screen.getByRole("slider"), { key: "Enter" });
+        const input = screen.getByRole("textbox", { name: "Edit Width" });
+        expect(input).toHaveValue("50");
+        await user.clear(input);
+        await user.type(input, "51{Enter}");
+      }
+      expect(change).toHaveBeenLastCalledWith(51, expect.anything());
+    }
+    expect(change).toHaveBeenCalledTimes(2);
+    fireEvent.keyDown(screen.getByRole("slider"), { key: "Enter" });
+    expect(screen.getByRole("textbox", { name: "Edit Width" })).toHaveValue("50");
+  });
+
+  it.each([
+    { min: 0, max: 100, step: 0, expectedMin: 0, expectedMax: 100 },
+    { min: 0, max: 100, step: -1, expectedMin: 0, expectedMax: 100 },
+    { min: 0, max: 100, step: NaN, expectedMin: 0, expectedMax: 100 },
+    { min: 0, max: 100, step: Infinity, expectedMin: 0, expectedMax: 100 },
+    { min: NaN, max: 100, step: 1, expectedMin: 0, expectedMax: 100 },
+    { min: 5, max: Infinity, step: 1, expectedMin: 5, expectedMax: 6 },
+    { min: 5, max: 4, step: 1, expectedMin: 5, expectedMax: 6 },
+    { min: 5, max: 5, step: 1, expectedMin: 5, expectedMax: 6 },
+  ])("normalizes invalid scale min=$min max=$max step=$step", ({ min, max, step, expectedMin, expectedMax }) => {
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(RULER_WIDTH);
+    render(<ScrubSlider label="Width" min={min} max={max} step={step} />);
+    const slider = screen.getByRole("slider");
+    expect(slider).toHaveAttribute("min", String(expectedMin));
+    expect(slider).toHaveAttribute("max", String(expectedMax));
+    expect(slider).toHaveAttribute("aria-valuenow", String(expectedMin));
+    fireEvent.keyDown(slider, { key: "ArrowRight" });
+    expect(slider).toHaveAttribute("aria-valuenow", String(expectedMin + 1));
+  });
+
   it("names the slider by its label and speaks the unit with the value", () => {
     render(<ScrubSlider label="Width" unit="px" defaultValue={40} />);
     const slider = screen.getByRole("slider", { name: "Width" });

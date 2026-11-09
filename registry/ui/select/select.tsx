@@ -3,7 +3,7 @@
 import { Select as BaseSelect } from "@base-ui/react/select";
 import { createChangeEventDetails } from "@base-ui/react/internals/createBaseUIEventDetails";
 import { useCallback, useMemo, useRef, useState, type ComponentProps, type MouseEvent, type ReactNode } from "react";
-import { SelectContext } from "./select.context";
+import { SelectContext, SelectActiveItemContext, SelectSearchContext } from "./select.context";
 import type { SelectSize } from "./select.shared";
 import { isEquivalentNode, stillEdge } from "./select.utils";
 
@@ -279,7 +279,7 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   );
   const hasMatchingDescendant = useCallback(
     (parentValue: unknown) => {
-      if (searchQuery.trim() === "") return false;
+      if (searchQuery.trim() === "" || nestedOptionTexts.size === 0) return false;
 
       const visited = new Set<unknown>();
       const findMatch = (ancestor: unknown): boolean => {
@@ -451,56 +451,64 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
     [handleValueChange],
   );
 
+  const context = useMemo(() => ({
+    open: isOpen,
+    multiple: Boolean(multiple),
+    disabled: Boolean(props.disabled),
+    readOnly: Boolean(props.readOnly),
+    setOpen,
+    setValue,
+    registerNestedPanel,
+    isNestedPanelTarget,
+    size,
+    triggerSizing,
+    setTriggerSizing,
+    setTriggerNode,
+    panelEdge,
+    values,
+    registerIcon,
+    unregisterIcon,
+    iconFor,
+    registerLabel,
+    unregisterLabel,
+    labelFor,
+    firstItem,
+    registerOptionText,
+    unregisterOptionText,
+    setActiveItem,
+    panelSearch,
+    setPanelSearch,
+    clear,
+  }), [isOpen, multiple, props.disabled, props.readOnly, setOpen, setValue,
+    registerNestedPanel, isNestedPanelTarget, size, triggerSizing, panelEdge, values,
+    registerIcon, unregisterIcon, iconFor, registerLabel, unregisterLabel, labelFor,
+    firstItem, registerOptionText, unregisterOptionText, panelSearch, clear]);
+  const searchContext = useMemo(() => ({
+    matchesQuery,
+    hasVisibleItems,
+    hasMatchingDescendant,
+    getOpeningItem,
+    searchQuery,
+    setSearchQuery,
+  }), [matchesQuery, hasVisibleItems, hasMatchingDescendant, getOpeningItem, searchQuery]);
+
   return (
-    <SelectContext.Provider
-      value={{
-        open: isOpen,
-        multiple: Boolean(multiple),
-        disabled: Boolean(props.disabled),
-        readOnly: Boolean(props.readOnly),
-        setOpen,
-        setValue,
-        registerNestedPanel,
-        isNestedPanelTarget,
-        size,
-        triggerSizing,
-        setTriggerSizing,
-        setTriggerNode,
-        panelEdge,
-        values,
-        registerIcon,
-        unregisterIcon,
-        iconFor,
-        registerLabel,
-        unregisterLabel,
-        labelFor,
-        firstItem,
-        registerOptionText,
-        unregisterOptionText,
-        matchesQuery,
-        hasVisibleItems,
-        hasMatchingDescendant,
-        getOpeningItem,
-        activeItem,
-        setActiveItem,
-        panelSearch,
-        setPanelSearch,
-        searchQuery,
-        setSearchQuery,
-        clear,
-      }}
-    >
-      <BaseSelect.Root
-        open={isOpen}
-        onOpenChange={handleOpenChange}
-        defaultOpen={defaultOpen}
-        multiple={multiple}
-        value={currentValue as never}
-        onValueChange={handleValueChange as never}
-        {...props}
-      >
-        {children}
-      </BaseSelect.Root>
+    <SelectContext.Provider value={context}>
+      <SelectSearchContext.Provider value={searchContext}>
+        <SelectActiveItemContext.Provider value={activeItem}>
+          <BaseSelect.Root
+            open={isOpen}
+            onOpenChange={handleOpenChange}
+            defaultOpen={defaultOpen}
+            multiple={multiple}
+            value={currentValue as never}
+            onValueChange={handleValueChange as never}
+            {...props}
+          >
+            {children}
+          </BaseSelect.Root>
+        </SelectActiveItemContext.Provider>
+      </SelectSearchContext.Provider>
     </SelectContext.Provider>
   );
 }

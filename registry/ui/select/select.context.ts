@@ -46,6 +46,14 @@ interface SelectContextValue {
   firstItem: unknown;
   registerOptionText: (value: unknown, text: string, parentValue?: unknown, disabled?: boolean, node?: HTMLElement | null) => void;
   unregisterOptionText: (value: unknown) => void;
+  setActiveItem: (value: unknown) => void;
+  panelSearch: boolean;
+  setPanelSearch: (enabled: boolean) => void;
+  /** Reset the selection to none (single → null, multiple → empty). */
+  clear: (event?: MouseEvent<HTMLButtonElement>) => void;
+}
+
+interface SelectSearchContextValue {
   /** True when the text passes the current panel-search query (or there is none). */
   matchesQuery: (text: string) => boolean;
   /** Whether any top-level item remains visible under the current query. */
@@ -54,15 +62,20 @@ interface SelectContextValue {
   hasMatchingDescendant: (value: unknown) => boolean;
   /** The row a panel opens on: the selection while the list is whole, else the first row. */
   getOpeningItem: (list: HTMLElement | null) => unknown;
-  activeItem: unknown;
-  setActiveItem: (value: unknown) => void;
-  panelSearch: boolean;
-  setPanelSearch: (enabled: boolean) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  /** Reset the selection to none (single → null, multiple → empty). */
-  clear: (event?: MouseEvent<HTMLButtonElement>) => void;
 }
+
+// Highlight and filtering change independently of trigger labels, selection, and registration.
+export const SelectActiveItemContext = createContext<unknown>(undefined);
+export const SelectSearchContext = createContext<SelectSearchContextValue>({
+  matchesQuery: () => true,
+  hasVisibleItems: false,
+  hasMatchingDescendant: () => false,
+  getOpeningItem: () => undefined,
+  searchQuery: "",
+  setSearchQuery: () => {},
+});
 
 export const SelectContext = createContext<SelectContextValue>({
   open: false,
@@ -89,16 +102,9 @@ export const SelectContext = createContext<SelectContextValue>({
   firstItem: undefined,
   registerOptionText: () => {},
   unregisterOptionText: () => {},
-  matchesQuery: () => true,
-  hasVisibleItems: false,
-  hasMatchingDescendant: () => false,
-  getOpeningItem: () => undefined,
-  activeItem: undefined,
   setActiveItem: () => {},
   panelSearch: false,
   setPanelSearch: () => {},
-  searchQuery: "",
-  setSearchQuery: () => {},
   clear: () => {},
 });
 
@@ -164,6 +170,6 @@ export function useSelectSubContext() {
  * stay in agreement.
  */
 export function useSelectSearch(): { query: string; matches: (text: string) => boolean } {
-  const { searchQuery, matchesQuery } = useContext(SelectContext);
+  const { searchQuery, matchesQuery } = useContext(SelectSearchContext);
   return { query: searchQuery, matches: matchesQuery };
 }

@@ -159,7 +159,7 @@ export function CommandPanelActions({
   // the containing custom panel owns them even while this menu is closed.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.defaultPrevented) return;
+      if (event.defaultPrevented || event.repeat || event.isComposing) return;
       const action = actionItems.find((item) => {
         return item.keybind != null && matchesKeybind(item.keybind, event);
       });
@@ -180,6 +180,7 @@ export function CommandPanelActions({
   // would have the footer teaching a different keyboard on every page.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat || event.isComposing) return;
       if (event.key.toLowerCase() === ACTIONS_HOTKEY && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
         setMenuOpen((current) => !current);

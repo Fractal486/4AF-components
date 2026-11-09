@@ -1,0 +1,75 @@
+{
+  "browser": "157.0.8103.39",
+  "options": 500,
+  "samples": [
+    [
+      {
+        "name": "hover",
+        "rowRenders": 502,
+        "rowsRendered": 500,
+        "commitMs": 38.49999988079071,
+        "commits": 4
+      },
+      {
+        "name": "search-all-match",
+        "rowRenders": 500,
+        "rowsRendered": 500,
+        "commitMs": 27.700000047683716,
+        "commits": 2
+      },
+      {
+        "name": "search-one-match",
+        "rowRenders": 1000,
+        "rowsRendered": 500,
+        "commitMs": 64.99999994039536,
+        "commits": 4
+      }
+    ],
+    [
+      {
+        "name": "hover",
+        "rowRenders": 502,
+        "rowsRendered": 500,
+        "commitMs": 20.899999856948853,
+        "commits": 4
+      },
+      {
+        "name": "search-all-match",
+        "rowRenders": 500,
+        "rowsRendered": 500,
+        "commitMs": 20.499999821186066,
+        "commits": 2
+      },
+      {
+        "name": "search-one-match",
+        "rowRenders": 1000,
+        "rowsRendered": 500,
+        "commitMs": 88.20000004768372,
+        "commits": 4
+      }
+    ],
+    [
+      {
+        "name": "hover",
+        "rowRenders": 502,
+        "rowsRendered": 500,
+        "commitMs": 28.699999928474426,
+        "commits": 4
+      },
+      {
+        "name": "search-all-match",
+        "rowRenders": 500,
+        "rowsRendered": 500,
+        "commitMs": 23.49999988079071,
+        "commits": 2
+      },
+      {
+        "name": "search-one-match",
+        "rowRenders": 1000,
+        "rowsRendered": 500,
+        "commitMs": 84.10000002384186,
+        "commits": 4
+      }
+    ]
+  ]
+}

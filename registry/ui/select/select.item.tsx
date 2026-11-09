@@ -3,6 +3,7 @@ import { CheckMark } from "@/registry/lib/check-mark";
 import { Select as BaseSelect } from "@base-ui/react/select";
 import {
   forwardRef,
+  memo,
   useCallback,
   useContext,
   useEffect,
@@ -11,9 +12,9 @@ import {
   type ComponentProps,
   type ReactNode,
 } from "react";
-import { SELECT_CLEAR_ACTION, SelectContext, SelectPanelDormantContext, SelectSubItemContext } from "./select.context";
+import { SELECT_CLEAR_ACTION, SelectActiveItemContext, SelectContext, SelectSearchContext, SelectPanelDormantContext, SelectSubItemContext } from "./select.context";
 import { SIZE, SelectItemIcon } from "./select.shared";
-import { isEquivalentNode, setForwardedRef } from "./select.utils";
+import { setForwardedRef } from "./select.utils";
 
 /** The trailing slot a row's check sits in, reserved whether or not the row is selected. */
 const CHECK_SLOT = "flex size-3.5 shrink-0 items-center justify-center text-foreground";
@@ -88,8 +89,27 @@ export type SelectItemProps = Omit<
   searchValue?: string;
 };
 
-export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function SelectItem(
+export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function SelectItem(props, ref) {
+  const activeItem = useContext(SelectActiveItemContext);
+  const { matchesQuery, hasMatchingDescendant } = useContext(SelectSearchContext);
+  const optionText = props.searchValue ?? (typeof props.children === "string" ? props.children : String(props.value));
+  return <SelectItemRow {...props} ref={ref}
+    active={Object.is(activeItem, props.value)}
+    clearActionActive={Object.is(activeItem, SELECT_CLEAR_ACTION)}
+    hiddenBySearch={!matchesQuery(optionText) && !hasMatchingDescendant(props.value)} />;
+});
+
+// Context readers still evaluate filtering for each option. The Base UI row, its icons,
+// and registration effects only render when that option's result or own props change.
+const SelectItemRow = memo(forwardRef<HTMLElement, SelectItemProps & {
+  active: boolean;
+  clearActionActive: boolean;
+  hiddenBySearch: boolean;
+}>(function SelectItemRow(
   {
+    active,
+    clearActionActive,
+    hiddenBySearch,
     className,
     icon,
     children,
@@ -117,22 +137,17 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
     registerLabel,
     unregisterLabel,
     open,
-    activeItem,
     panelSearch,
     setActiveItem,
-    matchesQuery,
     registerOptionText,
     unregisterOptionText,
-    hasMatchingDescendant,
   } = useContext(SelectContext);
   const nestedPanelContext = useContext(SelectSubItemContext);
   const nestedPanel = nestedPanelContext !== null;
   const nestedPanelOpen = nestedPanelContext?.open ?? false;
   const parentValue = nestedPanelContext?.parentValue;
   const optionText = searchValue ?? (typeof children === "string" ? children : String(value));
-  const hiddenBySearch = !matchesQuery(optionText) && !hasMatchingDescendant(value);
   const itemDisabled = disabled || hiddenBySearch || (nestedPanel && !nestedPanelOpen);
-  const clearActionActive = Object.is(activeItem, SELECT_CLEAR_ACTION);
   const pointerStartedRef = useRef(false);
   const bridgingPointerDownRef = useRef(false);
   const itemNode = useRef<HTMLElement | null>(null);
@@ -155,21 +170,16 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
     registerOptionText(value, optionText, parentValue, disabled, itemNode.current);
     return () => unregisterOptionText(value);
   }, [disabled, optionText, parentValue, registerOptionText, unregisterOptionText, value]);
-  const panelActive = open && Object.is(activeItem, value);
+  const panelActive = open && active;
   // Kept for the arrow keys once the pointer has left, but no longer painted; with a footer
   // button active, no row paints. Nested panels paint by CSS hover and have nothing to keep.
   const rest = useContext(SelectPanelDormantContext);
   const panelDormant = ((rest === "pointer" && panelActive) || rest === "footer") && !nestedPanel;
 
-  // The same shape as the label registration below, and for the same reason: an `<Icon />`
-  // written inline is a new object on every render.
-  const registeredIcon = useRef<{ value: unknown; icon: ReactNode } | null>(null);
+  // Always register on effect setup, including StrictMode and Activity replays. The
+  // parent's Map setter skips equivalent nodes, so inline JSX can safely re-register.
+  // Keep removal separate: deleting before each write would defeat that deduplication.
   useEffect(() => {
-    const previous = registeredIcon.current;
-    if (previous && Object.is(previous.value, value) && isEquivalentNode(previous.icon, icon)) {
-      return;
-    }
-    registeredIcon.current = { value, icon };
     registerIcon(value, icon);
   }, [icon, registerIcon, value]);
   useEffect(() => () => { unregisterIcon(value); }, [unregisterIcon, value]);
@@ -242,21 +252,9 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
     pointerStartedRef.current = false;
   };
 
-  // Register the label so a chip trigger can render the selected value(s) by name.
-  //
-  // The node cannot be a dependency that *writes*: JSX rebuilds it every render, so an
-  // effect keyed on its identity re-ran forever — its cleanup deleted the entry, the
-  // registration put it back, and the provider re-rendered into another fresh node. The
-  // effect still runs each render, but it only writes when the label says something
-  // different, and the removal is its own effect so it fires on unmount or a new value
-  // rather than on every pass.
-  const registeredLabel = useRef<{ value: unknown; label: ReactNode } | null>(null);
+  // As with icons, register on every setup and remove only when the value or lifecycle
+  // changes. A retained ref must not skip registration after an effect cleanup.
   useEffect(() => {
-    const previous = registeredLabel.current;
-    if (previous && Object.is(previous.value, value) && isEquivalentNode(previous.label, children)) {
-      return;
-    }
-    registeredLabel.current = { value, label: children };
     registerLabel(value, children);
   }, [children, registerLabel, value]);
   useEffect(() => () => { unregisterLabel(value); }, [unregisterLabel, value]);
@@ -369,4 +367,4 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
         ) : null)}
     </BaseSelect.Item>
   );
-});
+}));

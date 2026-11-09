@@ -139,13 +139,14 @@ import { Badge, BadgeClose, BadgeCount } from "@/components/ui/badge";
 <Badge status="danger" icons={{ danger: <CircleX /> }}>Failed</Badge>
 <Badge variant="outline" neutralText dot pulse>Live</Badge>
 <Badge variant="filled" status="danger" showIcon={false}><BadgeCount animated value={unread} max={99} /></Badge>
+// Opening and removal follow the current --duration-base / slow / fast CSS tokens.
 <Badge open={open} onOpenChange={setOpen}>Design<BadgeClose id="remove-design" /></Badge>`,
   },
   button: {
     usage: `import { Button } from "@/components/ui/button";
 
 <Button variant="primary">Deploy</Button>
-<Button loading>Deploy</Button>
+<Button loading loadingLabel="Deploying">Deploy</Button>
 <Button variant="ghost" aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>Actions</Button>`,
   },
   "button-group": {
@@ -189,7 +190,7 @@ import { Button } from "@/components/ui/button";
     <CommandPanelFooter actions={{ items: [{
       id: "delete",
       label: "Delete project",
-      keybind: "mod+shift+d",
+      keybind: "mod+shift+d", // Fresh presses only; held-key repeats and composition are ignored.
       confirm: { label: "Confirm deletion?" },
       onSelect: deleteProject,
     }] }} />
@@ -371,6 +372,11 @@ import { Morph } from "@/components/ui/morph";
     usage: `import { DatePicker, DateRangePicker } from "@/components/ui/date-picker";
 
 <DatePicker value={date} onValueChange={setDate} name="due" clearable />
+
+// A picker outside its form; empty and disabled selections are omitted.
+<form id="schedule" />
+<DatePicker name="scheduledDate" form="schedule" clearable />
+
 <DateRangePicker
   value={range}
   onValueChange={setRange}
@@ -427,6 +433,8 @@ import { Morph } from "@/components/ui/morph";
   SelectValue,
 } from "@/components/ui/select";
 
+// Mounted item labels and icons survive StrictMode and Activity effect replays.
+// For long lists, stable item props let unchanged rows skip highlight/search rendering.
 <Select size="xs" defaultValue="apple">
   <SelectTrigger variant="ghost" label="Fruit">
     <SelectValue />
@@ -634,7 +642,8 @@ import { Switch } from "@/components/ui/switch";
   slider: {
     usage: `import { Slider } from "@/components/ui/slider";
 
-<Slider aria-label="Volume" defaultValue={60} animateValue showValueTooltip />
+// Save after pointer, keyboard, or typed edits (Enter or blur).
+<Slider aria-label="Volume" defaultValue={60} onValueCommitted={saveVolume} animateValue showValueTooltip />
 
 <Slider label="Price" range draggableRange defaultValue={[20, 80]} showValueTooltip format={{ style: "currency", currency: "USD" }} thumbLabels={["Lowest price", "Highest price"]} />
 
@@ -651,6 +660,7 @@ import { Switch } from "@/components/ui/switch";
 
 <ScrubSlider label="Scale" unit="×" min={0.1} max={4} step={0.01} defaultValue={1} />
 
+// Further edits and nudges start from the value accepted by the parent.
 <ScrubSlider label="Opacity" unit="%" value={opacity} onValueChange={setOpacity} size="sm" variant="outline-ghost" />
 
 // One row for dense panels: label outside, ruler and value inside.
