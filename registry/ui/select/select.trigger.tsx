@@ -1,3 +1,5 @@
+"use client";
+
 import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { spring } from "@/registry/lib/motion";
 import { useMergedRefs } from "@/registry/lib/refs";

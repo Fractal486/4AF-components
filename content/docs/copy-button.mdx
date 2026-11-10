@@ -16,8 +16,9 @@ An Action Button that copies text to the clipboard, with visual and screen-reade
 | `labels` | `{ copy: "Copy", copied: "Copied", failed: "Couldn't copy" }` | Replace all three strings for translation. `copy` names an icon-only button; `copied` announces success and replaces a visible label when `swapLabel` is true; `failed` announces an error. |
 
 It inherits ActionButton's controlled `status` / `onStatusChange` and separate success/error
-`revertAfter` durations. Errors stay visible while hovered or focused; the remaining reset
-countdown resumes after both leave.
+`revertAfter` durations. Errors stay visible while hovered or keyboard-focused
+(`:focus-visible`); mouse focus alone does not hold them after the pointer leaves. The
+remaining reset countdown resumes when neither hover nor keyboard focus holds it.
 
 `size` accepts `xs`, `sm`, `md`, or `lg`. With a label these are the standard button sizes;
 without one they are the matching square `icon-xs`, `icon-sm`, `icon`, or `icon-lg` sizes. An

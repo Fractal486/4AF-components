@@ -709,15 +709,16 @@ describe("DataTable range selection", () => {
     expect(box("ada")).toHaveAttribute("aria-checked", "false");
   });
 
-  it("ranges a shift-click from where the last drag ended", async () => {
+  it("ranges a shift-click from where the last drag ended", () => {
     const onValueChange = vi.fn();
     render(<Roster onValueChange={onValueChange} />);
 
     press("ada");
     fireEvent.pointerEnter(row("alan"));
     fireEvent.pointerUp(document);
-    // Past the drag's own trailing click, which is swallowed.
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    // Deliver the drag’s trailing click: it must be swallowed without changing selection.
+    fireEvent.click(box("alan"));
+    expect(onValueChange).toHaveBeenLastCalledWith(["ada", "alan"]);
     fireEvent.click(box("edsger"), { shiftKey: true });
 
     expect(onValueChange).toHaveBeenLastCalledWith(["ada", "alan", "grace", "edsger"]);

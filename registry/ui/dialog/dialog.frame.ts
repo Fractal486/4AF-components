@@ -1,8 +1,9 @@
 "use client";
 
+import { pixels } from "@/registry/lib/numbers";
+import { prefersReducedMotion } from "@/registry/lib/reduced-motion";
 import { useCallback } from "react";
 
-const pixels = (value: string) => Number.parseFloat(value) || 0;
 const blockExtras = (style: CSSStyleDeclaration) =>
   pixels(style.paddingTop) + pixels(style.paddingBottom) + pixels(style.borderTopWidth) + pixels(style.borderBottomWidth);
 
@@ -59,7 +60,7 @@ export function useDialogFrameHeight() {
       // Flex layout pins a structured footer to the frame already. Legacy footers need
       // their offset animated because the natural-height body stays centred during resize.
       if (scrollBody || current === undefined || current === height || natural > height
-        || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        || prefersReducedMotion(frame.ownerDocument.defaultView)) return;
       const offset = (current - height) / 2;
       const timing = {
         duration: pixels(style.transitionDuration) * 1000,

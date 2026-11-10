@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createRef, useState } from "react";
 import {
@@ -180,7 +180,7 @@ it("opens on hover and respects disabled triggers", async () => {
   await user.hover(screen.getByRole("button", {name:"Hover"}));
   expect(await screen.findByRole("dialog", {name:"Preview"})).toBeVisible();
   await user.unhover(screen.getByRole("button", {name:"Hover"}));
-  await act(async () => { await new Promise(resolve => setTimeout(resolve,50)); });
+  await waitFor(() => expect(screen.queryByRole("dialog", {name:"Preview"})).not.toBeInTheDocument());
   await user.click(screen.getByRole("button", {name:"Disabled"}));
   expect(screen.queryByRole("dialog", {name:"Unavailable"})).not.toBeInTheDocument();
 });

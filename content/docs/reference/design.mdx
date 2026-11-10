@@ -11,7 +11,8 @@ floating above it.
 
 Components consume semantic roles by default. Direct palette ramps are reserved for status
 accents and fixed neutral control states. A consuming project can reskin the semantic roles;
-it must also remap the relevant ramps to change those exceptions.
+it must also remap the relevant ramps to change those exceptions. Scroll Area’s track and
+dark thumb are fixed neutral controls too; text greys are too bright over scrolling content.
 
 | Role | Light treatment | Dark treatment | Purpose |
 | --- | --- | --- | --- |
@@ -89,6 +90,10 @@ padding on their side by 2px. Keep this text-button spacing separate from icon-o
 Buttons and cards use `shadow-border`: a translucent hairline ring, a close lift, and a soft
 ambient shadow, which works over any background. Raised and overlay surfaces add more
 separation.
+
+Tooltips and selection toolbars share `shadow-overlay-subtle`, backed by
+`--elevation-overlay-subtle` in each theme: a faint ring and soft drop shadow for small
+floating annotations. Override that token to tune both surfaces together.
 
 In dark mode, most drop shadows are replaced by faint light rings, since shadows barely show on
 near-black. Real borders are kept for dividers and table cells.

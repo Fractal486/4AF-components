@@ -19,6 +19,10 @@ slots accept it as a custom indicator.
 | `loading` | `true` | Whether to show the spinner. `false` renders nothing, removes the accessible status, and stops the animation timer. Visibility changes immediately; no space is reserved. |
 | `label` | — | An accessible status name. Without it, the spinner is decorative and hidden from assistive technology. |
 | `className` | — | Classes for the outer span. |
+| Native span props and `ref` | — | `id`, `aria-*`, `data-*`, `style`, handlers, and `ref<HTMLSpanElement>` reach the outer span. Explicit ARIA props override the defaults from `label`. |
+
+The root stays a span and exposes `data-slot="ascii-loader"` and `data-loading` while mounted.
+Its glyph is managed internally; `children`, `asChild`, and `render` are not supported.
 
 Under reduced motion, the cycle takes 2.5 times as long; it continues to animate.
 

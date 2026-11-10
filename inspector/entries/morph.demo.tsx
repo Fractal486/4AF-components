@@ -43,8 +43,8 @@ export function MorphDemo({ sizing, outline }: { sizing: "widest" | "current"; o
       )}
     >
       {/* Icons share a known box, so they swap with `fixed` sizing and no hidden copies. */}
-      <Morph sizing="fixed" className="size-5 text-muted-foreground [&_svg]:size-5" activeKey={state} items={ICONS} />
-      <Morph sizing={sizing} activeKey={state} items={LABELS} />
+      <Morph aria-hidden="true" sizing="fixed" className="size-5 text-muted-foreground [&_svg]:size-5" activeKey={state} items={ICONS} />
+      <Morph role="status" sizing={sizing} activeKey={state} items={LABELS} />
     </p>
   );
 }

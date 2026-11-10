@@ -30,13 +30,17 @@ describe("ActionButton feedback controls", () => {
   it("accepts an external error and composes hover/focus handlers while holding it", () => {
     vi.useFakeTimers();
     const onStatusChange = vi.fn();
-    const onPointerEnter = vi.fn(), onPointerLeave = vi.fn(), onFocus = vi.fn(), onBlur = vi.fn();
+    const onPointerEnter = vi.fn(), onPointerLeave = vi.fn(), onFocus = vi.fn(), onBlur = vi.fn(), onKeyDown = vi.fn();
     render(<ActionButton status="error" error={new Error("Offline")} labels={{ error: error => (error as Error).message }}
       onStatusChange={onStatusChange} revertAfter={{ error: 100 }} onPointerEnter={onPointerEnter}
-      onPointerLeave={onPointerLeave} onFocus={onFocus} onBlur={onBlur}>Retry</ActionButton>);
+      onPointerLeave={onPointerLeave} onFocus={onFocus} onBlur={onBlur} onKeyDown={onKeyDown}>Retry</ActionButton>);
     const button = screen.getByRole("button", { name: "Offline" });
+    // jsdom has no keyboard modality; headless Chrome checks the real selector.
+    const matches = button.matches.bind(button);
+    button.matches = selector => selector === ":focus-visible" || matches(selector);
     fireEvent.pointerEnter(button, { pointerType: "mouse" });
     fireEvent.focus(button);
+    fireEvent.keyDown(button, { key: "ArrowRight" });
     act(() => vi.advanceTimersByTime(500));
     fireEvent.pointerLeave(button);
     act(() => vi.advanceTimersByTime(500));
@@ -44,6 +48,6 @@ describe("ActionButton feedback controls", () => {
     fireEvent.blur(button);
     act(() => vi.advanceTimersByTime(100));
     expect(onStatusChange).toHaveBeenCalledExactlyOnceWith("idle");
-    for (const handler of [onPointerEnter, onPointerLeave, onFocus, onBlur]) expect(handler).toHaveBeenCalledOnce();
+    for (const handler of [onPointerEnter, onPointerLeave, onFocus, onBlur, onKeyDown]) expect(handler).toHaveBeenCalledOnce();
   });
 });

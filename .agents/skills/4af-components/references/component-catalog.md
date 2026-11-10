@@ -30,11 +30,11 @@ component keeps its own element. Content slots and render callbacks for data are
 | [`button`](https://4af.selfsimilar.dev/docs/button.md) | Immediate actions, links, icon controls, and popup triggers that keep their anchor and open styling. | `asChild`. |
 | [`button-group`](https://4af.selfsimilar.dev/docs/button-group.md) | Related buttons, and optionally Input, Select, AlignedSelect, SearchSelect, or DatePicker fields, joined into one visual group; each keeps its own tab stop. | None. |
 | [`toggle`](https://4af.selfsimilar.dev/docs/toggle.md) | A pressed state that changes immediately, with independent icon/background fills, custom rendering, and state-aware styling. | `render`. |
-| [`action-button`](https://4af.selfsimilar.dev/docs/action-button.md) | Internal or externally controlled async feedback, with per-outcome reset timing and readable error messages. | None. |
+| [`action-button`](https://4af.selfsimilar.dev/docs/action-button.md) | Internal or externally controlled async feedback, with per-outcome reset timing and errors held by hover or keyboard focus. | None. |
 | [`action-toggle`](https://4af.selfsimilar.dev/docs/action-toggle.md) | A persistent pressed state with async commits, independent controlled feedback, readable errors, and reset controls. | `render`. |
 | [`copy-button`](https://4af.selfsimilar.dev/docs/copy-button.md) | Clipboard actions with confirmation. | None. |
 | [`delete-button`](https://4af.selfsimilar.dev/docs/delete-button.md) | A destructive action confirmed by a second press. | None. |
-| [`morph`](https://4af.selfsimilar.dev/docs/morph.md) | Animated replacement of text or icons with reserved space, or measured current width for changing labels; Badge uses this sizing for smooth text-width changes. | None. |
+| [`morph`](https://4af.selfsimilar.dev/docs/morph.md) | Animated replacement of text or icons with reserved space, or measured current width for changing labels; Badge uses this sizing for smooth text-width changes. Native span props and refs reach the root; measured current width overrides style.width. | None; fixed span. |
 
 ### Fields and selection
 
@@ -64,9 +64,9 @@ component keeps its own element. Content slots and render callbacks for data are
 | [`skeleton`](https://4af.selfsimilar.dev/docs/skeleton.md) | Pulsing blocks, content-sized loading wrappers with a reveal fade, inline placeholders, and typography-sized `SkeletonText` lines. | `render` on Skeleton; SkeletonText has a fixed element. |
 | [`empty`](https://4af.selfsimilar.dev/docs/empty.md) | Composable empty states with compact sizing, optional staggered entrances, custom elements, and wrapping rich descriptions. | `render` or `asChild` on all parts. |
 | [`text-shimmer`](https://4af.selfsimilar.dev/docs/text-shimmer.md) | Color-aware text highlights with one-time or looping playback, active and responsive controls, and native props and refs. | None. |
-| [`scramble-text`](https://4af.selfsimilar.dev/docs/scramble-text.md) | A brief random-character text reveal. | None. |
+| [`scramble-text`](https://4af.selfsimilar.dev/docs/scramble-text.md) | A brief random-character text reveal. Native span props and refs reach the root. | None; fixed span. |
 | [`blur-text`](https://4af.selfsimilar.dev/docs/blur-text.md) | Text that blurs and rises in, letter by letter or word by word. | None. |
-| [`ascii-loader`](https://4af.selfsimilar.dev/docs/ascii-loader.md) | A compact text spinner. | None. |
+| [`ascii-loader`](https://4af.selfsimilar.dev/docs/ascii-loader.md) | A compact text spinner. Native span props and refs reach the root. | None; fixed span. |
 | [`matrix-loader`](https://4af.selfsimilar.dev/docs/matrix-loader.md) | A grid of animated dots. | None. |
 | [`classic-loader`](https://4af.selfsimilar.dev/docs/classic-loader.md) | The default radial spinner, installed automatically with loading components. | `asChild`. |
 
@@ -172,5 +172,7 @@ include the component name: for example, `.context.ts` means `select.context.ts`
 
 These siblings are part of the same registry item, not separate install names; installing the
 component writes all of them. `select-aligned` and `select-search` are separate installable
-items. `select`, `select-aligned`, and `dropdown-menu` each also ship the same
-`select.utils.ts` helper at the flat UI alias; it owns dormant-row keyboard resumption.
+items. `select`, `select-aligned`, `select-search`, and `dropdown-menu` each also ship the
+same `select.utils.ts` helper at the flat UI alias; it owns dormant-row keyboard resumption
+and type/key equivalence for registered icon nodes. Change an icon’s key when its props
+change its appearance.

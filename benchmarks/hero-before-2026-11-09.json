@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 3,
+  "viewport": "1440x1000",
+  "observationMs": 8000,
+  "colorScheme": "light",
+  "reducedMotion": "no-preference",
+  "locale": "en-US",
+  "browser": "157.0.8103.39",
+  "runs": 5,
+  "pages": {
+    "/": {
+      "htmlBytes": 788258,
+      "htmlGzipBytes": 65262,
+      "median": {
+        "headingReads": 0,
+        "lcp": 220,
+        "cls": 0.007635728436575996,
+        "initialScripts": 39,
+        "initialScriptBytes": 1625988,
+        "scripts": 45,
+        "scriptBytes": 1916813,
+        "taskMs": 1522.116,
+        "layoutMs": 70.55300000000001,
+        "scriptMs": 348.881
+      },
+      "samples": [
+        {
+          "headingReads": 0,
+          "lcp": 1292,
+          "cls": 0.007635728436575996,
+          "initialScripts": 39,
+          "initialScriptBytes": 1625988,
+          "scripts": 45,
+          "scriptBytes": 1916813,
+          "taskMs": 2993.27,
+          "layoutMs": 79.027,
+          "scriptMs": 1752.203
+        },
+        {
+          "headingReads": 0,
+          "lcp": 1040,
+          "cls": 0.007635728436575996,
+          "initialScripts": 39,
+          "initialScriptBytes": 1625988,
+          "scripts": 45,
+          "scriptBytes": 1916813,
+          "taskMs": 1506.475,
+          "layoutMs": 61.928,
+          "scriptMs": 348.881
+        },
+        {
+          "headingReads": 0,
+          "lcp": 220,
+          "cls": 0.007635728436575996,
+          "initialScripts": 39,
+          "initialScriptBytes": 1625988,
+          "scripts": 45,
+          "scriptBytes": 1916813,
+          "taskMs": 1542.5729999999999,
+          "layoutMs": 70.55300000000001,
+          "scriptMs": 350.687
+        },
+        {
+          "headingReads": 0,
+          "lcp": 196,
+          "cls": 0.007635728436575996,
+          "initialScripts": 39,
+          "initialScriptBytes": 1625988,
+          "scripts": 45,
+          "scriptBytes": 1916813,
+          "taskMs": 1522.116,
+          "layoutMs": 69.18599999999999,
+          "scriptMs": 333.63300000000004
+        },
+        {
+          "headingReads": 0,
+          "lcp": 204,
+          "cls": 0.007635728436575996,
+          "initialScripts": 39,
+          "initialScriptBytes": 1625988,
+          "scripts": 45,
+          "scriptBytes": 1916813,
+          "taskMs": 1502.859,
+          "layoutMs": 74.943,
+          "scriptMs": 345.65299999999996
+        }
+      ]
+    },
+    "/docs/button": {
+      "htmlBytes": 325399,
+      "htmlGzipBytes": 28358,
+      "median": {
+        "headingReads": 144,
+        "lcp": 160,
+        "cls": 0.000005092592592592592,
+        "initialScripts": 34,
+        "initialScriptBytes": 1415739,
+        "scripts": 108,
+        "scriptBytes": 2824459,
+        "taskMs": 718.746,
+        "layoutMs": 29.661,
+        "scriptMs": 245.21699999999998
+      },
+      "samples": [
+        {
+          "headingReads": 150,
+          "lcp": 172,
+          "cls": 0.000005092592592592592,
+          "initialScripts": 34,
+          "initialScriptBytes": 1415739,
+          "scripts": 108,
+          "scriptBytes": 2824459,
+          "taskMs": 914.259,
+          "layoutMs": 28.698,
+          "scriptMs": 423.706
+        },
+        {
+          "headingReads": 144,
+          "lcp": 148,
+          "cls": 0.000005092592592592592,
+          "initialScripts": 34,
+          "initialScriptBytes": 1415739,
+          "scripts": 108,
+          "scriptBytes": 2824459,
+          "taskMs": 708.704,
+          "layoutMs": 30.445,
+          "scriptMs": 245.124
+        },
+        {
+          "headingReads": 144,
+          "lcp": 160,
+          "cls": 0.000005092592592592592,
+          "initialScripts": 34,
+          "initialScriptBytes": 1415739,
+          "scripts": 108,
+          "scriptBytes": 2824459,
+          "taskMs": 718.746,
+          "layoutMs": 31.387999999999998,
+          "scriptMs": 245.21699999999998
+        },
+        {
+          "headingReads": 140,
+          "lcp": 168,
+          "cls": 0.000005092592592592592,
+          "initialScripts": 34,
+          "initialScriptBytes": 1415739,
+          "scripts": 108,
+          "scriptBytes": 2824459,
+          "taskMs": 715.4430000000001,
+          "layoutMs": 29.661,
+          "scriptMs": 241.605
+        },
+        {
+          "headingReads": 142,
+          "lcp": 120,
+          "cls": 0.000005092592592592592,
+          "initialScripts": 34,
+          "initialScriptBytes": 1415739,
+          "scripts": 108,
+          "scriptBytes": 2824459,
+          "taskMs": 722.872,
+          "layoutMs": 24.352999999999998,
+          "scriptMs": 298.519
+        }
+      ]
+    }
+  }
+}

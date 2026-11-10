@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/registry/lib/cn";
 import { ActionButton, type ActionButtonProps } from "@/registry/ui/action-button/action-button";
 import { ActionToggle, type ActionToggleProps } from "@/registry/ui/action-toggle/action-toggle";

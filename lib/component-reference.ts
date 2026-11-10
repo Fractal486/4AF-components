@@ -8,6 +8,7 @@ export const componentReferences = {
   "action-button": {
     usage: `import { ActionButton } from "@/components/ui/action-button";
 
+// Errors pause on hover or keyboard focus; mouse focus alone does not hold them.
 <ActionButton
   action={() => saveChanges()}
   labels={{ success: "Saved", error: (error) => error instanceof Error ? error.message : "Failed" }}
@@ -19,6 +20,7 @@ export const componentReferences = {
   "action-toggle": {
     usage: `import { ActionToggle } from "@/components/ui/action-toggle";
 
+// Error feedback pauses on hover or keyboard focus.
 <ActionToggle
   pressed={following}
   action={(next) => saveFollowing(next)}
@@ -75,7 +77,7 @@ import {
   "ascii-loader": {
     usage: `import { AsciiLoader } from "@/components/ui/ascii-loader";
 
-<AsciiLoader loading={isLoading} label="Loading" />`,
+<AsciiLoader id="loading-status" loading={isLoading} label="Loading" style={{ fontSize: 16 }} />`,
   },
   "matrix-loader": {
     usage: [
@@ -127,6 +129,7 @@ import {
   "number-animation": {
     usage: `import { NumberAnimation } from "@/components/ui/number-animation";
 
+// Reduced motion cancels active rolls and exits; the latest value stays readable.
 <NumberAnimation value={total} locales="en-US" format={{ style: "currency", currency: "USD" }} />`,
   },
   badge: {
@@ -182,6 +185,8 @@ import { Button } from "@/components/ui/button";
   "command-palette": {
     usage: `import { CommandPalette, CommandPanelBody, CommandPanelFooter } from "@/components/ui/command-palette";
 
+// Keybinds also accept shift+/, shift+1, +, and mod++.
+// Unmodified shortcuts leave focused controls and editable fields alone.
 <CommandPalette groups={[{ items: [{
   id: "project",
   label: "Project actions",
@@ -200,6 +205,7 @@ import { Button } from "@/components/ui/button";
   "copy-button": {
     usage: `import { CopyButton } from "@/components/ui/copy-button";
 
+// After a failure, moving the pointer away resumes the timer unless keyboard-focused.
 <CopyButton value="Text to copy" size="md">Copy</CopyButton>`,
   },
   "delete-button": {
@@ -357,11 +363,13 @@ import { Input, InputCount } from "@/components/ui/input";
 import { Morph } from "@/components/ui/morph";
 
 <Morph
+  aria-hidden="true"
   activeKey={copied ? "done" : "idle"}
   items={{ idle: <Copy />, done: <Check /> }}
 />
 
 <Morph
+  aria-hidden="true"
   sizing="fixed"
   className="size-4"
   activeKey={copied ? "done" : "idle"}
@@ -474,6 +482,7 @@ import { Morph } from "@/components/ui/morph";
   "select-search": {
     usage: `import { SearchSelect, SearchSelectInput, SearchSelectContent, SearchSelectItem, SearchSelectGroup, SearchSelectGroupLabel, SearchSelectCollection } from "@/components/ui/select-search";
 
+// Item icons reuse their type/key; change the icon key when its appearance changes.
 <SearchSelect items={groups}>
   <SearchSelectInput aria-label="Choose an option" placeholder="Search available options…" />
   <SearchSelectContent align="start" alignOffset={4}>
@@ -789,7 +798,7 @@ function PeopleTable({ people }: { people: Person[] }) {
   "scramble-text": {
     usage: `import { ScrambleText } from "@/components/ui/scramble-text";
 
-<ScrambleText>Deploying changes…</ScrambleText>`,
+<ScrambleText id="deploy-status" data-job="deploy">Deploying changes…</ScrambleText>`,
   },
   "blur-text": {
     usage: `import { BlurText } from "@/components/ui/blur-text";

@@ -1,3 +1,5 @@
+"use client";
+
 import { Kbd, KbdGroup } from "@/registry/ui/kbd/kbd";
 import { cn } from "@/registry/lib/cn";
 import { useContext, type ComponentProps, type ReactNode } from "react";

@@ -62,10 +62,8 @@ export const selectionToolbarButtonVariants = cva(
 export const selectionToolbarVariants = cva([
   "z-50 flex w-fit max-w-[calc(100vw-2rem)] items-center gap-0.5 rounded-[8px] material-glass p-1",
   "text-foreground outline-none",
-  // A single faint 1px ring plus a soft drop shadow. rgba, not oklch, so the `/` alpha
-  // can't trip Tailwind's arbitrary parser.
-  "shadow-[0_0_0_1px_rgba(0,0,0,0.04),0_10px_24px_-8px_rgba(0,0,0,0.18)]",
-  "dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_14px_30px_-12px_rgba(0,0,0,0.6)]",
+  // A faint ring and soft lift shared by transient floating annotations.
+  "shadow-overlay-subtle",
   // Scale grows from the edge nearest the selection — Base UI hands us
   // `--transform-origin` pointing there. `blur-0` is the resting filter so it interpolates
   // from blur(4px) rather than from `none`, which some browsers won't tween. Only these

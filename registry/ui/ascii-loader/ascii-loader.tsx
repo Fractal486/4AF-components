@@ -1,8 +1,9 @@
 "use client";
 
 import { useReducedMotion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ComponentProps } from "react";
 import { cn } from "@/registry/lib/cn";
+import { asciiLoaderVariants } from "./ascii-loader.variants";
 
 /**
  * A text spinner using Unicode Braille characters.
@@ -19,7 +20,7 @@ import { cn } from "@/registry/lib/cn";
 
 const FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
-export interface AsciiLoaderProps {
+export interface AsciiLoaderProps extends Omit<ComponentProps<"span">, "children"> {
   /** Whether to render the spinner. Omit to always show it. */
   loading?: boolean;
   /** Seconds per full cycle. */
@@ -29,10 +30,9 @@ export interface AsciiLoaderProps {
    * — an `aria-live` region, say — so a screen reader isn't told "Loading" twice.
    */
   label?: string;
-  className?: string;
 }
 
-export function AsciiLoader({ speed = 0.8, loading = true, label, className }: AsciiLoaderProps) {
+export function AsciiLoader({ speed = 0.8, loading = true, label, className, ...props }: AsciiLoaderProps) {
   const reduce = useReducedMotion() ?? false;
   const [frame, setFrame] = useState(0);
 
@@ -50,21 +50,10 @@ export function AsciiLoader({ speed = 0.8, loading = true, label, className }: A
       role={label ? "status" : undefined}
       aria-label={label}
       aria-hidden={label ? undefined : true}
-      className={cn(
-        "inline-block font-mono leading-none tabular-nums",
-        // Optical correction, and the one place it belongs: the braille block almost
-        // certainly isn't in Geist Mono, so these render from a fallback whose cell sits
-        // fractionally left inside its advance width. Centre the box and the glyph still
-        // reads a hair left of centre — invisible on its own, obvious in a menu row
-        // beside icons that *are* centred.
-        //
-        // Safe to apply to every frame: they're all one cell from one block with one
-        // advance width, so this corrects the cell's position, not each frame's ink. (The
-        // ink genuinely does swing left and right between frames — that's the spin.)
-        // One number, tune it here.
-        "translate-x-[0.3px]",
-        className,
-      )}
+      {...props}
+      data-slot="ascii-loader"
+      data-loading=""
+      className={cn(asciiLoaderVariants(), className)}
     >
       {FRAMES[frame]}
     </span>

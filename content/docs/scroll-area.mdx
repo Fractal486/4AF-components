@@ -58,6 +58,11 @@ Set `--scroll-area-inset-top` on the root to start the vertical scrollbar that f
 example below a sticky header; the top fade starts there too, so the header stays opaque.
 Table does this with its pinned header's height.
 
+The track uses fixed neutral ramp steps (`neutral-200` in light mode, `neutral-950` in dark),
+and the dark thumb uses `neutral-800`. These are intentional control-tone exceptions: text
+greys are too bright over scrolling content in dark mode. The light thumb uses
+`subtle-foreground`. Override the track/thumb classes or remap those ramps when reskinning.
+
 ## Custom composition
 
 `ScrollAreaScrollbar` is one scrollbar and its thumb, with `scrollbar` and `thumbClassName`

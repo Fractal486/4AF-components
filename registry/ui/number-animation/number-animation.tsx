@@ -53,6 +53,7 @@ SOFTWARE.
 */
 // Local adaptation: no runtime dependency on the source packages.
 
+import { prefersReducedMotion, subscribeReducedMotion } from "@/registry/lib/reduced-motion";
 import * as React from "react"
 import { useRender } from "@base-ui/react/use-render"
 import { cn } from "@/registry/lib/cn"
@@ -257,22 +258,6 @@ function mergeItems(previous: NumberAnimationItem[], next: NumberAnimationChar[]
   )
 }
 
-function subscribeReducedMotion(callback: () => void) {
-  if (typeof window.matchMedia !== "function") {
-    return () => {}
-  }
-  const query = window.matchMedia("(prefers-reduced-motion: reduce)")
-  query.addEventListener("change", callback)
-  return () => query.removeEventListener("change", callback)
-}
-
-function getReducedMotion() {
-  return (
-    typeof window.matchMedia === "function" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  )
-}
-
 function canAnimate() {
   return (
     typeof Element !== "undefined" &&
@@ -315,7 +300,7 @@ function NumberAnimation({
   const key = signature(chars)
   const reducedMotion = React.useSyncExternalStore(
     subscribeReducedMotion,
-    getReducedMotion,
+    prefersReducedMotion,
     () => false
   )
   const animate = !reducedMotion && canAnimate()
@@ -334,10 +319,18 @@ function NumberAnimation({
   }
 
   const rootRef = React.useRef<HTMLSpanElement>(null)
-  React.useEffect(() => {
+  const animationsRef = React.useRef(new Set<Animation>())
+  const batchRef = React.useRef(0)
+  // Dispose the old batch before the later layout effect can start a new one.
+  React.useLayoutEffect(() => {
     const root = rootRef.current
+    const animations = animationsRef.current
     return () => {
-      root?.getAnimations({ subtree: true }).forEach(animation => animation.cancel())
+      batchRef.current += 1
+      // Exit cells can be detached from the root. Keep their animations too,
+      // so a live reduced-motion change cancels every layer.
+      animations.forEach(animation => animation.cancel())
+      animations.clear()
       root?.querySelectorAll('[data-turning]').forEach(cell => cell.removeAttribute('data-turning'))
     }
   }, [animate])
@@ -346,7 +339,6 @@ function NumberAnimation({
     { digit: number | null; exiting: boolean; exitId: number }
   > | null>(null)
   const valueRef = React.useRef(value)
-  const batchRef = React.useRef(0)
   const callbacksRef = React.useRef({ onAnimationsStart, onAnimationsFinish })
   const finishExitRef = React.useRef((itemKey: string, exitId: number) => {
     setState((current) => ({
@@ -517,6 +509,11 @@ function NumberAnimation({
       return
     }
 
+    for (const animation of started) {
+      animationsRef.current.add(animation)
+      const settled = () => { animationsRef.current.delete(animation) }
+      animation.finished.then(settled, settled)
+    }
     batchRef.current += 1
     const batch = batchRef.current
     callbacksRef.current.onAnimationsStart?.()

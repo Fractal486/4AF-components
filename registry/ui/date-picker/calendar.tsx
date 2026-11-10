@@ -1,5 +1,6 @@
 "use client";
 
+import { prefersReducedMotion } from "@/registry/lib/reduced-motion";
 import { useDirection } from "@base-ui/react/direction-provider";
 import { Radio as BaseRadio } from "@base-ui/react/radio";
 import { RadioGroup as BaseRadioGroup } from "@base-ui/react/radio-group";
@@ -177,7 +178,7 @@ function composeDayHandler<E extends SyntheticEvent>(
 }
 
 // Small icon buttons centered over the first and last calendar columns.
-const navButtonClassName = "m-[calc((var(--cell-size)-30px)/2)]";
+const navButtonClassName = "m-[calc((var(--cell-size)-30px)/2)] group-data-[picker-open]/calendar:invisible";
 
 export function Calendar({
   className,
@@ -365,10 +366,7 @@ export function Calendar({
           month:
             "relative flex w-[calc(var(--cell-size)*7)] max-w-full min-w-0 flex-col gap-3 group-data-[week-numbers]/calendar:w-[calc(var(--cell-size)*8)]",
           // Hidden while the month / year picker is open: it moves by month and year itself.
-          nav: cn(
-            "pointer-events-none absolute inset-x-0 top-0 z-10 flex h-(--cell-size) items-center justify-between gap-1 *:pointer-events-auto",
-            pickerOpen && "invisible",
-          ),
+          nav: "pointer-events-none absolute inset-x-0 top-0 z-10 flex h-(--cell-size) items-center justify-between gap-1 *:pointer-events-auto group-data-[picker-open]/calendar:invisible",
           button_previous: cn(navButtonClassName, navLayout === "around" && "absolute start-0 top-0 z-10"),
           button_next: cn(navButtonClassName, navLayout === "around" && "absolute end-0 top-0 z-10"),
           month_caption: "flex h-(--cell-size) w-full items-center justify-center px-(--cell-size)",
@@ -434,6 +432,7 @@ export function Calendar({
           ...components,
         }}
         {...props}
+        data-picker-open={pickerOpen ? "" : undefined}
       />
     </CalendarContext.Provider>
   );
@@ -653,12 +652,14 @@ function CalendarMonthGrid({ className, ...props }: MonthGridProps) {
   return (
     <div
       data-slot="calendar-month-grid"
-      className={cn("relative w-full", pickerOpen && "overflow-hidden")}
+      data-picker-open={pickerOpen ? "" : undefined}
+      className="relative w-full data-[picker-open]:overflow-hidden"
       style={pickerOpen && pickerHeight !== undefined ? { height: pickerHeight } : undefined}
     >
       <table
         {...props}
-        className={cn(className, pickerOpen && "invisible")}
+        data-picker-open={pickerOpen ? "" : undefined}
+        className={cn("data-[picker-open]:invisible", className)}
         aria-hidden={pickerOpen || undefined}
       />
       {pickerOpen && <MonthYearPicker />}
@@ -746,8 +747,7 @@ function MonthYearPicker() {
       return;
     }
     const reduced =
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      prefersReducedMotion();
     const behavior = reduced ? "instant" : "smooth";
     centerChecked(monthsRef.current, behavior);
     centerChecked(yearsRef.current, behavior);

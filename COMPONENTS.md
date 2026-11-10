@@ -32,6 +32,10 @@ Loading components install the shared loader utility and `ClassicLoader` as thei
 indicator. See [shared loading indicators](content/docs/reference/engineering.mdx#shared-loading-indicators)
 for provider overrides and alternative loaders.
 Morph's hidden sizing copies reserve the loader slot without mounting its indicator.
+Morph, ScrambleText, and AsciiLoader forward native span props and refs to their fixed outer
+span. Morph's measured `current` width takes precedence over a caller's `style.width`.
+Shared `reduced-motion`, `numbers`, and `move-focus-outside` helpers install transitively;
+their roles are listed in the [shared foundation](content/docs/reference/engineering.mdx#shared-foundation).
 
 For keyboard hints, use [Kbd and KbdGroup](content/docs/kbd.mdx#api), with platform-aware key labels, sequences, shared sizing, and context-aware colors. Command Palette, Dropdown Menu shortcuts, and Sidebar share it; Command Palette preserves its existing re-export.
 
@@ -55,13 +59,13 @@ For an application menu bar whose menus reuse every Dropdown Menu row, with a sl
 For notification counts, status dots, and actions that replace badges on hover, see
 [Sidebar's badge and action composition](content/docs/sidebar.mdx#menu-badges-and-actions).
 Sidebar also closes mobile navigation after ordinary links and supports configurable, scoped shortcuts.
-For externally controlled feedback, readable error states, and manual action resets, see [Action Button](content/docs/action-button.mdx#api).
+For externally controlled feedback, errors held by hover or keyboard focus, and manual action resets, see [Action Button](content/docs/action-button.mdx#api).
 For the same feedback controls around a persistent on/off state, see [Action Toggle](content/docs/action-toggle.mdx#api).
 For independent icon/background fills, custom rendering, and state-aware styling, see [Toggle](content/docs/toggle.mdx#api).
 For drag gestures, optimistic saves, and shared loading indicators in an on/off control, see [Switch](content/docs/switch.mdx#saving).
 For shared checkbox values, select-all parents, and nested selections, see [Checkbox groups](content/docs/checkbox.mdx#groups-and-select-all).
 For custom radio rendering, state-based classes, and validation styling, see [Radio](content/docs/radio.mdx#api).
-For grouped options, state-based classes, Field errors, and popup containers, see [Select](content/docs/select.mdx#api), [Select Search](content/docs/select-search.mdx#api), and [Select Aligned](content/docs/select-aligned.mdx#api).
+For grouped options, state-based classes, Field errors, stable icon registration (change the icon key when its appearance changes), and popup containers, see [Select](content/docs/select.mdx#api), [Select Search](content/docs/select-search.mdx#api), and [Select Aligned](content/docs/select-aligned.mdx#api).
 For automatic native validation styling and character counts, see [Input](content/docs/input.mdx#validation).
 For auto-growing multiline input, row limits, form wiring, and submit shortcuts, see [Textarea](content/docs/textarea.mdx#api).
 For progress bars, stacked segments, or rings with a value readout, see [Progress composition](content/docs/progress.mdx#api).

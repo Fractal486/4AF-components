@@ -1,3 +1,5 @@
+"use client";
+
 import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { useAction, type ActionStatus } from "@/registry/lib/use-action";
 import { LoadingIndicator } from "@/registry/lib/loader";

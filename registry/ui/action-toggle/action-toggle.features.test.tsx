@@ -37,14 +37,18 @@ describe("ActionToggle feedback controls", () => {
   it("holds an external error until hover and focus both leave, composing caller handlers", () => {
     vi.useFakeTimers();
     const onStatusChange = vi.fn();
-    const enter = vi.fn(), leave = vi.fn(), focus = vi.fn(), blur = vi.fn();
+    const enter = vi.fn(), leave = vi.fn(), focus = vi.fn(), blur = vi.fn(), keydown = vi.fn();
     render(<ActionToggle defaultPressed status="error" error={new Error("Offline")}
       onStatusChange={onStatusChange} labels={{ error: error => (error as Error).message }} revertAfter={400}
-      onPointerEnter={enter} onPointerLeave={leave} onFocus={focus} onBlur={blur}>Follow</ActionToggle>);
+      onPointerEnter={enter} onPointerLeave={leave} onFocus={focus} onBlur={blur} onKeyDown={keydown}>Follow</ActionToggle>);
     const toggle = screen.getByRole("button", { name: "Offline" });
+    // jsdom has no keyboard modality; headless Chrome checks the real selector.
+    const matches = toggle.matches.bind(toggle);
+    toggle.matches = selector => selector === ":focus-visible" || matches(selector);
     act(() => vi.advanceTimersByTime(100));
     fireEvent.pointerEnter(toggle, { pointerType: "mouse" });
     fireEvent.focus(toggle);
+    fireEvent.keyDown(toggle, { key: "ArrowRight" });
     act(() => vi.advanceTimersByTime(1000));
     fireEvent.pointerLeave(toggle);
     act(() => vi.advanceTimersByTime(1000));
@@ -56,7 +60,7 @@ describe("ActionToggle feedback controls", () => {
     expect(onStatusChange).toHaveBeenCalledExactlyOnceWith("idle");
     expect(toggle).toHaveAttribute("data-status", "error");
     expect(toggle).toHaveAttribute("aria-pressed", "true");
-    for (const handler of [enter, leave, focus, blur]) expect(handler).toHaveBeenCalledOnce();
+    for (const handler of [enter, leave, focus, blur, keydown]) expect(handler).toHaveBeenCalledOnce();
   });
 
   it.each([false, true])("resets a pending action without committing its late result (reject=%s)", async (reject) => {

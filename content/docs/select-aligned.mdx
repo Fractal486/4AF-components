@@ -98,7 +98,8 @@ states change and when options are inserted or reordered.
 Filtered rows leave the list rather than hiding, so the panel resizes to what is left. Rows
 match on their text, which only works when the children are a plain string — give a row built
 from elements an explicit `searchValue`. `emptyMessage` replaces the list when a query
-matches nothing, and `searchPlaceholder` and `searchLabel` name the field.
+matches nothing, and `searchPlaceholder` and `searchLabel` name the field. The list’s
+Scroll Area root carries `data-empty` while hidden behind the empty message.
 
 Because the panel is positioned by the selected row, the search field sits that far above the
 trigger. With a selection deep in a long list there may be no room for the overlap, and the panel

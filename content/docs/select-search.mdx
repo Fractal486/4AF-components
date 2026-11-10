@@ -103,7 +103,11 @@ const fruits = [{ value: "apple", label: "Apple", icon: <Apple /> }];
 ```
 
 An icon passed only to `SearchSelectItem` is available after the panel mounts. Resolution order
-is the mounted item, then `iconForValue`, then the value's own `icon`.
+is the mounted item, then `iconForValue`, then the value's own `icon`. Inline icons with the
+same element type and key reuse their registration, so a parent rerender does not update the
+whole provider. When an icon’s appearance changes through props, give it a key that changes
+with that appearance (for example, `<StatusIcon key={status} status={status} />`). This applies
+to `SearchMultiSelectItem` too; removing the icon clears its registration.
 
 ## Highlight implementation
 

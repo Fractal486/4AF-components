@@ -1,3 +1,5 @@
+"use client";
+
 import { createContext, useContext, useEffect } from "react";
 
 // How a panel's `useCommandSearch` tells the palette to show the inline header loader.

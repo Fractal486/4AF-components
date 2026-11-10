@@ -93,7 +93,8 @@ describe("Data Table model and controls", () => {
     fireEvent.pointerUp(document);
     // Consume the click suppressed after a drag so it cannot affect another test.
     fireEvent.click(document.body);
-  });
+    // A long sequence of full-table renders; under full-suite load it can exceed the 5s default.
+  }, 15_000);
 
   it("uses row-specific multi-selection rules when adding a row", () => {
     render(<People options={{ enableMultiRowSelection: row => row.id !== "a" }} />);

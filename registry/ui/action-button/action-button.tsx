@@ -99,6 +99,7 @@ export function ActionButton({
   onPointerLeave,
   onFocus,
   onBlur,
+  onKeyDown,
   ...props
 }: ActionButtonProps) {
   const { status, error, run, buttonProps } = useAction({
@@ -178,8 +179,9 @@ export function ActionButton({
         }}
         onPointerEnter={(event) => { onPointerEnter?.(event); buttonProps.onPointerEnter(event); }}
         onPointerLeave={(event) => { onPointerLeave?.(event); buttonProps.onPointerLeave(); }}
-        onFocus={(event) => { onFocus?.(event); buttonProps.onFocus(); }}
+        onFocus={(event) => { onFocus?.(event); buttonProps.onFocus(event); }}
         onBlur={(event) => { onBlur?.(event); buttonProps.onBlur(); }}
+        onKeyDown={(event) => { onKeyDown?.(event); buttonProps.onKeyDown(event); }}
         disabled={disabled || status === "pending"}
         focusableWhenDisabled={(!disabled && status === "pending") || focusableWhenDisabled}
         aria-busy={status === "pending" || undefined}

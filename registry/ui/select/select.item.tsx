@@ -1,3 +1,5 @@
+"use client";
+
 import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { CheckMark } from "@/registry/lib/check-mark";
 import { Select as BaseSelect } from "@base-ui/react/select";

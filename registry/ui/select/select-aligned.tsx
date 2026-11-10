@@ -595,7 +595,8 @@ export function AlignedSelectContent({
               18rem, or `--available-height`, which Base UI measured before growing the panel)
               leaves blank panel under the list as it grows. */}
           <ScrollArea
-            className={cn("max-h-full", noResults && "hidden")}
+            data-empty={noResults ? "" : undefined}
+            className="max-h-full data-[empty]:hidden"
             viewportRef={listRef}
             viewportClassName="p-1"
             viewportProps={{ tabIndex: -1, render: renderListViewport }}

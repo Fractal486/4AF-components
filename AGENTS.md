@@ -16,6 +16,10 @@ _incoming/    Raw downloads, gitignored. Staging only — never imported.
 
 `pnpm dev` · `pnpm typecheck` · `pnpm lint` · `pnpm test` · `pnpm build`
 
+Node is pinned in `.node-version`. `.agents/skills` is the canonical skill tree; never edit
+`.claude/skills` directly. `pnpm install` regenerates it, or run `pnpm skills:sync` after
+skill edits and pulls. `pnpm skills:check` detects stale generated copies.
+
 Run `pnpm registry:validate` and `pnpm registry:build` after changing install metadata or
 portable component source.
 
@@ -221,7 +225,7 @@ Plus one-off sources for specific jobs (loaders, charts). Same loop applies.
 3. **Tokens only.** No hex, no `slate-*`/`zinc-*`. Use semantic tokens (`bg-surface`,
    `text-muted-foreground`, `shadow-border`) by default. The ramp exceptions are status
    accents (such as warning ink and fills) and fixed neutral control states (such as
-   Switch's fixed tone and Checkbox/Radio's dark resting fills).
+   Switch's fixed tone, Checkbox/Radio's dark resting fills, and Scroll Area's track/dark thumb).
 4. **Variants + demo controls**, then an entry in `inspector/entries/` and an MDX page.
 5. **Review at 4x**, then in reduced motion, then by keyboard only, then in both themes.
 6. `/review-animations` and `/code-review`.

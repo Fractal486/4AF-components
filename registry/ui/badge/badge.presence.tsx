@@ -30,7 +30,7 @@ import { Collapsible } from "@base-ui/react/collapsible";
 import { useRender } from "@base-ui/react/use-render";
 import { motion, useReducedMotion } from "motion/react";
 import { useLayoutEffect, useRef, useSyncExternalStore, type ComponentProps, type Ref } from "react";
-import { tabbable } from "tabbable";
+import { moveFocusOutside } from "@/registry/lib/move-focus-outside";
 import { duration } from "@/registry/lib/motion";
 import { badgeSpringEase, badgeOutEase } from "./badge.motion";
 
@@ -67,20 +67,12 @@ export function BadgeSurface({ state, render, ref, panelRef, motionProps, onOpen
     const doc = element.ownerDocument;
     const hadFocus = element.contains(doc.activeElement);
     function finish() {
-      if (!open && hadFocus && (element!.contains(doc.activeElement) || doc.activeElement === doc.body)) {
-        const all = tabbable(doc.body).filter(node => !element!.contains(node));
-        const siblings = all.filter(node => node.matches('[data-slot="badge-close"]') && node.closest('[data-slot="badge"]')?.parentElement === element!.parentElement);
-        const candidates = siblings.length ? siblings : all;
-        const next = candidates.find(node => element!.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING);
-        const previous = candidates.findLast(node => element!.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_PRECEDING);
-        const target = next ?? previous;
-        if (target) target.focus({ preventScroll: true });
-        else {
-          const old = doc.body.getAttribute('tabindex');
-          doc.body.tabIndex = -1;
-          doc.body.focus({ preventScroll: true });
-          if (old === null) doc.body.removeAttribute('tabindex'); else doc.body.setAttribute('tabindex', old);
-        }
+      if (!open && hadFocus) {
+        moveFocusOutside(element!, {
+          restoreFromBody: true,
+          prefer: node => node.matches('[data-slot="badge-close"]')
+            && node.closest('[data-slot="badge"]')?.parentElement === element!.parentElement,
+        });
       }
       if (completed.current !== open) {
         completed.current = open;

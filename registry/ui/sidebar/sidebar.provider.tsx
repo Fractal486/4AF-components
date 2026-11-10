@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/registry/lib/cn";
 import { useMergedRefs } from "@/registry/lib/refs";
 import { TooltipProvider } from "@/registry/ui/tooltip/tooltip";

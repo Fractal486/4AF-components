@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/registry/lib/cn";
 import { Slot } from "@/registry/lib/slot";
 import { Button, type ButtonProps } from "@/registry/ui/button/button";

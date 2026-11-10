@@ -1,5 +1,6 @@
 "use client";
 
+import { clamp } from "@/registry/lib/numbers";
 import { Slider as BaseSlider } from "@base-ui/react/slider";
 import { useDirection } from "@base-ui/react/direction-provider";
 import { createChangeEventDetails, createGenericEventDetails } from "@base-ui/react/internals/createBaseUIEventDetails";
@@ -79,10 +80,6 @@ const FINE_STEP_COUNT = 50;
 // Grab stretch — quick, and no overshoot (bounce 0), so it settles cleanly rather than
 // wobbling.
 const SPRING_GRAB = { type: "spring", visualDuration: duration.base, bounce: 0 } as const;
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(Math.max(value, min), max);
-}
 
 // Base UI's hidden thumb takes the press, but sits at the value while the drawn bar thumb
 // rides up to 8px inside it (the fill's edge on the single bar, the inset travel in a range).

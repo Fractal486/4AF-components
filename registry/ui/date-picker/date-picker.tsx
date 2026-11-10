@@ -194,7 +194,8 @@ function DatePickerShell({
         {/* The value takes the room, so the icon sits at the field's end. */}
         <span
           data-slot="date-picker-value"
-          className={cn("min-w-0 flex-1 truncate", !hasValue && "text-muted-foreground")}
+          data-empty={hasValue ? undefined : ""}
+          className="min-w-0 flex-1 truncate data-[empty]:text-muted-foreground"
         >
           {label ?? placeholder}
         </span>

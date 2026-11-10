@@ -1,5 +1,6 @@
 "use client";
 
+import { prefersReducedMotion } from "@/registry/lib/reduced-motion";
 import { useEffect, useRef, useState, type MouseEvent, type RefObject } from "react";
 
 /** Fallback for browsers that do not emit `scrollend` after programmatic smooth scrolling. */
@@ -123,7 +124,7 @@ export function useTableOfContentsTracking({
     scrollRoot.addEventListener("scrollend", finish, { once: true });
     scrollCleanupRef.current = cleanup;
 
-    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    const reduce = prefersReducedMotion(element.ownerDocument.defaultView);
     // Embedded webviews and test DOMs may not implement the native method. Tracking still applies,
     // so a missing scroll primitive is simply a no-op.
     element.scrollIntoView?.({ behavior: reduce ? "auto" : "smooth", block: "start" });

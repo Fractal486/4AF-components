@@ -38,7 +38,10 @@ are off by default.
 Initial content renders immediately. Subsequent changes animate automatically: only changed digits
 roll, with motion blur and soft window edges. Rapid updates interrupt the current roll from its visible position. Added and removed
 columns animate their width so the number resizes naturally; this is an intentional layout
-animation. Reduced motion shows the latest value immediately.
+animation. Reduced motion shows the latest value immediately. Enabling it during a transition
+cancels every roll and column exit, including columns already removed from the DOM; cancelled
+batches do not call `onAnimationsFinish`. Disabling it resumes animation on the next value
+change. Unmounting also cancels outstanding animations.
 
 The basic roll and blur are adapted locally from
 [SF Interface Numbers](https://github.com/wheresryan22/sfinterface-numbers), with formatting and

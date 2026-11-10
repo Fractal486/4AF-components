@@ -102,6 +102,7 @@ export function ActionToggle({
   onPointerLeave,
   onFocus,
   onBlur,
+  onKeyDown,
   pressScale,
   // A labelled toggle is the case this exists for, so it defaults to a control with room
   // for a label rather than to Toggle's icon-sized ghost. Pass `size="icon"` for a star.
@@ -188,8 +189,9 @@ export function ActionToggle({
         }}
         onPointerEnter={(event) => { onPointerEnter?.(event); buttonProps.onPointerEnter(event); }}
         onPointerLeave={(event) => { onPointerLeave?.(event); buttonProps.onPointerLeave(); }}
-        onFocus={(event) => { onFocus?.(event); buttonProps.onFocus(); }}
+        onFocus={(event) => { onFocus?.(event); buttonProps.onFocus(event); }}
         onBlur={(event) => { onBlur?.(event); buttonProps.onBlur(); }}
+        onKeyDown={(event) => { onKeyDown?.(event); buttonProps.onKeyDown(event); }}
         pressScale={status === "pending" ? false : pressScale}
         aria-disabled={status === "pending" || undefined}
         aria-busy={status === "pending" || undefined}

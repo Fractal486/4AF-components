@@ -4,6 +4,28 @@ import { CommandPalette, CommandPanelBody, CommandPanelFooter } from "./command-
 
 const ignoredEvents = [{ repeat: true }, { isComposing: true }];
 
+it("leaves focused controls' Enter alone and runs shifted-symbol and plus panel actions", async () => {
+  const enter = vi.fn(), help = vi.fn(), add = vi.fn();
+  render(<CommandPalette defaultOpen initialItemId="project" groups={[{ items: [{
+    id: "project", label: "Project", panel: () => <>
+      <CommandPanelBody><button>Local action</button><a href="#details">Details link</a></CommandPanelBody>
+      <CommandPanelFooter actions={{ items: [
+        { id: "enter", label: "Enter action", keybind: "enter", onSelect: enter },
+        { id: "help", label: "Help", keybind: "shift+/", onSelect: help },
+        { id: "add", label: "Add", keybind: "+", onSelect: add },
+      ] }} />
+    </>,
+  }] }]} />);
+  const local = await screen.findByRole("button", { name: "Local action" });
+  expect(fireEvent.keyDown(local, { key: "Enter" })).toBe(true);
+  expect(fireEvent.keyDown(screen.getByRole("link", { name: "Details link" }), { key: "Enter" })).toBe(true);
+  expect(enter).not.toHaveBeenCalled();
+  fireEvent.keyDown(window, { key: "?", code: "Slash", shiftKey: true });
+  fireEvent.keyDown(window, { key: "+", code: "Equal", shiftKey: true });
+  expect(help).toHaveBeenCalledOnce();
+  expect(add).toHaveBeenCalledOnce();
+});
+
 describe.each(["ctrlKey", "metaKey"])("Command Palette shortcuts with %s", (modifier) => {
   it("toggles the palette only on fresh key presses", async () => {
     const onOpenChange = vi.fn();

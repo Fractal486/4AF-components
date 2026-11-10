@@ -1,4 +1,5 @@
 import { act, render, screen } from "@testing-library/react";
+import { createRef } from "react";
 import { afterEach, vi } from "vitest";
 import { Morph } from "./morph";
 
@@ -34,6 +35,29 @@ function stubResizeObserver() {
 }
 
 describe("Morph", () => {
+  it("keeps measurement and transition cleanup working with a caller ref, styles and handler", () => {
+    const report = stubResizeObserver();
+    const ref = createRef<HTMLSpanElement>();
+    const onTransitionEnd = vi.fn();
+    const items = { off: "Follow", on: "Following" };
+    const view = (activeKey: "off" | "on") => <Morph activeKey={activeKey} items={items} sizing="current"
+      ref={ref} style={{ width: 100, color: "red" }} onTransitionEnd={onTransitionEnd} />;
+    const { rerender, unmount } = render(view("off"));
+    const box = ref.current!;
+    expect(box.style.width).toBe("100px");
+    report(target => (target as HTMLElement).dataset.morphSizer === "on" ? 72 : 48);
+    expect(box.style.width).toBe("48px");
+    expect(box.style.color).toBe("red");
+    rerender(view("on"));
+    expect(ref.current).toBe(box);
+    expect(box).toHaveAttribute("data-resizing");
+    act(() => { box.dispatchEvent(Object.assign(new Event("transitionend", { bubbles: true }), { propertyName: "width" })); });
+    expect(box).not.toHaveAttribute("data-resizing");
+    expect(onTransitionEnd).toHaveBeenCalledOnce();
+    unmount();
+    expect(ref.current).toBeNull();
+  });
+
   it("does not render a duplicate sizer for a single state", () => {
     const { container } = render(
       <Morph activeKey="idle" items={{ idle: <span>Pending</span> }} />,

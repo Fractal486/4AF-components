@@ -3,7 +3,7 @@ import { extendTailwindMerge } from "tailwind-merge";
 
 const twMerge = extendTailwindMerge({
   extend: {
-    theme: { shadow: ["border", "raised", "overlay", "overlay-drop"] },
+    theme: { shadow: ["border", "raised", "overlay", "overlay-drop", "overlay-subtle"] },
     // The glass material sets the background, so it replaces a `bg-*` colour and vice versa.
     classGroups: { "bg-color": ["material-glass"] },
   },

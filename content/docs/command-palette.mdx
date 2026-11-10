@@ -250,3 +250,10 @@ opened. For async, toggle, and confirmation rows, the shortcut opens the menu an
 behavior as a row press, so pending feedback and confirmation remain visible. Confirmation still
 requires a second press after the 350ms guard; closing the menu disarms it. Ordinary `onSelect`
 shortcuts run immediately.
+
+Use `mod` for Control or Command, or name `ctrl`, `meta`, `alt`, and `shift` explicitly.
+Shifted digit and punctuation chords such as `shift+1` and `shift+/` also match their physical
+US key positions when the browser reports a shifted character. Letter chords follow
+`event.key`. A literal `+` works by itself or as `mod++`, including keyboards that require
+Shift to type it. Shortcuts with no named modifier ignore editable fields, buttons, links,
+and their descendants, so Enter remains available to the focused control.

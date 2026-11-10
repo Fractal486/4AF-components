@@ -3,8 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { vi } from "vitest";
 
-/** Mirrors DOUBLE_PRESS_GUARD in the component. */
-const DOUBLE_PRESS_GUARD_MS = 400;
+import { DOUBLE_PRESS_GUARD } from "./command-palette.actions";
+
 import {
   CommandPalette,
   CommandPanelBody,
@@ -18,6 +18,8 @@ import {
   useCommandPanelHighlight,
   useCommandSearch,
 } from "./command-palette";
+
+afterEach(() => vi.restoreAllMocks());
 
 describe("CommandPalette", () => {
   it("keeps a fixed height and centres the empty state in it", async () => {
@@ -615,7 +617,8 @@ describe("CommandPalette", () => {
     expect(await screen.findByRole("option", { name: "Saved" })).toBeInTheDocument();
   });
 
-  it("arms a confirm row on the first press and commits on the second", async () => {
+  it("arms a confirm row and accepts only a deliberate press at the guard boundary", async () => {
+    const now = vi.spyOn(Date, "now").mockReturnValue(1000);
     const user = userEvent.setup();
     const onSelect = vi.fn();
 
@@ -663,8 +666,13 @@ describe("CommandPalette", () => {
     expect(await screen.findByRole("option", { name: "Confirm?" })).toBeInTheDocument();
     expect(onSelect).not.toHaveBeenCalled();
 
-    // The guard means a second press has to be a deliberate one, not a double-click.
-    await new Promise((resolve) => setTimeout(resolve, DOUBLE_PRESS_GUARD_MS));
+    // A double-click and a press just before the boundary must not commit.
+    await user.click(screen.getByRole("option", { name: "Confirm?" }));
+    expect(onSelect).not.toHaveBeenCalled();
+    now.mockReturnValue(1000 + DOUBLE_PRESS_GUARD - 1);
+    await user.click(screen.getByRole("option", { name: "Confirm?" }));
+    expect(onSelect).not.toHaveBeenCalled();
+    now.mockReturnValue(1000 + DOUBLE_PRESS_GUARD);
 
     await user.click(screen.getByRole("option", { name: "Confirm?" }));
     expect(onSelect).toHaveBeenCalledOnce();

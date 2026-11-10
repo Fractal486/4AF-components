@@ -1,3 +1,5 @@
+import { clamp } from "@/registry/lib/numbers";
+
 /**
  * The scrub slider's maths, kept free of React so it can be tested on its own.
  *
@@ -19,9 +21,7 @@ const EDGE_SPEED = 30;
 const EDGE_RAMP_PER_SECOND = 1.5;
 const EDGE_RAMP_MAX = 8;
 
-export function clamp(value: number, min: number, max: number) {
-  return Math.min(Math.max(value, min), max);
-}
+export { clamp } from "@/registry/lib/numbers";
 
 /** Decimal precision, including numbers printed in exponent notation. */
 export function decimalPlaces(value: number): number {

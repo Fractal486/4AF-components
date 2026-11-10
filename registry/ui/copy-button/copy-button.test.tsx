@@ -195,7 +195,9 @@ describe("CopyButton", () => {
   });
 
   it("shows pending promptly when the value actually has to wait", async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.useFakeTimers();
+    let resolveValue!: (value: string) => void;
+    const value = new Promise<string>(resolve => { resolveValue = resolve; });
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
@@ -204,10 +206,7 @@ describe("CopyButton", () => {
 
     render(
       <CopyButton
-        value={async () => {
-          await new Promise((resolve) => setTimeout(resolve, 150));
-          return "fetched";
-        }}
+        value={() => value}
       >
         Copy
       </CopyButton>,
@@ -222,8 +221,9 @@ describe("CopyButton", () => {
     await act(() => vi.advanceTimersByTimeAsync(50));
     expect(button).toHaveAttribute("data-status", "pending");
     expect(writeText).not.toHaveBeenCalled();
-    await act(() => vi.advanceTimersByTimeAsync(100));
+    await act(async () => resolveValue("fetched"));
     expect(button).toHaveAttribute("data-status", "success");
+    expect(writeText).toHaveBeenCalledExactlyOnceWith("fetched");
     expect(seen()).toEqual(["idle", "pending", "success"]);
   });
 

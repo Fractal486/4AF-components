@@ -6,10 +6,8 @@ export const tooltipPopupVariants = cva([
   // The glass material every floating panel shares.
   "w-fit max-w-[min(var(--container-xs),var(--available-width))] wrap-anywhere rounded-md material-glass px-2.5 py-1",
   "text-xs font-medium text-pretty text-foreground",
-  // A single faint 1px ring instead of shadow-overlay's heavier one, plus a soft drop
-  // shadow. rgba, not oklch, so the `/` alpha can't trip Tailwind's arbitrary parser.
-  "shadow-[0_0_0_1px_rgba(0,0,0,0.04),0_10px_24px_-8px_rgba(0,0,0,0.18)]",
-  "dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_14px_30px_-12px_rgba(0,0,0,0.6)]",
+  // A faint ring and soft lift shared by transient floating annotations.
+  "shadow-overlay-subtle",
   // Scale grows from the anchor side; `blur-0` is the resting filter so it interpolates
   // from blur(5px) rather than from `none`, which some browsers won't tween. Only these
   // properties change, so only these are named. Base UI holds the popup mounted through

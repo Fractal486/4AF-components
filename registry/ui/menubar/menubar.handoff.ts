@@ -1,5 +1,6 @@
 "use client";
 
+import { prefersReducedMotion } from "@/registry/lib/reduced-motion";
 import { useLayoutEffect, useState } from "react";
 import { duration, ease } from "@/registry/lib/motion";
 
@@ -153,7 +154,7 @@ function timeScale(element: HTMLElement) {
 
 function canAnimate(element: HTMLElement) {
   return typeof element.animate === "function" &&
-    !element.ownerDocument.defaultView?.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    !prefersReducedMotion(element.ownerDocument.defaultView);
 }
 
 interface Copy {

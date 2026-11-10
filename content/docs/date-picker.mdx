@@ -77,7 +77,9 @@ their own selects, and `disableNavigation` renders a plain caption.
 
 Parts: `data-slot="calendar-picker-toggle"` (the caption button), `calendar-picker` (the two
 columns), and `calendar-month-grid` (the wrapper that holds the grid's height while the picker
-is open).
+is open). The calendar root, grid wrapper, and day table carry `data-picker-open` while
+this picker is open; the table is also `aria-hidden`. An empty date trigger and its
+`date-picker-value` span carry `data-empty`, which dims the placeholder.
 
 ## Behavior
 

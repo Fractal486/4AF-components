@@ -1,3 +1,5 @@
+"use client";
+
 import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { Input } from "@/registry/ui/input/input";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";

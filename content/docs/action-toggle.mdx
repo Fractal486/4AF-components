@@ -21,7 +21,7 @@ or Subscribe/Subscribed. Its appearance defaults to `variant="outline"` and `siz
 | `onStatusChange` | — | Reports requested feedback transitions, including resets. Update controlled `status` to accept a change. |
 | `error` | Last rejection | Error supplied by an external owner for a controlled error state. |
 | `labels.error` | Resting label | A React node or `(error) => ReactNode`, evaluated when showing an error. |
-| `revertAfter` | `2000` | Error reset countdown in milliseconds. It pauses while hovered or focused and resumes with the remaining time after both leave. Resetting feedback never changes `pressed`. |
+| `revertAfter` | `2000` | Error reset countdown in milliseconds. It pauses while hovered or keyboard-focused (`:focus-visible`) and resumes with the remaining time when neither holds it. Mouse focus alone does not pause it. Resetting feedback never changes `pressed`. |
 | `actionsRef` | — | A React ref receiving `{ reset() }`. The ordinary element `ref` still points to the toggle button. |
 
 When another part of the application owns the asynchronous work, omit `action` and control
@@ -30,7 +30,7 @@ immediately; the owner decides when to accept it. Without an `action` or control
 it changes immediately like a normal Toggle. With `action`, it still waits for success.
 Changing `status` by itself never commits a new pressed value.
 
-Hover and focus handlers supplied by the caller are composed with the error-hold behavior.
+Pointer, focus, blur, and keydown handlers supplied by the caller are composed with the error-hold behavior.
 Touch hover does not hold errors. Function-based error labels receive the actual rejection
 reason, or the supplied `error`, and are not evaluated before failure. Their width is only
 known on failure, so the control may grow to fit the message even with `sizing="widest"`.

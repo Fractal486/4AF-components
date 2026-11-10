@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FocusEvent, type KeyboardEvent, type PointerEvent } from "react";
 
 export type ActionStatus = "idle" | "pending" | "success" | "error";
 export type ActionRevertAfter = number | { success?: number; error?: number };
@@ -41,9 +41,9 @@ export function useAction({
   const [error, setError] = useState<unknown>();
   const [revision, setRevision] = useState(0);
   const [hovered, setHovered] = useState(false);
-  const [focused, setFocused] = useState(false);
+  const [focusVisible, setFocusVisible] = useState(false);
   const status = controlledStatus ?? internalStatus;
-  const held = status === "error" && (hovered || focused);
+  const held = status === "error" && (hovered || focusVisible);
   const revertTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const clock = useRef<RevertClock | null>(null);
@@ -85,7 +85,8 @@ export function useAction({
       || clock.current.revision !== revision) {
       clock.current = { status, duration: resetDuration, revision, remaining: resetDuration };
     }
-    // Hover and focus share one clock. Leaving one does not resume it while the other holds it.
+    // Hover and keyboard focus share one clock. Mouse focus alone must not hold an error
+    // after the pointer leaves the control.
     if (held || running.current) return;
     const current = clock.current;
     const started = Date.now();
@@ -154,8 +155,10 @@ export function useAction({
       if (event.pointerType !== "touch") setHovered(true);
     },
     onPointerLeave: () => setHovered(false),
-    onFocus: () => setFocused(true),
-    onBlur: () => setFocused(false),
+    onFocus: (event: FocusEvent<HTMLElement>) => setFocusVisible(event.target.matches(":focus-visible")),
+    // Modality can change while the same control stays focused.
+    onKeyDown: (event: KeyboardEvent<HTMLElement>) => setFocusVisible(event.currentTarget.matches(":focus-visible")),
+    onBlur: () => setFocusVisible(false),
   };
 
   return { status, error, run, reset, buttonProps };

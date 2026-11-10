@@ -1,3 +1,5 @@
+"use client";
+
 import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { duration, ease } from "@/registry/lib/motion";
 import { Button } from "@/registry/ui/button/button";

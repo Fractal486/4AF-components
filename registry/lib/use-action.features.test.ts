@@ -1,10 +1,48 @@
 import { act, renderHook } from "@testing-library/react";
-import type { PointerEvent } from "react";
+import type { FocusEvent, KeyboardEvent, PointerEvent } from "react";
 import { useAction, type ActionStatus } from "./use-action";
 
 afterEach(() => vi.useRealTimers());
 
+function focusEvent(visible = true) {
+  const target = document.createElement("button");
+  target.matches = selector => selector === ":focus-visible" && visible;
+  return { target, currentTarget: target } as unknown as FocusEvent<HTMLElement>;
+}
+
 describe("useAction feedback controls", () => {
+  it("holds an error when keyboard input makes the already-focused control focus-visible", async () => {
+    vi.useFakeTimers();
+    const { result } = renderHook(() => useAction({ action: () => { throw new Error("Offline"); }, revertAfter: 400 }));
+    act(() => result.current.buttonProps.onFocus(focusEvent(false)));
+    await act(() => result.current.run());
+    act(() => vi.advanceTimersByTime(100));
+    act(() => result.current.buttonProps.onKeyDown(focusEvent() as unknown as KeyboardEvent<HTMLElement>));
+    act(() => vi.advanceTimersByTime(1000));
+    expect(result.current.status).toBe("error");
+    act(() => result.current.buttonProps.onBlur());
+    act(() => vi.advanceTimersByTime(300));
+    expect(result.current.status).toBe("idle");
+  });
+
+  it("resumes the remaining error countdown after hover leaves a mouse-focused control", async () => {
+    vi.useFakeTimers();
+    const { result } = renderHook(() => useAction({ action: () => { throw new Error("Offline"); }, revertAfter: 400 }));
+    await act(() => result.current.run());
+    act(() => vi.advanceTimersByTime(100));
+    act(() => {
+      result.current.buttonProps.onPointerEnter({ pointerType: "mouse" } as PointerEvent<HTMLElement>);
+      result.current.buttonProps.onFocus(focusEvent(false));
+    });
+    act(() => vi.advanceTimersByTime(1000));
+    expect(result.current.status).toBe("error");
+    act(() => result.current.buttonProps.onPointerLeave());
+    act(() => vi.advanceTimersByTime(299));
+    expect(result.current.status).toBe("error");
+    act(() => vi.advanceTimersByTime(1));
+    expect(result.current.status).toBe("idle");
+  });
+
   it("uses separate success and error reset times", async () => {
     vi.useFakeTimers();
     let fail = false;
@@ -29,7 +67,7 @@ describe("useAction feedback controls", () => {
     await act(() => result.current.run());
     act(() => vi.advanceTimersByTime(100));
     act(() => result.current.buttonProps.onPointerEnter({ pointerType: "mouse" } as PointerEvent<HTMLElement>));
-    act(() => result.current.buttonProps.onFocus());
+    act(() => result.current.buttonProps.onFocus(focusEvent()));
     act(() => vi.advanceTimersByTime(1000));
     act(() => result.current.buttonProps.onPointerLeave());
     act(() => vi.advanceTimersByTime(1000));
@@ -50,7 +88,7 @@ describe("useAction feedback controls", () => {
     act(() => vi.advanceTimersByTime(100));
     expect(result.current.status).toBe("idle");
     fail = false;
-    act(() => result.current.buttonProps.onFocus());
+    act(() => result.current.buttonProps.onFocus(focusEvent()));
     await act(() => result.current.run());
     act(() => vi.advanceTimersByTime(100));
     expect(result.current.status).toBe("idle");

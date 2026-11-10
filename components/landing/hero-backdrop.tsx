@@ -1,7 +1,13 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
-import { HeroComponentPreview } from "./hero-component-preview";
+import dynamic from "next/dynamic";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { cn } from "@/registry/lib/cn";
+
+const HeroComponentPreview = dynamic(
+  () => import("./hero-component-preview").then((module) => module.HeroComponentPreview),
+  { ssr: false },
+);
 
 /** Clearance kept around each piece of copy before the artwork starts, in px. */
 const PAD = 48;
@@ -27,6 +33,28 @@ interface Box {
 export function HeroBackdrop({ className, artworkClassName }: { className?: string; artworkClassName?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const [mask, setMask] = useState<string>();
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let cancel = () => {};
+    const schedule = () => {
+      // Keep the decorative component tree out of the initial page load. A bounded idle
+      // callback lets the copy hydrate first without leaving busy browsers blank indefinitely.
+      if (typeof window.requestIdleCallback === "function") {
+        const idle = window.requestIdleCallback(() => setReady(true), { timeout: 1000 });
+        cancel = () => window.cancelIdleCallback(idle);
+      } else {
+        const timer = window.setTimeout(() => setReady(true), 0);
+        cancel = () => window.clearTimeout(timer);
+      }
+    };
+    if (document.readyState === "complete") schedule();
+    else window.addEventListener("load", schedule, { once: true });
+    return () => {
+      window.removeEventListener("load", schedule);
+      cancel();
+    };
+  }, []);
 
   useLayoutEffect(() => {
     const backdrop = ref.current;
@@ -78,7 +106,10 @@ export function HeroBackdrop({ className, artworkClassName }: { className?: stri
       className={className}
       style={mask ? ({ "--hero-copy-mask": mask } as CSSProperties) : undefined}
     >
-      <HeroComponentPreview entrance className={artworkClassName} />
+      {/* Reserve the same responsive frame before the chunk and its stylesheet arrive. */}
+      <div data-hero-artwork className={cn("relative aspect-[5/4] w-full", artworkClassName)}>
+        {ready && <HeroComponentPreview entrance className="h-full aspect-auto" />}
+      </div>
     </div>
   );
 }

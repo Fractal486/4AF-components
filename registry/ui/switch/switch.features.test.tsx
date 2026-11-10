@@ -32,6 +32,43 @@ function drag(control: HTMLElement, delta: number, end = "pointerup") {
 describe("Switch saving", () => {
   afterEach(() => vi.useRealTimers());
 
+  it("keeps failure feedback until another accepted change or reset, without an outcome timer", async () => {
+    vi.useFakeTimers();
+    const error = new Error("Offline");
+    const change = vi.fn<NonNullable<React.ComponentProps<typeof Switch>["onCheckedChange"]>>()
+      .mockRejectedValueOnce(error).mockImplementation(() => {});
+    render(<Switch onCheckedChange={change} />);
+    const control = screen.getByRole("switch");
+    await act(async () => { fireEvent.click(control); });
+    expect(control).toHaveAttribute("data-error");
+    act(() => vi.advanceTimersByTime(10_000));
+    expect(control).toHaveAttribute("data-error");
+    expect(screen.getByRole("status")).toHaveTextContent("Could not save change.");
+    fireEvent.click(control);
+    expect(control).not.toHaveAttribute("data-error");
+    expect(control).not.toHaveAttribute("data-pending");
+    expect(control).toHaveAttribute("aria-checked", "true");
+  });
+
+  it("ignores a reset request's rejection while a newer save is pending", async () => {
+    const old = deferred();
+    const current = deferred();
+    const onError = vi.fn();
+    const change = vi.fn().mockReturnValueOnce(old.promise).mockReturnValueOnce(current.promise);
+    render(<form data-testid="form"><Switch onCheckedChange={change} onError={onError} /></form>);
+    const control = screen.getByRole("switch");
+    fireEvent.click(control);
+    await act(async () => { fireEvent.reset(screen.getByTestId("form")); });
+    fireEvent.click(control);
+    await act(async () => old.reject(new Error("Old request")));
+    expect(onError).not.toHaveBeenCalled();
+    expect(control).toHaveAttribute("data-pending");
+    expect(control).not.toHaveAttribute("data-error");
+    await act(async () => current.resolve());
+    expect(control).not.toHaveAttribute("data-pending");
+    expect(control).toHaveAttribute("aria-checked", "true");
+  });
+
   it("changes optimistically, delays the inherited loader, blocks repeats, and commits success", async () => {
     vi.useFakeTimers();
     const save = deferred();

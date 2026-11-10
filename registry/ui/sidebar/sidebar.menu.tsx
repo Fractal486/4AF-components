@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/registry/lib/cn";
 import { useMergedRefs } from "@/registry/lib/refs";
 import { Slot } from "@/registry/lib/slot";

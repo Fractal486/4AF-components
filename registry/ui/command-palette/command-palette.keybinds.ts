@@ -11,9 +11,13 @@ interface ParsedKeybind {
 function splitKeybind(value: string): string[] {
   const trimmed = value.trim();
   if (!trimmed) return [];
+  if (trimmed === "+") return ["+"];
 
   if (trimmed.includes("+")) {
-    return trimmed.split(/\s*\+\s*/).filter(Boolean);
+    const parts = trimmed.split(/\s*\+\s*/).filter(Boolean);
+    // The final plus is the key in `mod++` or `shift++`, not another separator.
+    if (/\+\s*\+$/.test(trimmed)) parts.push("+");
+    return parts;
   }
 
   const compactModifier = /^(⌘|⌃|⌥|⇧|mod|cmd|command|meta|ctrl|control|alt|option|shift)(.+)$/i.exec(
@@ -80,23 +84,41 @@ function parseKeybind(value: string): ParsedKeybind | null {
 }
 
 
-function isEditableTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
-  return target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
+function ownsUnmodifiedKeys(event: KeyboardEvent): boolean {
+  // composedPath also finds the actual control when a shadow root retargets the event.
+  const targets = event.composedPath().length ? event.composedPath() : [event.target];
+  return targets.some(target => target instanceof Element && (
+    (target instanceof HTMLElement && target.isContentEditable)
+    || target.closest('input, textarea, select, button, a[href], [role="button"], [role="link"], [role="textbox"], [contenteditable]:not([contenteditable="false"])') !== null
+  ));
 }
 
+// Shift changes event.key to a glyph. For explicitly shifted digit/punctuation chords,
+// also accept the physical key code (US key positions); letters remain layout-aware.
+const shiftedCodes: Record<string, string> = {
+  "0": "Digit0", "1": "Digit1", "2": "Digit2", "3": "Digit3", "4": "Digit4",
+  "5": "Digit5", "6": "Digit6", "7": "Digit7", "8": "Digit8", "9": "Digit9",
+  "`": "Backquote", "-": "Minus", "=": "Equal", "[": "BracketLeft", "]": "BracketRight",
+  "\\": "Backslash", ";": "Semicolon", "'": "Quote", ",": "Comma", ".": "Period", "/": "Slash",
+};
+
 export function matchesKeybind(value: string, event: KeyboardEvent): boolean {
+  if (event.defaultPrevented || event.repeat || event.isComposing) return false;
   const binding = parseKeybind(value);
   if (!binding) return false;
 
   const hasModifier = binding.mod || binding.ctrl || binding.meta || binding.alt || binding.shift;
-  if (!hasModifier && isEditableTarget(event.target)) return false;
+  if (!hasModifier && ownsUnmodifiedKeys(event)) return false;
 
   if (binding.mod ? !(event.metaKey || event.ctrlKey) : event.metaKey !== binding.meta) {
     return false;
   }
   if (!binding.mod && event.ctrlKey !== binding.ctrl) return false;
-  if (event.altKey !== binding.alt || event.shiftKey !== binding.shift) return false;
+  if (event.altKey !== binding.alt) return false;
+  // A literal + follows the produced character on layouts that need Shift and on numpads.
+  const literalPlus = binding.key === "+" && event.key === "+" && !binding.shift;
+  if (event.shiftKey !== binding.shift && !literalPlus) return false;
 
-  return normalizeKey(event.key) === binding.key;
+  return normalizeKey(event.key) === binding.key
+    || (binding.shift && shiftedCodes[binding.key] !== undefined && shiftedCodes[binding.key] === event.code);
 }

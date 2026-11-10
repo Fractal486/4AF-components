@@ -16,9 +16,6 @@ export function pageAlternates(pathname: string) {
   };
 }
 
-/** The registry's address template, for `shadcn registry add @4af=…`. */
-export const REGISTRY_TEMPLATE = `${SITE_URL}/r/{name}.json`;
-
 /** The address a registry item is installed from, e.g. `…/r/button.json`. */
 export function registryItemUrl(name: string) {
   return `${SITE_URL}/r/${name}.json`;

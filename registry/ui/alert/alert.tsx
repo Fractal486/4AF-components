@@ -4,7 +4,7 @@ import { Collapsible as BaseCollapsible } from "@base-ui/react/collapsible";
 import { useRender } from "@base-ui/react/use-render";
 import { Check, Info, OctagonAlert, TriangleAlert, X } from "lucide-react";
 import { useLayoutEffect, useRef, type ComponentProps, type ReactNode } from "react";
-import { tabbable } from "tabbable";
+import { moveFocusOutside } from "@/registry/lib/move-focus-outside";
 import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { LoadingIndicator } from "@/registry/lib/loader";
 import {
@@ -80,25 +80,6 @@ function AlertSurface({ state, render, ref, ...props }: ComponentProps<"div"> & 
       "data-state": state.open ? "open" : "closed",
     },
   });
-}
-
-function moveFocusOutside(element: HTMLElement) {
-  const doc = element.ownerDocument;
-  if (!element.contains(doc.activeElement)) return;
-  const candidates = tabbable(doc.body).filter((node) => !element.contains(node));
-  const next = candidates.find((node) => element.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING);
-  const previous = candidates.findLast((node) => element.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_PRECEDING);
-  const target = next ?? previous;
-  if (target) {
-    target.focus({ preventScroll: true });
-  } else {
-    // A standalone alert can be the document's only focusable content.
-    const oldTabIndex = doc.body.getAttribute("tabindex");
-    doc.body.tabIndex = -1;
-    doc.body.focus({ preventScroll: true });
-    if (oldTabIndex === null) doc.body.removeAttribute("tabindex");
-    else doc.body.setAttribute("tabindex", oldTabIndex);
-  }
 }
 
 export type AlertTitleProps = useRender.ComponentProps<"div">;

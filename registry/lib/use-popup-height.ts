@@ -1,8 +1,8 @@
 "use client";
 
+import { pixels } from "@/registry/lib/numbers";
 import { useCallback } from "react";
 
-const pixels = (value: string) => Number.parseFloat(value) || 0;
 const trackingWindow = 80;
 const milliseconds = (value: string) => (Number.parseFloat(value) || 0) * (value.trim().endsWith("ms") ? 1 : 1000);
 

@@ -27,9 +27,10 @@ the component requests transitions through `onStatusChange` rather than overridi
 status blocks activation in both modes. A click handler that prevents the default also prevents
 the internal action from running.
 
-The error reset countdown pauses while the button is hovered or focused, including when it
-was already focused when the failure occurred. It resumes with its remaining time after both
-pointer and focus leave. Success resets normally. Changing unrelated props or callbacks does
+The error reset countdown pauses while the button is hovered or has keyboard focus
+(`:focus-visible`), including when focus predates the failure. Mouse focus alone does not
+hold the error after the pointer leaves. The countdown resumes with its remaining time when
+neither hover nor keyboard focus holds it. Success resets normally. Changing unrelated props or callbacks does
 not restart the countdown.
 
 A function-based error label is not evaluated before an error occurs. Its width is only known
@@ -47,7 +48,7 @@ settles. Unmounting stops local feedback and reset timers, but does not cancel t
 
 `useAction` from the installed `@/lib/use-action` module accepts `action`, `status`,
 `onStatusChange`, `revertAfter`, `pendingDelay`, `onSuccess`, and `onError`. It returns
-`status`, the last `error`, `run()`, `reset()`, and `buttonProps` containing hover/focus handlers.
+`status`, the last `error`, `run()`, `reset()`, and `buttonProps` containing pointer, focus, blur, and keydown handlers.
 Attach those handlers to a custom action surface to pause its error countdown. ActionButton
 attaches them automatically and composes them with caller-provided handlers.
 

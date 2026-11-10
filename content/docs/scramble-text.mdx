@@ -22,3 +22,6 @@ assistive technology; the complete text is available in a separate polite live r
 - `intervalMs` — milliseconds between reveal steps. Defaults to `32`; values at or below `0`
   show the final text immediately.
 - `className` — forwarded to the outer inline wrapper.
+- Native span props and `ref<HTMLSpanElement>` — forwarded to the outer span, including `id`,
+  `aria-*`, `data-*`, `style`, and event handlers. The root exposes `data-slot="scramble-text"`
+  and stays a span; `asChild` and `render` are not supported.

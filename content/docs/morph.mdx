@@ -13,6 +13,11 @@ Swaps icons or text with an animation. By default every item shares one grid cel
 largest, so the surrounding control keeps its size during a swap. Under reduced motion the
 swap is instant. Morph supplies no button styling, padding, or fixed height of its own.
 
+Standard span props (`id`, `aria-*`, `data-*`, `style`, and event handlers) and a
+`ref<HTMLSpanElement>` reach the outer span in every sizing mode. The element stays a span;
+there is no `asChild` or `render` prop. With `sizing="current"`, measured width takes precedence
+over `style.width`; other styles and the caller's `onTransitionEnd` are preserved.
+
 `sizing` sets how the box is sized:
 
 | `sizing` | Box size |

@@ -1,10 +1,11 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion/react";
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
 import { spring } from "@/registry/lib/motion";
 import { LoaderSizerContext } from "@/registry/lib/loader";
+import { useMergedRefs } from "@/registry/lib/refs";
 
 /**
  * Swaps one piece of content for another, animating the change.
@@ -28,7 +29,7 @@ export const morphVariants: Variants = {
   exit: { opacity: 0, scale: 0.25, filter: "blur(4px)" },
 };
 
-export interface MorphProps<K extends string> {
+export interface MorphProps<K extends string> extends Omit<ComponentProps<"span">, "children"> {
   /** Which item is showing. Changing it is what triggers the swap. */
   activeKey: K;
   /**
@@ -52,7 +53,6 @@ export interface MorphProps<K extends string> {
    * controls, effects and DOM nodes without contributing any measurements.
    */
   sizing?: "widest" | "current" | "fixed";
-  className?: string;
 }
 
 export function Morph<K extends string>({
@@ -60,6 +60,10 @@ export function Morph<K extends string>({
   items,
   sizing = "widest",
   className,
+  ref,
+  style,
+  onTransitionEnd,
+  ...props
 }: MorphProps<K>) {
   // The CSS `prefers-reduced-motion` rule can't reach Motion — the cascade doesn't
   // touch JS animation. `duration: 0` rather than a very short spring: a spring with a
@@ -70,6 +74,7 @@ export function Morph<K extends string>({
   const keys = Object.keys(items) as K[];
   const current = sizing === "current";
   const { box, width } = useItemWidths(keys, activeKey, current);
+  const mergedRef = useMergedRefs(box, ref);
 
   // While the width transitions between two measured sizes the box carries
   // `data-resizing`, so callers can lift a truncation cap that would otherwise put an
@@ -87,7 +92,15 @@ export function Morph<K extends string>({
   // Keep the same presence lifecycle so fixed-size swaps retain their outgoing state.
   if (sizing === "fixed" || (!current && keys.length === 1)) {
     return (
-      <span data-slot="morph" data-sizing={sizing} className={cn("relative inline-grid place-items-center", className)}>
+      <span
+        {...props}
+        ref={mergedRef}
+        style={style}
+        onTransitionEnd={onTransitionEnd}
+        data-slot="morph"
+        data-sizing={sizing}
+        className={cn("relative inline-grid place-items-center", className)}
+      >
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.span
             key={activeKey}
@@ -115,7 +128,8 @@ export function Morph<K extends string>({
     // `place-content-center` keeps items wider than the box — the incoming one while it
     // grows, the outgoing one while it shrinks — centred on it.
     <span
-      ref={box}
+      {...props}
+      ref={mergedRef}
       data-slot="morph"
       data-sizing={sizing}
       className={cn(
@@ -124,9 +138,10 @@ export function Morph<K extends string>({
         className,
       )}
       data-resizing={resizing ? "" : undefined}
-      style={width == null ? undefined : { width }}
+      style={width == null ? style : { ...style, width }}
       onTransitionEnd={(event) => {
         if (event.target === event.currentTarget && event.propertyName === "width") setResizing(false);
+        onTransitionEnd?.(event);
       }}
     >
       {/* The sizers. Hidden, inert, and unreadable — they exist only to hold the box

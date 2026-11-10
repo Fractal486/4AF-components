@@ -94,7 +94,9 @@ beforeAll(() => {
       : ts.createSourceFile(file, source, languageVersion, true, ts.ScriptKind.TSX);
   };
   program = ts.createProgram([...sources.keys()], compilerOptions, host);
-}, 20000);
+  // Building one program over every snippet takes ~5s alone and several times that
+  // while the full suite saturates every core.
+}, 60_000);
 
 describe("published usage types", () => {
   it("rejects missing exports and invalid props", () => {

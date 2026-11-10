@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/registry/lib/cn";
 import { useAction } from "@/registry/lib/use-action";
 import { LoadingIndicator } from "@/registry/lib/loader";
@@ -266,7 +268,7 @@ interface ActionRowScope {
 const ActionRowContext = createContext<ActionRowScope | null>(null);
 
 /** How long a press is ignored after arming, so one double-click can't confirm. */
-const DOUBLE_PRESS_GUARD = 350;
+export const DOUBLE_PRESS_GUARD = 350;
 
 /**
  * One actions row, in whichever of the three shapes its item describes.

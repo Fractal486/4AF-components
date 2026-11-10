@@ -1,3 +1,5 @@
+"use client";
+
 import { useSyncExternalStore } from "react";
 
 // Platform is stable for the lifetime of the page; there is no global listener to install.

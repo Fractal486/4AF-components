@@ -22,6 +22,7 @@ import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { duration, ease, spring } from "@/registry/lib/motion";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { searchSelectInputVariants, type SearchSelectInputVariant } from "./select-search.variants";
+import { isEquivalentNode } from "./select.utils";
 
 /**
  * A searchable single or multi-select — type to filter the list, then pick one or more.
@@ -161,7 +162,7 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
         return next;
       }
 
-      if (Object.is(current.get(value), icon)) return current;
+      if (isEquivalentNode(current.get(value), icon)) return current;
       return new Map(current).set(value, icon);
     });
   }, []);
@@ -549,8 +550,10 @@ export function SearchSelectItem({
 
   useEffect(() => {
     registerIcon(value, icon);
-    return () => unregisterIcon(value);
-  }, [icon, registerIcon, unregisterIcon, value]);
+  }, [icon, registerIcon, value]);
+  // Keep cleanup separate so a freshly created inline icon doesn't delete its old
+  // registration before the equivalent-node check can compare it.
+  useEffect(() => () => unregisterIcon(value), [unregisterIcon, value]);
 
   return (
     <Combobox.Item
@@ -595,8 +598,8 @@ export function SearchMultiSelectItem({
 
   useEffect(() => {
     registerIcon(value, icon);
-    return () => unregisterIcon(value);
-  }, [icon, registerIcon, unregisterIcon, value]);
+  }, [icon, registerIcon, value]);
+  useEffect(() => () => unregisterIcon(value), [unregisterIcon, value]);
 
   return (
     <Combobox.Item

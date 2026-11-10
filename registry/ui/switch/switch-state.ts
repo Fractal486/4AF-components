@@ -1,11 +1,15 @@
 "use client";
 
+import { prefersReducedMotion } from "@/registry/lib/reduced-motion";
 import type { Switch as BaseSwitch } from "@base-ui/react/switch";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { duration } from "@/registry/lib/motion";
 
 export type SwitchChangeHandler = (checked: boolean, details: BaseSwitch.Root.ChangeEventDetails) => void | PromiseLike<unknown>;
 
+// A checked-value transaction: cancellation is synchronous, only the spinner is delayed,
+// errors persist, and reset/unmount discard callbacks. useAction deliberately has different
+// outcome timing and unmount semantics; see switch.mdx's saving implementation notes.
 export function useSwitchState({ checked, defaultChecked = false, onCheckedChange, onError, pendingDelay = 400, rootRef, inputRef, form }: {
   checked?: boolean;
   defaultChecked?: boolean;
@@ -55,7 +59,7 @@ export function useSwitchState({ checked, defaultChecked = false, onCheckedChang
   const fail = (error: unknown) => {
     setFailed(true);
     const root = rootRef.current;
-    if (root?.animate && !root.ownerDocument.defaultView?.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (root?.animate && !prefersReducedMotion(root.ownerDocument.defaultView)) {
       shake.current?.cancel();
       shake.current = root.animate(
         ["0px", "-3px", "3px", "-2px", "2px", "0px"].map((translate) => ({ translate })),

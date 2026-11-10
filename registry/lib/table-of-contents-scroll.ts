@@ -1,5 +1,6 @@
 "use client";
 
+import { prefersReducedMotion } from "@/registry/lib/reduced-motion";
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 
 const TOC_SCROLL_EPSILON = 0.5;
@@ -199,7 +200,7 @@ export function useCenterActiveTableOfContentsItem(
 
     if (!Number.isFinite(nextScrollTop)) return;
 
-    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    const reduceMotion = prefersReducedMotion(nav.ownerDocument.defaultView);
     if (reduceMotion || typeof window.requestAnimationFrame !== "function") {
       cancelAnimation();
       nav.scrollTop = nextScrollTop;

@@ -284,7 +284,7 @@ const demos: Record<DemoName, () => Promise<AnyEntry>> = {
     slug: "ascii-loader",
     name: "ASCII Loader",
     controls: {},
-    render: () => <AsciiLoader label="Loading" className="text-sm text-muted-foreground" />,
+    render: () => <AsciiLoader data-demo="ascii-loader" label="Loading" className="text-sm text-muted-foreground" />,
   }),
   "action-button": async () => (await import("@/inspector/entries/action-button")).actionButtonEntry,
   "action-toggle": async () => (await import("@/inspector/entries/action-toggle")).actionToggleEntry,

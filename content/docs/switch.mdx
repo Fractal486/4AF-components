@@ -59,6 +59,24 @@ A form reset clears feedback and restores `defaultChecked` for an uncontrolled s
 Canceled resets do nothing. Resetting or unmounting ignores outstanding results and error
 callbacks; it does not abort the underlying save or undo its external effects.
 
+### Why saving uses a dedicated helper
+
+Switch keeps its value transaction in `useSwitchState`. The shared `useAction` helper owns
+temporary action feedback, with a success state, timed outcome resets, optional error holds,
+and outcome callbacks that still run after unmount. Switch needs different semantics:
+
+- `onCheckedChange` runs synchronously so Base UI can honor `details.cancel()` and thrown errors
+  before accepting a toggle. A synchronous return never enters saving feedback.
+- A promise immediately exposes pending state and announces “Saving”; `pendingDelay` delays
+  only the spinner. In `useAction`, the delay postpones the pending status itself.
+- Errors remain until another accepted change or a form reset. Success has no separate feedback
+  state. Reset and unmount invalidate both late state updates and error callbacks.
+- The optimistic checked value, rollback, form reset, and shake belong to this value transaction.
+
+The 400 ms spinner delay and saving announcements are intentional. Adapting `useAction` would
+require a second transaction guard and outcome policy alongside it, or changes to its public
+behavior. Switch therefore shares the loader and motion utilities while keeping this helper.
+
 ## Validation and composition
 
 `aria-invalid="true"` or Base UI Field's `data-invalid` adds a destructive ring. Field

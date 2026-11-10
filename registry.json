@@ -94,7 +94,8 @@
           "animate-classic-fade": "classic-fade 1.2s linear infinite",
           "color-warning-400": "oklch(0.774 0.153 60)",
           "color-warning-500": "oklch(0.702 0.176 52)",
-          "color-warning-700": "oklch(0.44 0.126 42)"
+          "color-warning-700": "oklch(0.44 0.126 42)",
+          "shadow-overlay-subtle": "var(--elevation-overlay-subtle)"
         },
         "light": {
           "background": "oklch(0.985 0.002 70)",
@@ -121,7 +122,8 @@
           "elevation-border": "0 0 0 1px oklch(0 0 0 / 0.06), 0 1px 2px -1px oklch(0 0 0 / 0.06), 0 2px 4px 0 oklch(0 0 0 / 0.04)",
           "elevation-raised": "0 0 0 1px oklch(0 0 0 / 0.06), 0 2px 4px -2px oklch(0 0 0 / 0.06), 0 6px 12px -3px oklch(0 0 0 / 0.08)",
           "elevation-overlay": "0 0 0 1px oklch(0 0 0 / 0.06), 0 8px 16px -6px oklch(0 0 0 / 0.1), 0 16px 32px -8px oklch(0 0 0 / 0.12)",
-          "elevation-overlay-drop": "0 8px 16px -6px oklch(0 0 0 / 0.1), 0 16px 32px -8px oklch(0 0 0 / 0.12)"
+          "elevation-overlay-drop": "0 8px 16px -6px oklch(0 0 0 / 0.1), 0 16px 32px -8px oklch(0 0 0 / 0.12)",
+          "elevation-overlay-subtle": "0 0 0 1px oklch(0 0 0 / 0.04), 0 10px 24px -8px oklch(0 0 0 / 0.18)"
         },
         "dark": {
           "background": "oklch(0.100 0 0)",
@@ -148,7 +150,8 @@
           "elevation-border": "0 0 0 1px oklch(1 0 0 / 0.08)",
           "elevation-raised": "0 0 0 1px oklch(1 0 0 / 0.1), 0 8px 16px -8px oklch(0 0 0 / 0.6)",
           "elevation-overlay": "0 0 0 1px oklch(1 0 0 / 0.12), 0 16px 32px -12px oklch(0 0 0 / 0.7)",
-          "elevation-overlay-drop": "0 16px 32px -12px oklch(0 0 0 / 0.7)"
+          "elevation-overlay-drop": "0 16px 32px -12px oklch(0 0 0 / 0.7)",
+          "elevation-overlay-subtle": "0 0 0 1px oklch(1 0 0 / 0.05), 0 14px 30px -12px oklch(0 0 0 / 0.6)"
         }
       },
       "css": {
@@ -293,6 +296,45 @@
       ]
     },
     {
+      "name": "reduced-motion",
+      "description": "Server-safe reduced-motion preference reads and subscriptions.",
+      "type": "registry:lib",
+      "files": [
+        {
+          "path": "registry/lib/reduced-motion.ts",
+          "type": "registry:lib",
+          "target": "@lib/reduced-motion.ts"
+        }
+      ]
+    },
+    {
+      "name": "numbers",
+      "description": "Shared range clamping and computed CSS length parsing.",
+      "type": "registry:lib",
+      "files": [
+        {
+          "path": "registry/lib/numbers.ts",
+          "type": "registry:lib",
+          "target": "@lib/numbers.ts"
+        }
+      ]
+    },
+    {
+      "name": "move-focus-outside",
+      "description": "Focus handoff when inline content closes, with optional related-control preference.",
+      "dependencies": [
+        "tabbable"
+      ],
+      "type": "registry:lib",
+      "files": [
+        {
+          "path": "registry/lib/move-focus-outside.ts",
+          "type": "registry:lib",
+          "target": "@lib/move-focus-outside.ts"
+        }
+      ]
+    },
+    {
       "name": "refs",
       "type": "registry:lib",
       "description": "React 19-safe callback and object ref composition.",
@@ -346,6 +388,9 @@
           "type": "registry:lib",
           "target": "@lib/use-popup-height.ts"
         }
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/numbers.json"
       ]
     },
     {
@@ -370,6 +415,9 @@
           "type": "registry:lib",
           "target": "@lib/table-of-contents-scroll.ts"
         }
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/reduced-motion.json"
       ]
     },
     {
@@ -382,6 +430,9 @@
           "type": "registry:lib",
           "target": "@lib/table-of-contents-tracking.ts"
         }
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/reduced-motion.json"
       ]
     },
     {
@@ -633,13 +684,13 @@
       "dependencies": [
         "class-variance-authority",
         "lucide-react",
-        "@base-ui/react",
-        "tabbable"
+        "@base-ui/react"
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
-        "https://4af.selfsimilar.dev/r/loader.json"
+        "https://4af.selfsimilar.dev/r/loader.json",
+        "https://4af.selfsimilar.dev/r/move-focus-outside.json"
       ],
       "files": [
         {
@@ -694,7 +745,8 @@
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/motion.json",
-        "https://4af.selfsimilar.dev/r/loader.json"
+        "https://4af.selfsimilar.dev/r/loader.json",
+        "https://4af.selfsimilar.dev/r/refs.json"
       ],
       "files": [
         {
@@ -836,7 +888,8 @@
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/motion.json",
         "https://4af.selfsimilar.dev/r/refs.json",
-        "https://4af.selfsimilar.dev/r/loader.json"
+        "https://4af.selfsimilar.dev/r/loader.json",
+        "https://4af.selfsimilar.dev/r/reduced-motion.json"
       ],
       "files": [
         {
@@ -932,7 +985,8 @@
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/motion.json",
         "https://4af.selfsimilar.dev/r/tooltip.json",
-        "https://4af.selfsimilar.dev/r/number-animation.json"
+        "https://4af.selfsimilar.dev/r/number-animation.json",
+        "https://4af.selfsimilar.dev/r/numbers.json"
       ],
       "files": [
         {
@@ -969,7 +1023,8 @@
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
-        "https://4af.selfsimilar.dev/r/cn.json"
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/numbers.json"
       ],
       "files": [
         {
@@ -1035,8 +1090,7 @@
         "class-variance-authority",
         "lucide-react",
         "motion",
-        "@base-ui/react",
-        "tabbable"
+        "@base-ui/react"
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
@@ -1044,7 +1098,8 @@
         "https://4af.selfsimilar.dev/r/motion.json",
         "https://4af.selfsimilar.dev/r/morph.json",
         "https://4af.selfsimilar.dev/r/loader.json",
-        "https://4af.selfsimilar.dev/r/number-animation.json"
+        "https://4af.selfsimilar.dev/r/number-animation.json",
+        "https://4af.selfsimilar.dev/r/move-focus-outside.json"
       ],
       "files": [
         {
@@ -1086,7 +1141,8 @@
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
-        "https://4af.selfsimilar.dev/r/cn.json"
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/reduced-motion.json"
       ],
       "files": [
         {
@@ -1388,7 +1444,8 @@
       "dependencies": [],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
-        "https://4af.selfsimilar.dev/r/cn.json"
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/reduced-motion.json"
       ],
       "files": [
         {
@@ -1599,7 +1656,8 @@
       "description": "A looping braille spinner for compact async status affordances, with optional loading visibility that stops its timer while hidden.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/ascii-loader (Markdown: https://4af.selfsimilar.dev/docs/ascii-loader.md)",
       "dependencies": [
-        "motion"
+        "motion",
+        "class-variance-authority"
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
@@ -1610,6 +1668,11 @@
           "path": "registry/ui/ascii-loader/ascii-loader.tsx",
           "type": "registry:ui",
           "target": "@ui/ascii-loader.tsx"
+        },
+        {
+          "path": "registry/ui/ascii-loader/ascii-loader.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/ascii-loader.variants.ts"
         }
       ]
     },
@@ -1729,6 +1792,11 @@
           "path": "registry/ui/select/select-search.variants.ts",
           "type": "registry:ui",
           "target": "@ui/select-search.variants.ts"
+        },
+        {
+          "path": "registry/ui/select/select.utils.ts",
+          "type": "registry:ui",
+          "target": "@ui/select.utils.ts"
         }
       ]
     },
@@ -1852,7 +1920,9 @@
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/motion.json",
         "https://4af.selfsimilar.dev/r/button.json",
-        "https://4af.selfsimilar.dev/r/scroll-area.json"
+        "https://4af.selfsimilar.dev/r/scroll-area.json",
+        "https://4af.selfsimilar.dev/r/reduced-motion.json",
+        "https://4af.selfsimilar.dev/r/numbers.json"
       ],
       "files": [
         {
@@ -1941,7 +2011,8 @@
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/button.json",
-        "https://4af.selfsimilar.dev/r/popover.json"
+        "https://4af.selfsimilar.dev/r/popover.json",
+        "https://4af.selfsimilar.dev/r/reduced-motion.json"
       ],
       "files": [
         {
@@ -1980,7 +2051,8 @@
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/slot.json",
-        "https://4af.selfsimilar.dev/r/dropdown-menu.json"
+        "https://4af.selfsimilar.dev/r/dropdown-menu.json",
+        "https://4af.selfsimilar.dev/r/reduced-motion.json"
       ],
       "files": [
         {
@@ -2166,7 +2238,8 @@
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/refs.json",
-        "https://4af.selfsimilar.dev/r/dropdown-menu.json"
+        "https://4af.selfsimilar.dev/r/dropdown-menu.json",
+        "https://4af.selfsimilar.dev/r/reduced-motion.json"
       ],
       "files": [
         {

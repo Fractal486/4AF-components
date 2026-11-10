@@ -15,7 +15,7 @@ export const scrambleTextEntry = defineEntry({
   render({ intervalMs }) {
     return (
       <p className="text-lg font-medium text-foreground">
-        <ScrambleText intervalMs={intervalMs}>Deploying changes…</ScrambleText>
+        <ScrambleText data-job="deploy" intervalMs={intervalMs}>Deploying changes…</ScrambleText>
       </p>
     );
   },

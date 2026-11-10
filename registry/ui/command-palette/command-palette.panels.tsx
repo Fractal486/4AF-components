@@ -1,3 +1,5 @@
+"use client";
+
 import { Kbd } from "@/registry/ui/kbd/kbd";
 import { cn } from "@/registry/lib/cn";
 import { LoadingIndicator } from "@/registry/lib/loader";

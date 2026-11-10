@@ -1,5 +1,6 @@
 "use client";
 
+import { prefersReducedMotion } from "@/registry/lib/reduced-motion";
 import { useRender } from "@base-ui/react/use-render";
 import { Check, ChevronRight, ChevronsUpDown, MoreHorizontal } from "lucide-react";
 import {
@@ -448,7 +449,7 @@ function motionTiming(element: HTMLElement) {
   const style = getComputedStyle(element);
   const raw = style.getPropertyValue("--duration-slow").trim();
   const ms = raw.endsWith("ms") ? parseFloat(raw) : raw.endsWith("s") ? parseFloat(raw) * 1000 : NaN;
-  const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  const reduced = prefersReducedMotion(element.ownerDocument.defaultView);
   return {
     duration: reduced ? 0 : Number.isFinite(ms) ? Math.max(0, ms) : 300,
     easing: style.getPropertyValue("--ease-out").trim() || "cubic-bezier(0.16, 1, 0.3, 1)",
