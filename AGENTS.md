@@ -17,8 +17,9 @@ _incoming/    Raw downloads, gitignored. Staging only — never imported.
 `pnpm dev` · `pnpm typecheck` · `pnpm lint` · `pnpm test` · `pnpm build`
 
 Node is pinned in `.node-version`. `.agents/skills` is the canonical skill tree; never edit
-`.claude/skills` directly. `pnpm install` regenerates it, or run `pnpm skills:sync` after
-skill edits and pulls. `pnpm skills:check` detects stale generated copies.
+`.claude/skills` directly. It links to `.agents/skills` through a Windows junction (a directory
+symlink elsewhere), so edits and new skills appear immediately. `pnpm install` ensures the link
+exists; `pnpm skills:sync` repairs it and `pnpm skills:check` verifies its target.
 
 Run `pnpm registry:validate` and `pnpm registry:build` after changing install metadata or
 portable component source.

@@ -55,8 +55,8 @@ pnpm build               # Export the complete site to out/ (stop pnpm dev first
 pnpm start               # Preview out/ with Cloudflare Workers at localhost:8787
 pnpm test:export         # Verify exported docs, registry, search, and skill ZIP
 pnpm benchmark:site      # Measure the running production preview in Chrome
-pnpm skills:sync         # Regenerate Claude skills from .agents/skills
-pnpm skills:check        # Check generated skills for missing or stale files
+pnpm skills:sync         # Ensure Claude skills link to .agents/skills
+pnpm skills:check        # Verify the skills link target
 ```
 
 > [!WARNING]
@@ -68,11 +68,11 @@ and comparison reports.
 
 ## Local agent skills
 
-Edit skills only in `.agents/skills`. `pnpm install` regenerates `.claude/skills` through
-the postinstall hook; run `pnpm skills:sync` after editing or pulling skill changes. If
-install scripts are disabled, run that command explicitly. Claude’s generated tree is
-gitignored and uses ordinary files, so Windows needs no symbolic-link privileges. The
-generator replaces stale copies and legacy junctions without following their targets.
+Edit skills only in `.agents/skills`. `.claude/skills` links directly to it through a
+Windows directory junction (a directory symlink on other platforms). Changes and new
+skills appear immediately. `pnpm install` ensures the link exists through its postinstall
+hook; run `pnpm skills:sync` to repair it if needed. The link is gitignored. When migrating
+old copies, the script preserves them under `build/skill-backups/`.
 
 ## Cloudflare Workers
 
