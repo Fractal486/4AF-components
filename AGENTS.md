@@ -85,7 +85,10 @@ rather than reimplementing installation logic.
 demo on a canvas, the title (with an info hover card for source lines and component dependencies,
 derived from `registry.json`), install actions and settings in a panel, and the MDX one tab away
 (`#docs`, or any heading's hash). Below `lg` the same parts stack as one page: title, demo,
-settings, then the docs. The MDX holds no demo. The site serves that page as plain
+settings, then the docs. The MDX holds no demo. A dimensional drawing at
+`public/drawings/<name>.html` (with an optional `<name>-motion.mp4` film) appears above the
+docs; run `pnpm drawings:build` after adding or changing one, which renders the themed
+`content/drawings/<name>.svg` the page inlines. The site serves that page as plain
 Markdown at `/docs/<component>.md` for agents, with the install and usage blocks expanded.
 
 When adding a component, update all of the relevant sources together:

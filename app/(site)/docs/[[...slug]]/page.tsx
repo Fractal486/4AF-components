@@ -6,7 +6,9 @@ import { AgentsCodePre } from "@/components/agents-code-pre";
 import { getMDXComponents } from "@/components/mdx";
 import { InlineLink } from "@/components/inline-link";
 import { ArticleColumn } from "@/components/site/article-column";
+import { ComponentDrawing } from "@/components/site/component-drawing";
 import { ComponentPlayground } from "@/components/site/component-playground";
+import { componentDrawing } from "@/lib/drawings";
 import { NavIcon, hasNavIcon } from "@/components/site/nav-icons";
 import { PageFrame } from "@/components/site/page-frame";
 import { componentStats } from "@/lib/component-stats";
@@ -44,6 +46,7 @@ export default async function Page({ params }: DocsPageProps) {
 
   const demos = slug.length === 1 ? playgroundDemos(slug[0]!, page.data.title) : [];
   if (demos.length > 0) {
+    const drawing = componentDrawing(slug[0]!);
     const link = (item?: { title: string; href: string }) =>
       item ? { title: item.title, href: item.href } : undefined;
     return (
@@ -61,6 +64,7 @@ export default async function Page({ params }: DocsPageProps) {
         icon={hasNavIcon(page.url) ? <NavIcon href={page.url} className="size-5 text-muted-foreground" /> : undefined}
         stats={componentStats(slug[0]!)}
       >
+        {drawing ? <ComponentDrawing title={page.data.title} {...drawing} /> : null}
         <MdxContent components={getMDXComponents()} />
       </ComponentPlayground>
     );
