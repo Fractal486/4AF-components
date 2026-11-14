@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Dialog · Dimensional drawing</title>
+<style>
+:root{color-scheme:light;--paper:#ececec;--sheet:#fff;--ink:#111;--ink2:#444;--ink3:#7a7a7a;--fill:#f3f3f3;--fill2:#e6e6e6;--f:Helvetica,Arial,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f)}
+.wrap{max-width:1800px;margin:auto;padding:28px 28px 32px}
+.tb{display:grid;grid-template-columns:2.3fr 1fr 1fr 1fr;border:1.2px solid var(--ink);border-radius:16px;background:var(--sheet);overflow:hidden;margin-bottom:20px}
+.tb>div{min-width:0;padding:12px 16px;border-right:.8px solid var(--ink);border-bottom:.8px solid var(--ink)}
+.tb>div:nth-child(4),.tb>div:nth-child(7){border-right:0}.tb .big{grid-row:span 2;display:flex;flex-direction:column;justify-content:space-between;gap:18px}
+.lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.075em;color:var(--ink2)}
+h1{font-size:44px;font-weight:400;letter-spacing:.1em;line-height:1.1;text-transform:uppercase;margin:8px 0 0}
+.v{margin-top:6px;font-size:12px;line-height:1.5;letter-spacing:.05em;text-transform:uppercase}.scope{font-size:10.5px;line-height:1.6;max-width:460px}
+.tb .notes{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:22px;border-right:0;font-size:10.5px;line-height:1.9;text-transform:uppercase;letter-spacing:.035em}
+.notes strong{font-size:12px;letter-spacing:.06em}.notes strong span{font-size:10px;font-weight:400}.notes ol{padding-left:18px;margin:5px 0 0}
+.tb .figs{grid-column:1/-1;display:grid;grid-template-columns:repeat(7,1fr);padding:14px 16px;border:0}
+.figs>div{padding-left:16px;border-left:.8px solid var(--ink)}.figs>div:first-child{padding-left:0;border-left:0}.figs .v{font-size:18px;text-transform:none;letter-spacing:0;white-space:nowrap}
+.scroll{overflow-x:auto;background:var(--sheet);border-radius:16px}svg{display:block;width:100%;min-width:1100px;height:auto}
+.foot{display:flex;justify-content:space-between;gap:20px;padding:12px 2px 0;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink2)}
+/* drawing */
+svg g[transform]>*{vector-effect:non-scaling-stroke}
+.u{font-family:var(--f);text-transform:uppercase;letter-spacing:.07em}
+.border{fill:none;stroke:var(--ink);stroke-width:1.2}
+.obj{fill:var(--sheet);stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round}
+.well{fill:var(--fill);stroke:var(--ink);stroke-width:1}
+.slot{fill:none;stroke:var(--ink2);stroke-width:.8;stroke-dasharray:4 3}
+.hug{fill:var(--fill2);stroke:var(--ink);stroke-width:1}
+.thin{fill:none;stroke:var(--ink);stroke-width:.8}
+.ph{fill:none;stroke:var(--ink3);stroke-width:.8;stroke-dasharray:14 3 3 3}
+.cl{fill:none;stroke:var(--ink3);stroke-width:.7;stroke-dasharray:16 3 2 3}
+.cut{stroke:var(--ink);stroke-width:2}
+.dl{stroke:var(--ink);stroke-width:.7;fill:none}
+.ext{stroke:var(--ink);stroke-width:.55;fill:none}
+.arrow{fill:var(--ink)}
+.hl{stroke:var(--ink2);stroke-width:.7}
+.hs{stroke:var(--ink);stroke-width:.8}
+.env{fill:none;stroke:var(--ink);stroke-width:.8;stroke-dasharray:10 3 2 3}
+.dt{font:400 11px var(--f);fill:var(--ink);paint-order:stroke;stroke:var(--sheet);stroke-width:4px;stroke-linejoin:round}
+.dts{font:400 9.5px var(--f);fill:var(--ink2);letter-spacing:.06em;text-transform:uppercase;paint-order:stroke;stroke:var(--sheet);stroke-width:3px}
+.sl{font:400 9px var(--f);fill:var(--ink2);letter-spacing:.08em;text-transform:uppercase}
+.nt{font:400 11.5px var(--f);fill:var(--ink);letter-spacing:.06em;text-transform:uppercase}
+.nth{font:700 13px var(--f);fill:var(--ink);letter-spacing:.06em}
+.vt{font:400 12px var(--f);fill:var(--ink);letter-spacing:.1em;text-transform:uppercase}
+.vtb{font:400 20px var(--f);fill:var(--ink);letter-spacing:.06em}
+.nb{fill:var(--sheet);stroke:var(--ink);stroke-width:.9}
+.nbt{font:400 9.5px var(--f);fill:var(--ink)}
+.lead{stroke:var(--ink);stroke-width:.7;fill:none}
+.dot{fill:var(--ink)}
+.th{font:400 10.5px var(--f);fill:var(--ink);letter-spacing:.05em;text-transform:uppercase}
+.tc{font:400 10.5px var(--f);fill:var(--ink)}
+.tbk{font:400 7px var(--f);fill:var(--ink2);letter-spacing:.04em;text-transform:uppercase}
+.tbt{font:700 15px var(--f);fill:var(--ink)}
+.tbv{font:400 17px var(--f);fill:var(--ink);letter-spacing:.06em}
+
+
+.tc{font-size:9px}.nt{font-size:10.5px;letter-spacing:.035em}.source{font:400 10px var(--f);fill:var(--ink2)}
+.accent-free{fill:#555;stroke:var(--ink);stroke-width:1}.faint{fill:#fafafa;stroke:#aaa;stroke-width:.55}
+.rule{stroke:#ccc;stroke-width:.55}.white-label{font:400 9px var(--f);fill:#fff;letter-spacing:.08em}
+@media(max-width:760px){.wrap{padding:12px}.tb{grid-template-columns:1fr 1fr}.tb .big{grid-column:1/-1;grid-row:auto}.tb .notes{grid-template-columns:1fr;gap:0}.tb .figs{grid-template-columns:repeat(2,1fr);gap:16px}.figs>div:nth-child(odd){border-left:0;padding-left:0}h1{font-size:32px}.foot{flex-wrap:wrap}}
+@media print{@page{size:A3 landscape;margin:8mm}body{background:#fff}.wrap{max-width:none;padding:0}.tb{margin-bottom:8px}.scroll{overflow:visible}svg{min-width:0}.foot{padding-top:6px}.tb>div{padding:8px 12px}.tb .figs{padding:8px 12px}.tb .notes{line-height:1.6}h1{font-size:32px}}
+</style>
+</head>
+<body><main class="wrap">
+<header class="tb">
+ <div class="big"><div><div class="lbl">UI component · dimensional drawing</div><h1>Dialog</h1></div><div class="v scope">Centered modal, independent body scroll, responsive footer and layers.<br>Measured frame, nested dialogs and optional multi-step flow.</div></div>
+ <div><div class="lbl">Dwg no.</div><div class="v">UI-DLG-001</div></div>
+ <div><div class="lbl">Rev</div><div class="v">A · 2026-11-14</div></div>
+ <div><div class="lbl">Sheets</div><div class="v">1 of 1</div></div>
+ <div><div class="lbl">Units</div><div class="v">CSS px · root 16 px</div></div>
+ <div><div class="lbl">Scale</div><div class="v">As noted · do not scale</div></div>
+ <div><div class="lbl">Source</div><div class="v">Local component source<br>+ measured browser layout</div></div>
+ <div class="notes"><div><strong>Notes: <span>(unless otherwise specified)</span></strong><ol><li>Use variable tables; screen and printed sizes are not authoritative.</li><li>Dimensions use border-box geometry. Slots replace all real content.</li><li>HUG widths are schematic; FLEX takes remaining space; FILL spans its parent.</li></ol></div><div><strong aria-hidden="true">&nbsp;</strong><ol start="4"><li>Baseline: light theme, default spacing, settled motion and default shell.</li><li>Nominal dimensions round browser subpixels. Formulas describe the source.</li><li>[TBD] means unspecified. Grayscale distinguishes structure, not color tokens.</li></ol></div></div>
+ <div class="figs"><div><div class="lbl">W · shell width</div><div class="v">min(512, vw−32)</div></div><div><div class="lbl">S1 · layout pad</div><div class="v">24</div></div><div><div class="lbl">S2 · stack gap</div><div class="v">16</div></div><div><div class="lbl">Z1 · close</div><div class="v">30</div></div><div><div class="lbl">T1 · close hit</div><div class="v">40 × 40</div></div><div><div class="lbl">MH · max height</div><div class="v">dvh−2·v1</div></div><div><div class="lbl">R1 · shell</div><div class="v">7</div></div></div></header><div class="scroll" id="static-sheet"></div><div id="stage" style="display:none"></div><footer class="foot"><span>2026-11-14 | UI component reference</span><span>Dialog, architecture | 1</span></footer></main><script>
+  const cfg = window.__CFG__ || { w: 1920, h: 1080, bg: '#ffffff' };
+  const stage = document.getElementById('stage');
+  stage.style.width = cfg.w + 'px';
+  stage.style.height = cfg.h + 'px';
+  stage.style.background = cfg.bg;
+  document.documentElement.style.setProperty('--bg', cfg.bg);
+
+  // Minimal kit shim (same helpers the scenes use in Claude Motion).
+  var SCENES = {};
+  var kit = (function () {
+    const clamp01 = x => Math.max(0, Math.min(1, x));
+    const seg = (t, a, b) => clamp01((t - a) / (b - a));
+    const lerp = (a, b, p) => a + (b - a) * p;
+    const eo = x => 1 - Math.pow(1 - x, 3);
+    const ei = x => x * x * x;
+    const eio = x => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+    return {
+      seg, lerp, eo, ei, eio, clamp01, stage,
+      width: cfg.w, height: cfg.h,
+      h: s => { const d = document.createElement('div'); d.innerHTML = s.trim(); return d.firstElementChild; },
+      css: s => { const st = document.createElement('style'); st.textContent = s; stage.appendChild(st); },
+      scene: (id, o) => { SCENES[id] = o; },
+    };
+  })();
+</script>
+<script id="scene-js">const { seg, lerp, eo, eio, clamp01 } = kit;
+const DW_NS = 'http://www.w3.org/2000/svg';
+const DW_CAM = [
+{t:0,cx:771,cy:201,z:4.4},{t:2.3,cx:775,cy:204,z:4.2},
+{t:4.2,cx:888,cy:352,z:1.9},{t:5.05,cx:888,cy:354,z:1.87},
+{t:6.8,cx:280,cy:821,z:2.2},{t:7.8,cx:282,cy:823,z:2.18},
+{t:9.2,cx:850,cy:530,z:.998},{t:13,cx:850,cy:530,z:.988}];
+kit.scene('drawing', {
+  init(kit) {
+    kit.css('.dw-svg .dt{font-size:11px;fill:var(--main);paint-order:stroke;stroke:var(--ground);stroke-width:4px;stroke-linejoin:round}' +
+      '.dw-svg .dts{font-size:9.5px;fill:color-mix(in srgb,var(--second) 75%,var(--ground));letter-spacing:.06em;paint-order:stroke;stroke:var(--ground);stroke-width:3px}' +
+      '.dw-svg .sl{font-size:9px;fill:color-mix(in srgb,var(--second) 75%,var(--ground));letter-spacing:.08em}' +
+      '.dw-svg .nt{font-size:11.5px;fill:var(--main);letter-spacing:.06em}.dw-svg .nth{font-size:13px;font-weight:700;fill:var(--main);letter-spacing:.06em}' +
+      '.dw-svg .vt{font-size:12px;fill:var(--main);letter-spacing:.1em}.dw-svg .nbt{font-size:9.5px;fill:var(--main)}' +
+      '.dw-svg .th{font-size:10.5px;fill:var(--main);letter-spacing:.05em}.dw-svg .tc{font-size:10.5px;fill:var(--main);text-transform:none}');
+    const root = kit.h('<div class="ground"><div class="dw-cam"></div></div>');
+    kit.stage.append(root);
+    const camEl = root.querySelector('.dw-cam');
+    this.cam = camEl.style;
+    const svg = document.createElementNS(DW_NS, 'svg');
+    svg.setAttribute('id','sheet'); svg.setAttribute('viewBox', '0 0 1700 1060'); svg.setAttribute('width', '1700'); svg.setAttribute('height', '1060'); svg.setAttribute('class', 'dw-svg');
+    camEl.appendChild(svg);
+    const REG = this.reg = []; let sv = svg, CUR = { a: 0, s: 0, d: .6, i: 0 }, noreg = 0;
+    const at = (a, s, d) => { CUR = { a: a, s: s || 0, d: d || .6, i: 0 }; };
+    const kind = (e, t) => { if (t === 'text') return 'f'; const c = ' ' + (e.getAttribute('class') || '') + ' ';
+      if (/ (slot|ph|cl|env|hs) /.test(c) || (e.getAttribute('fill') || '').indexOf('url') === 0) return 'f'; return 'd'; };
+    function mk(t, a, p) { const e = document.createElementNS(DW_NS, t); for (const k in a) if (a[k] != null) e.setAttribute(k, a[k]); (p || sv).appendChild(e);
+      if (!noreg && t !== 'g') { const s = CUR.a + CUR.i * CUR.s; CUR.i++; const k = kind(e, t); if (k === 'd') e.setAttribute('pathLength', '1'); e.style.opacity = 0; REG.push({ e: e, a: s, b: s + CUR.d, k: k, last: -1 }); }
+      return e; }
+    function tx(x, y, s, c, a, p) { const t = mk('text', Object.assign({ x: x, y: y, class: c || 'dt' }, a || {}), p); t.textContent = s; return t; }
+    noreg = 1; const d = mk('defs', {}); const m = mk('marker', { id: 'dwar', viewBox: '0 0 10 10', refX: 10, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse', markerUnits: 'userSpaceOnUse' }, d);
+    mk('path', { d: 'M0,1.7 L10,5 L0,8.3 z', class: 'arrow' }, m);
+    const pt = mk('pattern', { id: 'dwhat', width: 5, height: 5, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, d); mk('line', { x1: 0, y1: 0, x2: 0, y2: 5, class: 'hl' }, pt); noreg = 0;
+    const A = 'url(#dwar)', HAT = 'url(#dwhat)';
+    function dimH(x1, x2, y, e1, e2, l, o) { o = o || {}; [[x1, e1], [x2, e2]].forEach(([x, e]) => { if (e == null) return; const s = Math.sign(y - e) || 1; mk('line', { x1: x, y1: e + s * 3, x2: x, y2: y + s * 5, class: 'ext' }); });
+      if (x2 - x1 >= 28) mk('line', { x1: x1, y1: y, x2: x2, y2: y, class: 'dl', 'marker-start': A, 'marker-end': A }); else { mk('line', { x1: x1 - 13, y1: y, x2: x1, y2: y, class: 'dl', 'marker-end': A }); mk('line', { x1: x2 + 13, y1: y, x2: x2, y2: y, class: 'dl', 'marker-end': A }); }
+      tx((x1 + x2) / 2 + (o.dx || 0), (o.below ? y + 13 : y - 4) + (o.dy || 0), l, o.c || 'dt', { 'text-anchor': 'middle' }); }
+    function dimV(y1, y2, x, e1, e2, l, o) { o = o || {}; [[y1, e1], [y2, e2]].forEach(([y, e]) => { if (e == null) return; const s = Math.sign(x - e) || 1; mk('line', { x1: e + s * 3, y1: y, x2: x + s * 5, y2: y, class: 'ext' }); });
+      if (y2 - y1 >= 28) mk('line', { x1: x, y1: y1, x2: x, y2: y2, class: 'dl', 'marker-start': A, 'marker-end': A }); else { mk('line', { x1: x, y1: y1 - 13, x2: x, y2: y1, class: 'dl', 'marker-end': A }); mk('line', { x1: x, y1: y2 + 13, x2: x, y2: y2, class: 'dl', 'marker-end': A }); }
+      const c = (y1 + y2) / 2; if (o.side) { const r = o.side === 'r'; tx(r ? x + 6 : x - 6, c + 4, l, o.c || 'dt', { 'text-anchor': r ? 'start' : 'end' }); } else tx(x - 5, c, l, o.c || 'dt', { 'text-anchor': 'middle', transform: 'rotate(-90 ' + (x - 5) + ' ' + c + ')' }); }
+    function callout(px, py, ex, ey, l, dir, c) { const s = dir || (ex >= px ? 1 : -1); mk('circle', { cx: px, cy: py, r: 1.8, class: 'dot' }); mk('polyline', { points: px + ',' + py + ' ' + ex + ',' + ey + ' ' + (ex + s * 10) + ',' + ey, class: 'lead' }); tx(ex + s * 14, ey + 4, l, c || 'dt', { 'text-anchor': s > 0 ? 'start' : 'end' }); }
+    function rad(cx, cy, r, c, l, L) { const sx = c.indexOf('l') > -1 ? -1 : 1, sy = c.indexOf('t') > -1 ? -1 : 1; const ox = cx - sx * r, oy = cy - sy * r; callout(ox + sx * r * Math.SQRT1_2, oy + sy * r * Math.SQRT1_2, ox + sx * r * Math.SQRT1_2 + sx * L, oy + sy * r * Math.SQRT1_2 + sy * L, l, sx); }
+    function nb(x, y, n) { mk('rect', { x: x - 6, y: y - 6, width: 12, height: 12, class: 'nb' }); tx(x, y + 3.5, String(n), 'nbt', { 'text-anchor': 'middle' }); }
+    function rr(x, y, w, h, r, c, p) { return mk('rect', { x: x, y: y, width: w, height: h, rx: r, class: c }, p); }
+    function slotLabel(x, y, w, h, l, al, p) { tx(al === 'l' ? x + 6 : x + w / 2, y + h / 2 + 3.2, l, 'sl', { 'text-anchor': al === 'l' ? 'start' : 'middle' }, p); }
+    function title(x, y, t, s) { tx(x, y, t, 'vt', { 'text-anchor': 'middle' }); if (s) tx(x, y + 14, s, 'dts', { 'text-anchor': 'middle' }); }
+    function xbox(x, y, w, h, p) { mk('rect', { x: x, y: y, width: w, height: h, class: 'thin' }, p); mk('path', { d: 'M' + x + ',' + y + ' l' + w + ',' + h + ' M' + (x + w) + ',' + y + ' l' + (-w) + ',' + h, class: 'thin' }, p); }
+    function detailRef(cx, cy, r, lbl, lx, ly) { mk('circle', { cx: cx, cy: cy, r: r, class: 'ph' }); const a = Math.atan2(ly - cy, lx - cx); mk('line', { x1: cx + r * Math.cos(a), y1: cy + r * Math.sin(a), x2: lx, y2: ly, class: 'lead' }); tx(lx + (lx < cx ? -4 : 4), ly + 4, lbl, 'dts', { 'text-anchor': lx < cx ? 'end' : 'start' }); }
+    function table(x, y, ttl, rows) { const ws = [40, 88, 96], rh = 17; tx(x, y - 8, ttl, 'vt'); [['Code', 'Variable', 'Value']].concat(rows).forEach((r, i) => { let c2 = x; r.forEach((c, j) => { mk('rect', { x: c2, y: y + i * rh, width: ws[j], height: rh, class: 'thin' }); tx(c2 + (j ? ws[j] / 2 : 6), y + i * rh + 12, c, i ? 'tc' : 'th', { 'text-anchor': j ? 'middle' : 'start' }); c2 += ws[j]; }); }); return y + (rows.length + 1) * rh + 36; }
+    function notes(list) { tx(50, 58, 'Notes:', 'nth'); tx(112, 58, '(unless otherwise specified)', 'nt'); list.forEach(([n, t], i) => { const y = 88 + i * 24; nb(56, y - 4, n); tx(72, y, t, 'nt'); }); }
+// Source: all five Dialog modules; Button/ScrollArea; globals; usage and demo survey.
+// W is drawn at the 512px maximum. H2 and action widths are schematic caller slots.
+function line(x1,y1,x2,y2,c='thin',p){return mk('line',{x1,y1,x2,y2,class:c},p)}
+function lines(x,y,a,c='dts',step=15){a.forEach((s,i)=>tx(x,y+i*step,s,c))}
+function hatch(x,y,w,h,r=0,p){return mk('rect',{x,y,width:w,height:h,rx:r,class:'hs',fill:HAT},p)}
+table=function(x,y,ttl,rows){const ws=[65,102,203],rh=17;tx(x,y-9,ttl,'vt');[['Code','Variable','Value / formula']].concat(rows).forEach((r,i)=>{let xx=x;r.forEach((c,j)=>{rr(xx,y+i*rh,ws[j],rh,0,'thin');tx(xx+5,y+i*rh+12,c,i?'tc':'th');xx+=ws[j]})});return y+(rows.length+1)*rh+29};
+const W=512,H=360,k=1,PX=632,PY=166,X=v=>PX+v*k,Y=v=>PY+v*k;
+const r=(x,y,w,h,rad,c,label)=>{rr(X(x),Y(y),w*k,h*k,rad*k,c);if(label)slotLabel(X(x),Y(y),w*k,h*k,label)};
+sv=mk('g',{},svg);this.plan=sv;
+at(-.6,0,2.2);r(0,0,W,H,7,'obj');
+at(.1,.1,.55);r(25,25,438,24,0,'slot','TITLE SLOT · FLEX · WRAPS');
+at(.65,.1,.55);r(25,55,438,20,0,'slot','DESCRIPTION SLOT · FLEX · WRAPS');
+at(1.2,.06,.5);dimH(X(1),X(25),Y(-24),Y(0),Y(25),'S1',{dx:-7});dimH(X(25),X(463),Y(-24),Y(25),Y(25),'FLEX');dimV(Y(25),Y(49),PX-29,PX,X(25),'L1',{side:'l'});dimV(Y(49),Y(55),PX-29,null,X(25),'S3',{side:'l'});dimV(Y(55),Y(75),PX-29,null,X(25),'L2',{side:'l'});
+at(2.4,.06,.5);r(465,17,30,30,6,'slot');xbox(X(473),Y(25),14,14);dimH(X(465),X(495),Y(-24),Y(17),Y(17),'Z1');dimH(X(495),X(511),Y(-24),Y(17),Y(0),'S4',{dx:9});
+at(2.65,.07,.6);r(25,91,462,194,0,'well');r(25,91,462,194,0,'slot','CONTENT SLOT · FILL / SCROLL');r(39,109,424,46,0,'slot');r(39,171,424,96,0,'slot');slotLabel(X(39),Y(109),424,46,'CALLER CONTENT · HUG');slotLabel(X(39),Y(171),424,96,'CALLER CONTENT · HUG');
+at(3.1,.07,.5);r(279,301,100,34,8,'hug','ACTION · HUG');r(387,301,100,34,8,'hug','ACTION · HUG');
+at(3.5,.03,.4);line(X(-15),Y(180),X(527),Y(180),'cl');line(X(256),Y(-14),X(256),Y(374),'cl');
+dimH(PX,X(W),Y(-65),Y(-32),Y(-32),'W');title(888,64,'PLAN · STRUCTURED DIALOG','WIDTH 1:1 · HEIGHT / CONTENT SCHEMATIC · SM AND ABOVE');
+dimV(PY,Y(H),PX-92,PX-65,PX-65,'H');dimV(Y(1),Y(25),PX-65,PX,PX,'S1');dimV(Y(25),Y(75),PX-65,null,X(25),'H1');dimV(Y(75),Y(91),PX-65,null,X(25),'S2');dimV(Y(91),Y(285),PX-65,null,X(25),'H2 · FILL');dimV(Y(285),Y(301),PX-65,null,X(25),'S2');dimV(Y(301),Y(335),PX-65,null,X(25),'H3');dimV(Y(335),Y(359),PX-65,null,PX,'S1');
+at(3.9,.015,.4);dimH(X(25),X(279),Y(390),Y(H),Y(335),'FLEX');dimH(X(279),X(379),Y(390),Y(335),Y(335),'HUG');dimH(X(379),X(387),Y(390),Y(335),Y(335),'S5',{dy:15});dimH(X(387),X(487),Y(390),Y(335),Y(335),'HUG');dimH(X(487),X(511),Y(390),Y(335),Y(H),'S1',{dx:8});rad(X(W),Y(H),7,'br','R1',20);nb(1169,226,1);nb(1169,395,2);nb(1169,488,3);detailRef(X(480),Y(32),24,'DETAIL A',1214,205);detailRef(X(0),Y(355),14,'DETAIL B',659,493);title(888,602,'H = 2·B + 2·S1 + H1 + 2·S2 + H2 + H3','HEADER / FOOTER STAY OUTSIDE THE BODY SCROLLER');
+sv=svg;at(8.05,.006,.4);tx(50,58,'NOTES:','nth');tx(112,58,'(UNLESS OTHERWISE SPECIFIED)','nt');[
+['TITLE / DESCRIPTION WRAP AND GROW.','CLOSE RESERVES S6 AT THE HEADER END.'],
+['DIRECT BODY SCROLLS BETWEEN FIXED EDGES.','WITHOUT IT, THE WHOLE CONTENT SCROLLS.'],
+['FOOTER IS END-ALIGNED AT SM AND ABOVE.','BELOW SM: COLUMN-REVERSE, FILL ACTIONS.'],
+['FRAME MEASURES NATURAL CONTENT HEIGHT.','AUTO SIZE FALSE LEAVES HEIGHT TO CALLER.'],
+['MODAL CENTERS ON BOTH VIEWPORT AXES.','NESTED PARENT SHRINKS AND MOVES UP.'],
+['STEPS KEEP ONLY THE ACTIVE PHASE.','THREE EQUAL NAV COLUMNS CENTER DOTS.'],
+['SLOT LENGTHS AND LAYER DEPTH SCHEMATIC.','SOURCE DEFAULTS; CALLER OVERRIDES MAY VARY.']].forEach((a,i)=>{nb(56,84+i*35,i+1);lines(72,88+i*35,a,'nt',13)});
+at(8.25,.015,.4);title(255,360,'SHADOW ENVELOPE','NOMINAL BLUR EXTENT · LIGHT THEME');hatch(92,391,296,102,7);rr(92,391,296,102,7,'env');rr(116,399,248,54,7,'obj');slotLabel(116,399,248,54,'SHELL FOOTPRINT · SHORTENED');dimH(92,116,519,493,453,'E2',{dx:-5});dimV(391,399,419,388,364,'E1',{side:'r'});dimV(453,493,419,364,388,'E3',{side:'r'});lines(64,546,['E1 / E2 / E3 ARE NOMINAL DESIGN ENVELOPES.','CSS BLUR HAS NO HARD BOUNDARY.']);
+// Layer decomposition: screen, scrim, shadow, shell, scrolling viewport and content.
+const ia=.94*.43,ib=.17*.43,ic=-.34*.43,id=.47*.43,TX=272,TY=870;
+const G=z=>{const g=mk('g',{transform:'matrix('+[ia,ib,ic,id,TX,TY-z].join(',')+')'});g.style.setProperty('--u',1/Math.sqrt(ia*id-ib*ic));return g};
+at(6.1,.07,.7);rr(-25,-25,562,410,0,'slot',G(0));hatch(-25,-25,562,410,0,G(34));hatch(0,0,W,H,7,G(68));
+noreg=1;const MG=this.morph=[];const mg=(z,a)=>{const g=mk('g',{});MG.push({g,z,a});return g};
+let q=mg(102,5.05);rr(0,0,W,H,7,'obj',q);
+q=mg(140,5.15);rr(25,91,462,194,0,'well',q);
+q=mg(178,5.25);rr(25,25,438,24,0,'slot',q);rr(25,55,438,20,0,'slot',q);rr(465,17,30,30,6,'slot',q);xbox(473,25,14,14,q);rr(39,109,424,46,0,'slot',q);rr(39,171,424,96,0,'slot',q);rr(279,301,100,34,8,'hug',q);rr(387,301,100,34,8,'hug',q);
+noreg=0;this.flat=[k,0,0,k,PX,PY];this.iso=[ia,ib,ic,id,TX,TY];
+for(const [i,z,label] of [[0,0,'CANVAS'],[1,34,'FULL-BLEED SCRIM'],[2,68,'DROP SHADOW'],[3,102,'BORDER + GLASS'],[4,140,'BODY SCROLLER'],[5,178,'SLOTS + CONTROLS']]){at(6.7+i*.08,.04,.4);const yy=TY+id*H-z;line(197,yy,TX+ic*H,yy,'lead');tx(50,yy+4,label,'dts');}
+at(7,.04,.5);title(265,635,'EXPLODED AXONOMETRIC','PROPORTIONAL SCHEMATIC · NO PHYSICAL DEPTH');
+// Close and nested-radius details: actual source radii, no invented body well radius.
+at(8.4,.006,.4);title(641,650,'DETAIL A · CLOSE','SCALE 2:1 · VISIBLE / HIT');rr(601,696,80,80,0,'env');rr(611,706,60,60,12,'slot');xbox(627,722,28,28);dimH(611,671,688,706,706,'Z1');dimH(627,655,792,750,750,'I1');dimV(696,776,704,681,681,'T1',{side:'r'});lines(561,820,['ICON INSET (Z1−I1)÷2 = 8','PLAIN BUTTON · NO PAINTED FRAME']);
+at(8.45,.006,.4);title(860,665,'DETAIL B · CORNER','SCALE 4:1 · BORDER SECTION');mk('path',{d:'M802,783 V734 A28,28 0 0 1 830,706 H906',class:'obj',style:'fill:none'});mk('path',{d:'M806,783 V734 A24,24 0 0 1 830,710 H906',class:'thin'});line(822,734,838,734,'cl');line(830,726,830,742,'cl');callout(809,716,785,697,'R1',-1);callout(813,718,846,754,'R2',1);dimV(706,710,926,906,906,'B',{side:'r'});lines(780,820,['R2 = R1 − B = 6','BODY HAS NO RADIUS OR INSET SURFACE.']);
+// Viewport mini-plan + source nesting transform.
+at(8.5,.006,.4);title(1124,665,'PLACEMENT / NESTING','PROPORTIONAL VIEWPORT');hatch(1000,697,244,124);rr(1054,729,136,60,3,'obj');rr(1060,716,125,55,3,'ph');line(994,759,1250,759,'cl');line(1122,688,1122,831,'cl');dimV(697,713,1270,1244,1244,'V1',{side:'l'});lines(986,850,['CENTER = (50%, 50%)','PARENT SCALE = MAX(.8, 1−.04·N)','PARENT Y OFFSET = −8·N','N = OPEN NESTED DIALOG COUNT'],'dts',14);
+// Responsive footer and step navigation: never assign content-dependent action widths.
+at(8.55,.006,.4);title(679,888,'FOOTER · BELOW SM','SCALE 0.8:1 · COLUMN-REVERSE');rr(554,908,250,27.2,6.4,'hug');slotLabel(554,908,250,27.2,'ACTION 2 · FILL');rr(554,941.6,250,27.2,6.4,'hug');slotLabel(554,941.6,250,27.2,'ACTION 1 · FILL');dimV(935.2,941.6,831,804,804,'S5',{side:'r'});lines(556,994,['FOOTER HEIGHT: Σ(ACTION HEIGHTS) + (n−1)·S5','ACTION COUNT / WIDTH ARE CALLER-DEFINED.']);
+at(8.6,.006,.4);title(1080,930,'STEPS · NAVIGATION','THREE EQUAL GRID COLUMNS · SM BUTTONS');rr(931,956,300,30,0,'ph');line(1031,950,1031,992,'cl');line(1131,950,1131,992,'cl');rr(931,956,66,30,6,'hug');slotLabel(931,956,66,30,'BACK');rr(1165,956,66,30,6,'hug');slotLabel(1165,956,66,30,'NEXT');[1066,1078,1090].forEach((x,i)=>mk('circle',{cx:x+3,cy:971,r:3,class:i===1?'hug':'thin'}));dimH(1066,1072,1006,977,977,'Z2',{dx:-10});dimH(1072,1078,1006,977,977,'S8',{dx:10});
+// Source-backed tables. Reserve x1500–1650,y990–1035 for docs link.
+sv=svg;at(8.45,.001,.35);let yy=70,xx=1290;yy=table(xx,yy,'SPACING',[
+['B','shell border','1'],['S1 / S2','layout pad / gap','24 / 16'],['S3','header gap','6'],['S4','close top / end','16 from inner border edge'],['S5','footer gap','8'],['S6','header end reserve','24 when showClose'],['S7 / S8','nav gap / dot gap','12 / 6'],['S9','nav top margin','24'],['S10','body child gap','16 default; caller may override']]);
+yy=table(xx,yy,'SIZE / CONTENT FORMULAS',[
+['W','shell width','min(512, 100% − 32)'],['W1','inner content','W − 2·B − 2·S1 = W−50'],['H','frame height','min(natural, MH) · autoSize'],['H1','header height','L1+S3+L2 = 50 single-line'],['H2','body height','caller content / remaining space'],['H3 / H4','md / sm action','34 / 30'],['L1 / L2','title / description','24 / 20 line height; may wrap'],['Z1 / I1','close / icon','30 / 14'],['T1','close hit box','40 × 40 (pseudo-element)'],['Z2','step dot','6'],['MH','maximum height','100dvh − 2·V1'],['V1','viewport reserve','16 per edge; centered']]);
+yy=table(xx,yy,'RADIUS / MATERIAL',[
+['R1 / R2','outer / inner edge','7 / R1−B = 6'],['R3 / R4','md / sm button','8 / 6; close uses R4'],['R5','step dot','Z2÷2 = 3'],['F1 / F2','glass / scrim blur','12 / 8'],['A1 / A2','scrim / nested scrim','0.50 / 0.25 black opacity']]);
+yy=table(xx,yy,'SHADOW / FLOW',[
+['Y / BL / SP','first drop shadow','8 / 16 / −6 (light)'],['Y / BL / SP','second drop shadow','16 / 32 / −8 (light)'],['E1','nominal top','max(BL+SP−Y) = 8'],['E2','nominal side','max(BL+SP) = 24'],['E3','nominal bottom','max(BL+SP+Y) = 40'],['V2','footer breakpoint','sm = 640'],['N','nested count','number of open child dialogs'],['D1','phase travel','±24; blur 4 → 0'],['T2','step dot touch policy','[TBD] · source hit area is 6']]);
+at(8.7,.005,.4);lines(50,1000,['SOURCE: 5 DIALOG MODULES + BUTTON / SCROLL AREA / GLOBAL TOKENS.','BROWSER: 512 × 306 DEMO; HEADER 50, BODY 140, FOOTER 34.','H2 / TOTAL H / ACTION WIDTHS ARE NOT FIXED COMPONENT VALUES.'],'source',14);
+at(8.1,0,1);rr(20,20,1660,1020,16,'border');at(8.5,.05,.4);tx(50,1054,'UI-DLG-001 · DIALOG · ARCHITECTURE','dts');tx(1650,1054,'2026-11-14 · SHEET 1 OF 1','dts',{'text-anchor':'end'});
+
+  },
+  render(t) {
+    t = t / 0.85;
+    let i = 0; while (i < DW_CAM.length - 2 && t > DW_CAM[i + 1].t) i++;
+    const c0 = DW_CAM[i], c1 = DW_CAM[i + 1], p = eio(seg(t, c0.t, c1.t));
+    const z = Math.exp(lerp(Math.log(c0.z), Math.log(c1.z), p)), cx = lerp(c0.cx, c1.cx, p), cy = lerp(c0.cy, c1.cy, p);
+    this.cam.transform = 'translate(' + (960 - cx * z) + 'px,' + (540 - cy * z) + 'px) scale(' + z + ')';
+    for (const it of this.reg) {
+      let v = clamp01((t - it.a) / (it.b - it.a)); v = Math.round(v * 400) / 400;
+      if (v === it.last) continue; it.last = v; const s = it.e.style;
+      if (it.k === 'f') { s.opacity = eo(v); continue; }
+      const e = eio(v); s.opacity = Math.min(1, v * 6);
+      if (v >= 1) { s.strokeDasharray = ''; s.strokeDashoffset = ''; } else { s.strokeDasharray = '1 2'; s.strokeDashoffset = 1 - e; }
+      s.fillOpacity = eo(seg(v, .55, 1));
+    }
+    this.plan.style.opacity=1-eo(seg(t,5,5.65))*(1-eo(seg(t,7.75,8.75)));
+    const F = this.flat, I = this.iso;
+    this.morph.forEach((m, j) => {
+      const v = eio(seg(t, m.a, m.a + 1.5)), M = F.map((f, n) => lerp(f, I[n], v));
+      M[5] -= m.z * v;
+      m.g.style.opacity = eo(seg(t, m.a + 0.05, m.a + 0.5));
+      const pp=eio(seg(t,m.a,m.a+.7));m.strokes=m.strokes||[...m.g.querySelectorAll('.obj,.thin,.hug')];for(const el of m.strokes){el.setAttribute('pathLength','1');el.style.strokeDasharray=pp>=1?'':'1 2';el.style.strokeDashoffset=pp>=1?'':String(1-pp)}
+      const fo = eo(seg(t, m.a + 0.55, m.a + 1.25)); if (fo !== m.fo) { m.fo = fo; m.fills = m.fills || m.g.querySelectorAll('.obj,.well,.hug'); m.fills.forEach(e => { e.style.fillOpacity = fo; }); }
+      m.g.setAttribute('transform', 'matrix(' + M.join(',') + ')');
+      m.g.style.setProperty('--u', 1 / Math.sqrt(Math.abs(M[0] * M[3] - M[1] * M[2])));
+    });
+  },
+});
+</script>
+<script>
+  const ids = Object.keys(SCENES);
+  const SC = SCENES[cfg.scene] || SCENES[ids[0]];
+  SC.init(kit);
+  window.R = t => SC.render(t, kit);
+  window.R(0);
+  window.__READY__ = true;
+</script>
+<script>R(11);const sheet=document.querySelector('#sheet');document.getElementById('static-sheet').appendChild(sheet);sheet.classList.remove('dw-svg');sheet.removeAttribute('width');sheet.removeAttribute('height');sheet.setAttribute('role','img');sheet.setAttribute('aria-label','Dialog dimensional drawing: source-backed shell, slots, responsive footer, steps, placement, exploded layers and dimension tables');</script></body></html>

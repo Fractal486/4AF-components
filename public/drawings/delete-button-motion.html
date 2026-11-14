@@ -1,0 +1,218 @@
+<!doctype html>
+<html>
+<head><title>Delete Button · Motion drawing</title><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<!-- Headless player for dimensional-drawing motion scenes.
+     render.mjs injects: STAGE_W, STAGE_H, BG, the scene CSS and the scene JS.
+     The scene API matches Claude Motion's kit: kit.scene(id, { init(kit), render(t) }). -->
+
+<style>
+  html, body { margin: 0; background: var(--bg, #fff); }
+  #stage { position: absolute; left: 0; top: 0; overflow: hidden; --sans: Arimo, Helvetica, Arial, sans-serif; }
+</style>
+<style id="scene-css">#stage { --ground:#ffffff; --main:#111111; --second:#111111; --accent:#767676; color:var(--second); font-family:var(--sans, system-ui, sans-serif) }
+.ground { position:absolute; inset:0; background:var(--ground) }
+.dw-cam { position:absolute; left:0; top:0; width:1900px; height:1060px; transform-origin:0 0 }
+.dw-svg { position:absolute; left:0; top:0; overflow:visible; --u:1 }
+.dw-svg text { font-family:var(--sans, system-ui, sans-serif); text-transform:uppercase }
+.dw-svg .border { fill:none; stroke:var(--main); stroke-width:1.2 }
+.dw-svg .obj { fill:var(--ground); stroke:var(--main); stroke-width:calc(1.6px * var(--u)); stroke-linejoin:round }
+.dw-svg .well { fill:color-mix(in srgb, var(--second) 5%, var(--ground)); stroke:var(--main); stroke-width:calc(1px * var(--u)) }
+.dw-svg .hug { fill:color-mix(in srgb, var(--second) 10%, var(--ground)); stroke:var(--main); stroke-width:calc(1px * var(--u)) }
+.dw-svg .slot { fill:none; stroke:color-mix(in srgb, var(--second) 75%, var(--ground)); stroke-width:calc(.8px * var(--u)); stroke-dasharray:calc(4px * var(--u)) calc(3px * var(--u)) }
+.dw-svg .thin { fill:none; stroke:var(--main); stroke-width:calc(.8px * var(--u)) }
+.dw-svg .ph { fill:none; stroke:var(--accent); stroke-width:calc(.8px * var(--u)); stroke-dasharray:calc(14px * var(--u)) calc(3px * var(--u)) calc(3px * var(--u)) calc(3px * var(--u)) }
+.dw-svg .cl { fill:none; stroke:var(--accent); stroke-width:.7; stroke-dasharray:16 3 2 3 }
+.dw-svg .dl, .dw-svg .lead { stroke:var(--main); stroke-width:.7; fill:none }
+.dw-svg .ext { stroke:var(--main); stroke-width:.55; fill:none }
+.dw-svg .arrow, .dw-svg .dot { fill:var(--main) }
+.dw-svg .hl { stroke:color-mix(in srgb, var(--second) 70%, var(--ground)); stroke-width:.7 }
+.dw-svg .hs { stroke:var(--main); stroke-width:calc(.8px * var(--u)) }
+.dw-svg .env { fill:none; stroke:var(--main); stroke-width:.8; stroke-dasharray:10 3 2 3 }
+.dw-svg .nb { fill:var(--ground); stroke:var(--main); stroke-width:.9 }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+  const cfg = window.__CFG__ || { w: 1920, h: 1080, bg: '#ffffff' };
+  const stage = document.getElementById('stage');
+  stage.style.width = cfg.w + 'px';
+  stage.style.height = cfg.h + 'px';
+  stage.style.background = cfg.bg;
+  document.documentElement.style.setProperty('--bg', cfg.bg);
+
+  // Minimal kit shim (same helpers the scenes use in Claude Motion).
+  var SCENES = {};
+  var kit = (function () {
+    const clamp01 = x => Math.max(0, Math.min(1, x));
+    const seg = (t, a, b) => clamp01((t - a) / (b - a));
+    const lerp = (a, b, p) => a + (b - a) * p;
+    const eo = x => 1 - Math.pow(1 - x, 3);
+    const ei = x => x * x * x;
+    const eio = x => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+    return {
+      seg, lerp, eo, ei, eio, clamp01, stage,
+      width: cfg.w, height: cfg.h,
+      h: s => { const d = document.createElement('div'); d.innerHTML = s.trim(); return d.firstElementChild; },
+      css: s => { const st = document.createElement('style'); st.textContent = s; stage.appendChild(st); },
+      scene: (id, o) => { SCENES[id] = o; },
+    };
+  })();
+</script>
+<script id="scene-js">const { seg, lerp, eo, eio, clamp01 } = kit;
+const DW_NS = 'http://www.w3.org/2000/svg';
+const DW_CAM = [
+{t:0,cx:772,cy:259,z:3.4},{t:2.3,cx:780,cy:260,z:3.3},
+{t:4.2,cx:920,cy:335,z:1.65},{t:4.9,cx:920,cy:345,z:1.62},
+{t:7.2,cx:470,cy:665,z:2.0},{t:7.8,cx:472,cy:666,z:1.98},
+{t:9.6,cx:850,cy:530,z:.998},{t:13,cx:850,cy:530,z:.988}];
+kit.scene('drawing', {
+  init(kit) {
+    kit.css('.dw-svg .dt{font-size:11px;fill:var(--main);paint-order:stroke;stroke:var(--ground);stroke-width:4px;stroke-linejoin:round}' +
+      '.dw-svg .dts{font-size:9.5px;fill:color-mix(in srgb,var(--second) 75%,var(--ground));letter-spacing:.06em;paint-order:stroke;stroke:var(--ground);stroke-width:3px}' +
+      '.dw-svg .sl{font-size:9px;fill:color-mix(in srgb,var(--second) 75%,var(--ground));letter-spacing:.08em}' +
+      '.dw-svg .nt{font-size:11.5px;fill:var(--main);letter-spacing:.06em}.dw-svg .nth{font-size:13px;font-weight:700;fill:var(--main);letter-spacing:.06em}' +
+      '.dw-svg .vt{font-size:12px;fill:var(--main);letter-spacing:.1em}.dw-svg .nbt{font-size:9.5px;fill:var(--main)}' +
+      '.dw-svg .th{font-size:10.5px;fill:var(--main);letter-spacing:.05em}.dw-svg .tc{font-size:10.5px;fill:var(--main);text-transform:none}');
+    kit.css('.dw-svg .source{font-size:10px;fill:#444;text-transform:none}.dw-svg .nt{font-size:10px;letter-spacing:.01em}.dw-svg .tc{font-size:9.5px}.dw-svg .th{font-size:9px}');
+    const root = kit.h('<div class="ground"><div class="dw-cam"></div></div>');
+    kit.stage.append(root);
+    const camEl = root.querySelector('.dw-cam');
+    this.cam = camEl.style;
+    const svg = document.createElementNS(DW_NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 1900 1060'); svg.setAttribute('width', '1900'); svg.setAttribute('height', '1060'); svg.setAttribute('class', 'dw-svg');
+    camEl.appendChild(svg);
+    const REG = this.reg = []; let sv = svg, CUR = { a: 0, s: 0, d: .6, i: 0 }, noreg = 0;
+    const at = (a, s, d) => { CUR = { a: a, s: s || 0, d: d || .6, i: 0 }; };
+    const kind = (e, t) => { if (t === 'text') return 'f'; const c = ' ' + (e.getAttribute('class') || '') + ' ';
+      if (/ (slot|ph|cl|env|hs) /.test(c) || (e.getAttribute('fill') || '').indexOf('url') === 0) return 'f'; return 'd'; };
+    function mk(t, a, p) { const e = document.createElementNS(DW_NS, t); for (const k in a) if (a[k] != null) e.setAttribute(k, a[k]); (p || sv).appendChild(e);
+      if (!noreg && t !== 'g') { const s = CUR.a + CUR.i * CUR.s; CUR.i++; const k = kind(e, t); if (k === 'd') e.setAttribute('pathLength', '1'); e.style.opacity = 0; REG.push({ e: e, a: s, b: s + CUR.d, k: k, last: -1 }); }
+      return e; }
+    function tx(x, y, s, c, a, p) { const t = mk('text', Object.assign({ x: x, y: y, class: c || 'dt' }, a || {}), p); t.textContent = s; return t; }
+    noreg = 1; const d = mk('defs', {}); const m = mk('marker', { id: 'dwar', viewBox: '0 0 10 10', refX: 10, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse', markerUnits: 'userSpaceOnUse' }, d);
+    mk('path', { d: 'M0,1.7 L10,5 L0,8.3 z', class: 'arrow' }, m);
+    const pt = mk('pattern', { id: 'dwhat', width: 5, height: 5, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, d); mk('line', { x1: 0, y1: 0, x2: 0, y2: 5, class: 'hl' }, pt); noreg = 0;
+    const A = 'url(#dwar)', HAT = 'url(#dwhat)';
+    function dimH(x1, x2, y, e1, e2, l, o) { o = o || {}; [[x1, e1], [x2, e2]].forEach(([x, e]) => { if (e == null) return; const s = Math.sign(y - e) || 1; mk('line', { x1: x, y1: e + s * 3, x2: x, y2: y + s * 5, class: 'ext' }); });
+      if (x2 - x1 >= 28) mk('line', { x1: x1, y1: y, x2: x2, y2: y, class: 'dl', 'marker-start': A, 'marker-end': A }); else { mk('line', { x1: x1 - 13, y1: y, x2: x1, y2: y, class: 'dl', 'marker-end': A }); mk('line', { x1: x2 + 13, y1: y, x2: x2, y2: y, class: 'dl', 'marker-end': A }); }
+      tx((x1 + x2) / 2 + (o.dx || 0), (o.below ? y + 13 : y - 4) + (o.dy || 0), l, o.c || 'dt', { 'text-anchor': 'middle' }); }
+    function dimV(y1, y2, x, e1, e2, l, o) { o = o || {}; [[y1, e1], [y2, e2]].forEach(([y, e]) => { if (e == null) return; const s = Math.sign(x - e) || 1; mk('line', { x1: e + s * 3, y1: y, x2: x + s * 5, y2: y, class: 'ext' }); });
+      if (y2 - y1 >= 28) mk('line', { x1: x, y1: y1, x2: x, y2: y2, class: 'dl', 'marker-start': A, 'marker-end': A }); else { mk('line', { x1: x, y1: y1 - 13, x2: x, y2: y1, class: 'dl', 'marker-end': A }); mk('line', { x1: x, y1: y2 + 13, x2: x, y2: y2, class: 'dl', 'marker-end': A }); }
+      const c = (y1 + y2) / 2; if (o.side) { const r = o.side === 'r'; tx(r ? x + 6 : x - 6, c + 4, l, o.c || 'dt', { 'text-anchor': r ? 'start' : 'end' }); } else tx(x - 5, c, l, o.c || 'dt', { 'text-anchor': 'middle', transform: 'rotate(-90 ' + (x - 5) + ' ' + c + ')' }); }
+    function callout(px, py, ex, ey, l, dir, c) { const s = dir || (ex >= px ? 1 : -1); mk('circle', { cx: px, cy: py, r: 1.8, class: 'dot' }); mk('polyline', { points: px + ',' + py + ' ' + ex + ',' + ey + ' ' + (ex + s * 10) + ',' + ey, class: 'lead' }); tx(ex + s * 14, ey + 4, l, c || 'dt', { 'text-anchor': s > 0 ? 'start' : 'end' }); }
+    function rad(cx, cy, r, c, l, L) { const sx = c.indexOf('l') > -1 ? -1 : 1, sy = c.indexOf('t') > -1 ? -1 : 1; const ox = cx - sx * r, oy = cy - sy * r; callout(ox + sx * r * Math.SQRT1_2, oy + sy * r * Math.SQRT1_2, ox + sx * r * Math.SQRT1_2 + sx * L, oy + sy * r * Math.SQRT1_2 + sy * L, l, sx); }
+    function nb(x, y, n) { mk('rect', { x: x - 6, y: y - 6, width: 12, height: 12, class: 'nb' }); tx(x, y + 3.5, String(n), 'nbt', { 'text-anchor': 'middle' }); }
+    function rr(x, y, w, h, r, c, p) { return mk('rect', { x: x, y: y, width: w, height: h, rx: r, class: c }, p); }
+    function slotLabel(x, y, w, h, l, al, p) { tx(al === 'l' ? x + 6 : x + w / 2, y + h / 2 + 3.2, l, 'sl', { 'text-anchor': al === 'l' ? 'start' : 'middle' }, p); }
+    function title(x, y, t, s) { tx(x, y, t, 'vt', { 'text-anchor': 'middle' }); if (s) tx(x, y + 14, s, 'dts', { 'text-anchor': 'middle' }); }
+    function xbox(x, y, w, h, p) { mk('rect', { x: x, y: y, width: w, height: h, class: 'thin' }, p); mk('path', { d: 'M' + x + ',' + y + ' l' + w + ',' + h + ' M' + (x + w) + ',' + y + ' l' + (-w) + ',' + h, class: 'thin' }, p); }
+    function detailRef(cx, cy, r, lbl, lx, ly) { mk('circle', { cx: cx, cy: cy, r: r, class: 'ph' }); const a = Math.atan2(ly - cy, lx - cx); mk('line', { x1: cx + r * Math.cos(a), y1: cy + r * Math.sin(a), x2: lx, y2: ly, class: 'lead' }); tx(lx + (lx < cx ? -4 : 4), ly + 4, lbl, 'dts', { 'text-anchor': lx < cx ? 'end' : 'start' }); }
+    function table(x, y, ttl, rows) { const ws = [40, 88, 96], rh = 17; tx(x, y - 8, ttl, 'vt'); [['Code', 'Variable', 'Value']].concat(rows).forEach((r, i) => { let c2 = x; r.forEach((c, j) => { mk('rect', { x: c2, y: y + i * rh, width: ws[j], height: rh, class: 'thin' }); tx(c2 + (j ? ws[j] / 2 : 6), y + i * rh + 12, c, i ? 'tc' : 'th', { 'text-anchor': j ? 'middle' : 'start' }); c2 += ws[j]; }); }); return y + (rows.length + 1) * rh + 36; }
+    function notes(list) { tx(50, 58, 'Notes:', 'nth'); tx(112, 58, '(unless otherwise specified)', 'nt'); list.forEach(([n, t], i) => { const y = 88 + i * 24; nb(56, y - 4, n); tx(72, y, t, 'nt'); }); }
+// Source: delete-button.tsx; button.variants.ts; morph.tsx; globals.css.
+// Widths are schematic. All dimensional callouts resolve in the tables.
+table=function(x,y,ttl,rows){const ws=[38,110,179],rh=18;tx(x,y-9,ttl,'vt');[['Code','Variable','Value / formula']].concat(rows).forEach((r,i)=>{let xx=x;r.forEach((c,j)=>{mk('rect',{x:xx,y:y+i*rh,width:ws[j],height:rh,class:'thin'});tx(xx+5,y+i*rh+12,c,i?'tc':'th');xx+=ws[j]})});return y+(rows.length+1)*rh+30};
+const line=(x1,y1,x2,y2,c='thin',p)=>mk('line',{x1,y1,x2,y2,class:c},p);
+const lines=(x,y,ss,c='dts',step=17)=>ss.forEach((s,i)=>tx(x,y+i*step,s,c));
+const W=180,H=34,k=3,PX=650,PY=218,X=v=>PX+v*k,Y=v=>PY+v*k;
+const r=(x,y,w,h,rx,c)=>rr(X(x),Y(y),w*k,h*k,rx*k,c);
+at(-.65,0,1.8);r(0,0,W,H,8,'obj');
+at(.1,.06,.7);xbox(X(14),Y(9),48,48);
+at(.7,.08,.6);r(40,7,126,20,0,'slot');slotLabel(X(40),Y(7),378,60,'LABEL SLOT · HUG');
+at(1.2,.02,.45);dimH(X(0),X(14),Y(-12),Y(0),Y(9),'S1');dimH(X(14),X(30),Y(-12),Y(9),Y(9),'I1');dimH(X(30),X(40),Y(-12),Y(9),Y(7),'S2');
+at(2.3,.025,.5);dimH(X(40),X(166),Y(-12),Y(7),Y(7),'LABEL · HUG');dimH(X(166),X(180),Y(-12),Y(7),Y(0),'S1');
+at(2.6,.025,.5);dimH(X(0),X(W),Y(-30),Y(-15),Y(-15),'W = 2·S1 + C');dimV(Y(0),Y(34),X(-13),X(0),X(0),'H1');dimV(Y(0),Y(9),X(W+13),X(W),X(30),'S3',{side:'r'});dimV(Y(9),Y(25),X(W+13),X(30),X(30),'I1',{side:'r'});dimV(Y(25),Y(34),X(W+13),X(30),X(W),'S3',{side:'r'});
+at(3,.025,.5);line(X(-7),Y(17),X(W+7),Y(17),'cl');rad(X(W),Y(34),24,'br','R1',18);detailRef(X(4),Y(3),22,'DETAIL A',X(-20),Y(-4));nb(X(174),Y(17),1);title(X(90),Y(58),'Plan · armed / widest','Scale 3:1 · width schematic · MD');
+at(3.5,.025,.5);rr(650,435,230,56,13,'obj');xbox(674,451,24,24);rr(718,451,130,24,0,'slot');slotLabel(718,451,130,24,'IDLE SLOT · HUG');rr(947,435,230,56,13,'obj');xbox(971,451,24,24);rr(1015,451,138,24,0,'slot');slotLabel(1015,451,138,24,'ARMED SLOT · HUG');line(880,463,938,463,'dl');mk('path',{d:'M929,458 L938,463 L929,468',class:'thin'});tx(908,425,'PRESS','dts',{'text-anchor':'middle'});dimH(650,880,512,491,491,'W');dimH(947,1177,512,491,491,'W');title(913,550,'A stationary confirmation target','Widest = same box · current = opt-in width transition');
+// Lifting layers preserve the template’s pure-time matrix interpolation.
+const sc=2.1,TX=390,TY=754,ia=.94*sc,ib=.17*sc,ic=-.34*sc,id=.47*sc;
+const P=(x,y,z)=>[TX+ia*x+ic*y,TY+ib*x+id*y-z];
+const G=z=>{let g=mk('g',{transform:`matrix(${ia},${ib},${ic},${id},${TX},${TY-z})`});g.style.setProperty('--u',1/Math.sqrt(ia*id-ib*ic));return g};
+at(5.9,.02,.7);let g=G(0);rr(-8,-8,W+16,H+16,0,'ph',g);
+at(6.1,.02,.7);g=G(35);let sh=rr(-4,-2,W+8,H+8,10,'hs',g);sh.setAttribute('fill',HAT);
+noreg=1;this.morph=[];const mg=(z,a)=>{let q=mk('g',{});this.morph.push({g:q,z,a});return q};
+g=mg(85,5.1);rr(0,0,W,H,8,'obj',g);
+g=mg(135,5.2);rr(14,5,W-28,24,0,'slot',g);slotLabel(14,5,W-28,24,'RESERVED GRID · C',null,g);
+g=mg(185,5.3);rr(14,7,W-28,20,0,'well',g);slotLabel(14,7,W-28,20,'TWO HIDDEN SIZERS',null,g);
+g=mg(235,5.4);xbox(14,9,16,16,g);rr(40,7,W-54,20,0,'slot',g);slotLabel(40,7,W-54,20,'VISIBLE SLOT',null,g);
+noreg=0;this.iso=[ia,ib,ic,id,TX,TY];this.flat=[k,0,0,k,PX,PY];
+at(6.85,.03,.5);[[0,0],[W,0],[W,H],[0,H]].forEach(([x,y])=>{const a=P(x,y,35),b=P(x,y,235);line(...a,...b,'ph')});
+at(7.0,.035,.45);[[0,'L0 · HOST PLANE','Spacing [TBD]'],[35,'L1 · SHADOW','Outline variants'],[85,'L2 · BUTTON','Native control · R1'],[135,'L3 · MORPH GRID','Single shared cell'],[185,'L4 · HIDDEN SIZERS','Inert · aria-hidden'],[235,'L5 · ACTIVE CONTENT','Icon + label slot']].forEach(([z,l,s])=>{const p=P(0,H,z);line(247,p[1],p[0],p[1],'lead');tx(235,p[1]-3,l,'vt',{'text-anchor':'end'});tx(235,p[1]+12,s,'dts',{'text-anchor':'end'})});title(510,875,'Exploded architecture','Lift schematic · layers are DOM roles, not z-index');
+at(7.8,0,1.3);rr(20,20,1660,1020,16,'border');
+at(8.1,.003,.4);notes([[1,'Both states occupy one grid cell; C is the largest.'],[2,'Morph is the sole Button child: equal side padding.'],[3,'First press arms; presses before M1 are discarded.'],[4,'Escape, blur or M2 timeout requests disarming.'],[5,'Current sizing animates width; widest is stable.'],[6,'No pending / success layer or async waiting.'],[7,'XS / SM extend hit height; MD / LG do not.'],[8,'Grayscale maps slots, not destructive colors.']]);
+// Outline shadow geometry, including the three layered light-mode shadows.
+at(8.45,.008,.35);rr(105,349,310,74,17,'env');let h=rr(111,355,298,62,15,'hs');h.setAttribute('fill',HAT);rr(117,361,286,50,13,'obj');dimV(349,361,87,105,117,'E1',{side:'l'});dimV(411,423,437,403,415,'E3',{side:'r'});dimH(105,117,443,423,411,'E2',{dx:-5});title(265,473,'Shadow envelope','Light outline · conservative blur reference');
+at(8.5,.001,.3);let yy=table(1317,78,'MD geometry',[
+['H1','control height','34'],['S1','side padding','14 / 14'],['S2','icon-label gap','10'],['I1','icon box','16'],['S3','icon inset','(H1−I1)÷2 = 9'],['C','reserved content','max(idle, armed)'],['W','control width','2·S1+C = 28+C'],['B','layout border','0'],['R1','box radius','8'],['R2','pill radius','H1÷2 = 17']]);
+yy=table(1317,yy,'Shadow / focus',[
+['Y','ambient offset','2'],['BL','ambient blur','4'],['SP','ambient spread','0'],['E1','top envelope','BL+SP−Y = 2'],['E2','side envelope','BL+SP = 4'],['E3','bottom envelope','BL+SP+Y = 6'],['S4','focus offset','2'],['B1','focus ring','2'],['R3','ring outer r','R1+S4+B1 = 12']]);
+yy=table(1317,yy,'Interaction / constraints',[
+['M1','press guard','350 ms'],['M2','resetAfter','3000 ms; 0 = off'],['M3','current width','200 ms default'],['K1','press scale','0.95'],['T1','XS / SM target','max(W,40) × 40'],['V1','host clearance','[TBD]'],['MW','width cap','[TBD] / caller']]);
+lines(1317,yy+3,['Shadow light: (Y, BL, SP) in px','Ring (0,0,1); lift (1,2,−1);','ambient (2,4,0). Dark: ring only.','Ghost / plain: no resting shadow.','Envelopes are schematic, not clipping.'],'dts',16);
+// Detail A: concentric focus-ring geometry, not a fabricated inner body radius.
+at(8.85,.008,.4);const CX=850,CY=750,cs=4;
+rr(CX-16,CY-16,180,124,48,'env');rr(CX-8,CY-8,164,108,40,'thin');rr(CX,CY,148,92,32,'obj');line(CX+32,CY+20,CX+32,CY+44,'cl');line(CX+20,CY+32,CX+44,CY+32,'cl');
+rad(CX,CY,32,'tl','R1',20);rad(CX+164,CY-16,48,'tr','R3',14);dimH(CX+148,CX+156,CY+126,CY+92,CY+100,'S4',{dx:-9});dimH(CX+156,CX+164,CY+126,CY+100,CY+108,'B1',{dx:10,dy:15});title(924,925,'Detail A · focus corner','Scale 4:1 · concentric ring / offset');
+function familyTable(x,y,ttl,rows){tx(x,y-9,ttl,'vt');rows.forEach((r,i)=>{let xx=x;r.forEach((c,j)=>{let w=[38,113,103][j];rr(xx,y+i*21,w,21,0,'thin');tx(xx+5,y+i*21+14,c,'tc');xx+=w})})}
+// Size family uses source vertical geometry, never copy width.
+at(9.05,.006,.35);const sx=827,sy=624;
+[[24,14,6,'XS'],[30,14,6,'SM'],[34,16,8,'MD'],[38,16,8,'LG']].forEach(([hh,ii,rrr,name],i)=>{let x=sx+i*112,y=sy-hh;rr(x,y,86,hh,rrr,'obj');xbox(x+10,y+(hh-ii)/2,ii,ii);line(x+ii+20,y+hh/2,x+74,y+hh/2,'slot');tx(x+43,sy+24,name,'dts',{'text-anchor':'middle'});if(i<2)rr(x,sy-hh/2-20,86,40,0,'ph');});title(1038,689,'Size family / target envelope','1:1 height · HUG widths schematic');
+// Timing strip and reduced-motion / containment notes.
+at(9.25,.007,.35);tx(65,933,'Deliberate action sequence','vt');line(66,974,718,974,'dl');[66,190,620,718].forEach(x=>line(x,968,x,980,'thin'));tx(66,956,'ARM','dts');tx(190,956,'M1 · GUARD ENDS','dts');tx(620,956,'M2 · RESET','dts',{'text-anchor':'end'});rr(66,984,124,13,0,'hs').setAttribute('fill',HAT);tx(205,995,'CONFIRMING PRESS → DISARM REQUEST → CALLBACK','dts');tx(66,1019,'ESCAPE / BLUR CAN DISARM AT ANY POINT · TIME AXIS SCHEMATIC','dts');
+at(9.5,.001,.3);familyTable(1045,755,'Text size family · px',[
+['Size','H1 / S1 / S2','I1 / R1'],['XS','24 / 10 / 8','14 / 6'],['SM','30 / 12 / 8','14 / 6'],['MD','34 / 14 / 10','16 / 8'],['LG','38 / 20 / 12','16 / 8']]);
+// Keep this table in its own column without collision with the main tables.
+lines(825,983,['MORPH: SCALE 0.25 ↔ 1 · BLUR 4 ↔ 0 · RETAINED EXIT', 'REDUCED MOTION: JS DURATION 0 · CSS DURATION TOKENS 1ms'], 'dts',17);
+at(9.65,.001,.3);lines(1317,955,['SOURCE AUDIT · 2026-11-14','delete-button.tsx · button variants','morph.tsx · motion.ts · globals.css','2 runtime uses + 5 test instances','MD demo measured after fonts / hydration'],'source',15);
+  },
+  render(t) {
+    t = t / 0.85;
+    let i = 0; while (i < DW_CAM.length - 2 && t > DW_CAM[i + 1].t) i++;
+    const c0 = DW_CAM[i], c1 = DW_CAM[i + 1], p = eio(seg(t, c0.t, c1.t));
+    const z = Math.exp(lerp(Math.log(c0.z), Math.log(c1.z), p)), cx = lerp(c0.cx, c1.cx, p), cy = lerp(c0.cy, c1.cy, p);
+    this.cam.transform = 'translate(' + (960 - cx * z) + 'px,' + (540 - cy * z) + 'px) scale(' + z + ')';
+    for (const it of this.reg) {
+      let v = clamp01((t - it.a) / (it.b - it.a)); v = Math.round(v * 400) / 400;
+      if (v === it.last) continue; it.last = v; const s = it.e.style;
+      if (it.k === 'f') { s.opacity = eo(v); continue; }
+      const e = eio(v); s.opacity = Math.min(1, v * 6);
+      if (v >= 1) { s.strokeDasharray = ''; s.strokeDashoffset = ''; } else { s.strokeDasharray = '1 2'; s.strokeDashoffset = 1 - e; }
+      s.fillOpacity = eo(seg(v, .55, 1));
+    }
+    const F = this.flat, I = this.iso;
+    this.morph.forEach((m, j) => {
+      const v = eio(seg(t, m.a, m.a + 1.5)), M = F.map((f, n) => lerp(f, I[n], v));
+      M[5] -= m.z * v;
+      m.g.style.opacity = eo(seg(t, m.a + 0.05, m.a + 0.5));
+      const fo = eo(seg(t, m.a + 0.55, m.a + 1.25)); if (fo !== m.fo) { m.fo = fo; m.fills = m.fills || m.g.querySelectorAll('.obj,.well,.hug'); m.fills.forEach(e => { e.style.fillOpacity = fo; }); }
+      m.g.setAttribute('transform', 'matrix(' + M.join(',') + ')');
+      m.g.style.setProperty('--u', 1 / Math.sqrt(Math.abs(M[0] * M[3] - M[1] * M[2])));
+    });
+  },
+});
+</script>
+<script>
+  const ids = Object.keys(SCENES);
+  const SC = SCENES[cfg.scene] || SCENES[ids[0]];
+  SC.init(kit);
+  window.R = t => SC.render(t, kit);
+  window.R(0);
+  window.__READY__ = true;
+</script>
+<style>
+html,body{width:100%;height:100%;overflow:hidden;background:#fff;color:#111;font-family:Helvetica,Arial,sans-serif;color-scheme:light}
+#stage{transform-origin:0 0}#controls{position:fixed;bottom:0;left:0;right:0;display:flex;align-items:center;gap:16px;padding:12px 24px;background:#fff;border-top:1px solid #ddd;font-size:11px;letter-spacing:.06em}
+#controls button{background:#fff;color:#111;border:1px solid #999;border-radius:4px;padding:7px 12px;font:inherit;cursor:pointer}#controls input{flex:1;accent-color:#111}#time{font-variant-numeric:tabular-nums;min-width:68px}
+@media(prefers-reduced-motion:reduce){#controls button{transition:none}}
+</style><div id="controls"><button id="play" aria-label="Play or pause animation">PLAY</button><button id="replay">REPLAY</button><input id="seek" type="range" aria-label="Animation time" min="0" max="11" step="0.01" value="0"><output id="time">0.00 / 11 s</output></div>
+<script>
+const resize=()=>{const scale=Math.min(innerWidth/1920,(innerHeight-58)/1080);stage.style.transform='translate('+((innerWidth-1920*scale)/2)+'px,'+((innerHeight-58-1080*scale)/2)+'px) scale('+scale+')'};addEventListener('resize',resize);resize();
+let clock=0,playing=false,last=0;const seek=document.getElementById('seek'),play=document.getElementById('play'),time=document.getElementById('time');
+function show(){R(clock);seek.value=clock;time.textContent=clock.toFixed(2)+' / 11 s';play.textContent=playing?'PAUSE':'PLAY'}
+play.onclick=()=>{if(clock>=11)clock=0;playing=!playing;last=performance.now();show()};document.getElementById('replay').onclick=()=>{clock=0;playing=true;last=performance.now();show()};seek.oninput=()=>{clock=Number(seek.value);playing=false;show()};
+function tick(now){if(playing){clock=Math.min(11,clock+(now-last)/1000);if(clock>=11)playing=false;show()}last=now;requestAnimationFrame(tick)}
+if(matchMedia('(prefers-reduced-motion:reduce)').matches)clock=11;show();requestAnimationFrame(tick);
+</script></body>
+</html>

@@ -1,0 +1,174 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>Input · Motion drawing</title><style>
+:root{color-scheme:light;--paper:#ececec;--sheet:#fff;--ink:#111;--ink2:#444;--ink3:#7a7a7a;--fill:#f3f3f3;--fill2:#e6e6e6;--f:Helvetica,Arial,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f)}
+.wrap{max-width:1800px;margin:auto;padding:28px 28px 32px}
+.tb{display:grid;grid-template-columns:2.3fr 1fr 1fr 1fr;border:1.2px solid var(--ink);border-radius:16px;background:var(--sheet);overflow:hidden;margin-bottom:20px}
+.tb>div{min-width:0;padding:12px 16px;border-right:.8px solid var(--ink);border-bottom:.8px solid var(--ink)}
+.tb>div:nth-child(4),.tb>div:nth-child(7){border-right:0}.tb .big{grid-row:span 2;display:flex;flex-direction:column;justify-content:space-between;gap:18px}
+.lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.075em;color:var(--ink2)}
+h1{font-size:44px;font-weight:400;letter-spacing:.1em;line-height:1.1;text-transform:uppercase;margin:8px 0 0}
+.v{margin-top:6px;font-size:12px;line-height:1.5;letter-spacing:.05em;text-transform:uppercase}.scope{font-size:10.5px;line-height:1.6;max-width:460px}
+.tb .notes{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:22px;border-right:0;font-size:10.5px;line-height:1.9;text-transform:uppercase;letter-spacing:.035em}
+.notes strong{font-size:12px;letter-spacing:.06em}.notes strong span{font-size:10px;font-weight:400}.notes ol{padding-left:18px;margin:5px 0 0}
+.tb .figs{grid-column:1/-1;display:grid;grid-template-columns:repeat(7,1fr);padding:14px 16px;border:0}
+.figs>div{padding-left:16px;border-left:.8px solid var(--ink)}.figs>div:first-child{padding-left:0;border-left:0}.figs .v{font-size:18px;text-transform:none;letter-spacing:0;white-space:nowrap}
+.scroll{overflow-x:auto;background:var(--sheet);border-radius:16px}svg{display:block;width:100%;min-width:1100px;height:auto}
+.foot{display:flex;justify-content:space-between;gap:20px;padding:12px 2px 0;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink2)}
+/* drawing */
+.u{font-family:var(--f);text-transform:uppercase;letter-spacing:.07em}
+.border{fill:none;stroke:var(--ink);stroke-width:1.2}
+.obj{fill:var(--sheet);stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round}
+.well{fill:var(--fill);stroke:var(--ink);stroke-width:1}
+.slot{fill:none;stroke:var(--ink2);stroke-width:.8;stroke-dasharray:4 3}
+.hug{fill:var(--fill2);stroke:var(--ink);stroke-width:1}
+.thin{fill:none;stroke:var(--ink);stroke-width:.8}
+.ph{fill:none;stroke:var(--ink3);stroke-width:.8;stroke-dasharray:14 3 3 3}
+.cl{fill:none;stroke:var(--ink3);stroke-width:.7;stroke-dasharray:16 3 2 3}
+.cut{stroke:var(--ink);stroke-width:2}
+.dl{stroke:var(--ink);stroke-width:.7;fill:none}
+.ext{stroke:var(--ink);stroke-width:.55;fill:none}
+.arrow{fill:var(--ink)}
+.hl{stroke:var(--ink2);stroke-width:.7}
+.hs{stroke:var(--ink);stroke-width:.8}
+.env{fill:none;stroke:var(--ink);stroke-width:.8;stroke-dasharray:10 3 2 3}
+.dt{font:400 11px var(--f);fill:var(--ink);paint-order:stroke;stroke:var(--sheet);stroke-width:4px;stroke-linejoin:round}
+.dts{font:400 9.5px var(--f);fill:var(--ink2);letter-spacing:.06em;text-transform:uppercase;paint-order:stroke;stroke:var(--sheet);stroke-width:3px}
+.sl{font:400 9px var(--f);fill:var(--ink2);letter-spacing:.08em;text-transform:uppercase}
+.nt{font:400 11.5px var(--f);fill:var(--ink);letter-spacing:.06em;text-transform:uppercase}
+.nth{font:700 13px var(--f);fill:var(--ink);letter-spacing:.06em}
+.vt{font:400 12px var(--f);fill:var(--ink);letter-spacing:.1em;text-transform:uppercase}
+.vtb{font:400 20px var(--f);fill:var(--ink);letter-spacing:.06em}
+.nb{fill:var(--sheet);stroke:var(--ink);stroke-width:.9}
+.nbt{font:400 9.5px var(--f);fill:var(--ink)}
+.lead{stroke:var(--ink);stroke-width:.7;fill:none}
+.dot{fill:var(--ink)}
+.th{font:400 10.5px var(--f);fill:var(--ink);letter-spacing:.05em;text-transform:uppercase}
+.tc{font:400 10.5px var(--f);fill:var(--ink)}
+.tbk{font:400 7px var(--f);fill:var(--ink2);letter-spacing:.04em;text-transform:uppercase}
+.tbt{font:700 15px var(--f);fill:var(--ink)}
+.tbv{font:400 17px var(--f);fill:var(--ink);letter-spacing:.06em}
+
+
+.tc{font-size:10px}.nt{font-size:10.5px;letter-spacing:.035em}.source{font:400 10px var(--f);fill:var(--ink2)}
+.accent-free{fill:#555;stroke:var(--ink);stroke-width:1}.faint{fill:#fafafa;stroke:#aaa;stroke-width:.55}
+.rule{stroke:#ccc;stroke-width:.55}.white-label{font:400 9px var(--f);fill:#fff;letter-spacing:.08em}
+@media(max-width:760px){.wrap{padding:12px}.tb{grid-template-columns:1fr 1fr}.tb .big{grid-column:1/-1;grid-row:auto}.tb .notes{grid-template-columns:1fr;gap:0}.tb .figs{grid-template-columns:repeat(2,1fr);gap:16px}.figs>div:nth-child(odd){border-left:0;padding-left:0}h1{font-size:32px}.foot{flex-wrap:wrap}}
+@media print{@page{size:A3 landscape;margin:8mm}body{background:#fff}.wrap{max-width:none;padding:0}.tb{margin-bottom:8px}.scroll{overflow:visible}svg{min-width:0}.foot{padding-top:6px}.tb>div{padding:8px 12px}.tb .figs{padding:8px 12px}.tb .notes{line-height:1.6}h1{font-size:32px}}
+</style><style>html,body{margin:0;background:#fff;overflow:hidden}#stage{position:absolute;width:1920px;height:1080px;overflow:hidden;background:#fff}.dw-cam{position:absolute;transform-origin:0 0;width:1700px;height:1060px}svg{width:1700px;min-width:0;height:1060px}</style></head><body><div id="stage"><div class="dw-cam"><svg id="sheet" viewBox="0 0 1700 1060"></svg></div></div><script>
+(()=>{
+const NS='http://www.w3.org/2000/svg';let sv,A,HAT,uid=0,CUR={a:8,s:0,d:.5,i:0}; function at(a,s=0,d=.5){CUR={a,s,d,i:0}}
+function mk(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)if(a[k]!=null)e.setAttribute(k,a[k]);(p||sv).appendChild(e);if(!['defs','marker','pattern','g'].includes(t)&&!p?.closest('defs')){e.dataset.a=CUR.a+CUR.i++*CUR.s;e.dataset.d=CUR.d;}return e}
+function tx(x,y,s,c,a,p){const t=mk('text',Object.assign({x:x,y:y,class:c||'dt'},a||{}),p);t.textContent=s;return t}
+function begin(id){sv=document.getElementById(id);sv.innerHTML='';const n=uid++;const d=mk('defs',{});const m=mk('marker',{id:'ar'+n,viewBox:'0 0 10 10',refX:10,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse',markerUnits:'userSpaceOnUse'},d);mk('path',{d:'M0,1.7 L10,5 L0,8.3 z',class:'arrow'},m);
+ const pt=mk('pattern',{id:'hat'+n,width:5,height:5,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},d);mk('line',{x1:0,y1:0,x2:0,y2:5,class:'hl'},pt);A='url(#ar'+n+')';HAT='url(#hat'+n+')';rr(20,20,1660,1020,16,'border')}
+
+/* ---- kit ---- */
+function dimH(x1,x2,y,e1,e2,l,o){o=o||{};[[x1,e1],[x2,e2]].forEach(([x,e])=>{if(e==null)return;const s=Math.sign(y-e)||1;mk('line',{x1:x,y1:e+s*3,x2:x,y2:y+s*5,class:'ext'})});
+ if(x2-x1>=28)mk('line',{x1:x1,y1:y,x2:x2,y2:y,class:'dl','marker-start':A,'marker-end':A});else{mk('line',{x1:x1-13,y1:y,x2:x1,y2:y,class:'dl','marker-end':A});mk('line',{x1:x2+13,y1:y,x2:x2,y2:y,class:'dl','marker-end':A});mk('line',{x1:x1,y1:y,x2:x2,y2:y,class:'dl'})}
+ tx((x1+x2)/2+(o.dx||0),(o.below?y+13:y-4)+(o.dy||0),l,o.c||'dt',{'text-anchor':'middle'})}
+function dimV(y1,y2,x,e1,e2,l,o){o=o||{};[[y1,e1],[y2,e2]].forEach(([y,e])=>{if(e==null)return;const s=Math.sign(x-e)||1;mk('line',{x1:e+s*3,y1:y,x2:x+s*5,y2:y,class:'ext'})});
+ if(y2-y1>=28)mk('line',{x1:x,y1:y1,x2:x,y2:y2,class:'dl','marker-start':A,'marker-end':A});else{mk('line',{x1:x,y1:y1-13,x2:x,y2:y1,class:'dl','marker-end':A});mk('line',{x1:x,y1:y2+13,x2:x,y2:y2,class:'dl','marker-end':A});mk('line',{x1:x,y1:y1,x2:x,y2:y2,class:'dl'})}
+ const c=(y1+y2)/2;if(o.side){const r=o.side==='r';tx(r?x+6:x-6,c+4,l,o.c||'dt',{'text-anchor':r?'start':'end'})}else tx(x-5,c,l,o.c||'dt',{'text-anchor':'middle',transform:'rotate(-90 '+(x-5)+' '+c+')'})}
+function callout(px,py,ex,ey,l,dir,c){const s=dir||(ex>=px?1:-1);mk('circle',{cx:px,cy:py,r:1.8,class:'dot'});mk('polyline',{points:px+','+py+' '+ex+','+ey+' '+(ex+s*10)+','+ey,class:'lead'});tx(ex+s*14,ey+4,l,c||'dt',{'text-anchor':s>0?'start':'end'})}
+function rad(cx,cy,r,c,l,L){const sx=c.includes('l')?-1:1,sy=c.includes('t')?-1:1;const ox=cx-sx*r,oy=cy-sy*r;const px=ox+sx*r*Math.SQRT1_2,py=oy+sy*r*Math.SQRT1_2;callout(px,py,px+sx*L,py+sy*L,l,sx)}
+function nb(x,y,n){mk('rect',{x:x-6,y:y-6,width:12,height:12,class:'nb'});tx(x,y+3.5,String(n),'nbt',{'text-anchor':'middle'})}
+function rr(x,y,w,h,r,c){return mk('rect',{x:x,y:y,width:w,height:h,rx:r,class:c})}
+function slotLabel(x,y,w,h,l,al){tx(al==='l'?x+6:x+w/2,y+h/2+3.2,l,'sl',{'text-anchor':al==='l'?'start':'middle'})}
+function title(x,y,t,s){tx(x,y,t,'vt',{'text-anchor':'middle'});if(s)tx(x,y+14,s,'dts',{'text-anchor':'middle'})}
+function notes(list,extra){const NX=50,NY=58;tx(NX,NY,'NOTES:','nth');tx(NX+62,NY,'(UNLESS OTHERWISE SPECIFIED)','nt');
+ list.forEach(([n,t],i)=>{const y=NY+30+i*24;if(n){nb(NX+6,y-4,n);tx(NX+22,y,t,'nt')}else tx(NX,y,t,'nt')})}
+function table(x,y,ttl,rows){const ws=[40,88,96],rh=17;tx(x,y-8,ttl,'vt');
+ const all=[['Code','Variable','Value']].concat(rows);all.forEach((r,i)=>{let cx2=x;r.forEach((c,j)=>{mk('rect',{x:cx2,y:y+i*rh,width:ws[j],height:rh,class:'thin'});tx(cx2+(j?ws[j]/2:6),y+i*rh+12,c,i?'tc':'th',{'text-anchor':j?'middle':'start'});cx2+=ws[j]})});return y+all.length*rh+36}
+function detailRef(cx,cy,r,lbl,lx,ly){mk('circle',{cx:cx,cy:cy,r:r,class:'ph'});const a=Math.atan2(ly-cy,lx-cx);mk('line',{x1:cx+r*Math.cos(a),y1:cy+r*Math.sin(a),x2:lx,y2:ly,class:'lead'});tx(lx+(lx<cx?-4:4),ly+4,lbl,'dts',{'text-anchor':lx<cx?'end':'start'})}
+
+// Slightly wider tables accommodate the source formulas without abbreviating them.
+table=function(x,y,ttl,rows){const ws=[43,125,212],rh=16;tx(x,y-9,ttl,'vt');const all=[['Code','Variable','Value / formula']].concat(rows);all.forEach((r,i)=>{let xx=x;r.forEach((c,j)=>{mk('rect',{x:xx,y:y+i*rh,width:ws[j],height:rh,class:'thin'});tx(xx+6,y+i*rh+11.5,c,i?'tc':'th');xx+=ws[j]})});return y+all.length*rh+29};
+function line(x1,y1,x2,y2,c='thin',p){return mk('line',{x1,y1,x2,y2,class:c},p)}
+function cross(x,y,w,h,p){mk('rect',{x,y,width:w,height:h,class:'thin'},p);line(x,y,x+w,y+h,'thin',p);line(x+w,y,x,y+h,'thin',p)}
+function lines(x,y,items,c='dts',step=15){items.forEach((s,i)=>tx(x,y+i*step,s,c))}
+function hatch(x,y,w,h,r=0){return mk('rect',{x,y,width:w,height:h,rx:r,fill:HAT,class:'hs'})}
+
+begin('sheet');
+mk('title',{id:'drawing-title'}).textContent='Input dimensional drawing';
+mk('desc',{id:'drawing-desc'}).textContent='Native input architecture, optional icon and measured end action, focus ring, number stepper and variable tables.';
+function field(x,y,w=500,k=1,{icon=true,action=true,variant='default'}={}){
+ const h=34*k;const pad=variant==='underline'?0:12;
+ if(variant==='underline')line(x,y+h,x+w,y+h,'obj');else rr(x,y,w,h,(variant==='plain'?0:8)*k,variant==='plain'?'ph':'obj');
+ if(icon)cross(x+pad*k,y+9*k,16*k,16*k);
+ const left=(icon?pad+24+(variant==='default'?1:0):pad+1)*k,right=(action?38:13)*k;
+ rr(x+left,y+7*k,w-left-right,20*k,0,'slot');slotLabel(x+left,y,w-left-right,h,'VALUE SLOT · FLEX');
+ if(action){rr(x+w-29*k,y+5*k,24*k,24*k,3*k,'hug');cross(x+w-24*k,y+10*k,14*k,14*k);}
+ return {x,y,w,h};
+}
+// PLAN: width is a proportional schematic; fixed vertical and inset geometry is enlarged 2:1.
+at(2.5,.02,.6);title(850,58,'PLAN · INPUT WITH OPTIONAL SLOTS','SCALE 2:1 · W IS FILL / SCHEMATIC');
+const px=575,py=175;at(0,.08,1);field(px,py,570,2);at(1.2,.025,.5);
+line(px-18,py+34,px+588,py+34,'cl');
+dimH(px,px+570,114,py,py,'W · FILL');dimV(py,py+68,px-32,px,px,'H1');
+dimH(px,px+24,145,py,py+18,'S1',{dx:-8});dimH(px+24,px+56,145,py+18,py+18,'I1');dimH(px+56,px+74,145,py+18,py+14,'S2+B',{dx:8});
+dimH(px+74,px+494,318,py+68,py+68,'FLEX');dimH(px+494,px+512,318,py+68,py+58,'S2+B',{dx:-6,dy:15});dimH(px+512,px+560,318,py+58,py+58,'WA');dimH(px+560,px+570,318,py+58,py+68,'S3',{dx:12,dy:15});
+rad(px+570,py,16,'tr','R1',25);nb(px+590,py+45,2);detailRef(px+553,py+17,22,'DETAIL A',1170,343);
+rr(px,py+80,570,39,0,'slot');slotLabel(px,py+80,570,39,'DESCRIPTION SLOT · FILL · WRAPS');dimV(py+68,py+80,px-32,px,px,'S4',{side:'l'});nb(px-15,py+99,3);
+at(2,.02,.5);lines(600,346,['PS = S1 + I1 + S2 = 36; TEXT EDGE ADDS B.', 'PE = WA + S2 + S3 = WA + 13; TEXT EDGE ADDS B.', 'ACTION WIDTH IS MEASURED; WA = 24 IS THE INITIAL FALLBACK.'],'dt',18);
+// Notes and exact uniform ring envelope.
+at(7.6,.015,.45);tx(50,58,'NOTES:','nth');
+[['BASE UI NATIVE INPUT; WIDTH FILLS ITS WRAPPER.','NO FIXED MINIMUM WIDTH OR EXTRA HIT AREA.'],['OPTIONAL ICON IS DECORATIVE; ACTION IS INTERACTIVE.','ACTION WIDTH TRACKS RESIZE WITHOUT REMOUNTING.'],['DESCRIPTION IS LINKED THROUGH ARIA-DESCRIBEDBY.','WRAPS; NO FIXED DESCRIPTION HEIGHT.'],['NUMBER / FILE TYPES IGNORE CUSTOM END ACTION.','NATIVE DATE / TIME CHROME IS BROWSER-OWNED.'],['DEFAULT, PLAIN AND UNDERLINE SHARE H1.','FOCUS TONE CHANGES COLOR, NOT GEOMETRY.'],['DISABLED OPACITY IS 50%; GEOMETRY IS UNCHANGED.','INPUTCOUNT IS A SEPARATE CALLER-PLACED SLOT.']].forEach((ls,i)=>{nb(56,84+i*36,i+1);lines(72,88+i*36,ls,'dts',14)});
+title(260,350,'FOCUS ENVELOPE','SCALE 2:1 · EXACT SPREAD · NO BLUR');hatch(90,390,326,80,22);rr(90,390,326,80,22,'env');rr(96,396,314,68,16,'obj');slotLabel(96,396,314,68,'VALUE SLOT · FLEX');dimH(90,96,490,470,464,'E',{dx:-12});dimV(390,396,447,416,410,'E',{side:'r'});
+lines(74,527,['NEUTRAL BOXED FOCUS: Y = 0, BL = 0, SP = 3.', 'ACCENT / INVALID BOXED RING ALSO USES E = 3.', 'RESTING FIELD HAS NO ELEVATION SHADOW.'],'dts',16);
+// Exploded stack: these are render roles, not separate physical DOM planes.
+at(4.0,.03,.65);title(295,624,'EXPLODED AXONOMETRIC','PROPORTIONAL SCHEMATIC · Z SEPARATION NOT TO SCALE');
+const layerData=[['CANVAS',0],['FOCUS SPREAD',48],['FIELD BORDER',96],['SLOT LAYER',144]];
+for(const [label,z] of layerData){const g=mk('g',{transform:'matrix(.9,.19,-.38,.53,200,'+(880-z)+')','data-lift':z});
+ const old=sv;sv=g;
+ if(z===0)rr(-8,-8,400,50,0,'slot');
+ if(z===48){hatch(-3,-3,390,40,11);rr(-3,-3,390,40,11,'env');}
+ if(z===96)rr(0,0,384,34,8,'obj');
+ if(z===144){cross(12,9,16,16);rr(36,7,311,20,0,'slot');rr(355,5,24,24,3,'hug');cross(360,10,14,14);}
+ sv=old;g.querySelectorAll('*').forEach(e=>e.setAttribute('vector-effect','non-scaling-stroke'));
+ at(6.1,.01,.4);line(160,880-z,194,880-z,'lead');tx(153,884-z,label,'dts',{'text-anchor':'end'});at(4.0,.03,.65);
+}
+at(7.9,.02,.45);lines(74,980,['SOURCE AUDIT · INPUT.TSX / INPUT.VARIANTS.TS / INPUT-COUNT.TSX', 'GLOBALS.CSS: ROOT 16; TEXT-SM 13 / 20; DURATION-SLOW 300MS.', '11 JSX USES ACROSS 7 INSPECTOR FILES; ALL THREE VARIANTS REVIEWED.'],'source',16);
+// Corner construction A, concentric outer edge and action.
+at(8,.01,.5);title(875,430,'DETAIL A · CONCENTRIC ACTION','SCALE 4:1 · TOP / END INSET S3');
+const cx=760,cy=478;
+mk('path',{d:`M${cx-60},${cy} H${cx+68} A32,32 0 0 1 ${cx+100},${cy+32} V${cy+100}`,class:'thin'});
+mk('path',{d:`M${cx-60},${cy+4} H${cx+68} A28,28 0 0 1 ${cx+96},${cy+32} V${cy+100}`,class:'thin'});
+mk('path',{d:`M${cx-20},${cy+20} H${cx+68} A12,12 0 0 1 ${cx+80},${cy+32} V${cy+80}`,class:'obj',style:'fill:none'});
+line(cx+46,cy+32,cx+90,cy+32,'cl');line(cx+68,cy+10,cx+68,cy+55,'cl');mk('circle',{cx:cx+68,cy:cy+32,r:2,class:'dot'});
+dimV(cy,cy+20,cx-45,cx-20,cx-20,'S3',{side:'l'});dimH(cx+96,cx+100,cy+124,cy+100,cy+100,'B',{dx:14});
+callout(cx+91,cy+9,cx+141,cy-8,'R1',1);callout(cx+77,cy+24,cx+138,cy+56,'R2',1);
+lines(974,512,['R2 = R1 − S3 = 3', 'S3 MEASURES FROM', 'THE OUTER EDGE.', 'INNER BORDER R3 = 7.'],'dt',18);
+// Three structural variants and states, source dimensions only.
+title(870,682,'VARIANTS / STATE FOOTPRINT','SCALE 1:1 · W SCHEMATIC');
+for(const [i,v] of ['default','plain','underline'].entries()){const y=716+i*62;field(670,y,350,1,{icon:true,action:false,variant:v});tx(640,y+21,v,'dts',{'text-anchor':'end'});dimV(y,y+34,1050,1020,1020,'H1',{side:'r'});}
+lines(634,921,['PLAIN: B = 0; UNDERLINE: BOTTOM B = 1, R = 0.', 'UNDERLINE ICON INSET = 0; PS = I1 + S2 = 24.', 'INVALID / DISABLED / READONLY KEEP THE SAME FIELD SIZE.'],'dts',17);
+// Number stepper detail under tables.
+at(8.2,.015,.45);title(1438,839,'NUMBER STEPPER','SCALE 3:1 · END ACTION REPLACEMENT');
+const nx=1335,ny=890;rr(nx-40,ny,206,102,24,'obj');rr(nx+70,ny+9,84,42,18,'slot');rr(nx+70,ny+51,84,42,18,'slot');cross(nx+94,ny+12,36,36);cross(nx+94,ny+54,36,36);dimH(nx+70,nx+154,ny-18,ny+9,ny+9,'Z1');dimV(ny+9,ny+51,nx+190,nx+154,nx+154,'H3',{side:'r'});dimH(nx+70,nx+166,ny+126,ny+102,ny+102,'S6');
+// Tables.
+at(8.1,.001,.35);let yy=70,xx=1258;
+yy=table(xx,yy,'SIZE / SPACING',[
+ ['W','field width','FILL; caller-defined'],['H1','field height','34'],['B','boxed border','1'],['S1','inline padding','12 (underline: 0)'],['S2','icon / action gap','8'],['S3','action inset','5 (underline: 0)'],['S4','description margin','6'],['S5','block padding','4 (file: 0)'],['I1','leading SVG box','16'],['WA','end action width','measured; fallback 24'],['H2','shown action height','24 (caller-provided)'],['I3','shown action icon','14 (demo; caller-provided)'],['PS','start padding','S1 + I1 + S2 = 36'],['PE','end padding','WA + S2 + S3 = WA + 13'],['S6','number end rail','32'],['Z1','stepper width','28'],['H3','stepper button height','14'],['I2','stepper icon','12'],['S7','number pad-end','40']]);
+yy=table(xx,yy,'RADII / TYPE / MOTION',[
+ ['R1','field radius','8 (underline: 0)'],['R2','boxed action radius','R1 − S3 = 3'],['R3','inner border radius','R1 − B = 7'],['R4','stepper radius','6'],['F1','field text / line','13 / 20'],['F2','description / line','12 / 19.5'],['D1','field state duration','300ms; reduced: 1ms']]);
+yy=table(xx,yy,'ENVELOPE / CALLER CONSTRAINTS',[
+ ['Y / BL','focus offset / blur','0 / 0'],['SP / E','spread / envelope','3 / 3'],['T1','input hit height','H1 = 34'],['T2','target-size policy','[TBD]'],['V1','viewport margin','[TBD]; caller layout'],['MH','description max-h','[TBD]'],['L1','label gap','[TBD]; external label']]);
+window.drawingAudit={fieldHeight:34,radius:8,actionInset:5,sourceDate:'2026-11-14'};
+})();
+</script>
+<script>
+// Adapted from dimensional-drawing-motion/templates/scene-dialog.js:
+// registration windows, normalized path strokes, pure-time matrix lift and log camera zoom.
+const clamp01=x=>Math.max(0,Math.min(1,x)),seg=(t,a,b)=>clamp01((t-a)/(b-a));
+const lerp=(a,b,p)=>a+(b-a)*p,eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2,eo=x=>1-Math.pow(1-x,3);
+const reg=[...document.querySelectorAll('#sheet [data-a]')].filter(e=>!e.closest('defs')).map(e=>{const k=e.tagName==='text'||/slot|ph|cl|env|hs/.test(e.getAttribute('class')||'')||e.getAttribute('fill')?.startsWith('url')?'f':'d';if(k==='d')e.setAttribute('pathLength','1');return {e,k,a:+e.dataset.a,d:+e.dataset.d}});
+const lifts=[...document.querySelectorAll('[data-lift]')].map(g=>({g,z:+g.dataset.lift}));
+const cam=document.querySelector('.dw-cam');
+const keys=[{t:0,cx:680,cy:210,z:3.3},{t:1.8,cx:692,cy:211,z:3.15},{t:3.3,cx:856,cy:247,z:2.0},{t:4.0,cx:850,cy:250,z:1.95},{t:5.6,cx:400,cy:810,z:1.85},{t:6.7,cx:400,cy:810,z:1.8},{t:8.5,cx:850,cy:530,z:1.01},{t:11,cx:850,cy:530,z:.995}];
+window.R=function(t){
+ for(const {e,k,a,d} of reg){const p=seg(t,a,a+d);e.style.opacity=k==='f'?eo(p):(p>0?1:0);if(k==='d'){e.style.strokeDasharray=p>=1?'none':'1 2';e.style.strokeDashoffset=1-eio(p);e.style.fillOpacity=eo(seg(t,a+d*.55,a+d));}}
+ for(const {g,z} of lifts){const a=4.05+z/900,p=eio(seg(t,a,a+1.75));const flat=[570/384,0,0,2,575,175],iso=[.9,.19,-.38,.53,200,880-z];g.setAttribute('transform','matrix('+flat.map((v,i)=>lerp(v,iso[i],p)).join(',')+')');g.style.opacity=eo(seg(t,a,a+.45));for(const e of g.children)e.style.fillOpacity=eo(seg(t,a+.55,a+1.25));}
+ let i=0;while(i<keys.length-2&&t>keys[i+1].t)i++;const a=keys[i],b=keys[i+1],p=eio(seg(t,a.t,b.t)),cx=lerp(a.cx,b.cx,p),cy=lerp(a.cy,b.cy,p),z=Math.exp(lerp(Math.log(a.z),Math.log(b.z),p));cam.style.transform=`translate(${960-cx*z}px,${540-cy*z}px) scale(${z})`;
+};window.__READY__=true;window.R(0);
+let start=null;function play(now){if(start===null)start=now;if(!window.__HEADLESS__)window.R(((now-start)/1000)%11);requestAnimationFrame(play)}requestAnimationFrame(play);
+</script></body></html>

@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Text shimmer · Motion drawing</title>
+<!-- Headless player for dimensional-drawing motion scenes.
+     render.mjs injects: STAGE_W, STAGE_H, BG, the scene CSS and the scene JS.
+     The scene API matches Claude Motion's kit: kit.scene(id, { init(kit), render(t) }). -->
+
+<style>
+  html, body { margin: 0; background: var(--bg, #fff); }
+  #stage { position: absolute; left: 0; top: 0; overflow: hidden; --sans: Helvetica, Arial, sans-serif; }
+</style>
+<style id="scene-css">#stage { --ground:#ffffff; --main:#111111; --second:#111111; --accent:#767676; color:var(--second); font-family:var(--sans, system-ui, sans-serif) }
+.ground { position:absolute; inset:0; background:var(--ground) }
+.dw-cam { position:absolute; left:0; top:0; width:1900px; height:1060px; transform-origin:0 0 }
+.dw-svg { position:absolute; left:0; top:0; overflow:visible; --u:1 }
+.dw-svg text { font-family:var(--sans, system-ui, sans-serif); text-transform:uppercase }
+.dw-svg .border { fill:none; stroke:var(--main); stroke-width:1.2 }
+.dw-svg .obj { fill:var(--ground); stroke:var(--main); stroke-width:calc(1.6px * var(--u)); stroke-linejoin:round }
+.dw-svg .well { fill:color-mix(in srgb, var(--second) 5%, var(--ground)); stroke:var(--main); stroke-width:calc(1px * var(--u)) }
+.dw-svg .hug { fill:color-mix(in srgb, var(--second) 10%, var(--ground)); stroke:var(--main); stroke-width:calc(1px * var(--u)) }
+.dw-svg .slot { fill:none; stroke:color-mix(in srgb, var(--second) 75%, var(--ground)); stroke-width:calc(.8px * var(--u)); stroke-dasharray:calc(4px * var(--u)) calc(3px * var(--u)) }
+.dw-svg .thin { fill:none; stroke:var(--main); stroke-width:calc(.8px * var(--u)) }
+.dw-svg .ph { fill:none; stroke:var(--accent); stroke-width:calc(.8px * var(--u)); stroke-dasharray:calc(14px * var(--u)) calc(3px * var(--u)) calc(3px * var(--u)) calc(3px * var(--u)) }
+.dw-svg .cl { fill:none; stroke:var(--accent); stroke-width:.7; stroke-dasharray:16 3 2 3 }
+.dw-svg .dl, .dw-svg .lead { stroke:var(--main); stroke-width:.7; fill:none }
+.dw-svg .ext { stroke:var(--main); stroke-width:.55; fill:none }
+.dw-svg .arrow, .dw-svg .dot { fill:var(--main) }
+.dw-svg .hl { stroke:color-mix(in srgb, var(--second) 70%, var(--ground)); stroke-width:.7 }
+.dw-svg .hs { stroke:var(--main); stroke-width:calc(.8px * var(--u)) }
+.dw-svg .env { fill:none; stroke:var(--main); stroke-width:.8; stroke-dasharray:10 3 2 3 }
+.dw-svg .nb { fill:var(--ground); stroke:var(--main); stroke-width:.9 }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+  const cfg = window.__CFG__ || { w: 1920, h: 1080, bg: '#ffffff' };
+  const stage = document.getElementById('stage');
+  stage.style.width = cfg.w + 'px';
+  stage.style.height = cfg.h + 'px';
+  stage.style.background = cfg.bg;
+  document.documentElement.style.setProperty('--bg', cfg.bg);
+
+  // Minimal kit shim (same helpers the scenes use in Claude Motion).
+  var SCENES = {};
+  var kit = (function () {
+    const clamp01 = x => Math.max(0, Math.min(1, x));
+    const seg = (t, a, b) => clamp01((t - a) / (b - a));
+    const lerp = (a, b, p) => a + (b - a) * p;
+    const eo = x => 1 - Math.pow(1 - x, 3);
+    const ei = x => x * x * x;
+    const eio = x => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+    return {
+      seg, lerp, eo, ei, eio, clamp01, stage,
+      width: cfg.w, height: cfg.h,
+      h: s => { const d = document.createElement('div'); d.innerHTML = s.trim(); return d.firstElementChild; },
+      css: s => { const st = document.createElement('style'); st.textContent = s; stage.appendChild(st); },
+      scene: (id, o) => { SCENES[id] = o; },
+    };
+  })();
+</script>
+<script id="scene-js">const { seg, lerp, eo, eio, clamp01 } = kit;
+const DW_NS = 'http://www.w3.org/2000/svg';
+const DW_CAM = [
+ {t:0,cx:850,cy:245,z:4.4},{t:2.3,cx:855,cy:246,z:4.22},
+ {t:4.2,cx:960,cy:250,z:2.0},{t:5.0,cx:960,cy:253,z:1.98},
+ {t:5.8,cx:680,cy:510,z:1.65},{t:7.15,cx:390,cy:640,z:2.15},{t:7.7,cx:392,cy:640,z:2.12},
+ {t:9.4,cx:950,cy:530,z:.998},{t:13,cx:950,cy:530,z:.988}];
+kit.scene('text-shimmer', {
+  init(kit) {
+    kit.css('.dw-svg .dt{font-size:11px;fill:var(--main);paint-order:stroke;stroke:var(--ground);stroke-width:4px;stroke-linejoin:round}' +
+      '.dw-svg .dts{font-size:9.5px;fill:color-mix(in srgb,var(--second) 75%,var(--ground));letter-spacing:.06em;paint-order:stroke;stroke:var(--ground);stroke-width:3px}' +
+      '.dw-svg .sl{font-size:9px;fill:color-mix(in srgb,var(--second) 75%,var(--ground));letter-spacing:.08em}' +
+      '.dw-svg .nt{font-size:11.5px;fill:var(--main);letter-spacing:.06em}.dw-svg .nth{font-size:13px;font-weight:700;fill:var(--main);letter-spacing:.06em}' +
+      '.dw-svg .vt{font-size:12px;fill:var(--main);letter-spacing:.1em}.dw-svg .nbt{font-size:9.5px;fill:var(--main)}' +
+      '.dw-svg .th{font-size:10.5px;fill:var(--main);letter-spacing:.05em}.dw-svg .tc{font-size:10.5px;fill:var(--main);text-transform:none}');
+    kit.css('.dw-svg{--sheet:#fff;--ink:#111;--ink2:#444;--ink3:#7a7a7a;--fill:#f3f3f3;--fill2:#e6e6e6;--f:Helvetica,Arial,sans-serif}.dw-svg .tc{font-size:10px}.dw-svg .nt{font-size:10.5px;letter-spacing:.035em}.dw-svg .source{font-size:10px;fill:#444;text-transform:none}.dw-svg .accent-free{fill:#555;stroke:#111;stroke-width:1}.dw-svg .faint{fill:#fafafa;stroke:#aaa;stroke-width:.55}');
+    const root = kit.h('<div class="ground"><div class="dw-cam"></div></div>');
+    kit.stage.append(root);
+    const camEl = root.querySelector('.dw-cam');
+    this.cam = camEl.style;
+    const svg = document.createElementNS(DW_NS, 'svg');
+    svg.setAttribute('id','sheet'); svg.setAttribute('viewBox', '0 0 1900 1060'); svg.setAttribute('width', '1900'); svg.setAttribute('height', '1060'); svg.setAttribute('class', 'dw-svg');
+    camEl.appendChild(svg);
+    const REG = this.reg = []; let sv = svg, CUR = { a: 0, s: 0, d: .6, i: 0 }, noreg = 0;
+    const at = (a, s, d) => { CUR = { a: a, s: s || 0, d: d || .6, i: 0 }; };
+    const kind = (e, t) => { if (t === 'text') return 'f'; const c = ' ' + (e.getAttribute('class') || '') + ' ';
+      if (/ (slot|ph|cl|env|hs) /.test(c) || (e.getAttribute('fill') || '').indexOf('url') === 0) return 'f'; return 'd'; };
+    function mk(t, a, p) { const e = document.createElementNS(DW_NS, t); for (const k in a) if (a[k] != null) e.setAttribute(k, a[k]); (p || sv).appendChild(e);
+      if (!noreg && t !== 'g') { const s = CUR.a + CUR.i * CUR.s; CUR.i++; const k = kind(e, t); if (k === 'd') e.setAttribute('pathLength', '1'); e.style.opacity = 0; REG.push({ e: e, a: s, b: s + CUR.d, k: k, last: -1 }); }
+      return e; }
+    function tx(x, y, s, c, a, p) { const t = mk('text', Object.assign({ x: x, y: y, class: c || 'dt' }, a || {}), p); t.textContent = s; return t; }
+    noreg = 1; const d = mk('defs', {}); const m = mk('marker', { id: 'dwar', viewBox: '0 0 10 10', refX: 10, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse', markerUnits: 'userSpaceOnUse' }, d);
+    mk('path', { d: 'M0,1.7 L10,5 L0,8.3 z', class: 'arrow' }, m);
+    const pt = mk('pattern', { id: 'dwhat', width: 5, height: 5, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, d); mk('line', { x1: 0, y1: 0, x2: 0, y2: 5, class: 'hl' }, pt); noreg = 0;
+    const A = 'url(#dwar)', HAT = 'url(#dwhat)';
+    function dimH(x1, x2, y, e1, e2, l, o) { o = o || {}; [[x1, e1], [x2, e2]].forEach(([x, e]) => { if (e == null) return; const s = Math.sign(y - e) || 1; mk('line', { x1: x, y1: e + s * 3, x2: x, y2: y + s * 5, class: 'ext' }); });
+      if (x2 - x1 >= 28) mk('line', { x1: x1, y1: y, x2: x2, y2: y, class: 'dl', 'marker-start': A, 'marker-end': A }); else { mk('line', { x1: x1 - 13, y1: y, x2: x1, y2: y, class: 'dl', 'marker-end': A }); mk('line', { x1: x2 + 13, y1: y, x2: x2, y2: y, class: 'dl', 'marker-end': A }); }
+      tx((x1 + x2) / 2 + (o.dx || 0), (o.below ? y + 13 : y - 4) + (o.dy || 0), l, o.c || 'dt', { 'text-anchor': 'middle' }); }
+    function dimV(y1, y2, x, e1, e2, l, o) { o = o || {}; [[y1, e1], [y2, e2]].forEach(([y, e]) => { if (e == null) return; const s = Math.sign(x - e) || 1; mk('line', { x1: e + s * 3, y1: y, x2: x + s * 5, y2: y, class: 'ext' }); });
+      if (y2 - y1 >= 28) mk('line', { x1: x, y1: y1, x2: x, y2: y2, class: 'dl', 'marker-start': A, 'marker-end': A }); else { mk('line', { x1: x, y1: y1 - 13, x2: x, y2: y1, class: 'dl', 'marker-end': A }); mk('line', { x1: x, y1: y2 + 13, x2: x, y2: y2, class: 'dl', 'marker-end': A }); }
+      const c = (y1 + y2) / 2; if (o.side) { const r = o.side === 'r'; tx(r ? x + 6 : x - 6, c + 4, l, o.c || 'dt', { 'text-anchor': r ? 'start' : 'end' }); } else tx(x - 5, c, l, o.c || 'dt', { 'text-anchor': 'middle', transform: 'rotate(-90 ' + (x - 5) + ' ' + c + ')' }); }
+    function callout(px, py, ex, ey, l, dir, c) { const s = dir || (ex >= px ? 1 : -1); mk('circle', { cx: px, cy: py, r: 1.8, class: 'dot' }); mk('polyline', { points: px + ',' + py + ' ' + ex + ',' + ey + ' ' + (ex + s * 10) + ',' + ey, class: 'lead' }); tx(ex + s * 14, ey + 4, l, c || 'dt', { 'text-anchor': s > 0 ? 'start' : 'end' }); }
+    function rad(cx, cy, r, c, l, L) { const sx = c.indexOf('l') > -1 ? -1 : 1, sy = c.indexOf('t') > -1 ? -1 : 1; const ox = cx - sx * r, oy = cy - sy * r; callout(ox + sx * r * Math.SQRT1_2, oy + sy * r * Math.SQRT1_2, ox + sx * r * Math.SQRT1_2 + sx * L, oy + sy * r * Math.SQRT1_2 + sy * L, l, sx); }
+    function nb(x, y, n) { mk('rect', { x: x - 6, y: y - 6, width: 12, height: 12, class: 'nb' }); tx(x, y + 3.5, String(n), 'nbt', { 'text-anchor': 'middle' }); }
+    function rr(x, y, w, h, r, c, p) { return mk('rect', { x: x, y: y, width: w, height: h, rx: r, class: c }, p); }
+    function slotLabel(x, y, w, h, l, al, p) { tx(al === 'l' ? x + 6 : x + w / 2, y + h / 2 + 3.2, l, 'sl', { 'text-anchor': al === 'l' ? 'start' : 'middle' }, p); }
+    function title(x, y, t, s) { tx(x, y, t, 'vt', { 'text-anchor': 'middle' }); if (s) tx(x, y + 14, s, 'dts', { 'text-anchor': 'middle' }); }
+    function xbox(x, y, w, h, p) { mk('rect', { x: x, y: y, width: w, height: h, class: 'thin' }, p); mk('path', { d: 'M' + x + ',' + y + ' l' + w + ',' + h + ' M' + (x + w) + ',' + y + ' l' + (-w) + ',' + h, class: 'thin' }, p); }
+    function detailRef(cx, cy, r, lbl, lx, ly) { mk('circle', { cx: cx, cy: cy, r: r, class: 'ph' }); const a = Math.atan2(ly - cy, lx - cx); mk('line', { x1: cx + r * Math.cos(a), y1: cy + r * Math.sin(a), x2: lx, y2: ly, class: 'lead' }); tx(lx + (lx < cx ? -4 : 4), ly + 4, lbl, 'dts', { 'text-anchor': lx < cx ? 'end' : 'start' }); }
+    function table(x, y, ttl, rows) { const ws = [40, 88, 96], rh = 17; tx(x, y - 8, ttl, 'vt'); [['Code', 'Variable', 'Value']].concat(rows).forEach((r, i) => { let c2 = x; r.forEach((c, j) => { mk('rect', { x: c2, y: y + i * rh, width: ws[j], height: rh, class: 'thin' }); tx(c2 + (j ? ws[j] / 2 : 6), y + i * rh + 12, c, i ? 'tc' : 'th', { 'text-anchor': j ? 'middle' : 'start' }); c2 += ws[j]; }); }); return y + (rows.length + 1) * rh + 36; }
+    function notes(list) { tx(50, 58, 'Notes:', 'nth'); tx(112, 58, '(unless otherwise specified)', 'nt'); list.forEach(([n, t], i) => { const y = 88 + i * 24; nb(56, y - 4, n); tx(72, y, t, 'nt'); }); }
+// Slightly wider tables accommodate the source formulas without abbreviating them.
+table=function(x,y,ttl,rows){const ws=[43,120,217],rh=16;tx(x,y-9,ttl,'vt');const all=[['Code','Variable','Value / formula']].concat(rows);all.forEach((r,i)=>{let xx=x;r.forEach((c,j)=>{mk('rect',{x:xx,y:y+i*rh,width:ws[j],height:rh,class:'thin'});tx(xx+6,y+i*rh+11.5,c,i?'tc':'th');xx+=ws[j]})});return y+all.length*rh+29};
+function line(x1,y1,x2,y2,c='thin',p){return mk('line',{x1,y1,x2,y2,class:c},p)}
+function cross(x,y,w,h,p){mk('rect',{x,y,width:w,height:h,class:'thin'},p);line(x,y,x+w,y+h,'thin',p);line(x+w,y,x,y+h,'thin',p)}
+function lines(x,y,items,c='dts',step=15){items.forEach((s,i)=>tx(x,y+i*step,s,c))}
+function hatch(x,y,w,h,r=0){return mk('rect',{x,y,width:w,height:h,rx:r,fill:HAT,class:'hs'})}
+
+sv=mk('g',{transform:'translate(100,0)'},svg);at(8.1,0,.7);rr(20,20,1660,1020,16,'border');
+// Canonical source-grounded geometry shared by static sheet and film.
+at(8.2,.002,.4);
+tx(50,58,'NOTES:','nth');tx(112,58,'(UNLESS OTHERWISE SPECIFIED)','nt');
+const noteRows=[['ONE ACCESSIBLE COPY OF THE LABEL.','EMPTY ::AFTER ADDS LIGHT, NEVER TEXT.'],['TYPE METRICS COME FROM THE CALLER.','FONT, WEIGHT, TRACKING AND COLOR INHERIT.'],['ROOT MASK CLIPS TO THE GLYPHS.','THE OVERLAY TRANSLATES; GLYPHS STAY STILL.'],['OVERFLOW HIDDEN + NOWRAP + ELLIPSIS.','MAX-WIDTH CAPS THE INLINE-BLOCK AT P.'],['NO SURFACE, PADDING OR SHADOW.','BOX LINES ARE CONSTRUCTION GUIDES.'],['REDUCED MOTION REMOVES THE EFFECT.','UNSUPPORTED TEXT MASKS SHOW BASE TEXT.']];
+noteRows.forEach((ls,i)=>{nb(56,84+i*34,i+1);lines(74,88+i*34,ls,'nt',13)});
+const sheetRoot=sv;sv=mk('g',{},sheetRoot);this.plan=sv;
+at(3.4,.012,.4);title(868,65,'PLAN · SINGLE TEXT ELEMENT','PROPORTIONAL SCHEMATIC · HUG WIDTH AND GLYPHS ARE NOT DIMENSIONS');
+at(-.45,.07,1.1);rr(555,185,610,110,0,'slot');
+at(.35,.08,.65);for(let i=0;i<8;i++){rr(572+i*71,207,49,65,0,'thin');line(572+i*71,207,621+i*71,272);line(621+i*71,207,572+i*71,272)}
+at(1.35,.025,.5);line(540,272,1180,272,'cl');at(2.7,0,.4);tx(860,242,'GLYPH SLOTS · INHERITED TYPOGRAPHY','dt',{'text-anchor':'middle'});
+at(3.55,.03,.5);dimH(555,1165,140,185,185,'W · HUG ≤ P');dimV(185,295,1200,1165,1165,'H · LH');nb(540,184,2);nb(1183,294,3);
+callout(1165,295,1120,340,'OVERFLOW CLIP',-1);callout(555,185,594,108,'RELATIVE ROOT',1);
+at(3.65,.025,.45);dimH(707,1013,315,295,295,'2·S1 = 8ch');line(860,167,860,306,'ph');tx(860,359,'::AFTER INSET = 0 · W × H · POINTER-EVENTS NONE','dts',{'text-anchor':'middle'});
+lines(555,387,['DEFAULT SPAN · INLINE-BLOCK · ALIGN-TOP · MAX-WIDTH 100%', 'SINGLE LINE; LONG LABELS ELLIPSIZE AT THE AVAILABLE WIDTH.'],'dts',17);
+sv=sheetRoot;
+// EXPLODED_START
+at(6.65,.015,.45);title(265,358,'EXPLODED PAINT ORDER','SCHEMATIC · ALL PLANES SHARE THE ROOT BOX');
+const layers=[['BASE TEXT / CURRENT COLOR',0],['TRANSLATING ::AFTER',85],['GLYPH MASK / ROOT',170]];
+function layerBody(g,z){
+ mk('rect',{x:0,y:0,width:470,height:90,class:'slot'},g);
+ if(z===85){for(let i=0;i<7;i++)mk('rect',{x:155+i*23,y:0,width:23,height:90,class:i===3?'accent-free':'hug',style:'fill-opacity:'+((4-Math.abs(i-3))/4)},g)}
+ else for(let i=0;i<7;i++){mk('rect',{x:15+i*65,y:18,width:40,height:54,class:z===170?'thin':'hug'},g);mk('path',{d:'M'+(15+i*65)+',18 l40,54 M'+(55+i*65)+',18 l-40,54',class:'thin'},g)}
+ [...g.querySelectorAll('*')].forEach(e=>e.setAttribute('vector-effect','non-scaling-stroke'));
+}
+noreg=1;this.morph=[];this.flat=[610/470,0,0,110/90,555,185];this.iso=[.8,.145,-.29,.4,145,730];
+for(const [label,z] of layers){const g=mk('g',{});this.morph.push({g,z,a:5.05+z/700});layerBody(g,z)}noreg=0;
+at(7.0,.025,.4);for(const [name,z] of layers){let yy=730-z;line(122,yy,145,yy);let ls=z===0?['BASE TEXT','CURRENT COLOR']:z===85?['::AFTER','TRANSLATE']:['ROOT MASK','GLYPH CLIP'];ls.forEach((s,i)=>tx(115,yy-8+i*15,s,'dts',{'text-anchor':'end'}))}
+line(145,560,145,780,'ph');at(8.15,.008,.4);lines(60,825,['LOGICAL PAINT PLANES, NOT THREE DOM NODES.', 'THE MASK APPLIES TO THE ROOT AND ITS OVERLAY.', 'GLYPH CROSS-BOXES REPRESENT THE TEXT SILHOUETTE.', 'THE COMPONENT ADDS NO RADIUS OR SHADOW.'],'dts',19);
+// EXPLODED_END
+at(8.1,.005,.4);title(865,463,'DETAIL A · HIGHLIGHT PROFILE','HORIZONTAL LINEAR GRADIENT · 90° · ALPHA PROFILE SHOWN');
+line(565,595,1160,595);line(565,510,565,602);mk('path',{d:'M565,595 L707,595 L860,515 L1013,595 L1160,595',class:'thin'});
+line(860,500,860,615,'cl');line(707,575,707,630,'ext');line(1013,575,1013,630,'ext');dimH(707,860,641,595,515,'S1');dimH(860,1013,641,515,595,'S1');
+tx(572,527,'HIGHLIGHT','dts');tx(572,584,'TRANSPARENT','dts');tx(707,615,'W/2 − S1','dt',{'text-anchor':'middle'});tx(860,491,'W/2','dt',{'text-anchor':'middle'});tx(1013,615,'W/2 + S1','dt',{'text-anchor':'middle'});
+lines(555,679,['LIGHT: CURRENT COLOR 45% + WHITE 55%', 'DARK: CURRENT COLOR 20% + WHITE 80%', 'S1 USES THE FONT’S ch UNIT; IT IS NOT A PIXEL CONSTANT.'],'dts',17);
+at(8.3,.004,.4);title(865,765,'DETAIL B · ONE LINEAR SWEEP','TRANSLATE PERCENTAGES REFER TO THE OVERLAY’S OWN WIDTH W');
+const trackX=580,trackY=820,trackW=560;line(trackX,trackY,trackX+trackW,trackY);for(let i=0;i<3;i++){let x=trackX+i*trackW/2;line(x,trackY-7,x,trackY+7);rr(x-34,trackY-36,68,18,0,'slot');tx(x,trackY-22,'OVERLAY','sl',{'text-anchor':'middle'});tx(x,trackY+28,['−W','0','+W'][i],'dt',{'text-anchor':'middle'});tx(x,trackY+50,['t = 0','t = T/2','t = T'][i],'dt',{'text-anchor':'middle'})}
+dimH(trackX,trackX+trackW,905,trackY,trackY,'TRAVEL = 2·W');lines(555,936,['X(t) = W·(2t/T − 1), 0 ≤ t ≤ T', 'LOOP: INFINITE · ONCE: ONE ITERATION; REST AT +W', 'OFF / REDUCED / NO MASK SUPPORT: ORDINARY TEXT.'],'dt',20);
+at(8.55,.002,.4);tx(50,942,'SOURCE + MEASUREMENT AUDIT','vt');lines(50,963,['text-shimmer.tsx / .variants.ts; globals.css; theme registry.', 'Three JSX consumers + shared usage reference surveyed.', 'Demo: font 18px; line-height ≈ 26px; 4ch ≈ 48.456px.', 'Demo values are observations, not component constraints.'],'source',15);
+at(8.4,.001,.35);let yy=70;const xx=1260;
+yy=table(xx,yy,'LAYOUT / INHERITANCE',[
+ ['W','root / overlay width','HUG ≤ P; content-dependent'],['P','parent width','Caller-defined · [TBD]'],['H','root / overlay height','LH · inherited · [TBD]'],['F','font-size','Inherited · [TBD]'],['LH','line-height','Inherited · [TBD]'],['LS','letter-spacing','Inherited · [TBD]'],['S0','padding / inset','0 / 0'],['B / R','border / radius','None supplied'],['MW','max-width','100% of parent P']]);
+yy=table(xx,yy,'GRADIENT / CLIP',[
+ ['S1','half-spread','4ch (CSS variable override)'],['S2','full highlight span','2·S1 = 8ch'],['A','gradient angle','90deg'],['C','highlight center','50% of overlay width = W/2'],['G1','transparent start','C − S1'],['G2','opaque highlight','C'],['G3','transparent end','C + S1'],['M','root mask','linear-gradient(white, white)'],['MC','mask clip','text; gated by @supports']]);
+yy=table(xx,yy,'TIMING / PLAYBACK',[
+ ['T','sweep duration','2.5s; positive finite override'],['Q','easing','linear'],['X0','start translate','−100% = −W'],['X1','end / rest translate','100% = +W'],['D','travel distance','X1 − X0 = 2·W'],['N','iteration count','infinite; once = 1'],['RM','reduced motion','No overlay; no root mask'],['AX','accessible label','One original text copy']]);
+at(8.8,.002,.4);lines(xx,yy+7,['DURATION IS INDEPENDENT OF MOTION TOKENS.', 'INVALID DURATION FALLS BACK TO T = 2.5s.', 'STYLE OVERRIDES MAY REPLACE CSS VARIABLES.', 'OFF AND REDUCED MOTION OVERRIDE UTILITIES.', 'FONT FAMILY / WEIGHT REMAIN CALLER-DEFINED.'],'dts',18);
+at(8.85,.004,.4);tx(1260,830,'CSS VARIABLE HOOKS','vt');lines(1260,852,['--text-shimmer-duration → T', '--text-shimmer-spread → S1', '--text-shimmer-highlight → highlight color', '--text-shimmer-base → inherited color fallback', '--text-shimmer-mask → M', '--text-shimmer-display → overlay visibility'],'source',18);
+
+  },
+  render(t) {
+    t = t / 0.85;
+    let i = 0; while (i < DW_CAM.length - 2 && t > DW_CAM[i + 1].t) i++;
+    const c0 = DW_CAM[i], c1 = DW_CAM[i + 1], p = eio(seg(t, c0.t, c1.t));
+    const z = Math.exp(lerp(Math.log(c0.z), Math.log(c1.z), p)), cx = lerp(c0.cx, c1.cx, p), cy = lerp(c0.cy, c1.cy, p);
+    this.cam.transform = 'translate(' + (960 - cx * z) + 'px,' + (540 - cy * z) + 'px) scale(' + z + ')';
+    this.plan.style.opacity=1-eo(seg(t,5.0,5.65))*(1-eo(seg(t,8.3,9.2)));
+    for (const it of this.reg) {
+      let v = clamp01((t - it.a) / (it.b - it.a)); v = Math.round(v * 400) / 400;
+      if (v === it.last) continue; it.last = v; const s = it.e.style;
+      if (it.k === 'f') { s.opacity = eo(v); continue; }
+      const e = eio(v); s.opacity = Math.min(1, v * 6);
+      if (v >= 1) { s.strokeDasharray = ''; s.strokeDashoffset = ''; } else { s.strokeDasharray = '1 2'; s.strokeDashoffset = 1 - e; }
+      s.fillOpacity = eo(seg(v, .55, 1));
+    }
+    const F = this.flat, I = this.iso;
+    this.morph.forEach((m, j) => {
+      const v = eio(seg(t, m.a, m.a + 1.5)), M = F.map((f, n) => lerp(f, I[n], v));
+      M[5] -= m.z * v;
+      m.g.style.opacity = eo(seg(t, m.a + 0.05, m.a + 0.5));
+      const progress=eio(seg(t,m.a,m.a+.7));
+      m.strokes=m.strokes||[...m.g.querySelectorAll('.obj,.thin,.hug')];
+      for(const el of m.strokes){el.setAttribute('pathLength','1');el.style.strokeDasharray=progress>=1?'':'1 2';el.style.strokeDashoffset=progress>=1?'':String(1-progress)}
+      const fo = eo(seg(t, m.a + 0.55, m.a + 1.25)); if (fo !== m.fo) { m.fo = fo; m.fills = m.fills || m.g.querySelectorAll('.obj,.well,.hug,.accent-free'); m.fills.forEach(e => { e.style.fillOpacity = fo; }); }
+      m.g.setAttribute('transform', 'matrix(' + M.join(',') + ')');
+      m.g.style.setProperty('--u', 1 / Math.sqrt(Math.abs(M[0] * M[3] - M[1] * M[2])));
+    });
+  },
+});
+</script>
+<script>
+  const ids = Object.keys(SCENES);
+  const SC = SCENES[cfg.scene] || SCENES[ids[0]];
+  SC.init(kit);
+  window.R = t => SC.render(t, kit);
+  window.R(0);
+  window.__READY__ = true;
+</script>
+<style>
+html,body{width:100%;height:100%;overflow:hidden;background:#fff;color:#111;font-family:Helvetica,Arial,sans-serif;color-scheme:light}
+#stage{transform-origin:0 0}#controls{position:fixed;bottom:0;left:0;right:0;display:flex;align-items:center;gap:16px;padding:12px 24px;background:#fff;border-top:1px solid #ddd;font-size:11px;letter-spacing:.06em}
+#controls button{background:#fff;color:#111;border:1px solid #999;border-radius:4px;padding:7px 12px;font:inherit;cursor:pointer}#controls input{flex:1;accent-color:#111}#time{font-variant-numeric:tabular-nums;min-width:68px}
+@media(prefers-reduced-motion:reduce){#controls button{transition:none}}
+</style><div id="controls"><button id="play" aria-label="Play or pause animation">PLAY</button><button id="replay">REPLAY</button><input id="seek" type="range" aria-label="Animation time" min="0" max="11" step="0.01" value="0"><output id="time">0.00 / 11 s</output></div>
+<script>
+const resize=()=>{const scale=Math.min(innerWidth/1920,(innerHeight-58)/1080);stage.style.transform='translate('+((innerWidth-1920*scale)/2)+'px,'+((innerHeight-58-1080*scale)/2)+'px) scale('+scale+')'};addEventListener('resize',resize);resize();
+let clock=0,playing=false,last=0;const seek=document.getElementById('seek'),play=document.getElementById('play'),time=document.getElementById('time');
+function show(){R(clock);seek.value=clock;time.textContent=clock.toFixed(2)+' / 11 s';play.textContent=playing?'PAUSE':'PLAY'}
+play.onclick=()=>{if(clock>=11)clock=0;playing=!playing;last=performance.now();show()};document.getElementById('replay').onclick=()=>{clock=0;playing=true;last=performance.now();show()};seek.oninput=()=>{clock=Number(seek.value);playing=false;show()};
+function tick(now){if(playing){clock=Math.min(11,clock+(now-last)/1000);if(clock>=11)playing=false;show()}last=now;requestAnimationFrame(tick)}
+if(matchMedia('(prefers-reduced-motion:reduce)').matches)clock=11;show();requestAnimationFrame(tick);
+</script></body>
+</html>

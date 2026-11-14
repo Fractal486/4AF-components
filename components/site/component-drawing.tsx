@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type MouseEvent } from "react";
 import { Dialog as BaseDialog } from "@base-ui/react/dialog";
-import { useReducedMotion } from "motion/react";
 import { InlineLink } from "@/components/inline-link";
 import type { ComponentDrawing as Drawing } from "@/lib/drawings";
 import { cn } from "@/registry/lib/cn";
+import { prefersReducedMotion, subscribeReducedMotion } from "@/registry/lib/reduced-motion";
 import { Dialog, DialogBackdrop, DialogPortal, DialogTitle, DialogTrigger } from "@/registry/ui/dialog/dialog";
 
 interface ComponentDrawingProps extends Drawing {
@@ -17,7 +17,9 @@ interface ComponentDrawingProps extends Drawing {
  * docs come into view; either way, opening it shows the vector drawing at full size.
  */
 export function ComponentDrawing({ title, svg, sheetUrl, filmUrl }: ComponentDrawingProps) {
-  const reduceMotion = useReducedMotion();
+  // Keep the server and hydration markup identical, then follow the device preference.
+  // This also swaps the film for its sheet when reduced motion changes while open.
+  const reduceMotion = useSyncExternalStore(subscribeReducedMotion, prefersReducedMotion, () => false);
   const [from, setFrom] = useState<CSSProperties>();
 
   // Measured on the click, before the popup renders: its starting style places it over the

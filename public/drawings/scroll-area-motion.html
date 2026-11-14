@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Scroll area · Motion drawing</title>
+<!-- Headless player for dimensional-drawing motion scenes.
+     render.mjs injects: STAGE_W, STAGE_H, BG, the scene CSS and the scene JS.
+     The scene API matches Claude Motion's kit: kit.scene(id, { init(kit), render(t) }). -->
+
+<style>
+  html, body { margin: 0; background: var(--bg, #fff); }
+  #stage { position: absolute; left: 0; top: 0; overflow: hidden; --sans: Helvetica, Arial, sans-serif; }
+</style>
+<style id="scene-css">#stage { --ground:#ffffff; --main:#111111; --second:#111112; --accent:#767676; color:var(--second); font-family:var(--sans, system-ui, sans-serif) }
+.ground { position:absolute; inset:0; background:var(--ground) }
+.dw-cam { position:absolute; left:0; top:0; width:1900px; height:1060px; transform-origin:0 0 }
+.dw-svg { position:absolute; left:0; top:0; overflow:visible; --u:1 }
+.dw-svg text { font-family:var(--sans, system-ui, sans-serif); text-transform:uppercase }
+.dw-svg .border { fill:none; stroke:var(--main); stroke-width:1.2 }
+.dw-svg .obj { fill:var(--ground); stroke:var(--main); stroke-width:calc(1.6px * var(--u)); stroke-linejoin:round }
+.dw-svg .well { fill:color-mix(in srgb, var(--second) 5%, var(--ground)); stroke:var(--main); stroke-width:calc(1px * var(--u)) }
+.dw-svg .hug { fill:color-mix(in srgb, var(--second) 10%, var(--ground)); stroke:var(--main); stroke-width:calc(1px * var(--u)) }
+.dw-svg .slot { fill:none; stroke:color-mix(in srgb, var(--second) 75%, var(--ground)); stroke-width:calc(.8px * var(--u)); stroke-dasharray:calc(4px * var(--u)) calc(3px * var(--u)) }
+.dw-svg .thin { fill:none; stroke:var(--main); stroke-width:calc(.8px * var(--u)) }
+.dw-svg .ph { fill:none; stroke:var(--accent); stroke-width:calc(.8px * var(--u)); stroke-dasharray:calc(14px * var(--u)) calc(3px * var(--u)) calc(3px * var(--u)) calc(3px * var(--u)) }
+.dw-svg .cl { fill:none; stroke:var(--accent); stroke-width:.7; stroke-dasharray:16 3 2 3 }
+.dw-svg .dl, .dw-svg .lead { stroke:var(--main); stroke-width:.7; fill:none }
+.dw-svg .ext { stroke:var(--main); stroke-width:.55; fill:none }
+.dw-svg .arrow, .dw-svg .dot { fill:var(--main) }
+.dw-svg .hl { stroke:color-mix(in srgb, var(--second) 70%, var(--ground)); stroke-width:.7 }
+.dw-svg .hs { stroke:var(--main); stroke-width:calc(.8px * var(--u)) }
+.dw-svg .env { fill:none; stroke:var(--main); stroke-width:.8; stroke-dasharray:10 3 2 3 }
+.dw-svg .nb { fill:var(--ground); stroke:var(--main); stroke-width:.9 }
+
+.dw-svg .source{font-size:10px;fill:#444;text-transform:none}.dw-svg .tc{font-size:10px}.dw-svg .nt{font-size:10.5px;letter-spacing:.035em}.dw-svg .cut{stroke:#111;stroke-width:2}</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+  const cfg = window.__CFG__ || { w: 1920, h: 1080, bg: '#ffffff' };
+  const stage = document.getElementById('stage');
+  stage.style.width = cfg.w + 'px';
+  stage.style.height = cfg.h + 'px';
+  stage.style.background = cfg.bg;
+  document.documentElement.style.setProperty('--bg', cfg.bg);
+
+  // Minimal kit shim (same helpers the scenes use in Claude Motion).
+  var SCENES = {};
+  var kit = (function () {
+    const clamp01 = x => Math.max(0, Math.min(1, x));
+    const seg = (t, a, b) => clamp01((t - a) / (b - a));
+    const lerp = (a, b, p) => a + (b - a) * p;
+    const eo = x => 1 - Math.pow(1 - x, 3);
+    const ei = x => x * x * x;
+    const eio = x => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+    return {
+      seg, lerp, eo, ei, eio, clamp01, stage,
+      width: cfg.w, height: cfg.h,
+      h: s => { const d = document.createElement('div'); d.innerHTML = s.trim(); return d.firstElementChild; },
+      css: s => { const st = document.createElement('style'); st.textContent = s; stage.appendChild(st); },
+      scene: (id, o) => { SCENES[id] = o; },
+    };
+  })();
+</script>
+<script id="scene-js">const { seg, lerp, eo, eio, clamp01 } = kit;
+const DW_NS = 'http://www.w3.org/2000/svg';
+const DW_CAM = [
+{t:0,cx:1014,cy:225,z:4.4},{t:2.3,cx:1008,cy:229,z:4.15},
+{t:4.2,cx:809,cy:300,z:1.7},{t:5.2,cx:800,cy:305,z:1.68},
+{t:7.2,cx:334,cy:810,z:1.95},{t:7.7,cx:334,cy:810,z:1.92},
+{t:9.5,cx:850,cy:530,z:.998},{t:13,cx:850,cy:530,z:.988}];
+kit.scene('drawing', {
+  init(kit) {
+    kit.css('.dw-svg .dt{font-size:11px;fill:var(--main);paint-order:stroke;stroke:var(--ground);stroke-width:4px;stroke-linejoin:round}' +
+      '.dw-svg .dts{font-size:9.5px;fill:color-mix(in srgb,var(--second) 75%,var(--ground));letter-spacing:.06em;paint-order:stroke;stroke:var(--ground);stroke-width:3px}' +
+      '.dw-svg .sl{font-size:9px;fill:color-mix(in srgb,var(--second) 75%,var(--ground));letter-spacing:.08em}' +
+      '.dw-svg .nt{font-size:11.5px;fill:var(--main);letter-spacing:.06em}.dw-svg .nth{font-size:13px;font-weight:700;fill:var(--main);letter-spacing:.06em}' +
+      '.dw-svg .vt{font-size:12px;fill:var(--main);letter-spacing:.1em}.dw-svg .nbt{font-size:9.5px;fill:var(--main)}' +
+      '.dw-svg .th{font-size:10.5px;fill:var(--main);letter-spacing:.05em}.dw-svg .tc{font-size:10.5px;fill:var(--main);text-transform:none}');
+    const root = kit.h('<div class="ground"><div class="dw-cam"></div></div>');
+    kit.stage.append(root);
+    const camEl = root.querySelector('.dw-cam');
+    this.cam = camEl.style;
+    const svg = document.createElementNS(DW_NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 1900 1060'); svg.setAttribute('width', '1900'); svg.setAttribute('height', '1060'); svg.setAttribute('class', 'dw-svg');
+    camEl.appendChild(svg);
+    const REG = this.reg = []; let sv = svg, CUR = { a: 0, s: 0, d: .6, i: 0 }, noreg = 0;
+    const at = (a, s, d) => { CUR = { a: a, s: s || 0, d: d || .6, i: 0 }; };
+    const kind = (e, t) => { if (t === 'text') return 'f'; const c = ' ' + (e.getAttribute('class') || '') + ' ';
+      if (/ (slot|ph|cl|env|hs) /.test(c) || (e.getAttribute('fill') || '').indexOf('url') === 0) return 'f'; return 'd'; };
+    function mk(t, a, p) { const e = document.createElementNS(DW_NS, t); for (const k in a) if (a[k] != null) e.setAttribute(k, a[k]); (p || sv).appendChild(e);
+      if (!noreg && t !== 'g') { const s = CUR.a + CUR.i * CUR.s; CUR.i++; const k = kind(e, t); if (k === 'd') e.setAttribute('pathLength', '1'); e.style.opacity = 0; REG.push({ e: e, a: s, b: s + CUR.d, k: k, last: -1 }); }
+      return e; }
+    function tx(x, y, s, c, a, p) { const t = mk('text', Object.assign({ x: x, y: y, class: c || 'dt' }, a || {}), p); t.textContent = s; return t; }
+    noreg = 1; const d = mk('defs', {}); const m = mk('marker', { id: 'dwar', viewBox: '0 0 10 10', refX: 10, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse', markerUnits: 'userSpaceOnUse' }, d);
+    mk('path', { d: 'M0,1.7 L10,5 L0,8.3 z', class: 'arrow' }, m);
+    const pt = mk('pattern', { id: 'dwhat', width: 5, height: 5, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, d); mk('line', { x1: 0, y1: 0, x2: 0, y2: 5, class: 'hl' }, pt); noreg = 0;
+    const A = 'url(#dwar)', HAT = 'url(#dwhat)';
+    function dimH(x1, x2, y, e1, e2, l, o) { o = o || {}; [[x1, e1], [x2, e2]].forEach(([x, e]) => { if (e == null) return; const s = Math.sign(y - e) || 1; mk('line', { x1: x, y1: e + s * 3, x2: x, y2: y + s * 5, class: 'ext' }); });
+      if (x2 - x1 >= 28) mk('line', { x1: x1, y1: y, x2: x2, y2: y, class: 'dl', 'marker-start': A, 'marker-end': A }); else { mk('line', { x1: x1 - 13, y1: y, x2: x1, y2: y, class: 'dl', 'marker-end': A }); mk('line', { x1: x2 + 13, y1: y, x2: x2, y2: y, class: 'dl', 'marker-end': A }); }
+      tx((x1 + x2) / 2 + (o.dx || 0), (o.below ? y + 13 : y - 4) + (o.dy || 0), l, o.c || 'dt', { 'text-anchor': 'middle' }); }
+    function dimV(y1, y2, x, e1, e2, l, o) { o = o || {}; [[y1, e1], [y2, e2]].forEach(([y, e]) => { if (e == null) return; const s = Math.sign(x - e) || 1; mk('line', { x1: e + s * 3, y1: y, x2: x + s * 5, y2: y, class: 'ext' }); });
+      if (y2 - y1 >= 28) mk('line', { x1: x, y1: y1, x2: x, y2: y2, class: 'dl', 'marker-start': A, 'marker-end': A }); else { mk('line', { x1: x, y1: y1 - 13, x2: x, y2: y1, class: 'dl', 'marker-end': A }); mk('line', { x1: x, y1: y2 + 13, x2: x, y2: y2, class: 'dl', 'marker-end': A }); }
+      const c = (y1 + y2) / 2; if (o.side) { const r = o.side === 'r'; tx(r ? x + 6 : x - 6, c + 4, l, o.c || 'dt', { 'text-anchor': r ? 'start' : 'end' }); } else tx(x - 5, c, l, o.c || 'dt', { 'text-anchor': 'middle', transform: 'rotate(-90 ' + (x - 5) + ' ' + c + ')' }); }
+    function callout(px, py, ex, ey, l, dir, c) { const s = dir || (ex >= px ? 1 : -1); mk('circle', { cx: px, cy: py, r: 1.8, class: 'dot' }); mk('polyline', { points: px + ',' + py + ' ' + ex + ',' + ey + ' ' + (ex + s * 10) + ',' + ey, class: 'lead' }); tx(ex + s * 14, ey + 4, l, c || 'dt', { 'text-anchor': s > 0 ? 'start' : 'end' }); }
+    function rad(cx, cy, r, c, l, L) { const sx = c.indexOf('l') > -1 ? -1 : 1, sy = c.indexOf('t') > -1 ? -1 : 1; const ox = cx - sx * r, oy = cy - sy * r; callout(ox + sx * r * Math.SQRT1_2, oy + sy * r * Math.SQRT1_2, ox + sx * r * Math.SQRT1_2 + sx * L, oy + sy * r * Math.SQRT1_2 + sy * L, l, sx); }
+    function nb(x, y, n) { mk('rect', { x: x - 6, y: y - 6, width: 12, height: 12, class: 'nb' }); tx(x, y + 3.5, String(n), 'nbt', { 'text-anchor': 'middle' }); }
+    function rr(x, y, w, h, r, c, p) { return mk('rect', { x: x, y: y, width: w, height: h, rx: r, class: c }, p); }
+    function slotLabel(x, y, w, h, l, al, p) { tx(al === 'l' ? x + 6 : x + w / 2, y + h / 2 + 3.2, l, 'sl', { 'text-anchor': al === 'l' ? 'start' : 'middle' }, p); }
+    function title(x, y, t, s) { tx(x, y, t, 'vt', { 'text-anchor': 'middle' }); if (s) tx(x, y + 14, s, 'dts', { 'text-anchor': 'middle' }); }
+    function xbox(x, y, w, h, p) { mk('rect', { x: x, y: y, width: w, height: h, class: 'thin' }, p); mk('path', { d: 'M' + x + ',' + y + ' l' + w + ',' + h + ' M' + (x + w) + ',' + y + ' l' + (-w) + ',' + h, class: 'thin' }, p); }
+    function detailRef(cx, cy, r, lbl, lx, ly) { mk('circle', { cx: cx, cy: cy, r: r, class: 'ph' }); const a = Math.atan2(ly - cy, lx - cx); mk('line', { x1: cx + r * Math.cos(a), y1: cy + r * Math.sin(a), x2: lx, y2: ly, class: 'lead' }); tx(lx + (lx < cx ? -4 : 4), ly + 4, lbl, 'dts', { 'text-anchor': lx < cx ? 'end' : 'start' }); }
+    function table(x, y, ttl, rows) { const ws = [40, 88, 96], rh = 17; tx(x, y - 8, ttl, 'vt'); [['Code', 'Variable', 'Value']].concat(rows).forEach((r, i) => { let c2 = x; r.forEach((c, j) => { mk('rect', { x: c2, y: y + i * rh, width: ws[j], height: rh, class: 'thin' }); tx(c2 + (j ? ws[j] / 2 : 6), y + i * rh + 12, c, i ? 'tc' : 'th', { 'text-anchor': j ? 'middle' : 'start' }); c2 += ws[j]; }); }); return y + (rows.length + 1) * rh + 36; }
+    function notes(list) { tx(50, 58, 'Notes:', 'nth'); tx(112, 58, '(unless otherwise specified)', 'nt'); list.forEach(([n, t], i) => { const y = 88 + i * 24; nb(56, y - 4, n); tx(72, y, t, 'nt'); }); }
+// Slightly wider tables accommodate the source formulas without abbreviating them.
+table=function(x,y,ttl,rows){const ws=[43,125,212],rh=16;tx(x,y-9,ttl,'vt');const all=[['Code','Variable','Value / formula']].concat(rows);all.forEach((r,i)=>{let xx=x;r.forEach((c,j)=>{mk('rect',{x:xx,y:y+i*rh,width:ws[j],height:rh,class:'thin'});tx(xx+6,y+i*rh+11.5,c,i?'tc':'th');xx+=ws[j]})});return y+all.length*rh+29};
+function line(x1,y1,x2,y2,c='thin',p){return mk('line',{x1,y1,x2,y2,class:c},p)}
+function cross(x,y,w,h,p){mk('rect',{x,y,width:w,height:h,class:'thin'},p);line(x,y,x+w,y+h,'thin',p);line(x+w,y,x,y+h,'thin',p)}
+function lines(x,y,items,c='dts',step=15){items.forEach((s,i)=>tx(x,y+i*step,s,c))}
+function hatch(x,y,w,h,r=0){return mk('rect',{x,y,width:w,height:h,rx:r,fill:HAT,class:'hs'})}
+
+// Layout and slot bounds are proportional where the caller owns geometry.
+const W=420,H=288,PX=600,PY=156,k=1;
+function layer(g,z){
+ if(z===0)rr(0,0,W,H,14,'slot',g);
+ if(z===48){rr(0,0,W,H,14,'obj',g);rr(16,16,W-32,H-32,0,'slot',g)}
+ if(z===96){rr(0,0,W,28,0,'hug',g);rr(0,H-28,W,28,0,'hug',g)}
+ if(z===144){rr(W-10,0,10,H,0,'slot',g);rr(W-8,2,5,H-4,2.5,'well',g);rr(W-8,65,5,70,2.5,'hug',g)}
+}
+at(-.35,0,1.6);mk('path',{d:`M ${PX+W},${PY+H/2} V ${PY+14} Q ${PX+W},${PY} ${PX+W-14},${PY} H ${PX+14} Q ${PX},${PY} ${PX},${PY+14} V ${PY+H-14} Q ${PX},${PY+H} ${PX+14},${PY+H} H ${PX+W-14} Q ${PX+W},${PY+H} ${PX+W},${PY+H-14} Z`,class:'obj'});
+at(.2,.12,.55);rr(PX+410,PY,10,H,0,'slot');rr(PX+412,PY+2,5,H-4,2.5,'well');rr(PX+412,PY+65,5,70,2.5,'hug');
+at(.9,.03,.5);dimH(PX+410,PX+420,PY-30,PY,PY,'T1');callout(PX+414.5,PY+90,1095,235,'W1',1);nb(PX+428,PY+50,2);
+at(1.7,.05,.5);rr(PX+16,PY+34,W-46,24,0,'slot');slotLabel(PX+16,PY+34,W-46,24,'HEADER SLOT · CALLER');
+at(2.1,.06,.5);for(let j=0;j<5;j++){rr(PX+16,PY+70+j*36,W-46,28,0,'slot');slotLabel(PX+16,PY+70+j*36,W-46,28,'CONTENT SLOT · FILL')}
+at(2.55,.06,.55);hatch(PX,PY,W,28);hatch(PX,PY+H-28,W,28);nb(PX-16,PY+22,3);
+at(2.8,.02,.45);dimH(PX,PX+W,105,PY,PY,'W · CALLER');dimV(PY,PY+H,PX-44,PX,PX,'H · CALLER');dimV(PY,PY+28,1060,PX+W,PX+W,'F1',{side:'r'});dimV(PY+H-28,PY+H,1060,PX+W,PX+W,'F1',{side:'r'});rad(PX,PY,14,'tl','R2',24);detailRef(PX+415,PY+H-8,20,'DETAIL A',1115,480);
+at(3.25,.05,.45);title(PX+W/2,58,'PLAN · VERTICAL OVERFLOW','REFERENCE DEMO H · WIDTH SCHEMATIC · MID-SCROLL');lines(600,492,['ROOT AND VIEWPORT SHARE THE SAME CLIP.', 'TRACK OVERLAYS CONTENT; IT RESERVES NO WIDTH.', 'HATCH = MASK REGION, NOT A VISIBLE SURFACE.']);nb(995,418,1);
+at(8,.02,.4);tx(50,58,'NOTES:','nth');
+const notesList=[['CALLER SIZES AND STYLES THE ROOT.', 'NO BUILT-IN PADDING, BORDER OR SHADOW.'],['AXIS BARS MOUNT ONLY WHILE OVERFLOWING.', 'NATIVE SCROLL / TOUCH / KEYBOARD REMAIN.'],['FADES TRACK REMAINING SCROLL DISTANCE.', 'TOP INSET CAN PRESERVE A PINNED HEADER.'],['AUTO: HOVER OR SCROLL REVEALS THE BAR.', 'HIDDEN BAR PASSES POINTER EVENTS THROUGH.'],['HORIZONTAL / BOTH WRAP THE CONTENT.', 'VERTICAL MODE OBSERVES CHILD RESIZES.'],['FOCUS OUTLINE IS ON THE UNMASKED ROOT.', 'ONLY DIRECT-CHILD VIEWPORT FOCUS TRIGGERS IT.']];
+notesList.forEach((ls,i)=>{nb(56,88+i*43, i+1);lines(72,91+i*43,ls,'nt',15)});
+at(8.35,.02,.45);title(245,399,'AXIS COMPOSITION','PROPORTIONAL · SAME CROSS-AXIS GEOMETRY');
+for(let j=0;j<3;j++){let x=65+j*124;rr(x,430,104,91,7,'obj');rr(x+9,440,76,62,0,'slot');if(j!==1){rr(x+96,432,5,87,2.5,'well');rr(x+96,444,5,28,2.5,'hug')}if(j!==0){rr(x+2,513,100,5,2.5,'well');rr(x+15,513,30,5,2.5,'hug')}tx(x+52,544,['VERTICAL','HORIZONTAL','BOTH'][j],'sl',{'text-anchor':'middle'})}
+lines(65,574,['BOTH: CORNER JOINS THE TWO OVERLAY TRACKS.', 'CONTENT WRAPPER SIZES TO FIT WIDE CHILDREN.']);nb(430,490,5);
+at(8.6,.025,.45);title(1082,594,'DETAIL A · TRACK SECTION','SCALE 10:1 · VERTICAL CROSS AXIS');
+rr(1030,640,100,170,0,'slot');rr(1050,640,50,170,25,'well');rr(1050,672,50,106,25,'hug');line(1130,625,1130,835,'cut');
+dimH(1030,1130,619,640,640,'T1');dimH(1030,1050,845,810,810,'S1',{dx:-12,dy:15});dimH(1050,1100,845,810,810,'W1');dimH(1100,1130,845,810,810,'S2',{dx:12,dy:15});rad(1100,672,25,'tr','R1',18);lines(987,891,['DASH = HIT AREA · GREY = RAIL / THUMB', 'OUTER EDGE →  S2 + W1 + S1 = T1', 'HORIZONTAL: ROTATE THIS SECTION 90°']);
+at(8.9,.025,.4);title(780,650,'DETAIL B · EDGE MASK','PROPORTIONAL · PINNED TOP REGION');
+rr(654,690,230,203,0,'obj');rr(654,690,230,38,0,'slot');slotLabel(654,690,230,38,'PINNED SLOT · CALLER');hatch(654,728,230,40);hatch(654,853,230,40);rr(670,781,198,55,0,'slot');slotLabel(670,781,198,55,'CONTENT · SCROLLS');dimV(690,728,628,654,654,'S3',{side:'l'});dimV(728,768,913,884,884,'F2',{side:'r'});dimV(853,893,913,884,884,'F2',{side:'r'});nb(866,708,3);lines(650,936,['F2 = min(REMAINING DISTANCE, F1)', 'X / Y MASKS INTERSECT; RTL FLIPS X.', 'AT AN EDGE: THAT EDGE HAS ZERO FADE.']);
+at(9.1,.003,.3);let yy=table(1280,86,'Spacing + geometry',[
+ ['T1','track cross-axis','10 px'],['S1','inner / end pad','0.5 spacing = 2 px'],['S2','outer edge pad','3 px'],['W1','rail / thumb','T1 − S1 − S2 = 5 px'],['R1','rail / thumb radius','W1 ÷ 2 = 2.5 px'],['S3','top inset','custom property; default 0'],['F1','fade cap','1.75rem = 28 px'],['F2','live fade','min(remaining, F1)']]);
+yy=table(1280,yy,'Caller + runtime dimensions',[
+ ['W','root width','[TBD] · caller'],['H','root height','[TBD] · demo 288 px'],['R2','root / viewport radius','[TBD] · demo 14 px'],['L1','thumb length','runtime · content ratio'],['P1','thumb position','runtime · scroll offset'],['O1','focus outline','2 px; offset −2 px']]);
+yy=table(1280,yy,'Visibility timing',[
+ ['D1','auto reveal','--duration-fast = 150ms'],['D2','auto disappear','--duration-slow = 300ms'],['D3','reduced motion','D1 / D2 = 1ms'],['D4','scroll linger','primitive-owned · [TBD]']]);
+tx(1280,yy+10,'SOURCE REGISTER','vt');lines(1280,yy+35,['registry/ui/scroll-area/', '  scroll-area.tsx · composition / resize', '  scroll-area.variants.ts · geometry', 'app/globals.css · motion / spacing', 'inspector/entries/scroll-area.tsx · demo'],'source',19);lines(1280,yy+157,['NOMINAL PIXELS ASSUME 16PX ROOT FONT.', 'SHEET IS NOT A SCALE MEASUREMENT.', 'L1 / P1 CHANGE WITH LIVE CONTENT.'],'dts',18);
+at(9.3,.02,.4);line(50,990,1650,990,'thin');tx(50,1015,'UI-SCROLL-001 · SCROLL AREA · ARCHITECTURE','dts');tx(1650,1015,'ONE SHEET · SOURCE GEOMETRY / CALLER SCHEMATICS','dts',{'text-anchor':'end'});
+
+const ia=.658,ib=.119,ic=-.238,id=.329,TX=310,TY=825;
+const P=(x,y,z)=>[TX+ia*x+ic*y,TY+ib*x+id*y-z];
+at(7,.04,.4);title(274,638,'EXPLODED ARCHITECTURE','Z SEPARATION SCHEMATIC · NO SHADOW LAYER');
+for(const [z,name] of [[144,'OVERLAY TRACK + THUMB'],[96,'VIEWPORT MASK'],[48,'SCROLLING VIEWPORT'],[0,'ROOT CLIP + FOCUS']]){
+ let p=P(0,200,z);line(p[0],p[1],71,p[1],'lead');tx(65,p[1]-5,name,'sl');
+}
+at(7.3,.05,.4);lines(65,963,['MASK AFFECTS VIEWPORT; OVERLAY BAR STAYS OPAQUE.']);
+
+noreg=1;this.morph=[];
+for(const z of [0,48,96,144]){const g=mk('g',{});g.style.opacity=0;this.morph.push({g,z,a:5.3+z/480});layer(g,z)}
+noreg=0;this.iso=[ia,ib,ic,id,TX,TY];this.flat=[1,0,0,1,PX,PY];
+at(7.9,0,1.2);rr(20,20,1660,1020,16,'border');
+  },
+  render(t) {
+    t = t / 0.85;
+    let i = 0; while (i < DW_CAM.length - 2 && t > DW_CAM[i + 1].t) i++;
+    const c0 = DW_CAM[i], c1 = DW_CAM[i + 1], p = eio(seg(t, c0.t, c1.t));
+    const z = Math.exp(lerp(Math.log(c0.z), Math.log(c1.z), p)), cx = lerp(c0.cx, c1.cx, p), cy = lerp(c0.cy, c1.cy, p);
+    this.cam.transform = 'translate(' + (960 - cx * z) + 'px,' + (540 - cy * z) + 'px) scale(' + z + ')';
+    for (const it of this.reg) {
+      let v = clamp01((t - it.a) / (it.b - it.a)); v = Math.round(v * 400) / 400;
+      if (v === it.last) continue; it.last = v; const s = it.e.style;
+      if (it.k === 'f') { s.opacity = eo(v); continue; }
+      const e = eio(v); s.opacity = Math.min(1, v * 6);
+      if (v >= 1) { s.strokeDasharray = ''; s.strokeDashoffset = ''; } else { s.strokeDasharray = '1 2'; s.strokeDashoffset = 1 - e; }
+      s.fillOpacity = eo(seg(v, .55, 1));
+    }
+    const F = this.flat, I = this.iso;
+    this.morph.forEach((m, j) => {
+      const v = eio(seg(t, m.a, m.a + 1.5)), M = F.map((f, n) => lerp(f, I[n], v));
+      M[5] -= m.z * v;
+      m.g.style.opacity = eo(seg(t, m.a + 0.05, m.a + 0.5));
+      const fo = eo(seg(t, m.a + 0.55, m.a + 1.25)); if (fo !== m.fo) { m.fo = fo; m.fills = m.fills || m.g.querySelectorAll('.obj,.well,.hug'); m.fills.forEach(e => { e.style.fillOpacity = fo; }); }
+      m.g.setAttribute('transform', 'matrix(' + M.join(',') + ')');
+      m.g.style.setProperty('--u', 1 / Math.sqrt(Math.abs(M[0] * M[3] - M[1] * M[2])));
+    });
+  },
+});
+</script>
+<script>
+  const ids = Object.keys(SCENES);
+  const SC = SCENES[cfg.scene] || SCENES[ids[0]];
+  SC.init(kit);
+  window.R = t => SC.render(t, kit);
+  window.R(0);
+  window.__READY__ = true;
+</script>
+<style>
+html,body{width:100%;height:100%;overflow:hidden;background:#fff;color:#111;font-family:Helvetica,Arial,sans-serif;color-scheme:light}
+#stage{transform-origin:0 0}#controls{position:fixed;bottom:0;left:0;right:0;display:flex;align-items:center;gap:16px;padding:12px 24px;background:#fff;border-top:1px solid #ddd;font-size:11px;letter-spacing:.06em}
+#controls button{background:#fff;color:#111;border:1px solid #999;border-radius:4px;padding:7px 12px;font:inherit;cursor:pointer}#controls input{flex:1;accent-color:#111}#time{font-variant-numeric:tabular-nums;min-width:68px}
+@media(prefers-reduced-motion:reduce){#controls button{transition:none}}
+</style><div id="controls"><button id="play" aria-label="Play or pause animation">PLAY</button><button id="replay">REPLAY</button><input id="seek" type="range" aria-label="Animation time" min="0" max="11" step="0.01" value="0"><output id="time">0.00 / 11 s</output></div>
+<script>
+const resize=()=>{if(location.search.includes('render=1')){stage.style.transform='none';document.getElementById('controls').style.display='none';return}const scale=Math.min(innerWidth/1920,(innerHeight-58)/1080);stage.style.transform='translate('+((innerWidth-1920*scale)/2)+'px,'+((innerHeight-58-1080*scale)/2)+'px) scale('+scale+')'};addEventListener('resize',resize);resize();
+let clock=0,playing=false,last=0;const seek=document.getElementById('seek'),play=document.getElementById('play'),time=document.getElementById('time');
+function show(){R(clock);seek.value=clock;time.textContent=clock.toFixed(2)+' / 11 s';play.textContent=playing?'PAUSE':'PLAY'}
+play.onclick=()=>{if(clock>=11)clock=0;playing=!playing;last=performance.now();show()};document.getElementById('replay').onclick=()=>{clock=0;playing=true;last=performance.now();show()};seek.oninput=()=>{clock=Number(seek.value);playing=false;show()};
+function tick(now){if(playing){clock=Math.min(11,clock+(now-last)/1000);if(clock>=11)playing=false;show()}last=now;requestAnimationFrame(tick)}
+if(matchMedia('(prefers-reduced-motion:reduce)').matches)clock=11;show();requestAnimationFrame(tick);
+</script></body>
+</html>

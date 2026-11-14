@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Slider · Dimensional drawing</title>
+<style>
+:root{color-scheme:light;--paper:#ececec;--sheet:#fff;--ink:#111;--ink2:#444;--ink3:#7a7a7a;--fill:#f3f3f3;--fill2:#e6e6e6;--f:Helvetica,Arial,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f)}
+.wrap{max-width:1800px;margin:auto;padding:28px 28px 32px}
+.tb{display:grid;grid-template-columns:2.3fr 1fr 1fr 1fr;border:1.2px solid var(--ink);border-radius:16px;background:var(--sheet);overflow:hidden;margin-bottom:20px}
+.tb>div{min-width:0;padding:12px 16px;border-right:.8px solid var(--ink);border-bottom:.8px solid var(--ink)}
+.tb>div:nth-child(4),.tb>div:nth-child(7){border-right:0}.tb .big{grid-row:span 2;display:flex;flex-direction:column;justify-content:space-between;gap:18px}
+.lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.075em;color:var(--ink2)}
+h1{font-size:44px;font-weight:400;letter-spacing:.1em;line-height:1.1;text-transform:uppercase;margin:8px 0 0}
+.v{margin-top:6px;font-size:12px;line-height:1.5;letter-spacing:.05em;text-transform:uppercase}.scope{font-size:10.5px;line-height:1.6;max-width:460px}
+.tb .notes{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:22px;border-right:0;font-size:10.5px;line-height:1.9;text-transform:uppercase;letter-spacing:.035em}
+.notes strong{font-size:12px;letter-spacing:.06em}.notes strong span{font-size:10px;font-weight:400}.notes ol{padding-left:18px;margin:5px 0 0}
+.tb .figs{grid-column:1/-1;display:grid;grid-template-columns:repeat(7,1fr);padding:14px 16px;border:0}
+.figs>div{padding-left:16px;border-left:.8px solid var(--ink)}.figs>div:first-child{padding-left:0;border-left:0}.figs .v{font-size:18px;text-transform:none;letter-spacing:0;white-space:nowrap}
+.scroll{overflow-x:auto;background:var(--sheet);border-radius:16px}svg{display:block;width:100%;min-width:1100px;height:auto}
+.foot{display:flex;justify-content:space-between;gap:20px;padding:12px 2px 0;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink2)}
+/* drawing */
+.u{font-family:var(--f);text-transform:uppercase;letter-spacing:.07em}
+.border{fill:none;stroke:var(--ink);stroke-width:1.2}
+.obj{fill:var(--sheet);stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round}
+.well{fill:var(--fill);stroke:var(--ink);stroke-width:1}
+.slot{fill:none;stroke:var(--ink2);stroke-width:.8;stroke-dasharray:4 3}
+.hug{fill:var(--fill2);stroke:var(--ink);stroke-width:1}
+.thin{fill:none;stroke:var(--ink);stroke-width:.8}
+.ph{fill:none;stroke:var(--ink3);stroke-width:.8;stroke-dasharray:14 3 3 3}
+.cl{fill:none;stroke:var(--ink3);stroke-width:.7;stroke-dasharray:16 3 2 3}
+.cut{stroke:var(--ink);stroke-width:2}
+.dl{stroke:var(--ink);stroke-width:.7;fill:none}
+.ext{stroke:var(--ink);stroke-width:.55;fill:none}
+.arrow{fill:var(--ink)}
+.hl{stroke:var(--ink2);stroke-width:.7}
+.hs{stroke:var(--ink);stroke-width:.8}
+.env{fill:none;stroke:var(--ink);stroke-width:.8;stroke-dasharray:10 3 2 3}
+.dt{font:400 11px var(--f);fill:var(--ink);paint-order:stroke;stroke:var(--sheet);stroke-width:4px;stroke-linejoin:round}
+.dts{font:400 9.5px var(--f);fill:var(--ink2);letter-spacing:.06em;text-transform:uppercase;paint-order:stroke;stroke:var(--sheet);stroke-width:3px}
+.sl{font:400 9px var(--f);fill:var(--ink2);letter-spacing:.08em;text-transform:uppercase}
+.nt{font:400 11.5px var(--f);fill:var(--ink);letter-spacing:.06em;text-transform:uppercase}
+.nth{font:700 13px var(--f);fill:var(--ink);letter-spacing:.06em}
+.vt{font:400 12px var(--f);fill:var(--ink);letter-spacing:.1em;text-transform:uppercase}
+.vtb{font:400 20px var(--f);fill:var(--ink);letter-spacing:.06em}
+.nb{fill:var(--sheet);stroke:var(--ink);stroke-width:.9}
+.nbt{font:400 9.5px var(--f);fill:var(--ink)}
+.lead{stroke:var(--ink);stroke-width:.7;fill:none}
+.dot{fill:var(--ink)}
+.th{font:400 10.5px var(--f);fill:var(--ink);letter-spacing:.05em;text-transform:uppercase}
+.tc{font:400 10.5px var(--f);fill:var(--ink)}
+.tbk{font:400 7px var(--f);fill:var(--ink2);letter-spacing:.04em;text-transform:uppercase}
+.tbt{font:700 15px var(--f);fill:var(--ink)}
+.tbv{font:400 17px var(--f);fill:var(--ink);letter-spacing:.06em}
+
+
+.tc{font-size:10px}.nt{font-size:10.5px;letter-spacing:.035em}.source{font:400 10px var(--f);fill:var(--ink2)}
+.accent-free{fill:#555;stroke:var(--ink);stroke-width:1}.faint{fill:#fafafa;stroke:#aaa;stroke-width:.55}
+.rule{stroke:#ccc;stroke-width:.55}.white-label{font:400 9px var(--f);fill:#fff;letter-spacing:.08em}
+@media(max-width:760px){.wrap{padding:12px}.tb{grid-template-columns:1fr 1fr}.tb .big{grid-column:1/-1;grid-row:auto}.tb .notes{grid-template-columns:1fr;gap:0}.tb .figs{grid-template-columns:repeat(2,1fr);gap:16px}.figs>div:nth-child(odd){border-left:0;padding-left:0}h1{font-size:32px}.foot{flex-wrap:wrap}}
+@media print{@page{size:A3 landscape;margin:8mm}body{background:#fff}.wrap{max-width:none;padding:0}.tb{margin-bottom:8px}.scroll{overflow:visible}svg{min-width:0}.foot{padding-top:6px}.tb>div{padding:8px 12px}.tb .figs{padding:8px 12px}.tb .notes{line-height:1.6}h1{font-size:32px}}
+</style>
+</head>
+<body><main class="wrap">
+<header class="tb">
+ <div class="big"><div><div class="lbl">UI component · dimensional drawing</div><h1>Slider</h1></div><div class="v scope">Three thumb families, two sizes, inset travel and range.<br>Visible paint, behavior targets and orientation.</div></div>
+ <div><div class="lbl">Dwg no.</div><div class="v">UI-SLIDER-001</div></div>
+ <div><div class="lbl">Rev</div><div class="v">A · 2026-11-14</div></div>
+ <div><div class="lbl">Sheets</div><div class="v">1 of 1</div></div>
+ <div><div class="lbl">Units</div><div class="v">CSS px · root 16 px</div></div>
+ <div><div class="lbl">Scale</div><div class="v">As noted · do not scale</div></div>
+ <div><div class="lbl">Source</div><div class="v">Local component source<br>+ measured browser layout</div></div>
+ <div class="notes"><div><strong>Notes: <span>(unless otherwise specified)</span></strong><ol><li>Use variable tables; screen and printed sizes are not authoritative.</li><li>Dimensions use border-box geometry. Slots replace all real content.</li><li>HUG widths are schematic; FLEX takes remaining space; FILL spans its parent.</li></ol></div><div><strong aria-hidden="true">&nbsp;</strong><ol start="4"><li>Baseline: light theme, default spacing, settled motion.</li><li>Nominal dimensions round browser subpixels. Formulas describe the source.</li><li>[TBD] means unspecified. Grayscale distinguishes structure, not color tokens.</li></ol></div></div>
+ <div class="figs"><div><div class="lbl">W / L · length</div><div class="v">caller [TBD]</div></div><div><div class="lbl">H1 · bar</div><div class="v">40 / 32</div></div><div><div class="lbl">H2 · circle</div><div class="v">28 / 24</div></div><div><div class="lbl">H5 · knob rail</div><div class="v">4 / 2</div></div><div><div class="lbl">Z3 · bar width</div><div class="v">2</div></div><div><div class="lbl">T1 · hit width</div><div class="v">24</div></div><div><div class="lbl">S2 · travel inset</div><div class="v">8</div></div></div>
+</header>
+<div class="scroll"><svg id="sheet" viewBox="0 0 1700 1060" role="img" aria-labelledby="drawing-title drawing-desc"></svg></div>
+<footer class="foot"><span>2026-11-14 &nbsp;|&nbsp; UI component reference</span><span>Slider, architecture &nbsp;|&nbsp; 1</span></footer>
+</main>
+<script>
+(()=>{
+const NS='http://www.w3.org/2000/svg';let sv,A,HAT,uid=0;
+function mk(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)if(a[k]!=null)e.setAttribute(k,a[k]);(p||sv).appendChild(e);return e}
+function tx(x,y,s,c,a,p){const t=mk('text',Object.assign({x:x,y:y,class:c||'dt'},a||{}),p);t.textContent=s;return t}
+function begin(id){sv=document.getElementById(id);sv.innerHTML='';const n=uid++;const d=mk('defs',{});const m=mk('marker',{id:'ar'+n,viewBox:'0 0 10 10',refX:10,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse',markerUnits:'userSpaceOnUse'},d);mk('path',{d:'M0,1.7 L10,5 L0,8.3 z',class:'arrow'},m);
+ const pt=mk('pattern',{id:'hat'+n,width:5,height:5,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},d);mk('line',{x1:0,y1:0,x2:0,y2:5,class:'hl'},pt);A='url(#ar'+n+')';HAT='url(#hat'+n+')';rr(20,20,1660,1020,16,'border')}
+
+/* ---- kit ---- */
+function dimH(x1,x2,y,e1,e2,l,o){o=o||{};[[x1,e1],[x2,e2]].forEach(([x,e])=>{if(e==null)return;const s=Math.sign(y-e)||1;mk('line',{x1:x,y1:e+s*3,x2:x,y2:y+s*5,class:'ext'})});
+ if(x2-x1>=28)mk('line',{x1:x1,y1:y,x2:x2,y2:y,class:'dl','marker-start':A,'marker-end':A});else{mk('line',{x1:x1-13,y1:y,x2:x1,y2:y,class:'dl','marker-end':A});mk('line',{x1:x2+13,y1:y,x2:x2,y2:y,class:'dl','marker-end':A});mk('line',{x1:x1,y1:y,x2:x2,y2:y,class:'dl'})}
+ tx((x1+x2)/2+(o.dx||0),(o.below?y+13:y-4)+(o.dy||0),l,o.c||'dt',{'text-anchor':'middle'})}
+function dimV(y1,y2,x,e1,e2,l,o){o=o||{};[[y1,e1],[y2,e2]].forEach(([y,e])=>{if(e==null)return;const s=Math.sign(x-e)||1;mk('line',{x1:e+s*3,y1:y,x2:x+s*5,y2:y,class:'ext'})});
+ if(y2-y1>=28)mk('line',{x1:x,y1:y1,x2:x,y2:y2,class:'dl','marker-start':A,'marker-end':A});else{mk('line',{x1:x,y1:y1-13,x2:x,y2:y1,class:'dl','marker-end':A});mk('line',{x1:x,y1:y2+13,x2:x,y2:y2,class:'dl','marker-end':A});mk('line',{x1:x,y1:y1,x2:x,y2:y2,class:'dl'})}
+ const c=(y1+y2)/2;if(o.side){const r=o.side==='r';tx(r?x+6:x-6,c+4,l,o.c||'dt',{'text-anchor':r?'start':'end'})}else tx(x-5,c,l,o.c||'dt',{'text-anchor':'middle',transform:'rotate(-90 '+(x-5)+' '+c+')'})}
+function callout(px,py,ex,ey,l,dir,c){const s=dir||(ex>=px?1:-1);mk('circle',{cx:px,cy:py,r:1.8,class:'dot'});mk('polyline',{points:px+','+py+' '+ex+','+ey+' '+(ex+s*10)+','+ey,class:'lead'});tx(ex+s*14,ey+4,l,c||'dt',{'text-anchor':s>0?'start':'end'})}
+function rad(cx,cy,r,c,l,L){const sx=c.includes('l')?-1:1,sy=c.includes('t')?-1:1;const ox=cx-sx*r,oy=cy-sy*r;const px=ox+sx*r*Math.SQRT1_2,py=oy+sy*r*Math.SQRT1_2;callout(px,py,px+sx*L,py+sy*L,l,sx)}
+function nb(x,y,n){mk('rect',{x:x-6,y:y-6,width:12,height:12,class:'nb'});tx(x,y+3.5,String(n),'nbt',{'text-anchor':'middle'})}
+function rr(x,y,w,h,r,c){return mk('rect',{x:x,y:y,width:w,height:h,rx:r,class:c})}
+function slotLabel(x,y,w,h,l,al){tx(al==='l'?x+6:x+w/2,y+h/2+3.2,l,'sl',{'text-anchor':al==='l'?'start':'middle'})}
+function title(x,y,t,s){tx(x,y,t,'vt',{'text-anchor':'middle'});if(s)tx(x,y+14,s,'dts',{'text-anchor':'middle'})}
+function notes(list,extra){const NX=50,NY=58;tx(NX,NY,'NOTES:','nth');tx(NX+62,NY,'(UNLESS OTHERWISE SPECIFIED)','nt');
+ list.forEach(([n,t],i)=>{const y=NY+30+i*24;if(n){nb(NX+6,y-4,n);tx(NX+22,y,t,'nt')}else tx(NX,y,t,'nt')})}
+function table(x,y,ttl,rows){const ws=[40,88,96],rh=17;tx(x,y-8,ttl,'vt');
+ const all=[['Code','Variable','Value']].concat(rows);all.forEach((r,i)=>{let cx2=x;r.forEach((c,j)=>{mk('rect',{x:cx2,y:y+i*rh,width:ws[j],height:rh,class:'thin'});tx(cx2+(j?ws[j]/2:6),y+i*rh+12,c,i?'tc':'th',{'text-anchor':j?'middle':'start'});cx2+=ws[j]})});return y+all.length*rh+36}
+function detailRef(cx,cy,r,lbl,lx,ly){mk('circle',{cx:cx,cy:cy,r:r,class:'ph'});const a=Math.atan2(ly-cy,lx-cx);mk('line',{x1:cx+r*Math.cos(a),y1:cy+r*Math.sin(a),x2:lx,y2:ly,class:'lead'});tx(lx+(lx<cx?-4:4),ly+4,lbl,'dts',{'text-anchor':lx<cx?'end':'start'})}
+
+
+begin('sheet');const st=mk('title',{id:'drawing-title'});st.textContent='Slider dimensional drawing';const sd=mk('desc',{id:'drawing-desc'});sd.textContent='Three thumb families, inset travel, ranges, orientation, target geometry and exploded layers with source-derived variable tables.';function at(){}
+function layerGroup(z,j){return mk('g',{transform:'matrix(.65,.118,-.235,.325,200,'+(878-z)+')'})}
+// Canonical slider architecture geometry. Length is schematic; all fixed cross-sections are source-derived.
+function line(x1,y1,x2,y2,c='thin',p){return mk('line',{x1,y1,x2,y2,class:c},p)}
+function lines(x,y,a,c='dts',dy=16){a.forEach((s,i)=>tx(x,y+i*dy,s,c))}
+function hatch(x,y,w,h,r=0){return mk('rect',{x,y,width:w,height:h,rx:r,fill:HAT,class:'hs'})}
+table=function(x,y,ttl,rows){const ws=[40,132,208],rh=18;tx(x,y-9,ttl,'vt');[['Code','Variable','Value / formula'],...rows].forEach((r,i)=>{let xx=x;r.forEach((c,j)=>{rr(xx,y+i*rh,ws[j],rh,0,'thin');tx(xx+5,y+i*rh+12.5,c,i?'tc':'th');xx+=ws[j]})});return y+(rows.length+1)*rh+32};
+function rail(x,y,w,type='bar',size='md',range=false,k=1,slots=false){
+ const sm=size==='sm',h=type==='bar'?(sm?32:40):type==='circle'?(sm?24:28):(sm?16:20);
+ const th=type==='bar'?(sm?12:16):type==='circle'?(sm?16:20):(sm?8:10),tw=type==='bar'?2:th;
+ const inset=type==='bar'?8:type==='circle'?h/2:tw/2,r=type==='bar'?7:h/2;
+ const a=range?inset+.28*(w-2*inset):type==='bar'?Math.max(w*.6-8,8):inset+.6*(w-2*inset),b=inset+.72*(w-2*inset);
+ const rect=(a,b,c,d,r,cl)=>rr(x+a*k,y+b*k,c*k,d*k,r*k,cl);
+ if(type==='knob'){rect(0,0,w,h,0,'slot');rect(0,(h-(sm?2:4))/2,w,sm?2:4,sm?1:2,'well');rect(range?a:0,(h-(sm?2:4))/2,range?b-a:a,sm?2:4,sm?1:2,'hug')}
+ else{rect(0,0,w,h,r,'well');const lo=range?a-inset:0,hi=range?b+inset:type==='bar'?w*.6:a+inset;if(type==='bar'&&!range){const xx=x,yy=y,hh=h*k,ww=hi*k,rrr=r*k;mk('path',{d:`M${xx},${yy+rrr} Q${xx},${yy} ${xx+rrr},${yy} H${xx+ww} V${yy+hh} H${xx+rrr} Q${xx},${yy+hh} ${xx},${yy+hh-rrr} Z`,class:'hug'})}else rect(lo,0,hi-lo,h,type==='bar'?0:h/2,'hug');if(type==='bar')rect(0,0,w,h,r,'thin')}
+ for(const p of range?[a,b]:[a]){rect(p-tw/2,(h-th)/2,tw,th,tw/2,'obj')}
+ if(slots){rect(12,(h-16)/2,118,16,0,'slot');slotLabel(x+12*k,y,w>100?118*k:100,h*k,'LABEL · FLEX');rect(w-104,(h-16)/2,92,16,0,'slot');slotLabel(x+(w-104)*k,y,92*k,h*k,'VALUE · HUG')}
+ return{h,th,tw,a:a*k+x,b:b*k+x,inset};
+}
+at(8.2,.004,.5);
+tx(50,58,'NOTES:','nth');tx(112,58,'(UNLESS OTHERWISE SPECIFIED)','nt');
+[
+ ['THREE THUMB SHAPES; MD / SM CROSS-SECTIONS.', 'HORIZONTAL WIDTH AND VERTICAL HEIGHT: CALLER.'],
+ ['SINGLE BAR: FILL EDGE REPRESENTS VALUE.', 'RANGE / ROUND THUMBS USE INSET CENTRE TRAVEL.'],
+ ['PAINTED THUMB AND HIDDEN INPUT ARE SEPARATE.', 'RANGE GESTURE OWNS SPACE BETWEEN PAINTED HANDLES.'],
+ ['VERTICAL PAINT ROTATES −90°; INPUT STAYS VERTICAL.', 'MINIMUM AT BOTTOM; RTL MIRRORS HORIZONTAL ONLY.'],
+ ['INLINE LABEL ONLY ON HORIZONTAL BAR.', 'THUMB DIMS NEAR TEXT; CONTENT WIDTH IS HUG / FLEX.'],
+ ['TICKS: HIDE ABOVE 50 STEPS; NONE ON KNOB.', 'BAR TICKS APPEAR DURING HOVER, DRAG OR FOCUS.']
+].forEach((a,i)=>{nb(56,84+i*39,i+1);lines(72,88+i*39,a,'nt',14)});
+// Main plan.
+const sheetSv=sv,plan=mk('g',{});sv=plan;
+at(3.7,.025,.5);title(817,58,'PLAN · HORIZONTAL SLIDER','FIXED CROSS-SECTION 1.25:1 · LENGTH SCHEMATIC · MD');
+const px=550,py=173,k=1.25,w=440;
+at(3.7,.025,.5);rr(px,py-30,155,20,0,'slot');slotLabel(px,py-30,155,20,'LABEL SLOT · FLEX');rr(px+440,py-30,110,20,0,'slot');slotLabel(px+440,py-30,110,20,'VALUE SLOT · HUG');
+at(-.5,.11,1.4);const bar=rail(px,py,w,'bar','md',false,k);
+at(3.7,.015,.5);line(px-20,py+25,px+570,py+25,'cl');dimH(px,px+550,112,py,py,'W · FILL');dimV(py,py+50,px-28,px,px,'H1');dimV(py-30,py-10,px+585,px+550,px+550,'H4',{side:'r'});dimV(py-10,py,px+585,px+550,px+550,'S1',{side:'r'});
+at(3.8,.015,.4);nb(px-48,py+24,2);rad(px,py,8.75,'tl','R1',19);dimH(bar.a,px+330,py+80,py+35,py+50,'S2',{dx:30});callout(px+330,py+50,px+385,py+84,'F · FILL EDGE',1);detailRef(bar.a,py+25,25,'DETAIL A',px+230,py+100);
+at(3,.03,.5);title(817,320,'RANGE · TWO INSET THUMBS','CIRCLE / MD · SELECTION SPAN IS VARIABLE');
+const circle=rail(px,363,w,'circle','md',true,k);line(px-20,380.5,px+570,380.5,'cl');dimH(px,circle.a,432,398,398,'C(p₀)');dimH(circle.a,circle.b,432,398,398,'C(p₁) − C(p₀)');dimV(363,398,px-28,px,px,'H2');nb(1128,380,3);
+callout(circle.a,368,670,346,'Z1',-1);callout(px+7,370,522,335,'R2',-1);
+at(3.4,.03,.5);title(817,484,'KNOB · TARGET / RAIL','MD · DASHED BOX IS CONTROL, NOT A VISIBLE SURFACE');
+rail(px,522,w,'knob','md',false,k);dimV(522,547,522,550,550,'H3');dimV(532,537,1135,1100,1100,'H5',{side:'r'});callout(880,534,936,579,'Z2',1);
+at(3.7,.025,.4);lines(550,609,['INTERIOR RANGE FILL: C(p₀) − I TO C(p₁) + I; CLAMP TO RAIL.', 'FIRST / LAST TICK FIELD INTERPOLATES CONTINUOUSLY TO THE RAIL EDGE.'],'dts',15);
+sv=sheetSv;
+// Vertical construction.
+at(8.15,.025,.45);title(1110,651,'VERTICAL','LENGTH SCHEMATIC');
+rr(1086,700,50,225,8.75,'well');mk('path',{d:'M1086,790 H1136 V916.25 Q1136,925 1127.25,925 H1094.75 Q1086,925 1086,916.25 Z',class:'hug'});rr(1101,799,20,2.5,1.25,'obj');line(1111,682,1111,944,'cl');
+dimV(700,925,1168,1136,1136,'L · FILL');dimH(1086,1136,957,925,925,'H1');nb(1070,724,4);lines(1042,987,['PAINT ROTATES −90°.', 'LABEL STAYS ABOVE.'],'dts',15);
+// Thumb construction detail.
+at(8.3,.02,.45);title(743,651,'DETAIL A · BAR THUMB','SCALE 5:1 · REST / GRAB / HIDDEN TARGET');
+const bx=575,by=736;
+hatch(bx-55,by,120,80,5);rr(bx-55,by,120,80,5,'slot');rr(bx,by,10,80,5,'obj');line(bx-65,by+40,bx+80,by+40,'cl');
+dimH(bx-55,bx+65,by-32,by,by,'T1');dimV(by,by+80,bx-79,bx-55,bx-55,'Z4');dimH(bx,bx+10,by+110,by+80,by+80,'Z3');
+rr(760,by-15.25,15,110.5,7.5,'obj');line(742,by+40,791,by+40,'cl');dimV(by-15.25,by+95.25,810,775,775,'Z6');dimH(760,775,by+123,by+95.25,by+95.25,'Z5');
+callout(772,by-12,855,by-20,'R3 × 1.5',1);lines(865,by+22,['CAPS TRANSLATE ±S3.', 'CAP SCALE = 1.5.', 'MIDDLE BRIDGES CAPS.', 'NO OVAL ENDS.'],'dts',17);
+lines(538,931,['Z6 = Z4 + 2·S3 + (Z5 − Z3) = 22.1 / 16.7', 'ACTUAL OUTER EXTENT INCLUDES THE SCALED CAPS.', 'HATCH: HIDDEN HIT BOX; NOT CENTRED ON PAINT IN FADER MODE.'],'dts',17);
+// Inline slots and dodge.
+at(8.55,.02,.45);title(246,391,'INLINE CONTENT · BAR ONLY','SCALE 1:1 · WIDTH IS PROPORTIONAL');
+rail(70,420,350,'bar','md',false,1,true);dimH(70,82,490,460,460,'S4',{dx:-14});dimH(82,200,490,460,460,'FLEX');dimH(316,408,490,460,460,'HUG');nb(438,440,5);
+lines(72,526,['S5 GAP BETWEEN LABEL AND READOUT.', 'S6 APPROACH ZONE → THUMB OPACITY 0.15.', 'NO DODGE AT THE TWO TRAVEL ENDPOINTS.'],'dts',16);
+// Exploded construction; layer matrices are adapted by the motion wrapper.
+at(6.7,.02,.5);title(250,615,'EXPLODED AXONOMETRIC','LAYER SEPARATION SCHEMATIC · RAIL EDGE OMITTED');
+const layers=[['CONTROL / TARGET',0],['RAIL + FILL',47],['TICKS + EDGE',94],['HIDDEN INPUT',141],['PAINTED THUMB',188]];
+for(let j=0;j<layers.length;j++){
+ const [label,z]=layers[j],g=layerGroup(z,j);
+ mk('rect',{x:0,y:0,width:440,height:40,rx:j===0?0:7,class:j===0||j===3?'slot':'thin'},g);
+ if(j===1){mk('rect',{x:0,y:0,width:440,height:40,rx:7,class:'well'},g);mk('path',{d:'M0,7 Q0,0 7,0 H264 V40 H7 Q0,40 0,33 Z',class:'hug'},g)}
+ if(j===2)for(let n=1;n<10;n++)mk('line',{x1:n*44,y1:13,x2:n*44,y2:27,class:'thin'},g);
+ if(j===3)mk('rect',{x:252,y:12,width:24,height:16,rx:8,class:'slot'},g);
+ if(j===4)mk('rect',{x:255,y:12,width:2,height:16,rx:1,class:'obj'},g);
+ [...g.querySelectorAll('*')].forEach(e=>e.setAttribute('vector-effect','non-scaling-stroke'));
+ line(157,878-z,195,878-z,'lead');tx(150,882-z,label,'dts',{'text-anchor':'end'});
+}
+lines(70,937,['SEPARATION SHOWS OWNERSHIP, NOT CSS Z-INDEX.', 'OPTIONAL INLINE SLOTS PAINT ABOVE THE THUMB.', 'OPTIONAL TOOLTIP USES A PORTAL.'],'dts',16);
+// Tables.
+at(8.15,.001,.5);let yy=70;const xx=1265;
+yy=table(xx,yy,'SIZE · MD / SM',[
+ ['W / L','horizontal / vertical','caller [TBD] · FILL'],['H1','bar control / rail','40 / 32'],['H2','circle control / rail','28 / 24'],['H3','knob control','20 / 16'],['H4','optional label row','16 nominal; content HUG'],['H5','knob rail','4 / 2'],['Z1','circle thumb','20 / 16'],['Z2','knob thumb','10 / 8'],['Z3 / Z4','bar width / height','2 / (16 / 12)'],['T1','bar hidden hit width','24; hit height = Z4'],['T2','round hidden hit','Z1 / Z2; no added pad']]);
+yy=table(xx,yy,'SPACING / RADII',[
+ ['S1','label row → control','8'],['S2','bar inset / fill reach','8'],['S3','bar cap translation','0.175·Z4 = 2.8 / 2.1'],['S4','inline side padding','12 / 10'],['S5 / S6','inline gap / approach','8 / 8'],['S7','circle travel inset','H2÷2 = 14 / 12'],['S8','knob travel inset','Z2÷2 = 5 / 4'],['R1','bar rail radius','7'],['R2','circle rail / fill','H2÷2 = 14 / 12'],['R3','bar cap radius','Z3÷2 = 1'],['R4','round thumb radius','Z1÷2 or Z2÷2']]);
+yy=table(xx,yy,'GEOMETRY / GRAB',[
+ ['p','physical fraction','0…1; RTL reverses x'],['C(p)','inset thumb centre','I + p·max(W − 2·I, 0)'],['I','travel inset','S2 / S7 / S8'],['F','single bar fill edge','p·W (LTR)'],['Cᶠ','single bar centre','max(F − S2, S2) (LTR)'],['Z5','grabbed bar width','1.5·Z3 = 3'],['Z6','bar outer grab height','1.35·Z4 + 1 = 22.1 / 16.7'],['G1','round grab scale','circle1.12; knob1.25 / 4÷3']]);
+yy=table(xx,yy,'STROKE / SHADOW / ANCHOR',[
+ ['B','bar border overlay','1; no layout inset'],['B2','outline-ghost edge','1 spread; no layout inset'],['SH1','rail lift y / blur / spread','1 / 2 / −1 and 2 / 4 / 0'],['SH2','round thumb shadow','1 / 3 / 0 and 1 / 2 / −1'],['Y / BL','bar drop shadow','1 / 2 (Gaussian std dev)'],['E','bar shadow envelope','[TBD] · Gaussian; no cutoff'],['S9','tooltip side offset','bar −2 / 0; round 8'],['V1','minimum host length','[TBD] · caller policy'],['K1','tick hairline width','max(1, round(dpr)) ÷ dpr'],['K2','bar tick heights','6 / 10 / 14; sm 4 / 8 / 12'],['Z7','circle tick diameter','4; no ticks on knob']]);
+at(8.6,.02,.4);rr(910,855,32,65,8,'env');rr(924,866,4,32,2,'obj');callout(942,888,970,866,'E',1);lines(855,915,['SHADOW ENVELOPE · SCHEMATIC'],'dts',15);
+// Keep reserved bottom-right link area clear.
+at(8.7,.015,.4);tx(50,1010,'SOURCE AUDIT','vt');lines(170,1010,['slider.tsx · slider.variants.ts · slider-geometry.ts · slider-range-drag.ts', 'globals.css · tooltip variants · 8 production JSX uses across 4 files'],'source',15);
+
+window.drawingAudit={sourceDate:'2026-11-14',tableBottom:yy-32,callerLength:'[TBD]',barGrabOuter:[22.1,16.7]};
+})();
+</script></body></html>

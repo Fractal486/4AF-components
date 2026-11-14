@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Button group · Dimensional drawing</title>
+<style>
+:root{color-scheme:light;--paper:#ececec;--sheet:#fff;--ink:#111;--ink2:#444;--ink3:#7a7a7a;--fill:#f3f3f3;--fill2:#e6e6e6;--f:Helvetica,Arial,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f)}
+.wrap{max-width:1800px;margin:auto;padding:28px 28px 32px}
+.tb{display:grid;grid-template-columns:2.3fr 1fr 1fr 1fr;border:1.2px solid var(--ink);border-radius:16px;background:var(--sheet);overflow:hidden;margin-bottom:20px}
+.tb>div{min-width:0;padding:12px 16px;border-right:.8px solid var(--ink);border-bottom:.8px solid var(--ink)}
+.tb>div:nth-child(4),.tb>div:nth-child(7){border-right:0}.tb .big{grid-row:span 2;display:flex;flex-direction:column;justify-content:space-between;gap:18px}
+.lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.075em;color:var(--ink2)}
+h1{font-size:44px;font-weight:400;letter-spacing:.1em;line-height:1.1;text-transform:uppercase;margin:8px 0 0}
+.v{margin-top:6px;font-size:12px;line-height:1.5;letter-spacing:.05em;text-transform:uppercase}.scope{font-size:10.5px;line-height:1.6;max-width:460px}
+.tb .notes{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:22px;border-right:0;font-size:10.5px;line-height:1.9;text-transform:uppercase;letter-spacing:.035em}
+.notes strong{font-size:12px;letter-spacing:.06em}.notes strong span{font-size:10px;font-weight:400}.notes ol{padding-left:18px;margin:5px 0 0}
+.tb .figs{grid-column:1/-1;display:grid;grid-template-columns:repeat(7,1fr);padding:14px 16px;border:0}
+.figs>div{padding-left:16px;border-left:.8px solid var(--ink)}.figs>div:first-child{padding-left:0;border-left:0}.figs .v{font-size:18px;text-transform:none;letter-spacing:0;white-space:nowrap}
+.scroll{overflow-x:auto;background:var(--sheet);border-radius:16px}svg{display:block;width:100%;min-width:1100px;height:auto}
+.foot{display:flex;justify-content:space-between;gap:20px;padding:12px 2px 0;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink2)}
+/* drawing */
+.u{font-family:var(--f);text-transform:uppercase;letter-spacing:.07em}
+.border{fill:none;stroke:var(--ink);stroke-width:1.2}
+.obj{fill:var(--sheet);stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round}
+.well{fill:var(--fill);stroke:var(--ink);stroke-width:1}
+.slot{fill:none;stroke:var(--ink2);stroke-width:.8;stroke-dasharray:4 3}
+.hug{fill:var(--fill2);stroke:var(--ink);stroke-width:1}
+.thin{fill:none;stroke:var(--ink);stroke-width:.8}
+.ph{fill:none;stroke:var(--ink3);stroke-width:.8;stroke-dasharray:14 3 3 3}
+.cl{fill:none;stroke:var(--ink3);stroke-width:.7;stroke-dasharray:16 3 2 3}
+.cut{stroke:var(--ink);stroke-width:2}
+.dl{stroke:var(--ink);stroke-width:.7;fill:none}
+.ext{stroke:var(--ink);stroke-width:.55;fill:none}
+.arrow{fill:var(--ink)}
+.hl{stroke:var(--ink2);stroke-width:.7}
+.hs{stroke:var(--ink);stroke-width:.8}
+.env{fill:none;stroke:var(--ink);stroke-width:.8;stroke-dasharray:10 3 2 3}
+.dt{font:400 11px var(--f);fill:var(--ink);paint-order:stroke;stroke:var(--sheet);stroke-width:4px;stroke-linejoin:round}
+.dts{font:400 9.5px var(--f);fill:var(--ink2);letter-spacing:.06em;text-transform:uppercase;paint-order:stroke;stroke:var(--sheet);stroke-width:3px}
+.sl{font:400 9px var(--f);fill:var(--ink2);letter-spacing:.08em;text-transform:uppercase}
+.nt{font:400 11.5px var(--f);fill:var(--ink);letter-spacing:.06em;text-transform:uppercase}
+.nth{font:700 13px var(--f);fill:var(--ink);letter-spacing:.06em}
+.vt{font:400 12px var(--f);fill:var(--ink);letter-spacing:.1em;text-transform:uppercase}
+.vtb{font:400 20px var(--f);fill:var(--ink);letter-spacing:.06em}
+.nb{fill:var(--sheet);stroke:var(--ink);stroke-width:.9}
+.nbt{font:400 9.5px var(--f);fill:var(--ink)}
+.lead{stroke:var(--ink);stroke-width:.7;fill:none}
+.dot{fill:var(--ink)}
+.th{font:400 10.5px var(--f);fill:var(--ink);letter-spacing:.05em;text-transform:uppercase}
+.tc{font:400 10.5px var(--f);fill:var(--ink)}
+.tbk{font:400 7px var(--f);fill:var(--ink2);letter-spacing:.04em;text-transform:uppercase}
+.tbt{font:700 15px var(--f);fill:var(--ink)}
+.tbv{font:400 17px var(--f);fill:var(--ink);letter-spacing:.06em}
+
+
+.tc{font-size:10px}.nt{font-size:10.5px;letter-spacing:.035em}.source{font:400 10px var(--f);fill:var(--ink2)}
+.accent-free{fill:#555;stroke:var(--ink);stroke-width:1}.faint{fill:#fafafa;stroke:#aaa;stroke-width:.55}
+.rule{stroke:#ccc;stroke-width:.55}.white-label{font:400 9px var(--f);fill:#fff;letter-spacing:.08em}
+@media(max-width:760px){.wrap{padding:12px}.tb{grid-template-columns:1fr 1fr}.tb .big{grid-column:1/-1;grid-row:auto}.tb .notes{grid-template-columns:1fr;gap:0}.tb .figs{grid-template-columns:repeat(2,1fr);gap:16px}.figs>div:nth-child(odd){border-left:0;padding-left:0}h1{font-size:32px}.foot{flex-wrap:wrap}}
+@media print{@page{size:A3 landscape;margin:8mm}body{background:#fff}.wrap{max-width:none;padding:0}.tb{margin-bottom:8px}.scroll{overflow:visible}svg{min-width:0}.foot{padding-top:6px}.tb>div{padding:8px 12px}.tb .figs{padding:8px 12px}.tb .notes{line-height:1.6}h1{font-size:32px}}
+</style>
+</head>
+<body><main class="wrap">
+<header class="tb">
+ <div class="big"><div><div class="lbl">UI component · dimensional drawing</div><h1>Button group</h1></div><div class="v scope">Joined actions, seam construction, fields and layer ownership.<br>Horizontal and vertical runs; rectangular and pill ends.</div></div>
+ <div><div class="lbl">Dwg no.</div><div class="v">UI-GROUP-001</div></div>
+ <div><div class="lbl">Rev</div><div class="v">A · 2026-11-14</div></div>
+ <div><div class="lbl">Sheets</div><div class="v">1 of 1</div></div>
+ <div><div class="lbl">Units</div><div class="v">CSS px · root 16 px</div></div>
+ <div><div class="lbl">Scale</div><div class="v">As noted · do not scale</div></div>
+ <div><div class="lbl">Source</div><div class="v">Local component source<br>+ measured browser layout</div></div>
+ <div class="notes"><div><strong>Notes: <span>(unless otherwise specified)</span></strong><ol><li>Use variable tables; screen and printed sizes are not authoritative.</li><li>Dimensions use border-box geometry. Slots replace all real content.</li><li>HUG widths are schematic; FLEX takes remaining space; FILL spans its parent.</li></ol></div><div><strong aria-hidden="true">&nbsp;</strong><ol start="4"><li>Baseline: light theme, default spacing, settled motion and uniform size tiers.</li><li>Nominal dimensions round browser subpixels. Formulas describe the source.</li><li>[TBD] means unspecified. Grayscale distinguishes structure, not color tokens.</li></ol></div></div>
+ <div class="figs"><div><div class="lbl">H1 · button height</div><div class="v">24 / 30 / 34 / 38</div></div><div><div class="lbl">S1 · group padding</div><div class="v">0</div></div><div><div class="lbl">S2 · overlap</div><div class="v">1</div></div><div><div class="lbl">B · seam</div><div class="v">1</div></div><div><div class="lbl">R1 · ends</div><div class="v">6 / 6 / 8 / 8</div></div><div><div class="lbl">R2 · joined corner</div><div class="v">0</div></div><div><div class="lbl">W · group width</div><div class="v">Σwᵢ − (n−1)·s2</div></div></div>
+</header>
+<div class="scroll"><svg id="sheet" viewBox="0 0 1700 1060" role="img" aria-labelledby="drawing-title drawing-desc"></svg></div>
+<footer class="foot"><span>2026-11-14 &nbsp;|&nbsp; UI component reference</span><span>Button group, architecture &nbsp;|&nbsp; 1</span></footer>
+</main>
+<script>
+(()=>{
+const NS='http://www.w3.org/2000/svg';let sv,A,HAT,uid=0,phase=8.2,order=0;function at(t){phase=t;order=0;}
+function mk(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)if(a[k]!=null)e.setAttribute(k,a[k]);(p||sv).appendChild(e);if(!p&&t!=="defs"){e.dataset.phase=phase;e.dataset.order=order++;}return e}
+function tx(x,y,s,c,a,p){const t=mk('text',Object.assign({x:x,y:y,class:c||'dt'},a||{}),p);t.textContent=s;return t}
+function begin(id){sv=document.getElementById(id);sv.innerHTML='';const n=uid++;const d=mk('defs',{});const m=mk('marker',{id:'ar'+n,viewBox:'0 0 10 10',refX:10,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse',markerUnits:'userSpaceOnUse'},d);mk('path',{d:'M0,1.7 L10,5 L0,8.3 z',class:'arrow'},m);
+ const pt=mk('pattern',{id:'hat'+n,width:5,height:5,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},d);mk('line',{x1:0,y1:0,x2:0,y2:5,class:'hl'},pt);A='url(#ar'+n+')';HAT='url(#hat'+n+')';rr(20,20,1660,1020,16,'border')}
+
+/* ---- kit ---- */
+function dimH(x1,x2,y,e1,e2,l,o){o=o||{};[[x1,e1],[x2,e2]].forEach(([x,e])=>{if(e==null)return;const s=Math.sign(y-e)||1;mk('line',{x1:x,y1:e+s*3,x2:x,y2:y+s*5,class:'ext'})});
+ if(x2-x1>=28)mk('line',{x1:x1,y1:y,x2:x2,y2:y,class:'dl','marker-start':A,'marker-end':A});else{mk('line',{x1:x1-13,y1:y,x2:x1,y2:y,class:'dl','marker-end':A});mk('line',{x1:x2+13,y1:y,x2:x2,y2:y,class:'dl','marker-end':A});mk('line',{x1:x1,y1:y,x2:x2,y2:y,class:'dl'})}
+ tx((x1+x2)/2+(o.dx||0),(o.below?y+13:y-4)+(o.dy||0),l,o.c||'dt',{'text-anchor':'middle'})}
+function dimV(y1,y2,x,e1,e2,l,o){o=o||{};[[y1,e1],[y2,e2]].forEach(([y,e])=>{if(e==null)return;const s=Math.sign(x-e)||1;mk('line',{x1:e+s*3,y1:y,x2:x+s*5,y2:y,class:'ext'})});
+ if(y2-y1>=28)mk('line',{x1:x,y1:y1,x2:x,y2:y2,class:'dl','marker-start':A,'marker-end':A});else{mk('line',{x1:x,y1:y1-13,x2:x,y2:y1,class:'dl','marker-end':A});mk('line',{x1:x,y1:y2+13,x2:x,y2:y2,class:'dl','marker-end':A});mk('line',{x1:x,y1:y1,x2:x,y2:y2,class:'dl'})}
+ const c=(y1+y2)/2;if(o.side){const r=o.side==='r';tx(r?x+6:x-6,c+4,l,o.c||'dt',{'text-anchor':r?'start':'end'})}else tx(x-5,c,l,o.c||'dt',{'text-anchor':'middle',transform:'rotate(-90 '+(x-5)+' '+c+')'})}
+function callout(px,py,ex,ey,l,dir,c){const s=dir||(ex>=px?1:-1);mk('circle',{cx:px,cy:py,r:1.8,class:'dot'});mk('polyline',{points:px+','+py+' '+ex+','+ey+' '+(ex+s*10)+','+ey,class:'lead'});tx(ex+s*14,ey+4,l,c||'dt',{'text-anchor':s>0?'start':'end'})}
+function rad(cx,cy,r,c,l,L){const sx=c.includes('l')?-1:1,sy=c.includes('t')?-1:1;const ox=cx-sx*r,oy=cy-sy*r;const px=ox+sx*r*Math.SQRT1_2,py=oy+sy*r*Math.SQRT1_2;callout(px,py,px+sx*L,py+sy*L,l,sx)}
+function nb(x,y,n){mk('rect',{x:x-6,y:y-6,width:12,height:12,class:'nb'});tx(x,y+3.5,String(n),'nbt',{'text-anchor':'middle'})}
+function rr(x,y,w,h,r,c){return mk('rect',{x:x,y:y,width:w,height:h,rx:r,class:c})}
+function slotLabel(x,y,w,h,l,al){tx(al==='l'?x+6:x+w/2,y+h/2+3.2,l,'sl',{'text-anchor':al==='l'?'start':'middle'})}
+function title(x,y,t,s){tx(x,y,t,'vt',{'text-anchor':'middle'});if(s)tx(x,y+14,s,'dts',{'text-anchor':'middle'})}
+function notes(list,extra){const NX=50,NY=58;tx(NX,NY,'NOTES:','nth');tx(NX+62,NY,'(UNLESS OTHERWISE SPECIFIED)','nt');
+ list.forEach(([n,t],i)=>{const y=NY+30+i*24;if(n){nb(NX+6,y-4,n);tx(NX+22,y,t,'nt')}else tx(NX,y,t,'nt')})}
+function table(x,y,ttl,rows){const ws=[40,88,96],rh=17;tx(x,y-8,ttl,'vt');
+ const all=[['Code','Variable','Value']].concat(rows);all.forEach((r,i)=>{let cx2=x;r.forEach((c,j)=>{mk('rect',{x:cx2,y:y+i*rh,width:ws[j],height:rh,class:'thin'});tx(cx2+(j?ws[j]/2:6),y+i*rh+12,c,i?'tc':'th',{'text-anchor':j?'middle':'start'});cx2+=ws[j]})});return y+all.length*rh+36}
+function detailRef(cx,cy,r,lbl,lx,ly){mk('circle',{cx:cx,cy:cy,r:r,class:'ph'});const a=Math.atan2(ly-cy,lx-cx);mk('line',{x1:cx+r*Math.cos(a),y1:cy+r*Math.sin(a),x2:lx,y2:ly,class:'lead'});tx(lx+(lx<cx?-4:4),ly+4,lbl,'dts',{'text-anchor':lx<cx?'end':'start'})}
+
+// Slightly wider tables accommodate the source formulas without abbreviating them.
+table=function(x,y,ttl,rows){const ws=[42,126,214],rh=19;tx(x,y-9,ttl,'vt');const all=[['Code','Variable','Value / formula']].concat(rows);all.forEach((r,i)=>{let xx=x;r.forEach((c,j)=>{mk('rect',{x:xx,y:y+i*rh,width:ws[j],height:rh,class:'thin'});tx(xx+6,y+i*rh+11.5,c,i?'tc':'th');xx+=ws[j]})});return y+all.length*rh+29};
+function line(x1,y1,x2,y2,c='thin',p){return mk('line',{x1,y1,x2,y2,class:c},p)}
+function cross(x,y,w,h,p){mk('rect',{x,y,width:w,height:h,class:'thin'},p);line(x,y,x+w,y+h,'thin',p);line(x+w,y,x,y+h,'thin',p)}
+function lines(x,y,items,c='dts',step=15){items.forEach((s,i)=>tx(x,y+i*step,s,c))}
+function hatch(x,y,w,h,r=0){return mk('rect',{x,y,width:w,height:h,rx:r,fill:HAT,class:'hs'})}
+
+begin('sheet');
+mk('title',{id:'drawing-title'}).textContent='Button group dimensional drawing';
+mk('desc',{id:'drawing-desc'}).textContent='Joined action plan, one-pixel seam, corner ownership, fields, vertical run, focus and press states, exploded stack and variable tables.';
+at(8.1);
+notes([[1,'GROUP OWNS ONE OUTER EDGE; CHILD SHADOWS OFF.'],[2,'EACH JOIN OVERLAPS S2. SEAM BELONGS TO NEXT ITEM.'],[3,'ONLY EXPOSED CORNERS RETAIN R1; JOINS USE R2.'],[4,'PRESS SCALES CONTENT; JOINED BOXES STAY STILL.'],[5,'NO EXPANDED HIT AREA INSIDE A GROUP.'],[6,'TEXT FIELDS FLEX; TRIGGERS AND BUTTONS HUG.'],[7,'EACH ACTION REMAINS ITS OWN TAB STOP.']]);
+lines(50,280,['SOURCE HAS ONE DEMO GROUP WITH SEVEN CONTENT MODES.', 'ALL SIZE / SHAPE / ORIENTATION BRANCHES REVIEWED.', 'HUG WIDTHS BELOW ARE PROPORTIONAL SCHEMATICS.']);
+// Primary plan at nominal 1:1. Widths deliberately schematic, never specified.
+at(-.3);
+const PX=590,PY=160,W=360,H=34;
+rr(PX,PY,W,H,8,'obj');
+at(.5);line(PX+124,PY,PX+124,PY+H);line(PX+236,PY,PX+236,PY+H);
+at(1);for(const [x,w] of [[0,124],[124,112],[236,124]]){cross(PX+x+12,PY+9,16,16);rr(PX+x+38,PY+10,w-52,14,0,'slot');slotLabel(PX+x+38,PY+10,w-52,14,'LABEL');}
+at(1.65);dimV(PY,PY+H,560,PX,PX,'H1');dimH(PX,PX+W,104,PY,PY,'W · HUG');
+at(2.3);dimH(PX,PX+124,226,PY+H,PY+H,'HUG');dimH(PX+124,PX+236,226,null,PY+H,'HUG');dimH(PX+236,PX+360,226,null,PY+H,'HUG');
+line(PX-15,PY+17,PX+W+15,PY+17,'cl');rad(PX+W,PY,8,'tr','R1',22);nb(PX+110,PY-16,2);nb(PX+W+25,PY+H+12,3);
+detailRef(PX+124,PY+20,17,'DETAIL A',PX+170,PY+83);
+title(775,58,'PLAN · JOINED ACTIONS','SCALE 1:1 · MD · THREE HUG WIDTHS SHOWN');
+lines(590,275,['W = Σwᵢ − (N−1)·S2 · S1 = 0', 'LABEL WIDTHS ARE CONTENT-DEPENDENT; NEVER DIMENSIONED.']);
+// Enlarged seam and content padding.
+at(8.35);title(810,338,'DETAIL A · JOIN + CONTENT','SCALE 3:1 · LEADING ICON · MD');
+rr(580,395,480,102,24,'obj');line(820,395,820,497,'cut');
+hatch(817,395,3,102);cross(616,422,48,48);rr(694,425,84,42,0,'slot');slotLabel(694,425,84,42,'LABEL');
+cross(859,422,48,48);rr(937,425,81,42,0,'slot');slotLabel(937,425,81,42,'LABEL');
+dimV(395,497,548,580,580,'H1');dimH(580,616,370,395,422,'S4');dimH(616,664,370,422,422,'I1');dimH(664,694,370,422,425,'S5');
+dimH(817,820,530,497,497,'S2',{dx:-22});callout(820,455,885,530,'B',1);rad(1060,395,24,'tr','R1',22);nb(835,402,2);
+lines(590,570,['B = 1 AT THE NEXT ITEM’S LEADING EDGE.', 'S2 = 1 OVERLAP HIDES FRACTIONAL-PIXEL GAPS.', 'QUIET VARIANTS KEEP THE OVERLAP, OMIT THE SEAM.']);
+// Vertical alternative and true icon-size family.
+at(8.5);title(1130,58,'VERTICAL','SCALE 1:1 · MD');rr(1080,119,100,100,8,'obj');line(1080,152,1180,152);line(1080,185,1180,185);for(let i=0;i<3;i++)slotLabel(1080,119+33*i,100,34,'LABEL · FILL');dimV(119,219,1210,1180,1180,'H2');
+lines(1050,254,['SHARED WIDTH · HUG', 'H2 = N·H1 − (N−1)·S2', 'TOP / BOTTOM JOIN EDGES']);
+// Exploded ownership stack; z gaps only illustrative.
+at(5.3);const layers=[['CANVAS',0],['GROUP EDGE',45],['ITEM SURFACES + SEAMS',90],['ICONS + LABEL SLOTS',135]];
+for(const [name,z] of layers){const g=mk('g',{transform:'matrix(.85,.15,-.3,.45,235,'+(720-z)+')','data-layer':z});
+ if(z===0)mk('rect',{x:-12,y:-12,width:384,height:58,rx:0,class:'slot'},g);
+ if(z===45)mk('rect',{x:0,y:0,width:360,height:34,rx:8,class:'obj'},g);
+ if(z===90){mk('rect',{x:0,y:0,width:360,height:34,rx:8,class:'well'},g);for(const x of [124,236])line(x,0,x,34,'thin',g);}
+ if(z===135)for(const [x,w] of [[0,124],[124,112],[236,124]]){cross(x+12,9,16,16,g);mk('rect',{x:x+38,y:10,width:w-52,height:14,class:'slot'},g);}
+ g.querySelectorAll('*').forEach(e=>e.setAttribute('vector-effect','non-scaling-stroke'));
+}
+at(6.6);for(const [name,z] of layers){const y=720-z;line(216,y,235,y,'lead');tx(205,y+4,name,'dts',{'text-anchor':'end'});}
+title(335,810,'EXPLODED AXONOMETRIC','SCHEMATIC · LAYER SEPARATION NOT TO SCALE');
+lines(65,846,['THE FRAME IS A SHADOW, NOT A LAYOUT BORDER.', 'GROUP S1 = 0: OUTER AND CHILD RADIUS MATCH.', 'NO SCRIM; NO PORTAL; NO ROVING TABINDEX.']);
+// Border shadow envelope under notes.
+at(8.3);title(250,354,'EDGE / SHADOW ENVELOPE','SCALE 3:1 · OUTLINED RUN');hatch(100,393,300,126,24);rr(112,399,276,102,24,'obj');rr(100,393,300,126,27,'env');dimH(100,112,375,393,399,'E2',{dx:-16});callout(388,402,428,408,'E1',1);callout(388,513,428,520,'E3',1);lines(64,547,['RING + LIFT + AMBIENT; MAXIMUM ENVELOPES.', 'BLUR HAS NO HARD EDGE; ENVELOPE IS NOMINAL.']);
+// Corner + radius identity detail.
+at(8.55);title(800,656,'DETAIL B · CORNER OWNERSHIP','SCALE 4:1 · NO INSET BETWEEN GROUP AND CHILD');
+mk('path',{d:'M590,744 V712 A32,32 0 0 1 622,680 H680',class:'obj',style:'fill:none'});
+mk('path',{d:'M586,744 V712 A36,36 0 0 1 622,676 H680',class:'env'});
+line(622,700,622,724,'cl');line(610,712,634,712,'cl');callout(600,689,553,676,'R1',-1);callout(589,717,554,754,'E0',-1);
+lines(710,699,['GROUP RADIUS = CHILD R1; S1 = 0.', 'OUTER RING ARC = R1 + E0.', 'JOINED CORNERS: R2 = 0.', 'PILL ENDS: R3 = H1 ÷ 2.'],'dt',21);
+// Joining fields, focus, content-only press.
+at(8.7);title(950,817,'COMPOSITION / STATES','PROPORTIONAL SCHEMATICS · MD');
+rr(650,855,210,34,8,'obj');line(790,855,790,889);slotLabel(650,855,140,34,'FIELD · FLEX');slotLabel(790,855,70,34,'HUG');nb(635,872,6);
+rr(930,855,210,34,8,'obj');line(1000,855,1000,889);line(1070,855,1070,889);rr(998,853,74,38,0,'env');for(let i=0;i<3;i++)slotLabel(930+70*i,855,70,34,'LABEL');
+lines(650,917,['INPUT / SEARCH INPUT FLEX WITH MIN-WIDTH 0.', 'SELECT / DATE TRIGGERS USE MAX-CONTENT.', 'FOCUS RING F = 2; OFFSET 0; ITEM RAISES.']);
+rr(650,962,210,34,8,'obj');line(720,962,720,996);line(790,962,790,996);for(let i=0;i<3;i++){rr(663+70*i,972,i===1?41.8:44,i===1?13.3:14,0,'slot');}nb(635,978,4);lines(900,974,['PRESS: CONTENT SCALE P = 0.95', 'HIT AREA = DRAWN BOX; T1 = H1.']);
+// Source-grounded tables.
+at(8.4);let yy=70;const xx=1270;
+yy=table(xx,yy,'SPACING / JOINS',[
+ ['S1','group pad / gap','0 / 0'],['S2','item overlap','1; margin-start or top: −1'],['S3','label pad-x','10 / 12 / 14 / 20'],['S4','icon-side pad','S3 − 2 = 8 / 10 / 12 / 18'],['S5','icon → label gap','8 / 8 / 10 / 12'],['B','joined seam','1; quiet variants: 0'],['F','focus ring / offset','2 / 0']]);
+yy=table(xx,yy,'SIZE / FORMULAS',[
+ ['H1','item height','24 / 30 / 34 / 38'],['Z1','icon-only square','H1'],['I1','icon / loader size','14 / 14 / 16 / 16'],['N','visible items','caller-defined; example: 3'],['W','horizontal group','Σwᵢ − (N−1)·S2 · HUG'],['H2','vertical group','N·H1 − (N−1)·S2'],['T1','group item hit-h','H1; no expanded hit pseudo'],['P','content press scale','0.95; reduced motion: 1']]);
+yy=table(xx,yy,'RADII / SHADOW',[
+ ['R1','outer end / frame','6 / 6 / 8 / 8'],['R2','joined corner','0'],['R3','pill end','H1 ÷ 2 = 12 / 15 / 17 / 19'],['Y','shadow offset-y','0 / 1 / 2'],['BL','shadow blur','0 / 2 / 4'],['SP','shadow spread','1 / −1 / 0'],['E0','hairline envelope','1'],['E1','nominal top','max(BL + SP − Y) = 2'],['E2','nominal side','max(BL + SP) = 4'],['E3','nominal bottom','max(BL + SP + Y) = 6']]);
+yy=table(xx,yy,'CONSTRAINTS',[
+ ['V1','external keep-out','[TBD] caller layout'],['MW','group width limit','[TBD] caller layout'],['T2','touch-size policy','[TBD] no group minimum']]);
+lines(xx,yy+2,['SIZE ORDER IN TABLES: XS / SM / MD / LG.', 'FRAME USES FIRST CHILD’S SIZE AND SHAPE.', 'OUTLINE VARIANTS / FIELDS FRAME THE GROUP.', 'QUIET RUNS MAY HAVE NO OUTER FRAME.'],'dts',18);
+tx(50,954,'SOURCE AUDIT','vt');lines(50,976,['button-group.tsx + button-group.variants.ts', 'button.tsx + button.variants.ts · globals.css', 'Browser MD: H1 34 · S4 12 · S5 10 · I1 16.', '2026-11-14 · CSS pixels · root 16px'],'source',15);
+window.drawingAudit={height:[24,30,34,38],radius:[6,6,8,8],overlap:1,groupPadding:0,tableBottom:yy};
+
+})();
+</script></body></html>

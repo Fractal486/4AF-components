@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Number animation · Dimensional drawing</title>
+<style>
+:root{color-scheme:light;--paper:#ececec;--sheet:#fff;--ink:#111;--ink2:#444;--ink3:#7a7a7a;--fill:#f3f3f3;--fill2:#e6e6e6;--f:Helvetica,Arial,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f)}
+.wrap{max-width:1800px;margin:auto;padding:28px 28px 32px}
+.tb{display:grid;grid-template-columns:2.3fr 1fr 1fr 1fr;border:1.2px solid var(--ink);border-radius:16px;background:var(--sheet);overflow:hidden;margin-bottom:20px}
+.tb>div{min-width:0;padding:12px 16px;border-right:.8px solid var(--ink);border-bottom:.8px solid var(--ink)}
+.tb>div:nth-child(4),.tb>div:nth-child(7){border-right:0}.tb .big{grid-row:span 2;display:flex;flex-direction:column;justify-content:space-between;gap:18px}
+.lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.075em;color:var(--ink2)}
+h1{font-size:44px;font-weight:400;letter-spacing:.1em;line-height:1.1;text-transform:uppercase;margin:8px 0 0}
+.v{margin-top:6px;font-size:12px;line-height:1.5;letter-spacing:.05em;text-transform:uppercase}.scope{font-size:10.5px;line-height:1.6;max-width:460px}
+.tb .notes{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:22px;border-right:0;font-size:10.5px;line-height:1.9;text-transform:uppercase;letter-spacing:.035em}
+.notes strong{font-size:12px;letter-spacing:.06em}.notes strong span{font-size:10px;font-weight:400}.notes ol{padding-left:18px;margin:5px 0 0}
+.tb .figs{grid-column:1/-1;display:grid;grid-template-columns:repeat(7,1fr);padding:14px 16px;border:0}
+.figs>div{padding-left:16px;border-left:.8px solid var(--ink)}.figs>div:first-child{padding-left:0;border-left:0}.figs .v{font-size:18px;text-transform:none;letter-spacing:0;white-space:nowrap}
+.scroll{overflow-x:auto;background:var(--sheet);border-radius:16px}svg{display:block;width:100%;min-width:1100px;height:auto}
+.foot{display:flex;justify-content:space-between;gap:20px;padding:12px 2px 0;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink2)}
+/* drawing */
+.u{font-family:var(--f);text-transform:uppercase;letter-spacing:.07em}
+.border{fill:none;stroke:var(--ink);stroke-width:1.2}
+.obj{fill:var(--sheet);stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round}
+.well{fill:var(--fill);stroke:var(--ink);stroke-width:1}
+.slot{fill:none;stroke:var(--ink2);stroke-width:.8;stroke-dasharray:4 3}
+.hug{fill:var(--fill2);stroke:var(--ink);stroke-width:1}
+.thin{fill:none;stroke:var(--ink);stroke-width:.8}
+.ph{fill:none;stroke:var(--ink3);stroke-width:.8;stroke-dasharray:14 3 3 3}
+.cl{fill:none;stroke:var(--ink3);stroke-width:.7;stroke-dasharray:16 3 2 3}
+.cut{stroke:var(--ink);stroke-width:2}
+.dl{stroke:var(--ink);stroke-width:.7;fill:none}
+.ext{stroke:var(--ink);stroke-width:.55;fill:none}
+.arrow{fill:var(--ink)}
+.hl{stroke:var(--ink2);stroke-width:.7}
+.hs{stroke:var(--ink);stroke-width:.8}
+.env{fill:none;stroke:var(--ink);stroke-width:.8;stroke-dasharray:10 3 2 3}
+.dt{font:400 11px var(--f);fill:var(--ink);paint-order:stroke;stroke:var(--sheet);stroke-width:4px;stroke-linejoin:round}
+.dts{font:400 9.5px var(--f);fill:var(--ink2);letter-spacing:.06em;text-transform:uppercase;paint-order:stroke;stroke:var(--sheet);stroke-width:3px}
+.sl{font:400 9px var(--f);fill:var(--ink2);letter-spacing:.08em;text-transform:uppercase}
+.nt{font:400 11.5px var(--f);fill:var(--ink);letter-spacing:.06em;text-transform:uppercase}
+.nth{font:700 13px var(--f);fill:var(--ink);letter-spacing:.06em}
+.vt{font:400 12px var(--f);fill:var(--ink);letter-spacing:.1em;text-transform:uppercase}
+.vtb{font:400 20px var(--f);fill:var(--ink);letter-spacing:.06em}
+.nb{fill:var(--sheet);stroke:var(--ink);stroke-width:.9}
+.nbt{font:400 9.5px var(--f);fill:var(--ink)}
+.lead{stroke:var(--ink);stroke-width:.7;fill:none}
+.dot{fill:var(--ink)}
+.th{font:400 10.5px var(--f);fill:var(--ink);letter-spacing:.05em;text-transform:uppercase}
+.tc{font:400 10.5px var(--f);fill:var(--ink)}
+.tbk{font:400 7px var(--f);fill:var(--ink2);letter-spacing:.04em;text-transform:uppercase}
+.tbt{font:700 15px var(--f);fill:var(--ink)}
+.tbv{font:400 17px var(--f);fill:var(--ink);letter-spacing:.06em}
+
+
+.tc{font-size:10px}.nt{font-size:10.5px;letter-spacing:.035em}.source{font:400 10px var(--f);fill:var(--ink2)}
+.accent-free{fill:#555;stroke:var(--ink);stroke-width:1}.faint{fill:#fafafa;stroke:#aaa;stroke-width:.55}
+.rule{stroke:#ccc;stroke-width:.55}.white-label{font:400 9px var(--f);fill:#fff;letter-spacing:.08em}
+@media(max-width:760px){.wrap{padding:12px}.tb{grid-template-columns:1fr 1fr}.tb .big{grid-column:1/-1;grid-row:auto}.tb .notes{grid-template-columns:1fr;gap:0}.tb .figs{grid-template-columns:repeat(2,1fr);gap:16px}.figs>div:nth-child(odd){border-left:0;padding-left:0}h1{font-size:32px}.foot{flex-wrap:wrap}}
+@media print{@page{size:A3 landscape;margin:8mm}body{background:#fff}.wrap{max-width:none;padding:0}.tb{margin-bottom:8px}.scroll{overflow:visible}svg{min-width:0}.foot{padding-top:6px}.tb>div{padding:8px 12px}.tb .figs{padding:8px 12px}.tb .notes{line-height:1.6}h1{font-size:32px}}
+</style>
+</head>
+<body><main class="wrap">
+<header class="tb">
+ <div class="big"><div><div class="lbl">UI component · dimensional drawing</div><h1>Number animation</h1></div><div class="v scope">Digit columns, clipping windows, row positioning and soft edges.<br>Inherited typography; locale-aware formatting; column presence.</div></div>
+ <div><div class="lbl">Dwg no.</div><div class="v">UI-NUMBER-001</div></div>
+ <div><div class="lbl">Rev</div><div class="v">A · 2026-11-14</div></div>
+ <div><div class="lbl">Sheets</div><div class="v">1 of 1</div></div>
+ <div><div class="lbl">Units</div><div class="v">CSS em / px · timing ms</div></div>
+ <div><div class="lbl">Scale</div><div class="v">As noted · do not scale</div></div>
+ <div><div class="lbl">Source</div><div class="v">Local component source<br>+ measured browser layout</div></div>
+ <div class="notes"><div><strong>Notes: <span>(unless otherwise specified)</span></strong><ol><li>Use variable tables; screen and printed sizes are not authoritative.</li><li>Dimensions use border-box geometry. Slots replace all real content.</li><li>HUG widths are schematic; FLEX takes remaining space; FILL spans its parent.</li></ol></div><div><strong aria-hidden="true">&nbsp;</strong><ol start="4"><li>Baseline: light theme, inherited typography and settled motion.</li><li>Em values scale with the caller font. Browser geometry may round subpixels.</li><li>[TBD] means unspecified. Grayscale distinguishes structure, not color tokens.</li></ol></div></div>
+<div class="figs"><div><div class="lbl">F · font-size</div><div class="v">inherited</div></div><div><div class="lbl">H1 · cell</div><div class="v">1.4em</div></div><div><div class="lbl">S1 · bleed</div><div class="v">.27em</div></div><div><div class="lbl">H2 · window</div><div class="v">1.94em</div></div><div><div class="lbl">H3 · strip</div><div class="v">42em</div></div><div><div class="lbl">P · target row</div><div class="v">d + 10</div></div><div><div class="lbl">T1 · roll</div><div class="v">≈ 520ms</div></div></div>
+</header>
+<div class="scroll"><svg id="sheet" viewBox="0 0 1700 1060" role="img" aria-labelledby="drawing-title drawing-desc"></svg></div>
+<footer class="foot"><span>2026-11-14 &nbsp;|&nbsp; UI component reference</span><span>Number animation, architecture &nbsp;|&nbsp; 1</span></footer>
+</main>
+<script>
+(()=>{
+const NS='http://www.w3.org/2000/svg';let sv,A,HAT,uid=0;
+function mk(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)if(a[k]!=null)e.setAttribute(k,a[k]);(p||sv).appendChild(e);return e}
+function tx(x,y,s,c,a,p){const t=mk('text',Object.assign({x:x,y:y,class:c||'dt'},a||{}),p);t.textContent=s;return t}
+function begin(id){sv=document.getElementById(id);sv.innerHTML='';const n=uid++;const d=mk('defs',{});const m=mk('marker',{id:'ar'+n,viewBox:'0 0 10 10',refX:10,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse',markerUnits:'userSpaceOnUse'},d);mk('path',{d:'M0,1.7 L10,5 L0,8.3 z',class:'arrow'},m);
+ const pt=mk('pattern',{id:'hat'+n,width:5,height:5,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},d);mk('line',{x1:0,y1:0,x2:0,y2:5,class:'hl'},pt);A='url(#ar'+n+')';HAT='url(#hat'+n+')';rr(20,20,1660,1020,16,'border')}
+
+/* ---- kit ---- */
+function dimH(x1,x2,y,e1,e2,l,o){o=o||{};[[x1,e1],[x2,e2]].forEach(([x,e])=>{if(e==null)return;const s=Math.sign(y-e)||1;mk('line',{x1:x,y1:e+s*3,x2:x,y2:y+s*5,class:'ext'})});
+ if(x2-x1>=28)mk('line',{x1:x1,y1:y,x2:x2,y2:y,class:'dl','marker-start':A,'marker-end':A});else{mk('line',{x1:x1-13,y1:y,x2:x1,y2:y,class:'dl','marker-end':A});mk('line',{x1:x2+13,y1:y,x2:x2,y2:y,class:'dl','marker-end':A});mk('line',{x1:x1,y1:y,x2:x2,y2:y,class:'dl'})}
+ tx((x1+x2)/2+(o.dx||0),(o.below?y+13:y-4)+(o.dy||0),l,o.c||'dt',{'text-anchor':'middle'})}
+function dimV(y1,y2,x,e1,e2,l,o){o=o||{};[[y1,e1],[y2,e2]].forEach(([y,e])=>{if(e==null)return;const s=Math.sign(x-e)||1;mk('line',{x1:e+s*3,y1:y,x2:x+s*5,y2:y,class:'ext'})});
+ if(y2-y1>=28)mk('line',{x1:x,y1:y1,x2:x,y2:y2,class:'dl','marker-start':A,'marker-end':A});else{mk('line',{x1:x,y1:y1-13,x2:x,y2:y1,class:'dl','marker-end':A});mk('line',{x1:x,y1:y2+13,x2:x,y2:y2,class:'dl','marker-end':A});mk('line',{x1:x,y1:y1,x2:x,y2:y2,class:'dl'})}
+ const c=(y1+y2)/2;if(o.side){const r=o.side==='r';tx(r?x+6:x-6,c+4,l,o.c||'dt',{'text-anchor':r?'start':'end'})}else tx(x-5,c,l,o.c||'dt',{'text-anchor':'middle',transform:'rotate(-90 '+(x-5)+' '+c+')'})}
+function callout(px,py,ex,ey,l,dir,c){const s=dir||(ex>=px?1:-1);mk('circle',{cx:px,cy:py,r:1.8,class:'dot'});mk('polyline',{points:px+','+py+' '+ex+','+ey+' '+(ex+s*10)+','+ey,class:'lead'});tx(ex+s*14,ey+4,l,c||'dt',{'text-anchor':s>0?'start':'end'})}
+function rad(cx,cy,r,c,l,L){const sx=c.includes('l')?-1:1,sy=c.includes('t')?-1:1;const ox=cx-sx*r,oy=cy-sy*r;const px=ox+sx*r*Math.SQRT1_2,py=oy+sy*r*Math.SQRT1_2;callout(px,py,px+sx*L,py+sy*L,l,sx)}
+function nb(x,y,n){mk('rect',{x:x-6,y:y-6,width:12,height:12,class:'nb'});tx(x,y+3.5,String(n),'nbt',{'text-anchor':'middle'})}
+function rr(x,y,w,h,r,c,p){return mk('rect',{x:x,y:y,width:w,height:h,rx:r,class:c},p)}
+function slotLabel(x,y,w,h,l,al){tx(al==='l'?x+6:x+w/2,y+h/2+3.2,l,'sl',{'text-anchor':al==='l'?'start':'middle'})}
+function title(x,y,t,s){tx(x,y,t,'vt',{'text-anchor':'middle'});if(s)tx(x,y+14,s,'dts',{'text-anchor':'middle'})}
+function notes(list,extra){const NX=50,NY=58;tx(NX,NY,'NOTES:','nth');tx(NX+62,NY,'(UNLESS OTHERWISE SPECIFIED)','nt');
+ list.forEach(([n,t],i)=>{const y=NY+30+i*24;if(n){nb(NX+6,y-4,n);tx(NX+22,y,t,'nt')}else tx(NX,y,t,'nt')})}
+function table(x,y,ttl,rows){const ws=[40,88,96],rh=17;tx(x,y-8,ttl,'vt');
+ const all=[['Code','Variable','Value']].concat(rows);all.forEach((r,i)=>{let cx2=x;r.forEach((c,j)=>{mk('rect',{x:cx2,y:y+i*rh,width:ws[j],height:rh,class:'thin'});tx(cx2+(j?ws[j]/2:6),y+i*rh+12,c,i?'tc':'th',{'text-anchor':j?'middle':'start'});cx2+=ws[j]})});return y+all.length*rh+36}
+function detailRef(cx,cy,r,lbl,lx,ly){mk('circle',{cx:cx,cy:cy,r:r,class:'ph'});const a=Math.atan2(ly-cy,lx-cx);mk('line',{x1:cx+r*Math.cos(a),y1:cy+r*Math.sin(a),x2:lx,y2:ly,class:'lead'});tx(lx+(lx<cx?-4:4),ly+4,lbl,'dts',{'text-anchor':lx<cx?'end':'start'})}
+
+// Slightly wider tables accommodate the source formulas without abbreviating them.
+table=function(x,y,ttl,rows){const ws=[43,120,217],rh=16;tx(x,y-9,ttl,'vt');const all=[['Code','Variable','Value / formula']].concat(rows);all.forEach((r,i)=>{let xx=x;r.forEach((c,j)=>{mk('rect',{x:xx,y:y+i*rh,width:ws[j],height:rh,class:'thin'});tx(xx+6,y+i*rh+11.5,c,i?'tc':'th');xx+=ws[j]})});return y+all.length*rh+29};
+function line(x1,y1,x2,y2,c='thin',p){return mk('line',{x1,y1,x2,y2,class:c},p)}
+function cross(x,y,w,h,p){mk('rect',{x,y,width:w,height:h,class:'thin'},p);line(x,y,x+w,y+h,'thin',p);line(x+w,y,x,y+h,'thin',p)}
+function lines(x,y,items,c='dts',step=15){items.forEach((s,i)=>tx(x,y+i*step,s,c))}
+function hatch(x,y,w,h,r=0){return mk('rect',{x,y,width:w,height:h,rx:r,fill:HAT,class:'hs'})}
+begin('sheet');const at=()=>{};mk('title',{id:'drawing-title'}).textContent='Number animation dimensional drawing';mk('desc',{id:'drawing-desc'}).textContent='Inline number anatomy with inherited type, digit window, thirty-row strip, fade geometry, position formulas and exploded layers.';
+// Source: number-animation.tsx, .css, .variants.ts; shared duration tokens.
+at(8.25,.003,.35);
+tx(50,58,'NOTES:','nth');tx(112,58,'(UNLESS OTHERWISE SPECIFIED)','nt');
+const noteRows=[
+ ['TEXT METRICS COME FROM THE CALLER.', 'FONT, WEIGHT, COLOR AND TRACKING INHERIT.'],
+ ['DIGIT SLOT IS SIZED BY A HIDDEN GLYPH.', 'WINDOW IS ABSOLUTE; IT DOES NOT ADD HEIGHT.'],
+ ['THREE TEN-GLYPH CYCLES MAKE A STRIP.', 'TARGET RESTS IN THE MIDDLE CYCLE.'],
+ ['FORMATTING PRECEDES THE ANIMATION.', 'SYMBOLS NEVER ROLL; DIGIT POSITIONS PERSIST.'],
+ ['CHANGED DIGITS ROLL; ADDED COLUMNS GROW.', 'REDUCED MOTION SETTLES THE VALUE AT ONCE.'],
+ ['NO FRAME, SHADOW OR RADIUS IS ADDED.', 'LINES ON THIS SHEET EXPLAIN BOXES ONLY.']];
+noteRows.forEach((ls,i)=>{nb(56,84+i*34,i+1);lines(74,88+i*34,ls,'nt',13)});
+
+// PLAN: dimensions in em; horizontal intervals are placeholder proportions.
+at(3.8,.025,.45);title(870,58,'PLAN · INLINE VALUE ARCHITECTURE','PROPORTIONAL SCHEMATIC · TYPOGRAPHY AND HUG WIDTHS ARE CALLER-DEFINED');
+const py=210;
+at(-.55,0,1.7);rr(735,py,90,140,0,'obj');
+at(.25,.12,.6);rr(735,py-27,90,194,0,'env');hatch(735,py-27,90,27);hatch(735,py+140,90,27);
+at(.9,.12,.5);rr(752,py+45,56,50,0,'slot');slotLabel(735,py,90,140,'DIGIT SLOT');
+at(3.55,.035,.5);dimV(py,py+140,1210,1185,1185,'H1');dimV(py-27,py+167,1242,1185,1185,'H2');
+at(2.2,.07,.45);
+for(const [x,w,l] of [[525,110,'PREFIX'],[635,100,'DIGIT'],[825,30,'SYMBOL'],[855,95,'DIGIT'],[950,95,'DIGIT'],[1045,140,'SUFFIX']]){at(2.2,.0,.45);rr(x,py,w,140,0,'slot');at(3.5,0,.45);slotLabel(x,py,w,140,l==='SYMBOL'?'SYM':l+' · HUG')}
+at(3.05,.03,.4);line(510,py+140,1201,py+140,'cl');tx(1165,py+157,'BASELINE ALIGNMENT','dts',{'text-anchor':'end'});
+dimH(525,1185,135,py,py,'W · HUG = DIGIT ADVANCES + SYMBOL ADVANCES');
+dimH(735,825,165,py,py,'WD · HUG');
+dimV(py-27,py,498,525,525,'S1',{side:'l'});
+dimV(py+140,py+167,498,525,525,'S1',{side:'l'});
+nb(749,py-60,2);detailRef(780,280,45,'DETAIL A',1010,410);
+at(3.7,.035,.4);lines(550,412,['INLINE-FLEX · BASELINE · NOWRAP · TABULAR NUMERALS · DIR = LTR', 'NO INTERNAL GAP; INHERITED LETTER-SPACING MAY CHANGE ADVANCES.'],'dts',18);
+
+// An exploded digit: layout box, absolute window, strip, visible glyph plane.
+at(6.7,.02,.5);title(250,360,'EXPLODED DIGIT COLUMN','SCHEMATIC · SEPARATION EXPLAINS PAINT / LAYOUT');
+const layers=[['FLOW SLOT / HIDDEN GLYPH',0],['ABSOLUTE CLIPPING WINDOW',60],['TRANSLATED DIGIT STRIP',120],['VISIBLE GLYPH / SOFT EDGE',180]];
+function layerBody(g,z){
+ if(z===0){mk('rect',{x:0,y:27,width:100,height:140,class:'slot'},g);mk('rect',{x:20,y:72,width:60,height:50,class:'thin'},g);}
+ if(z===60){mk('rect',{x:0,y:0,width:100,height:194,class:'obj'},g);mk('rect',{x:0,y:0,width:100,height:27,fill:HAT,class:'hs'},g);mk('rect',{x:0,y:167,width:100,height:27,fill:HAT,class:'hs'},g);}
+ if(z===120){mk('rect',{x:0,y:0,width:100,height:194,class:'thin'},g);for(let i=0;i<4;i++)mk('line',{x1:0,y1:i*58,x2:100,y2:i*58,class:'slot'},g);}
+ if(z===180){mk('rect',{x:0,y:27,width:100,height:140,class:'slot'},g);mk('rect',{x:20,y:72,width:60,height:50,class:'hug'},g);}
+ [...g.querySelectorAll('*')].forEach(e=>e.setAttribute('vector-effect','non-scaling-stroke'));
+}
+for(const [label,z] of layers){const g=mk('g',{transform:'matrix(.94,.17,-.34,.47,310,'+(720-z)+')'});layerBody(g,z)}
+at(7.05,.025,.45);
+for(const [name,z] of layers){const yy=692-z;line(239,yy,278,yy,'lead');line(278,yy,310,yy+28,'lead');tx(235,yy-6,name,'dts',{'text-anchor':'end'})}
+line(310,540,310,750,'ph');at(8.35,.005,.4);lines(70,855,['WINDOW: TOP = BOTTOM = −S1; LEFT = RIGHT = 0.', 'STRIP: TOP = S1, LEFT = 0; Y TRANSLATE = Y1.', 'NET CELL ORIGIN: −S1 + S1 + Y1 = Y1.'],'dts',18);
+
+// DETAIL A: window, flow reserve, deepest fade and stationary core.
+at(8.15,.008,.4);title(718,482,'DETAIL A · MASKED WINDOW','ENLARGED EM GEOMETRY · WD SHOWN SCHEMATICALLY');
+const ax=645,ay=547,aw=135;
+rr(ax,ay,aw,194,0,'obj');hatch(ax,ay,aw,27);hatch(ax,ay+167,aw,27);rr(ax,ay+27,aw,140,0,'slot');
+rr(ax+25,ay+72,aw-50,50,0,'hug');slotLabel(ax+25,ay+72,aw-50,50,'GLYPH SLOT');
+line(ax-12,ay+51.3,ax+aw+12,ay+51.3,'ph');line(ax-12,ay+142.7,ax+aw+12,ay+142.7,'ph');
+dimV(ay,ay+194,ax-43,ax,ax,'H2');dimV(ay+27,ay+167,ax+aw+35,ax+aw,ax+aw,'H1');
+dimV(ay,ay+27,ax+aw+73,ax+aw,ax+aw,'S1',{side:'r'});
+callout(ax+30,ay+51.3,576,594,'V2',-1);callout(ax+aw/2,ay+14,569,529,'V1',-1);
+nb(ax-62,ay+160,2);lines(539,791,['H2 = H1 + 2·S1 = 1.94em', 'V1: REST FADE DEPTH = 0.27em', 'V2: DEEPEST FADE = 0.513em AT 32%', 'DASH-DOT = DEEPEST FADE BOUNDARIES.'],'dt',19);
+
+// DETAIL B: expanded thirty-row strip, broken to preserve readable sheet scale.
+at(8.3,.008,.4);title(1081,482,'DETAIL B · STRIP POSITION','COMPRESSED REPEATS · EACH CYCLE HAS TEN GLYPHS');
+const bx=1005,by=536,bw=100;
+rr(bx,by,bw,300,0,'thin');
+for(let cycle=0;cycle<3;cycle++){
+ const yy=by+cycle*100;rr(bx,yy,bw,100,0,cycle===1?'well':'slot');
+ for(let j=1;j<4;j++)line(bx,yy+j*25,bx+bw,yy+j*25,'slot');
+ tx(bx+bw+18,yy+18,'CYCLE '+String(cycle+1),'dts');tx(bx+bw+18,yy+36,cycle===1?'REST BAND':'WRAP BAND','dts');
+ mk('path',{d:'M'+(bx-5)+','+(yy+58)+' l25,-8 l25,16 l25,-16 l30,8',class:'obj',style:'fill:none'});
+}
+rr(bx,by+125,bw,25,0,'hug');slotLabel(bx,by+125,bw,25,'TARGET SLOT');
+dimV(by,by+300,bx-40,bx,bx,'H3 = N·H1');callout(bx+100,by+137.5,1150,690,'P',1);nb(bx-23,by+225,3);
+lines(957,866,['P = D + 10; D IS THE TARGET DIGIT.', 'Y1 = −P·100% / N = −P·H1', 'GLYPH AT ROW J = GLYPHS[J MOD 10].'],'dt',18);
+
+// Ordered formatting skeleton and intentionally animated presence.
+at(8.6,.008,.4);title(848,938,'FORMATTING + COLUMN PRESENCE','SYMBOLS KEEP FORMATTED ORDER · INTEGERS KEY BY PLACE; FRACTIONS BY INDEX');
+const segments=[['PREFIX',95],['SIGN',70],['INTEGER',130],['DECIMAL',85],['FRACTION',115],['SUFFIX',95]];let fx=550;
+for(const [name,w] of segments){rr(fx,961,w,30,0,'slot');slotLabel(fx,961,w,30,name);fx+=w;}
+lines(550,1018,['ENTER / EXIT: WIDTH 0 ↔ HUG, OPACITY 0 ↔ 1 OVER T2. GROUP SEPARATORS RETAIN THEIR PLACE.'],'dts');
+
+at(8.6,.003,.35);tx(50,935,'SOURCE + MEASUREMENT AUDIT','vt');
+lines(50,955,['number-animation.tsx / .css / .variants.ts; reduced-motion.ts', 'globals.css duration tokens; six JSX uses across four files.', 'Browser F = 36: H1 = 50.391; H2 = 69.828 CSS px.', 'Subpixel layout rounds nominal H1 = 50.4; H2 = 69.84.', 'Glyph advance measured, never promoted to a fixed width.'],'source',15);
+
+// Every dimensional code belongs to the source or a closed derived formula.
+at(8.4,.001,.35);let yy=70;const xx=1270;
+yy=table(xx,yy,'LAYOUT / TYPOGRAPHY',[
+ ['F','font-size','Inherited · [TBD] per caller'],['WD','digit advance','HUG · hidden localized zero glyph'],['W','root width','HUG · sum of formatted advances'],
+ ['H1','cell / flow height','1.4em = 1.4·F'],['S1','bleed','(H1 − .86em) / 2 = .27em'],['H2','window height','H1 + 2·S1 = 1.94em'],
+ ['N','strip rows','30 = 3 cycles × 10 glyphs'],['H3','strip height','N·H1 = 42em'],['S2','inter-column gap','0; tracking inherits'],
+ ['B / R','border / radius','0 / 0 · no component chrome'],['MW','root max-width','100% of parent; no root clip']]);
+at(8.55,.001,.35);yy=table(xx,yy,'POSITION / FADE',[
+ ['D','target digit index','0–9; locale maps glyphs'],['P','rest row index','D + 10 (middle cycle)'],['Y1','strip translate-y','−P·100% / N = −P·H1'],
+ ['V1','rest veil depth','S1 × fade = .27em; fade = 1'],['V2','peak veil depth','V1 × 1.9 = .513em'],['K','softness','0 by default; mask alpha profile'],
+ ['BL','peak motion blur','.09·F × min(1, |Δ| / 4)'],['Δ','roll distance','Trend-adjusted digit difference']]);
+at(8.65,.001,.35);yy=table(xx,yy,'TIMING / PRESENCE',[
+ ['T1','roll duration','450ms × 1.15555556 ≈ 520ms'],['T2','width settle','min(240ms, T1)'],['T3','arrival stagger','min(arrival index, 4) × 18ms'],
+ ['Q','easing','cubic-bezier(.32, .72, 0, 1)'],['Y2','entry offset-y','−S1 / 2 = −.135em'],['X1','entry scale-x','.55 → 1'],
+ ['A1','blur offsets','0 / .15 / .62 / 1'],['A2','veil offsets','0 / .32 / 1']]);
+at(8.8,.001,.35);yy=table(xx,yy,'CALLER CONTRACT / LIMITS',[
+ ['LH','surrounding line-height','Inherited · [TBD]'],['LS','letter spacing','Inherited · [TBD]'],['WM','outer width policy','[TBD] · may exceed max-width'],
+ ['RM','reduced motion','No roll / blur / mask; value snaps'],['AX','accessible value','One sr-only string; slots aria-hidden'],['LF','locale / format','Caller / runtime; Intl formatToParts']]);
+at(8.9,.003,.4);lines(xx,yy+5,['CSS GAP / BLUR / EXIT VARIABLES ARE DECLARED;', 'THE JS PRESENCE PATH USES T2 AND BL ABOVE.', 'DURATION PROP OVERRIDES T1; TOKEN SCALE APPLIES.'],'dts',17);
+
+window.drawingAudit={cellEm:1.4,bleedEm:.27,windowEm:1.94,rows:30,rollMs:520,sourceDate:"2026-11-14"};
+})();
+</script></body></html>

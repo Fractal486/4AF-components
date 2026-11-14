@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Context menu · Dimensional drawing</title>
+<style>
+:root{color-scheme:light;--paper:#ececec;--sheet:#fff;--ink:#111;--ink2:#444;--ink3:#7a7a7a;--fill:#f3f3f3;--fill2:#e6e6e6;--f:Helvetica,Arial,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f)}
+.wrap{max-width:1800px;margin:auto;padding:28px 28px 32px}
+.tb{display:grid;grid-template-columns:2.3fr 1fr 1fr 1fr;border:1.2px solid var(--ink);border-radius:16px;background:var(--sheet);overflow:hidden;margin-bottom:20px}
+.tb>div{min-width:0;padding:12px 16px;border-right:.8px solid var(--ink);border-bottom:.8px solid var(--ink)}
+.tb>div:nth-child(4),.tb>div:nth-child(7){border-right:0}.tb .big{grid-row:span 2;display:flex;flex-direction:column;justify-content:space-between;gap:18px}
+.lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.075em;color:var(--ink2)}
+h1{font-size:44px;font-weight:400;letter-spacing:.1em;line-height:1.1;text-transform:uppercase;margin:8px 0 0}
+.v{margin-top:6px;font-size:12px;line-height:1.5;letter-spacing:.05em;text-transform:uppercase}.scope{font-size:10.5px;line-height:1.6;max-width:460px}
+.tb .notes{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:22px;border-right:0;font-size:10.5px;line-height:1.9;text-transform:uppercase;letter-spacing:.035em}
+.notes strong{font-size:12px;letter-spacing:.06em}.notes strong span{font-size:10px;font-weight:400}.notes ol{padding-left:18px;margin:5px 0 0}
+.tb .figs{grid-column:1/-1;display:grid;grid-template-columns:repeat(7,1fr);padding:14px 16px;border:0}
+.figs>div{padding-left:16px;border-left:.8px solid var(--ink)}.figs>div:first-child{padding-left:0;border-left:0}.figs .v{font-size:18px;text-transform:none;letter-spacing:0;white-space:nowrap}
+.scroll{overflow-x:auto;background:var(--sheet);border-radius:16px}svg{display:block;width:100%;min-width:1100px;height:auto}
+.foot{display:flex;justify-content:space-between;gap:20px;padding:12px 2px 0;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink2)}
+/* drawing */
+.u{font-family:var(--f);text-transform:uppercase;letter-spacing:.07em}
+.border{fill:none;stroke:var(--ink);stroke-width:1.2}
+.obj{fill:var(--sheet);stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round}
+.well{fill:var(--fill);stroke:var(--ink);stroke-width:1}
+.slot{fill:none;stroke:var(--ink2);stroke-width:.8;stroke-dasharray:4 3}
+.hug{fill:var(--fill2);stroke:var(--ink);stroke-width:1}
+.thin{fill:none;stroke:var(--ink);stroke-width:.8}
+.ph{fill:none;stroke:var(--ink3);stroke-width:.8;stroke-dasharray:14 3 3 3}
+.cl{fill:none;stroke:var(--ink3);stroke-width:.7;stroke-dasharray:16 3 2 3}
+.cut{stroke:var(--ink);stroke-width:2}
+.dl{stroke:var(--ink);stroke-width:.7;fill:none}
+.ext{stroke:var(--ink);stroke-width:.55;fill:none}
+.arrow{fill:var(--ink)}
+.hl{stroke:var(--ink2);stroke-width:.7}
+.hs{stroke:var(--ink);stroke-width:.8}
+.env{fill:none;stroke:var(--ink);stroke-width:.8;stroke-dasharray:10 3 2 3}
+.dt{font:400 11px var(--f);fill:var(--ink);paint-order:stroke;stroke:var(--sheet);stroke-width:4px;stroke-linejoin:round}
+.dts{font:400 9.5px var(--f);fill:var(--ink2);letter-spacing:.06em;text-transform:uppercase;paint-order:stroke;stroke:var(--sheet);stroke-width:3px}
+.sl{font:400 9px var(--f);fill:var(--ink2);letter-spacing:.08em;text-transform:uppercase}
+.nt{font:400 11.5px var(--f);fill:var(--ink);letter-spacing:.06em;text-transform:uppercase}
+.nth{font:700 13px var(--f);fill:var(--ink);letter-spacing:.06em}
+.vt{font:400 12px var(--f);fill:var(--ink);letter-spacing:.1em;text-transform:uppercase}
+.vtb{font:400 20px var(--f);fill:var(--ink);letter-spacing:.06em}
+.nb{fill:var(--sheet);stroke:var(--ink);stroke-width:.9}
+.nbt{font:400 9.5px var(--f);fill:var(--ink)}
+.lead{stroke:var(--ink);stroke-width:.7;fill:none}
+.dot{fill:var(--ink)}
+.th{font:400 10.5px var(--f);fill:var(--ink);letter-spacing:.05em;text-transform:uppercase}
+.tc{font:400 10.5px var(--f);fill:var(--ink)}
+.tbk{font:400 7px var(--f);fill:var(--ink2);letter-spacing:.04em;text-transform:uppercase}
+.tbt{font:700 15px var(--f);fill:var(--ink)}
+.tbv{font:400 17px var(--f);fill:var(--ink);letter-spacing:.06em}
+
+
+.tc{font-size:10px}.nt{font-size:10.5px;letter-spacing:.035em}.source{font:400 10px var(--f);fill:var(--ink2)}
+.accent-free{fill:#555;stroke:var(--ink);stroke-width:1}.faint{fill:#fafafa;stroke:#aaa;stroke-width:.55}
+.rule{stroke:#ccc;stroke-width:.55}.white-label{font:400 9px var(--f);fill:#fff;letter-spacing:.08em}
+@media(max-width:760px){.wrap{padding:12px}.tb{grid-template-columns:1fr 1fr}.tb .big{grid-column:1/-1;grid-row:auto}.tb .notes{grid-template-columns:1fr;gap:0}.tb .figs{grid-template-columns:repeat(2,1fr);gap:16px}.figs>div:nth-child(odd){border-left:0;padding-left:0}h1{font-size:32px}.foot{flex-wrap:wrap}}
+@media print{@page{size:A3 landscape;margin:8mm}body{background:#fff}.wrap{max-width:none;padding:0}.tb{margin-bottom:8px}.scroll{overflow:visible}svg{min-width:0}.foot{padding-top:6px}.tb>div{padding:8px 12px}.tb .figs{padding:8px 12px}.tb .notes{line-height:1.6}h1{font-size:32px}}
+</style>
+</head>
+<body><main class="wrap">
+<header class="tb">
+ <div class="big"><div><div class="lbl">UI component · dimensional drawing</div><h1>Context menu</h1></div><div class="v scope">Pointer anchor, shared menu rows, touch hold and portal layers.<br>Target geometry and content widths belong to the caller.</div></div>
+ <div><div class="lbl">Dwg no.</div><div class="v">UI-CONTEXT-001</div></div>
+ <div><div class="lbl">Rev</div><div class="v">A · 2026-11-14</div></div>
+ <div><div class="lbl">Sheets</div><div class="v">1 of 1</div></div>
+ <div><div class="lbl">Units</div><div class="v">CSS px · root 16 px</div></div>
+ <div><div class="lbl">Scale</div><div class="v">As noted · do not scale</div></div>
+ <div><div class="lbl">Source</div><div class="v">Local component source<br>+ measured browser layout</div></div>
+ <div class="notes"><div><strong>Notes: <span>(unless otherwise specified)</span></strong><ol><li>Use variable tables; screen and printed sizes are not authoritative.</li><li>Dimensions use border-box geometry. Slots replace all real content.</li><li>HUG widths are schematic; FLEX takes remaining space; FILL spans its parent.</li></ol></div><div><strong aria-hidden="true">&nbsp;</strong><ol start="4"><li>Baseline: light theme, root 16 px, settled motion and single-line rows.</li><li>Nominal dimensions round browser subpixels. Formulas describe the source.</li><li>[TBD] means unspecified. Grayscale distinguishes structure, not color tokens.</li></ol></div></div>
+ <div class="figs"><div><div class="lbl">W · panel width</div><div class="v">caller / content</div></div><div><div class="lbl">S1 · panel inset</div><div class="v">4</div></div><div><div class="lbl">H1 · row baseline</div><div class="v">2·s3 + max(l1,i1)</div></div><div><div class="lbl">I1 · glyph box</div><div class="v">14</div></div><div><div class="lbl">S5 · pointer offset</div><div class="v">0</div></div><div><div class="lbl">R1 · panel radius</div><div class="v">7</div></div><div><div class="lbl">Q · hold scale</div><div class="v">0.98</div></div></div>
+</header>
+<div class="scroll"><svg id="sheet" viewBox="0 0 1700 1060" role="img" aria-labelledby="drawing-title drawing-desc"></svg></div>
+<footer class="foot"><span>2026-11-14 &nbsp;|&nbsp; UI component reference</span><span>Context menu, architecture &nbsp;|&nbsp; 1</span></footer>
+</main>
+<script>
+(()=>{
+const NS='http://www.w3.org/2000/svg';let sv,A,HAT,uid=0;
+function mk(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)if(a[k]!=null)e.setAttribute(k,a[k]);(p||sv).appendChild(e);return e}
+function tx(x,y,s,c,a,p){const t=mk('text',Object.assign({x:x,y:y,class:c||'dt'},a||{}),p);t.textContent=s;return t}
+function begin(id){sv=document.getElementById(id);sv.innerHTML='';const n=uid++;const d=mk('defs',{});const m=mk('marker',{id:'ar'+n,viewBox:'0 0 10 10',refX:10,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse',markerUnits:'userSpaceOnUse'},d);mk('path',{d:'M0,1.7 L10,5 L0,8.3 z',class:'arrow'},m);
+ const pt=mk('pattern',{id:'hat'+n,width:5,height:5,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},d);mk('line',{x1:0,y1:0,x2:0,y2:5,class:'hl'},pt);A='url(#ar'+n+')';HAT='url(#hat'+n+')';rr(20,20,1660,1020,16,'border')}
+
+/* ---- kit ---- */
+function dimH(x1,x2,y,e1,e2,l,o){o=o||{};[[x1,e1],[x2,e2]].forEach(([x,e])=>{if(e==null)return;const s=Math.sign(y-e)||1;mk('line',{x1:x,y1:e+s*3,x2:x,y2:y+s*5,class:'ext'})});
+ if(x2-x1>=28)mk('line',{x1:x1,y1:y,x2:x2,y2:y,class:'dl','marker-start':A,'marker-end':A});else{mk('line',{x1:x1-13,y1:y,x2:x1,y2:y,class:'dl','marker-end':A});mk('line',{x1:x2+13,y1:y,x2:x2,y2:y,class:'dl','marker-end':A});mk('line',{x1:x1,y1:y,x2:x2,y2:y,class:'dl'})}
+ tx((x1+x2)/2+(o.dx||0),(o.below?y+13:y-4)+(o.dy||0),l,o.c||'dt',{'text-anchor':'middle'})}
+function dimV(y1,y2,x,e1,e2,l,o){o=o||{};[[y1,e1],[y2,e2]].forEach(([y,e])=>{if(e==null)return;const s=Math.sign(x-e)||1;mk('line',{x1:e+s*3,y1:y,x2:x+s*5,y2:y,class:'ext'})});
+ if(y2-y1>=28)mk('line',{x1:x,y1:y1,x2:x,y2:y2,class:'dl','marker-start':A,'marker-end':A});else{mk('line',{x1:x,y1:y1-13,x2:x,y2:y1,class:'dl','marker-end':A});mk('line',{x1:x,y1:y2+13,x2:x,y2:y2,class:'dl','marker-end':A});mk('line',{x1:x,y1:y1,x2:x,y2:y2,class:'dl'})}
+ const c=(y1+y2)/2;if(o.side){const r=o.side==='r';tx(r?x+6:x-6,c+4,l,o.c||'dt',{'text-anchor':r?'start':'end'})}else tx(x-5,c,l,o.c||'dt',{'text-anchor':'middle',transform:'rotate(-90 '+(x-5)+' '+c+')'})}
+function callout(px,py,ex,ey,l,dir,c){const s=dir||(ex>=px?1:-1);mk('circle',{cx:px,cy:py,r:1.8,class:'dot'});mk('polyline',{points:px+','+py+' '+ex+','+ey+' '+(ex+s*10)+','+ey,class:'lead'});tx(ex+s*14,ey+4,l,c||'dt',{'text-anchor':s>0?'start':'end'})}
+function rad(cx,cy,r,c,l,L){const sx=c.includes('l')?-1:1,sy=c.includes('t')?-1:1;const ox=cx-sx*r,oy=cy-sy*r;const px=ox+sx*r*Math.SQRT1_2,py=oy+sy*r*Math.SQRT1_2;callout(px,py,px+sx*L,py+sy*L,l,sx)}
+function nb(x,y,n){mk('rect',{x:x-6,y:y-6,width:12,height:12,class:'nb'});tx(x,y+3.5,String(n),'nbt',{'text-anchor':'middle'})}
+function rr(x,y,w,h,r,c){return mk('rect',{x:x,y:y,width:w,height:h,rx:r,class:c})}
+function slotLabel(x,y,w,h,l,al){tx(al==='l'?x+6:x+w/2,y+h/2+3.2,l,'sl',{'text-anchor':al==='l'?'start':'middle'})}
+function title(x,y,t,s){tx(x,y,t,'vt',{'text-anchor':'middle'});if(s)tx(x,y+14,s,'dts',{'text-anchor':'middle'})}
+function notes(list,extra){const NX=50,NY=58;tx(NX,NY,'NOTES:','nth');tx(NX+62,NY,'(UNLESS OTHERWISE SPECIFIED)','nt');
+ list.forEach(([n,t],i)=>{const y=NY+30+i*24;if(n){nb(NX+6,y-4,n);tx(NX+22,y,t,'nt')}else tx(NX,y,t,'nt')})}
+function table(x,y,ttl,rows){const ws=[40,88,96],rh=17;tx(x,y-8,ttl,'vt');
+ const all=[['Code','Variable','Value']].concat(rows);all.forEach((r,i)=>{let cx2=x;r.forEach((c,j)=>{mk('rect',{x:cx2,y:y+i*rh,width:ws[j],height:rh,class:'thin'});tx(cx2+(j?ws[j]/2:6),y+i*rh+12,c,i?'tc':'th',{'text-anchor':j?'middle':'start'});cx2+=ws[j]})});return y+all.length*rh+36}
+function detailRef(cx,cy,r,lbl,lx,ly){mk('circle',{cx:cx,cy:cy,r:r,class:'ph'});const a=Math.atan2(ly-cy,lx-cx);mk('line',{x1:cx+r*Math.cos(a),y1:cy+r*Math.sin(a),x2:lx,y2:ly,class:'lead'});tx(lx+(lx<cx?-4:4),ly+4,lbl,'dts',{'text-anchor':lx<cx?'end':'start'})}
+
+
+begin('sheet');const rootSvg=sv;const at=()=>{};
+const st=mk('title',{id:'drawing-title'});st.textContent='Context menu dimensional drawing';const sd=mk('desc',{id:'drawing-desc'});sd.textContent='Pointer-anchored menu plan, shared row anatomy, touch hold, shadow envelope, nested corner, submenu and exploded layers with source-grounded variables.';
+// Canonical geometry: plan, source-specific details, variables and layers.
+function line(x1,y1,x2,y2,c='thin',p){return mk('line',{x1,y1,x2,y2,class:c},p)}
+function cross(x,y,w,h,p){mk('rect',{x,y,width:w,height:h,class:'thin'},p);line(x,y,x+w,y+h,'thin',p);line(x+w,y,x,y+h,'thin',p)}
+function lines(x,y,a,c='dts',step=15){a.forEach((s,i)=>tx(x,y+i*step,s,c))}
+function hatch(x,y,w,h,r=0){return mk('rect',{x,y,width:w,height:h,rx:r,fill:HAT,class:'hs'})}
+table=function(x,y,ttl,rows){const ws=[40,122,218],rh=17;tx(x,y-9,ttl,'vt');[['Code','Variable','Value / formula']].concat(rows).forEach((r,i)=>{let xx=x;r.forEach((c,j)=>{rr(xx,y+i*rh,ws[j],rh,0,'thin');tx(xx+6,y+i*rh+12,c,i?'tc':'th');xx+=ws[j]})});return y+(rows.length+1)*rh+30};
+function section(id){sv=mk('g',{'data-section':id},rootSvg);return sv}
+function row(x,y,w,kind='item',labels=true,p){
+ const old=sv;if(p)sv=p;rr(x,y,w,28,3,kind==='active'?'hug':'thin');
+ cross(x+10,y+7,14,14);rr(x+32,y+6,w-68,16,0,'slot');
+ if(labels)slotLabel(x+32,y+6,w-68,16,'LABEL · FLEX');
+ if(kind==='check'||kind==='radio'||kind==='sub'){cross(x+w-24,y+7,14,14)}
+ else if(kind==='item'){rr(x+w-32,y+7,22,14,2,'hug')}
+ sv=old;
+}
+function panel(x,y,w=224,labels=true){rr(x,y,w,215,7,'obj');rr(x+5,y+5,w-10,205,3,'well');
+ rr(x+13,y+11,w-26,16,0,'slot');if(labels)slotLabel(x+13,y+11,w-26,16,'GROUP LABEL · FILL');
+ for(let i=0;i<3;i++)row(x+5,y+33+i*28,w-10,['active','check','radio'][i],labels);
+ line(x+1,y+121.5,x+w-1,y+121.5,'thin');
+ for(let i=0;i<3;i++)row(x+5,y+126+i*28,w-10,['sub','action','item'][i],labels);
+}
+section('notes');at(8.1,.004,.4);
+tx(50,58,'NOTES:','nth');tx(112,58,'(UNLESS OTHERWISE SPECIFIED)','nt');
+[
+ ['TRIGGER HAS NO INTRINSIC SIZE OR SURFACE.', 'CALLER OWNS AREA / ROW GEOMETRY.'],
+ ['POINTER ANCHOR: BOTTOM / START, S5 = 0.', 'POSITIONER MAY FLIP OR SHIFT AT VIEWPORT EDGES.'],
+ ['ROWS SHARE ONE MENU IMPLEMENTATION.', 'GLYPH / STATUS BOXES NEVER SHRINK.'],
+ ['LABELS WRAP; ROW HEIGHT CAN GROW.', 'H1 IS THE SINGLE-LINE BASELINE ONLY.'],
+ ['ROW R2 IS 3; CONCENTRIC REFERENCE R3 IS 2.', 'BORDER MUST BE COUNTED IN THE INSET.'],
+ ['NO SCRIM. PANEL CLIPS; INNER VIEWPORT SCROLLS.', 'CHECK / RADIO SLOT REMAINS RESERVED.']
+].forEach((a,i)=>{nb(56,84+i*34,i+1);lines(72,88+i*34,a,'nt',13)});
+section('shadow');at(8.2,.01,.4);
+title(250,325,'SHADOW ENVELOPE','SCALE 1:1 · SHORTENED HEIGHT · LIGHT THEME');
+hatch(126,352,272,136,7);rr(126,352,272,136,7,'env');rr(150,360,224,88,7,'obj');slotLabel(150,360,224,88,'PANEL FOOTPRINT');
+dimH(126,150,510,488,448,'E2');dimV(352,360,425,398,374,'E1',{side:'r'});dimV(448,488,425,374,398,'E3',{side:'r'});
+lines(75,542,['NOMINAL EXTENTS USE THE MAXIMUM OF TWO SHADOWS.', 'BLUR HAS NO HARD EDGE; THIS IS A DRAWING CONVENTION.']);
+section('plan');at(3.8,.04,.4);
+title(760,58,'PLAN · POINTER-ANCHORED MENU','SCALE 1:1 · W IS CALLER / CONTENT DEPENDENT');
+at(2.05,.035,.5);rr(570,118,350,150,0,'ph');slotLabel(595,130,300,24,'CALLER TARGET · WT × HT · [TBD]');nb(932,144,1);
+at(-.35,0,1.65);rr(620,190,224,215,7,'obj');
+at(.28,.06,.5);rr(625,195,214,205,3,'well');rr(633,201,198,16,0,'slot');slotLabel(633,201,198,16,'GROUP LABEL · FILL');
+for(let i=0;i<3;i++){at(.78+i*.45,.035,.5);row(625,223+i*28,214,['active','check','radio'][i])}
+at(2.25,.035,.45);line(621,311.5,843,311.5);for(let i=0;i<3;i++){at(2.5+i*.18,.02,.5);row(625,316+i*28,214,['sub','action','item'][i])}
+at(1.8,.02,.4);line(608,190,632,190,'cl');line(620,178,620,202,'cl');mk('circle',{cx:620,cy:190,r:3,class:'dot'});
+callout(620,190,558,174,'POINTER · S5',-1);nb(560,205,2);
+at(3.5,.01,.5);dimH(620,844,92,118,190,'W');dimV(190,405,532,620,620,'H = HUG');
+dimV(195,223,578,625,625,'H2');dimV(223,251,578,625,625,'H1');dimV(307,316,578,625,625,'H3');
+dimV(190,195,875,844,839,'B+S1',{side:'r'});dimV(223,229,875,839,829,'S3',{side:'r'});dimV(229,245,908,829,829,'L1',{side:'r'});dimV(245,251,875,829,839,'S3',{side:'r'});
+dimH(620,625,440,405,400,'B+S1',{dx:-23,dy:14});dimH(625,839,440,400,400,'WR = W − 2·(B+S1)');dimH(839,844,440,400,405,'S1+B',{dx:24,dy:14});
+rad(844,190,7,'tr','R1',27);detailRef(628,398,14,'DETAIL C',682,483);nb(855,366,3);nb(855,280,4);
+at(4.05,.035,.4);lines(586,508,['H = 2·(B+S1) + N·H1 + G·H2 + K·H3', 'SCHEMATIC: N=6, G=1, K=1 → H=215', 'W=224 DRAWN FOR LEGIBILITY; NOT A WIDTH CONTRACT.'],'dt',17);
+section('submenu');at(8.5,.008,.4);
+title(1100,58,'SUBMENU PLACEMENT','SCHEMATIC · RIGHT / START');rr(968,110,90,88,7,'well');row(973,138,80,'sub',false);rr(1066,134,144,94,7,'obj');
+for(let i=0;i<3;i++)row(1071,139+i*28,134,'check',false);
+dimH(1058,1066,100,138,134,'S6');dimV(134,138,1235,1210,1058,'S7',{side:'r'});nb(966,245,3);
+lines(978,266,['SUBMENU HAS THE SAME PANEL / ROW GEOMETRY.', 'S6 = 8 · S7 = −4 · COLLISIONS CAN FLIP.', 'POINTER OPEN: NO INITIAL ROW HIGHLIGHT.', 'KEYBOARD OPEN: FIRST ENABLED ROW.']);
+section('hold');at(8.65,.008,.4);
+title(1100,367,'TOUCH HOLD FEEDBACK','PROPORTIONAL TARGET · NO FIXED WT OR HT');rr(991,404,215,91,0,'ph');rr(993.15,404.91,210.7,89.18,0,'obj');slotLabel(1003,427,191,39,'CALLER TARGET · SCALE Q');
+callout(996,493,974,520,'Q',-1);
+lines(978,550,['D1 WAIT → Q WHILE HELD → D2 MENU OPEN.', 'MOVEMENT > D3 ON EITHER AXIS CANCELS.', 'RELEASE / MULTI-TOUCH CANCELS FEEDBACK.', 'REDUCED MOTION: Q = 1.']);
+section('exploded');at(7.0,.03,.45);
+title(285,603,'EXPLODED AXONOMETRIC','PROPORTIONAL SCHEMATIC · LAYER SEPARATION NOT TO SCALE');
+const iso=[.752,.136,-.272,.376,315,835];
+const layers=[['CANVAS',0],['SHADOW',35],['BORDER + GLASS',75],['SCROLL / HIGHLIGHT',115],['SLOTS + STATUS',155]];
+for(const [label,z] of layers){
+ const g=mk('g',{'data-layer':z,transform:'matrix('+[...iso.slice(0,5),iso[5]-z].join(',')+')'});
+ if(z===0)mk('rect',{x:0,y:0,width:224,height:215,class:'slot'},g);
+ if(z===35)mk('rect',{x:0,y:0,width:224,height:215,rx:7,class:'hs',fill:HAT},g);
+ if(z===75)mk('rect',{x:0,y:0,width:224,height:215,rx:7,class:'obj'},g);
+ if(z===115){mk('rect',{x:5,y:5,width:214,height:205,rx:3,class:'well'},g);mk('rect',{x:5,y:33,width:214,height:28,rx:3,class:'hug'},g)}
+ if(z===155){mk('rect',{x:13,y:11,width:198,height:16,class:'slot'},g);for(let i=0;i<6;i++){let yy=i<3?33+i*28:126+(i-3)*28;cross(15,yy+7,14,14,g);mk('rect',{x:37,y:yy+6,width:146,height:16,class:'slot'},g);}}
+ [...g.querySelectorAll('*')].forEach(e=>e.setAttribute('vector-effect','non-scaling-stroke'));
+}
+at(7.12,.015,.45);for(const [label,z] of layers){const yy=835+215*.376-z;line(205,yy,256.5,yy,'lead');tx(195,yy+4,label,'dts',{'text-anchor':'end'})}
+at(8.7,.03,.4);lines(76,954,['PORTAL → POSITIONER → POPUP → SCROLL VIEWPORT.', 'LAYER ORDER IS STRUCTURAL; NO SCRIM IS INSERTED.']);
+section('row-detail');at(8.25,.006,.4);
+title(879,622,'DETAIL A · ROW ANATOMY','SCALE 2:1 · SINGLE LINE BASELINE · TRAILING SLOT IS OPTIONAL');
+const rx=618,ry=681;rr(rx,ry,548,56,6,'obj');cross(rx+20,ry+14,28,28);rr(rx+64,ry+12,394,32,0,'slot');slotLabel(rx+64,ry+12,394,32,'LABEL SLOT · FLEX · WRAPS');cross(rx+500,ry+14,28,28);
+dimH(rx,rx+20,656,ry,ry+14,'S2',{dx:-8});dimH(rx+20,rx+48,656,ry+14,ry+14,'I1',{dy:-13});dimH(rx+48,rx+64,656,ry+14,ry+12,'S4',{dx:9});dimH(rx+500,rx+528,656,ry+14,ry+14,'I1');dimV(ry,ry+56,1196,rx+548,rx+548,'H1');
+lines(618,767,['LEAD GLYPH ↔ LOADER: SAME I1 BOX. TRAIL: CHECK / RADIO / CHEVRON.', 'H1 = 2·S3 + MAX(L1,I1) = 28; WRAPPING ADDS LINE HEIGHT.', 'SHORTCUT HUGS ITS CONTENT AND START-ALIGNS; NO TEXT WIDTH IS SPECIFIED.']);
+section('corner');at(8.45,.006,.4);
+title(760,848,'DETAIL C · NESTED CORNER','SCALE 4:1 · SOURCE R2 ≠ CONCENTRIC R3');
+const cx=630,cy=908;
+mk('path',{d:`M${cx},${cy-14} V${cy+28} A28,28 0 0 0 ${cx+28},${cy+56} H${cx+120}`,class:'thin'});
+mk('path',{d:`M${cx+4},${cy-14} V${cy+28} A24,24 0 0 0 ${cx+28},${cy+52} H${cx+120}`,class:'thin'});
+mk('path',{d:`M${cx+20},${cy-10} V${cy+24} A12,12 0 0 0 ${cx+32},${cy+36} H${cx+120}`,class:'thin'});
+mk('path',{d:`M${cx+20},${cy+8} V${cy+28} A8,8 0 0 0 ${cx+28},${cy+36} H${cx+60}`,class:'env'});
+line(cx+14,cy+28,cx+42,cy+28,'cl');line(cx+28,cy+14,cx+28,cy+42,'cl');dimH(cx,cx+4,cy-31,cy-14,cy-14,'B',{dx:-14});dimH(cx+4,cx+20,cy-31,cy-14,cy-10,'S1',{dx:13});
+lines(795,904,['R1 = 7 · R2 = 3 (SOURCE)', 'R3 = R1 − B − S1 = 2', 'DASH-DOT = CONCENTRIC REFERENCE', 'NOT AN IMPLEMENTED RADIUS.'],'dt',18);nb(773,939,5);
+section('sources');at(8.9,.01,.4);tx(50,1001,'SOURCE AUDIT','vt');lines(50,1018,['context-menu.tsx / variants · dropdown-menu.menu / actions / shared / variants · globals.css', 'Two JSX root compositions in one demo; area and file-row callers. Browser geometry checked at root 16px.'],'source',13);
+section('tables');at(8.3,.0005,.35);let yy=70;const xx=1270;
+yy=table(xx,yy,'SPACING',[
+ ['B','panel border','1'],['S1','scroll viewport pad','4'],['S2','row pad-x','10 (inset left: 32)'],['S3','row / label pad-y','6'],['S4','row slot gap','8'],['S5','pointer side offset','0'],['S6','submenu side offset','8'],['S7','submenu align offset','−4'],['S8','separator margin-y','4'],['S9','label pad-x','8']]);
+yy=table(xx,yy,'SIZE / CONTENT GEOMETRY',[
+ ['W','panel width','caller / content; min M1, max M2'],['WR','row width','W − 2·(B+S1) = W − 10'],['WT/HT','trigger width/height','[TBD] caller-owned'],['I1','glyph / status box','14'],['L1','label line-height','16 nominal; text size 12'],['H1','one-line row','2·S3 + max(L1,I1) = 28'],['H2','one-line group label','2·S3 + L1 = 28'],['H3','separator region','2·S8 + B = 9'],['H','panel natural height','2·(B+S1)+N·H1+G·H2+K·H3'],['N/G/K','rows / labels / rules','caller composition; 6 / 1 / 1 drawn'],['T1','touch hit policy','[TBD]; row box is actual target']]);
+yy=table(xx,yy,'RADII / MATERIAL',[
+ ['R1','panel radius','7'],['R2','row radius','3 (source)'],['R3','concentric reference','R1 − B − S1 = 2 (not source)'],['F1','glass backdrop blur','12']]);
+yy=table(xx,yy,'SHADOW · LIFT / AMBIENT',[
+ ['Y','offset-y','8 / 16'],['BL','blur','16 / 32'],['SP','spread','−6 / −8'],['E1','nominal top','max(BL+SP−Y) = 8'],['E2','nominal side','max(BL+SP) = 24'],['E3','nominal bottom','max(BL+SP+Y) = 40']]);
+yy=table(xx,yy,'PLACEMENT / HOLD',[
+ ['V1','collision padding','8'],['A','available width','positioner; fallback 100vw−16'],['M1','minimum width','min(200,A)'],['M2','maximum width','min(320,A)'],['MH','maximum height','available height'],['Q','held target scale','0.98; reduced motion: 1'],['D1/D2','feedback / open delay','120ms / 500ms'],['D3','hold cancellation','>10px on either axis']]);
+window.drawingAudit={component:'context-menu',revision:'A',sourceDate:'2026-11-14',tableBottom:yy-30,rowNominal:28,panelFormula:'2*(B+S1)+N*H1+G*H2+K*H3',measured:{panelWidth:224,panelHeight:344.828125,rowHeight:27.984375},reservedDocsLink:{x:1500,y:990,width:150,height:45}};
+
+})();</script></body></html>

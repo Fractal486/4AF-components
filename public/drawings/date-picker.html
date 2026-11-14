@@ -67,7 +67,7 @@ h1{font-size:44px;font-weight:400;letter-spacing:.1em;line-height:1.1;text-trans
 <header class="tb">
  <div class="big"><div><div class="lbl">UI component · dimensional drawing</div><h1>Date picker</h1></div><div class="v scope">Trigger, calendar, alternate picker, placement and layers.<br>Single, multiple and range selection share one month.</div></div>
  <div><div class="lbl">Dwg no.</div><div class="v">UI-DATE-001</div></div>
- <div><div class="lbl">Rev</div><div class="v">A · 2026-11-14</div></div>
+ <div><div class="lbl">Rev</div><div class="v">B · 2026-11-14</div></div>
  <div><div class="lbl">Sheets</div><div class="v">1 of 1</div></div>
  <div><div class="lbl">Units</div><div class="v">CSS px · root 16 px</div></div>
  <div><div class="lbl">Scale</div><div class="v">As noted · do not scale</div></div>
@@ -106,7 +106,7 @@ function table(x,y,ttl,rows){const ws=[40,88,96],rh=17;tx(x,y-8,ttl,'vt');
 function detailRef(cx,cy,r,lbl,lx,ly){mk('circle',{cx:cx,cy:cy,r:r,class:'ph'});const a=Math.atan2(ly-cy,lx-cx);mk('line',{x1:cx+r*Math.cos(a),y1:cy+r*Math.sin(a),x2:lx,y2:ly,class:'lead'});tx(lx+(lx<cx?-4:4),ly+4,lbl,'dts',{'text-anchor':lx<cx?'end':'start'})}
 
 // Slightly wider tables accommodate the source formulas without abbreviating them.
-table=function(x,y,ttl,rows){const ws=[43,125,212],rh=16;tx(x,y-9,ttl,'vt');const all=[['Code','Variable','Value / formula']].concat(rows);all.forEach((r,i)=>{let xx=x;r.forEach((c,j)=>{mk('rect',{x:xx,y:y+i*rh,width:ws[j],height:rh,class:'thin'});tx(xx+6,y+i*rh+11.5,c,i?'tc':'th');xx+=ws[j]})});return y+all.length*rh+29};
+table=function(x,y,ttl,rows){const ws=[43,125,212],rh=15.5;tx(x,y-9,ttl,'vt');const all=[['Code','Variable','Value / formula']].concat(rows);all.forEach((r,i)=>{let xx=x;r.forEach((c,j)=>{mk('rect',{x:xx,y:y+i*rh,width:ws[j],height:rh,class:'thin'});tx(xx+6,y+i*rh+11.5,c,i?'tc':'th');xx+=ws[j]})});return y+all.length*rh+29};
 function line(x1,y1,x2,y2,c='thin',p){return mk('line',{x1,y1,x2,y2,class:c},p)}
 function cross(x,y,w,h,p){mk('rect',{x,y,width:w,height:h,class:'thin'},p);line(x,y,x+w,y+h,'thin',p);line(x+w,y,x,y+h,'thin',p)}
 function lines(x,y,items,c='dts',step=15){items.forEach((s,i)=>tx(x,y+i*step,s,c))}
@@ -288,7 +288,7 @@ yy=table(xx,yy,'VIEWPORT / KEEP-OUT',[
  ['MH','panel max-height','available height; else 100dvh−2·V2']
 ]);
 // Store accessible provenance without external assets or network dependencies.
-window.drawingAudit={width:252,cell:34,mark:30,panelForRows:n=>115+37*n,tableBottom:yy-29,sourceDate:'2026-11-14'};
+window.drawingAudit={width:252,cell:34,mark:30,panelForRows:n=>115+37*n,tableBottom:yy-29,sourceDate:'2026-11-14',revision:'B',reservedDocsLink:{x:1500,y:990,width:150,height:45}};
 })();
 </script>
 </body></html>

@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Breadcrumb · Dimensional drawing</title>
+<style>
+:root{color-scheme:light;--paper:#ececec;--sheet:#fff;--ink:#111;--ink2:#444;--ink3:#7a7a7a;--fill:#f3f3f3;--fill2:#e6e6e6;--f:Helvetica,Arial,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f)}
+.wrap{max-width:1800px;margin:auto;padding:28px 28px 32px}
+.tb{display:grid;grid-template-columns:2.3fr 1fr 1fr 1fr;border:1.2px solid var(--ink);border-radius:16px;background:var(--sheet);overflow:hidden;margin-bottom:20px}
+.tb>div{min-width:0;padding:12px 16px;border-right:.8px solid var(--ink);border-bottom:.8px solid var(--ink)}
+.tb>div:nth-child(4),.tb>div:nth-child(7){border-right:0}.tb .big{grid-row:span 2;display:flex;flex-direction:column;justify-content:space-between;gap:18px}
+.lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.075em;color:var(--ink2)}
+h1{font-size:44px;font-weight:400;letter-spacing:.1em;line-height:1.1;text-transform:uppercase;margin:8px 0 0}
+.v{margin-top:6px;font-size:12px;line-height:1.5;letter-spacing:.05em;text-transform:uppercase}.scope{font-size:10.5px;line-height:1.6;max-width:460px}
+.tb .notes{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:22px;border-right:0;font-size:10.5px;line-height:1.9;text-transform:uppercase;letter-spacing:.035em}
+.notes strong{font-size:12px;letter-spacing:.06em}.notes strong span{font-size:10px;font-weight:400}.notes ol{padding-left:18px;margin:5px 0 0}
+.tb .figs{grid-column:1/-1;display:grid;grid-template-columns:repeat(7,1fr);padding:14px 16px;border:0}
+.figs>div{padding-left:16px;border-left:.8px solid var(--ink)}.figs>div:first-child{padding-left:0;border-left:0}.figs .v{font-size:18px;text-transform:none;letter-spacing:0;white-space:nowrap}
+.scroll{overflow-x:auto;background:var(--sheet);border-radius:16px}svg{display:block;width:100%;min-width:1100px;height:auto}
+.foot{display:flex;justify-content:space-between;gap:20px;padding:12px 2px 0;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink2)}
+/* drawing */
+.u{font-family:var(--f);text-transform:uppercase;letter-spacing:.07em}
+.border{fill:none;stroke:var(--ink);stroke-width:1.2}
+.obj{fill:var(--sheet);stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round}
+.well{fill:var(--fill);stroke:var(--ink);stroke-width:1}
+.slot{fill:none;stroke:var(--ink2);stroke-width:.8;stroke-dasharray:4 3}
+.hug{fill:var(--fill2);stroke:var(--ink);stroke-width:1}
+.thin{fill:none;stroke:var(--ink);stroke-width:.8}
+.ph{fill:none;stroke:var(--ink3);stroke-width:.8;stroke-dasharray:14 3 3 3}
+.cl{fill:none;stroke:var(--ink3);stroke-width:.7;stroke-dasharray:16 3 2 3}
+.cut{stroke:var(--ink);stroke-width:2}
+.dl{stroke:var(--ink);stroke-width:.7;fill:none}
+.ext{stroke:var(--ink);stroke-width:.55;fill:none}
+.arrow{fill:var(--ink)}
+.hl{stroke:var(--ink2);stroke-width:.7}
+.hs{stroke:var(--ink);stroke-width:.8}
+.env{fill:none;stroke:var(--ink);stroke-width:.8;stroke-dasharray:10 3 2 3}
+.dt{font:400 11px var(--f);fill:var(--ink);paint-order:stroke;stroke:var(--sheet);stroke-width:4px;stroke-linejoin:round}
+.dts{font:400 9.5px var(--f);fill:var(--ink2);letter-spacing:.06em;text-transform:uppercase;paint-order:stroke;stroke:var(--sheet);stroke-width:3px}
+.sl{font:400 9px var(--f);fill:var(--ink2);letter-spacing:.08em;text-transform:uppercase}
+.nt{font:400 11.5px var(--f);fill:var(--ink);letter-spacing:.06em;text-transform:uppercase}
+.nth{font:700 13px var(--f);fill:var(--ink);letter-spacing:.06em}
+.vt{font:400 12px var(--f);fill:var(--ink);letter-spacing:.1em;text-transform:uppercase}
+.vtb{font:400 20px var(--f);fill:var(--ink);letter-spacing:.06em}
+.nb{fill:var(--sheet);stroke:var(--ink);stroke-width:.9}
+.nbt{font:400 9.5px var(--f);fill:var(--ink)}
+.lead{stroke:var(--ink);stroke-width:.7;fill:none}
+.dot{fill:var(--ink)}
+.th{font:400 10.5px var(--f);fill:var(--ink);letter-spacing:.05em;text-transform:uppercase}
+.tc{font:400 10.5px var(--f);fill:var(--ink)}
+.tbk{font:400 7px var(--f);fill:var(--ink2);letter-spacing:.04em;text-transform:uppercase}
+.tbt{font:700 15px var(--f);fill:var(--ink)}
+.tbv{font:400 17px var(--f);fill:var(--ink);letter-spacing:.06em}
+
+
+.tc{font-size:10px}.nt{font-size:10.5px;letter-spacing:.035em}.source{font:400 10px var(--f);fill:var(--ink2)}
+.accent-free{fill:#555;stroke:var(--ink);stroke-width:1}.faint{fill:#fafafa;stroke:#aaa;stroke-width:.55}
+.rule{stroke:#ccc;stroke-width:.55}.white-label{font:400 9px var(--f);fill:#fff;letter-spacing:.08em}
+@media(max-width:760px){.wrap{padding:12px}.tb{grid-template-columns:1fr 1fr}.tb .big{grid-column:1/-1;grid-row:auto}.tb .notes{grid-template-columns:1fr;gap:0}.tb .figs{grid-template-columns:repeat(2,1fr);gap:16px}.figs>div:nth-child(odd){border-left:0;padding-left:0}h1{font-size:32px}.foot{flex-wrap:wrap}}
+@media print{@page{size:A3 landscape;margin:8mm}body{background:#fff}.wrap{max-width:none;padding:0}.tb{margin-bottom:8px}.scroll{overflow:visible}svg{min-width:0}.foot{padding-top:6px}.tb>div{padding:8px 12px}.tb .figs{padding:8px 12px}.tb .notes{line-height:1.6}h1{font-size:32px}}
+</style>
+</head>
+<body><main class="wrap">
+<header class="tb">
+ <div class="big"><div><div class="lbl">UI component · dimensional drawing</div><h1>Breadcrumb</h1></div><div class="v scope">Inline trail, collapse, sibling menus, target geometry and wrapping.<br>Two sizes share semantic navigation and list structure.</div></div>
+ <div><div class="lbl">Dwg no.</div><div class="v">UI-BREAD-001</div></div>
+ <div><div class="lbl">Rev</div><div class="v">B · 2026-11-14</div></div>
+ <div><div class="lbl">Sheets</div><div class="v">1 of 1</div></div>
+ <div><div class="lbl">Units</div><div class="v">CSS px · root 16 px</div></div>
+ <div><div class="lbl">Scale</div><div class="v">As noted · do not scale</div></div>
+ <div><div class="lbl">Source</div><div class="v">Local component source<br>+ measured browser layout</div></div>
+ <div class="notes"><div><strong>Notes: <span>(unless otherwise specified)</span></strong><ol><li>Use variable tables; screen and printed sizes are not authoritative.</li><li>Dimensions use border-box geometry. Slots replace all real content.</li><li>HUG widths are schematic; FLEX takes remaining space; FILL spans its parent.</li></ol></div><div><strong aria-hidden="true">&nbsp;</strong><ol start="4"><li>Baseline: light theme, root 16 px, default spacing and settled motion.</li><li>Nominal dimensions round browser subpixels. Formulas describe the source.</li><li>[TBD] means unspecified. Grayscale distinguishes structure, not color tokens.</li></ol></div></div>
+ <div class="figs"><div><div class="lbl">W · trail</div><div class="v">caller / hug</div></div><div><div class="lbl">H1 · line</div><div class="v">16 / 20</div></div><div><div class="lbl">S1 · list gap</div><div class="v">4 / 6</div></div><div><div class="lbl">Z1 · ellipsis</div><div class="v">20 / 24</div></div><div><div class="lbl">T1 · hit target</div><div class="v">40</div></div><div><div class="lbl">R1 · link</div><div class="v">4</div></div><div><div class="lbl">S2 · inner gap</div><div class="v">4</div></div></div>
+</header>
+<div class="scroll"><svg id="sheet" viewBox="0 0 1700 1060" role="img" aria-labelledby="drawing-title drawing-desc"></svg></div>
+<footer class="foot"><span>2026-11-14 &nbsp;|&nbsp; UI component reference</span><span>Breadcrumb, architecture &nbsp;|&nbsp; 1</span></footer>
+</main>
+<script>
+(()=>{
+const NS='http://www.w3.org/2000/svg';let sv,A,HAT,uid=0;
+function mk(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)if(a[k]!=null)e.setAttribute(k,a[k]);(p||sv).appendChild(e);return e}
+function tx(x,y,s,c,a,p){const t=mk('text',Object.assign({x:x,y:y,class:c||'dt'},a||{}),p);t.textContent=s;return t}
+function begin(id){sv=document.getElementById(id);sv.innerHTML='';const n=uid++;const d=mk('defs',{});const m=mk('marker',{id:'ar'+n,viewBox:'0 0 10 10',refX:10,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse',markerUnits:'userSpaceOnUse'},d);mk('path',{d:'M0,1.7 L10,5 L0,8.3 z',class:'arrow'},m);
+ const pt=mk('pattern',{id:'hat'+n,width:5,height:5,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},d);mk('line',{x1:0,y1:0,x2:0,y2:5,class:'hl'},pt);A='url(#ar'+n+')';HAT='url(#hat'+n+')';rr(20,20,1660,1020,16,'border')}
+
+/* ---- kit ---- */
+function dimH(x1,x2,y,e1,e2,l,o){o=o||{};[[x1,e1],[x2,e2]].forEach(([x,e])=>{if(e==null)return;const s=Math.sign(y-e)||1;mk('line',{x1:x,y1:e+s*3,x2:x,y2:y+s*5,class:'ext'})});
+ if(x2-x1>=28)mk('line',{x1:x1,y1:y,x2:x2,y2:y,class:'dl','marker-start':A,'marker-end':A});else{mk('line',{x1:x1-13,y1:y,x2:x1,y2:y,class:'dl','marker-end':A});mk('line',{x1:x2+13,y1:y,x2:x2,y2:y,class:'dl','marker-end':A});mk('line',{x1:x1,y1:y,x2:x2,y2:y,class:'dl'})}
+ tx((x1+x2)/2+(o.dx||0),(o.below?y+13:y-4)+(o.dy||0),l,o.c||'dt',{'text-anchor':'middle'})}
+function dimV(y1,y2,x,e1,e2,l,o){o=o||{};[[y1,e1],[y2,e2]].forEach(([y,e])=>{if(e==null)return;const s=Math.sign(x-e)||1;mk('line',{x1:e+s*3,y1:y,x2:x+s*5,y2:y,class:'ext'})});
+ if(y2-y1>=28)mk('line',{x1:x,y1:y1,x2:x,y2:y2,class:'dl','marker-start':A,'marker-end':A});else{mk('line',{x1:x,y1:y1-13,x2:x,y2:y1,class:'dl','marker-end':A});mk('line',{x1:x,y1:y2+13,x2:x,y2:y2,class:'dl','marker-end':A});mk('line',{x1:x,y1:y1,x2:x,y2:y2,class:'dl'})}
+ const c=(y1+y2)/2;if(o.side){const r=o.side==='r';tx(r?x+6:x-6,c+4,l,o.c||'dt',{'text-anchor':r?'start':'end'})}else tx(x-5,c,l,o.c||'dt',{'text-anchor':'middle',transform:'rotate(-90 '+(x-5)+' '+c+')'})}
+function callout(px,py,ex,ey,l,dir,c){const s=dir||(ex>=px?1:-1);mk('circle',{cx:px,cy:py,r:1.8,class:'dot'});mk('polyline',{points:px+','+py+' '+ex+','+ey+' '+(ex+s*10)+','+ey,class:'lead'});tx(ex+s*14,ey+4,l,c||'dt',{'text-anchor':s>0?'start':'end'})}
+function rad(cx,cy,r,c,l,L){const sx=c.includes('l')?-1:1,sy=c.includes('t')?-1:1;const ox=cx-sx*r,oy=cy-sy*r;const px=ox+sx*r*Math.SQRT1_2,py=oy+sy*r*Math.SQRT1_2;callout(px,py,px+sx*L,py+sy*L,l,sx)}
+function nb(x,y,n){mk('rect',{x:x-6,y:y-6,width:12,height:12,class:'nb'});tx(x,y+3.5,String(n),'nbt',{'text-anchor':'middle'})}
+function rr(x,y,w,h,r,c){return mk('rect',{x:x,y:y,width:w,height:h,rx:r,class:c})}
+function slotLabel(x,y,w,h,l,al){tx(al==='l'?x+6:x+w/2,y+h/2+3.2,l,'sl',{'text-anchor':al==='l'?'start':'middle'})}
+function title(x,y,t,s){tx(x,y,t,'vt',{'text-anchor':'middle'});if(s)tx(x,y+14,s,'dts',{'text-anchor':'middle'})}
+function notes(list,extra){const NX=50,NY=58;tx(NX,NY,'NOTES:','nth');tx(NX+62,NY,'(UNLESS OTHERWISE SPECIFIED)','nt');
+ list.forEach(([n,t],i)=>{const y=NY+30+i*24;if(n){nb(NX+6,y-4,n);tx(NX+22,y,t,'nt')}else tx(NX,y,t,'nt')})}
+function table(x,y,ttl,rows){const ws=[40,88,96],rh=17;tx(x,y-8,ttl,'vt');
+ const all=[['Code','Variable','Value']].concat(rows);all.forEach((r,i)=>{let cx2=x;r.forEach((c,j)=>{mk('rect',{x:cx2,y:y+i*rh,width:ws[j],height:rh,class:'thin'});tx(cx2+(j?ws[j]/2:6),y+i*rh+12,c,i?'tc':'th',{'text-anchor':j?'middle':'start'});cx2+=ws[j]})});return y+all.length*rh+36}
+function detailRef(cx,cy,r,lbl,lx,ly){mk('circle',{cx:cx,cy:cy,r:r,class:'ph'});const a=Math.atan2(ly-cy,lx-cx);mk('line',{x1:cx+r*Math.cos(a),y1:cy+r*Math.sin(a),x2:lx,y2:ly,class:'lead'});tx(lx+(lx<cx?-4:4),ly+4,lbl,'dts',{'text-anchor':lx<cx?'end':'start'})}
+
+// Slightly wider tables accommodate the source formulas without abbreviating them.
+table=function(x,y,ttl,rows){const ws=[43,125,212],rh=15.5;tx(x,y-9,ttl,'vt');const all=[['Code','Variable','Value / formula']].concat(rows);all.forEach((r,i)=>{let xx=x;r.forEach((c,j)=>{mk('rect',{x:xx,y:y+i*rh,width:ws[j],height:rh,class:'thin'});tx(xx+6,y+i*rh+11.5,c,i?'tc':'th');xx+=ws[j]})});return y+all.length*rh+29};
+function line(x1,y1,x2,y2,c='thin',p){return mk('line',{x1,y1,x2,y2,class:c},p)}
+function cross(x,y,w,h,p){mk('rect',{x,y,width:w,height:h,class:'thin'},p);line(x,y,x+w,y+h,'thin',p);line(x+w,y,x,y+h,'thin',p)}
+function lines(x,y,items,c='dts',step=15){items.forEach((s,i)=>tx(x,y+i*step,s,c))}
+function hatch(x,y,w,h,r=0){return mk('rect',{x,y,width:w,height:h,rx:r,fill:HAT,class:'hs'})}
+
+// @beat notes
+begin('sheet');
+mk('title',{id:'drawing-title'}).textContent='Breadcrumb dimensional drawing';
+mk('desc',{id:'drawing-desc'}).textContent='Inline navigation trail with source-backed sizes, in-place expansion, menu composition, wrapping, target geometry, separator glyphs and exploded semantic layers. Caller text widths are schematic.';
+tx(50,58,'NOTES:','nth');tx(112,58,'(UNLESS OTHERWISE SPECIFIED)','nt');
+[
+ ['NAV LANDMARK → ORDERED LIST → ITEMS.', 'CURRENT PAGE IS A SPAN; LINKS ARE ANCHORS.'],
+ ['NO OUTER SURFACE, BORDER OR SHADOW.', 'ALL LABEL WIDTHS ARE HUG; PLAN IS SCHEMATIC.'],
+ ['LIST WRAPS; NO AUTOMATIC COLLAPSE.', 'CALLER CHOOSES WHICH MIDDLE ITEMS TO HIDE.'],
+ ['ELLIPSIS HIT AREA EXCEEDS ITS VISIBLE BOX.', 'SIBLING HIT AREA EXTENDS VERTICALLY ONLY.'],
+ ['EXPANSION ANIMATES WIDTH, MARGIN, OPACITY.', 'FOCUS MOVES ONLY AFTER SETTLING.'],
+ ['MENU ROWS USE THE SHARED DROPDOWN PANEL.', 'CURRENT ROW OR FIRST ENABLED ROW IS ACTIVE.']
+].forEach((ls,i)=>{const y=88+i*34;nb(56,y-4,i+1);lines(72,y,ls,'nt',13)});
+// @beat plan
+const PX=540,PY=175;
+function chevron(x,y,s){mk('path',{d:`M${x+s*.38},${y+s*.25} L${x+s*.63},${y+s*.5} L${x+s*.38},${y+s*.75}`,class:'thin'})}
+function ellipsis(x,y,z,i){rr(x,y,z,z,6*(z/24),'hug');cross(x+(z-i)/2,y+(z-i)/2,i,i)}
+function trail(x,y,k=1,closed=true){
+ const h=20*k,sz=14*k,gap=6*k;
+ rr(x,y,125*k,h,0,'slot');slotLabel(x,y,125*k,h,'LINK SLOT · HUG');
+ chevron(x+131*k,y+3*k,sz);
+ if(closed){ellipsis(x+151*k,y-2*k,24*k,16*k);chevron(x+181*k,y+3*k,sz);rr(x+201*k,y,109*k,h,0,'slot');slotLabel(x+201*k,y,109*k,h,'CURRENT · HUG')}
+ else {rr(x+151*k,y,85*k,h,0,'slot');slotLabel(x+151*k,y,85*k,h,'LINK · HUG');rr(x+240*k,y,20*k,h,4*k,'hug');cross(x+243*k,y+3*k,14*k,14*k);chevron(x+266*k,y+3*k,sz);rr(x+286*k,y,105*k,h,0,'slot');slotLabel(x+286*k,y,105*k,h,'CURRENT · HUG')}
+}
+title(850,58,'PLAN · COLLAPSED TRAIL','FIXED GEOMETRY 2:1 · MD · HUG WIDTHS PROPORTIONAL');
+trail(PX,PY,2,true);line(PX-20,PY+20,PX+640,PY+20,'cl');
+dimH(PX,PX+620,116,PY,PY,'W · CALLER / HUG');
+dimV(PY,PY+40,510,PX,PX,'H1');
+dimH(PX+250,PX+262,246,PY+40,PY+34,'S1',{dx:-15,dy:12});
+dimH(PX+262,PX+290,246,PY+34,PY+34,'I1',{dx:8,dy:-2});
+dimH(PX+302,PX+350,278,PY+44,PY+44,'Z1');
+dimH(PX+402,PX+620,246,PY+40,PY+40,'HUG');
+nb(525,154,1);nb(1178,195,2);detailRef(PX+326,PY+20,36,'DETAIL A',1003,310);
+lines(550,328,['VISIBLE SEQUENCE: LINK / SEPARATOR / ELLIPSIS / SEPARATOR / CURRENT.', 'S1 APPLIES BETWEEN EVERY FLEX CHILD; CURRENT HAS NO EXTRA PAD-X.']);
+// @beat focus
+// A trail has no drop shadow: show the actual focus envelope instead.
+title(246,342,'FOCUS ENVELOPE','SCALE 3:1 · NO RESTING SHADOW');
+rr(115,390,252,60,12,'obj');rr(109,384,264,72,18,'env');rr(127,390,228,60,0,'slot');slotLabel(127,390,228,60,'LINK SLOT · HUG');
+dimH(115,127,480,450,450,'S3',{dx:-15});callout(110,400,78,371,'F1',-1);rad(367,390,12,'tr','R1',22);
+lines(75,515,['NEGATIVE MARGIN CANCELS BOTH S3 INSETS IN FLOW.', 'FOCUS RING IS F1 OUTSIDE THE R1 ROUNDED BOX.']);
+// @beat targets
+title(680,390,'DETAIL A · ELLIPSIS','SCALE 4:1 · MD / INTERACTIVE ONLY');
+const ex=604,ey=446;hatch(ex-32,ey-32,160,160);rr(ex-32,ey-32,160,160,0,'env');ellipsis(ex,ey,96,64);
+line(ex-45,ey+48,ex+140,ey+48,'cl');line(ex+48,ey-45,ex+48,ey+140,'cl');
+dimH(ex-32,ex+128,ey+155,ey+128,ey+128,'T1');dimV(ey,ey+96,ex+155,ex+96,ex+96,'Z1');
+callout(ex+16,ey+16,577,438,'I2',-1);rad(ex+96,ey,24,'tr','R2',18);nb(565,557,4);
+lines(540,640,['TOP / BOTTOM MARGIN = −S4.', 'FLOW HEIGHT = Z1 − 2·S4 = H1.', 'HIT OVERHANG = (T1 − Z1) ÷ 2.']);
+title(1025,390,'SIBLING TRIGGER','SCALE 4:1 · MD');
+const bx=978,by=446;hatch(bx,by-40,80,160);rr(bx,by-40,80,160,0,'env');rr(bx,by,80,80,16,'hug');cross(bx+12,by+12,56,56);
+dimH(bx,bx+80,by+151,by+80,by+80,'Z2');dimV(by-40,by+120,bx+115,bx+80,bx+80,'T1');rad(bx,by,16,'tl','R1',18);
+lines(904,640,['HIT WIDTH = Z2; HEIGHT = T1.', 'NO SIDEWAYS EXPANSION OVER THE LINK.', 'ICON INSET = (Z2 − I1) ÷ 2.']);
+// @beat explode
+title(250,585,'EXPLODED SEMANTIC LAYERS','PROPORTIONAL SCHEMATIC · NOT PHYSICAL SURFACES');
+const layerSpecs=[['NAV LANDMARK',0],['ORDERED FLEX LIST',40],['ITEMS + SEPARATORS',80],['LINK / CURRENT / CONTROL',120]];
+for(const [label,z] of layerSpecs){const g=mk('g',{transform:'matrix(.94,.17,-.34,.47,199,'+(810-z)+')','data-layer':z});
+ mk('rect',{x:0,y:0,width:265,height:90,class:z<80?'ph':'slot'},g);
+ if(z>=80){for(let j=0;j<3;j++)mk('rect',{x:8+j*84,y:30,width:j===1?24:66,height:24,rx:z===120?4:0,class:z===120?'hug':'slot'},g)}
+ [...g.querySelectorAll('*')].forEach(e=>e.setAttribute('vector-effect','non-scaling-stroke'));
+ line(182,810-z,199,810-z,'lead');line(65,810-z,182,810-z,'lead');tx(65,800-z,label,'dts');}
+lines(65,925,['NO SCRIM, CONTAINER FILL OR ELEVATION IN THE TRAIL.', 'OPTIONAL MENU PORTAL IS A SEPARATE SURFACE.']);
+// @beat modes
+title(751,725,'EXPANSION / WRAPPING','FIXED GEOMETRY 1:1 · WIDTHS SCHEMATIC');
+trail(530,766,1,false);nb(505,778,5);
+rr(530,812,390,104,0,'ph');rr(542,826,130,20,0,'slot');slotLabel(542,826,130,20,'LINK SLOT · HUG');chevron(678,829,14);rr(698,826,170,20,0,'slot');slotLabel(698,826,170,20,'LINK SLOT · HUG');
+chevron(542,855,14);rr(562,852,170,20,0,'slot');slotLabel(562,852,170,20,'CURRENT · WRAPS');
+dimV(846,852,889,868,732,'S1',{side:'r'});nb(505,862,3);
+lines(530,948,['FLEX-WRAP + WRAP-ANYWHERE; NO FIXED BREAKPOINT.', 'DURING EXPANSION: NOWRAP + CLIP, THEN RESTORE.', 'W = AVAILABLE CALLER SPACE; WRAPPED HEIGHT = HUG.']);
+// @beat menu
+title(1090,725,'MENU COMPOSITION','SCALE 0.85:1 · THREE SINGLE-LINE ROWS');
+rr(1001,759,20.4,20.4,5.1,'hug');cross(1004.4,762.4,13.6,13.6);rr(1001,784.5,170,79.9,5.95,'obj');
+for(let j=0;j<3;j++){rr(1005.25,788.75+j*23.8,161.5,23.8,2.55,j===1?'hug':'slot');slotLabel(1014,788.75+j*23.8,120,23.8,'LABEL · FLEX');if(j===1)cross(1146,793.8+j*23.8,11.9,11.9)}
+dimV(779.4,784.5,1200,1021.4,1171,'S5',{side:'r'});dimH(1001,1171,895,864.4,864.4,'WM');
+lines(980,928,['MENU: CHILD ITEMS BECOME ROWS.', 'SEPARATORS + SIBLING MENUS OMITTED.', 'CURRENT SIBLING GETS A TRAILING MARK.', 'BOTTOM / START; MAY FLIP OR SHIFT.']);nb(1192,834,6);
+// @beat separators
+title(245,980,'SEPARATOR FAMILY','24-UNIT GLYPH GRID · SVG BOX = I1');
+for(let i=0;i<4;i++){const x=80+i*103,y=1008;rr(x,y,24,24,0,'slot');if(i===0)mk('path',{d:`M${x+15},${y+4} L${x+9},${y+20}`,class:'thin'});if(i===1)chevron(x,y,24);if(i===2)line(x+12,y+5,x+12,y+19);if(i===3)mk('circle',{cx:x+12,cy:y+12,r:2,class:'dot'});tx(x+34,y+15,['SLASH','CHEVRON','LINE','DOT'][i],'sl')}
+// @beat tables
+let yy=70;const xx=1260;
+yy=table(xx,yy,'SPACING / SIZE · SM / MD',[
+ ['S1','list gap','4 / 6 (both axes)'],['S2','item / icon gap','4'],['S3','link pad-inline','4; margin-inline: −4'],['S4','margin magnitude','2; block margin: −S4'],['H1','nominal line','16 / 20'],['Z1','ellipsis box','20 / 24'],['Z2','siblings button','16 / 20'],['I1','separator / siblings','12 / 14'],['I2','link / page / dots','14 / 16'],['T1','interactive hit','40; sibling width = Z2'],['W','trail width','caller / HUG; [TBD] cap'],['F1','focus ring','2; no offset'],['R1','link / siblings','4'],['R2','ellipsis','6']]);
+yy=table(xx,yy,'MENU · SHARED DEPENDENCY',[
+ ['S5','anchor offset','6'],['V1','collision padding','8'],['B','menu border','1'],['S6','menu inset','4'],['S7','row pad-x / pad-y','10 / 6'],['S8','row slot gap','8'],['H2','single-line row','16 + 2·6 = 28 nominal'],['HM','menu height','2·B + 2·S6 + N·H2'],['WM','panel width','HUG; 200–320 if room'],['MW','available width','viewport / collision bounded'],['MH','panel max-height','available height'],['N','visible menu rows','caller-controlled'],['R3','panel radius','7'],['R4','row radius','3; source value'],['R5','concentric ref.','R3 − B − S6 = 2']]);
+yy=table(xx,yy,'MOTION / CONSTRAINTS',[
+ ['D1','hover / focus','150ms; duration-fast'],['D2','expand / collapse','300ms; duration-slow'],['D3','menu enter / exit','300 / 200ms'],['RM','reduced motion','expand: immediate; CSS: 1ms'],['T2','link min hit policy','[TBD]; no extra hit area'],['V2','trail viewport gap','[TBD]; caller layout'],['BP','wrap breakpoint','none; content + W'],['SH','trail shadow','none'],['E','menu easing','ease-panel / ease-out']]);
+
+// @beat corner
+title(1450,808,'NESTED CORNER · MENU','SCALE 5:1 · SOURCE + CONCENTRIC REFERENCE');
+mk('path',{d:'M1320,837 V897 A35,35 0 0 0 1355,932 H1420',class:'thin'});
+mk('path',{d:'M1325,837 V897 A30,30 0 0 0 1355,927 H1420',class:'thin'});
+mk('path',{d:'M1345,850 V892 A15,15 0 0 0 1360,907 H1420',class:'thin'});
+mk('path',{d:'M1345,880 V897 A10,10 0 0 0 1355,907 H1390',class:'env'});
+line(1345,897,1370,897,'cl');line(1355,882,1355,915,'cl');
+dimH(1320,1325,846,null,null,'B',{dx:-15,dy:-10});dimH(1325,1345,846,null,null,'S6',{dx:14,dy:-10});
+callout(1325,920,1280,927,'R3',-1);callout(1348,901,1440,881,'R4',1);
+lines(1480,913,['R5 DASH-DOT:', 'R3 − B − S6 = 2'],'dt',17);
+
+lines(1260,963,['MENU ROW R4 IS NOT CONCENTRIC WITH R3.', 'R5 IS REFERENCE ONLY, NOT IMPLEMENTED.']);
+tx(530,1007,'SOURCE AUDIT','vt');lines(530,1024,['breadcrumb.tsx + variants · dropdown-menu modules · globals.css', 'Inspector + usage reference reviewed; browser default md measured.'],'source',13);
+window.drawingAudit={component:'breadcrumb',line:[16,20],gap:[4,6],ellipsis:[20,24],target:40,tableBottom:yy-29,sourceDate:'2026-11-14'};
+
+})();
+</script></body></html>

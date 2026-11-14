@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Data table · Dimensional drawing</title>
+<style>
+:root{color-scheme:light;--paper:#ececec;--sheet:#fff;--ink:#111;--ink2:#444;--ink3:#7a7a7a;--fill:#f3f3f3;--fill2:#e6e6e6;--f:Helvetica,Arial,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f)}
+.wrap{max-width:1800px;margin:auto;padding:28px 28px 32px}
+.tb{display:grid;grid-template-columns:2.3fr 1fr 1fr 1fr;border:1.2px solid var(--ink);border-radius:16px;background:var(--sheet);overflow:hidden;margin-bottom:20px}
+.tb>div{min-width:0;padding:12px 16px;border-right:.8px solid var(--ink);border-bottom:.8px solid var(--ink)}
+.tb>div:nth-child(4),.tb>div:nth-child(7){border-right:0}.tb .big{grid-row:span 2;display:flex;flex-direction:column;justify-content:space-between;gap:18px}
+.lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.075em;color:var(--ink2)}
+h1{font-size:44px;font-weight:400;letter-spacing:.1em;line-height:1.1;text-transform:uppercase;margin:8px 0 0}
+.v{margin-top:6px;font-size:12px;line-height:1.5;letter-spacing:.05em;text-transform:uppercase}.scope{font-size:10.5px;line-height:1.6;max-width:460px}
+.tb .notes{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:22px;border-right:0;font-size:10.5px;line-height:1.9;text-transform:uppercase;letter-spacing:.035em}
+.notes strong{font-size:12px;letter-spacing:.06em}.notes strong span{font-size:10px;font-weight:400}.notes ol{padding-left:18px;margin:5px 0 0}
+.tb .figs{grid-column:1/-1;display:grid;grid-template-columns:repeat(7,1fr);padding:14px 16px;border:0}
+.figs>div{padding-left:16px;border-left:.8px solid var(--ink)}.figs>div:first-child{padding-left:0;border-left:0}.figs .v{font-size:18px;text-transform:none;letter-spacing:0;white-space:nowrap}
+.scroll{overflow-x:auto;background:var(--sheet);border-radius:16px}svg{display:block;width:100%;min-width:1100px;height:auto}
+.foot{display:flex;justify-content:space-between;gap:20px;padding:12px 2px 0;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink2)}
+/* drawing */
+.u{font-family:var(--f);text-transform:uppercase;letter-spacing:.07em}
+.border{fill:none;stroke:var(--ink);stroke-width:1.2}
+.obj{fill:var(--sheet);stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round}
+.well{fill:var(--fill);stroke:var(--ink);stroke-width:1}
+.slot{fill:none;stroke:var(--ink2);stroke-width:.8;stroke-dasharray:4 3}
+.hug{fill:var(--fill2);stroke:var(--ink);stroke-width:1}
+.thin{fill:none;stroke:var(--ink);stroke-width:.8}
+.ph{fill:none;stroke:var(--ink3);stroke-width:.8;stroke-dasharray:14 3 3 3}
+.cl{fill:none;stroke:var(--ink3);stroke-width:.7;stroke-dasharray:16 3 2 3}
+.cut{stroke:var(--ink);stroke-width:2}
+.dl{stroke:var(--ink);stroke-width:.7;fill:none}
+.ext{stroke:var(--ink);stroke-width:.55;fill:none}
+.arrow{fill:var(--ink)}
+.hl{stroke:var(--ink2);stroke-width:.7}
+.hs{stroke:var(--ink);stroke-width:.8}
+.env{fill:none;stroke:var(--ink);stroke-width:.8;stroke-dasharray:10 3 2 3}
+.dt{font:400 11px var(--f);fill:var(--ink);paint-order:stroke;stroke:var(--sheet);stroke-width:4px;stroke-linejoin:round}
+.dts{font:400 9.5px var(--f);fill:var(--ink2);letter-spacing:.06em;text-transform:uppercase;paint-order:stroke;stroke:var(--sheet);stroke-width:3px}
+.sl{font:400 9px var(--f);fill:var(--ink2);letter-spacing:.08em;text-transform:uppercase}
+.nt{font:400 11.5px var(--f);fill:var(--ink);letter-spacing:.06em;text-transform:uppercase}
+.nth{font:700 13px var(--f);fill:var(--ink);letter-spacing:.06em}
+.vt{font:400 12px var(--f);fill:var(--ink);letter-spacing:.1em;text-transform:uppercase}
+.vtb{font:400 20px var(--f);fill:var(--ink);letter-spacing:.06em}
+.nb{fill:var(--sheet);stroke:var(--ink);stroke-width:.9}
+.nbt{font:400 9.5px var(--f);fill:var(--ink)}
+.lead{stroke:var(--ink);stroke-width:.7;fill:none}
+.dot{fill:var(--ink)}
+.th{font:400 10.5px var(--f);fill:var(--ink);letter-spacing:.05em;text-transform:uppercase}
+.tc{font:400 10.5px var(--f);fill:var(--ink)}
+.tbk{font:400 7px var(--f);fill:var(--ink2);letter-spacing:.04em;text-transform:uppercase}
+.tbt{font:700 15px var(--f);fill:var(--ink)}
+.tbv{font:400 17px var(--f);fill:var(--ink);letter-spacing:.06em}
+
+
+.tc{font-size:10px}.nt{font-size:10.5px;letter-spacing:.035em}.source{font:400 10px var(--f);fill:var(--ink2)}
+.accent-free{fill:#555;stroke:var(--ink);stroke-width:1}.faint{fill:#fafafa;stroke:#aaa;stroke-width:.55}
+.rule{stroke:#ccc;stroke-width:.55}.white-label{font:400 9px var(--f);fill:#fff;letter-spacing:.08em}
+@media(max-width:760px){.wrap{padding:12px}.tb{grid-template-columns:1fr 1fr}.tb .big{grid-column:1/-1;grid-row:auto}.tb .notes{grid-template-columns:1fr;gap:0}.tb .figs{grid-template-columns:repeat(2,1fr);gap:16px}.figs>div:nth-child(odd){border-left:0;padding-left:0}h1{font-size:32px}.foot{flex-wrap:wrap}}
+@media print{@page{size:A3 landscape;margin:8mm}body{background:#fff}.wrap{max-width:none;padding:0}.tb{margin-bottom:8px}.scroll{overflow:visible}svg{min-width:0}.foot{padding-top:6px}.tb>div{padding:8px 12px}.tb .figs{padding:8px 12px}.tb .notes{line-height:1.6}h1{font-size:32px}}
+</style>
+</head>
+<body><main class="wrap">
+<header class="tb">
+ <div class="big"><div><div class="lbl">UI component · dimensional drawing</div><h1>Data table</h1></div><div class="v scope">Toolbar, native table, selection overlay and pagination.<br>Density, pinned edges, loading and optional outline.</div></div>
+ <div><div class="lbl">Dwg no.</div><div class="v">UI-DATA-001</div></div>
+ <div><div class="lbl">Rev</div><div class="v">A · 2026-11-14</div></div>
+ <div><div class="lbl">Sheets</div><div class="v">1 of 1</div></div>
+ <div><div class="lbl">Units</div><div class="v">CSS px · root 16 px</div></div>
+ <div><div class="lbl">Scale</div><div class="v">As noted · do not scale</div></div>
+ <div><div class="lbl">Source</div><div class="v">Local component source<br>+ measured browser layout</div></div>
+ <div class="notes"><div><strong>Notes: <span>(unless otherwise specified)</span></strong><ol><li>Use variable tables; screen and printed sizes are not authoritative.</li><li>Dimensions use border-box geometry. Slots replace all real content.</li><li>HUG widths are schematic; FLEX takes remaining space; FILL spans its parent.</li></ol></div><div><strong aria-hidden="true">&nbsp;</strong><ol start="4"><li>Baseline: light theme, default spacing, settled motion and sm density.</li><li>Nominal dimensions round browser subpixels. Formulas describe the source.</li><li>[TBD] means unspecified. Grayscale distinguishes structure, not color tokens.</li></ol></div></div>
+ <div class="figs"><div><div class="lbl">W · viewport</div><div class="v">caller / fill</div></div><div><div class="lbl">H1 · header min</div><div class="v">36</div></div><div><div class="lbl">H2 · row min</div><div class="v">36 / 44</div></div><div><div class="lbl">S1 · cell pad-x</div><div class="v">10 / 12</div></div><div><div class="lbl">S3 · stack gap</div><div class="v">12</div></div><div><div class="lbl">Z1 · checkbox</div><div class="v">16</div></div><div><div class="lbl">W1 · select gutter</div><div class="v">2·s1 + z1</div></div></div>
+</header>
+<div class="scroll"><svg id="sheet" viewBox="0 0 1700 1060" role="img" aria-labelledby="drawing-title drawing-desc"></svg></div>
+<footer class="foot"><span>2026-11-14 &nbsp;|&nbsp; UI component reference</span><span>Data table, architecture &nbsp;|&nbsp; 1</span></footer>
+</main>
+<script>(()=>{const NS='http://www.w3.org/2000/svg';let sv,A,HAT,uid=0;
+function mk(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)if(a[k]!=null)e.setAttribute(k,a[k]);(p||sv).appendChild(e);return e}
+function tx(x,y,s,c,a,p){const t=mk('text',Object.assign({x:x,y:y,class:c||'dt'},a||{}),p);t.textContent=s;return t}
+function begin(id){sv=document.getElementById(id);sv.innerHTML='';const n=uid++;const d=mk('defs',{});const m=mk('marker',{id:'ar'+n,viewBox:'0 0 10 10',refX:10,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse',markerUnits:'userSpaceOnUse'},d);mk('path',{d:'M0,1.7 L10,5 L0,8.3 z',class:'arrow'},m);
+ const pt=mk('pattern',{id:'hat'+n,width:5,height:5,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},d);mk('line',{x1:0,y1:0,x2:0,y2:5,class:'hl'},pt);A='url(#ar'+n+')';HAT='url(#hat'+n+')';rr(20,20,1660,1020,16,'border')}
+
+/* ---- kit ---- */
+function dimH(x1,x2,y,e1,e2,l,o){o=o||{};[[x1,e1],[x2,e2]].forEach(([x,e])=>{if(e==null)return;const s=Math.sign(y-e)||1;mk('line',{x1:x,y1:e+s*3,x2:x,y2:y+s*5,class:'ext'})});
+ if(x2-x1>=28)mk('line',{x1:x1,y1:y,x2:x2,y2:y,class:'dl','marker-start':A,'marker-end':A});else{mk('line',{x1:x1-13,y1:y,x2:x1,y2:y,class:'dl','marker-end':A});mk('line',{x1:x2+13,y1:y,x2:x2,y2:y,class:'dl','marker-end':A});mk('line',{x1:x1,y1:y,x2:x2,y2:y,class:'dl'})}
+ tx((x1+x2)/2+(o.dx||0),(o.below?y+13:y-4)+(o.dy||0),l,o.c||'dt',{'text-anchor':'middle'})}
+function dimV(y1,y2,x,e1,e2,l,o){o=o||{};[[y1,e1],[y2,e2]].forEach(([y,e])=>{if(e==null)return;const s=Math.sign(x-e)||1;mk('line',{x1:e+s*3,y1:y,x2:x+s*5,y2:y,class:'ext'})});
+ if(y2-y1>=28)mk('line',{x1:x,y1:y1,x2:x,y2:y2,class:'dl','marker-start':A,'marker-end':A});else{mk('line',{x1:x,y1:y1-13,x2:x,y2:y1,class:'dl','marker-end':A});mk('line',{x1:x,y1:y2+13,x2:x,y2:y2,class:'dl','marker-end':A});mk('line',{x1:x,y1:y1,x2:x,y2:y2,class:'dl'})}
+ const c=(y1+y2)/2;if(o.side){const r=o.side==='r';tx(r?x+6:x-6,c+4,l,o.c||'dt',{'text-anchor':r?'start':'end'})}else tx(x-5,c,l,o.c||'dt',{'text-anchor':'middle',transform:'rotate(-90 '+(x-5)+' '+c+')'})}
+function callout(px,py,ex,ey,l,dir,c){const s=dir||(ex>=px?1:-1);mk('circle',{cx:px,cy:py,r:1.8,class:'dot'});mk('polyline',{points:px+','+py+' '+ex+','+ey+' '+(ex+s*10)+','+ey,class:'lead'});tx(ex+s*14,ey+4,l,c||'dt',{'text-anchor':s>0?'start':'end'})}
+function rad(cx,cy,r,c,l,L){const sx=c.includes('l')?-1:1,sy=c.includes('t')?-1:1;const ox=cx-sx*r,oy=cy-sy*r;const px=ox+sx*r*Math.SQRT1_2,py=oy+sy*r*Math.SQRT1_2;callout(px,py,px+sx*L,py+sy*L,l,sx)}
+function nb(x,y,n){mk('rect',{x:x-6,y:y-6,width:12,height:12,class:'nb'});tx(x,y+3.5,String(n),'nbt',{'text-anchor':'middle'})}
+function rr(x,y,w,h,r,c,p){return mk('rect',{x:x,y:y,width:w,height:h,rx:r,class:c},p)}
+function slotLabel(x,y,w,h,l,al){tx(al==='l'?x+6:x+w/2,y+h/2+3.2,l,'sl',{'text-anchor':al==='l'?'start':'middle'})}
+function title(x,y,t,s){tx(x,y,t,'vt',{'text-anchor':'middle'});if(s)tx(x,y+14,s,'dts',{'text-anchor':'middle'})}
+function notes(list,extra){const NX=50,NY=58;tx(NX,NY,'NOTES:','nth');tx(NX+62,NY,'(UNLESS OTHERWISE SPECIFIED)','nt');
+ list.forEach(([n,t],i)=>{const y=NY+30+i*24;if(n){nb(NX+6,y-4,n);tx(NX+22,y,t,'nt')}else tx(NX,y,t,'nt')})}
+function table(x,y,ttl,rows){const ws=[40,88,96],rh=17;tx(x,y-8,ttl,'vt');
+ const all=[['Code','Variable','Value']].concat(rows);all.forEach((r,i)=>{let cx2=x;r.forEach((c,j)=>{mk('rect',{x:cx2,y:y+i*rh,width:ws[j],height:rh,class:'thin'});tx(cx2+(j?ws[j]/2:6),y+i*rh+12,c,i?'tc':'th',{'text-anchor':j?'middle':'start'});cx2+=ws[j]})});return y+all.length*rh+36}
+function detailRef(cx,cy,r,lbl,lx,ly){mk('circle',{cx:cx,cy:cy,r:r,class:'ph'});const a=Math.atan2(ly-cy,lx-cx);mk('line',{x1:cx+r*Math.cos(a),y1:cy+r*Math.sin(a),x2:lx,y2:ly,class:'lead'});tx(lx+(lx<cx?-4:4),ly+4,lbl,'dts',{'text-anchor':lx<cx?'end':'start'})}
+
+
+table=function(x,y,ttl,rows){const ws=[42,126,212],rh=17;tx(x,y-9,ttl,'vt');[['Code','Variable','Value / formula']].concat(rows).forEach((r,i)=>{let xx=x;r.forEach((c,j)=>{mk('rect',{x:xx,y:y+i*rh,width:ws[j],height:rh,class:'thin'});tx(xx+6,y+i*rh+12,c,i?'tc':'th');xx+=ws[j]})});return y+(rows.length+1)*rh+30};
+function line(x1,y1,x2,y2,c='thin',p){return mk('line',{x1,y1,x2,y2,class:c},p)}
+function cross(x,y,w,h,p){rr(x,y,w,h,0,'thin',p);line(x,y,x+w,y+h,'thin',p);line(x+w,y,x,y+h,'thin',p)}
+function lines(x,y,a,c='dts',step=15){a.forEach((s,i)=>tx(x,y+i*step,s,c))}
+function hatch(x,y,w,h){return mk('rect',{x,y,width:w,height:h,fill:HAT,class:'hs'})}
+const MOTION=false;function layerGroup(z,a,j){return mk('g',{class:'iso',transform:'matrix(.47,.085,-.17,.235,205,'+(830-z)+')'})}const at=()=>{};begin('sheet');const st=mk('title',{id:'drawing-title'});st.textContent='Data table dimensional drawing';const ds=mk('desc',{id:'drawing-desc'});ds.textContent='Variable-width data table anatomy with toolbar, sortable headers, density, selection overlay, pinned edges, scroll viewport, optional corner and exploded layers.';
+// Fixed heights are source geometry; horizontal spans are schematic, never specifications.
+at(8.25,.004,.4);
+tx(50,58,'NOTES:','nth');tx(112,58,'(UNLESS OTHERWISE SPECIFIED)','nt');
+[
+ ['W FILLS THE CALLER. COLUMNS AUTO-SIZE.', 'WT MAY EXCEED W; HORIZONTAL SCROLL IS BUILT IN.'],
+ ['SM / MD ARE MINIMUM ROW HEIGHTS.', 'WRAPPING OR TALL CONTENT GROWS EACH ROW.'],
+ ['SELECTION BAR OVERLAYS THE EXISTING HEADER.', 'LABELS FADE; COLUMN WIDTHS DO NOT REFLOW.'],
+ ['SELECT GUTTER ALWAYS PINS TO INLINE START.', 'ACTIONS PIN IF THE LAST DATA COLUMN PINS END.'],
+ ['OUTLINE, VERTICAL RULES AND CAPTION OPTIONAL.', 'HORIZONTAL RULES AND STICKY HEADER DEFAULT ON.'],
+ ['TOOLBAR / PAGINATION WRAP; WIDTHS ARE HUG.', 'BOUNDED SCROLL HEIGHT IS CALLER-DEFINED [TBD].']
+].forEach((a,i)=>{nb(56,84+i*34,i+1);lines(72,88+i*34,a,'nt',13)});
+
+// MAIN PLAN: characteristic sort header draws first; wider composition follows.
+const planRoot=sv;const planGroup=mk('g',{});sv=planGroup;if(MOTION)this.plan=planGroup;
+const PX=535,PY=170,W=650,H=216;
+at(-.35,0,1.9);rr(PX,PY,W,H,0,'thin');
+at(.15,.08,.65);line(PX,PY+36,PX+W,PY+36);rr(PX+10,PY+10,16,16,4,'hug');
+at(.5,.075,.55);rr(PX+46,PY+10,100,16,0,'slot');slotLabel(PX+46,PY+10,100,16,'LABEL · HUG');cross(PX+152,PY+11,14,14);
+at(1.12,.06,.55);dimV(PY,PY+36,PX-25,PX,PX,'H1',{side:'l'});dimH(PX,PX+36,480,PY+H,PY+H,'W1');
+at(2.35,.025,.5);for(const [a,w] of [[196,180],[416,150]]){rr(PX+a,PY+10,w,16,0,'slot');slotLabel(PX+a,PY+10,w,16,'LABEL SLOT · HUG')}
+for(let row=0;row<5;row++){
+ at(2.5+row*.16,.012,.55);const yy=PY+36+row*36;
+ if(row===1)rr(PX,yy,W,36,0,'well');
+ if(row<4)line(PX,yy+36,PX+W,yy+36);
+ rr(PX+10,yy+10,16,16,4,'hug');
+ for(const [a,w] of [[46,130],[196,200],[416,180]]){rr(PX+a,yy+9,w,18,0,'slot');slotLabel(PX+a,yy+9,w,18,'VALUE SLOT · FLEX')}
+ rr(PX+616,yy+6,24,24,6,'slot');cross(PX+621,yy+11,14,14);
+}
+at(3.35,.03,.55);title(860,58,'PLAN · DATA MODE','HEIGHTS 1:1 · WIDTHS SCHEMATIC · SM · FIVE ROW SLOTS');
+rr(PX,124,436,34,8,'obj');cross(PX+12,133,16,16);rr(PX+37,133,385,16,0,'slot');slotLabel(PX+37,133,385,16,'SEARCH VALUE · FLEX');
+rr(PX+444,126,94,30,6,'hug');slotLabel(PX+444,126,94,30,'FILTER · HUG');rr(PX+546,126,104,30,6,'hug');slotLabel(PX+546,126,104,30,'VIEW · HUG');
+rr(PX,394,W,16,0,'slot');slotLabel(PX,394,W,16,'CAPTION SLOT · FILL · OPTIONAL');
+rr(PX,426,165,16,0,'slot');slotLabel(PX,426,165,16,'COUNT · HUG');
+rr(PX+270,422,152,30,6,'slot');slotLabel(PX+270,422,152,30,'PAGE SIZE · HUG');
+rr(PX+438,428,80,16,0,'slot');slotLabel(PX+438,428,80,16,'PAGE · HUG');
+for(let i=0;i<4;i++){rr(PX+542+i*28,425,24,24,6,'hug');cross(PX+547+i*28,430,14,14)}
+at(3.9,.018,.45);dimH(PX,PX+W,91,124,124,'W · VIEWPORT FILL / WT · TABLE AUTO');
+dimH(PX+36,PX+606,480,386,386,'Σ CW · CONTENT / CALLER');dimH(PX+606,PX+650,480,386,386,'W2');
+dimV(124,158,1220,1185,1185,'H3',{side:'r'});dimV(158,170,1250,1185,1185,'S3',{side:'l'});
+dimV(206,242,1220,1185,1185,'H2',{side:'r'});dimV(170,386,484,535,535,'H4 = H1 + N·H2');
+dimV(386,394,1220,1185,1185,'S7',{side:'r'});dimV(410,422,1250,1185,1185,'S3',{side:'l'});
+nb(520,137,6);nb(1198,270,2);nb(520,182,4);nb(1198,403,5);
+detailRef(PX+101,PY+16,24,'A',705,164);
+lines(550,513,['NO FIXED TABLE / COLUMN WIDTH. H4 ASSUMES UNWRAPPED ROWS.', 'TOOLBAR + S3 + TABLE / CAPTION + S3 + PAGINATION = CONTENT HEIGHT.']);
+
+sv=planRoot;
+// Exploded structure, same geometry as the plan. Z gaps are illustration only.
+at(7,.04,.45);title(258,572,'EXPLODED AXONOMETRIC','PROPORTIONAL · SEPARATION NOT A CSS ELEVATION');
+const layerSpecs=[['SCROLL VIEWPORT',0],['CELL FILLS + RULES',38],['PINNED HEADER',76],['SLOTS + CONTROLS',114]];
+for(let j=0;j<layerSpecs.length;j++){
+ const [name,z]=layerSpecs[j];at(5.8+j*.12,.006,.65);
+ const g=layerGroup(z,5.15+j*.12,j);
+ if(j===0)rr(0,0,W,H,0,'slot',g);
+ if(j===1){rr(0,0,W,H,0,'obj',g);for(let n=1;n<6;n++)line(0,n*36,W,n*36,'thin',g)}
+ if(j===2){rr(0,0,W,36,0,'well',g);rr(0,36,36,H-36,0,'well',g)}
+ if(j===3){for(let row=0;row<6;row++){rr(10,10+row*36,16,16,4,'hug',g);for(const [a,w] of [[46,130],[196,200],[416,180]])rr(a,10+row*36,w,16,0,'slot',g)}}
+ if(!MOTION)[...g.querySelectorAll('*')].forEach(e=>e.setAttribute('vector-effect','non-scaling-stroke'));
+ at(7.05+j*.05,.03,.4);const ly=830-z;line(163,ly,205,ly,'lead');tx(154,ly+4,name,'dts',{'text-anchor':'end'});
+}
+at(8.3,.01,.45);lines(65,932,['NO SCRIM OR DROP SHADOW ON THE TABLE.', 'STICKY CELL PAINT IS OPAQUE; CONTENT SCROLLS BELOW.', 'PINNED HEADER SEAM: 1 PX UPWARD FILL SHADOW.']);
+
+// Cell section / density: native table min heights, never a fixed multiline row.
+at(8.45,.015,.45);title(690,575,'DETAIL A · CELL DENSITY','SCALE 2:1 · SM / MD · HEIGHTS ARE MINIMA');
+for(const [i,h,p] of [[0,36,10],[1,44,12]]){
+ const xx=530+i*190,yy=617;rr(xx,yy,160,h*2,0,'obj');rr(xx+p*2,yy+(h*2-40)/2,160-p*4,40,0,'slot');
+ slotLabel(xx+p*2,yy+(h*2-40)/2,160-p*4,40,'VALUE · FLEX');dimV(yy,yy+h*2,xx-18,xx,xx,'H2',{side:'l'});
+ dimH(xx,xx+p*2,yy+h*2+22,yy+h*2,yy+h*2,'S1',{dx:-5});tx(xx+80,yy+h*2+44,i?'MD':'SM','dts',{'text-anchor':'middle'});
+}
+lines(520,775,['H2 ≥ MAX(DENSITY MIN, CONTENT + 2·S2 + B).', 'HORIZONTAL RULE B IS ABSENT ON LAST BODY ROW.']);
+
+// Selection bar retains cells beneath; source does not paint a new surface.
+at(8.7,.012,.45);title(1072,575,'SELECTION OVERLAY','SCALE 1:1 HEIGHT · WIDTH SCHEMATIC');
+rr(928,617,280,36,0,'well');rr(938,627,16,16,4,'hug');
+rr(964,627,100,16,0,'slot');slotLabel(964,627,100,16,'COUNT · HUG');
+rr(1118,623,80,24,6,'hug');slotLabel(1118,623,80,24,'ACTIONS');
+dimH(928,964,594,617,617,'S8');dimV(617,653,1235,1208,1208,'H1',{side:'r'});nb(1220,632,3);
+line(928,673,1208,673,'ph');tx(1068,692,'LABELS RETAIN THEIR CELLS BELOW','dts',{'text-anchor':'middle'});
+lines(930,725,['BAR: TRANSLATE-Y −8 → 0 + OPACITY.', 'LABEL FADE: DURATION-SLOW = 300 MS.', 'REDUCED MOTION: JS 0; CSS 1 MS.', 'GAP S9 BETWEEN COUNT AND ACTIONS.']);
+
+// Pinning and overflow diagram.
+at(8.95,.015,.45);title(1045,831,'PINNING / SCROLL CONTRACT','PROPORTIONAL · WIDTH AND MAX HEIGHT [TBD]');
+rr(906,865,295,116,0,'obj');rr(906,865,295,22,0,'well');rr(906,887,36,94,0,'hug');rr(1171,887,30,94,0,'hug');
+for(let y=909;y<979;y+=23)line(942,y,1171,y,'thin');
+hatch(942,887,14,94);hatch(1157,887,14,94);line(976,937,1140,937,'dl');
+mk('path',{d:'M976,937 l8,-4 v8 z M1140,937 l-8,-4 v8 z',class:'arrow'});
+callout(920,914,888,896,'START',-1);callout(1186,950,1223,975,'END',1);
+lines(913,1008,['HEADER PINS AT TOP 0; SCROLLBAR INSET = HEADER.', 'EDGE FADE EXCLUDES PINNED COLUMNS.']);
+
+// Optional outline corner, distinct from a fabricated nested surface.
+at(9.1,.02,.4);title(690,846,'OUTLINE CORNER / GUTTER','SCALE 4:1 · OPTIONAL WRAPPER FRAME');
+mk('path',{d:'M550,886 V938 A28,28 0 0 0 578,966 H646',class:'obj',style:'fill:none'});
+mk('path',{d:'M554,886 V938 A24,24 0 0 0 578,962 H646',class:'thin'});
+line(564,938,592,938,'cl');line(578,924,578,952,'cl');callout(559,958,525,977,'R1',-1);
+hatch(774,884,80,80);rr(790,900,48,48,12,'slot');cross(800,910,28,28);dimH(774,854,977,964,964,'T1');
+rr(690,900,64,64,16,'hug');cross(706,916,32,32);dimH(690,754,879,900,900,'Z1');
+lines(660,991,['R2 = R1 − B = 6 (INNER EDGE).', 'CHECKBOX R3 = 4; SORT CONTROL R4 = 6.']);
+
+// Placeholder geometry stays in the same columns; empty content spans the viewport.
+at(9.05,.015,.45);title(1460,872,'LOADING / EMPTY','PROPORTIONAL · GUTTERS REMAIN IN COLUMN');
+rr(1280,900,170,64,0,'thin');rr(1470,900,170,64,0,'thin');
+for(let row=0;row<2;row++){const y=906+row*30;rr(1286,y,16,16,4,'hug');rr(1312,y,96,16,0,'well');line(1280,y+24,1450,y+24)}
+rr(1485,919,140,20,0,'slot');slotLabel(1485,919,140,20,'EMPTY SLOT · FILL');
+lines(1280,972,['SKELETONS: H8 HIGH · W3 CYCLES BY COLUMN.', 'EMPTY ROW: H5 MIN; CONTENT MAY GROW.'],'dts',13);
+
+// Compact provenance. Doc-link keep-out x1500–1650,y990–1035 remains clear.
+at(9.2,.01,.45);tx(50,996,'SOURCE AUDIT','vt');lines(50,1014,['Six data-table modules · table.tsx / variants · Input / Checkbox / Button', 'One production DataTable root (inspector demo); measured after fonts / hydration.'],'source',13);
+
+at(8.5,.001,.4);let yy=70;const xx=1270;
+yy=table(xx,yy,'SPACING · SM / MD',[
+ ['S1','cell / gutter pad-x','10 / 12'],['S2','body cell pad-y','6 / 8'],['S3','root stack gap','12'],['S4','toolbar gap','8'],['S5','pagination gap-x / y','16 / 8'],['S6','sort label → icon','6'],['S7','caption gap','8 / 12'],['S8','selection bar start','36 / 40 (= 2·S1 + Z1)'],['S9','bar internal gap','12; action group: 4']]);
+yy=table(xx,yy,'SIZE / CONSTRAINTS',[
+ ['W / WT','viewport / table','caller FILL / auto ≥ viewport'],['CW','data column width','content / caller [TBD]'],['W1','select gutter min','2·S1 + Z1 = 36 / 40'],['W2','default action gutter','2·S1 + Z2 = 44 / 54'],['H1','header / footer min','36 / 36'],['H2','body row min','36 / 44; content may grow'],['H3','search height','34'],['H4','table, no footer','H1 + N·H2 (unwrapped)'],['N','visible body rows','caller / model; plan shows 5'],['Z1 / Z2','checkbox / action','16 / (24 sm, 30 md)'],['I1','sort / action icon','14'],['H5','empty row min','96; rich content may grow'],['MH','scroll max height','caller [TBD]; unset by default']]);
+yy=table(xx,yy,'RADII / RULES',[
+ ['B','optional frame / rule','1; independent toggles'],['R1','outline wrapper','7'],['R2','wrapper inner edge','R1 − B = 6'],['R3','checkbox','4'],['R4','sort control','6'],['R5','search / action','8 / 6'],['E1–E3','shadow envelope','none; no table drop shadow']]);
+yy=table(xx,yy,'RESPONSIVE / STATE',[
+ ['S10','search flex basis','12rem = 192; min=min(W,192)'],['S11','pagination nav gap','4'],['H6','caption line','16 nominal; content may wrap'],['H7','pagination height','HUG; controls may wrap'],['T1','button min hit size','40; checkbox remains Z1'],['T2','table touch policy','[TBD]; no table-level expansion'],['V1','outer margin','caller [TBD]'],['H8 / W3','skeleton h / widths','16 / 96,64,112,80']]);
+window.drawingAudit={sourceDate:'2026-11-14',tableBottom:yy-30,header:36,rows:[36,44],cellPadding:[10,12],width:'caller/content',slots:5};
+})();</script></body></html>
