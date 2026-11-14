@@ -6,3 +6,11 @@ allowBuilds:
 
 overrides:
   postcss: ^8.5.31
+  fumadocs-mdx>zod: ^4.6.7
+
+# Keep Core's optional Zod 4 peer on a patched runtime copy even when other
+# tools in the workspace resolve a different Zod version.
+packageExtensions:
+  fumadocs-core@16:
+    dependencies:
+      zod: ^4.6.7

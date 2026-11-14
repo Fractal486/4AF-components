@@ -1,5 +1,6 @@
 "use client";
 
+import { prefersReducedMotion } from "@/registry/lib/reduced-motion";
 import { useEffect, useRef, useState, type MouseEvent, type RefObject } from "react";
 
 /** Fallback for browsers that do not emit `scrollend` after programmatic smooth scrolling. */
@@ -123,7 +124,7 @@ export function useTableOfContentsTracking({
     scrollRoot.addEventListener("scrollend", finish, { once: true });
     scrollCleanupRef.current = cleanup;
 
-    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    const reduce = prefersReducedMotion(element.ownerDocument.defaultView);
     // Embedded webviews and test DOMs may not implement the native method. Tracking still applies,
     // so a missing scroll primitive is simply a no-op.
     element.scrollIntoView?.({ behavior: reduce ? "auto" : "smooth", block: "start" });
@@ -143,6 +144,7 @@ export function useTableOfContentsTracking({
 
     let positions: { id: string; top: number }[] = [];
     let frame = 0;
+    let positionsDirty = false;
     // The scroll height the offsets above were measured against. Anything that changes it
     // — an image finishing, a font swapping, an embed sizing itself — moves every heading
     // below it, and none of that resizes the root or the headings themselves, so no
@@ -176,6 +178,7 @@ export function useTableOfContentsTracking({
       root?.scrollHeight ?? document.documentElement.scrollHeight;
 
     const measurePositions = () => {
+      positionsDirty = false;
       const viewportTop = root?.getBoundingClientRect().top ?? 0;
       const scrollOffset = root?.scrollTop ?? window.scrollY;
       positions = elements.map((element) => ({
@@ -186,15 +189,14 @@ export function useTableOfContentsTracking({
       updateCurrentId();
     };
 
-    const scheduleUpdate = () => {
-      setSettledTargetId((current) => (current === undefined ? current : undefined));
+    const scheduleFrame = () => {
       if (frame !== 0) return;
       frame = requestAnimationFrame(() => {
         frame = 0;
         // One property read per frame, and it is what keeps a first read honest: measured
         // before the images land, every heading sits too high, so the list runs ahead of
         // the article and then snaps back as the real positions arrive.
-        if (scrollHeight() !== measuredScrollHeight) {
+        if (positionsDirty || scrollHeight() !== measuredScrollHeight) {
           measurePositions();
           return;
         }
@@ -202,18 +204,29 @@ export function useTableOfContentsTracking({
       });
     };
 
+    const scheduleUpdate = () => {
+      setSettledTargetId((current) => (current === undefined ? current : undefined));
+      scheduleFrame();
+    };
+
+    // Images and resize notifications can arrive together. Measure their final layout
+    // once on the next frame instead of rereading every heading for each event.
+    const scheduleMeasurement = () => {
+      positionsDirty = true;
+      scheduleFrame();
+    };
+
     const scrollTarget: HTMLElement | Window = root ?? window;
     scrollTarget.addEventListener("scroll", scheduleUpdate, { passive: true });
-    window.addEventListener("resize", measurePositions);
+    window.addEventListener("resize", scheduleMeasurement);
     const resizeObserver =
-      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measurePositions);
+      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(scheduleMeasurement);
     resizeObserver?.observe(root ?? document.documentElement);
     for (const element of elements) resizeObserver?.observe(element);
     // Capture, because `load` does not bubble. Without this the correction waits for the
     // next scroll, which is exactly when the reader is watching the list.
-    const handleContentLoad = () => measurePositions();
     const loadTarget = root ?? document;
-    loadTarget.addEventListener("load", handleContentLoad, true);
+    loadTarget.addEventListener("load", scheduleMeasurement, true);
     measurePositions();
 
     const observer =
@@ -237,8 +250,8 @@ export function useTableOfContentsTracking({
     return () => {
       observer?.disconnect();
       resizeObserver?.disconnect();
-      window.removeEventListener("resize", measurePositions);
-      loadTarget.removeEventListener("load", handleContentLoad, true);
+      window.removeEventListener("resize", scheduleMeasurement);
+      loadTarget.removeEventListener("load", scheduleMeasurement, true);
       scrollTarget.removeEventListener("scroll", scheduleUpdate);
       if (frame !== 0) cancelAnimationFrame(frame);
     };

@@ -13,6 +13,7 @@ import { cn } from "@/registry/lib/cn";
 import { useMergedRefs } from "@/registry/lib/refs";
 import {
   useCenterActiveTableOfContentsItem,
+  useTableOfContentsEdgeFade,
   useTableOfContentsEdgePadding,
 } from "@/registry/lib/table-of-contents-scroll";
 import { useTableOfContentsTracking } from "@/registry/lib/table-of-contents-tracking";
@@ -56,6 +57,11 @@ export interface TableOfContentsProps
   items: TocItem[];
   /** The scroll container, when the content scrolls inside an element rather than the page. */
   rootRef?: RefObject<HTMLElement | null>;
+  /**
+   * Highlights this entry regardless of scroll position, for a list whose headings are
+   * elsewhere or not on the page at all (a preview, a static illustration). Clicks still scroll.
+   */
+  activeId?: string;
 }
 
 /** Inset (px) so the marker's rounded ends sit inside lit rows rather than on their edges. */
@@ -73,6 +79,7 @@ interface RailGeometry {
 export function TableOfContents({
   items,
   rootRef,
+  activeId,
   variant = "span",
   labels = "always",
   className,
@@ -162,16 +169,18 @@ export function TableOfContents({
 
   // A clicked destination temporarily wins over live observation. `single` follows the destination;
   // `span` follows the projected destination range, so neither variant retargets at every heading.
-  const trackingVisibleIds = scrollTargetId && variant === "span" ? scrollVisibleIds : visibleIds;
-  const trackingCurrentId =
-    scrollTargetId && variant === "span" ? scrollCurrentId : currentId;
+  const trackingVisibleIds = activeId !== undefined
+    ? [activeId]
+    : scrollTargetId && variant === "span" ? scrollVisibleIds : visibleIds;
+  const trackingCurrentId = activeId ??
+    (scrollTargetId && variant === "span" ? scrollCurrentId : currentId);
   const visibleSet = new Set(trackingVisibleIds);
   const litSegments = geometry?.segments.filter((segment) => visibleSet.has(segment.id)) ?? [];
   const currentSegment = geometry?.segments.find((segment) => segment.id === trackingCurrentId);
   const currentHighlightId =
-    variant === "single"
+    activeId ?? (variant === "single"
       ? scrollTargetId ?? settledTargetId ?? visibleIds[0] ?? currentId
-      : trackingVisibleIds[0] ?? trackingCurrentId;
+      : trackingVisibleIds[0] ?? trackingCurrentId);
   const singleSegment = geometry?.segments.find((segment) => segment.id === currentHighlightId);
   const markerSegments =
     variant === "single"
@@ -199,14 +208,25 @@ export function TableOfContents({
     : "";
   const markerPath = geometry ? `M 1 ${geometry.top} L 1 ${geometry.top + geometry.total}` : "";
   const edgePadding = useTableOfContentsEdgePadding(navRef, items);
+  const edgeFade = useTableOfContentsEdgeFade(navRef, items);
 
-  useCenterActiveTableOfContentsItem(navRef, currentHighlightId, items, edgePadding);
+  // `span` centres its whole lit range, not the first heading in it.
+  useCenterActiveTableOfContentsItem(
+    navRef,
+    variant === "span" && markerSegments.length > 0
+      ? markerSegments.map((segment) => segment.id)
+      : currentHighlightId,
+    items,
+    edgePadding,
+  );
 
   return (
     <nav
       ref={mergedRef}
       aria-label="Table of contents"
       data-variant={variant}
+      data-overflow-top={edgeFade.top || undefined}
+      data-overflow-bottom={edgeFade.bottom || undefined}
       className={cn(tableOfContentsVariants({ variant, labels }), className)}
       {...props}
     >
@@ -259,7 +279,9 @@ export function TableOfContents({
                 aria-current={item.id === currentHighlightId ? "location" : undefined}
                 style={{ paddingInlineStart: `${0.75 + ((item.level ?? 2) - minLevel) * 0.75}rem` }}
                 className={cn(
-                  "block py-1.5 pr-2 leading-snug duration-(--duration-slow) ease-out",
+                  // The arrow cursor, like the library's other rows: the entry moves within
+                  // the page rather than leaving it.
+                  "block cursor-default py-1.5 pr-2 leading-snug duration-(--duration-slow) ease-out",
                   "outline-none focus-visible:text-foreground",
                   active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
                   labels === "hover"

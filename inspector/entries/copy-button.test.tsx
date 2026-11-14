@@ -16,7 +16,6 @@ describe("CopyButton inspector", () => {
         size: "lg",
         shape: "rectangular",
         withLabel: true,
-        revertAfter: 2000,
         lazy: false,
       }),
     );
@@ -33,7 +32,6 @@ describe("CopyButton inspector", () => {
         size: "lg",
         shape: "rectangular",
         withLabel: false,
-        revertAfter: 2000,
         lazy: false,
       }),
     );

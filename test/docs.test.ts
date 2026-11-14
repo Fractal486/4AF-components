@@ -10,6 +10,7 @@ import {
   componentCount,
 } from "../lib/component-catalog";
 import { renderComponentPageMarkdown } from "../lib/component-docs";
+import { playgroundDemos } from "../stories/demo-names";
 import { publicInstallCommand, SITE_URL } from "../lib/site";
 import tsconfig from "../tsconfig.json";
 
@@ -86,7 +87,7 @@ describe("component documentation", () => {
         const target = symbol!.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(symbol!) : symbol!;
         expect(Boolean(target.flags & ts.SymbolFlags.Value), `${item.name}: ${identifier} must be a value`).toBe(true);
         expect(
-          target.getDeclarations()?.some((declaration) => shippedFiles.has(declaration.getSourceFile().fileName)),
+          target.getDeclarations()?.some((declaration) => shippedFiles.has(resolve(declaration.getSourceFile().fileName))),
           `${item.name}: ${identifier} must resolve to a shipped declaration`,
         ).toBe(true);
       }
@@ -95,9 +96,9 @@ describe("component documentation", () => {
 
   it("provides a demo mapping for every installable component", () => {
     const demoNames = objectEntries("stories/component-demo.tsx", "demos").map(([name]) => name);
-    // Select Sort is a bundled Select composition with an additional demo. Sidebar Layout
-    // has its own key, even though its loader intentionally reuses the Sidebar entry.
-    expect(demoNames.sort()).toEqual([...installableNames, "select-sort"].sort());
+    // Rail demos are extra demos of one page, with no install of their own.
+    const RAIL_DEMOS = ["select-sort", "select-filter", "checkbox-group", "checkbox-nested", "skeleton-text", "skeleton-wrap", "skeleton-inline", "slider-circle", "slider-knob"];
+    expect(demoNames.sort()).toEqual([...installableNames, ...RAIL_DEMOS].sort());
   });
 
   it("keeps the agent catalog's category tables aligned with the component categories", () => {
@@ -194,7 +195,9 @@ describe("component documentation", () => {
       .filter((name) => {
         const page = readFileSync(resolve("content/docs", `${name}.mdx`), "utf8");
         return (
-          !page.includes(`<ComponentDemo name="${name}" />`) ||
+          // The playground renders the demo; the page only declares the reference.
+          page.includes("<ComponentDemo") ||
+          playgroundDemos(name, name).length === 0 ||
           !page.includes(`<ComponentReference name="${name}" />`) ||
           !page.includes("## API") ||
           !page.includes("**Main export")
@@ -236,11 +239,10 @@ describe("component documentation", () => {
       "action-button": ["labels.pending", "pendingMode"],
       "action-toggle": ["new state should persist", "onPressedChange", "fillIcon"],
       "copy-button": ["Promise<string>", "<CopyButton icon="],
-      badge: ["animateLayout={false}", "FLIP-animates"],
+      badge: ["animateLayout={false}", "FLIP-animate its position"],
       select: [
         "SelectSortTrigger",
         "SelectSeparator",
-        'ComponentDemo name="select-sort"',
         "clearable",
         "ghost reset button",
         'variant="ghost"',
@@ -248,8 +250,8 @@ describe("component documentation", () => {
         "iconForValue",
       ],
       "select-aligned": [
-        'variant="default" | "ghost" | "plain"',
-        "default and ghost panels match the trigger width",
+        'variant="default" | "outline-ghost" | "ghost" | "plain"',
+        "default and ghost panels are at least the trigger's width",
         "Fruit: Banana",
       ],
       "select-search": ["Resolution order", "iconForValue", "SearchSelectItem"],

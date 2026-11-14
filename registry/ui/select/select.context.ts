@@ -1,4 +1,14 @@
+"use client";
+
 import { createContext, useContext, type MouseEvent, type ReactNode } from "react";
+
+/**
+ * Why a panel's rows rest. `pointer`: the pointer has left a panel without a search field; its
+ * active row is kept for the arrow keys to resume from, but stops painting, as a hover does when
+ * the pointer moves away. `footer`: a footer button holds the active mark, so no row paints —
+ * including the row Base UI still highlights after focus moved down off it.
+ */
+export const SelectPanelDormantContext = createContext<"pointer" | "footer" | false>(false);
 import type { SelectSize } from "./select.shared";
 
 interface SelectContextValue {
@@ -38,6 +48,14 @@ interface SelectContextValue {
   firstItem: unknown;
   registerOptionText: (value: unknown, text: string, parentValue?: unknown, disabled?: boolean, node?: HTMLElement | null) => void;
   unregisterOptionText: (value: unknown) => void;
+  setActiveItem: (value: unknown) => void;
+  panelSearch: boolean;
+  setPanelSearch: (enabled: boolean) => void;
+  /** Reset the selection to none (single → null, multiple → empty). */
+  clear: (event?: MouseEvent<HTMLButtonElement>) => void;
+}
+
+interface SelectSearchContextValue {
   /** True when the text passes the current panel-search query (or there is none). */
   matchesQuery: (text: string) => boolean;
   /** Whether any top-level item remains visible under the current query. */
@@ -46,15 +64,20 @@ interface SelectContextValue {
   hasMatchingDescendant: (value: unknown) => boolean;
   /** The row a panel opens on: the selection while the list is whole, else the first row. */
   getOpeningItem: (list: HTMLElement | null) => unknown;
-  activeItem: unknown;
-  setActiveItem: (value: unknown) => void;
-  panelSearch: boolean;
-  setPanelSearch: (enabled: boolean) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  /** Reset the selection to none (single → null, multiple → empty). */
-  clear: (event?: MouseEvent<HTMLButtonElement>) => void;
 }
+
+// Highlight and filtering change independently of trigger labels, selection, and registration.
+export const SelectActiveItemContext = createContext<unknown>(undefined);
+export const SelectSearchContext = createContext<SelectSearchContextValue>({
+  matchesQuery: () => true,
+  hasVisibleItems: false,
+  hasMatchingDescendant: () => false,
+  getOpeningItem: () => undefined,
+  searchQuery: "",
+  setSearchQuery: () => {},
+});
 
 export const SelectContext = createContext<SelectContextValue>({
   open: false,
@@ -81,16 +104,9 @@ export const SelectContext = createContext<SelectContextValue>({
   firstItem: undefined,
   registerOptionText: () => {},
   unregisterOptionText: () => {},
-  matchesQuery: () => true,
-  hasVisibleItems: false,
-  hasMatchingDescendant: () => false,
-  getOpeningItem: () => undefined,
-  activeItem: undefined,
   setActiveItem: () => {},
   panelSearch: false,
   setPanelSearch: () => {},
-  searchQuery: "",
-  setSearchQuery: () => {},
   clear: () => {},
 });
 
@@ -119,7 +135,19 @@ interface SelectSubContextValue {
   /** The trigger was left at this point: hold the panel open while the pointer heads for it. */
   leaveTowardPanel: (x: number, y: number, fallbackDelay: number) => void;
   setPanelNode: (node: HTMLElement | null) => void;
+  /** Swapped in from (or out for) a sibling nested panel: animate briefly, not fully. */
+  swapping: boolean;
 }
+
+/** A nested panel as its siblings see it, for swapping between them quickly. */
+export interface SelectSubSibling {
+  open: boolean;
+  closedAt: number;
+  setSwapping: (swapping: boolean) => void;
+}
+
+/** The nested panels opened from one Select panel. */
+export const SelectSubSiblingsContext = createContext<Set<SelectSubSibling> | null>(null);
 
 export const SelectSubContext = createContext<SelectSubContextValue | null>(null);
 
@@ -144,6 +172,6 @@ export function useSelectSubContext() {
  * stay in agreement.
  */
 export function useSelectSearch(): { query: string; matches: (text: string) => boolean } {
-  const { searchQuery, matchesQuery } = useContext(SelectContext);
+  const { searchQuery, matchesQuery } = useContext(SelectSearchContext);
   return { query: searchQuery, matches: matchesQuery };
 }

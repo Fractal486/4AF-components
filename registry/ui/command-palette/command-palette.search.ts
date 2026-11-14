@@ -1,3 +1,5 @@
+"use client";
+
 import { useContext, useEffect, useRef, useState } from "react";
 import { PanelSearchContext } from "./command-palette.context";
 import type { CommandItem, UseCommandSearchOptions } from "./command-palette.types";

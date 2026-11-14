@@ -1,125 +1,137 @@
 {
-  "version": 1,
+  "version": 2,
   "skills": {
     "12-principles-of-animation": {
       "source": "raphaelsalaja/skill",
       "sourceType": "github",
       "skillPath": "skills/12-principles-of-animation/SKILL.md",
-      "computedHash": "028c3bad9e7417460e0d2094fc0c1b9d601e56317d38c4f5d124666b06a9405b"
+      "computedHash": ""
     },
     "animation-vocabulary": {
       "source": "emilkowalski/skills",
       "sourceType": "github",
       "skillPath": "skills/animation-vocabulary/SKILL.md",
-      "computedHash": "280c6688ef2568ad92f40c4dc638f0cc5cde0f49bdd6debd097410aa9945f44f"
+      "computedHash": ""
     },
     "apple-design": {
       "source": "emilkowalski/skills",
       "sourceType": "github",
       "skillPath": "skills/apple-design/SKILL.md",
-      "computedHash": "0d19303902efa64eace10e6b183eb29ef3220d424c1a7fd1eafc52adde216932"
+      "computedHash": ""
     },
     "better-colors": {
       "source": "jakubkrehel/skills",
       "sourceType": "github",
       "skillPath": "skills/better-colors/SKILL.md",
-      "computedHash": "88298882c861708eca7840ebe229b1f1bc13112ba96deff6aa5eba0719ea3b96"
+      "computedHash": ""
     },
     "better-typography": {
       "source": "jakubkrehel/skills",
       "sourceType": "github",
       "skillPath": "skills/better-typography/SKILL.md",
-      "computedHash": "eecdfa1424261622278db6344c9c0d5ddac20920f89c930fb5d622b998103ab2"
+      "computedHash": ""
     },
     "better-ui": {
       "source": "jakubkrehel/skills",
       "sourceType": "github",
       "skillPath": "skills/better-ui/SKILL.md",
-      "computedHash": "67bebeb8222cd41757e2498e26f4c6e37d93e00fd9927be940f9998ad5faaeff"
+      "computedHash": ""
     },
     "building-components": {
       "source": "vercel/components.build",
       "sourceType": "github",
       "skillPath": "skills/building-components/SKILL.md",
-      "computedHash": "20889af7cb9b3abca1e38824f7fffaa873eb0cc4d45187967b97bd85462cf934"
+      "computedHash": ""
     },
     "design-md": {
       "source": "google-labs-code/stitch-skills",
       "sourceType": "github",
       "skillPath": "plugins/stitch-utilities/skills/design-md/SKILL.md",
-      "computedHash": "44af3e6e89a42a765d9cebf943f1e2ff3cdf43d1958341eb43fb7b74116f6691"
+      "computedHash": ""
     },
     "design-taste-frontend": {
       "source": "Leonxlnx/taste-skill",
       "sourceType": "github",
       "skillPath": "skills/taste-skill/SKILL.md",
-      "computedHash": "52fa30810ae93ef288f8926e27624561ebd2e5b70d35682f4de70cb7131c92d1"
+      "computedHash": ""
+    },
+    "dimensional-drawing": {
+      "source": "enesozturk/dimensional-drawing",
+      "sourceType": "github",
+      "skillPath": "skills/dimensional-drawing/SKILL.md",
+      "computedHash": "eccba90e3927edba2b5ed98d26928b6560cb11ffe15ed1750dba89ecc7fa011a"
+    },
+    "dimensional-drawing-motion": {
+      "source": "enesozturk/dimensional-drawing",
+      "sourceType": "github",
+      "skillPath": "skills/dimensional-drawing-motion/SKILL.md",
+      "computedHash": "fb500ead2ef102fb078724e9a984f04a88b37153426a3c9564205567c9e3c24b"
     },
     "emil-design-eng": {
       "source": "emilkowalski/skills",
       "sourceType": "github",
       "skillPath": "skills/emil-design-eng/SKILL.md",
-      "computedHash": "ac3fc5b4e206488ffc408a2806f829bb2e5eaf518fded09be34790685c2b3a0d"
+      "computedHash": ""
     },
     "find-animation-opportunities": {
       "source": "emilkowalski/skills",
       "sourceType": "github",
       "skillPath": "skills/find-animation-opportunities/SKILL.md",
-      "computedHash": "5c3ea721da792383aac5c10927548ad0d2ab56706ff553109ecf6f743091b01b"
+      "computedHash": ""
     },
     "frontend-design": {
       "source": "anthropics/skills",
       "sourceType": "github",
       "skillPath": "skills/frontend-design/SKILL.md",
-      "computedHash": "93f53fd1c0352d3d7ec17b8f73d7351bf76f4821e55d123c9d2abc2c53ba48e4"
+      "computedHash": ""
     },
     "high-end-visual-design": {
       "source": "Leonxlnx/taste-skill",
       "sourceType": "github",
       "skillPath": "skills/soft-skill/SKILL.md",
-      "computedHash": "f730e4132775f13eea19e3dc39afc6bb453cfc0498872b127ad8f0d47cfd802d"
+      "computedHash": ""
     },
     "improve": {
       "source": "shadcn/improve",
       "sourceType": "github",
       "skillPath": "skills/improve/SKILL.md",
-      "computedHash": "553713a1b9af40ec50c4018f75b8974bf728fe5abc8e125b748e2d718d5c31ea"
+      "computedHash": ""
     },
     "improve-animations": {
       "source": "emilkowalski/skills",
       "sourceType": "github",
       "skillPath": "skills/improve-animations/SKILL.md",
-      "computedHash": "ff9991a8d6dabb24411daaf6de570e3b6826323459d514d90d7f6371bbdbdbe1"
+      "computedHash": ""
     },
     "make-interfaces-feel-better": {
       "source": "jakubkrehel/make-interfaces-feel-better",
       "sourceType": "github",
       "skillPath": "skills/make-interfaces-feel-better/SKILL.md",
-      "computedHash": "f0924279cb953f8396eb037734a82822816c738b3f491a0465c191488c6449a2"
+      "computedHash": ""
     },
     "oklch-skill": {
       "source": "jakubkrehel/oklch-skill",
       "sourceType": "github",
       "skillPath": "skills/oklch-skill/SKILL.md",
-      "computedHash": "e627c78e72955352f1efff3771e788a9ac174628fe3238738d1ee6912effdefd"
+      "computedHash": ""
     },
     "review-animations": {
       "source": "emilkowalski/skills",
       "sourceType": "github",
       "skillPath": "skills/review-animations/SKILL.md",
-      "computedHash": "26bec85a9bfe7cfbfd500ff1ffebc7819ac0cef75cf068c4a97b5af865ccccf7"
+      "computedHash": ""
     },
     "skill-creator": {
       "source": "anthropics/skills",
       "sourceType": "github",
       "skillPath": "skills/skill-creator/SKILL.md",
-      "computedHash": "7e3c9cd74e9e2b4828527a857170e86310f2dab5ea8030a9043df2c7e6c88857"
+      "computedHash": ""
     },
     "skill-doctor": {
       "source": "warpdotdev/common-skills",
       "sourceType": "github",
       "skillPath": ".agents/skills/skill-doctor/SKILL.md",
-      "computedHash": "ad386c03191e593232308eafc8127a52acabb5f51f669430a3b3b4b83b1ed934"
+      "computedHash": ""
     }
   }
 }

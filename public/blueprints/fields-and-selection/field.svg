@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="620" viewBox="0 0 1320 620" fill="none" role="img" aria-labelledby="field-bp-title field-bp-desc">
+  <title id="field-bp-title">Field spacing blueprint</title>
+  <desc id="field-bp-desc">A required Email field with an empty input and a description, drawn at three times actual size. This example is 320 pixels wide and 86 pixels tall. The label and description each have a 20 pixel line height, separated from the 34 pixel input by 6 pixel gaps. Input horizontal padding is 12 pixels inside its 1 pixel border.</desc>
+  <!-- Sources: registry/ui/field/field.tsx, field.variants.ts;
+       registry/ui/input/input.tsx, input.variants.ts; inspector/entries/field.tsx;
+       app/globals.css; node_modules/tailwindcss/theme.css and preflight.css.
+       Sidebar: COMPONENT_CATEGORIES in lib/component-catalog.ts, Fields and selection.
+       State: ordinary vertical Field, required marker, default neutral Input,
+       description visible, no error/status, enabled and unfocused.
+       Scale: 3 SVG units per CSS px. Width is a representative caller-selected
+       320px, within the demo's max-w-sm = 24rem = 384px, not a fixed Field width.
+       Root rem = 16px; spacing = .25rem = 4px; gap-1.5 = 6px.
+       Field has no border or padding. Height is content-dependent:
+       label 20 + gap 6 + input 34 + gap 6 + description 20 = 86px.
+       Label and description font size = 13px, explicit leading-5 = 20px.
+       Label marker gap-1 = 4px. Input text-sm = 13px with 1.5385 line height
+       (20.0005px, visually 20px); fixed border-box height = 34px, border = 1px,
+       px-3 = 12px, py-1 = 4px. Native input text is vertically centered.
+       Text inset from outer input edge = 1px border + 12px padding = 13px.
+       Input outer radius = 8px, stroke centerline radius = 7.5px.
+       Geometry: x=180..1140; label y=190..250; input y=268..370;
+       description y=388..448. Text inset x=219..1101; border interior x=183..1137.
+       Dark app background oklch(0.100 0 0) rounds to sRGB #030303.
+       No smaller component strokes in this state: outline 0..400ms;
+       all annotations 700..900ms. Text stays visible; reduced motion is static. -->
+  <defs>
+    <style>
+      .field-bp-text, .field-bp-label { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      .field-bp-text { fill: #92948d; font-size: 39px; }
+      .field-bp-label { fill: #6889ff; font-size: 18px; }
+      .field-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
+      .field-bp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      @keyframes field-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes field-bp-reveal { from { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        .field-bp-outline { stroke-dasharray: 1; animation: field-bp-draw 400ms ease-out both; }
+        .field-bp-measure, .field-bp-spacing, .field-bp-label { animation: field-bp-reveal 200ms ease-out 700ms both; }
+      }
+    </style>
+  </defs>
+  <rect width="1320" height="620" fill="#030303"/>
+
+  <!-- The input is the only solid box; Field itself has no surrounding frame. -->
+  <rect x="181.5" y="269.5" width="957" height="99" rx="22.5" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="field-bp-outline"/>
+
+  <!-- Actual line-box boundaries and the two inter-part gaps. -->
+  <path d="M180 190H1140 M180 250H1173 M180 268H1173 M180 370H1173 M180 388H1173 M180 448H1140" class="field-bp-spacing"/>
+  <path d="M219 271V367 M1101 271V508 M1137 370V508" class="field-bp-spacing"/>
+
+  <text x="180" y="232" class="field-bp-text" style="fill:#c7c7c2;font-weight:500">Email<tspan dx="12" fill="#92948d" font-weight="400">*</tspan></text>
+  <text x="219" y="332" class="field-bp-text">you@example.com</text>
+  <text x="180" y="430" class="field-bp-text">We only use it to reply.</text>
+
+  <!-- Representative width and content-dependent total height. -->
+  <path d="M180 114V136 M1140 114V136 M180 125H1140" class="field-bp-measure"/>
+  <text x="660" y="107" text-anchor="middle" class="field-bp-label">320 px</text>
+  <path d="M180 145V178 M1140 145V178" class="field-bp-spacing"/>
+  <path d="M99 190H121 M99 448H121 M110 190V448" class="field-bp-measure"/>
+  <path d="M131 190H168 M131 448H168" class="field-bp-spacing"/>
+  <text x="91" y="325" text-anchor="end" class="field-bp-label">86 px</text>
+
+  <!-- Line height, both 6px gaps, and the fixed input height. -->
+  <path d="M1179 190H1201 M1179 250H1201 M1190 190V250" class="field-bp-measure"/>
+  <text x="1211" y="226" class="field-bp-label">20 px</text>
+  <path d="M1179 250H1201 M1179 268H1201 M1190 250V268" class="field-bp-measure"/>
+  <text x="1211" y="265" class="field-bp-label">6 px</text>
+  <path d="M1179 268H1201 M1179 370H1201 M1190 268V370" class="field-bp-measure"/>
+  <text x="1211" y="325" class="field-bp-label">34 px</text>
+  <path d="M1179 370H1201 M1179 388H1201 M1190 370V388" class="field-bp-measure"/>
+  <text x="1211" y="385" class="field-bp-label">6 px</text>
+  <path d="M1179 388H1201 M1179 448H1201 M1190 388V448" class="field-bp-measure"/>
+  <text x="1211" y="424" class="field-bp-label">20 px</text>
+
+  <!-- Padding ruler starts at the inside of the border, not the outer edge. -->
+  <path d="M1101 496V518 M1137 496V518 M1101 507H1137" class="field-bp-measure"/>
+  <text x="1119" y="545" text-anchor="middle" class="field-bp-label">12 px</text>
+</svg>

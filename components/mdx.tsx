@@ -6,7 +6,6 @@ import { ComponentReference } from "@/components/component-reference";
 import { DocsCodePre } from "@/components/docs-code-block";
 import { DocsHeading } from "@/components/docs-heading";
 import { InlineLink } from "@/components/inline-link";
-import { ComponentDemo } from "@/stories/component-demo";
 import { cn } from "@/registry/lib/cn";
 import {
   Table,
@@ -23,7 +22,8 @@ function DocsTable({ className, ...props }: ComponentProps<"table">) {
   return (
     <Table
       {...props}
-      className={cn("[&_thead]:bg-surface [&_thead_th]:border-b-0", className)}
+      className={cn("[&_thead]:bg-surface [&_thead_th]:bg-surface [&_thead_th]:border-b-0", className)}
+      wrap
       stickyHeader={false}
       wrapperClassName="not-prose my-6"
     />
@@ -51,7 +51,6 @@ export function getMDXComponents(components?: MDXComponents) {
     caption: TableCaption,
     ComponentCatalog,
     ComponentCount,
-    ComponentDemo,
     ComponentReference,
     ...components,
   } satisfies MDXComponents;

@@ -1,13 +1,16 @@
 "use client";
 
 import { Combobox } from "@base-ui/react/combobox";
-import { Check, ChevronDown, Search } from "lucide-react";
+import { useRender } from "@base-ui/react/use-render";
+import { CheckMark } from "@/registry/lib/check-mark";
+import { ChevronDown, Search } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import {
   createContext,
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ComponentProps,
@@ -15,9 +18,11 @@ import {
   type RefObject,
 } from "react";
 import { useMergedRefs } from "@/registry/lib/refs";
-import { cn } from "@/registry/lib/cn";
+import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { duration, ease, spring } from "@/registry/lib/motion";
-import { Checkbox } from "@/registry/ui/checkbox/checkbox";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
+import { searchSelectInputVariants, type SearchSelectInputVariant } from "./select-search.variants";
+import { isEquivalentNode } from "./select.utils";
 
 /**
  * A searchable single or multi-select — type to filter the list, then pick one or more.
@@ -31,7 +36,7 @@ import { Checkbox } from "@/registry/ui/checkbox/checkbox";
  *
  * It looks like the Base UI `select.tsx` — same field, chevron and fade-in panel — but
  * the trigger is an editable input rather than a button, because searching is the point.
- * Pass `multiple` for an open checkbox list; whenever its input is not focused, the field
+ * Pass `multiple` for an open multi-select list; whenever its input is not focused, the field
  * summarizes the current choice as “N selected”.
  * Single selection dims only while focused; typed queries never overwrite the choice.
  * Closing discards the query. The panel opens on the selection, or the first row when
@@ -39,19 +44,15 @@ import { Checkbox } from "@/registry/ui/checkbox/checkbox";
  */
 
 // The panel blurs and scales in from `--transform-origin`, and every select in the family
-// uses these same numbers: 0.95 and a 3px blur entering, a shorter 0.97 and 2px leaving, over
-// `--duration-base` on the expo curve. Three selects sat in one form that scale by different
+// uses these same numbers: 0.9 and a 4px blur entering over `--duration-slow` on `--ease-panel`,
+// a shorter 0.97 and 2px leaving over `--duration-base` on the expo curve. Three selects sat in one form that scale by different
 // amounts is the kind of difference you feel without being able to name.
-const FADE_HIDDEN = { opacity: 0, scale: 0.95, filter: "blur(3px)" };
+const FADE_HIDDEN = { opacity: 0, scale: 0.9, filter: "blur(4px)" };
 const FADE_SHOW = { opacity: 1, scale: 1, filter: "blur(0px)" };
 // Leaving is its own pose, not the entrance reversed: less travel and less blur, so the panel
 // is gone before it can draw attention to going.
 const FADE_EXIT = { opacity: 0, scale: 0.97, filter: "blur(2px)" };
 
-// A thin custom scrollbar, shown only when the list overflows. Firefox reads the first
-// two properties; WebKit the pseudo-element rules.
-const SCROLLBAR =
-  "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground";
 
 /**
  * The two sizes, mirroring Button. `sm` (30px) is the compact default; `md` (34px) matches
@@ -65,7 +66,7 @@ const SIZE: Record<
   { field: string; glyph: string; iconSlot: string; iconPadding: string; row: string; radius: string }
 > = {
   sm: {
-    field: "h-[30px] text-xs",
+    field: "h-[30px] pr-9 text-xs",
     glyph: "size-3.5",
     iconSlot: "size-3.5 [&>svg]:size-3.5 [&_[data-slot=loader]]:size-3.5",
     iconPadding: "pl-9",
@@ -73,7 +74,7 @@ const SIZE: Record<
     radius: "rounded-[6px]",
   },
   md: {
-    field: "h-[34px] text-sm",
+    field: "h-[34px] pr-9.5 text-sm",
     glyph: "size-4",
     iconSlot: "size-4 [&>svg]:size-4 [&_[data-slot=loader]]:size-4",
     iconPadding: "pl-9.5",
@@ -161,7 +162,7 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
         return next;
       }
 
-      if (Object.is(current.get(value), icon)) return current;
+      if (isEquivalentNode(current.get(value), icon)) return current;
       return new Map(current).set(value, icon);
     });
   }, []);
@@ -240,10 +241,12 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
     [isControlled, multiple, onOpenChange],
   );
 
+  const context = useMemo(() => ({
+    open: isOpen, multiple: Boolean(multiple), size, selectedLabel, inputRef, registerIcon, unregisterIcon, iconFor,
+  }), [isOpen, multiple, size, selectedLabel, registerIcon, unregisterIcon, iconFor]);
+
   return (
-    <SearchContext.Provider
-      value={{ open: isOpen, multiple: Boolean(multiple), size, selectedLabel, inputRef, registerIcon, unregisterIcon, iconFor }}
-    >
+    <SearchContext.Provider value={context}>
       <Combobox.Root<Value, Multiple>
         open={isOpen}
         onOpenChange={handleOpenChange}
@@ -280,22 +283,53 @@ export function SearchSelect<Value, Multiple extends boolean | undefined = false
   );
 }
 
+function SearchInputSurface({ elementProps, state, render, placeholder, displayedPlaceholder }: {
+  elementProps: ComponentProps<"input">;
+  state: Combobox.Input.State;
+  render: ComponentProps<typeof Combobox.Input>["render"];
+  placeholder: ReactNode;
+  displayedPlaceholder: ReactNode;
+}) {
+  const input = useRender({
+    defaultTagName: "input",
+    render: typeof render === "function" ? (props) => render(props, state) : render,
+    props: { ...elementProps },
+  });
+  return <>
+    {/* Use the resolved state-based classes for both the field and its width measurement. */}
+    <span aria-hidden="true" data-slot="search-select-input-sizer"
+      className={cn(elementProps.className, "pointer-events-none invisible grid w-max min-w-max whitespace-pre")}>
+      <span className="col-start-1 row-start-1">{placeholder}</span>
+      <span className="col-start-1 row-start-1">{displayedPlaceholder}</span>
+    </span>
+    {input}
+  </>;
+}
+
 export function SearchSelectInput({
   ref,
   className,
   tone = "neutral",
+  variant = "default",
   placeholder,
   onFocus,
   onBlur,
+  render,
   ...props
-}: Omit<ComponentProps<typeof Combobox.Input>, "className"> & {
-  className?: string;
+}: ComponentProps<typeof Combobox.Input> & {
   /**
    * Focus colour. `neutral` is a quiet grey (the default — a field you type into the
    * whole time you're searching shouldn't sit lit in the accent); `accent` uses the
    * `--ring` token, matching every other focusable control in the app.
    */
   tone?: "neutral" | "accent";
+  /**
+   * The same four looks as Select's trigger: `default` boxed field, `outline-ghost` (Button's
+   * edge, no fill), `ghost` (Button's ghost colours, filled while focused), and `plain` (no
+   * surface, edge or horizontal padding). `tone` applies to `default` and `outline-ghost`.
+   * @default "default"
+   */
+  variant?: SearchSelectInputVariant;
 }) {
   const { open, multiple, iconFor, size, selectedLabel, inputRef } = useContext(SearchContext);
   const mergedRef = useMergedRefs(inputRef, ref);
@@ -303,12 +337,22 @@ export function SearchSelectInput({
   const reduceMotion = useReducedMotion();
 
   return (
-    <div className="relative">
+    <div data-slot="search-select-field" className="relative grid min-w-max">
       <Combobox.Value>
         {(selectedValue) => {
           const selectedIcon = !multiple
             ? iconFor(selectedValue)
             : undefined;
+          const displayedPlaceholder = !focused && multiple && Array.isArray(selectedValue) && selectedValue.length > 0
+            ? `${selectedValue.length} selected`
+            : selectedLabel || placeholder;
+          const plain = variant === "plain";
+          const inputClasses = mergeStateClassName(cn(
+            SIZE[size].field,
+            SIZE[size].radius,
+            searchSelectInputVariants({ variant, tone, size }),
+            // A plain field's icon sits at the text edge, so it reserves only icon + 8px.
+            selectedIcon && (plain ? (size === "md" ? "pl-6" : "pl-5.5") : SIZE[size].iconPadding)), className);
 
           return (
             <>
@@ -317,33 +361,17 @@ export function SearchSelectInput({
                   ? <Search className="text-muted-foreground" />
                   : selectedIcon}
                 size={size}
-                // Match the popup border + list padding + row padding.
-                className="absolute top-1/2 left-[calc(var(--spacing)*3.5+1px)] -translate-y-1/2"
+                // Match the popup border + list padding + row padding; plain has no padding.
+                className={cn("absolute top-1/2 -translate-y-1/2", plain ? "left-0" : "left-[calc(var(--spacing)*3.5+1px)]")}
               />
               <Combobox.Input
                 ref={mergedRef}
+                size={1}
+                data-slot="search-select-input"
+                data-variant={variant}
                 data-selected-label={!focused && !multiple && selectedLabel ? "" : undefined}
-                className={cn(
-                  "w-full border border-border bg-surface pr-9 pl-3.5 text-foreground",
-                  SIZE[size].field,
-                  SIZE[size].radius,
-                  "outline-none placeholder:text-muted-foreground data-[selected-label]:placeholder:text-foreground",
-                  "transition-[border-color,box-shadow,color] duration-(--duration-fast) ease-out",
-                  "hover:border-border-strong disabled:cursor-not-allowed disabled:opacity-50",
-                  // Invalid mirrors the Input's treatment; `shadow-none` clears the neutral
-                  // tone's grey focus shadow so only the red reads through. Pair with `Alert`.
-                  "aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/25 aria-invalid:shadow-none",
-                  selectedIcon && SIZE[size].iconPadding,
-                  tone === "accent"
-                    ? "focus:border-ring focus:ring-[3px] focus:ring-ring/25"
-                    : "focus:border-[oklch(0.719_0_0)] focus:shadow-[0_0_0_3px_oklch(0.390_0_0_/_0.502)]",
-                  className,
-                )}
-                placeholder={
-                  !focused && multiple && Array.isArray(selectedValue) && selectedValue.length > 0
-                    ? `${selectedValue.length} selected`
-                    : selectedLabel || placeholder
-                }
+                className={inputClasses}
+                placeholder={displayedPlaceholder}
                 onFocus={(event) => {
                   setFocused(true);
                   onFocus?.(event);
@@ -353,17 +381,23 @@ export function SearchSelectInput({
                   onBlur?.(event);
                 }}
                 {...props}
+                render={(elementProps, state) => <SearchInputSurface elementProps={elementProps} state={state}
+                  render={render} placeholder={placeholder} displayedPlaceholder={displayedPlaceholder} />}
               />
             </>
           );
         }}
       </Combobox.Value>
-      {/* Opens/closes the list; the input itself opens it on focus/typing too. */}
+      {/* Match Select's padding and actual border, with an 8px text-to-glyph gap.
+          Borders round differently from padding at fractional zoom, so do not fold the
+          border into calc(... + 1px). The input reserves this button's full width. */}
       <Combobox.Trigger
         aria-label="Toggle list"
         className={cn(
-          "absolute inset-y-0 right-0 flex w-9 cursor-pointer items-center justify-center text-muted-foreground outline-none",
+          "absolute inset-y-0 right-0 flex cursor-pointer items-center justify-center border-r border-transparent pl-2 pr-3.5 text-muted-foreground outline-none",
           "disabled:cursor-not-allowed disabled:opacity-50",
+          // Plain owns no padding or edge, so the chevron ends at the text's edge.
+          variant === "plain" && "border-r-0 pr-0",
         )}
       >
         <motion.span
@@ -385,9 +419,16 @@ export function SearchSelectContent({
   children,
   emptyMessage = "No results.",
   sideOffset = 6,
+  side = "bottom",
+  align = "start",
+  alignOffset = 0,
+  portalProps,
   ...props
-}: Omit<ComponentProps<typeof Combobox.Popup>, "className" | "children"> & {
-  className?: string;
+}: Omit<ComponentProps<typeof Combobox.Popup>, "children"> & {
+  side?: ComponentProps<typeof Combobox.Positioner>["side"];
+  align?: ComponentProps<typeof Combobox.Positioner>["align"];
+  alignOffset?: ComponentProps<typeof Combobox.Positioner>["alignOffset"];
+  portalProps?: Omit<ComponentProps<typeof Combobox.Portal>, "children">;
   /** The List render function — `(item, index) => <SearchSelectItem …>`. */
   children: ComponentProps<typeof Combobox.List>["children"];
   emptyMessage?: ReactNode;
@@ -397,20 +438,18 @@ export function SearchSelectContent({
   const { open, size } = useContext(SearchContext);
 
   return (
-    <Combobox.Portal keepMounted>
+    <Combobox.Portal keepMounted {...portalProps}>
       <Combobox.Positioner
         sideOffset={sideOffset}
-        side="bottom"
-        align="start"
-        className="z-50 w-[var(--anchor-width)] outline-none"
+        side={side}
+        align={align}
+        alignOffset={alignOffset}
+        className="z-50 w-max min-w-(--anchor-width) max-w-(--available-width) outline-none"
       >
         {/* Fade driven off `open` (not Motion's mount) so it replays every open — Base UI
             keeps the popup mounted after the first one. */}
         <Combobox.Popup
-          className={cn(
-            "overflow-hidden rounded-md border border-border bg-surface shadow-overlay-drop",
-            className,
-          )}
+          className={mergeStateClassName("overflow-hidden rounded-md border border-border material-glass shadow-overlay-drop", className)}
           render={
             <motion.div
               style={{ transformOrigin: "var(--transform-origin)" }}
@@ -422,7 +461,11 @@ export function SearchSelectContent({
                     ? FADE_SHOW
                     : FADE_EXIT
               }
-              transition={reduceMotion ? { duration: 0 } : { duration: duration.base, ease: ease.out }}
+              transition={reduceMotion
+                ? { duration: 0 }
+                : open
+                  ? { duration: duration.slow, ease: ease.panel }
+                  : { duration: duration.base, ease: ease.out }}
             />
           }
           {...props}
@@ -440,24 +483,36 @@ export function SearchSelectContent({
           >
             {emptyMessage}
           </Combobox.Empty>
-          <Combobox.List
-            className={cn(
-              "max-h-[min(var(--available-height),18rem)] overflow-y-auto p-1 empty:hidden",
-              SCROLLBAR,
-            )}
+          {/* The list owns its `p-1`, so with no matches `empty:hidden` collapses the whole
+              area to nothing. Out of the tab order: the field drives the list. */}
+          <ScrollArea
+            className="max-h-[min(var(--available-height),18rem)]"
+            viewportProps={{ tabIndex: -1 }}
           >
-            {children}
-          </Combobox.List>
+            <Combobox.List className="p-1 empty:hidden">{children}</Combobox.List>
+          </ScrollArea>
         </Combobox.Popup>
       </Combobox.Positioner>
     </Combobox.Portal>
   );
 }
 
-export type SearchSelectItemProps = Omit<ComponentProps<typeof Combobox.Item>, "className"> & {
+/** Iterates Base UI's filtered items within a SearchSelectGroup. */
+export const SearchSelectCollection = Combobox.Collection;
+
+export function SearchSelectGroup({ className, ...props }: ComponentProps<typeof Combobox.Group>) {
+  return <Combobox.Group data-slot="search-select-group"
+    className={mergeStateClassName("flex flex-col [&:not(:has([role=option]:not([hidden])))]:hidden", className)} {...props} />;
+}
+
+export function SearchSelectGroupLabel({ className, ...props }: ComponentProps<typeof Combobox.GroupLabel>) {
+  return <Combobox.GroupLabel data-slot="search-select-group-label"
+    className={mergeStateClassName("px-2.5 pt-2 pb-1 text-[10px] font-medium text-subtle-foreground/70", className)} {...props} />;
+}
+
+export type SearchSelectItemProps = ComponentProps<typeof Combobox.Item> & {
   /** An optional leading icon. It is inert and hidden from assistive technology. */
   icon?: ReactNode;
-  className?: string;
   children?: ReactNode;
 };
 
@@ -475,11 +530,9 @@ function SearchSelectItemIcon({
   return (
     <span
       aria-hidden="true"
-      className={cn(
+      className={mergeStateClassName(cn(
         "pointer-events-none flex shrink-0 items-center justify-center",
-        SIZE[size].iconSlot,
-        className,
-      )}
+        SIZE[size].iconSlot), className)}
     >
       {icon}
     </span>
@@ -497,46 +550,40 @@ export function SearchSelectItem({
 
   useEffect(() => {
     registerIcon(value, icon);
-    return () => unregisterIcon(value);
-  }, [icon, registerIcon, unregisterIcon, value]);
+  }, [icon, registerIcon, value]);
+  // Keep cleanup separate so a freshly created inline icon doesn't delete its old
+  // registration before the equivalent-node check can compare it.
+  useEffect(() => () => unregisterIcon(value), [unregisterIcon, value]);
 
   return (
     <Combobox.Item
       value={value}
-      className={cn(
+      className={mergeStateClassName(cn(
         "flex items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
         // Base UI moves this highlight with the keyboard as well as the pointer; it snaps
         // (no transition) so it keeps up with arrow-key navigation rather than lagging.
         "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
-        "data-[selected]:text-foreground",
-        className,
-      )}
+        "data-[selected]:text-foreground"), className)}
       {...props}
     >
       <SearchSelectItemIcon icon={icon} size={size} />
       <span className="flex-1 truncate">{children}</span>
-      <Combobox.ItemIndicator className="shrink-0 text-foreground">
-        <Check className="size-3.5" />
+      <Combobox.ItemIndicator className="flex shrink-0 text-foreground">
+        <CheckMark checked />
       </Combobox.ItemIndicator>
     </Combobox.Item>
   );
 }
 
 /**
- * A checkbox row for `SearchSelect` in `multiple` mode.
- *
- * The option remains the interactive listbox element. The shared Checkbox is inert and
- * mirrors its selected state, preserving one keyboard and screen-reader interaction model.
+ * A row for `SearchSelect` in `multiple` mode: the single-select check, kept mounted so it
+ * scales in and out as rows toggle while the list stays open.
  */
-export type SearchMultiSelectItemProps = Omit<
-  ComponentProps<typeof Combobox.Item>,
-  "className"
-> & {
-  /** An optional icon shown after the checkbox and before the label. */
+export type SearchMultiSelectItemProps = ComponentProps<typeof Combobox.Item> & {
+  /** An optional icon shown before the label. */
   icon?: ReactNode;
-  className?: string;
   children?: ReactNode;
 };
 
@@ -551,39 +598,36 @@ export function SearchMultiSelectItem({
 
   useEffect(() => {
     registerIcon(value, icon);
-    return () => unregisterIcon(value);
-  }, [icon, registerIcon, unregisterIcon, value]);
+  }, [icon, registerIcon, value]);
+  useEffect(() => () => unregisterIcon(value), [unregisterIcon, value]);
 
   return (
     <Combobox.Item
       value={value}
-      className={cn(
-        "flex items-center gap-2.5 rounded-xs px-2.5 py-1.5 outline-none select-none",
+      className={mergeStateClassName(cn(
+        "flex items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
         "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
         "data-[selected]:text-foreground",
-        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-        className,
-      )}
+        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50"), className)}
       {...props}
     >
+      <SearchSelectItemIcon icon={icon} size={size} />
+      <span className="flex-1 truncate">{children}</span>
       <Combobox.ItemIndicator
         keepMounted
-        className="shrink-0"
         render={(indicatorProps, state) => (
-          <span {...indicatorProps}>
-            <Checkbox
-              checked={state.selected}
-              aria-hidden
-              tabIndex={-1}
-              className="pointer-events-none shrink-0"
-            />
+          <span
+            {...indicatorProps}
+            data-slot="search-select-item-check"
+            data-selected={state.selected ? "" : undefined}
+            className="flex size-3.5 shrink-0 items-center justify-center text-foreground"
+          >
+            <CheckMark checked={state.selected} />
           </span>
         )}
       />
-      <SearchSelectItemIcon icon={icon} size={size} />
-      <span className="flex-1 truncate">{children}</span>
     </Combobox.Item>
   );
 }

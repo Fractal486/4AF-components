@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { useState } from "react";
+import { createRef, useState } from "react";
 import { vi } from "vitest";
 import {
   Breadcrumb,
@@ -11,12 +11,14 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
+  BreadcrumbSibling,
+  BreadcrumbSiblings,
 } from "./breadcrumb";
 
 function Trail({
   collapse,
 }: {
-  collapse?: { open?: boolean; defaultOpen?: boolean; onOpenChange?: (open: boolean) => void };
+  collapse?: { open?: boolean; defaultOpen?: boolean; onOpenChange?: (open: boolean) => void; variant?: "expand" | "menu" };
 }) {
   return (
     <Breadcrumb>
@@ -45,6 +47,54 @@ function Trail({
   );
 }
 
+function SiblingTrail(props: { onOpenChange?: (open: boolean) => void; current?: boolean }) {
+  return (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+          <BreadcrumbSiblings label="Components" onOpenChange={props.onOpenChange}>
+            <BreadcrumbSibling href="/docs/badge">Badge</BreadcrumbSibling>
+            <BreadcrumbSibling href="/docs/breadcrumb" current={props.current ?? true}>Breadcrumb</BreadcrumbSibling>
+            <BreadcrumbSibling href="/docs/button">Button</BreadcrumbSibling>
+          </BreadcrumbSiblings>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
+}
+
+describe("BreadcrumbSiblings", () => {
+  it("opens a menu of sibling links on the current page", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(<SiblingTrail onOpenChange={onOpenChange} />);
+    const trigger = screen.getByRole("button", { name: "Components" });
+    expect(trigger).toHaveAttribute("data-slot", "breadcrumb-siblings-trigger");
+    await user.click(trigger);
+
+    const current = await screen.findByRole("menuitem", { name: "Breadcrumb" });
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+    expect(current).toHaveAttribute("href", "/docs/breadcrumb");
+    expect(current).toHaveAttribute("aria-current", "page");
+    expect(current).toHaveAttribute("data-current");
+    await waitFor(() => expect(current).toHaveFocus());
+    expect(current).toHaveAttribute("data-highlighted");
+    expect(screen.getByRole("menuitem", { name: "Badge" })).not.toHaveAttribute("aria-current");
+
+    await user.keyboard("{ArrowDown}");
+    expect(screen.getByRole("menuitem", { name: "Button" })).toHaveFocus();
+  });
+
+  it("opens on the first row when no sibling is current", async () => {
+    const user = userEvent.setup();
+    render(<SiblingTrail current={false} />);
+    await user.click(screen.getByRole("button", { name: "Components" }));
+    const first = await screen.findByRole("menuitem", { name: "Badge" });
+    await waitFor(() => expect(first).toHaveFocus());
+  });
+});
+
 describe("Breadcrumb", () => {
   it("is a labelled nav landmark with an ordered list and the current page marked", () => {
     render(<Trail />);
@@ -60,6 +110,33 @@ describe("Breadcrumb", () => {
     expect(separator).toHaveAttribute("aria-hidden", "true");
     expect(separator).toHaveAttribute("role", "presentation");
     expect(separator.querySelector("svg")).not.toBeNull();
+  });
+
+  it("chooses every default separator glyph from the list", () => {
+    const { container, rerender } = render(
+      <BreadcrumbList>
+        <BreadcrumbSeparator />
+        <BreadcrumbSeparator>|</BreadcrumbSeparator>
+      </BreadcrumbList>,
+    );
+    const list = container.querySelector("ol")!;
+    const [first, custom] = container.querySelectorAll('[data-slot="breadcrumb-separator"]');
+    expect(list).toHaveAttribute("data-separator", "chevron");
+    expect(first).toHaveAttribute("data-separator", "chevron");
+    expect(custom).not.toHaveAttribute("data-separator");
+    expect(custom).toHaveTextContent("|");
+
+    for (const kind of ["slash", "line", "dot"] as const) {
+      rerender(
+        <BreadcrumbList separator={kind}>
+          <BreadcrumbSeparator />
+        </BreadcrumbList>,
+      );
+      const separator = container.querySelector('[data-slot="breadcrumb-separator"]')!;
+      expect(container.querySelector("ol")).toHaveAttribute("data-separator", kind);
+      expect(separator).toHaveAttribute("data-separator", kind);
+      expect(separator.querySelector("svg")).not.toBeNull();
+    }
   });
 
   it("renders a link's styles onto its child with asChild", () => {
@@ -99,6 +176,207 @@ describe("Breadcrumb", () => {
     const list = container.querySelector("ol")!;
     expect(list).toHaveAttribute("data-size", "sm");
     expect(list).toHaveClass("text-xs", "gap-1");
+  });
+
+  const parts = [Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator, BreadcrumbEllipsis]
+    .map((Part) => ({ name: Part.name, Part }));
+
+  it.each(parts)("$name supports render with merged props, handlers, and refs", async ({ Part }) => {
+    const user = userEvent.setup();
+    const partRef = vi.fn();
+    const buttonRef = createRef<HTMLButtonElement>();
+    const partClick = vi.fn();
+    const buttonClick = vi.fn();
+    const { container } = render(
+      <Part ref={partRef} className="part" onClick={partClick} title="Details"
+        render={<button ref={buttonRef} type="button" className="replacement" onClick={buttonClick} />}>
+        Details
+      </Part>,
+    );
+    const button = container.querySelector("button")!;
+    expect(container.firstElementChild).toBe(button);
+    expect(partRef).toHaveBeenCalledWith(button);
+    expect(buttonRef.current).toBe(button);
+    expect(button).toHaveClass("part", "replacement");
+    expect(button).toHaveAttribute("data-slot");
+    expect(button).toHaveAttribute("title", "Details");
+    await user.click(button);
+    expect(partClick).toHaveBeenCalledOnce();
+    expect(buttonClick).toHaveBeenCalledOnce();
+  });
+
+  it.each(parts)("$name supports asChild and gives it precedence over render", ({ Part }) => {
+    const partRef = vi.fn();
+    const childRef = createRef<HTMLDivElement>();
+    const { container } = render(
+      <Part asChild ref={partRef} render={<aside />} className="part">
+        <div ref={childRef} className="child">Content</div>
+      </Part>,
+    );
+    const child = container.firstElementChild!;
+    expect(child.tagName).toBe("DIV");
+    expect(child).toHaveTextContent("Content");
+    expect(child).toHaveClass("part", "child");
+    expect(child).toHaveAttribute("data-slot");
+    expect(child).not.toHaveAttribute("asChild");
+    expect(partRef).toHaveBeenCalledWith(child);
+    expect(childRef.current).toBe(child);
+  });
+
+  it("supports render functions and retains collapse attributes on custom list items", () => {
+    render(
+      <Breadcrumb render={(props) => <nav {...props} aria-label="Location" />}>
+        <BreadcrumbList render={<ol aria-label="Path" />}>
+          <BreadcrumbCollapse>
+            <BreadcrumbItem render={<li title="Hidden" />}><BreadcrumbLink href="/docs">Docs</BreadcrumbLink></BreadcrumbItem>
+            <BreadcrumbSeparator render={<li title="Separator" />} />
+          </BreadcrumbCollapse>
+          <BreadcrumbItem><BreadcrumbPage render={<strong />}>Current</BreadcrumbPage></BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>,
+    );
+    expect(screen.getByRole("navigation", { name: "Location" })).toContainElement(screen.getByRole("list", { name: "Path" }));
+    expect(screen.getByTitle("Hidden")).toHaveAttribute("data-collapsed");
+    expect(screen.getByTitle("Separator")).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByText("Current").tagName).toBe("STRONG");
+    expect(screen.getByText("Current")).toHaveAttribute("aria-current", "page");
+  });
+});
+
+function mockAnimations() {
+  const pending: { target: Element; finish: () => void; cancel: ReturnType<typeof vi.fn> }[] = [];
+  const original = Object.getOwnPropertyDescriptor(Element.prototype, "animate");
+  const animate = vi.fn(function (this: Element) {
+    const { promise: finished, resolve, reject } = Promise.withResolvers<void>();
+    const cancel = vi.fn(() => reject(new DOMException("Canceled", "AbortError")));
+    pending.push({ target: this, finish: () => resolve(), cancel });
+    return { finished, cancel };
+  });
+  Object.defineProperty(Element.prototype, "animate", { configurable: true, value: animate });
+  return {
+    pending,
+    animate,
+    async finish() {
+      await act(async () => { pending.filter(({ cancel }) => !cancel.mock.calls.length).forEach(({ finish }) => finish()); });
+    },
+    restore() {
+      if (original) Object.defineProperty(Element.prototype, "animate", original);
+      else Reflect.deleteProperty(Element.prototype, "animate");
+    },
+  };
+}
+
+describe("BreadcrumbCollapse animation lifecycle", () => {
+  let animations: ReturnType<typeof mockAnimations>;
+  beforeEach(() => { animations = mockAnimations(); });
+  afterEach(() => { animations.restore(); vi.restoreAllMocks(); });
+
+  it("keeps outgoing crumbs until exit finishes and transfers focus only after each animation", async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(<Trail collapse={{ open: false }} />);
+    const trigger = screen.getByRole("button", { name: "Show full path" });
+    await user.click(trigger);
+    rerender(<Trail collapse={{ open: true }} />);
+    expect(trigger).toHaveFocus();
+    expect(trigger.parentElement).not.toHaveAttribute("data-collapsed");
+    expect(trigger.parentElement).toHaveAttribute("data-transitioning");
+    await animations.finish();
+    expect(screen.getByRole("link", { name: "Docs" })).toHaveFocus();
+    expect(trigger.parentElement).toHaveAttribute("data-collapsed");
+
+    rerender(<Trail collapse={{ open: false }} />);
+    expect(container.querySelectorAll("[data-breadcrumb-group][data-collapsed]")).toHaveLength(0);
+    expect(screen.getByRole("link", { name: "Docs" })).toHaveFocus();
+    await animations.finish();
+    expect(container.querySelectorAll("[data-breadcrumb-group][data-collapsed]")).toHaveLength(4);
+    expect(trigger).toHaveFocus();
+    expect(trigger.parentElement).not.toHaveAttribute("data-transitioning");
+  });
+
+  it("does not steal focus when the user leaves the trail during an animation", async () => {
+    const user = userEvent.setup();
+    render(<><Trail collapse={{}} /><button>Elsewhere</button></>);
+    await user.click(screen.getByRole("button", { name: "Show full path" }));
+    await user.click(screen.getByRole("button", { name: "Elsewhere" }));
+    await animations.finish();
+    expect(screen.getByRole("button", { name: "Elsewhere" })).toHaveFocus();
+  });
+
+  it("ignores canceled animation completions when direction reverses", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<Trail collapse={{ open: false }} />);
+    const trigger = screen.getByRole("button", { name: "Show full path" });
+    await user.click(trigger);
+    rerender(<Trail collapse={{ open: true }} />);
+    const firstRun = [...animations.pending];
+    rerender(<Trail collapse={{ open: false }} />);
+    await act(async () => { firstRun.forEach(({ finish }) => finish()); });
+    expect(firstRun.every(({ cancel }) => cancel.mock.calls.length === 1)).toBe(true);
+    expect(trigger.parentElement).toHaveAttribute("data-transitioning");
+    expect(trigger).toHaveFocus();
+    await animations.finish();
+    expect(trigger.parentElement).not.toHaveAttribute("data-transitioning");
+    expect(trigger.parentElement).toHaveAttribute("data-state", "closed");
+    expect(trigger).toHaveFocus();
+  });
+
+  it("skips animation and focuses immediately under reduced motion", async () => {
+    vi.spyOn(window, "matchMedia").mockImplementation((query) => ({ matches: true, media: query }) as MediaQueryList);
+    const user = userEvent.setup();
+    render(<Trail collapse={{}} />);
+    await user.click(screen.getByRole("button", { name: "Show full path" }));
+    expect(animations.animate).not.toHaveBeenCalled();
+    expect(screen.getByRole("link", { name: "Docs" })).toHaveFocus();
+  });
+
+  it("restores caller inline styles after settling and cancels pending work on unmount", async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<Trail collapse={{}} />);
+    const item = screen.getByRole("link", { name: "Docs" }).parentElement!;
+    item.style.whiteSpace = "pre-wrap";
+    item.style.overflow = "visible";
+    await user.click(screen.getByRole("button", { name: "Show full path" }));
+    expect(item.style.whiteSpace).toBe("nowrap");
+    await animations.finish();
+    expect(item.style.whiteSpace).toBe("pre-wrap");
+    expect(item.style.overflow).toBe("visible");
+    expect(item.style.flexShrink).toBe("");
+    unmount();
+
+    const next = render(<Trail collapse={{}} />);
+    await user.click(screen.getByRole("button", { name: "Show full path" }));
+    const running = animations.pending.filter(({ cancel }) => !cancel.mock.calls.length);
+    next.unmount();
+    expect(running.every(({ cancel }) => cancel.mock.calls.length === 1)).toBe(true);
+    await animations.finish();
+  });
+});
+
+describe("BreadcrumbCollapse menu variant", () => {
+  it("lists the hidden crumbs in a dropdown and keeps one separator in the trail", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const { container } = render(<Trail collapse={{ variant: "menu", onOpenChange }} />);
+    const list = container.querySelector("ol")!;
+    expect(screen.queryByRole("link", { name: "Docs" })).toBeNull();
+    // Home, separator, collapse, separator, page.
+    expect(list.children).toHaveLength(5);
+    expect(list.querySelector('[data-slot="breadcrumb-collapse"]')).toHaveAttribute("data-variant", "menu");
+
+    const trigger = screen.getByRole("button", { name: "Show full path" });
+    await user.click(trigger);
+    const docs = await screen.findByRole("menuitem", { name: "Docs" });
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+    expect(docs.tagName).toBe("A");
+    expect(docs).toHaveAttribute("href", "/docs");
+    expect(screen.getByRole("menuitem", { name: "Components" })).toHaveAttribute("href", "/docs/components");
+    expect(screen.getAllByRole("menuitem")).toHaveLength(2);
+    await waitFor(() => expect(docs).toHaveFocus());
+    expect(docs).toHaveAttribute("data-highlighted");
+
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
   });
 });
 

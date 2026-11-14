@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { prefersReducedMotion } from "@/registry/lib/reduced-motion";
+import { useEffect, useState, type ComponentProps } from "react";
 import { cn } from "@/registry/lib/cn";
 
-export interface ScrambleTextProps {
+export interface ScrambleTextProps extends Omit<ComponentProps<"span">, "children"> {
   /** The text to reveal. */
   children: string;
-  className?: string;
   /** Milliseconds between reveal steps. Defaults to 32. */
   intervalMs?: number;
 }
@@ -85,14 +85,6 @@ function getRevealStep(segmentCount: number) {
   return Math.max(1, Math.ceil(segmentCount / MAX_REVEAL_STEPS));
 }
 
-function shouldReduceMotion() {
-  return (
-    typeof window !== "undefined" &&
-    typeof window.matchMedia === "function" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
-}
-
 /**
  * Reveals text one grapheme at a time through a short random-character scramble.
  * Uses Intl.Segmenter for graphemes, falling back to Unicode code points without it.
@@ -102,6 +94,7 @@ export function ScrambleText({
   children,
   className,
   intervalMs = 32,
+  ...props
 }: ScrambleTextProps) {
   const [displayText, setDisplayText] = useState(() =>
     scrambleText(children, 0, "stable"),
@@ -110,7 +103,7 @@ export function ScrambleText({
   useEffect(() => {
     const segments = getTextSegments(children);
 
-    if (segments.length === 0 || intervalMs <= 0 || shouldReduceMotion()) {
+    if (segments.length === 0 || intervalMs <= 0 || prefersReducedMotion()) {
       // The animated display owns this state, so it must settle immediately when the
       // animation is disabled or reduced motion is active.
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -137,7 +130,7 @@ export function ScrambleText({
   }, [children, intervalMs]);
 
   return (
-    <span className={cn("inline-block", className)}>
+    <span {...props} data-slot="scramble-text" className={cn("inline-block", className)}>
       <span aria-hidden="true">{displayText}</span>
       <span aria-atomic="true" aria-live="polite" className="sr-only">
         {children}

@@ -3,7 +3,6 @@ title: Button
 description: A composable Base UI button with variants, loading state, asChild support, and spring press feedback.
 ---
 
-<ComponentDemo name="button" />
 <ComponentReference name="button" />
 
 ## API
@@ -12,10 +11,11 @@ description: A composable Base UI button with variants, loading state, asChild s
 
 | | Values |
 | --- | --- |
-| `variant` | `primary` (default), `outline`, `ghost`, `plain`, `destructive`, `link` |
+| `variant` | `primary` (default), `outline`, `outline-ghost`, `ghost`, `plain`, `destructive`, `link`. `outline` fills with `surface`; `outline-ghost` has the same edge and no fill, so the background behind it shows through. |
 | `size` | `xs` (24px), `sm` (30px), `md` (34px), `lg` (38px) |
 | Square icon sizes | `icon-xs`, `icon-sm`, `icon`, `icon-lg`, matching the heights above |
 | `shape` | `rectangular` (default), `pill` |
+| `loadingLabel` | String announced while loading; defaults to `"Loading"`. Localize it or describe the pending action. |
 
 `rectangular` uses the size's corner radius: 6px at `xs`/`sm`, 8px at `md`/`lg`. `pill` rounds the
 ends fully; square icon sizes become circles. The button carries `data-shape`. Toggle, Button
@@ -28,6 +28,7 @@ The `link` variant uses a `border-strong` underline that transitions to the text
 hover, matching documentation links. Its underline offset is 4px.
 
 `loading` blocks interaction without changing the button's size or dropping keyboard focus.
+The label and the loader swap with [Morph](/docs/morph)'s animation, in both directions.
 The button stays focusable with `aria-disabled="true"` and `aria-busy="true"`; repeated clicks,
 Enter, and Space do not activate it. An explicit `disabled` prop still disables the native
 button unless you opt into Base UI's `focusableWhenDisabled` behavior.
@@ -44,10 +45,18 @@ to supply a custom indicator.
 `asChild` renders the button's styles onto its child, such as a link, which keeps its own
 semantics.
 
+The default root exposes `data-slot="button"`; composed triggers can supply their own slot.
+Nested [Kbd](/docs/kbd) shortcuts adapt to the button's text and background colors.
+
 ## Press behavior
 
-Buttons scale to `0.95` while pressed by default. Set `pressScale={false}` on anchored triggers,
-where the resize would make the attached panel appear to move.
+Buttons scale to `0.95` while pressed by default. A truthy `aria-haspopup` automatically disables
+press scaling so popup triggers stay anchored. This also works with `asChild`, including when
+the child supplies `aria-haspopup`. Explicit `pressScale={true}` or `false` overrides the default.
+For anchored controls without popup semantics, set `pressScale={false}` yourself.
+
+Popup triggers carry `data-popup-trigger`. While `aria-expanded="true"`, they keep their
+variant's hover appearance after the pointer leaves. The `plain` variant remains transparent.
 
 ```tsx
 <Button pressScale={false}>Open menu</Button>
@@ -63,4 +72,5 @@ keeps its edges still. Button Group already sets this on its children.
 
 Action Button, Copy Button, and Delete Button accept both props.
 
-The native button presses with a Motion spring. With `asChild`, the press is CSS.
+The native button presses with a Motion spring. With `asChild`, the press is CSS on
+`--ease-press`, the same spring sampled into `linear()` over `--duration-slow`, so both feel alike.

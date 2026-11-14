@@ -1,0 +1,155 @@
+"use client";
+
+import dynamic from "next/dynamic";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { cn } from "@/registry/lib/cn";
+
+const HeroComponentPreview = dynamic(
+  () => import("./hero-component-preview").then((module) => module.HeroComponentPreview),
+  { ssr: false },
+);
+
+/** Clearance kept around each piece of copy before the artwork starts, in px. */
+const PAD = 48;
+/** How softly the artwork comes back after that clearance (SVG blur deviation), in px. */
+const SOFTNESS = 36;
+
+interface Box {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
+
+/**
+ * The landing hero's artwork, kept clear of the copy laid over it.
+ *
+ * The hero's copy marks its pieces with `data-hero-copy` (`"text"` for a heading, measured line
+ * by line). This measures where each one actually ends and masks the artwork out of a soft
+ * shape around them, from the hero's left edge to each piece's own right edge. The artwork
+ * fades in sooner beside a short title line, later beside the wide command boxes. Nothing is
+ * painted over the artwork: the mask is an SVG image layered with the artwork's edge fades.
+ */
+export function HeroBackdrop({ className, artworkClassName }: { className?: string; artworkClassName?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [mask, setMask] = useState<string>();
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let cancel = () => {};
+    const schedule = () => {
+      // Keep the decorative component tree out of the initial page load. A bounded idle
+      // callback lets the copy hydrate first without leaving busy browsers blank indefinitely.
+      if (typeof window.requestIdleCallback === "function") {
+        const idle = window.requestIdleCallback(() => setReady(true), { timeout: 1000 });
+        cancel = () => window.cancelIdleCallback(idle);
+      } else {
+        const timer = window.setTimeout(() => setReady(true), 0);
+        cancel = () => window.clearTimeout(timer);
+      }
+    };
+    if (document.readyState === "complete") schedule();
+    else window.addEventListener("load", schedule, { once: true });
+    return () => {
+      window.removeEventListener("load", schedule);
+      cancel();
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    const backdrop = ref.current;
+    const hero = backdrop?.closest<HTMLElement>("[data-hero]");
+    if (!backdrop || !hero) return;
+
+    const measure = () => {
+      const area = backdrop.getBoundingClientRect();
+      if (area.width === 0 || area.height === 0) return;
+      const boxes: Box[] = [];
+      for (const piece of hero.querySelectorAll<HTMLElement>("[data-hero-copy]")) {
+        const rects = piece.dataset.heroCopy === "text" ? lineRects(piece) : [piece.getBoundingClientRect()];
+        for (const rect of rects) {
+          // A piece hidden at this width measures as an empty box at the corner; skip it.
+          if (rect.right === rect.left && rect.bottom === rect.top) continue;
+          boxes.push({
+            left: 0,
+            top: rect.top - area.top - PAD,
+            right: rect.right - area.left + PAD,
+            bottom: rect.bottom - area.top + PAD,
+          });
+        }
+      }
+      // One continuous shape for the whole copy: each box reaches down to the next one, so the
+      // gaps between the title, buttons, commands and credit stay clear too, while each keeps
+      // its own right edge.
+      boxes.sort((a, b) => a.top - b.top);
+      for (let index = 0; index < boxes.length - 1; index++) {
+        boxes[index]!.bottom = Math.max(boxes[index]!.bottom, boxes[index + 1]!.top);
+      }
+      setMask(svgMask(area.width, area.height, boxes));
+    };
+
+    measure();
+    const resize = new ResizeObserver(measure);
+    resize.observe(hero);
+    // Fonts settle the title's line widths; the entrance moves the copy into place.
+    void document.fonts?.ready.then(measure);
+    const settle = window.setTimeout(measure, 1500);
+    return () => {
+      resize.disconnect();
+      window.clearTimeout(settle);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={mask ? ({ "--hero-copy-mask": mask } as CSSProperties) : undefined}
+    >
+      {/* Reserve the same responsive frame before the chunk and its stylesheet arrive. */}
+      <div data-hero-artwork className={cn("relative aspect-[5/4] w-full", artworkClassName)}>
+        {ready && <HeroComponentPreview entrance className="h-full aspect-auto" />}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * One rect per rendered line of a piece of text, spanning that line's words. A BlurText run
+ * also holds a screen-reader copy of its text, kept on one unbroken line out of sight; only the
+ * visible, `aria-hidden` parts (its letters, and any logos set in the line) are measured, or that
+ * copy reads as one long first line.
+ */
+function lineRects(element: HTMLElement) {
+  const visible = Array.from(element.querySelectorAll<HTMLElement>("[aria-hidden='true']"))
+    .filter((part) => !part.parentElement?.closest("[aria-hidden='true']"));
+  const rects: DOMRect[] = [];
+  for (const part of visible.length > 0 ? visible : [element]) {
+    const range = document.createRange();
+    range.selectNodeContents(part);
+    rects.push(...range.getClientRects());
+  }
+  const lines = new Map<number, Box>();
+  for (const rect of rects) {
+    if (rect.width === 0) continue;
+    const key = Math.round(rect.bottom / 8);
+    const line = lines.get(key);
+    lines.set(key, line
+      ? { left: Math.min(line.left, rect.left), top: Math.min(line.top, rect.top), right: Math.max(line.right, rect.right), bottom: Math.max(line.bottom, rect.bottom) }
+      : { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom });
+  }
+  return [...lines.values()];
+}
+
+/** An alpha mask: opaque everywhere except blurred cut-outs over the boxes. */
+function svgMask(width: number, height: number, boxes: Box[]) {
+  const cutouts = boxes
+    .map((box) => `<rect x="${box.left - SOFTNESS * 3}" y="${box.top}" width="${box.right - box.left + SOFTNESS * 3}" height="${box.bottom - box.top}"/>`)
+    .join("");
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">` +
+    `<defs><filter id="s" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="${SOFTNESS}"/></filter>` +
+    `<mask id="m"><rect width="100%" height="100%" fill="white"/><g fill="black" filter="url(#s)">${cutouts}</g></mask></defs>` +
+    `<rect width="100%" height="100%" fill="black" mask="url(#m)"/></svg>`;
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+}

@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/registry/lib/cn";
 import { useAction } from "@/registry/lib/use-action";
 import { LoadingIndicator } from "@/registry/lib/loader";
@@ -10,7 +12,8 @@ import {
   useSelectSearch,
 } from "@/registry/ui/select/select";
 import { Select as BaseSelect } from "@base-ui/react/select";
-import { Check, TriangleAlert } from "lucide-react";
+import { CheckMark } from "@/registry/lib/check-mark";
+import { TriangleAlert } from "lucide-react";
 import {
   createContext,
   useCallback,
@@ -21,8 +24,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { ACTION_CLASS, CommandKeybindHint, Kbd } from "./command-palette.chrome";
-import { ActionsOpenContext } from "./command-palette.context";
+import { KbdGroup } from "@/registry/ui/kbd/kbd";
+import { ACTION_CLASS, CommandKeybindHint } from "./command-palette.chrome";
+import { ActionsOpenContext, PanelActionsContext } from "./command-palette.context";
 import { matchesKeybind } from "./command-palette.keybinds";
 import type { CommandGroup, CommandItem, CommandPanelActionsProps } from "./command-palette.types";
 
@@ -30,7 +34,7 @@ import type { CommandGroup, CommandItem, CommandPanelActionsProps } from "./comm
  * A palette *inside* the palette — the contextual action menu for a panel page.
  *
  * It's the Select with its in-panel search field, not a bespoke popup: `searchable` gives
- * the filter field, `width="content"` sizes the panel to its rows (at least 200px) rather
+ * the filter field, `width="content"` sizes the panel to its rows (at least 280px) rather
  * than the tiny trigger, and `autoFocusFirstItem` activates the first row while keeping
  * the caret in the search field, so Enter can run an action immediately.
  * Base UI owns the anchoring, the dismiss, and the collision flip — the menu hangs off a
@@ -77,6 +81,14 @@ export function CommandPanelActions({
   // A panel can be torn down with its menu still open — stepping back, or the palette
   // closing under it — and the frozen highlight would outlive the thing that froze it.
   useEffect(() => () => reportActionsOpen?.(false), [reportActionsOpen]);
+
+  // A right-clicked row opens this menu. The row has already taken the highlight, so the
+  // panel's actions describe that row by the time the menu renders.
+  const panelActions = useContext(PanelActionsContext);
+  useEffect(
+    () => panelActions?.register(() => setMenuOpen(true)),
+    [panelActions, setMenuOpen],
+  );
 
   const actionGroups = useMemo(
     () => groups ?? [{ items: items ?? [] }],
@@ -149,7 +161,7 @@ export function CommandPanelActions({
   // the containing custom panel owns them even while this menu is closed.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.defaultPrevented) return;
+      if (event.defaultPrevented || event.repeat || event.isComposing) return;
       const action = actionItems.find((item) => {
         return item.keybind != null && matchesKeybind(item.keybind, event);
       });
@@ -170,6 +182,7 @@ export function CommandPanelActions({
   // would have the footer teaching a different keyboard on every page.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat || event.isComposing) return;
       if (event.key.toLowerCase() === ACTIONS_HOTKEY && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
         setMenuOpen((current) => !current);
@@ -196,10 +209,7 @@ export function CommandPanelActions({
     >
       <SelectTrigger outline={false} chevron={false} className={cn(ACTION_CLASS, "h-auto")}>
         {label}
-        <span className="flex items-center gap-0.5">
-          <Kbd>Ctrl/⌘</Kbd>
-          <Kbd>{ACTIONS_HOTKEY.toUpperCase()}</Kbd>
-        </span>
+        <KbdGroup keys={`mod+${ACTIONS_HOTKEY}`} className="gap-0.5" />
       </SelectTrigger>
       <SelectContent
         // Opens upward off the footer and hangs from its right edge, so the panel grows
@@ -208,6 +218,9 @@ export function CommandPanelActions({
         side="top"
         align="end"
         width="content"
+        // Wider than a field select's 200px floor: action labels are sentences, and a menu
+        // that changes width from panel to panel reads as a different menu each time.
+        className="min-w-70"
         searchable
         searchPosition="bottom"
         // The top action is highlighted the moment the menu opens, while the caret stays
@@ -255,7 +268,7 @@ interface ActionRowScope {
 const ActionRowContext = createContext<ActionRowScope | null>(null);
 
 /** How long a press is ignored after arming, so one double-click can't confirm. */
-const DOUBLE_PRESS_GUARD = 350;
+export const DOUBLE_PRESS_GUARD = 350;
 
 /**
  * One actions row, in whichever of the three shapes its item describes.
@@ -365,7 +378,7 @@ function CommandActionRow({ item, end }: { item: CommandItem; end?: ReactNode })
           off: item.icon,
           on: item.icons?.checked ?? item.icon,
           pending: item.icons?.pending ?? <LoadingIndicator loader={item.loader} />,
-          success: item.icons?.success ?? <Check />,
+          success: item.icons?.success ?? <CheckMark checked appear className="size-4" />,
           error: item.icons?.error ?? <TriangleAlert />,
           armed: item.confirm?.icon ?? item.icon,
         }}

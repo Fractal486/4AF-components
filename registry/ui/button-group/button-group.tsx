@@ -22,6 +22,7 @@ type ButtonSize = NonNullable<ButtonProps["size"]>;
 /** What the join between two adjacent buttons is made of, per variant. */
 const SEAM: Record<ButtonVariant, NonNullable<ButtonGroupItemVariants["seam"]>> = {
   outline: "divider",
+  "outline-ghost": "divider",
   primary: "tint",
   destructive: "tint",
   ghost: "none",
@@ -97,6 +98,11 @@ function flattenElements(children: ReactNode): ReactElement<ItemProps>[] {
  * props injected; anything else in the group (a menu trigger, a `Tooltip`-wrapped
  * button) receives the class names and is otherwise left alone, because passing it
  * props it doesn't know about would land them on the DOM.
+ *
+ * An Input or a Select joins the run as a field: it takes the free width and gives its
+ * border to the group's outline. That styling lives on the group (see
+ * `button-group.variants.ts`), keyed off the fields' `data-slot`, so this file needs no
+ * import of either.
  */
 export function ButtonGroup({
   className,
@@ -131,7 +137,7 @@ export function ButtonGroup({
           orientation,
           // Asked of the children rather than of the group's own prop, so
           // `<ButtonGroup><Button variant="outline" /></ButtonGroup>` is framed too.
-          framed: variants.includes("outline"),
+          framed: variants.includes("outline") || variants.includes("outline-ghost"),
           radius:
             firstShape === "pill" ? "full" : LARGE_RADIUS.includes(sizes[0] ?? "md") ? "lg" : "md",
         }),

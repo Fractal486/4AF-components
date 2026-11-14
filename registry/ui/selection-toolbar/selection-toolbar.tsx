@@ -338,8 +338,9 @@ export function SelectionToolbar({
           if (!next) close();
         }}
       >
-        <BasePopover.Portal>
+        <BasePopover.Portal data-slot="selection-toolbar-portal">
           <BasePopover.Positioner
+            data-slot="selection-toolbar-positioner"
             anchor={anchor}
             side={side}
             align={align}
@@ -352,6 +353,7 @@ export function SelectionToolbar({
               // `role="dialog"` wrapper around it, which is a second thing for a screen
               // reader to enter on the way to two buttons.
               render={<BaseToolbar.Root />}
+              data-slot="selection-toolbar-content"
               role="toolbar"
               aria-label={label}
               aria-orientation="horizontal"

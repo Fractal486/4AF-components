@@ -1,7 +1,7 @@
 "use client";
 
 import { Button as BaseButton } from "@base-ui/react/button";
-import { motion, useReducedMotion, type HTMLMotionProps } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion, type HTMLMotionProps } from "motion/react";
 import {
   Children,
   cloneElement,
@@ -12,10 +12,12 @@ import {
   type ReactElement,
   type ReactNode,
   type Ref,
+  useState,
 } from "react";
 import { cn } from "@/registry/lib/cn";
 import { PRESS_SCALE, spring } from "@/registry/lib/motion";
 import { LoadingIndicator } from "@/registry/lib/loader";
+import { morphVariants } from "@/registry/ui/morph/morph";
 import { useSlotChild } from "@/registry/lib/slot";
 import { buttonVariants, type ButtonVariants } from "./button.variants";
 
@@ -37,7 +39,7 @@ export interface ButtonProps
   loading?: boolean;
   /** Overrides the nearest LoaderProvider for this button's loading indicator. */
   loader?: ReactNode;
-  /** Animate a scale change while pressed. Set false for anchored triggers. @default true */
+  /** Animate press scale. Defaults off for popup triggers and on for other buttons. */
   pressScale?: boolean;
   /**
    * Holds the button in its pressed state — e.g. while a popover or menu it triggers is
@@ -85,9 +87,11 @@ const PRESS_VARIANTS = {
 /**
  * The same content press for the `asChild` path, which can't use Motion — wrapping an
  * arbitrary child would mean nesting DOM that isn't valid. Same 0.95, driven off the
- * element's `:active` and the fast duration token, so it collapses under reduced
- * motion with everything else.
+ * element's `:active` on `--ease-press`, the press spring sampled into `linear()`, so it
+ * presses like the Motion path and still collapses under reduced motion via its token.
  */
+const SCALE_PRESS_TRANSITION =
+  "[transition:background-color_var(--duration-fast)_var(--ease-out),box-shadow_var(--duration-fast)_var(--ease-out),color_var(--duration-fast)_var(--ease-out),opacity_var(--duration-fast)_var(--ease-out),text-decoration-color_var(--duration-fast)_var(--ease-out),scale_var(--duration-slow)_var(--ease-press)]";
 const CONTENT_PRESS_CSS =
   "[&:active_[data-slot=button-content]]:scale-[0.95] motion-reduce:[&:active_[data-slot=button-content]]:scale-100";
 const CONTENT_HELD_CSS =
@@ -102,7 +106,7 @@ export function Button({
   loading = false,
   loader,
   loadingLabel = "Loading",
-  pressScale = true,
+  pressScale: pressScaleProp,
   pressed = false,
   pressTarget = "button",
   disabled,
@@ -112,6 +116,11 @@ export function Button({
   ...props
 }: ButtonProps) {
   const children = useSlotChild(childrenProp);
+  const childPopup = asChild && isValidElement<{ "aria-haspopup"?: ButtonProps["aria-haspopup"] }>(children)
+    ? children.props["aria-haspopup"] : undefined;
+  const popup = props["aria-haspopup"] ?? childPopup;
+  const isPopupTrigger = popup != null && popup !== false && popup !== "false";
+  const pressScale = pressScaleProp ?? !isPopupTrigger;
   const isDisabled = disabled || loading;
   const icons = iconEdges(children, asChild);
   const reduceMotion = useReducedMotion();
@@ -120,8 +129,15 @@ export function Button({
     asChild && isValidElement<{ children?: ReactNode }>(children)
       ? children.props.children
       : children;
-  const labelled = loading ? (
-    <ButtonLoading label={loadingLabel} loader={loader}>{innerContent}</ButtonLoading>
+  // A button that has never loaded keeps its plain children; the loading layer mounts on
+  // its first `loading` and stays, so the label can morph back in when loading ends.
+  const [mountedLoading] = useState(loading);
+  const [hasLoaded, setHasLoaded] = useState(loading);
+  if (loading && !hasLoaded) setHasLoaded(true);
+  const labelled = hasLoaded ? (
+    <ButtonLoading loading={loading} animateIn={!mountedLoading} label={loadingLabel} loader={loader}>
+      {innerContent}
+    </ButtonLoading>
   ) : (
     innerContent
   );
@@ -136,7 +152,7 @@ export function Button({
   ) : asChild ? (
     <span
       data-slot="button-content"
-      className="inline-flex items-center gap-[inherit] transition-[scale] duration-(--duration-fast) ease-out"
+      className="inline-flex items-center gap-[inherit] transition-[scale] duration-(--duration-slow) ease-press"
     >
       {labelled}
     </span>
@@ -177,6 +193,7 @@ export function Button({
 
   return (
     <BaseButton
+      data-slot="button"
       {...props}
       ref={ref}
       className={cn(
@@ -184,7 +201,8 @@ export function Button({
         asChild &&
           pressScale &&
           !pressesContent &&
-          "transition-[background-color,box-shadow,color,opacity,text-decoration-color,scale] active:scale-[0.95] motion-reduce:active:scale-100",
+          // Colours keep the base's fast expo; only the scale takes the press curve.
+          `${SCALE_PRESS_TRANSITION} active:scale-[0.95] motion-reduce:active:scale-100`,
         // Held state for the CSS-press (`asChild`) path. `scale` is a single CSS
         // property, so this and `active:scale-[0.95]` resolve to one value (0.95) rather
         // than multiplying — no compounding when a held button is pressed to dismiss.
@@ -202,6 +220,7 @@ export function Button({
       data-variant={variant ?? "primary"}
       data-size={size ?? "md"}
       data-shape={shape ?? "rectangular"}
+      data-popup-trigger={isPopupTrigger ? "" : undefined}
       data-loading={loading || undefined}
       data-pressed={pressed || undefined}
       data-icon-start={icons.start || undefined}
@@ -283,27 +302,53 @@ function flatten(children: ReactNode): ReactNode[] {
 }
 
 /**
- * The label keeps its place in the layout and fades out; the spinner is absolutely
- * positioned over it. Swapping the label *for* a spinner would resize the button
- * mid-click, moving the target out from under the cursor.
+ * The label keeps its place in the layout and morphs out; the spinner, absolutely
+ * positioned over it, morphs in — Morph's poses, so it reads like every other status swap.
+ * Swapping the label *for* a spinner would resize the button mid-click, moving the target
+ * out from under the cursor, so the label stays mounted and animates between poses.
  *
- * `aria-hidden` on the faded label plus a live-region-free status text means a
+ * `aria-hidden` on the hidden label plus a live-region-free status text means a
  * screen reader hears "Loading", not the stale label it can no longer act on.
+ *
+ * `animateIn` is false when the button mounted already loading: it appears in that state
+ * rather than playing a swap nobody triggered.
  */
-function ButtonLoading({ label, loader, children }: { label: string; loader?: ReactNode; children: ReactNode }) {
+function ButtonLoading({ loading, animateIn, label, loader, children }: {
+  loading: boolean; animateIn: boolean; label: string; loader?: ReactNode; children: ReactNode;
+}) {
+  const reduceMotion = useReducedMotion();
+  const transition = reduceMotion ? { duration: 0 } : spring.clean;
   return (
     <>
-      <span
-        aria-hidden="true"
-        className="inline-flex items-center gap-[inherit] opacity-0 transition-[opacity] duration-(--duration-fast) ease-out"
+      <motion.span
+        aria-hidden={loading || undefined}
+        className="inline-flex items-center gap-[inherit]"
+        variants={morphVariants}
+        initial={animateIn ? "animate" : false}
+        animate={loading ? "exit" : "animate"}
+        transition={transition}
       >
         {children}
-      </span>
-      <span className="absolute inset-0 inline-flex items-center justify-center">
-        {/* The button's size gives this box its icon size, in either loader style. */}
-        <LoadingIndicator loader={loader} />
-        <span className="sr-only">{label}</span>
-      </span>
+      </motion.span>
+      <AnimatePresence initial={animateIn}>
+        {loading && (
+          <motion.span
+            key="loader"
+            className="absolute inset-0 inline-flex items-center justify-center"
+            variants={morphVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={transition}
+          >
+            {/* The button's size gives this box its icon size, in either loader style. */}
+            <LoadingIndicator loader={loader} />
+          </motion.span>
+        )}
+      </AnimatePresence>
+      {/* Outside the exiting spinner, so the button's name drops "Loading" the moment
+          loading ends rather than after the spinner has animated away. */}
+      {loading && <span className="sr-only">{label}</span>}
     </>
   );
 }

@@ -1,3 +1,6 @@
+"use client";
+
+import { Kbd } from "@/registry/ui/kbd/kbd";
 import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
 import { Tooltip, TooltipProvider } from "@/registry/ui/tooltip/tooltip";
@@ -11,33 +14,34 @@ export function SidebarTrigger({
   onClick,
   ...props
 }: ComponentProps<typeof Button>) {
-  const { isMobile, openMobile, state, toggleSidebar } = useSidebar();
+  const { isMobile, openMobile, state, toggleSidebar, keyboardShortcut } = useSidebar();
   const isOpen = isMobile ? openMobile : state === "expanded";
+
+  const button = (
+    <Button
+      data-slot="sidebar-trigger"
+      variant="ghost"
+      size="icon-sm"
+      aria-label="Toggle sidebar"
+      // Whether the panel it toggles is open: the drawer on mobile, the sidebar on desktop.
+      aria-expanded={isOpen}
+      className={className}
+      onClick={(event) => {
+        onClick?.(event);
+        if (!event.defaultPrevented) toggleSidebar();
+      }}
+      {...props}
+    >
+      {isOpen ? <PanelLeft aria-hidden="true" /> : <PanelRight aria-hidden="true" />}
+    </Button>
+  );
+
+  if (!keyboardShortcut) return button;
 
   return (
     <TooltipProvider delay={500}>
-      <Tooltip
-        content={
-          <kbd>Ctrl/⌘ B</kbd>
-        }
-        delay={500}
-      >
-        <Button
-          data-slot="sidebar-trigger"
-          variant="ghost"
-          size="icon-sm"
-          aria-label="Toggle sidebar"
-          // Whether the panel it toggles is open: the drawer on mobile, the sidebar on desktop.
-          aria-expanded={isOpen}
-          className={className}
-          onClick={(event) => {
-            onClick?.(event);
-            if (!event.defaultPrevented) toggleSidebar();
-          }}
-          {...props}
-        >
-          {isOpen ? <PanelLeft aria-hidden="true" /> : <PanelRight aria-hidden="true" />}
-        </Button>
+      <Tooltip content={<Kbd keys={keyboardShortcut} />} delay={500}>
+        {button}
       </Tooltip>
     </TooltipProvider>
   );

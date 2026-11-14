@@ -8,8 +8,15 @@ describe("cn", () => {
     expect(cn("h-(--collapsible-panel-height)", "h-auto")).toBe("h-auto");
   });
 
+  it("treats the glass material as a background colour", () => {
+    expect(cn("bg-surface-raised", "material-glass")).toBe("material-glass");
+    expect(cn("material-glass", "bg-surface")).toBe("bg-surface");
+  });
+
   it("merges semantic elevation tokens as shadow sizes while preserving shadow colors", () => {
     expect(cn("shadow-border", "shadow-none")).toBe("shadow-none");
+    expect(cn("shadow-overlay-subtle", "shadow-none")).toBe("shadow-none");
+    expect(cn("shadow-lg", "shadow-overlay-subtle", "shadow-black/10")).toBe("shadow-overlay-subtle shadow-black/10");
     expect(cn("shadow-lg", "shadow-overlay-drop")).toBe("shadow-overlay-drop");
     expect(cn("shadow-overlay", "shadow-raised", "shadow-black/10")).toBe("shadow-raised shadow-black/10");
     expect(cn("hover:shadow-border", "shadow-none")).toBe("hover:shadow-border shadow-none");

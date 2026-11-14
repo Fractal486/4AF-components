@@ -1,0 +1,103 @@
+---
+title: Context Menu
+description: A menu of actions on right click or long press, anchored at the pointer.
+---
+
+<ComponentReference name="context-menu" />
+
+## API
+
+**Main exports:** `ContextMenu`, `ContextMenuTrigger`, `ContextMenuContent`,
+`ContextMenuPositioner`, and the [Dropdown Menu](/docs/dropdown-menu) rows and popup parts
+under `ContextMenu*` names.
+
+The menu is Dropdown Menu's panel, opened at the pointer. Rows, shortcuts, submenus, async
+actions, and nested select panels are the same parts with the same props. Installing
+`context-menu` installs `dropdown-menu`.
+
+| Context Menu part | Dropdown Menu part |
+| --- | --- |
+| `ContextMenuItem`, `ContextMenuCheckboxItem`, `ContextMenuActionItem` | `DropdownMenuItem`, `DropdownMenuCheckboxItem`, `DropdownMenuActionItem` |
+| `ContextMenuRadioGroup`, `ContextMenuRadioItem` | `DropdownMenuRadioGroup`, `DropdownMenuRadioItem` |
+| `ContextMenuGroup`, `ContextMenuLabel`, `ContextMenuSeparator`, `ContextMenuShortcut` | `DropdownMenuGroup`, `DropdownMenuLabel`, `DropdownMenuSeparator`, `DropdownMenuShortcut` |
+| `ContextMenuSub`, `ContextMenuSubTrigger`, `ContextMenuSubContent` | `DropdownMenuSub`, `DropdownMenuSubTrigger`, `DropdownMenuSubContent` |
+| `ContextMenuSelect`, `ContextMenuSelectTrigger`, `ContextMenuSelectContent`, `ContextMenuSelectItem` | The matching `DropdownMenuSelect*` parts |
+| `ContextMenuPortal`, `ContextMenuPopup` | `DropdownMenuPortal`, `DropdownMenuPopup` |
+
+Prop types are exported under the same names, such as `ContextMenuItemProps`.
+
+### ContextMenu
+
+Base UI's context menu root.
+
+| Prop | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `open`, `defaultOpen`, `onOpenChange` | — | — | Controlled or uncontrolled open state. `onOpenChange` receives the reason, such as `trigger-press`, `outside-press`, or `escape-key`. |
+| `onOpenChangeComplete` | `(open: boolean) => void` | — | Runs after the open or close transition. |
+| `disabled` | `boolean` | `false` | Leaves the area to the browser's own menu and turns off hold feedback. |
+| `loopFocus` | `boolean` | `true` | Arrow keys wrap at the ends. |
+| `highlightItemOnHover` | `boolean` | `true` | Rows highlight under the pointer. |
+| `actionsRef` | `RefObject<{ close, unmount }>` | — | Close the menu imperatively. |
+| `loader` | `ReactNode` | — | Default indicator for action and deferred checkbox rows. |
+
+### ContextMenuTrigger
+
+The area that opens the menu. Renders a `<div>`; use `render` for another element. It has no
+appearance of its own — style the area with `className`, which also accepts a state callback.
+
+| Prop | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `holdFeedback` | `boolean` | `true` | Shrink the area to 0.98 while a long press is held on touch screens. |
+| `render` | `ReactElement \| (props, state) => ReactElement` | `<div>` | Replace the area element. |
+
+Refs, native props, and touch handlers are forwarded.
+
+| Attribute | Purpose |
+| --- | --- |
+| `data-slot="context-menu-trigger"` | The area. |
+| `data-popup-open` | Present while its menu is open; style the open row or area from it. |
+| `data-holding` | Present while a long press is held. |
+
+### ContextMenuContent
+
+Accepts every [`DropdownMenuContent`](/docs/dropdown-menu#portals-and-positioning) prop:
+`side`, `align`, `alignOffset`, `portalProps`, `positionerProps`, `keepMounted`, and the
+popup's own props. `sideOffset` defaults to `0`, so the menu's corner sits at the pointer.
+Pass `positionerProps.anchor` to place it against an element instead.
+
+| Attribute | Purpose |
+| --- | --- |
+| `data-slot="context-menu-content"` | The popup. |
+| `data-slot="context-menu-positioner"` | Its positioner. |
+
+`ContextMenuPositioner` is the positioner on its own, with the same `0` side offset, for
+composing `ContextMenuPortal`, `ContextMenuPositioner`, and `ContextMenuPopup` by hand.
+
+## Hold feedback
+
+On touch screens Base UI opens the menu after a 500ms long press. After 120ms of holding,
+the trigger gets `data-holding` and scales to 0.98 over `--duration-slow`. Lifting the
+finger, moving it more than 10px, a second finger, or the menu opening restores the scale.
+With reduced motion the area does not scale. The trigger transitions only `scale`; a custom
+`transition-*` class on the trigger should include `scale` to keep the feedback smooth.
+
+iOS's long-press callout is suppressed on the trigger.
+
+## Keyboard
+
+| Key | Action |
+| --- | --- |
+| `Shift+F10`, Menu key | Opens the menu for a focused element inside the trigger. |
+| `↑` `↓` | Moves between rows, wrapping at the ends. |
+| `Home` `End` | Moves to the first or last row. |
+| `Enter` `Space` | Runs the highlighted row. Checkbox and radio rows stay open. |
+| `→` `←` | Opens or closes a submenu; reversed in right-to-left layouts. |
+| `Esc` | Closes the current menu; in a submenu, only that submenu. |
+| `A`–`Z` | Moves to the next row starting with that letter. |
+
+## Accessibility
+
+A context menu is a shortcut. Make its actions reachable elsewhere too, such as from a
+visible [Dropdown Menu](/docs/dropdown-menu) or button. Include a focusable element in the
+trigger so keyboard users can open it with Shift+F10 or the Menu key.
+`ContextMenuShortcut` is a label; register the key handler where the action is owned.

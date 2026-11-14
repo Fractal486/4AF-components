@@ -1,4 +1,4 @@
-import { defineEntry, select } from "../schema";
+import { bool, defineEntry, select } from "../schema";
 import { TocLinesDemo } from "./toc-demo";
 
 const LABELS = ["always", "hover"] as const;
@@ -10,8 +10,9 @@ export const tableOfContentsLinesEntry = defineEntry({
     // `hover` is the reason the rules exist: idle, the list is only its rules, and the
     // labels arrive when it is pointed at or focused.
     labels: select(LABELS, "always"),
+    scrollable: bool(false, "Scrollable"),
   },
-  render({ labels }) {
-    return <TocLinesDemo labels={labels} />;
+  render({ labels, scrollable }) {
+    return <TocLinesDemo labels={labels} scrollable={scrollable} />;
   },
 });

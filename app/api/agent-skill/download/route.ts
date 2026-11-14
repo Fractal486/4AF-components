@@ -31,14 +31,16 @@ async function collectFiles(directory: string, relativeDirectory = "") {
   const files: Array<{ name: string; data: Buffer }> = [];
 
   for (const entry of entries) {
+    if (entry.name.startsWith(".")) continue;
     const relativePath = relativeDirectory
       ? path.join(relativeDirectory, entry.name)
       : entry.name;
     const absolutePath = path.join(directory, entry.name);
 
-    if (entry.isDirectory()) {
+    if (entry.isDirectory() && (relativeDirectory !== "" || entry.name === "references")) {
       files.push(...(await collectFiles(absolutePath, relativePath)));
-    } else if (entry.isFile()) {
+    } else if (entry.isFile() && (relativePath === "SKILL.md" ||
+      (relativeDirectory !== "" && entry.name.endsWith(".md")))) {
       files.push({
         name: `4af-components/${relativePath.split(path.sep).join("/")}`,
         data: await readFile(absolutePath),

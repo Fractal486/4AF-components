@@ -17,15 +17,25 @@ export type ControlDef =
       defaultValue: string;
       label?: string;
       disabledWhen?: DisabledWhen;
+      /** An icon beside the selected value and each option in the dropdown. */
+      icons?: Readonly<Partial<Record<string, ReactNode>>>;
+      /** The boolean setting whose ⋯ menu holds this one, instead of a row of its own. */
+      menuOf?: string;
+      /** The starting value on a phone-width screen, when it differs from `defaultValue`. */
+      mobileDefault?: string;
     }
   | {
       kind: "multiselect";
       options: readonly string[];
       defaultValue: readonly string[];
+      showCount?: boolean;
       label?: string;
+      disabledWhen?: DisabledWhen;
+      /** An icon beside each option in the dropdown's rows. */
+      icons?: Readonly<Partial<Record<string, ReactNode>>>;
     }
   | { kind: "boolean"; defaultValue: boolean; label?: string; disabledWhen?: DisabledWhen }
-  | { kind: "text"; defaultValue: string; label?: string; placeholder?: string }
+  | { kind: "text"; defaultValue: string; label?: string; placeholder?: string; disabledWhen?: DisabledWhen }
   | {
       kind: "number";
       defaultValue: number;
@@ -33,6 +43,16 @@ export type ControlDef =
       min?: number;
       max?: number;
       step?: number;
+      disabledWhen?: DisabledWhen;
+    }
+  | {
+      kind: "range";
+      defaultValue: readonly [number, number];
+      label?: string;
+      min: number;
+      max: number;
+      step?: number;
+      disabledWhen?: DisabledWhen;
     };
 
 export type ControlSchema = Record<string, ControlDef>;
@@ -51,7 +71,9 @@ type ValueOf<C extends ControlDef> = C extends {
       ? string
       : C extends { kind: "number" }
         ? number
-        : never;
+        : C extends { kind: "range" }
+          ? readonly [number, number]
+          : never;
 
 export type ControlValues<S extends ControlSchema> = {
   [K in keyof S]: ValueOf<S[K]>;
@@ -75,13 +97,46 @@ export function select<const O extends readonly string[]>(
   return { kind: "select", options, defaultValue, label, disabledWhen };
 }
 
+/**
+ * Give a select's dropdown options icons. Every option needs an icon.
+ */
+export function withIcons<D extends { kind: "select" | "multiselect"; options: readonly string[] }>(
+  def: D,
+  icons: Readonly<Record<D["options"][number], ReactNode>>,
+): D & { icons: Readonly<Record<string, ReactNode>> } {
+  return { ...def, icons };
+}
+
+/**
+ * Move a select into a boolean setting's ⋯ menu: the styles of something the boolean turns on,
+ * picked beside its checkbox rather than as rows of their own. Its value stays a normal key.
+ */
+export function inMenu<D extends { kind: "select" }>(def: D, owner: string): D & { menuOf: string } {
+  return { ...def, menuOf: owner };
+}
+
+/** Start a select on `value` when the page is opened on a phone-width screen. */
+export function onMobile<D extends { kind: "select"; options: readonly string[] }>(
+  def: D,
+  value: D["options"][number],
+): D & { mobileDefault: string } {
+  return { ...def, mobileDefault: value };
+}
+
 /** Any number of the options, including none: related on/off settings in one row. */
 export function multi<const O extends readonly string[]>(
   options: O,
   defaultValue: readonly O[number][],
   label?: string,
-): { kind: "multiselect"; options: O; defaultValue: readonly O[number][]; label?: string } {
-  return { kind: "multiselect", options, defaultValue, label };
+  disabledWhen?: DisabledWhen,
+): {
+  kind: "multiselect";
+  options: O;
+  defaultValue: readonly O[number][];
+  label?: string;
+  disabledWhen?: DisabledWhen;
+} {
+  return { kind: "multiselect", options, defaultValue, label, disabledWhen };
 }
 
 export function bool(
@@ -96,13 +151,14 @@ export function text(
   defaultValue: string,
   label?: string,
   placeholder?: string,
-): { kind: "text"; defaultValue: string; label?: string; placeholder?: string } {
-  return { kind: "text", defaultValue, label, placeholder };
+  disabledWhen?: DisabledWhen,
+): { kind: "text"; defaultValue: string; label?: string; placeholder?: string; disabledWhen?: DisabledWhen } {
+  return { kind: "text", defaultValue, label, placeholder, disabledWhen };
 }
 
 export function num(
   defaultValue: number,
-  opts: { min?: number; max?: number; step?: number; label?: string } = {},
+  opts: { min?: number; max?: number; step?: number; label?: string; disabledWhen?: DisabledWhen } = {},
 ): {
   kind: "number";
   defaultValue: number;
@@ -110,8 +166,25 @@ export function num(
   min?: number;
   max?: number;
   step?: number;
+  disabledWhen?: DisabledWhen;
 } {
   return { kind: "number", defaultValue, ...opts };
+}
+
+/** Two ends of one quantity — a minimum and a maximum — set on a single two-thumb rail. */
+export function range(
+  defaultValue: readonly [number, number],
+  opts: { min: number; max: number; step?: number; label?: string; disabledWhen?: DisabledWhen },
+): {
+  kind: "range";
+  defaultValue: readonly [number, number];
+  label?: string;
+  min: number;
+  max: number;
+  step?: number;
+  disabledWhen?: DisabledWhen;
+} {
+  return { kind: "range", defaultValue, ...opts };
 }
 
 export interface Entry<S extends ControlSchema = ControlSchema> {
@@ -127,8 +200,14 @@ export function defineEntry<S extends ControlSchema>(entry: Entry<S>): Entry<S> 
   return entry;
 }
 
-export function initialValues<S extends ControlSchema>(schema: S): ControlValues<S> {
+/** The settings a demo starts on; `mobile` picks each select's `mobileDefault` where it has one. */
+export function initialValues<S extends ControlSchema>(
+  schema: S,
+  { mobile = false }: { mobile?: boolean } = {},
+): ControlValues<S> {
   const out: Record<string, unknown> = {};
-  for (const [key, def] of Object.entries(schema)) out[key] = def.defaultValue;
+  for (const [key, def] of Object.entries(schema)) {
+    out[key] = mobile && def.kind === "select" && def.mobileDefault !== undefined ? def.mobileDefault : def.defaultValue;
+  }
   return out as ControlValues<S>;
 }

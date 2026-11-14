@@ -1,16 +1,20 @@
 "use client";
 
-import { useEffect, useRef, type ComponentProps, type PointerEvent, type Ref } from "react";
+import { Input as BaseInput } from "@base-ui/react/input";
+import { useEffect, useId, useRef, type ComponentProps, type KeyboardEvent, type PointerEvent, type ReactNode, type Ref } from "react";
 import { cn } from "@/registry/lib/cn";
 import { useMergedRefs } from "@/registry/lib/refs";
-import { inputVariants, type InputVariants } from "@/registry/ui/ui/input.variants";
+import { fieldDescriptionVariants, fieldWrapperVariants, inputVariants, type InputVariants } from "@/registry/ui/ui/input.variants";
+import { clampRows, useTextareaAutosize } from "./textarea-autosize";
+import { textareaVariants } from "./textarea.variants";
 
 /**
  * A multi-line field — the Input, taller.
  *
- * A native `<textarea>` sharing Input's border and focus styling. Choose the bordered
+ * A Base UI Field control rendering a native `<textarea>`, sharing Input's styling.
+ * Choose the bordered
  * default or a plain field when its surrounding surface already provides the frame.
- * There is no Base UI textarea primitive.
+ * Base UI owns field labels, descriptions, validation, and value notifications.
  *
  * The one addition is the corner grip. The native resize handle is the browser's, not
  * ours, so it's turned off (`resize-none`) and replaced with a grip that drags the height
@@ -29,6 +33,17 @@ export interface TextareaProps extends Omit<ComponentProps<"textarea">, "classNa
   tone?: InputVariants["tone"];
   /** The drag-to-resize grip in the corner. */
   resizable?: boolean;
+  /** Supporting content below the field, linked through aria-describedby. */
+  description?: ReactNode;
+  /** Grow with content between minRows and maxRows. @default true */
+  autoResize?: boolean;
+  /** Starting row count. Falls back to rows, then 3. */
+  minRows?: number;
+  /** Maximum automatically visible rows before scrolling. @default 10 */
+  maxRows?: number;
+  /** Submit the associated form with Ctrl/Command + Enter. @default false */
+  submitOnShortcut?: boolean;
+  onValueChange?: ComponentProps<typeof BaseInput>["onValueChange"];
 }
 
 export function Textarea({
@@ -36,6 +51,15 @@ export function Textarea({
   variant = "default",
   tone = "neutral",
   resizable = true,
+  autoResize = true,
+  minRows,
+  maxRows = 10,
+  rows,
+  submitOnShortcut = false,
+  onKeyDown,
+  onValueChange,
+  description,
+  "aria-describedby": describedBy,
   disabled,
   ref,
   ...props
@@ -43,12 +67,18 @@ export function Textarea({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const mergedRef = useMergedRefs(textareaRef, ref);
   const resizeCleanup = useRef<(() => void) | null>(null);
+  const descriptionId = useId();
+  const hasDescription = description != null && typeof description !== "boolean" && description !== "";
+  const minimumRows = clampRows(minRows ?? rows, 3);
+  const maximumRows = Math.max(minimumRows, clampRows(maxRows, 10));
+  const showGrip = resizable && !autoResize;
+  useTextareaAutosize(textareaRef, autoResize, minimumRows, maximumRows, props.form);
 
-  useEffect(() => () => resizeCleanup.current?.(), [disabled, resizable]);
+  useEffect(() => () => resizeCleanup.current?.(), [disabled, showGrip]);
 
   const startResize = (event: PointerEvent<HTMLButtonElement>) => {
     const textarea = textareaRef.current;
-    if (!textarea || disabled || event.button !== 0) return;
+    if (!textarea || textarea.disabled || event.button !== 0) return;
     event.preventDefault();
     resizeCleanup.current?.();
 
@@ -60,6 +90,7 @@ export function Textarea({
 
     const onMove = (moveEvent: globalThis.PointerEvent) => {
       if (moveEvent.pointerId !== pointerId) return;
+      if (textarea.disabled) { cleanup(); return; }
       textarea.style.height = `${Math.max(MIN_HEIGHT, startHeight + (moveEvent.clientY - startY))}px`;
     };
     const cleanup = () => {
@@ -81,25 +112,36 @@ export function Textarea({
     grip.addEventListener("lostpointercapture", onEnd);
   };
 
-  return (
-    <div className="relative w-full" data-slot="textarea">
-      <textarea
+  const control = (
+    <div className="relative w-full [&:has(>textarea:disabled)>button]:hidden" data-slot="textarea">
+      <BaseInput
+        {...(props as unknown as ComponentProps<typeof BaseInput>)}
         ref={mergedRef}
+        render={<textarea rows={minimumRows} />}
+        onValueChange={onValueChange}
+        onKeyDown={(event) => {
+          const keyEvent = event as unknown as KeyboardEvent<HTMLTextAreaElement>;
+          onKeyDown?.(keyEvent);
+          if (submitOnShortcut && !keyEvent.defaultPrevented && keyEvent.key === "Enter"
+            && (keyEvent.metaKey || keyEvent.ctrlKey) && !keyEvent.nativeEvent.isComposing
+            && keyEvent.keyCode !== 229 && keyEvent.currentTarget.form) {
+            keyEvent.preventDefault();
+            keyEvent.currentTarget.form.requestSubmit();
+          }
+        }}
         data-variant={variant}
         data-tone={tone ?? "neutral"}
+        data-autoresize={autoResize ? "" : undefined}
         disabled={disabled}
         className={cn(
           inputVariants({ variant, tone: tone ?? "neutral" }),
-          // Override the Input's single-line box: a block element that grows, no native
-          // resize (the grip owns it), a touch more vertical padding, and room so the last
-          // line's text doesn't run under the grip.
-          "block h-auto min-h-16 resize-none py-2",
-          resizable && "pb-4",
+          // Height reflows the form when auto-growing. Manual mode reserves grip space.
+          textareaVariants({ autoResize, grip: showGrip }),
           className,
         )}
-        {...props}
+        aria-describedby={[describedBy, hasDescription ? descriptionId : undefined].filter(Boolean).join(" ") || undefined}
       />
-      {resizable && (
+      {showGrip && (
         <button
           type="button"
           aria-label="Resize"
@@ -117,6 +159,18 @@ export function Textarea({
             />
           </svg>
         </button>
+      )}
+    </div>
+  );
+
+  if (description === undefined) return control;
+  return (
+    <div data-slot="textarea-field" className={fieldWrapperVariants()}>
+      {control}
+      {hasDescription && (
+        <div id={descriptionId} data-slot="textarea-description" className={fieldDescriptionVariants()}>
+          {description}
+        </div>
       )}
     </div>
   );

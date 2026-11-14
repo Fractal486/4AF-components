@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
-export type SelectTriggerVariant = "default" | "ghost" | "plain";
+export type SelectTriggerVariant = "default" | "outline-ghost" | "ghost" | "plain";
+export type SelectTriggerTone = "neutral" | "accent";
 
 /** The standard field trigger: a boxed field, a ghost field, or a borderless text control. */
 export const selectTriggerVariants = cva(
@@ -16,14 +17,22 @@ export const selectTriggerVariants = cva(
       variant: {
         default: [
           "w-full justify-between border border-border bg-surface px-3.5",
-          "hover:border-border-strong data-[popup-open]:border-border-strong",
-          "aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",
+          "hover:border-border-strong",
+          "[&:is([aria-invalid=true],[data-invalid])]:border-destructive! [&:is([aria-invalid=true],[data-invalid])]:ring-[3px]! [&:is([aria-invalid=true],[data-invalid])]:ring-destructive/25!",
+        ],
+        // Button's outline-ghost: the `shadow-border` edge with no fill of its own, so the
+        // background shows through; hover and open lay a translucent wash. The border stays,
+        // transparent, so the invalid state can colour an edge without changing the size.
+        "outline-ghost": [
+          "w-full justify-between border border-transparent bg-transparent shadow-border px-3.5",
+          "hover:bg-foreground/5 data-[popup-open]:bg-foreground/5",
+          "[&:is([aria-invalid=true],[data-invalid])]:border-destructive! [&:is([aria-invalid=true],[data-invalid])]:ring-[3px]! [&:is([aria-invalid=true],[data-invalid])]:ring-destructive/25!",
         ],
         ghost: [
           "w-full justify-between border border-transparent bg-transparent px-3.5 text-muted-foreground",
           "hover:border-transparent hover:bg-muted hover:text-foreground",
           "data-[popup-open]:border-transparent data-[popup-open]:bg-muted data-[popup-open]:text-foreground",
-          "aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",
+          "[&:is([aria-invalid=true],[data-invalid])]:ring-[3px]! [&:is([aria-invalid=true],[data-invalid])]:ring-destructive/25!",
         ],
         // Plain keeps the control's hit area and type scale, but owns no surface or edge.
         // The explicit transparent hover/open states keep a consumer's global button styles
@@ -31,11 +40,26 @@ export const selectTriggerVariants = cva(
         plain: [
           "w-auto justify-start gap-1.5 border-0 bg-transparent px-0",
           "hover:border-0 hover:bg-transparent data-[popup-open]:border-0 data-[popup-open]:bg-transparent",
-          "aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",
+          "[&:is([aria-invalid=true],[data-invalid])]:ring-[3px]! [&:is([aria-invalid=true],[data-invalid])]:ring-destructive/25!",
         ],
       },
+      // The open field wears the inner edge of Input's focus ring — its border colour, without
+      // the outer halo. Boxed `default` variant only.
+      tone: { neutral: "", accent: "" },
     },
-    defaultVariants: { variant: "default" },
+    compoundVariants: [
+      {
+        variant: "default",
+        tone: "neutral",
+        class: "data-[popup-open]:border-[oklch(0.719_0_0)]",
+      },
+      {
+        variant: "default",
+        tone: "accent",
+        class: "data-[popup-open]:border-ring",
+      },
+    ],
+    defaultVariants: { variant: "default", tone: "neutral" },
   },
 );
 
@@ -46,13 +70,20 @@ export const selectSortTriggerVariants = cva(
     "transition-[background-color,border-color,color] duration-(--duration-base) ease-out",
     "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
     "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
+    "[&:is([aria-invalid=true],[data-invalid])]:ring-[3px]! [&:is([aria-invalid=true],[data-invalid])]:ring-destructive/25!",
   ],
   {
     variants: {
       variant: {
         default: [
           "border hover:border-border-strong",
+          "[&:is([aria-invalid=true],[data-invalid])]:border-destructive!",
           "data-[popup-open]:border-border-strong data-[popup-open]:bg-muted",
+        ],
+        "outline-ghost": [
+          "border border-transparent bg-transparent shadow-border",
+          "hover:bg-foreground/5 data-[popup-open]:bg-foreground/5",
+          "[&:is([aria-invalid=true],[data-invalid])]:border-destructive!",
         ],
         ghost: [
           "border border-transparent bg-transparent text-muted-foreground",

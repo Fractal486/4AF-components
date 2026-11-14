@@ -58,6 +58,26 @@ describe("Badge", () => {
     expect(screen.getByTestId("badge")).toHaveClass(height, radius, gap);
   });
 
+  it("wraps a long label onto more lines when asked, instead of holding it to one", () => {
+    const sentence = "The newsletter briefing is missing two issues.";
+    const { rerender } = render(<Badge data-testid="badge" size="md">{sentence}</Badge>);
+    expect(screen.getByTestId("badge")).toHaveClass("h-5", "whitespace-nowrap");
+    expect(screen.getByTestId("badge").querySelector('[data-slot="badge-text"]')).toBeNull();
+
+    rerender(<Badge data-testid="badge" size="md" wrap>{sentence}</Badge>);
+    const badge = screen.getByTestId("badge");
+    expect(badge).toHaveClass("h-auto", "max-w-full", "whitespace-normal");
+    expect(badge).not.toHaveClass("h-5");
+    // Outside Morph, whose single line is what clipped a sentence before.
+    const text = badge.querySelector('[data-slot="badge-text"]');
+    expect(text).toHaveTextContent(sentence);
+    expect(text?.closest('[data-slot="morph"]')).toBeNull();
+    // The glyph stays on the first line: the row aligns to the top, and the glyph's box is
+    // one line tall.
+    expect(badge).toHaveClass("items-start");
+    expect(badge.querySelector("[aria-hidden]")).toHaveClass("h-[1lh]");
+  });
+
   it("supports a pill shape alongside the current rounded shape", () => {
     render(
       <>

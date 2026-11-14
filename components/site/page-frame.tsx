@@ -28,8 +28,9 @@ export function PageFrame({
   children: ReactNode;
 }) {
   return (
-    // Column gap only: a row gap would open space between the content and the footer.
-    <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_11rem] xl:gap-x-12">
+    // Column gap only: a row gap would open space between the content and the footer. Without
+    // a rail there is one column, or the footer would take the rail's place beside the content.
+    <div className={cn(toc.length > 0 && "xl:grid xl:grid-cols-[minmax(0,1fr)_11rem] xl:gap-x-12")}>
       {mobileToc && toc.length > 0 ? <MobileToc items={toc} /> : null}
       <div className="min-w-0 px-5 pt-9 pb-16 sm:px-10 sm:pt-18 sm:pb-28 lg:px-0">{children}</div>
       {toc.length > 0 ? (

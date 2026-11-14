@@ -1,8 +1,10 @@
 "use client";
 
+import { Kbd } from "@/registry/ui/kbd/kbd";
 import { cn } from "@/registry/lib/cn";
 import { duration, ease, overlayEnter, overlayExit, overlayVisible, spring } from "@/registry/lib/motion";
 import { LoadingIndicator, LoaderProvider } from "@/registry/lib/loader";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Autocomplete } from "@base-ui/react/autocomplete";
 import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import { ChevronLeft, CornerDownLeft, Plus, Search } from "lucide-react";
@@ -12,17 +14,17 @@ import {
   CommandIcon,
   EscapeHint,
   Hint,
-  KBD,
-  SCROLLBAR,
   snapFirstRowToTop,
 } from "./command-palette.chrome";
 import {
   ActionsOpenContext,
   FrozenRowContext,
   PaletteControlsContext,
+  PanelActionsContext,
   PanelHighlightContext,
   PanelSearchContext,
   type PaletteControls,
+  type PanelActionsRegistry,
   type PanelHighlightHandler,
   type PanelHighlightRegistration,
 } from "./command-palette.context";
@@ -38,7 +40,8 @@ import type {
 } from "./command-palette.types";
 
 // Keep the installable component's public API at this entry point.
-export { CommandIcon, Kbd } from "./command-palette.chrome";
+export { CommandIcon } from "./command-palette.chrome";
+export { Kbd, type KbdProps } from "@/registry/ui/kbd/kbd";
 export { useCommandPanelHighlight } from "./command-palette.context";
 export {
   CommandPanelBody,
@@ -100,29 +103,6 @@ export type {
  */
 
 const GROUP_LABEL_CLASS = "px-2.5 pt-2 pb-1 text-xs font-medium text-subtle-foreground";
-
-/**
- * "No results" takes exactly the height of the smallest real result: one group label over
- * one row with a description. Typing a query that empties the list then doesn't resize the
- * panel. The height comes from an invisible copy of those two parts, built from the same
- * label class and the described row's padding and type sizes, so it follows the type scale
- * rather than hard-coding a pixel height. The list keeps its own padding while empty, so
- * that part already matches.
- */
-function NoResults({ children }: { children: ReactNode }) {
-  return (
-    <div className="relative">
-      <div aria-hidden className="invisible">
-        <div className={GROUP_LABEL_CLASS}>&nbsp;</div>
-        <div className="flex min-h-9 flex-col py-2 text-sm">
-          <span>&nbsp;</span>
-          <span className="text-xs">&nbsp;</span>
-        </div>
-      </div>
-      <div className="absolute inset-0 flex items-center justify-center px-4">{children}</div>
-    </div>
-  );
-}
 
 function omitCommandPanelInputProps(input: CommandPanelInputProps) {
   const attributes = { ...input };
@@ -226,7 +206,7 @@ export function CommandPalette({
   searchErrorMessage = "Search failed. Change your query to retry.",
   shortcut = true,
   placeholder = "Type a command or search…",
-  emptyMessage = "No results found.",
+  emptyMessage,
   onCreate,
   footer = true,
   open,
@@ -295,6 +275,7 @@ export function CommandPalette({
   useEffect(() => {
     if (!shortcut) return;
     const onKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat || event.isComposing) return;
       if (event.key.toLowerCase() === "k" && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
         setOpen(!isOpen);
@@ -390,6 +371,27 @@ export function CommandPalette({
       if (panelHighlightRef.current === handler) panelHighlightRef.current = previous;
     };
   }, []);
+  // The open panel's actions menu, for a right-clicked row to open. Held the same way as
+  // the highlight handler: the latest mounted menu wins, and unmounting restores the last.
+  const panelActionsRef = useRef<(() => void) | null>(null);
+  const panelActions = useMemo<PanelActionsRegistry>(
+    () => ({
+      register: (open) => {
+        const previous = panelActionsRef.current;
+        panelActionsRef.current = open;
+        return () => {
+          if (panelActionsRef.current === open) panelActionsRef.current = previous;
+        };
+      },
+      open: () => {
+        const open = panelActionsRef.current;
+        if (!open) return false;
+        open();
+        return true;
+      },
+    }),
+    [],
+  );
 
   const activePage = pages.length > 0 ? pages[pages.length - 1]! : null;
   const activeItem = activePage?.itemId
@@ -518,8 +520,9 @@ export function CommandPalette({
         {isOpen && (
           // keepMounted on the Portal keeps the subtree in the DOM so AnimatePresence, not
           // Base UI, owns when it's torn down.
-          <BaseDialog.Portal keepMounted>
+          <BaseDialog.Portal keepMounted data-slot="command-palette-portal">
             <BaseDialog.Backdrop
+              data-slot="command-palette-backdrop"
               render={
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -531,6 +534,7 @@ export function CommandPalette({
               }
             />
             <BaseDialog.Popup
+              data-slot="command-palette-content"
               onKeyDown={(event) => {
                 if (
                   !panelNode || event.defaultPrevented || event.key !== "Tab" ||
@@ -562,8 +566,10 @@ export function CommandPalette({
               }}
               // Top-anchored and x-centred. The vertical offset is a plain `top`, and the
               // horizontal centring a `-translate-x-1/2` now composes with Motion's scale.
+              // A fixed height, capped by the viewport: typing, an empty result, or opening a
+              // panel changes what's inside, never the window, so the footer stays put.
               className={cn(
-                "fixed top-[14vh] left-1/2 z-50 flex max-h-[min(34rem,calc(100dvh-16vh))] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 flex-col overflow-hidden rounded-md border border-border bg-surface-raised shadow-overlay-drop outline-none",
+                "fixed top-[14vh] left-1/2 z-50 flex h-[min(34rem,calc(100dvh-16vh))] w-[calc(100%-2rem)] max-w-[50rem] -translate-x-1/2 flex-col overflow-hidden rounded-md border border-border material-glass shadow-overlay-drop outline-none",
                 className,
               )}
               render={
@@ -685,7 +691,9 @@ export function CommandPalette({
               <div className="flex min-h-0 flex-1 flex-col">
                 <PanelSearchContext.Provider value={setPanelSearching}>
                   <PanelHighlightContext.Provider value={registerPanelHighlight}>
-                    {panelNode}
+                    <PanelActionsContext.Provider value={panelActions}>
+                      {panelNode}
+                    </PanelActionsContext.Provider>
                   </PanelHighlightContext.Provider>
                 </PanelSearchContext.Provider>
               </div>
@@ -779,53 +787,66 @@ export function CommandPalette({
                 <LoadingIndicator className="size-4 shrink-0 text-sm text-subtle-foreground" />
               )}
 
-              <kbd className={cn(KBD, "hidden sm:block")}>
+              <Kbd className="hidden px-1.5 sm:inline-flex">
                 Esc
-              </kbd>
+              </Kbd>
             </div>
 
-            <Autocomplete.List
-              ref={snapFirstRowToTop}
-              className={cn("min-h-0 flex-1 overflow-y-auto overscroll-contain p-1.5", SCROLLBAR)}
+            {/* The body fills the fixed height; results scroll inside it, and the empty,
+                loading, and error states are centred over it. */}
+            <div className="relative flex min-h-0 flex-1 flex-col">
+            <ScrollArea
+              className="min-h-0 flex-1"
+              viewportRef={snapFirstRowToTop}
+              viewportProps={{ tabIndex: -1 }}
             >
-              {(group: { heading?: string; items: CommandItem[] }) => (
-                <Autocomplete.Group
-                  key={group.heading ?? "group"}
-                  items={group.items}
-                  className="mb-1 last:mb-0"
-                >
-                  {group.heading && (
-                    <Autocomplete.GroupLabel className={GROUP_LABEL_CLASS}>
-                      {group.heading}
-                    </Autocomplete.GroupLabel>
-                  )}
-                  <Autocomplete.Collection>
-                    {(item: CommandItem) => (
-                      <CommandRow key={item.id} item={item} query={query} onRun={runItem} />
+              <Autocomplete.List className="p-1">
+                {(group: { heading?: string; items: CommandItem[] }) => (
+                  <Autocomplete.Group
+                    key={group.heading ?? "group"}
+                    items={group.items}
+                    className="mb-1 last:mb-0"
+                  >
+                    {group.heading && (
+                      <Autocomplete.GroupLabel className={GROUP_LABEL_CLASS}>
+                        {group.heading}
+                      </Autocomplete.GroupLabel>
                     )}
-                  </Autocomplete.Collection>
-                </Autocomplete.Group>
-              )}
-            </Autocomplete.List>
+                    <Autocomplete.Collection>
+                      {(item: CommandItem) => (
+                        <CommandRow key={item.id} item={item} query={query} onRun={runItem} />
+                      )}
+                    </Autocomplete.Collection>
+                  </Autocomplete.Group>
+                )}
+              </Autocomplete.List>
+            </ScrollArea>
 
             {/* Empty's box must stay mounted — it's an ARIA live region — and only its
-                *children* clear when there are results. The padding lives on an inner
-                element that comes and goes with the message, so the outer box collapses
-                to nothing rather than leaving a dead band under the list. */}
-            <Autocomplete.Empty className="text-center text-sm text-muted-foreground">
+                *children* clear when there are results. It overlays the body rather than
+                sitting under the list, so a message is centred in the fixed height. */}
+            <Autocomplete.Empty className="pointer-events-none absolute inset-0 flex items-center justify-center text-center text-sm text-muted-foreground">
               {searching ? (
-                <div className="flex items-center justify-center gap-2 px-4 py-8">
+                <div className="flex items-center justify-center gap-2 px-4">
                   <LoadingIndicator className="size-4 text-sm text-subtle-foreground" />
                   <span>{loadingMessage}</span>
                 </div>
               ) : searchError ? (
-                <div role="alert" className="px-4 py-8">
+                <div role="alert" className="pointer-events-auto px-4">
                   {renderedSearchError}
                 </div>
               ) : (
-                <NoResults>{emptyMessage}</NoResults>
+                <div className="px-4">
+                  {emptyMessage ?? (
+                    <>
+                      <p className="text-foreground">No results for “{query.trim()}”</p>
+                      <p className="mt-1 text-subtle-foreground">Try a different search</p>
+                    </>
+                  )}
+                </div>
               )}
             </Autocomplete.Empty>
+            </div>
 
             {footer && (
               // The same two ends as a panel footer: escape at the left, the Enter action

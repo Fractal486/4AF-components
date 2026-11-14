@@ -1,0 +1,4 @@
+interface:
+  display_name: "Two-Tone Icons"
+  short_description: "Draw 16px two-tone line icons in currentColor"
+  default_prompt: "Use $two-tone-icons to draw the requested icons."

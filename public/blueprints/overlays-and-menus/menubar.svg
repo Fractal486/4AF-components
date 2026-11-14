@@ -1,0 +1,196 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="960" viewBox="0 0 1200 960" fill="none" role="img" aria-labelledby="mb-blueprint-title mb-blueprint-desc">
+  <title id="mb-blueprint-title">Menubar spacing blueprint</title>
+  <desc id="mb-blueprint-desc">Default horizontal outline menubar, medium size. The panel and active highlight slide once from Edit to File before the spacing guides appear. Reduced motion shows the completed File state. The bar is 34 pixels tall, triggers are 26 pixels tall, and the menu opens 4 pixels below the bar. The representative 224 pixel wide panel has five contiguous 28 pixel rows, 4 pixel panel padding and 10 pixel horizontal row padding.</desc>
+  <!--
+    Sources: registry.json; registry/ui/menubar/menubar.tsx and menubar.variants.ts;
+    registry/ui/dropdown-menu/dropdown-menu.menu.tsx and dropdown-menu.variants.ts;
+    inspector/entries/menubar.tsx; app/globals.css; lib/component-catalog.ts;
+    registry/ui/menubar/menubar.handoff.ts; menubar.highlight.ts; registry/lib/motion.ts.
+    State: outline / md / horizontal, File open, first command active.
+    Caller content: five file rows, including checked Auto save and a Share submenu;
+    no separators or shortcuts. Outgoing Edit contains five text-only commands.
+    Trailing icons: 14px boxes from dropdown-menu.variants.ts [&_svg]:size-3.5;
+    CHECK_SLOT in dropdown-menu.shared.tsx also reserves 14px. This descendant size
+    overrides the submenu chevron's own size-4. Both end at the 10px row inset x891.
+    Icon boxes: x849..891 (42 SVG units); centered vertically in their 28px rows.
+    Check path is registry/lib/check-mark.tsx's M4 12l5 5L20 6, stroke 2 in 24 units.
+    A mounted checked row shows the tick fully drawn; it shares the incoming row handoff.
+    Scale: 3 SVG units per CSS px, including component typography and radii.
+    Popup width: representative w-56 = 224px from the demo, not a universal width.
+    Text metrics: text-sm = 13px / approximately 20px; text-xs = 12px / approximately 16px.
+    Line-height tokens are rounded ratios: 13 * 1.5385 = 20.0005;
+    12 * 1.3333 = 15.9996. Drawing rounds these subpixel results to 20 and 16.
+    Bar height = 2 * (1 border + 3 padding) + 26 trigger = 34px.
+    Trigger text advances illustrated as 21, 23, 29, 43px; content determines widths.
+    Trigger widths = text advance + 2 * 10px padding = 41, 43, 49, 63px.
+    Bar width = 8px border/padding + 196px triggers + 3 * 3px gaps = 213px.
+    Trigger height 26px contains a centered 20px line box.
+    Row height = 16px line box + 2 * 6px padding = 28px; inter-row gap = 0.
+    Panel height = 2px border + 2 * 4px padding + 5 * 28px rows = 150px.
+    Panel radius 7px; row radius 3px; bar radius 8px; trigger radius 4px.
+    Trigger bottom y290; sideOffset 8px gives popup top y314.
+    Bar bottom y302, therefore visible gap = (314 - 302) / 3 = 4px.
+    Popup left x264 = first trigger left x279 + (-5px alignOffset * 3).
+    Trigger text and menu text share x309: 279 + 30 = 264 + 3 + 12 + 30.
+    Dark background oklch(0.100 0 0): linear sRGB .001, encoded .01292,
+    round(255 * .01292) = 3, so #030303.
+    Requested Edit-to-File slide: trigger starts differ by 411 - 279 = 132 SVG units
+    (44 CSS px). Panel begins at x396 under Edit and finishes at x264 under File.
+    Active highlight begins 129 units wide under Edit, finishing 123 units wide under File.
+    Motion follows beginHandoff at the default timeScale=1, with two equal-size menus.
+    MOVE_SPRING stiffness 1485 / damping 78; SLIDE_SPRING stiffness 1012 / damping 64.
+    Curves below use springCurve's exact 1/240s integration, settling thresholds,
+    41 rounded stops, and computed durations: 341.666667ms and 395.833333ms.
+    Incoming rows countertranslate the box by -132 to 0, then slide -18 to 0
+    (SHIFT_PX=6 at 3x). Their opacity rises over 200ms with ease.in.
+    Outgoing Edit rows countertranslate 0 to 132, then slide 0 to +18 and fade
+    over 150ms with ease.out. Nested groups reproduce WAAPI additive translations.
+    The popup's inner border clips both row sets. Content does not ride with the box.
+    Highlight moves/resizes over 200ms with ease.out, from menubarHighlightVariants.
+    Trigger ink stays constant, matching the source's absence of a color transition.
+    Sequence: outline 0-400ms; handoff starts at 400ms and settles at 795.833333ms;
+    guides appear 800-1000ms. The longer reveal preserves the real component timing.
+    Both chosen menus contain five single-line rows, so width and height stay constant.
+    No looping.
+    Static renderers and reduced-motion viewers show the completed File state.
+  -->
+  <defs>
+    <style>
+      #mb-blueprint text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      #mb-blueprint .mb-trigger { fill: #92948d; font-size: 39px; font-weight: 500; }
+      #mb-blueprint .mb-item { fill: #92948d; font-size: 36px; letter-spacing: .36px; }
+      #mb-blueprint .mb-outline { stroke: #a7a8a2; stroke-width: 3; }
+      #mb-blueprint .mb-guide { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      #mb-blueprint .mb-ruler { stroke: #6889ff; stroke-width: 1.5; }
+      #mb-blueprint .mb-label { fill: #6889ff; font-size: 18px; }
+      #mb-blueprint {
+        --mb-move-duration: 341.6666666666667ms;
+        --mb-slide-duration: 395.83333333333314ms;
+        --mb-move-curve: linear(0.0000, 0.0683, 0.1793, 0.3002, 0.4152, 0.5178, 0.6058, 0.6797, 0.7408, 0.7909, 0.8490, 0.8786, 0.9026, 0.9218, 0.9373, 0.9497, 0.9597, 0.9677, 0.9741, 0.9792, 0.9834, 0.9867, 0.9893, 0.9914, 0.9931, 0.9945, 0.9956, 0.9965, 0.9972, 0.9977, 0.9984, 0.9987, 0.9990, 0.9992, 0.9993, 0.9995, 0.9996, 0.9997, 0.9997, 0.9998, 1.0000);
+        --mb-slide-curve: linear(0.0000, 0.0477, 0.1790, 0.2785, 0.4218, 0.5074, 0.5833, 0.6789, 0.7313, 0.7758, 0.8298, 0.8586, 0.8931, 0.9114, 0.9266, 0.9447, 0.9543, 0.9622, 0.9715, 0.9765, 0.9823, 0.9854, 0.9879, 0.9909, 0.9925, 0.9938, 0.9953, 0.9961, 0.9971, 0.9976, 0.9980, 0.9985, 0.9988, 0.9990, 0.9992, 0.9994, 0.9995, 0.9996, 0.9997, 0.9998, 1.0000);
+        --mb-ease-out: cubic-bezier(.16, 1, .3, 1);
+        --mb-ease-in: cubic-bezier(.7, 0, .84, 0);
+        --mb-handoff-delay: 400ms;
+      }
+      #mb-blueprint .mb-outgoing { opacity: 0; }
+      @keyframes mb-blueprint-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes mb-blueprint-reveal { from { opacity: 0; } }
+      @keyframes mb-blueprint-slide { from { transform: translateX(132px); } to { transform: translateX(0); } }
+      @keyframes mb-blueprint-highlight {
+        from { transform: translateX(132px); width: 129px; }
+        to { transform: translateX(0); width: 123px; }
+      }
+      @keyframes mb-blueprint-in-counter { from { transform: translateX(-132px); } to { transform: translateX(0); } }
+      @keyframes mb-blueprint-in-slide { from { transform: translateX(-18px); } to { transform: translateX(0); } }
+      @keyframes mb-blueprint-in-fade { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes mb-blueprint-out-counter { from { transform: translateX(0); } to { transform: translateX(132px); } }
+      @keyframes mb-blueprint-out-slide { from { transform: translateX(0); } to { transform: translateX(18px); } }
+      @keyframes mb-blueprint-out-fade { from { opacity: 1; } to { opacity: 0; } }
+      @media (prefers-reduced-motion: no-preference) {
+        #mb-blueprint .mb-outline { stroke-dasharray: 1; animation: mb-blueprint-draw 400ms ease-out both; }
+        #mb-blueprint .mb-panel { animation: mb-blueprint-slide var(--mb-move-duration) var(--mb-move-curve) var(--mb-handoff-delay) both; }
+        #mb-blueprint .mb-highlight { animation: mb-blueprint-highlight 200ms var(--mb-ease-out) var(--mb-handoff-delay) both; }
+        #mb-blueprint .mb-in-counter { animation: mb-blueprint-in-counter var(--mb-move-duration) var(--mb-move-curve) var(--mb-handoff-delay) both; }
+        #mb-blueprint .mb-in-slide { animation: mb-blueprint-in-slide var(--mb-slide-duration) var(--mb-slide-curve) var(--mb-handoff-delay) both; }
+        #mb-blueprint .mb-incoming { animation: mb-blueprint-in-fade 200ms var(--mb-ease-in) var(--mb-handoff-delay) both; }
+        #mb-blueprint .mb-out-counter { animation: mb-blueprint-out-counter var(--mb-move-duration) var(--mb-move-curve) var(--mb-handoff-delay) both; }
+        #mb-blueprint .mb-out-slide { animation: mb-blueprint-out-slide 150ms var(--mb-ease-out) var(--mb-handoff-delay) both; }
+        #mb-blueprint .mb-outgoing { animation: mb-blueprint-out-fade 150ms var(--mb-ease-out) var(--mb-handoff-delay) both; }
+        #mb-blueprint .mb-guide, #mb-blueprint .mb-ruler, #mb-blueprint .mb-label {
+          animation: mb-blueprint-reveal 200ms ease-out 800ms both;
+        }
+      }
+    </style>
+    <clipPath id="mb-blueprint-panel-clip" clipPathUnits="userSpaceOnUse">
+      <rect x="267" y="317" width="666" height="444" rx="18"/>
+    </clipPath>
+  </defs>
+  <g id="mb-blueprint">
+    <rect width="1200" height="960" fill="#030303"/>
+
+    <!-- Visible fills are separate from animated strokes. -->
+    <rect x="279" y="212" width="123" height="78" rx="12" fill="#353632" class="mb-highlight"/>
+    <rect x="268.5" y="201.5" width="636" height="99" rx="22.5" pathLength="1" class="mb-outline"/>
+    <g class="mb-panel">
+      <!-- Same clipping and counter-motion as the real popup and its row wrappers. -->
+      <g clip-path="url(#mb-blueprint-panel-clip)">
+        <g class="mb-in-counter">
+          <g class="mb-in-slide">
+            <g class="mb-incoming">
+              <rect x="279" y="329" width="642" height="84" rx="9" fill="#353632"/>
+              <text x="309" y="384" class="mb-item" style="fill:#c7c7c2">New file</text>
+              <text x="309" y="468" class="mb-item">Open…</text>
+              <text x="309" y="552" class="mb-item">Auto save</text>
+              <svg x="849" y="518" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#c7c7c2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 12l5 5L20 6" pathLength="1"/>
+              </svg>
+              <text x="309" y="636" class="mb-item">Share</text>
+              <svg x="849" y="602" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#92948d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m9 18 6-6-6-6" pathLength="1"/>
+              </svg>
+              <text x="309" y="720" class="mb-item">Print…</text>
+            </g>
+          </g>
+        </g>
+        <!-- Frozen outgoing Edit rows, appended above the incoming rows as in source. -->
+        <g class="mb-out-counter">
+          <g class="mb-out-slide">
+            <g class="mb-outgoing">
+              <rect x="279" y="329" width="642" height="84" rx="9" fill="#353632"/>
+              <text x="309" y="384" class="mb-item" style="fill:#c7c7c2">Undo</text>
+              <text x="309" y="468" class="mb-item">Redo</text>
+              <text x="309" y="552" class="mb-item">Cut</text>
+              <text x="309" y="636" class="mb-item">Copy</text>
+              <text x="309" y="720" class="mb-item">Paste</text>
+            </g>
+          </g>
+        </g>
+      </g>
+      <rect x="265.5" y="315.5" width="669" height="447" rx="19.5" pathLength="1" class="mb-outline"/>
+    </g>
+
+    <!-- A few representative edges show spacing without tracing every repeated row. -->
+    <rect x="279" y="212" width="615" height="78" class="mb-guide"/>
+    <path d="M402 200V290 M411 200V290" class="mb-guide"/>
+    <path d="M309 200V290 M309 665V752" class="mb-guide"/>
+    <rect x="279" y="329" width="642" height="420" class="mb-guide"/>
+    <path d="M891 518V644 M279 413H921 M279 497H921" class="mb-guide"/>
+
+    <text x="309" y="265" textLength="63" lengthAdjust="spacingAndGlyphs" class="mb-trigger">File</text>
+    <text x="441" y="265" textLength="69" lengthAdjust="spacingAndGlyphs" class="mb-trigger">Edit</text>
+    <text x="579" y="265" textLength="87" lengthAdjust="spacingAndGlyphs" class="mb-trigger">View</text>
+    <text x="735" y="265" textLength="129" lengthAdjust="spacingAndGlyphs" class="mb-trigger">Profiles</text>
+
+    <!-- Overall bar height. -->
+    <path d="M220 200H242 M220 302H242 M231 200V302" class="mb-ruler"/>
+    <text x="211" y="257" text-anchor="end" class="mb-label">34 px</text>
+
+    <!-- One representative gap between triggers. -->
+    <path d="M402 147V201 M411 147V201" class="mb-guide"/>
+    <path d="M402 147V169 M411 147V169 M402 158H411 M406.5 158 434 125H470" class="mb-ruler"/>
+    <text x="484" y="131" class="mb-label">3 px</text>
+
+    <!-- Popup's visible distance from the outside of the bar. -->
+    <path d="M906 302H1038 M936 314H1038" class="mb-guide"/>
+    <path d="M1020 302H1042 M1020 314H1042 M1031 302V314 M1031 308H1060" class="mb-ruler"/>
+    <text x="1073" y="314" class="mb-label">4 px</text>
+
+    <!-- One representative row height. -->
+    <path d="M961 413H983 M961 497H983 M972 413V497" class="mb-ruler"/>
+    <text x="994" y="461" class="mb-label">28 px</text>
+
+    <!-- Overall panel height and chosen width. -->
+    <path d="M202 314H224 M202 764H224 M213 314V764" class="mb-ruler"/>
+    <text x="191" y="545" text-anchor="end" class="mb-label">150 px</text>
+    <path d="M264 862V884 M936 862V884 M264 873H936" class="mb-ruler"/>
+    <text x="600" y="902" text-anchor="middle" class="mb-label">224 px</text>
+
+    <!-- Panel padding starts inside its 1px border; row inset starts at x279. -->
+    <path d="M267 764V811 M279 749V811 M309 749V811" class="mb-guide"/>
+    <path d="M267 799V821 M279 799V821 M309 799V821 M267 810H309" class="mb-ruler"/>
+    <path d="M273 821 248 839H216" class="mb-ruler"/>
+    <text x="202" y="845" text-anchor="end" class="mb-label">4 px</text>
+    <path d="M294 821 319 839H361" class="mb-ruler"/>
+    <text x="375" y="845" class="mb-label">10 px</text>
+  </g>
+</svg>

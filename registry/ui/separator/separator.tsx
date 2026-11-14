@@ -1,33 +1,67 @@
-import { Separator as BaseSeparator } from "@base-ui/react/separator";
-import type { ComponentProps } from "react";
-import { cn } from "@/registry/lib/cn";
+"use client";
 
-/**
- * A divider.
- *
- * Base UI's Separator, so it carries `role="separator"` and `aria-orientation` — a rule
- * that a screen reader announces, not just a line that looks like one. A real filled
- * hairline (`bg-border`), not a shadow: the job here is separation, not elevation, and
- * `shadow-border` is for the things that need to read as lifted.
- *
- * Not `"use client"` — it renders no state and handles no events, so it stays a server
- * component. It sizes itself to its container: full width when horizontal, full height
- * when vertical (give the parent a height for the vertical case).
- */
+import { Separator as BaseSeparator } from "@base-ui/react/separator";
+import { Children, Fragment, isValidElement, type ComponentProps, type ReactNode } from "react";
+import { cn } from "@/registry/lib/cn";
+import { separatorLabelVariants, separatorLineVariants, separatorVariants } from "./separator.variants";
+
+export type SeparatorAlign = "start" | "center" | "end";
+
+export interface SeparatorProps extends ComponentProps<typeof BaseSeparator> {
+  /** Text, icons, or other content in the divider. Takes precedence over children. */
+  label?: ReactNode;
+  /** Where the label sits along the divider. */
+  align?: SeparatorAlign;
+  /** Removes the separator announcement for a purely visual line. Labels remain readable. */
+  decorative?: boolean;
+}
+
+function hasContent(content: ReactNode): boolean {
+  return Children.toArray(content).some((child) => {
+    if (isValidElement<{ children?: ReactNode }>(child) && child.type === Fragment) {
+      return hasContent(child.props.children);
+    }
+    return typeof child !== "string" || child.trim() !== "";
+  });
+}
+
+/** Base UI owns the plain divider semantics; labeled dividers preserve their content's semantics. */
 export function Separator({
   className,
   orientation = "horizontal",
+  label,
+  align = "center",
+  decorative = false,
+  children,
   ...props
-}: ComponentProps<typeof BaseSeparator>) {
+}: SeparatorProps) {
+  const content = label === undefined ? children : label;
+  const labeled = hasContent(content);
+  const baseClassName = separatorVariants({ orientation });
+  const semantics = labeled
+    ? { role: undefined, "aria-orientation": undefined }
+    : decorative ? { role: "none", "aria-orientation": undefined } : {};
+
   return (
     <BaseSeparator
       orientation={orientation}
-      className={cn(
-        "shrink-0 bg-border",
-        orientation === "horizontal" ? "h-px w-full" : "h-full w-px",
-        className,
-      )}
+      data-slot="separator"
+      data-labeled={labeled ? "" : undefined}
+      data-align={labeled ? align : undefined}
+      data-decorative={decorative ? "" : undefined}
+      className={typeof className === "function"
+        ? (state) => cn(baseClassName, className(state))
+        : cn(baseClassName, className)}
+      {...semantics}
       {...props}
-    />
+    >
+      {labeled ? (
+        <>
+          <span data-slot="separator-line" aria-hidden="true" className={separatorLineVariants({ side: "before" })} />
+          <span data-slot="separator-label" className={separatorLabelVariants()}>{content}</span>
+          <span data-slot="separator-line" aria-hidden="true" className={separatorLineVariants({ side: "after" })} />
+        </>
+      ) : null}
+    </BaseSeparator>
   );
 }

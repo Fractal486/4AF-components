@@ -22,6 +22,8 @@ export interface MatrixLoaderProps
   size?: MatrixLoaderSize;
   /** Seconds per full color-pulse cycle. */
   duration?: number;
+  /** Whether to render the spinner. Omit to always show it. */
+  loading?: boolean;
   /**
    * The optional accessible status label. Without a label the visual loader is hidden
    * from assistive technology so nearby status text can do the announcing.
@@ -56,6 +58,7 @@ export const MatrixLoader = forwardRef<HTMLDivElement, MatrixLoaderProps>(
     {
       className,
       duration = 1.2,
+      loading = true,
       label,
       size = "sm",
       style,
@@ -64,6 +67,7 @@ export const MatrixLoader = forwardRef<HTMLDivElement, MatrixLoaderProps>(
     },
     ref,
   ) {
+    if (!loading) return null;
     const cycle = validDuration(duration);
 
     return (

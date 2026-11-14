@@ -1,47 +1,129 @@
-import { Archive, Copy, Share2, SquarePen, Trash2 } from "lucide-react";
+import type { ReactNode } from "react";
+import { NavIcon } from "@/components/site/nav-icons";
+import { DATE_RANGE_ICON } from "../setting-icons";
+import { Copy, Search, Share2, SquarePen } from "lucide-react";
+import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
 import { ButtonGroup } from "@/registry/ui/button-group/button-group";
+import { DatePicker, DateRangePicker } from "@/registry/ui/date-picker/date-picker";
+import { Input } from "@/registry/ui/input/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/registry/ui/select/select";
+import {
+  AlignedSelect,
+  AlignedSelectContent,
+  AlignedSelectItem,
+  AlignedSelectTrigger,
+} from "@/registry/ui/select/select-aligned";
+import { SearchSelect, SearchSelectContent, SearchSelectInput, SearchSelectItem } from "@/registry/ui/select/select-search";
 import { CONTROL_VARIANTS, TEXT_SIZES } from "../button-options";
-import { bool, defineEntry, num, select } from "../schema";
+import { bool, defineEntry, multi, select, withIcons } from "../schema";
+import { BUTTON_GROUP_ORIENTATION_ICONS } from "../setting-icons";
 
 const ACTIONS = [
   { label: "Copy", icon: Copy },
   { label: "Edit", icon: SquarePen },
   { label: "Share", icon: Share2 },
-  { label: "Archive", icon: Archive },
-  { label: "Delete", icon: Trash2 },
 ];
-
-/** Icon-only buttons use the square sizes, so the group stays on one geometry. */
+const SEARCH_ITEMS = [
+  { value: "design", label: "Design" },
+  { value: "engineering", label: "Engineering" },
+  { value: "marketing", label: "Marketing" },
+];
+const CONTENT = ["buttons", "input", "select", "alignedSelect", "searchSelect", "datePicker", "dateRangePicker"] as const;
+// Each kind of content wears its component's sidebar icon in the Content dropdown.
+const CONTENT_ICONS = {
+  buttons: <NavIcon href="/docs/button" />,
+  input: <NavIcon href="/docs/input" />,
+  select: <NavIcon href="/docs/select" />,
+  alignedSelect: <NavIcon href="/docs/select-aligned" />,
+  searchSelect: <NavIcon href="/docs/select-search" />,
+  datePicker: <NavIcon href="/docs/date-picker" />,
+  // No page of its own: Date Picker's calendar, marked with a range.
+  dateRangePicker: DATE_RANGE_ICON,
+} satisfies Record<(typeof CONTENT)[number], ReactNode>;
 const ICON_SIZE = { xs: "icon-xs", sm: "icon-sm", md: "icon", lg: "icon-lg" } as const;
+
+function picks(values: Record<string, unknown>): readonly string[] {
+  return Array.isArray(values.content) ? values.content : ["buttons"];
+}
 
 export const buttonGroupEntry = defineEntry({
   slug: "button-group",
   name: "Button Group",
   controls: {
-    variant: select(CONTROL_VARIANTS, "outline"),
-    size: select(TEXT_SIZES, "md"),
-    orientation: select(["horizontal", "vertical"], "horizontal"),
-    shape: select(["rectangular", "pill"], "rectangular", "Shape"),
-    count: num(3, { min: 2, max: 5, label: "Buttons" }),
-    icon: select(["none", "leading", "only"], "leading"),
-    disableSecond: bool(false, "Disable the second button"),
+    content: withIcons({ ...multi(CONTENT, ["buttons"], "Content"), showCount: true }, CONTENT_ICONS),
+    variant: select(CONTROL_VARIANTS, "outline-ghost"),
+    size: select(TEXT_SIZES, "md", undefined, (values) => picks(values).includes("input")),
+    orientation: withIcons(select(["horizontal", "vertical"], "horizontal"), BUTTON_GROUP_ORIENTATION_ICONS),
+    shape: select(["rectangular", "pill"], "rectangular", "Shape", (values) => picks(values).some((item) => item !== "buttons")),
+    icon: select(["none", "leading", "only"], "leading", undefined, (values) => !picks(values).includes("buttons")),
+    invalid: bool(false, "Invalid field", (values) => !picks(values).some((item) => item !== "buttons")),
   },
-  render({ variant, size, orientation, shape, count, icon, disableSecond }) {
+  render({ content, variant, size, orientation, shape, icon, invalid }) {
+    const selected = Array.isArray(content) ? content : ["buttons"];
+    const has = (kind: typeof CONTENT[number]) => selected.includes(kind);
+    const hasFields = selected.some((item) => item !== "buttons");
     const iconOnly = icon === "only";
+    // Inputs have one height; other fields support up to md, and SearchSelect starts at sm.
+    const groupSize = has("input") ? "md"
+      : hasFields && size === "lg" ? "md"
+        : has("searchSelect") && size === "xs" ? "sm" : size;
+    const fieldSize = groupSize === "lg" ? "md" : groupSize;
+
+    if (selected.length === 0) {
+      return <p className="text-sm text-muted-foreground">Select content to build a group.</p>;
+    }
 
     return (
       <ButtonGroup
         variant={variant}
-        size={iconOnly ? ICON_SIZE[size] : size}
+        size={groupSize}
         orientation={orientation}
-        shape={shape}
-        aria-label="Item actions"
+        shape={hasFields ? "rectangular" : shape}
+        aria-label="Button group preview"
+        className={cn(
+          (has("input") || has("searchSelect")) && "w-full max-w-3xl",
+          orientation === "horizontal" && "min-w-max [&>[data-slot=input-wrapper]]:min-w-32",
+        )}
       >
-        {ACTIONS.slice(0, count).map(({ label, icon: Icon }, index) => (
+        {has("input") && (
+          <Input aria-label="Query" placeholder="Search…" startIcon={<Search />} aria-invalid={invalid || undefined} />
+        )}
+        {has("select") && (
+          <Select size={fieldSize} defaultValue="open">
+            <SelectTrigger variant="outline-ghost" aria-label="Status" aria-invalid={invalid || undefined}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="open">Open</SelectItem>
+              <SelectItem value="closed">Closed</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+        {has("alignedSelect") && (
+          <AlignedSelect size={fieldSize} defaultValue="day">
+            <AlignedSelectTrigger variant="outline-ghost" aria-label="Group by" aria-invalid={invalid || undefined} />
+            <AlignedSelectContent>
+              <AlignedSelectItem value="day">Day</AlignedSelectItem>
+              <AlignedSelectItem value="week">Week</AlignedSelectItem>
+              <AlignedSelectItem value="month">Month</AlignedSelectItem>
+            </AlignedSelectContent>
+          </AlignedSelect>
+        )}
+        {has("searchSelect") && (
+          <SearchSelect size={fieldSize === "xs" ? "sm" : fieldSize} items={SEARCH_ITEMS}>
+            <SearchSelectInput variant="outline-ghost" aria-label="Team" placeholder="Team…" aria-invalid={invalid || undefined} />
+            <SearchSelectContent>
+              {(item: typeof SEARCH_ITEMS[number]) => <SearchSelectItem key={item.value} value={item}>{item.label}</SearchSelectItem>}
+            </SearchSelectContent>
+          </SearchSelect>
+        )}
+        {has("datePicker") && <DatePicker variant="outline-ghost" size={fieldSize} aria-label="Date" aria-invalid={invalid || undefined} />}
+        {has("dateRangePicker") && <DateRangePicker variant="outline-ghost" size={fieldSize} aria-label="Date range" aria-invalid={invalid || undefined} />}
+        {has("buttons") && ACTIONS.map(({ label, icon: Icon }) => (
           <Button
             key={label}
-            disabled={disableSecond && index === 1}
+            size={iconOnly ? ICON_SIZE[groupSize] : groupSize}
             aria-label={iconOnly ? label : undefined}
           >
             {icon !== "none" && <Icon />}

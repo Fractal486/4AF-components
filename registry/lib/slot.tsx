@@ -11,7 +11,7 @@ import {
   type Ref,
 } from "react";
 import { cn } from "./cn";
-import { composeRefs } from "./refs";
+import { useMergedRefs } from "./refs";
 import { useSlotChild } from "./slot-child";
 
 // Re-exported so existing `@/registry/lib/slot` imports keep working.
@@ -29,18 +29,22 @@ export { useSlotChild };
  */
 export function Slot({
   children: childrenProp,
+  ref,
   ...slotProps
 }: HTMLAttributes<HTMLElement> & { children?: ReactNode; ref?: Ref<HTMLElement> }) {
   const children = useSlotChild(childrenProp);
-  if (!isValidElement(children)) {
+  const child = isValidElement(children) ? children as ReactElement<Record<string, unknown>> : null;
+  // Keep both refs attached through ordinary rerenders. The hook must also run when
+  // the child is absent, since `asChild` content can appear on a later render.
+  const mergedRef = useMergedRefs(ref, child?.props.ref as Ref<HTMLElement> | undefined);
+  if (!child) {
     if (Children.count(children) > 1) {
       throw new Error("Slot expects a single React element child when using `asChild`.");
     }
     return null;
   }
 
-  const child = children as ReactElement<Record<string, unknown>>;
-  return cloneElement(child, mergeProps(slotProps, child.props));
+  return cloneElement(child, { ...mergeProps(slotProps, child.props), ref: mergedRef });
 }
 
 /**
@@ -78,8 +82,6 @@ function mergeProps(
       merged[key] = cn(slotValue as string, childValue as string);
     } else if (key === "style") {
       merged[key] = { ...(slotValue as CSSProperties), ...(childValue as CSSProperties) };
-    } else if (key === "ref") {
-      merged[key] = composeRefs(slotValue as Ref<unknown>, childValue as Ref<unknown>);
     }
   }
 

@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ComponentType } from "react";
 import * as jsxRuntime from "react/jsx-runtime";
+import * as lucide from "lucide-react";
 import ts from "typescript";
 import { componentReferences } from "../lib/component-reference";
 import * as alertDialog from "../registry/ui/alert-dialog/alert-dialog";
@@ -21,6 +22,7 @@ function usageComponent(name: "alert-dialog" | "dropdown-menu" | "dialog" | "rad
   });
   const modules: Record<string, unknown> = {
     "react/jsx-runtime": jsxRuntime,
+    "lucide-react": lucide,
     "@/components/ui/alert-dialog": alertDialog,
     "@/components/ui/dropdown-menu": dropdownMenu,
     "@/components/ui/dialog": dialog,

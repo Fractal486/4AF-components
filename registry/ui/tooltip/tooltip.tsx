@@ -1,117 +1,163 @@
 "use client";
 
 import { Tooltip as BaseTooltip } from "@base-ui/react/tooltip";
-import type { ComponentProps, ReactElement, ReactNode } from "react";
-import { cn } from "@/registry/lib/cn";
-
-/**
- * A tooltip.
- *
- * Behaviour, positioning and timing are Base UI's: it opens on hover *and* focus (a
- * mouse-only tooltip is invisible to keyboard users), flips to the opposite side when
- * it would overflow the viewport, wires `aria-describedby` from trigger to popup, and
- * — via the Provider — opens instantly once a neighbour has just closed, so sweeping a
- * toolbar doesn't re-wait the delay on every button.
- *
- * The enter is CSS, not Motion: a tooltip is a plain enter/exit with no physics or
- * gesture, so it rides Base UI's `data-starting-style` / `data-ending-style` attributes.
- * It scales up from the edge nearest the trigger — Base UI hands us `--transform-origin`
- * pointing there — with a brief blur, so it resolves into focus rather than snapping in.
- */
+import { createContext, useContext, useState, type ComponentProps, type ReactElement, type ReactNode } from "react";
+import { mergeStateClassName } from "@/registry/lib/cn";
+import { tooltipPopupVariants, tooltipPositionerVariants } from "./tooltip.variants";
 
 export const TooltipProvider = BaseTooltip.Provider;
+export const createTooltipHandle = BaseTooltip.createHandle;
+export type TooltipRootProps<Payload = unknown> = BaseTooltip.Root.Props<Payload>;
+export type TooltipHandle<Payload = unknown> = BaseTooltip.Handle<Payload>;
 
-const popupClassName = cn(
-  // `bg-surface`: the same fill as an outline button at rest, so the tooltip reads as
-  // the same material as the control it describes.
-  "w-fit max-w-xs rounded-md bg-surface px-2.5 py-1",
-  "text-xs font-medium text-pretty text-foreground",
-  // A single faint 1px ring instead of shadow-overlay's heavier one, plus a soft drop
-  // shadow. rgba, not oklch, so the `/` alpha can't trip Tailwind's arbitrary parser.
-  "shadow-[0_0_0_1px_rgba(0,0,0,0.04),0_10px_24px_-8px_rgba(0,0,0,0.18)]",
-  "dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_14px_30px_-12px_rgba(0,0,0,0.6)]",
-  // Scale grows from the anchor side; `blur-0` is the resting filter so it interpolates
-  // from blur(5px) rather than from `none`, which some browsers won't tween. Only these
-  // properties change, so only these are named. Base UI holds the popup mounted through
-  // the transition and unmounts on transitionend; its `data-instant` state short-circuits
-  // that transition when the provider moves directly between neighbouring triggers.
-  "origin-[var(--transform-origin)] blur-0",
-  "transition-[opacity,scale,translate,filter] duration-(--duration-fast) ease-out data-instant:transition-none",
-  // Hidden pose: fade, shrink, blur — and slide in from *toward* the trigger, so a top
-  // tooltip rises up from below into place rather than only scaling. Larger offset
-  // entering than leaving.
-  "data-[starting-style]:scale-90 data-[starting-style]:opacity-0 data-[starting-style]:blur-[5px]",
-  "data-[ending-style]:scale-95 data-[ending-style]:opacity-0 data-[ending-style]:blur-[3px]",
-  "data-[side=top]:data-[starting-style]:translate-y-4 data-[side=top]:data-[ending-style]:translate-y-1",
-  "data-[side=bottom]:data-[starting-style]:-translate-y-4 data-[side=bottom]:data-[ending-style]:-translate-y-1",
-  "data-[side=left]:data-[starting-style]:translate-x-4 data-[side=left]:data-[ending-style]:translate-x-1",
-  "data-[side=right]:data-[starting-style]:-translate-x-4 data-[side=right]:data-[ending-style]:-translate-x-1",
-);
+const TooltipGroupContext = createContext<BaseTooltip.Handle<ReactNode> | null>(null);
+const isEmpty = (content: ReactNode) => content == null || content === "";
 
-export interface TooltipProps {
-  /** The tooltip text. Empty content hides the popup without remounting the trigger. */
-  content: ReactNode;
-  /** The element the tooltip describes. Becomes the trigger. */
-  children: ReactElement;
-  side?: "top" | "right" | "bottom" | "left";
-  align?: "start" | "center" | "end";
-  /** Gap between trigger and tooltip, in px. */
-  sideOffset?: number;
-  /** How long to wait before opening, in milliseconds. */
-  delay?: number;
-  /** Whether pressing the trigger closes an open tooltip. */
-  closeOnClick?: boolean;
-  /** Controlled open state. Omit this for the default hover/focus behavior. */
-  open?: boolean;
-  /** Close as soon as the pointer leaves the trigger instead of entering the popup. */
-  disableHoverablePopup?: boolean;
-  /** Class for the popup. */
-  className?: string;
-  /** Forwarded to Base UI's positioner (collision padding, sticky, etc.). */
-  positionerProps?: Omit<
-    ComponentProps<typeof BaseTooltip.Positioner>,
-    "side" | "align" | "sideOffset" | "children"
-  >;
+/** An independent root also isolates its triggers from any surrounding TooltipGroup. */
+export function TooltipRoot<Payload = unknown>(props: TooltipRootProps<Payload>) {
+  return <TooltipGroupContext.Provider value={null}><BaseTooltip.Root {...props} /></TooltipGroupContext.Provider>;
 }
 
-export function Tooltip({
-  content,
-  children,
-  side = "top",
-  align = "center",
-  sideOffset = 8,
-  delay,
-  closeOnClick = true,
-  open,
-  disableHoverablePopup = false,
-  className,
-  positionerProps,
-}: TooltipProps) {
-  const empty = content == null || content === "";
+export type TooltipTriggerProps<Payload = unknown> = Omit<BaseTooltip.Trigger.Props<Payload>, "content"> & {
+  /** Content for this trigger when it belongs to a TooltipGroup. */
+  content?: ReactNode;
+};
+
+export function TooltipTrigger<Payload = unknown>({
+  handle, payload, content, disabled, ...props
+}: TooltipTriggerProps<Payload>) {
+  const groupHandle = useContext(TooltipGroupContext);
+  const grouped = handle === undefined && groupHandle !== null;
 
   return (
-    <BaseTooltip.Root open={open} disabled={empty} disableHoverablePopup={disableHoverablePopup}>
-      <BaseTooltip.Trigger render={children} delay={delay} closeOnClick={closeOnClick} />
+    <BaseTooltip.Trigger
+      data-slot="tooltip-trigger"
+      {...props}
+      // The context owns ReactNode payloads; explicit handles keep their caller's payload type.
+      handle={grouped ? groupHandle as BaseTooltip.Handle<Payload> : handle}
+      payload={grouped ? content as Payload : payload}
+      disabled={disabled || (grouped && isEmpty(content))}
+    />
+  );
+}
+
+export type TooltipPortalProps = ComponentProps<typeof BaseTooltip.Portal>;
+export function TooltipPortal(props: TooltipPortalProps) {
+  return <BaseTooltip.Portal data-slot="tooltip-portal" {...props} />;
+}
+
+export type TooltipPositionerProps = ComponentProps<typeof BaseTooltip.Positioner>;
+export function TooltipPositioner({ className, sideOffset = 8, ...props }: TooltipPositionerProps) {
+  return (
+    <BaseTooltip.Positioner
+      data-slot="tooltip-positioner"
+      sideOffset={sideOffset}
+      {...props}
+      className={mergeStateClassName(tooltipPositionerVariants(), className)}
+    />
+  );
+}
+
+export type TooltipPopupProps = ComponentProps<typeof BaseTooltip.Popup>;
+export function TooltipPopup({ className, ...props }: TooltipPopupProps) {
+  return (
+    <BaseTooltip.Popup
+      data-slot="tooltip-content"
+      {...props}
+      className={mergeStateClassName(tooltipPopupVariants(), className)}
+    />
+  );
+}
+
+export interface TooltipContentProps extends TooltipPopupProps {
+  side?: TooltipPositionerProps["side"];
+  align?: TooltipPositionerProps["align"];
+  sideOffset?: TooltipPositionerProps["sideOffset"];
+  /** Portal container, mounting behavior, ref, and other portal props. */
+  portalProps?: Omit<TooltipPortalProps, "children">;
+  /** Positioning, collision behavior, ref, and state-aware positioner classes. */
+  positionerProps?: Omit<TooltipPositionerProps, "side" | "align" | "sideOffset" | "children">;
+}
+
+/** Convenient portal + positioner + popup. Its ref and DOM props belong to the popup. */
+export function TooltipContent({
+  side = "top", align = "center", sideOffset = 8, portalProps, positionerProps, ...popupProps
+}: TooltipContentProps) {
+  return (
+    <TooltipPortal {...portalProps}>
+      <TooltipPositioner side={side} align={align} sideOffset={sideOffset} {...positionerProps}>
+        <TooltipPopup {...popupProps} />
+      </TooltipPositioner>
+    </TooltipPortal>
+  );
+}
+
+interface TooltipPresentationProps extends Pick<TooltipContentProps,
+  "side" | "align" | "sideOffset" | "className" | "portalProps" | "positionerProps"
+> {
+  /** Popup ref, render element, DOM attributes, and event handlers. */
+  popupProps?: Omit<TooltipPopupProps, "className" | "children">;
+}
+
+export interface TooltipProps extends Omit<BaseTooltip.Root.Props, "children">, TooltipPresentationProps {
+  /** Empty content hides the popup without remounting the trigger. */
+  content: ReactNode;
+  children: ReactElement;
+  delay?: number;
+  closeOnClick?: boolean;
+}
+
+/** One trigger and its content. All visibility and cursor behavior belongs to Base UI. */
+export function Tooltip({
+  content, children, side, align, sideOffset, delay, closeOnClick = true,
+  className, positionerProps, portalProps, popupProps, disabled = false, ...rootProps
+}: TooltipProps) {
+  const empty = isEmpty(content);
+
+  return (
+    <TooltipRoot {...rootProps} disabled={disabled || empty}>
+      <TooltipTrigger render={children} delay={delay} closeOnClick={closeOnClick} />
       {!empty && (
-        <BaseTooltip.Portal>
-          <BaseTooltip.Positioner
-            side={side}
-            align={align}
-            sideOffset={sideOffset}
-            {...positionerProps}
-            className={(state) => cn(
-              "z-50 outline-none",
-              typeof positionerProps?.className === "function"
-                ? positionerProps.className(state)
-                : positionerProps?.className,
-            )}
-          >
-            <BaseTooltip.Popup className={cn(popupClassName, className)}>
-              {content}
-            </BaseTooltip.Popup>
-          </BaseTooltip.Positioner>
-        </BaseTooltip.Portal>
+        <TooltipContent
+          {...popupProps}
+          side={side} align={align} sideOffset={sideOffset} className={className}
+          positionerProps={positionerProps} portalProps={portalProps}
+        >
+          {content}
+        </TooltipContent>
       )}
-    </BaseTooltip.Root>
+    </TooltipRoot>
+  );
+}
+
+export interface TooltipGroupProps extends Omit<BaseTooltip.Root.Props<ReactNode>, "children" | "handle">,
+  TooltipPresentationProps, Pick<ComponentProps<typeof TooltipProvider>, "delay" | "closeDelay" | "timeout"> {
+  children?: ReactNode;
+}
+
+/** Several TooltipTriggers supply their own content to one shared popup. */
+export function TooltipGroup({
+  children, delay, closeDelay, timeout, side, align, sideOffset, className,
+  portalProps, positionerProps, popupProps, ...rootProps
+}: TooltipGroupProps) {
+  const [handle] = useState(() => createTooltipHandle<ReactNode>());
+
+  return (
+    <TooltipProvider delay={delay} closeDelay={closeDelay} timeout={timeout}>
+      <TooltipGroupContext.Provider value={handle}>
+        {children}
+      </TooltipGroupContext.Provider>
+      <TooltipRoot {...rootProps} handle={handle}>
+        {({ payload }) => (
+          <TooltipContent
+            {...popupProps}
+            side={side} align={align} sideOffset={sideOffset} className={className}
+            portalProps={portalProps} positionerProps={positionerProps}
+          >
+            {payload}
+          </TooltipContent>
+        )}
+      </TooltipRoot>
+    </TooltipProvider>
   );
 }

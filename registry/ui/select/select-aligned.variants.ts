@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
-export type AlignedSelectTriggerVariant = "default" | "ghost" | "plain";
+export type AlignedSelectTriggerVariant = "default" | "outline-ghost" | "ghost" | "plain";
 
 /** The aligned trigger: a field, a ghost field, or a borderless text control. */
 export const alignedSelectTriggerVariants = cva(
@@ -9,7 +9,7 @@ export const alignedSelectTriggerVariants = cva(
     "cursor-pointer outline-none select-none",
     "transition-[background-color,border-color,color] duration-(--duration-base) ease-out",
     "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-    "aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",
+    "[&:is([aria-invalid=true],[data-invalid])]:ring-[3px]! [&:is([aria-invalid=true],[data-invalid])]:ring-destructive/25!",
     "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
   ],
   {
@@ -18,7 +18,15 @@ export const alignedSelectTriggerVariants = cva(
         default: [
           "w-full justify-between border border-border bg-surface px-3.5",
           "hover:border-border-strong data-[popup-open]:border-border-strong",
-          "aria-invalid:border-destructive",
+          "[&:is([aria-invalid=true],[data-invalid])]:border-destructive!",
+        ],
+        // Button's outline-ghost: the `shadow-border` edge with no fill of its own, so the
+        // background shows through; hover and open lay a translucent wash. The border stays,
+        // transparent, so the invalid state can colour an edge without changing the size.
+        "outline-ghost": [
+          "w-full justify-between border border-transparent bg-transparent shadow-border px-3.5",
+          "hover:bg-foreground/5 data-[popup-open]:bg-foreground/5",
+          "[&:is([aria-invalid=true],[data-invalid])]:border-destructive!",
         ],
         ghost: [
           "w-full justify-between border border-transparent bg-transparent px-3.5 text-muted-foreground",

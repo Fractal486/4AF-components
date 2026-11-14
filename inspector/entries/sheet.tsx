@@ -11,7 +11,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/registry/ui/sheet/sheet";
-import { defineEntry, select } from "../schema";
+import { bool, defineEntry, select, withIcons } from "../schema";
+import { EDGE_SIDE_ICONS } from "../setting-icons";
 
 const SIDES = ["right", "left", "top", "bottom"] as const;
 
@@ -19,13 +20,15 @@ export const sheetEntry = defineEntry({
   slug: "sheet",
   name: "Sheet",
   controls: {
-    side: select(SIDES, "right"),
+    side: withIcons(select(SIDES, "right"), EDGE_SIDE_ICONS),
+    content: select(["short", "long"], "short", "Content"),
+    showClose: bool(true, "Close button"),
   },
-  render({ side }) {
+  render({ side, content, showClose }) {
     return (
       <Sheet>
-        <SheetTrigger render={<Button variant="outline">Open sheet</Button>} />
-        <SheetContent side={side}>
+        <SheetTrigger render={<Button variant="outline-ghost">Open sheet</Button>} />
+        <SheetContent side={side} showClose={showClose}>
           <SheetHeader>
             <SheetTitle>Edit profile</SheetTitle>
             <SheetDescription>
@@ -43,7 +46,7 @@ export const sheetEntry = defineEntry({
               "Website",
               "Company",
               "Phone",
-            ].map((label) => (
+            ].slice(0, content === "short" ? 2 : undefined).map((label) => (
               <label key={label} className="flex flex-col gap-1.5">
                 <span className="text-sm text-muted-foreground">{label}</span>
                 <Input tone="accent" defaultValue={label} />
@@ -52,8 +55,8 @@ export const sheetEntry = defineEntry({
           </SheetBody>
 
           <SheetFooter>
-            <SheetClose render={<Button variant="ghost">Cancel</Button>} />
-            <SheetClose render={<Button variant="primary">Save changes</Button>} />
+            <SheetClose render={<Button variant="outline-ghost">Cancel</Button>} />
+            <SheetClose render={<Button variant="outline-ghost">Save changes</Button>} />
           </SheetFooter>
         </SheetContent>
       </Sheet>

@@ -3,7 +3,6 @@ title: Command Palette
 description: A searchable keyboard-first command surface composed from 4AF primitives.
 ---
 
-<ComponentDemo name="command-palette" />
 <ComponentReference name="command-palette" />
 
 ## API
@@ -13,7 +12,26 @@ description: A searchable keyboard-first command surface composed from 4AF primi
 
 A keyboard-first command and search dialog with fuzzy ranking, groups, nested and custom panels,
 async, server-driven, and paginated search, header text fields, per-panel header actions, badges,
-checkboxes, keybinds, and destructive actions.
+selection checks, keybinds, and destructive actions.
+
+### Root props
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `groups` | Required | `CommandGroup[]` shown at rest and filtered locally unless `onSearch` supplies results. |
+| `open` / `defaultOpen` / `onOpenChange` | — / `false` / — | Controlled or uncontrolled visibility; the callback receives the requested boolean state. |
+| `placeholder` | `"Type a command or search…"` | Placeholder in the root search input. |
+| `onCreate` | — | `(query: string) => void`. Adds a keyboard-accessible Create row for a nonempty root query, even when other results match. Receives the trimmed query when that row is activated. |
+| `footer` | `true` | Shows the root list's keyboard hint bar. Custom panels use their own `CommandPanelFooter`. |
+| `emptyMessage` | Two-line no-results message | React node used when no results or Create row are available: by default, `No results for “<query>”` and `Try a different search`. |
+| `shortcut` | `true` | Binds Command+K / Ctrl+K to toggle the palette. |
+| `initialItemId` | — | Item id to open directly into a custom panel or sub-list; `null` uses the root. Read on each opening. |
+| `onSearch` | — | `(query, signal) => Promise<CommandGroup[]>` for root results. Returned order is preserved. |
+| `searchDebounce` | `200` | Delay before async search, in milliseconds. |
+| `loadingMessage` | `"Searching…"` | React node shown while waiting for results. |
+| `searchErrorMessage` | `"Search failed. Change your query to retry."` | React node or `(error: unknown) => ReactNode` for failed searches. |
+| `loader` | Inherited | Default indicator for searches, panels, and actions. |
+| `className` | — | Classes for the palette panel. |
 
 `loader={<MySpinner />}` supplies the palette's search, panel, and action indicators. Omit it to
 inherit [LoaderProvider](/docs/reference/engineering#shared-loading-indicators), with `ClassicLoader` as
@@ -22,6 +40,8 @@ the fallback. `CommandItem` data and `CommandPanelLoading` accept their own `loa
 
 `shortcut` is on by default and binds `⌘K` / `Ctrl+K` to toggle the palette. The demo on this
 page uses `⌘⇧P` / `Ctrl+Shift+P` instead, so it doesn't clash with the site search.
+The palette toggle, `⌘J` / `Ctrl+J` actions-menu toggle, and panel action keybinds ignore held-key
+repeats and text-composition events; each fresh press can toggle or run its action once.
 
 `useCommandSearch` discards results from cancelled requests, even when the search callback
 ignores its abort signal. Clearing the query or disabling search resets the results, and a late
@@ -32,6 +52,9 @@ Use `searchDebounce` and `loadingMessage` to configure waiting behavior. In cust
 render the initial loader while `searching && results === null`.
 
 Header navigation buttons use the compact 6px radius.
+
+The palette uses the standalone [Kbd](/docs/kbd) component for its keycaps and installs it
+automatically. The existing `Kbd` export remains an alias for compatibility.
 
 ## Composition
 
@@ -49,7 +72,7 @@ The registry item includes:
   to go back;
 - per-panel `headerActions`, suitable for Select and Select Sort controls—use the default
   `size="sm"` so they fit the palette;
-- custom list rows with trailing badges or selection checkboxes;
+- custom list rows with trailing badges or selection checks (`checkbox` shows a trailing check);
 - grouped action panels with section labels, icons, keybinds, search, and destructive actions;
 - async or server-driven search: pass `onSearch` on the root with `groups` as the resting state,
   or call `useCommandSearch` in a custom panel and render `CommandPanelLoading` for its first-load
@@ -62,7 +85,7 @@ The registry item includes:
 - a tab row directly under a custom panel's header, with `CommandPanelTabs`;
 - opening the palette straight onto one page with `initialItemId`.
 
-The demo's Projects, Rename Project, New Project, and Keyboard Shortcuts flows are built only
+The demo's Projects, New Project, Find People, and Keyboard Shortcuts flows are built only
 from these public APIs.
 
 ## Panel tabs
@@ -75,7 +98,7 @@ row and its one travelling indicator; `variant` picks how the selected tab is ma
 | `variant` | Selected tab |
 | --- | --- |
 | `fill` (default) | A muted fill slides behind it |
-| `underline` | A hairline slides along the rule under the row |
+| `underline` | A hairline under the selected label slides along the rule under the row |
 
 ```tsx
 <CommandPanelTabs value={tab} onValueChange={setTab}>
@@ -121,15 +144,22 @@ found only in async search retain the results they opened with.
 ## Selection and hover
 
 The root list opens with its first enabled row active, before anything is typed, and activates
-the first match as the query changes. `CommandPanelList` initializes the last enabled row marked `selected`, or the first
-enabled row when nothing is selected; filtering that preserves the active row can keep that highlight. Enter runs the
+the first match as the query changes. `CommandPanelList` opens on its last row marked
+`selected`, or its first enabled row when none is, and activates the first enabled row whenever
+a query leaves it with no active row; filtering that preserves the active row keeps that
+highlight. Enter runs the
 active row without an arrow press first.
 
 Selection and hover are separate states. The selected row carries `data-highlighted` and moves
 with the arrow keys and with presses. Hovering gives a row a weaker fill only, so moving the
 pointer across the list never changes what Enter runs. A press selects a row and runs it, so in a
-panel that stays open, such as a checkbox list, the selection follows the row you pressed.
+panel that stays open, such as a multi-select list, the selection follows the row you pressed.
 Moving the pointer out of the list leaves the selection where it was.
+
+On a `CommandPanelRow`, a click and Enter are the same activation: each runs `onSelect`, then
+`onActivate`. A right-click selects the row and opens the panel footer's actions menu for it,
+without activating the row, so the pointer can reach any row's actions. A panel without an
+`actions` menu leaves the browser's context menu in place.
 Command rows and custom panel rows use the standard arrow cursor.
 
 While a row's actions menu is open, the row carries `data-frozen`, styled like the selection,
@@ -139,11 +169,13 @@ When the selection reaches the first row, the list scrolls to its top, so the se
 that row is visible. This applies to the root list and to `CommandPanelList`.
 
 The root list primes its first row from the `items` collection through `autoHighlight`.
-Custom panels have no such collection, so `CommandPanelList` activates the last enabled
-selected row (otherwise the first enabled row) after mount. Preserve that initialization when changing panel composition; root highlighting does
+Custom panels have no such collection, so `CommandPanelList` moves the highlight to its
+opening row the first time it has rows, taking over from the first row Base UI picks. Preserve that initialization when changing panel composition; root highlighting does
 not initialize custom panels.
 
-The no-results state is the height of one section label plus one row with a description.
+The palette has a fixed height of 34rem, capped by the viewport. Results scroll inside it;
+the empty, loading, and error states are centred in it. The default `emptyMessage` is two lines:
+`No results for “<query>”` and `Try a different search`. Opening a panel keeps the same height.
 
 ## Panel footer
 
@@ -154,7 +186,7 @@ the right — and fills the right corner with two optional slots, in this order:
 | Slot | Prop | Key |
 | --- | --- | --- |
 | The primary action | `enter` | Fixed Return hint; native button/form activation |
-| The contextual actions menu | `actions` | Cmd/Ctrl + J, fixed |
+| The contextual actions menu | `actions` | Cmd/Ctrl + J, fixed; or right-click a row |
 
 ```tsx
 <CommandPanelFooter
@@ -169,6 +201,8 @@ Enter binding: use `type="submit"` inside a form for native form submission, or 
 in the relevant input when needed. Clicking a submit button also runs its `onClick`, if provided.
 `actions` takes the menu's own props:
 `items` or `groups`, plus `label`, `searchPlaceholder`, and `emptyMessage`.
+The menu is at least 280px wide and otherwise as wide as its widest row; it keeps its opening
+width while its search filters the rows.
 
 An actions row normally runs `onSelect` and closes the menu. The fields below make it show its
 result in place instead, keeping the menu open. They match Dropdown Menu's row types:
@@ -216,3 +250,10 @@ opened. For async, toggle, and confirmation rows, the shortcut opens the menu an
 behavior as a row press, so pending feedback and confirmation remain visible. Confirmation still
 requires a second press after the 350ms guard; closing the menu disarms it. Ordinary `onSelect`
 shortcuts run immediately.
+
+Use `mod` for Control or Command, or name `ctrl`, `meta`, `alt`, and `shift` explicitly.
+Shifted digit and punctuation chords such as `shift+1` and `shift+/` also match their physical
+US key positions when the browser reports a shifted character. Letter chords follow
+`event.key`. A literal `+` works by itself or as `mod++`, including keyboards that require
+Shift to type it. Shortcuts with no named modifier ignore editable fields, buttons, links,
+and their descendants, so Enter remains available to the focused control.

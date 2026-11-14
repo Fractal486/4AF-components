@@ -1,6 +1,6 @@
 import type { Autocomplete } from "@base-ui/react/autocomplete";
 import type { Tabs as BaseTabs } from "@base-ui/react/tabs";
-import type { ComponentProps, MouseEvent as ReactMouseEvent, ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 export interface CommandPanelInputProps
   extends Omit<
@@ -164,7 +164,10 @@ export interface CommandPaletteProps {
   /** Bind ⌘K / Ctrl-K to toggle the palette globally. @default true */
   shortcut?: boolean;
   placeholder?: string;
-  /** Shown when the query matches nothing (and there's no create action). */
+  /**
+   * Shown when the query matches nothing (and there's no create action).
+   * @default No results for “<query>”, then “Try a different search”
+   */
   emptyMessage?: ReactNode;
   /**
    * Turns a miss into an action: a `Create "<query>"` row appears at the foot of the root
@@ -210,15 +213,18 @@ export interface CommandPanelRowProps
   /** Marks an irreversible row action; its label and icon use the destructive color. */
   destructive?: boolean;
   children?: ReactNode;
-  /** Optional trailing content, typically a `Badge`, aligned with the checkbox slot. */
+  /** Optional trailing content, typically a `Badge`, aligned with the check slot. */
   badge?: ReactNode;
-  /** Persistent selection state shown by the optional checkbox indicator. */
+  /** Persistent selection state shown by the optional check. */
   selected?: boolean;
   /** Select the row when it is clicked or activated with Enter/Space. */
   onSelect?: () => void;
-  /** Observe the activation event when a caller needs to distinguish keyboard activation. */
-  onActivate?: (event: ReactMouseEvent<HTMLDivElement>) => void;
-  /** Show a trailing checkbox indicator for the row's selection state. */
+  /**
+   * The row's primary action, run after `onSelect` by a click or by Enter — one activation,
+   * whichever way it arrives. A right-click opens the panel's actions menu instead.
+   */
+  onActivate?: () => void;
+  /** Show a trailing check for the row's selection state. */
   checkbox?: boolean;
   onKeyDown?: ComponentProps<"div">["onKeyDown"];
 }

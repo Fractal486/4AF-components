@@ -3,7 +3,6 @@ title: Sidebar Layout
 description: An application-shell layout that coordinates a 4AF sidebar with the main content area.
 ---
 
-<ComponentDemo name="sidebar-layout" />
 <ComponentReference name="sidebar-layout" />
 
 ## API
@@ -16,7 +15,12 @@ left, the page title, and optional actions on the right.
 
 The header is at least 48px tall. When the actions don't fit beside the title, it wraps them onto
 another row instead of overflowing. The content column can shrink below its content's width, so
-wide content scrolls inside it, and reaching the end of the content doesn't scroll the page.
+wide content scrolls inside it, and reaching the end of the content doesn't scroll the page. The
+column is a [Scroll Area](/docs/scroll-area); `contentClassName` styles its scrolling element.
+
+The outer column has `data-slot="sidebar-layout-content"`; its inner scrolling element has
+`data-slot="sidebar-layout-viewport"`. Use the viewport marker for scroll restoration, scroll
+position measurements, or scroll locking. The outer column clips content but does not scroll.
 
 | Prop | Purpose |
 | --- | --- |

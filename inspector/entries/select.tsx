@@ -3,6 +3,8 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectGroup,
+  SelectGroupLabel,
   SelectSub,
   SelectSubContent,
   SelectSubTrigger,
@@ -10,7 +12,8 @@ import {
   SelectValue,
 } from "@/registry/ui/select/select";
 import { FruitIcon } from "./select-fruit-icons";
-import { bool, defineEntry, select } from "../schema";
+import { bool, defineEntry, select, withIcons } from "../schema";
+import { STATE_ICONS } from "../setting-icons";
 
 const FRUITS = {
   apple: "Apple",
@@ -23,22 +26,42 @@ const FRUITS = {
   watermelon: "Watermelon",
 } as const;
 
+/** Added when the demo is scrollable: enough rows that the panel outgrows its cap and scrolls. */
+const MORE_FRUITS = {
+  apricot: "Apricot",
+  cherry: "Cherry",
+  coconut: "Coconut",
+  fig: "Fig",
+  guava: "Guava",
+  kiwi: "Kiwi",
+  lemon: "Lemon",
+  lime: "Lime",
+  lychee: "Lychee",
+  papaya: "Papaya",
+  peach: "Peach",
+  pear: "Pear",
+  pineapple: "Pineapple",
+  plum: "Plum",
+  pomegranate: "Pomegranate",
+  raspberry: "Raspberry",
+} as const;
+
+const ALL_FRUITS = { ...FRUITS, ...MORE_FRUITS };
+
 const NESTED_FRUITS = ["banana", "mango"] as const;
 
-function FruitOptions({ icons }: { icons: boolean }) {
+function FruitOptions({ icons, scrollable, groups }: { icons: boolean; scrollable: boolean; groups: boolean }) {
+  const items = Object.entries(scrollable ? ALL_FRUITS : FRUITS)
+    .sort(([, a], [, b]) => a.localeCompare(b))
+    .filter(([value]) => !NESTED_FRUITS.includes(value as (typeof NESTED_FRUITS)[number]));
+  const row = ([value, label]: [string, string]) => <SelectItem key={value} value={value}
+    icon={icons ? <FruitIcon value={value} /> : undefined}>{label}</SelectItem>;
   return (
     <>
-      {Object.entries(FRUITS)
-        .filter(([value]) => !NESTED_FRUITS.includes(value as (typeof NESTED_FRUITS)[number]))
-        .map(([value, label]) => (
-          <SelectItem
-            key={value}
-            value={value}
-            icon={icons ? <FruitIcon value={value} /> : undefined}
-          >
-            {label}
-          </SelectItem>
-        ))}
+      {groups ? [true, false].map((berries) => <SelectGroup key={String(berries)}>
+        <SelectGroupLabel>{berries ? "Berries" : "Other fruit"}</SelectGroupLabel>
+        {items.filter(([value]) => value.endsWith("berry") === berries).map(row)}
+      </SelectGroup>) : items.map(row)}
       <SelectSub>
         <SelectSubTrigger>More fruit</SelectSubTrigger>
         <SelectSubContent>
@@ -61,17 +84,22 @@ export const selectEntry = defineEntry({
   slug: "select",
   name: "Select",
   controls: {
+    variant: select(["default", "outline-ghost", "ghost", "plain"] as const, "outline-ghost", "Variant"),
+    tone: select(["neutral", "accent"] as const, "neutral", "Open border", (v) => v.variant !== "default"),
     size: select(["xs", "sm", "md"] as const, "sm"),
-    disabled: bool(false),
     multiple: bool(false),
     selected: bool(true, "Selected"),
-    searchable: bool(false, "Search in panel"),
-    icons: bool(true),
-    variant: select(["default", "ghost", "plain"] as const, "default", "Variant"),
     showLabel: bool(true, "Show label"),
-    invalid: bool(false),
+    icons: bool(true),
+    groups: bool(false, "Sections"),
+    scrollable: bool(false, "Scrollable"),
+    searchable: bool(false, "Search in panel"),
+    state: withIcons(select(["default", "disabled", "invalid"] as const, "default", "State"), STATE_ICONS),
   },
-  render({ size, disabled, multiple, selected, searchable, icons, variant, showLabel, invalid }) {
+  render({ size, multiple, selected, searchable, scrollable, groups, icons, variant, tone, showLabel, state }) {
+    const disabled = state === "disabled";
+    const invalid = state === "invalid";
+    const items = scrollable ? ALL_FRUITS : FRUITS;
     return (
       <div className="w-full max-w-56">
         {multiple ? (
@@ -79,13 +107,14 @@ export const selectEntry = defineEntry({
             key={`multiple-${selected}`}
             multiple
             size={size}
-            items={FRUITS}
+            items={items}
             defaultValue={selected ? ["banana", "mango"] : []}
             disabled={disabled}
           >
             <SelectTrigger
               aria-label="Fruits"
               variant={variant}
+              tone={tone}
               label={showLabel ? "Fruit" : undefined}
               aria-invalid={invalid ? true : undefined}
               aria-describedby={invalid ? "select-error" : undefined}
@@ -97,14 +126,14 @@ export const selectEntry = defineEntry({
               searchPlaceholder="Search fruits…"
               emptyMessage="No fruit found."
             >
-              <FruitOptions icons={icons} />
+              <FruitOptions icons={icons} scrollable={scrollable} groups={groups} />
             </SelectContent>
           </Select>
         ) : (
           <Select
             key={`single-${selected}`}
             size={size}
-            items={FRUITS}
+            items={items}
             defaultValue={selected ? "banana" : null}
             disabled={disabled}
             iconForValue={icons ? (value) => <FruitIcon value={String(value)} /> : undefined}
@@ -112,6 +141,7 @@ export const selectEntry = defineEntry({
             <SelectTrigger
               aria-label="Fruit"
               variant={variant}
+              tone={tone}
               label={showLabel ? "Fruit" : undefined}
               aria-invalid={invalid ? true : undefined}
               aria-describedby={invalid ? "select-error" : undefined}
@@ -123,7 +153,7 @@ export const selectEntry = defineEntry({
               searchPlaceholder="Search fruits…"
               emptyMessage="No fruit found."
             >
-              <FruitOptions icons={icons} />
+              <FruitOptions icons={icons} scrollable={scrollable} groups={groups} />
             </SelectContent>
           </Select>
         )}

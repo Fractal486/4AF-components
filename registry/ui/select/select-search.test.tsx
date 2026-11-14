@@ -105,6 +105,21 @@ function DynamicMultiIcon() {
 }
 
 describe("Search Select", () => {
+  it("draws outline-ghost with Button's edge and no fill of its own", () => {
+    render(
+      <SearchSelect<Fruit> items={FRUITS}>
+        <SearchSelectInput aria-label="Ghost fruit" variant="outline-ghost" />
+        <SearchSelectContent>
+          {(item: Fruit) => <SearchSelectItem key={item.value} value={item}>{item.label}</SearchSelectItem>}
+        </SearchSelectContent>
+      </SearchSelect>,
+    );
+    const input = screen.getByRole("combobox", { name: "Ghost fruit" });
+    expect(input).toHaveAttribute("data-variant", "outline-ghost");
+    expect(input).toHaveClass("shadow-border", "bg-transparent", "border-transparent");
+    expect(input).not.toHaveClass("bg-surface");
+  });
+
   it("uses the shared 34px medium field and row size", async () => {
     const user = userEvent.setup();
     render(<FruitSearch size="md" />);
@@ -360,11 +375,10 @@ describe("Search Select", () => {
     );
     expect(screen.getByRole("listbox")).toBeVisible();
 
-    const checkbox = mango.querySelector<HTMLElement>("[role=checkbox]");
-    expect(checkbox).toHaveAttribute("aria-hidden", "true");
-    expect(checkbox).toHaveAttribute("tabindex", "-1");
-    expect(checkbox).toHaveAttribute("aria-checked", "true");
-    expect(checkbox).toHaveAttribute("data-checked");
+    // A trailing check, not a checkbox: the option alone carries the selection.
+    const check = mango.querySelector<HTMLElement>("[data-slot=search-select-item-check]");
+    expect(check).toBe(mango.lastElementChild);
+    expect(check).toHaveAttribute("data-selected");
     expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
 
     await user.keyboard("{Escape}");

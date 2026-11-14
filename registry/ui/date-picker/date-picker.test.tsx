@@ -54,6 +54,10 @@ describe("DatePicker", () => {
     render(<DatePicker defaultOpen defaultValue={new Date(2026, 0, 1)} clearable calendarProps={{ today: may14 }} onValueChange={onValueChange} />);
     const today = screen.getByRole("button", { name: "Today" });
     expect(today.nextElementSibling).toBe(screen.getByRole("button", { name: "Clear" }));
+    // Select's footer geometry: 3px buttons 4px inside the panel.
+    expect(today).toHaveClass("rounded-xs");
+    expect(screen.getByRole("button", { name: "Clear" })).toHaveClass("rounded-xs");
+    expect(today.parentElement).toHaveClass("p-1");
     await user.click(today);
     expect(onValueChange).not.toHaveBeenCalled();
     expect(screen.getByRole("grid")).toHaveAccessibleName("May 2026");
@@ -77,12 +81,28 @@ describe("DatePicker", () => {
     expect(onValueChange).toHaveBeenCalledWith({ from: new Date(2026, 0, 15), to: may14 });
   });
 
+  it("borders the open default trigger in Input's focus tone", () => {
+    render(
+      <>
+        <DatePicker aria-label="Neutral date" />
+        <DateRangePicker aria-label="Accent range" tone="accent" />
+      </>,
+    );
+
+    const neutral = screen.getByRole("button", { name: "Neutral date" });
+    const accent = screen.getByRole("button", { name: "Accent range" });
+    expect(neutral).toHaveAttribute("data-tone", "neutral");
+    expect(neutral.className).toContain("data-[popup-open]:border-[oklch(0.719_0_0)]");
+    expect(accent).toHaveAttribute("data-tone", "accent");
+    expect(accent.className).toContain("data-[popup-open]:border-ring");
+  });
+
   it("shows the placeholder and marks the trigger empty until a date is chosen", () => {
     render(<DatePicker />);
     const trigger = screen.getByRole("button", { name: "Pick a date" });
     expect(trigger).toHaveAttribute("data-empty", "");
     expect(trigger).toHaveAttribute("data-variant", "default");
-    expect(trigger).toHaveAttribute("data-size", "md");
+    expect(trigger).toHaveAttribute("data-size", "sm");
   });
 
   it("shows the date as day / month / year numbers with numeric format, the icon last", () => {
@@ -165,6 +185,81 @@ describe("DatePicker", () => {
   });
 });
 
+describe("DatePicker multiple", () => {
+  it("toggles separate dates, keeps the panel open, and preserves dates across months", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    const { container } = render(<DatePicker mode="multiple" defaultOpen name="dates" onValueChange={onValueChange}
+      calendarProps={{ defaultMonth: may14 }} />);
+    await user.click(dayButton("2026-05-14"));
+    await user.click(dayButton("2026-05-20"));
+    expect(onValueChange).toHaveBeenLastCalledWith([may14, new Date(2026, 4, 20)]);
+    expect(dayButton("2026-05-14")).toHaveAttribute("data-selected-single");
+    expect(dayButton("2026-05-20")).toHaveAttribute("data-selected-single");
+    await user.click(dayButton("2026-05-14"));
+    await user.click(screen.getByRole("button", { name: /next month/i }));
+    await user.click(dayButton("2026-06-05"));
+    expect(container.querySelector('input[name="dates"]')).toHaveValue("2026-05-20,2026-06-05");
+    expect(screen.getByRole("grid")).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("grid")).not.toBeInTheDocument());
+    const trigger = screen.getByRole("button", { name: "May 20, 2026, Jun 5, 2026" });
+    await user.click(trigger);
+    await waitFor(() => expect(dayButton("2026-06-05")).toHaveFocus());
+  });
+
+  it("uses the last supplied date for initial focus and supports keyboard selection", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(<DatePicker mode="multiple" defaultOpen defaultValue={[new Date(2026, 4, 20), may14]}
+      onValueChange={onValueChange} />);
+    await waitFor(() => expect(dayButton("2026-05-14")).toHaveFocus());
+    await user.keyboard("{ArrowRight}{Enter}");
+    expect(onValueChange).toHaveBeenLastCalledWith([new Date(2026, 4, 20), may14, new Date(2026, 4, 15)]);
+    expect(screen.getByRole("grid")).toBeInTheDocument();
+  });
+
+  it("uses controlled values and clears to an empty array", async () => {
+    const user = userEvent.setup();
+    function Controlled() {
+      const [dates, setDates] = useState([may14]);
+      return <DatePicker mode="multiple" value={dates} onValueChange={setDates} clearable defaultOpen name="dates" />;
+    }
+    const { container } = render(<Controlled />);
+    await user.click(dayButton("2026-05-20"));
+    expect(container.querySelector('input[name="dates"]')).toHaveValue("2026-05-14,2026-05-20");
+    await user.click(screen.getByRole("button", { name: "Clear" }));
+    expect(container.querySelector('input[name="dates"]')).toHaveValue("");
+    expect(screen.getByRole("button", { name: "Pick dates" })).toHaveAttribute("data-empty");
+    await waitFor(() => expect(screen.queryByRole("grid")).not.toBeInTheDocument());
+  });
+
+  it("honors disabled days and selection limits without replacing existing dates", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(<DatePicker mode="multiple" defaultOpen defaultValue={[may14]} onValueChange={onValueChange}
+      calendarProps={{ min: 1, max: 2, disabled: new Date(2026, 4, 16) }} />);
+    await user.click(dayButton("2026-05-14"));
+    await user.click(dayButton("2026-05-16"));
+    expect(onValueChange).not.toHaveBeenCalled();
+    await user.click(dayButton("2026-05-15"));
+    await user.click(dayButton("2026-05-17"));
+    expect(onValueChange).toHaveBeenCalledExactlyOnceWith([may14, new Date(2026, 4, 15)]);
+    expect(dayButton("2026-05-14")).toHaveAttribute("data-selected-single");
+    expect(dayButton("2026-05-15")).toHaveAttribute("data-selected-single");
+    await user.click(dayButton("2026-05-14"));
+    expect(onValueChange).toHaveBeenLastCalledWith([new Date(2026, 4, 15)]);
+  });
+
+  it("formats and submits multiple dates in the requested time zone", () => {
+    const value = [new Date("2026-05-31T09:30:00Z"), new Date("2026-05-31T10:30:00Z")];
+    const { container } = render(<DatePicker mode="multiple" value={value} dateFormat="numeric" name="dates"
+      calendarProps={{ timeZone: "Pacific/Kiritimati" }} />);
+    expect(screen.getByRole("button")).toHaveTextContent("31 / 05 / 2026, 01 / 06 / 2026");
+    expect(container.querySelector('input[name="dates"]')).toHaveValue("2026-05-31,2026-06-01");
+  });
+});
+
 describe("DateRangePicker", () => {
   it("stays open after the first day and commits the range on the second, in either order", async () => {
     const user = userEvent.setup();
@@ -244,26 +339,32 @@ describe("Calendar month / year picker", () => {
 
   it("holds the grid's height while the picker is open, whatever month it moves to", async () => {
     const user = userEvent.setup();
-    const offsetHeight = vi
-      .spyOn(HTMLElement.prototype, "offsetHeight", "get")
-      .mockReturnValue(210);
+    // A fractional height, held exactly: rounding it up grew the panel as the picker opened.
+    const computed = window.getComputedStyle.bind(window);
+    const getComputedStyle = vi
+      .spyOn(window, "getComputedStyle")
+      .mockImplementation((element, pseudo) =>
+        element instanceof HTMLElement && element.dataset.slot === "calendar-month-grid"
+          ? ({ height: "210.5px" } as CSSStyleDeclaration)
+          : computed(element, pseudo),
+      );
     try {
       render(<Calendar mode="single" defaultMonth={new Date(2026, 4, 1)} />);
       const grid = () => document.querySelector<HTMLElement>('[data-slot="calendar-month-grid"]')!;
 
       expect(grid().style.height).toBe("");
       await user.click(toggle());
-      expect(grid().style.height).toBe("210px");
+      expect(grid().style.height).toBe("210.5px");
 
       // A month with a different number of weeks doesn't move it while the picker is open.
       await user.click(screen.getByRole("radio", { name: "2027" }));
-      expect(grid().style.height).toBe("210px");
+      expect(grid().style.height).toBe("210.5px");
 
       // Back in the day view, the grid takes its own height again.
       await user.click(screen.getByRole("radio", { name: "Feb" }));
       expect(grid().style.height).toBe("");
     } finally {
-      offsetHeight.mockRestore();
+      getComputedStyle.mockRestore();
     }
   });
 
@@ -414,4 +515,19 @@ describe("DateRangePicker constraints", () => {
     await user.click(dayButton("2026-05-14"));
     expect(onValueChange).toHaveBeenCalledExactlyOnceWith({ from: may14, to: may14 });
   });
+});
+
+it("measures calendar height independently of the popover's entrance scale", () => {
+  const original = window.getComputedStyle;
+  const styles = vi.spyOn(window, "getComputedStyle").mockImplementation((element, pseudo) =>
+    element instanceof HTMLElement && element.dataset.slot === "calendar-month"
+      ? ({height:"284.5px"} as CSSStyleDeclaration)
+      : original(element,pseudo));
+  const rect = vi.spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({
+    x:0,y:0,top:0,left:0,right:250,bottom:270,width:250,height:270,toJSON:()=>({}),
+  });
+  try {
+    const {container} = render(<Calendar defaultMonth={new Date(2026,10,1)} />);
+    expect(container.querySelector<HTMLElement>('[data-slot="calendar-month-height"]')?.style.height).toBe("284.5px");
+  } finally { styles.mockRestore(); rect.mockRestore(); }
 });

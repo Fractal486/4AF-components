@@ -40,11 +40,11 @@ export interface DeleteButtonProps
     "variant" | "children" | "onClick" | "asChild" | "loading"
   > {
   /**
-   * Which quiet Button variant carries it — a bordered chip, a hover-only button, or bare
+   * Which quiet Button variant carries it — a bordered chip (filled or not), a hover-only button, or bare
    * text. Never the solid `destructive` fill: red is the signal here, and a button that is
    * already entirely red has nowhere left to escalate when it arms.
    */
-  variant?: "outline" | "ghost" | "plain";
+  variant?: "outline" | "outline-ghost" | "ghost" | "plain";
   /** The resting label. */
   children?: ReactNode;
   /** The armed label. */

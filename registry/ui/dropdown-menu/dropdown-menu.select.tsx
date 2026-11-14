@@ -1,8 +1,11 @@
-import { cn } from "@/registry/lib/cn";
-import { Checkbox } from "@/registry/ui/checkbox/checkbox";
+"use client";
+
+import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { Input } from "@/registry/ui/input/input";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
+import { resumeFromActiveRow } from "@/registry/ui/ui/select.utils";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
-import { Check } from "lucide-react";
+import { CheckMark } from "@/registry/lib/check-mark";
 import {
   createContext,
   useCallback,
@@ -22,7 +25,7 @@ import {
   DropdownMenuSubTrigger,
   type DropdownMenuContentProps,
 } from "./dropdown-menu.menu";
-import { DisabledReasonTooltip } from "./dropdown-menu.shared";
+import { CHECK_SLOT, DisabledReasonTooltip } from "./dropdown-menu.shared";
 
 type DropdownMenuSelectValue<Value, Multiple extends boolean | undefined> = Multiple extends true
   ? Value[]
@@ -52,6 +55,12 @@ interface DropdownMenuSelectContextValue {
 }
 
 const DropdownMenuSelectContext = createContext<DropdownMenuSelectContextValue | null>(null);
+
+/**
+ * Whether the pointer has left a panel without a search field: its active row is kept for the
+ * arrow keys to resume from, but stops painting, as a hover does when the pointer moves away.
+ */
+const DropdownMenuSelectDormantContext = createContext(false);
 
 function useDropdownMenuSelectContext() {
   const context = useContext(DropdownMenuSelectContext);
@@ -266,8 +275,8 @@ export function DropdownMenuSelect<Value, Multiple extends boolean | undefined =
 }
 
 const selectItemBase = cn(
-  "relative flex items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-xs outline-none select-none",
-  "text-muted-foreground data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
+  "relative flex min-w-0 items-center gap-2.5 rounded-xs px-2.5 py-1.5 text-xs wrap-anywhere outline-none select-none",
+  "text-muted-foreground data-[panel-active]:not-data-[panel-dormant]:bg-muted data-[panel-active]:not-data-[panel-dormant]:text-foreground",
   "data-[checked]:text-foreground",
   "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
 );
@@ -278,7 +287,12 @@ const selectItemIcon =
 function enabledSelectItems(list: HTMLElement | null) {
   return Array.from(
     list?.querySelectorAll<HTMLElement>('[role="menuitemradio"], [role="menuitemcheckbox"]') ?? [],
-  ).filter((item) => !item.closest("[hidden]") && item.getAttribute("aria-disabled") !== "true");
+  ).filter((item) => {
+    // Hidden by a search inside the list, not by anything around it: Base UI can mark the
+    // whole positioner `hidden` while its anchor has no size, and the rows are still the rows.
+    const hidden = item.closest("[hidden]");
+    return !(hidden && list?.contains(hidden)) && item.getAttribute("aria-disabled") !== "true";
+  });
 }
 
 export interface DropdownMenuSelectTriggerProps
@@ -290,7 +304,7 @@ export interface DropdownMenuSelectTriggerProps
   icon?: ReactNode;
   /** The label shown on the left side of the trigger. */
   placeholder?: ReactNode;
-  className?: string;
+  className?: ComponentProps<typeof BaseMenu.SubmenuTrigger>["className"];
   /** Hover delay in milliseconds. @default 0 */
   delay?: number;
 }
@@ -326,14 +340,14 @@ export function DropdownMenuSelectTrigger({
       {...props}
       disabled={disabled || context.disabled}
       label={label ?? (typeof placeholder === "string" ? placeholder : undefined)}
-      className={cn("min-w-0", className)}
+      className={mergeStateClassName("min-w-0", className)}
     >
       {icon && (
         <span aria-hidden="true" className={selectItemIcon}>
           {icon}
         </span>
       )}
-      <span className="min-w-0 flex-1 truncate text-foreground">{label ?? placeholder}</span>
+      <span className="min-w-0 flex-1 wrap-anywhere text-foreground">{label ?? placeholder}</span>
       {hasSelection && (
         <span className="ml-auto max-w-[50%] shrink-0 truncate text-muted-foreground">{summary}</span>
       )}
@@ -360,7 +374,7 @@ export function DropdownMenuSelectContent({
   className,
   side = "right",
   align = "start",
-  keepMounted = true,
+  keepMounted,
   searchable = false,
   searchPosition = "top",
   searchPlaceholder = "Search…",
@@ -376,6 +390,16 @@ export function DropdownMenuSelectContent({
     searchable && context.searchQuery.trim() !== "" && context.visibleOptionCount === 0;
 
   const { open, searchQuery, options, values, activate, clearActive } = context;
+
+  // Without a search field the active row behaves like a hover once the pointer leaves:
+  // unpainted, but kept for the arrows. A searchable panel keeps it lit for Enter.
+  const [pointerLeft, setPointerLeft] = useState(false);
+  const [wasOpen, setWasOpen] = useState(open);
+  if (wasOpen !== open) {
+    setWasOpen(open);
+    if (open) setPointerLeft(false);
+  }
+  const dormant = pointerLeft && !searchable;
   const previous = useRef({ open: false, query: "" });
   useEffect(() => {
     const opening = open && !previous.current.open;
@@ -431,11 +455,11 @@ export function DropdownMenuSelectContent({
     // A fixed 38px row, flush to the panel edge: the negative margins cancel the popup's
     // `p-1` so the strip runs from the panel's top edge to its separator line at exactly
     // 38px (the popup's `overflow-hidden` clips it to the rounded corners). `px-3.5` matches
-    // the standalone Select's search inset and its 4px list + 10px row icon inset. Icon and
-    // input are centred flex children rather than an absolute icon over a padded input.
+    // the standalone Select's search inset and its 4px list + 10px row icon inset.
+    // Stretch the Input wrapper so its h-full field fills the search strip.
     <div
       className={cn(
-        "-mx-1 flex h-[38px] shrink-0 items-center gap-2 px-3.5",
+        "-mx-1 flex h-[38px] shrink-0 items-stretch gap-2 px-3.5",
         searchPosition === "bottom" ? "-mb-1 border-t border-border" : "-mt-1 border-b border-border",
       )}
     >
@@ -476,33 +500,49 @@ export function DropdownMenuSelectContent({
     <DropdownMenuSubContent
       side={side}
       align={align}
-      keepMounted={keepMounted}
-      className={cn(searchable && "overflow-hidden", className)}
+      keepMounted={keepMounted ?? props.portalProps?.keepMounted ?? true}
+      className={mergeStateClassName(cn(searchable && "overflow-hidden"), className)}
       onFocus={(event) => {
         onFocus?.(event);
         if (searchable && autoFocusFirstItem && event.target === event.currentTarget) {
           searchInputRef.current?.focus();
         }
       }}
+      onPointerLeave={(event) => {
+        if (!searchable && event.pointerType !== "touch") setPointerLeft(true);
+      }}
+      onPointerMove={() => {
+        if (pointerLeft) setPointerLeft(false);
+      }}
+      onKeyDownCapture={(event) => {
+        if (searchable) return;
+        if (pointerLeft) setPointerLeft(false);
+        // Only when the panel itself holds focus, where Base UI parks it after the pointer
+        // leaves. Keys from a nested panel bubble through here too, and are not ours.
+        if (event.target === event.currentTarget && resumeFromActiveRow(
+          listRef.current, event.key, '[role="menuitemradio"], [role="menuitemcheckbox"]',
+        )) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      }}
       {...props}
     >
       {searchable && searchPosition === "top" && searchField}
-      <div
-        ref={listRef}
-        className={cn(
-          "max-h-[min(var(--available-height),18rem)] overflow-y-auto p-1",
-          "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent]",
-          "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent",
-          "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong",
-          noResults && "hidden",
-        )}
+      <ScrollArea
+        viewportRef={listRef}
+        viewportProps={{ tabIndex: -1 }}
+        className={cn("max-h-[min(var(--available-height),18rem)]", noResults && "hidden")}
+        // The menu panel already insets its content 4px, the same as its own rows, so the list
+        // adds only the gap on the search field's side — where the field cancels that inset.
+        viewportClassName={searchable ? (searchPosition === "bottom" ? "pb-1" : "pt-1") : undefined}
       >
-        {items}
-      </div>
+        <DropdownMenuSelectDormantContext.Provider value={dormant}>{items}</DropdownMenuSelectDormantContext.Provider>
+      </ScrollArea>
       {noResults && (
-        // `m-1` supplies the same 4px inset as the list's `p-1`; `h-7` matches one
-        // select row, keeping the full panel height identical to a single result.
-        <div className="m-1 flex h-7 items-center justify-center px-2.5 text-center text-xs text-muted-foreground">
+        // The same gap beside the field as the list's; `h-7` matches one select row, keeping
+        // the full panel height identical to a single result.
+        <div className={cn("flex h-7 items-center justify-center px-2.5 text-center text-xs text-muted-foreground", searchPosition === "bottom" ? "mb-1" : "mt-1")}>
           {emptyMessage}
         </div>
       )}
@@ -519,7 +559,7 @@ export interface DropdownMenuSelectItemProps {
   disabled?: boolean;
   /** Explain why a disabled option is unavailable. Hovering the row shows the explanation. */
   disabledReason?: ReactNode;
-  className?: string;
+  className?: ComponentProps<typeof BaseMenu.RadioItem>["className"];
   /** Text used by an ancestor searchable select panel to match this option. */
   searchValue?: string;
 }
@@ -558,9 +598,12 @@ export function DropdownMenuSelectItem({
     return () => unregisterOptionText(value);
   }, [optionText, registerOptionText, unregisterOptionText, value, isDisabled]);
 
+  const panelActive = context.activeValue !== null && Object.is(context.activeValue.value, value);
+  const panelDormant = useContext(DropdownMenuSelectDormantContext) && panelActive;
   const activationProps = {
     ref: itemRef,
-    "data-panel-active": context.activeValue && Object.is(context.activeValue.value, value) ? "" : undefined,
+    "data-panel-active": panelActive ? "" : undefined,
+    "data-panel-dormant": panelDormant ? "" : undefined,
     onFocus: () => { if (!isDisabled && !hiddenBySearch) context.activate(value); },
   };
 
@@ -573,22 +616,23 @@ export function DropdownMenuSelectItem({
         disabled={isDisabled || hiddenBySearch}
         hidden={hiddenBySearch}
         label={itemLabel}
-        className={cn(selectItemBase, hasReason && "data-[disabled]:pointer-events-auto", className)}
+        className={mergeStateClassName(cn(selectItemBase, hasReason && "data-[disabled]:pointer-events-auto"), className)}
         render={(itemProps, state) => (
           <DisabledReasonTooltip disabled={isDisabled} reason={disabledReason}>
             <div {...itemProps}>
-              <Checkbox
-                checked={state.checked}
-                aria-hidden
-                tabIndex={-1}
-                className="pointer-events-none shrink-0"
-              />
               {icon && (
                 <span aria-hidden="true" className={selectItemIcon}>
                   {icon}
                 </span>
               )}
-              <span className="min-w-0 flex-1 truncate">{children}</span>
+              <span className="min-w-0 flex-1 wrap-anywhere">{children}</span>
+              <span
+                data-slot="dropdown-menu-select-item-check"
+                data-checked={state.checked ? "" : undefined}
+                className={CHECK_SLOT}
+              >
+                <CheckMark checked={state.checked} />
+              </span>
             </div>
           </DisabledReasonTooltip>
         )}
@@ -603,24 +647,23 @@ export function DropdownMenuSelectItem({
       disabled={isDisabled || hiddenBySearch}
       hidden={hiddenBySearch}
       label={itemLabel}
-      className={cn(selectItemBase, hasReason && "data-[disabled]:pointer-events-auto", className)}
+      className={mergeStateClassName(cn(selectItemBase, hasReason && "data-[disabled]:pointer-events-auto"), className)}
     >
       {icon && (
         <span aria-hidden="true" className={selectItemIcon}>
           {icon}
         </span>
       )}
-      <span className="min-w-0 flex-1 truncate">{children}</span>
+      <span className="min-w-0 flex-1 wrap-anywhere">{children}</span>
       <BaseMenu.RadioItemIndicator
         keepMounted
-        className={cn(
-          "ml-auto flex size-3.5 shrink-0 items-center justify-center text-foreground",
-          "scale-0 opacity-0 transition-[opacity,scale] duration-(--duration-fast) ease-out",
-          "data-[checked]:scale-100 data-[checked]:opacity-100",
+        className="ml-auto flex size-3.5 shrink-0 items-center justify-center text-foreground"
+        render={(indicatorProps, state) => (
+          <span {...indicatorProps}>
+            <CheckMark checked={state.checked} />
+          </span>
         )}
-      >
-        <Check className="size-3.5" />
-      </BaseMenu.RadioItemIndicator>
+      />
     </BaseMenu.RadioItem>
   );
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/registry/lib/cn";
-import { spring } from "@/registry/lib/motion";
+import { duration, ease } from "@/registry/lib/motion";
 import { useMergedRefs } from "@/registry/lib/refs";
 import { Tabs as BaseTabs } from "@base-ui/react/tabs";
 import { motion, useReducedMotion } from "motion/react";
@@ -21,6 +21,9 @@ import {
 type Variant = NonNullable<CommandPanelTabListProps["variant"]>;
 
 const TabVariantContext = createContext<Variant>("fill");
+
+/** How far the underline reaches past each side of the label, into the tab's padding. */
+const UNDERLINE_OVERHANG_PX = 4;
 
 /**
  * Tabs for a custom panel, in a row directly under the panel's header.
@@ -50,13 +53,13 @@ export function CommandPanelTabs({ className, ...props }: CommandPanelTabsProps)
 /**
  * The tab row, and the one indicator that travels across it to the selected tab.
  *
- * Measured like Tabs' indicator — the selected tab's box relative to the row, moved by a
- * Motion layout animation so the travel is a transform rather than `left`/`width` frames —
- * with one correction the palette needs. The palette scales in as it opens, and a panel
- * can be the page it opens on (`initialItemId`), so the first measurement is often taken
- * mid-entrance. Bounding rects are scaled by that transform; dividing by the row's own
- * rendered-to-layout ratio takes it back out, where a bare measurement would leave the
- * indicator a few pixels short of its tab until the next change.
+ * Measured and animated like Tabs' indicator: the selected tab's box in the row's own
+ * coordinates, anchored at the start and moved by `x`. Layout projection would measure the
+ * viewport box, and the palette scales in as it opens, so the indicator would play that
+ * movement too. A panel can be the page the palette opens on (`initialItemId`), so the
+ * first measurement is often taken mid-entrance: bounding rects are scaled by that
+ * transform, and dividing by the row's rendered-to-layout ratio takes it back out.
+ * The underline spans the label plus a small overhang, not the tab's full padding.
  */
 export function CommandPanelTabList({
   variant = "fill",
@@ -70,23 +73,46 @@ export function CommandPanelTabList({
 }: CommandPanelTabListProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const mergedRef = useMergedRefs(listRef, forwardedRef);
-  const [box, setBox] = useState<{ left: number; width: number } | null>(null);
+  const [box, setBox] = useState<{ left: number; width: number; snap: boolean } | null>(null);
   const reduceMotion = useReducedMotion();
 
   useLayoutEffect(() => {
     const list = listRef.current;
     if (!list) return;
 
+    // The tab the indicator last measured. A new one is a selection, and slides; the same
+    // one measured again has only changed size (a resizing sidebar or window), and the
+    // indicator snaps to it rather than replaying the slide on every frame of the resize.
+    let measured: HTMLElement | null = null;
+
     const measure = () => {
       const active = list.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
       if (!active) return;
+      const snap = active === measured;
+      measured = active;
       const listRect = list.getBoundingClientRect();
       const tabRect = active.getBoundingClientRect();
-      const scale = list.offsetWidth > 0 ? listRect.width / list.offsetWidth : 1;
-      const left = (tabRect.left - listRect.left) / scale + list.scrollLeft;
-      const width = tabRect.width / scale;
+      const scale = list.offsetWidth > 0 && Math.abs(listRect.width - list.offsetWidth) >= 1
+        ? listRect.width / list.offsetWidth : 1;
+      let left = (tabRect.left - listRect.left) / scale - list.clientLeft + list.scrollLeft;
+      let width = tabRect.width / scale;
+      // Under a rotated or 3D-tilted ancestor the rects are projected bounding boxes; use
+      // layout values, which ignore transforms, as Tabs does.
+      if (list.offsetWidth > 0 && list.offsetHeight > 0 &&
+        Math.abs(listRect.width / list.offsetWidth - listRect.height / list.offsetHeight) > 0.02) {
+        left = active.offsetLeft;
+        width = Number.parseFloat(getComputedStyle(active).width) || active.offsetWidth;
+      }
+      if (variant === "underline") {
+        const { paddingLeft, paddingRight } = getComputedStyle(active);
+        // Inset by the padding less a small overhang, so the line runs just past the label.
+        const start = Math.max((Number.parseFloat(paddingLeft) || 0) - UNDERLINE_OVERHANG_PX, 0);
+        const end = Math.max((Number.parseFloat(paddingRight) || 0) - UNDERLINE_OVERHANG_PX, 0);
+        left += start;
+        width = Math.max(width - start - end, 0);
+      }
       setBox((previous) => previous?.left === left && previous.width === width
-        ? previous : { left, width });
+        ? previous : { left, width, snap });
     };
 
     measure();
@@ -116,12 +142,19 @@ export function CommandPanelTabList({
           <motion.div
             aria-hidden
             data-slot="command-panel-tab-indicator"
-            // `left`/`width` are laid out once per change; `layout` plays the move as a
-            // transform. No fly-in on first appearance: it mounts at its target.
-            layout
+            // Anchored at the row's start and moved by `x`, a transform. No fly-in on first
+            // appearance: it mounts at its target.
+            initial={false}
+            animate={{ x: box.left, width: box.width }}
             className={commandPanelTabIndicatorVariants({ variant })}
-            style={{ left: box.left, width: box.width }}
-            transition={reduceMotion ? { duration: 0 } : spring.snappy}
+            style={{ left: 0 }}
+            // Tabs' tween: a click answered at full speed, decelerating into place, with
+            // the width settling a step sooner than the travel.
+            transition={reduceMotion || box.snap ? { duration: 0 } : {
+              duration: duration.slower,
+              ease: ease.out,
+              width: { duration: duration.slow, ease: ease.out },
+            }}
           />
         )}
         {children}

@@ -4,7 +4,7 @@ description: The component contract, repository boundaries, motion rules, and do
 ---
 
 Use this contract when adding or refining a component. Each component page documents its
-supported API; do not assume every export accepts a ref, `asChild`, or controlled state.
+supported API; do not assume every export accepts a ref, `asChild`, `render`, or controlled state.
 
 ## Component contract
 
@@ -12,21 +12,29 @@ supported API; do not assume every export accepts a ref, `asChild`, or controlle
   focus, dialogs, popups, collision handling, dismissal, and ARIA wiring. Calendar uses
   react-day-picker because Base UI has no calendar primitive.
 - Components forward props and refs, support controlled and uncontrolled state where relevant,
-  and allow element replacement when the underlying element may reasonably change.
+  and allow element replacement when the underlying element may reasonably change. Base UI-backed
+  parts use `render`; standalone parts use `asChild` through the shared Slot helper. Some existing
+  parts support both, and wrappers may intentionally fix their element. Check the owning page's
+  API and the agent catalog's swap-prop column before composing a custom element. For example,
+  Button accepts `asChild`, while Toggle accepts `render`.
 - Variant definitions live beside the component in a `.variants.ts` file and use CVA.
   Wrappers may reuse their underlying component's variants; parts without variants do not
   need a separate definitions file.
 - State is exposed on the element through attributes such as `data-state`, `data-variant`, and
   `data-loading`, so styling and tests read the DOM.
 - Components use semantic theme tokens by default. Direct palette ramps are reserved for
-  status accents and fixed neutral control states, as documented in the root contract.
-- Add `"use client"` when client APIs, hooks, context, or interaction require it. Table uses
+  status accents and fixed neutral control states, including Scroll Area’s track and dark
+  thumb, as documented in the root contract.
+- Add `"use client"` when client APIs, hooks, context, or interaction require it, including in
+  sibling modules so direct imports preserve the boundary. Table uses
   client context even though its presentation parts have no interactive state.
 - A panel of rows (select, searchable menu, command palette) opens with a row already active:
   the current selection, or the most recent one when several are chosen, otherwise the first
   enabled row. Typing moves it to the top match. In the selects, hovering moves the active row; in the
-  command palette hover only highlights, and a press moves the selection. The pointer leaving
-  the panel keeps the active row. It carries `data-panel-active`, or Base UI's
+  command palette hover only highlights, and a press moves the selection. When the pointer
+  leaves, searchable panels keep the active row lit; panels without search mark it
+  `data-panel-dormant`, stop painting it, and resume the arrow keys from it. It carries
+  `data-panel-active`, or Base UI's
   `data-highlighted` where the primitive owns the highlight. `autoFocusFirstItem={false}` opts
   out where that prop is supported. Ordinary Dropdown Menu submenus opened by pointer hover
   start without a highlighted row; keyboard openings highlight the first enabled row.
@@ -41,10 +49,15 @@ lifecycle.
 Transitions name their properties and prefer compositor-friendly motion. Animating layout
 properties such as `width`, `height`, `top`, and `left` is discouraged because it can trigger
 layout and paint on every frame. Use it when smoothly changing the layout is part of the
-intended interaction, and document the reason. Existing uses include Collapsible's height
-transition, Calendar's measured month height as week rows change, Sidebar's shell dimensions
+intended interaction, and document the reason. Textarea animates its auto-growing height so
+the surrounding form reflows as lines are added or removed. Badge removal animates width, padding,
+border and margin to close the gap between tags; Number Animation (shared by Badge, Slider, and Progress) animates digit widths when columns
+appear or disappear so the count resizes smoothly. Existing uses also include Collapsible's height and gap margins
+transition, Dialog's measured frame height, Calendar's measured month height as week rows change, Sidebar's shell dimensions
 and offcanvas position, its collapsing menu rows (width, height, padding) and group labels
-(margin), and Morph's opt-in `sizing="current"` width. Sidebar's row geometry and label spacing
+(margin), and Morph's opt-in `sizing="current"` width, also used by Badge text labels to resize without
+scaling their text. Menubar's open-menu highlight transitions its width and height with its
+translate, so it keeps its corner radius between triggers of different widths. Sidebar's row geometry and label spacing
 transition so the navigation reflows smoothly into the icon rail without leaving gaps for
 hidden labels.
 
@@ -110,10 +123,10 @@ registry/     Portable library source
   lib/        Shared utilities and motion presets
   ui/         Installable component source
 inspector/    Data-driven demos, settings, and schemas
-stories/      Fumadocs demo adapter
+stories/      Demo loader and playground demo list
 content/docs/ Routed MDX documentation
 app/          Next.js routes; (site)/ holds the overview and docs pages
-components/   Site shell (rail, page frame) and landing figures
+components/   Site shell (rail, playground, page frame) and landing figures
 _incoming/    Temporary staging; never imported
 registry.json Install metadata and dependency graph
 public/r/     Built registry (pnpm registry:build), served at /r/<name>.json
@@ -134,8 +147,13 @@ pages:
 | `refs` | React 19 callback and object ref composition, including callback cleanup |
 | `slot` | Small local helper for `asChild` composition. `useSlotChild` lives in a separate server-compatible module, so components that render on the server can call it |
 | `motion` | Shared spring and easing presets |
+| `reduced-motion` | Server-safe `prefersReducedMotion` reads and `subscribeReducedMotion` change listeners; accepts an element's owning window |
+| `numbers` | Inclusive range clamping and computed CSS length parsing shared by sliders and measured panels |
+| `move-focus-outside` | Focus handoff when inline content closes; Badge can prefer related close controls while Alert uses document order |
 | `loader` | Caller-supplied loading slots and provider defaults, with `ClassicLoader` as the fallback |
-| `use-action` | Run, pending, outcome, and revert state shared by Action Button and asynchronous menu rows |
+| `use-popup-height` | Measures natural popup content height, follows continuous changes, and exposes sizing state while CSS transitions settle |
+| `check-mark` | Shared animated SVG tick for selections and success feedback, with reduced-motion support |
+| `use-action` | Controlled or internal action status, per-outcome reset timing, error hover/keyboard-focus holds, and manual reset that ignores stale results; see [Action Button's helper reference](/docs/action-button#shared-action-helper) |
 | `table-of-contents-scroll` | Active-entry centering, endpoint padding, and overflow-edge state for constrained contents rails |
 | `table-of-contents-tracking` | Heading activation, visibility observation, and click-to-scroll settling shared by both contents variants |
 
@@ -145,9 +163,20 @@ Its `onSuccess` and `onError` callbacks fire when the action settles even if the
 control has unmounted. Unmounting clears pending and reset timers and prevents local status
 updates; it does not cancel the work or discard its result.
 
+Switch keeps its checked-value transaction in a dedicated helper: synchronous Base UI
+cancellation, immediate saving announcements with a delayed spinner, persistent failures,
+and form-reset/unmount invalidation differ from `useAction`'s temporary outcome feedback.
+See [Switch's saving rationale](/docs/switch#why-saving-uses-a-dedicated-helper) before sharing
+this machinery with other value controls.
+
+Use `prefersReducedMotion()` at the start of imperative animations. Pass
+`element.ownerDocument.defaultView` when animating an element in another document. For live
+React updates, pair `subscribeReducedMotion` with `useSyncExternalStore` and a deterministic
+server snapshot. Existing Motion components continue to use Motion's `useReducedMotion`.
+
 `cn` uses Tailwind Merge 3 for Tailwind 4 utilities, including custom-property forms such as
 `duration-(--duration-fast)` and `w-(--sidebar-width)`. The theme's `shadow-border`,
-`shadow-raised`, `shadow-overlay`, and `shadow-overlay-drop` are registered as shadow sizes,
+`shadow-raised`, `shadow-overlay`, `shadow-overlay-drop`, and `shadow-overlay-subtle` are registered as shadow sizes,
 so a consumer's later `shadow-none` replaces them while independent shadow colors survive.
 
 ## Documentation parity

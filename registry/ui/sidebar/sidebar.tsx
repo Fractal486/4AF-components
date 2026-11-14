@@ -1,13 +1,7 @@
 "use client";
 
+import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import { cn } from "@/registry/lib/cn";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/registry/ui/sheet/sheet";
 import {
   useCallback,
   useLayoutEffect,
@@ -17,10 +11,12 @@ import {
   type ComponentProps,
   type CSSProperties,
   type ReactNode,
+  type MouseEvent,
 } from "react";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { SidebarSplitContext, useSidebar, type SidebarSplitContextValue } from "./sidebar.context";
 import { SidebarRail } from "./sidebar.controls";
-import { SIDEBAR_SCROLLBAR } from "./sidebar.structure";
+import { sidebarMobileBackdropVariants, sidebarMobilePopupVariants } from "./sidebar.variants";
 
 // Keep the installable component's public API at this entry point.
 export { useSidebar } from "./sidebar.context";
@@ -46,6 +42,8 @@ export {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   type SidebarMenuButtonProps,
+  type SidebarMenuBadgeProps,
+  type SidebarMenuActionProps,
   type SidebarMenuCollapsibleContentProps,
   type SidebarMenuCollapsibleProps,
   type SidebarMenuCollapsibleTriggerProps,
@@ -68,13 +66,20 @@ export {
   SidebarSeparator,
   type SidebarHeaderButtonProps,
 } from "./sidebar.structure";
+export {
+  SidebarTabs,
+  SidebarTabsList,
+  SidebarTabsPanel,
+  SidebarTabsTab,
+  type SidebarTabsProps,
+} from "./sidebar.tabs";
 
 /**
  * An application sidebar: a collapsible nav rail with a mobile drawer.
  *
  * There's no Base UI "sidebar" — it's a composition, and the parts that *do* have
- * primitives use them. The mobile drawer is our Sheet (Base UI Dialog: focus trap,
- * scroll lock, dismiss), the collapsed labels are our Tooltip (Base UI Tooltip), and
+ * primitives use them. The mobile drawer is Base UI's Dialog (focus trap, scroll lock,
+ * dismiss) with CSS slide transitions of its own, the collapsed labels are our Tooltip (Base UI Tooltip), and
  * the dividers are Base UI's Separator. What's left — a width, a breakpoint, and some
  * state — is genuinely just layout, and pretending otherwise would mean wrapping a
  * primitive around a `<div>`.
@@ -86,6 +91,10 @@ export {
  * relayout is the feature. It's bounded: two elements, one user-initiated transition,
  * on click rather than on hover or scroll. The durations come from `--duration-slow`
  * like everything else, which also means reduced motion collapses it to 1ms for free.
+ * Every part of the collapse shares `ease-collapse` (quart-out): it moves from the first
+ * frame and settles promptly. The library's front-loaded `ease-out` did most of the width in
+ * the first frames, then crawled; `ease-in-out` was slow to start, and `ease-panel` slow to
+ * settle. Fades keep `ease-out`.
  *
  * Row highlights are instant — no transition on the hover or active background. A
  * highlight that fades in trails the pointer as it runs down a list.
@@ -94,6 +103,14 @@ export {
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 
 const SIDEBAR_WIDTH_SPLIT_RAIL = "3rem";
+
+function isMobileNavigation(event: MouseEvent) {
+  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey
+    || !(event.target instanceof Element)) return false;
+  const link = event.target.closest("a[href]");
+  return link instanceof HTMLAnchorElement && link.getAttribute("aria-disabled") !== "true"
+    && !link.hasAttribute("download") && (!link.target || link.target.toLowerCase() === "_self");
+}
 
 /* -- Shell ---------------------------------------------------------------------------- */
 
@@ -130,6 +147,11 @@ export interface SidebarProps extends ComponentProps<"div"> {
    * continues to use `className` on mobile.
    */
   mobileClassName?: string;
+  /**
+   * Opens the mobile drawer inside this element instead of the document body. The drawer
+   * and its backdrop are then positioned against it, so give it `position: relative`.
+   */
+  mobileContainer?: HTMLElement | null;
 }
 
 export function Sidebar({
@@ -142,11 +164,17 @@ export function Sidebar({
   onActivePanelChange,
   hideCollapseHandle = false,
   mobileClassName,
+  mobileContainer,
   className,
   children,
   ...props
 }: SidebarProps) {
-  const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+  const { isMobile, mobileOverride, state, openMobile, setOpenMobile, shortcutScope } = useSidebar();
+  // Forced desktop shows at every width; otherwise the desktop shell waits for the
+  // breakpoint, so a phone's first paint (before the viewport is read) never shows it.
+  const desktopBlock = mobileOverride === false ? "block" : "hidden md:block";
+  const desktopFlex = mobileOverride === false ? "flex" : "hidden md:flex";
+  const contained = mobileContainer != null;
   const [uncontrolledActivePanel, setUncontrolledActivePanel] = useState(defaultActivePanel);
   const isActivePanelControlled = activePanel !== undefined;
   const currentActivePanel = isActivePanelControlled ? activePanel : uncontrolledActivePanel;
@@ -200,8 +228,11 @@ export function Sidebar({
     return (
       <div
         data-slot="sidebar"
+        data-side={side}
         className={cn(
           "flex h-full w-(--sidebar-width) flex-col bg-surface text-foreground",
+          // The same edge rule the collapsible sidebars draw against the content.
+          side === "left" ? "border-r border-border" : "border-l border-border",
           className,
         )}
         {...props}
@@ -213,54 +244,56 @@ export function Sidebar({
 
   if (isMobile) {
     const mobileSidebar = (
-      <Sheet open={openMobile} onOpenChange={setOpenMobile}>
-        <SheetContent
-          side={side}
-          showClose={false}
-          data-slot="sidebar"
-          data-mobile="true"
-          className={cn(
-            isSplit
-              ? "w-[calc(var(--sidebar-width)+var(--sidebar-width-icon))]"
-              : "w-(--sidebar-width)",
-            "bg-surface p-0",
-            mobileClassName,
-          )}
-          style={
-            {
-              "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-              ...(isSplit
-                ? { "--sidebar-width-icon": SIDEBAR_WIDTH_SPLIT_RAIL }
-                : {}),
-            } as CSSProperties
-          }
-        >
-          {/* The drawer is a dialog and needs a name, but the nav is self-describing. */}
-          <SheetHeader className="sr-only">
-            <SheetTitle>Sidebar</SheetTitle>
-            <SheetDescription>Site navigation.</SheetDescription>
-          </SheetHeader>
-          {isSplit ? (
-            <div className="flex h-full w-full">
-              <div
-                data-slot="sidebar-rail-column"
-                className={cn(
-                  // `overflow-x-hidden` as on desktop: setting only the vertical axis makes the
-                  // other `auto` too, and a wide rail item showed a stray horizontal scrollbar.
-                  "flex h-full w-(--sidebar-width-icon) shrink-0 flex-col items-center gap-2 overflow-x-hidden overflow-y-auto bg-surface p-2",
-                  SIDEBAR_SCROLLBAR,
-                  "border-r border-border",
-                )}
-              >
-                {rail}
+      <BaseDialog.Root open={openMobile} onOpenChange={(open) => setOpenMobile(open)}>
+        <BaseDialog.Portal container={mobileContainer ?? undefined}>
+          <BaseDialog.Backdrop className={sidebarMobileBackdropVariants({ contained })} />
+          <BaseDialog.Popup
+            data-slot="sidebar"
+            data-side={side}
+            data-mobile="true"
+            data-sidebar-scope={shortcutScope}
+            onClick={(event) => {
+              // Client routers prevent the browser's default navigation before routing.
+              // The link still navigates, so defaultPrevented does not suppress this close.
+              if (isMobileNavigation(event)) setOpenMobile(false);
+            }}
+            className={cn(
+              sidebarMobilePopupVariants({ side, contained }),
+              isSplit
+                ? "w-[calc(var(--sidebar-width)+var(--sidebar-width-icon))]"
+                : "w-(--sidebar-width)",
+              mobileClassName,
+            )}
+            style={
+              {
+                "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+                ...(isSplit
+                  ? { "--sidebar-width-icon": SIDEBAR_WIDTH_SPLIT_RAIL }
+                  : {}),
+              } as CSSProperties
+            }
+          >
+            {/* The drawer is a dialog and needs a name, but the nav is self-describing. */}
+            <BaseDialog.Title className="sr-only">Sidebar</BaseDialog.Title>
+            <BaseDialog.Description className="sr-only">Site navigation.</BaseDialog.Description>
+            {isSplit ? (
+              <div className="flex h-full w-full">
+                <ScrollArea
+                  data-slot="sidebar-rail-column"
+                  className="h-full w-(--sidebar-width-icon) shrink-0 border-r border-border bg-surface"
+                  // `overflow-x-hidden` as on desktop: a wide rail item must not scroll sideways.
+                  viewportClassName="flex flex-col items-center gap-2 overflow-x-hidden! p-2"
+                >
+                  {rail}
+                </ScrollArea>
+                <div className="flex min-w-0 flex-1 flex-col">{children}</div>
               </div>
-              <div className="flex min-w-0 flex-1 flex-col">{children}</div>
-            </div>
-          ) : (
-            <div className="flex h-full w-full flex-col">{children}</div>
-          )}
-        </SheetContent>
-      </Sheet>
+            ) : (
+              <div className="flex h-full w-full flex-col">{children}</div>
+            )}
+          </BaseDialog.Popup>
+        </BaseDialog.Portal>
+      </BaseDialog.Root>
     );
 
     return isSplit ? (
@@ -275,7 +308,7 @@ export function Sidebar({
   if (isSplit) {
     const splitSidebar = (
       <div
-        className="group peer hidden text-foreground md:block"
+        className={cn("group peer text-foreground", desktopBlock)}
         style={{ "--sidebar-width-icon": SIDEBAR_WIDTH_SPLIT_RAIL } as CSSProperties}
         data-state={splitCollapsed ? "collapsed" : "expanded"}
         // `offcanvas`, not `icon`. The split panel doesn't *become* a rail when it
@@ -292,7 +325,7 @@ export function Sidebar({
         <div
           data-slot="sidebar-gap"
           className={cn(
-            "relative bg-transparent transition-[width] duration-(--duration-slow) ease-out",
+            "relative bg-transparent transition-[width] duration-(--duration-slow) ease-collapse",
             splitExpandedWidth,
             splitCollapsedWidth,
           )}
@@ -300,7 +333,8 @@ export function Sidebar({
         <div
           data-slot="sidebar-container"
           className={cn(
-            "fixed inset-y-0 z-10 hidden h-svh md:flex border-border transition-[width,border-color] duration-(--duration-slow) ease-out",
+            "fixed inset-y-0 z-10 h-svh border-border transition-[width,border-color] duration-(--duration-slow) ease-collapse",
+            desktopFlex,
             splitExpandedWidth,
             splitCollapsedWidth,
             splitFloating && "p-2",
@@ -326,20 +360,21 @@ export function Sidebar({
                   : undefined,
             )}
           >
-            <div
+            <ScrollArea
               data-slot="sidebar-rail-column"
               className={cn(
-                // The border leaves the padded rail one pixel narrower than its 32px
-                // controls; never turn that intentional edge overlap into an x-scrollbar.
-                "flex h-full w-(--sidebar-width-icon) shrink-0 flex-col items-center gap-2 overflow-x-hidden overflow-y-auto bg-surface p-2",
-                SIDEBAR_SCROLLBAR,
+                "h-full w-(--sidebar-width-icon) shrink-0 bg-surface",
                 // Once the wide panel closes, this internal divider meets the
                 // container's outer edge border; keep the outer line only.
                 "border-r border-border group-data-[state=collapsed]:border-r-0",
               )}
+              // The border leaves the padded rail one pixel narrower than its 32px controls;
+              // never turn that intentional edge overlap into sideways scrolling. `!` because
+              // Base UI sets the viewport's overflow inline.
+              viewportClassName="flex flex-col items-center gap-2 overflow-x-hidden! p-2"
             >
               {rail}
-            </div>
+            </ScrollArea>
             {/* `visibility` is in the transition list on purpose: it interpolates as a
                 step that holds the *visible* end for the whole duration, so the panel
                 stays on screen while it closes and is only hidden from AT and tab order
@@ -350,7 +385,7 @@ export function Sidebar({
               className={cn(
                 "flex h-full shrink-0 flex-col overflow-hidden bg-surface",
                 splitPanelWidth,
-                "transition-[width,opacity,visibility] duration-(--duration-slow) ease-out",
+                "transition-[width,opacity,visibility] duration-(--duration-slow) ease-collapse",
                 "group-data-[state=collapsed]:pointer-events-none group-data-[state=collapsed]:invisible",
                 "group-data-[state=collapsed]:w-0 group-data-[state=collapsed]:opacity-0",
               )}
@@ -380,7 +415,7 @@ export function Sidebar({
 
   return (
     <div
-      className="group peer hidden text-foreground md:block"
+      className={cn("group peer text-foreground", desktopBlock)}
       data-state={state}
       data-collapsible={state === "collapsed" ? collapsible : ""}
       data-variant={variant}
@@ -395,7 +430,7 @@ export function Sidebar({
         data-slot="sidebar-gap"
         className={cn(
           "relative w-(--sidebar-width) bg-transparent",
-          "transition-[width] duration-(--duration-slow) ease-out",
+          "transition-[width] duration-(--duration-slow) ease-collapse",
           "group-data-[collapsible=offcanvas]:w-0",
           "group-data-[side=right]:rotate-180",
           variant === "floating" || variant === "inset"
@@ -406,8 +441,9 @@ export function Sidebar({
       <div
         data-slot="sidebar-container"
         className={cn(
-          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) md:flex",
-          "transition-[left,right,width] duration-(--duration-slow) ease-out",
+          "fixed inset-y-0 z-10 h-svh w-(--sidebar-width)",
+          desktopFlex,
+          "transition-[left,right,width] duration-(--duration-slow) ease-collapse",
           side === "left"
             ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
             : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",

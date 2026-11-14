@@ -8,11 +8,11 @@ export const componentReferences = {
   "action-button": {
     usage: `import { ActionButton } from "@/components/ui/action-button";
 
-// Pending keeps keyboard focus; completion callbacks also run after unmount.
-// Idle sizing copies reserve the loader's space without mounting its animation.
+// Errors pause on hover or keyboard focus; mouse focus alone does not hold them.
 <ActionButton
   action={() => saveChanges()}
-  labels={{ success: "Saved" }}
+  labels={{ success: "Saved", error: (error) => error instanceof Error ? error.message : "Failed" }}
+  revertAfter={{ success: 2000, error: 4000 }}
 >
   Save changes
 </ActionButton>`,
@@ -20,29 +20,37 @@ export const componentReferences = {
   "action-toggle": {
     usage: `import { ActionToggle } from "@/components/ui/action-toggle";
 
+// Error feedback pauses on hover or keyboard focus.
 <ActionToggle
   pressed={following}
   action={(next) => saveFollowing(next)}
   onPressedChange={setFollowing}
-  labels={{ pressed: "Following" }}
+  labels={{ pressed: "Following", error: (error) => error instanceof Error ? error.message : "Try again" }}
 >
   Follow
 </ActionToggle>`,
   },
   alert: {
-    usage: `import { Alert } from "@/components/ui/alert";
+    usage: `import { Alert, AlertTitle, AlertDescription, AlertClose } from "@/components/ui/alert";
 
-<Alert variant="success">Changes saved.</Alert>
-<Alert variant="loading">Checking availability…</Alert>`,
+<Alert variant="success" open={open} onOpenChange={setOpen}>
+  <AlertTitle>Changes saved</AlertTitle>
+  <AlertDescription>Your settings are up to date.</AlertDescription>
+  <AlertClose />
+</Alert>`,
   },
   "alert-dialog": {
-    usage: `import {
+    usage: `import { Trash2 } from "lucide-react";
+import {
   AlertDialog,
   AlertDialogAction,
+  AlertDialogBody,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
@@ -50,11 +58,18 @@ export const componentReferences = {
 <AlertDialog>
   <AlertDialogTrigger>Delete project</AlertDialogTrigger>
   <AlertDialogContent>
-    <AlertDialogTitle>Delete project?</AlertDialogTitle>
-    <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+    <AlertDialogBody>
+      <AlertDialogHeader>
+        <AlertDialogMedia variant="destructive"><Trash2 /></AlertDialogMedia>
+        <AlertDialogTitle>Delete project?</AlertDialogTitle>
+        <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+      </AlertDialogHeader>
+    </AlertDialogBody>
     <AlertDialogFooter>
       <AlertDialogCancel>Cancel</AlertDialogCancel>
-      <AlertDialogAction variant="destructive">Delete</AlertDialogAction>
+      <AlertDialogAction variant="destructive" onClick={() => deleteProject(projectId)}>
+        Delete
+      </AlertDialogAction>
     </AlertDialogFooter>
   </AlertDialogContent>
 </AlertDialog>`,
@@ -62,19 +77,19 @@ export const componentReferences = {
   "ascii-loader": {
     usage: `import { AsciiLoader } from "@/components/ui/ascii-loader";
 
-<AsciiLoader label="Loading" />`,
+<AsciiLoader id="loading-status" loading={isLoading} label="Loading" style={{ fontSize: 16 }} />`,
   },
   "matrix-loader": {
     usage: [
       'import { MatrixLoader } from "@/components/ui/matrix-loader";',
       "",
-      '<MatrixLoader variant="twinkle" label="Loading" />',
+      '<MatrixLoader loading={isLoading} variant="twinkle" label="Loading" />',
     ].join("\n"),
   },
   "classic-loader": {
     usage: `import { ClassicLoader } from "@/components/ui/classic-loader";
 
-<ClassicLoader size="md" speed={1} label="Loading results" />`,
+<ClassicLoader loading={isLoading} size="md" speed={1} label="Loading results" />`,
   },
   breadcrumb: {
     usage: `import {
@@ -85,15 +100,17 @@ export const componentReferences = {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
+  BreadcrumbSibling,
+  BreadcrumbSiblings,
 } from "@/components/ui/breadcrumb";
 
 <Breadcrumb>
-  <BreadcrumbList>
+  <BreadcrumbList separator="slash">
     <BreadcrumbItem>
-      <BreadcrumbLink href="/">Home</BreadcrumbLink>
+      <BreadcrumbLink render={<a href="/" />}>Home</BreadcrumbLink>
     </BreadcrumbItem>
     <BreadcrumbSeparator />
-    <BreadcrumbCollapse>
+    <BreadcrumbCollapse open={pathExpanded} onOpenChange={setPathExpanded}>
       <BreadcrumbItem>
         <BreadcrumbLink href="/docs">Docs</BreadcrumbLink>
       </BreadcrumbItem>
@@ -101,25 +118,39 @@ export const componentReferences = {
     </BreadcrumbCollapse>
     <BreadcrumbItem>
       <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+      <BreadcrumbSiblings label="Navigation pages">
+        <BreadcrumbSibling href="/docs/breadcrumb" current>Breadcrumb</BreadcrumbSibling>
+        <BreadcrumbSibling href="/docs/menubar">Menubar</BreadcrumbSibling>
+      </BreadcrumbSiblings>
     </BreadcrumbItem>
   </BreadcrumbList>
 </Breadcrumb>`,
   },
+  "number-animation": {
+    usage: `import { NumberAnimation } from "@/components/ui/number-animation";
+
+// Reduced motion cancels active rolls and exits; the latest value stays readable.
+<NumberAnimation value={total} locales="en-US" format={{ style: "currency", currency: "USD" }} />`,
+  },
   badge: {
     usage: `import { CircleX } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge, BadgeClose, BadgeCount } from "@/components/ui/badge";
 
 <Badge variant="solid" shape="pill">Approved</Badge>
+<Badge render={<button type="button" />}>Follow</Badge>
 <Badge status="loading">Syncing</Badge>
 <Badge status="danger" icons={{ danger: <CircleX /> }}>Failed</Badge>
-<Badge color="oklch(0.7 0.15 250 / 0.15)">Beta</Badge>`,
+<Badge variant="outline" neutralText dot pulse>Live</Badge>
+<Badge variant="filled" status="danger" showIcon={false}><BadgeCount animated value={unread} max={99} /></Badge>
+// Opening and removal follow the current --duration-base / slow / fast CSS tokens.
+<Badge open={open} onOpenChange={setOpen}>Design<BadgeClose id="remove-design" /></Badge>`,
   },
   button: {
     usage: `import { Button } from "@/components/ui/button";
 
 <Button variant="primary">Deploy</Button>
-// Keeps keyboard focus and blocks activation; inherits LoaderProvider's indicator.
-<Button loading>Deploy</Button>`,
+<Button loading loadingLabel="Deploying">Deploy</Button>
+<Button variant="ghost" aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>Actions</Button>`,
   },
   "button-group": {
     usage: `import { ButtonGroup } from "@/components/ui/button-group";
@@ -131,9 +162,13 @@ import { Button } from "@/components/ui/button";
 </ButtonGroup>`,
   },
   checkbox: {
-    usage: `import { Checkbox } from "@/components/ui/checkbox";
+    usage: `import { Checkbox, CheckboxGroup } from "@/components/ui/checkbox";
 
-<Checkbox label="Accept terms and conditions" />`,
+<CheckboxGroup aria-label="Notifications" allValues={["email", "push"]} defaultValue={["email"]}>
+  <Checkbox parent label="Select all" />
+  <Checkbox value="email" label="Email" />
+  <Checkbox value="push" label="Push notifications" />
+</CheckboxGroup>`,
   },
   collapsible: {
     usage: `import {
@@ -142,14 +177,16 @@ import { Button } from "@/components/ui/button";
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
-<Collapsible>
+<Collapsible className="flex flex-col gap-2">
   <CollapsibleTrigger>Details</CollapsibleTrigger>
-  <CollapsibleContent>More information.</CollapsibleContent>
+  <CollapsibleContent className="pt-0">More information.</CollapsibleContent>
 </Collapsible>`,
   },
   "command-palette": {
     usage: `import { CommandPalette, CommandPanelBody, CommandPanelFooter } from "@/components/ui/command-palette";
 
+// Keybinds also accept shift+/, shift+1, +, and mod++.
+// Unmodified shortcuts leave focused controls and editable fields alone.
 <CommandPalette groups={[{ items: [{
   id: "project",
   label: "Project actions",
@@ -158,18 +195,17 @@ import { Button } from "@/components/ui/button";
     <CommandPanelFooter actions={{ items: [{
       id: "delete",
       label: "Delete project",
-      keybind: "mod+shift+d",
+      keybind: "mod+shift+d", // Fresh presses only; held-key repeats and composition are ignored.
       confirm: { label: "Confirm deletion?" },
       onSelect: deleteProject,
     }] }} />
   </>,
-}] }]} />
-// The shortcut opens the actions menu and arms confirmation before it can delete.`,
+}] }]} />`,
   },
   "copy-button": {
     usage: `import { CopyButton } from "@/components/ui/copy-button";
 
-// Async values keep keyboard focus while copying and block repeat activation.
+// After a failure, moving the pointer away resumes the timer unless keyboard-focused.
 <CopyButton value="Text to copy" size="md">Copy</CopyButton>`,
   },
   "delete-button": {
@@ -180,18 +216,49 @@ import { Button } from "@/components/ui/button";
   dialog: {
     usage: `import {
   Dialog,
+  DialogBody,
   DialogContent,
+  DialogFooter,
+  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 
 <Dialog>
   <DialogTrigger>Open dialog</DialogTrigger>
+  {/* For a fixed height, use autoSize={false} className="h-[32rem]". */}
   <DialogContent>
-    <DialogTitle>Edit project</DialogTitle>
-    Project settings
+    <DialogHeader>
+      <DialogTitle>Edit project</DialogTitle>
+    </DialogHeader>
+    <DialogBody>Project settings</DialogBody>
+    <DialogFooter showCloseButton />
   </DialogContent>
 </Dialog>`,
+  },
+  "context-menu": {
+    usage: `import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuShortcut,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+
+<ContextMenu>
+  <ContextMenuTrigger className="rounded-xl border border-dashed border-border p-8">
+    Right click here
+  </ContextMenuTrigger>
+  <ContextMenuContent>
+    <ContextMenuItem>
+      Duplicate
+      <ContextMenuShortcut keys="mod+d" />
+    </ContextMenuItem>
+    <ContextMenuSeparator />
+    <ContextMenuItem variant="destructive">Delete</ContextMenuItem>
+  </ContextMenuContent>
+</ContextMenu>`,
   },
   "dropdown-menu": {
     usage: `import {
@@ -203,7 +270,7 @@ import { Button } from "@/components/ui/button";
 
 <DropdownMenu>
   <DropdownMenuTrigger>Actions</DropdownMenuTrigger>
-  <DropdownMenuContent>
+  <DropdownMenuContent portalProps={{ keepMounted: true }} positionerProps={{ collisionPadding: 8 }}>
     <DropdownMenuItem>Edit</DropdownMenuItem>
     <DropdownMenuItem disabled disabledReason="Billing is available on the Pro plan.">
       Billing
@@ -212,10 +279,16 @@ import { Button } from "@/components/ui/button";
 </DropdownMenu>`,
   },
   empty: {
-    usage: `import { Empty, EmptyTitle } from "@/components/ui/empty";
+    usage: `import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 
-<Empty>
-  <EmptyTitle>No projects yet</EmptyTitle>
+<Empty size="sm" animated render={<section aria-labelledby="empty-title" />}>
+  <EmptyHeader>
+    <EmptyTitle id="empty-title" render={<h2 />}>No projects yet</EmptyTitle>
+    <EmptyDescription>
+      <p>Create a project to get started.</p>
+      <p>Read the <a href="/guide">setup guide</a> for help.</p>
+    </EmptyDescription>
+  </EmptyHeader>
 </Empty>`,
   },
   "hover-card": {
@@ -227,36 +300,91 @@ import { Button } from "@/components/ui/button";
 
 <HoverCard>
   <HoverCardTrigger href="/people/alex">Alex Morgan</HoverCardTrigger>
-  <HoverCardContent>Preview content</HoverCardContent>
+  <HoverCardContent autoSize lockSide portalProps={{ keepMounted: true }}>
+    Preview content
+  </HoverCardContent>
 </HoverCard>`,
   },
   input: {
-    usage: `import { Input } from "@/components/ui/input";
+    usage: `import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input, InputCount } from "@/components/ui/input";
 
-<Input aria-label="Search" placeholder="Search…" />`,
+<Input
+  aria-label="Name" value={name} onValueChange={setName}
+  wrapperClassName="max-w-sm"
+  maxLength={40} aria-describedby="name-count"
+  endAction={name ? (
+    <Button variant="ghost" size="icon-xs" aria-label="Clear name" onClick={() => setName("")}>
+      <X />
+    </Button>
+  ) : undefined}
+/>
+<InputCount id="name-count" length={name.length} maxLength={40} />`,
+  },
+  kbd: {
+    usage: `import { KbdGroup } from "@/components/ui/kbd";
+
+<KbdGroup keys="mod+k" size="sm" />`,
+  },
+  menubar: {
+    usage: `import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarSeparator,
+  MenubarShortcut,
+  MenubarTrigger,
+} from "@/components/ui/menubar";
+
+<Menubar aria-label="Editor">
+  <MenubarMenu>
+    <MenubarTrigger>File</MenubarTrigger>
+    <MenubarContent>
+      <MenubarItem>
+        New file
+        <MenubarShortcut keys="mod+n" />
+      </MenubarItem>
+      <MenubarSeparator />
+      <MenubarItem variant="destructive">Move to trash</MenubarItem>
+    </MenubarContent>
+  </MenubarMenu>
+  <MenubarMenu>
+    <MenubarTrigger>Edit</MenubarTrigger>
+    <MenubarContent>
+      <MenubarItem>Undo</MenubarItem>
+    </MenubarContent>
+  </MenubarMenu>
+</Menubar>`,
   },
   morph: {
     usage: `import { Check, Copy } from "lucide-react";
 import { Morph } from "@/components/ui/morph";
 
-// A known icon slot needs no hidden sizing copies.
 <Morph
+  aria-hidden="true"
+  activeKey={copied ? "done" : "idle"}
+  items={{ idle: <Copy />, done: <Check /> }}
+/>
+
+<Morph
+  aria-hidden="true"
   sizing="fixed"
   className="size-4"
   activeKey={copied ? "done" : "idle"}
-  items={{ idle: <Copy className="size-4" />, done: <Check className="size-4" /> }}
+  items={{ idle: <Copy />, done: <Check /> }}
 />`,
   },
   "date-picker": {
     usage: `import { DatePicker, DateRangePicker } from "@/components/ui/date-picker";
 
-{/* Both pickers use a popover with 34px calendar cells on every device. */}
 <DatePicker value={date} onValueChange={setDate} name="due" clearable />
-{/* Today returns to the current month without selecting; Clear resets the value. */}
-{/* Use showToday={false} and clearable={false} to omit the footer. */}
-{/* The calendar shows only the weeks needed for each month. */}
-{/* dateFormat="numeric" shows 19 / 10 / 2026 in every locale. */}
-{/* calendarProps.timeZone keeps labels, submitted dates, and the grid in the same zone. */}
+
+// A picker outside its form; empty and disabled selections are omitted.
+<form id="schedule" />
+<DatePicker name="scheduledDate" form="schedule" clearable />
+
 <DateRangePicker
   value={range}
   onValueChange={setRange}
@@ -274,7 +402,7 @@ import { Morph } from "@/components/ui/morph";
 
 <Popover>
   <PopoverTrigger>Open</PopoverTrigger>
-  <PopoverContent>
+  <PopoverContent autoSize portalProps={{ keepMounted: true }}>
     <PopoverTitle>Display options</PopoverTitle>
     Popover content
   </PopoverContent>
@@ -283,10 +411,10 @@ import { Morph } from "@/components/ui/morph";
   progress: {
     usage: `import { Progress, ProgressLabel, ProgressValue } from "@/components/ui/progress";
 
-<Progress value={60} className="space-y-2">
+<Progress value={progress} color="var(--ring)" className="space-y-2">
   <div className="flex items-baseline justify-between text-sm">
     <ProgressLabel>Uploading files</ProgressLabel>
-    <ProgressValue className="tabular-nums" />
+    <ProgressValue animated className="tabular-nums" />
   </div>
 </Progress>`,
   },
@@ -294,7 +422,8 @@ import { Morph } from "@/components/ui/morph";
     usage: `import { Radio, RadioGroup } from "@/components/ui/radio";
 
 <RadioGroup aria-label="Density" defaultValue="comfortable">
-  <Radio value="comfortable" label="Comfortable" />
+  <Radio value="comfortable" label="Comfortable" className={({ checked }) => checked ? "shadow-border" : undefined} />
+  <Radio value="compact" label="Compact" render={<span />} />
 </RadioGroup>`,
   },
   select: {
@@ -302,6 +431,8 @@ import { Morph } from "@/components/ui/morph";
   Select,
   SelectContent,
   SelectItem,
+  SelectGroup,
+  SelectGroupLabel,
   SelectSeparator,
   SelectSub,
   SelectSubContent,
@@ -310,13 +441,17 @@ import { Morph } from "@/components/ui/morph";
   SelectValue,
 } from "@/components/ui/select";
 
-// The opening row is the selection, then the first enabled option in rendered order.
+// Mounted item labels and icons survive StrictMode and Activity effect replays.
+// For long lists, stable item props let unchanged rows skip highlight/search rendering.
 <Select size="xs" defaultValue="apple">
   <SelectTrigger variant="ghost" label="Fruit">
     <SelectValue />
   </SelectTrigger>
   <SelectContent clearable>
-    <SelectItem value="apple">Apple</SelectItem>
+    <SelectGroup>
+      <SelectGroupLabel>Popular</SelectGroupLabel>
+      <SelectItem value="apple">Apple</SelectItem>
+    </SelectGroup>
     <SelectSeparator />
     <SelectSub>
       <SelectSubTrigger>More fruit</SelectSubTrigger>
@@ -325,9 +460,7 @@ import { Morph } from "@/components/ui/morph";
       </SelectSubContent>
     </SelectSub>
   </SelectContent>
-</Select>
-// Clear reports null (or [] for multiple) to onValueChange(value, details).
-// Call details.cancel() in that callback to keep the selection.`,
+</Select>`,
   },
   "select-aligned": {
     usage: `import {
@@ -337,9 +470,9 @@ import { Morph } from "@/components/ui/morph";
   AlignedSelectTrigger,
 } from "@/components/ui/select-aligned";
 
-// Dynamic option updates preserve rendered order for opening and search highlights.
 <AlignedSelect size="xs" value={city} onValueChange={setCity}>
-  <AlignedSelectTrigger variant="ghost" label="City" placeholder="Pick a city" />
+  <AlignedSelectTrigger variant="ghost" label="City" placeholder="Pick a city"
+    className={({ valid }) => valid === false ? "text-destructive" : undefined} />
   <AlignedSelectContent>
     <AlignedSelectItem value="Lisbon">Lisbon</AlignedSelectItem>
     <AlignedSelectItem value="Oslo">Oslo</AlignedSelectItem>
@@ -347,13 +480,20 @@ import { Morph } from "@/components/ui/morph";
 </AlignedSelect>`,
   },
   "select-search": {
-    usage: `import { SearchSelect, SearchSelectInput, SearchSelectContent, SearchSelectItem } from "@/components/ui/select-search";
+    usage: `import { SearchSelect, SearchSelectInput, SearchSelectContent, SearchSelectItem, SearchSelectGroup, SearchSelectGroupLabel, SearchSelectCollection } from "@/components/ui/select-search";
 
-// Focusing dims the selection; clicking a row commits it and unfocuses the field.
-<SearchSelect items={items} defaultValue={items[0]}>
-  <SearchSelectInput aria-label="Choose an option" placeholder="Search…" />
-  <SearchSelectContent>
-    {(item) => <SearchSelectItem key={item.value} value={item}>{item.label}</SearchSelectItem>}
+// Item icons reuse their type/key; change the icon key when its appearance changes.
+<SearchSelect items={groups}>
+  <SearchSelectInput aria-label="Choose an option" placeholder="Search available options…" />
+  <SearchSelectContent align="start" alignOffset={4}>
+    {(group) => (
+      <SearchSelectGroup key={group.label} items={group.items}>
+        <SearchSelectGroupLabel>{group.label}</SearchSelectGroupLabel>
+        <SearchSelectCollection>
+          {(item) => <SearchSelectItem key={item.value} value={item}>{item.label}</SearchSelectItem>}
+        </SearchSelectCollection>
+      </SearchSelectGroup>
+    )}
   </SearchSelectContent>
 </SearchSelect>`,
   },
@@ -368,24 +508,37 @@ import { Morph } from "@/components/ui/morph";
   Selectable content
 </SelectionToolbar>`,
   },
+  "scroll-area": {
+    usage: `import { ScrollArea } from "@/components/ui/scroll-area";
+
+<ScrollArea className={({ scrolling }) =>
+  "h-72 rounded-xl shadow-border" + (scrolling ? " bg-surface" : "")
+}>
+  <div className="p-4">{/* long content */}</div>
+</ScrollArea>`,
+  },
   separator: {
     usage: `import { Separator } from "@/components/ui/separator";
 
-<Separator />`,
+<Separator label="Or" align="center" />`,
   },
   sheet: {
     usage: `import {
   Sheet,
+  SheetBody,
   SheetContent,
+  SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 
 <Sheet>
   <SheetTrigger>Open sheet</SheetTrigger>
-  <SheetContent>
-    <SheetTitle>Edit project</SheetTitle>
-    Project settings
+  <SheetContent side="bottom">
+    <SheetHeader>
+      <SheetTitle>Edit project</SheetTitle>
+    </SheetHeader>
+    <SheetBody>Project settings</SheetBody>
   </SheetContent>
 </Sheet>`,
   },
@@ -394,6 +547,10 @@ import { Morph } from "@/components/ui/morph";
   Sidebar,
   SidebarContent,
   SidebarMenu,
+  SidebarMenuAction,
+  SidebarMenuBadge,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarMenuCollapsible,
   SidebarMenuCollapsibleContent,
   SidebarMenuCollapsibleTrigger,
@@ -401,12 +558,19 @@ import { Morph } from "@/components/ui/morph";
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
-<SidebarProvider>
+<SidebarProvider keyboardShortcut="mod+b">
   <Sidebar>
     <SidebarContent>
       <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton asChild><a href="/inbox">Inbox</a></SidebarMenuButton>
+          <SidebarMenuBadge count={12} label="unread messages" />
+          <SidebarMenuAction replacesBadge aria-label="More inbox actions">…</SidebarMenuAction>
+        </SidebarMenuItem>
         <SidebarMenuCollapsible defaultOpen>
+          {/* Page rows pass isActive and select via onClick; their chevron only toggles. */}
           <SidebarMenuCollapsibleTrigger>Projects</SidebarMenuCollapsibleTrigger>
+          {/* Content unfolds with a fade and blur using the motion tokens. */}
           <SidebarMenuCollapsibleContent>Navigation</SidebarMenuCollapsibleContent>
         </SidebarMenuCollapsible>
       </SidebarMenu>
@@ -419,6 +583,7 @@ import { Morph } from "@/components/ui/morph";
     usage: `import { Sidebar } from "@/components/ui/sidebar";
 import { SidebarLayout } from "@/components/ui/sidebar-layout";
 
+// Scroll restoration and locking target [data-slot="sidebar-layout-viewport"].
 <SidebarLayout
   sidebar={<Sidebar />}
   title="Notes"
@@ -428,30 +593,100 @@ import { SidebarLayout } from "@/components/ui/sidebar-layout";
   Page content
 </SidebarLayout>`,
   },
+  field: {
+    usage: `import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+  FieldStatus,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+
+// The label reads \`required\` from the control and draws "Email *".
+<Field>
+  <FieldLabel>Email</FieldLabel>
+  <Input type="email" required />
+  <FieldDescription>We only use it to reply.</FieldDescription>
+  <FieldError match="valueMissing">Enter an email address.</FieldError>
+</Field>
+
+// In a mostly-required form, mark the optional fields instead, once for the whole set.
+<FieldSet indicator="optional">
+  <FieldLegend>Profile</FieldLegend>
+  <FieldGroup>
+    <Field>
+      <FieldLabel>Nickname</FieldLabel>  {/* "Nickname (optional)" */}
+      <Input />
+    </Field>
+    <Field validationMode="onBlur">
+      <FieldLabel>Handle</FieldLabel>
+      <Input required pattern="[a-z0-9_]+" endAction={<FieldStatus />} />
+      <FieldError errors={serverErrors} />
+    </Field>
+  </FieldGroup>
+</FieldSet>
+
+// A control beside its label and description.
+<Field orientation="horizontal">
+  <Switch />
+  <FieldContent>
+    <FieldLabel>Email updates</FieldLabel>
+    <FieldDescription>A weekly summary.</FieldDescription>
+  </FieldContent>
+</Field>`,
+  },
   skeleton: {
     usage: `import { Skeleton } from "@/components/ui/skeleton";
 
-<Skeleton className="h-4 w-32" />`,
+<Skeleton loading={isLoading}>
+  <span>Account details</span>
+</Skeleton>`,
   },
   slider: {
     usage: `import { Slider } from "@/components/ui/slider";
 
-<Slider aria-label="Volume" defaultValue={60} showValueTooltip />
+// Save after pointer, keyboard, or typed edits (Enter or blur).
+<Slider aria-label="Volume" defaultValue={60} onValueCommitted={saveVolume} animateValue showValueTooltip />
 
-<Slider label="Price" range defaultValue={[20, 80]} thumbLabels={["Lowest price", "Highest price"]} />
+<Slider label="Price" range draggableRange defaultValue={[20, 80]} showValueTooltip format={{ style: "currency", currency: "USD" }} thumbLabels={["Lowest price", "Highest price"]} />
 
-// Typed values snap to the grid starting at 0.5, preserving its decimal precision.
 <Slider label="Amount" min={0.5} max={10.5} step={1} defaultValue={3.5} />
 
-<Slider label="Volume" defaultValue={60} inlineLabel />`,
+<Slider label="Volume" defaultValue={60} inlineLabel />
+
+<Slider label="Brightness" thumb="circle" variant="outline-ghost" defaultValue={40} />`,
+  },
+  "scrub-slider": {
+    usage: `import { ScrubSlider } from "@/components/ui/scrub-slider";
+
+<ScrubSlider label="Width" unit="px" min={0} max={2000} defaultValue={307} />
+
+<ScrubSlider label="Scale" unit="×" min={0.1} max={4} step={0.01} defaultValue={1} />
+
+// Further edits and nudges start from the value accepted by the parent.
+<ScrubSlider label="Opacity" unit="%" value={opacity} onValueChange={setOpacity} size="sm" variant="outline-ghost" />
+
+// One row for dense panels: label outside, ruler and value inside.
+<ScrubSlider aria-label="Gap" layout="inline" variant="plain" chevrons={false} size="sm" min={0} max={48} defaultValue={8} />`,
   },
   switch: {
     usage: `import { Switch } from "@/components/ui/switch";
 
 <Switch
   aria-label="Enable notifications"
+  icons
   onCheckedChange={(next, details) => {
-    if (next && !canEnableNotifications) details.cancel();
+    if (next && !canEnableNotifications) {
+      details.cancel();
+      return;
+    }
+    return saveNotifications(next);
   }}
 />`,
   },
@@ -466,19 +701,20 @@ import { SidebarLayout } from "@/components/ui/sidebar-layout";
   TableRow,
 } from "@/components/ui/table";
 
-<Table>
+// Pinned columns automatically fade content scrolling behind their inner edges.
+<Table wrap>
   <TableCaption>People</TableCaption>
   <TableHeader>
     <TableRow>
-      <TableHead>Name</TableHead>
-      <TableHead>Role</TableHead>
+      <TableHead pinned="start">Name</TableHead>
+      <TableHead align="center">Role</TableHead>
     </TableRow>
   </TableHeader>
   <TableBody>
     {people.map((person) => (
       <TableRow key={person.id}>
-        <TableCell>{person.name}</TableCell>
-        <TableCell>{person.role}</TableCell>
+        <TableHead scope="row" pinned="start">{person.name}</TableHead>
+        <TableCell align="center">{person.role}</TableCell>
       </TableRow>
     ))}
   </TableBody>
@@ -486,52 +722,37 @@ import { SidebarLayout } from "@/components/ui/sidebar-layout";
   },
   "data-table": {
     usage: `import {
-  DataTable,
-  DataTableHead,
-  DataTableRow,
-  DataTableRowActions,
-  TableBody,
-  TableCell,
-  TableHeader,
+  DataTable, DataTableContent, DataTableToolbar, DataTableSearch, DataTableFilter,
+  DataTableViewOptions, DataTablePagination, createDataTableColumns, useDataTable,
 } from "@/components/ui/data-table";
-import { Button } from "@/components/ui/button";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
-<DataTable
-  selectable
-  selectionBar
-  actionColumn
-  rows={people.map((person) => person.id)}
-  value={selected}
-  onValueChange={setSelected}
-  sort={sort}
-  onSortChange={setSort}
-  selectionActions={<Button size="xs" variant="ghost">Export</Button>}
->
-  <TableHeader>
-    <DataTableRow>
-      <DataTableHead sortKey="name">Name</DataTableHead>
-      <DataTableHead>Role</DataTableHead>
-    </DataTableRow>
-  </TableHeader>
-  <TableBody>
-    {sortPeople(people, sort).map((person) => (
-      <DataTableRow
-        key={person.id}
-        value={person.id}
-        selectLabel={\`Select \${person.name}\`}
-        actions={
-          <DataTableRowActions label={\`Actions for \${person.name}\`}>
-            <DropdownMenuItem>Edit</DropdownMenuItem>
-          </DataTableRowActions>
-        }
-      >
-        <TableCell>{person.name}</TableCell>
-        <TableCell>{person.role}</TableCell>
-      </DataTableRow>
-    ))}
-  </TableBody>
-</DataTable>`,
+type Person = { id: string; name: string; role: string };
+const helper = createDataTableColumns<Person>();
+const columns = helper.columns([
+  // Leaf-column pinning includes the selection gutter below grouped headings.
+  helper.group({ id: "person", header: "Person", columns: helper.columns([
+    helper.accessor("name", { header: "Name", enableHiding: false, meta: { rowHeader: true, pinned: "start" } }),
+    helper.accessor("role", { header: "Role" }),
+  ]) }),
+]);
+
+function PeopleTable({ people }: { people: Person[] }) {
+  const table = useDataTable({
+    data: people, columns, getRowId: (person) => person.id,
+    enableMultiRowSelection: true, // Set false for single selection, including range gestures.
+  });
+  return (
+    <DataTable table={table} selectable wrap>
+      <DataTableToolbar>
+        <DataTableSearch placeholder="Search people…" />
+        <DataTableFilter column="role" />
+        <DataTableViewOptions className="ms-auto" />
+      </DataTableToolbar>
+      <DataTableContent<Person> getRowLabel={(person) => person.name} />
+      <DataTablePagination />
+    </DataTable>
+  );
+}`,
   },
   "table-of-contents": {
     usage: `import { TableOfContents } from "@/components/ui/table-of-contents";
@@ -556,37 +777,28 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
   tabs: {
     usage: `import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
 
-<Tabs defaultValue="account">
-  <TabsList>
-    <TabsTab value="account">Account</TabsTab>
-  </TabsList>
-  <TabsPanel value="account">Account settings</TabsPanel>
-</Tabs>
-
-<Tabs variant="pill" size="sm" defaultValue="account">
-  <TabsList maxWidth={280}>
-    <TabsTab value="account">Account</TabsTab>
+<Tabs orientation="vertical" defaultValue="account">
+  <TabsList aria-label="Settings" className="max-h-48">
+    <TabsTab value="account" className={({ active }) => active ? "font-semibold" : undefined}>
+      Account
+    </TabsTab>
     <TabsTab value="notifications">Notifications</TabsTab>
-    <TabsTab value="billing">Billing</TabsTab>
-    <TabsTab value="team">Team members</TabsTab>
-    <TabsTab value="security">Security</TabsTab>
   </TabsList>
-  <TabsPanel value="account">Account settings</TabsPanel>
-  <TabsPanel value="notifications">Notification settings</TabsPanel>
-  <TabsPanel value="billing">Billing settings</TabsPanel>
-  <TabsPanel value="team">Team members</TabsPanel>
-  <TabsPanel value="security">Security settings</TabsPanel>
+  <TabsPanel value="account" render={<section />}>Account settings</TabsPanel>
+  <TabsPanel value="notifications" render={<section />}>Notification settings</TabsPanel>
 </Tabs>`,
   },
   "text-shimmer": {
     usage: `import { TextShimmer } from "@/components/ui/text-shimmer";
 
-<TextShimmer duration={2.5}>Syncing changes…</TextShimmer>`,
+<TextShimmer as="p" role="status" active={isSyncing} once={false} duration={2.5}>
+  {isSyncing ? "Syncing changes…" : "Changes synced"}
+</TextShimmer>`,
   },
   "scramble-text": {
     usage: `import { ScrambleText } from "@/components/ui/scramble-text";
 
-<ScrambleText>Deploying changes…</ScrambleText>`,
+<ScrambleText id="deploy-status" data-job="deploy">Deploying changes…</ScrambleText>`,
   },
   "blur-text": {
     usage: `import { BlurText } from "@/components/ui/blur-text";
@@ -598,19 +810,20 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
   textarea: {
     usage: `import { Textarea } from "@/components/ui/textarea";
 
-<Textarea aria-label="Notes" placeholder="Write a note…" />
+// Auto-grow uses layout width, including inside scaled containers.
+<Textarea aria-label="Notes" placeholder="Write a note…" minRows={3} maxRows={10} />
 <Textarea variant="plain" aria-label="Draft" placeholder="Write inside your own editor surface…" />`,
   },
   toggle: {
     usage: `import { Toggle } from "@/components/ui/toggle";
 
-<Toggle aria-label="Pin item">Pin</Toggle>`,
+<Toggle aria-label="Pin item" fillBackground>Pin</Toggle>`,
   },
   tooltip: {
     usage: `import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
 
 <TooltipProvider>
-  <Tooltip content="Save changes">
+  <Tooltip content="Save changes" trackCursorAxis="x">
     <button>Save</button>
   </Tooltip>
 </TooltipProvider>`,

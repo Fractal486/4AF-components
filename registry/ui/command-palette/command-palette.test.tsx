@@ -3,8 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { vi } from "vitest";
 
-/** Mirrors DOUBLE_PRESS_GUARD in the component. */
-const DOUBLE_PRESS_GUARD_MS = 400;
+import { DOUBLE_PRESS_GUARD } from "./command-palette.actions";
+
 import {
   CommandPalette,
   CommandPanelBody,
@@ -19,7 +19,22 @@ import {
   useCommandSearch,
 } from "./command-palette";
 
+afterEach(() => vi.restoreAllMocks());
+
 describe("CommandPalette", () => {
+  it("keeps a fixed height and centres the empty state in it", async () => {
+    const user = userEvent.setup();
+    render(<CommandPalette open groups={[{ items: [{ id: "one", label: "One" }] }]} />);
+    const popup = screen.getByRole("dialog");
+    expect(popup.className).toContain("h-[min(34rem,calc(100dvh-16vh))]");
+    expect(popup.className).not.toContain("max-h-");
+
+    await user.type(screen.getByRole("combobox"), "nothing matches");
+    const message = await screen.findByText("No results for “nothing matches”");
+    expect(screen.getByText("Try a different search")).toBeInTheDocument();
+    expect(message.parentElement?.parentElement).toHaveClass("absolute", "inset-0", "items-center", "justify-center");
+  });
+
   it("requests a root Escape close exactly once", async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();
@@ -303,7 +318,7 @@ describe("CommandPalette", () => {
     await screen.findByRole("option", { name: "Rename" });
     const searchInput = screen.getByRole("textbox", { name: "Search options" });
     expect(searchInput).toHaveClass("h-full");
-    expect(searchInput.parentElement).toHaveClass("h-[38px]");
+    expect(searchInput.closest('[data-slot="input-wrapper"]')?.parentElement).toHaveClass("h-[38px]", "items-stretch");
 
     // Base UI drops its own highlight when the menu takes focus, so the row paints the
     // frozen one instead — the two are styled identically.
@@ -327,7 +342,7 @@ describe("CommandPalette", () => {
     );
   });
 
-  it("reports keyboard activation separately from pointer selection", async () => {
+  it("activates a row on a click and on Enter alike", async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
     const onActivate = vi.fn();
@@ -362,11 +377,120 @@ describe("CommandPalette", () => {
     );
 
     await user.click(await screen.findByRole("option", { name: "Projects" }));
-    await user.keyboard("{ArrowDown}{Enter}");
-
+    await user.click(await screen.findByRole("option", { name: "Alpha" }));
     expect(onSelect).toHaveBeenCalledOnce();
     expect(onActivate).toHaveBeenCalledOnce();
-    expect(onActivate.mock.calls[0]?.[0]).toHaveProperty("detail", 0);
+
+    await user.keyboard("{Enter}");
+    expect(onSelect).toHaveBeenCalledTimes(2);
+    expect(onActivate).toHaveBeenCalledTimes(2);
+  });
+
+  it("opens the actions menu for a right-clicked row without activating it", async () => {
+    const user = userEvent.setup();
+    const onActivate = vi.fn();
+
+    function RowsPanel() {
+      const [highlighted, setHighlighted] = useState<unknown>(undefined);
+      useCommandPanelHighlight(setHighlighted);
+      const name = highlighted === "beta" ? "Beta" : "Alpha";
+
+      return (
+        <CommandPanelBody>
+          <CommandPanelList>
+            <CommandPanelRow value="alpha" onActivate={onActivate}>Alpha</CommandPanelRow>
+            <CommandPanelRow value="beta" onActivate={onActivate}>Beta</CommandPanelRow>
+          </CommandPanelList>
+          <CommandPanelFooter actions={{ items: [{ id: "rename", label: `Rename ${name}` }] }} />
+        </CommandPanelBody>
+      );
+    }
+
+    render(
+      <CommandPalette
+        open
+        groups={[{ items: [{ id: "projects", label: "Projects", panel: () => <RowsPanel /> }] }]}
+      />,
+    );
+
+    await user.click(await screen.findByRole("option", { name: "Projects" }));
+    const beta = await screen.findByRole("option", { name: "Beta" });
+
+    await user.pointer({ keys: "[MouseRight]", target: beta });
+
+    // The menu describes the row under the pointer, which keeps the menu's highlight.
+    expect(await screen.findByRole("option", { name: "Rename Beta" })).toBeInTheDocument();
+    expect(beta).toHaveAttribute("data-frozen");
+    expect(onActivate).not.toHaveBeenCalled();
+  });
+
+  it("leaves the browser's context menu alone in a panel without actions", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <CommandPalette
+        open
+        groups={[
+          {
+            items: [
+              {
+                id: "projects",
+                label: "Projects",
+                panel: () => (
+                  <CommandPanelBody>
+                    <CommandPanelList>
+                      <CommandPanelRow value="alpha" onActivate={() => {}}>Alpha</CommandPanelRow>
+                    </CommandPanelList>
+                    <CommandPanelFooter />
+                  </CommandPanelBody>
+                ),
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    await user.click(await screen.findByRole("option", { name: "Projects" }));
+    const alpha = await screen.findByRole("option", { name: "Alpha" });
+    const event = new MouseEvent("contextmenu", { bubbles: true, cancelable: true, button: 2 });
+    act(() => {
+      alpha.dispatchEvent(event);
+    });
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it("opens a custom panel on its last selected row", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <CommandPalette
+        open
+        groups={[
+          {
+            items: [
+              {
+                id: "projects",
+                label: "Projects",
+                panel: () => (
+                  <CommandPanelBody>
+                    <CommandPanelList>
+                      <CommandPanelRow value="alpha" onSelect={() => {}}>Alpha</CommandPanelRow>
+                      <CommandPanelRow value="beta" selected onSelect={() => {}}>Beta</CommandPanelRow>
+                      <CommandPanelRow value="gamma" selected onSelect={() => {}}>Gamma</CommandPanelRow>
+                    </CommandPanelList>
+                  </CommandPanelBody>
+                ),
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    await user.click(await screen.findByRole("option", { name: "Projects" }));
+    expect(await screen.findByRole("option", { name: "Gamma" })).toHaveAttribute("data-highlighted");
+    expect(screen.getByRole("option", { name: "Alpha" })).not.toHaveAttribute("data-highlighted");
   });
 
   it("reports custom-panel highlights and additional refresh work", async () => {
@@ -493,7 +617,8 @@ describe("CommandPalette", () => {
     expect(await screen.findByRole("option", { name: "Saved" })).toBeInTheDocument();
   });
 
-  it("arms a confirm row on the first press and commits on the second", async () => {
+  it("arms a confirm row and accepts only a deliberate press at the guard boundary", async () => {
+    const now = vi.spyOn(Date, "now").mockReturnValue(1000);
     const user = userEvent.setup();
     const onSelect = vi.fn();
 
@@ -541,8 +666,13 @@ describe("CommandPalette", () => {
     expect(await screen.findByRole("option", { name: "Confirm?" })).toBeInTheDocument();
     expect(onSelect).not.toHaveBeenCalled();
 
-    // The guard means a second press has to be a deliberate one, not a double-click.
-    await new Promise((resolve) => setTimeout(resolve, DOUBLE_PRESS_GUARD_MS));
+    // A double-click and a press just before the boundary must not commit.
+    await user.click(screen.getByRole("option", { name: "Confirm?" }));
+    expect(onSelect).not.toHaveBeenCalled();
+    now.mockReturnValue(1000 + DOUBLE_PRESS_GUARD - 1);
+    await user.click(screen.getByRole("option", { name: "Confirm?" }));
+    expect(onSelect).not.toHaveBeenCalled();
+    now.mockReturnValue(1000 + DOUBLE_PRESS_GUARD);
 
     await user.click(screen.getByRole("option", { name: "Confirm?" }));
     expect(onSelect).toHaveBeenCalledOnce();
@@ -633,6 +763,25 @@ describe("CommandPalette initialItemId", () => {
 
     await user.keyboard("{Escape}");
     expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("keeps the Escape that closes the root list from reaching the page", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const pageEscape = vi.fn();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") pageEscape();
+    };
+    document.addEventListener("keydown", onKeyDown);
+
+    try {
+      render(<CommandPalette open groups={groups} onOpenChange={onOpenChange} />);
+      await user.keyboard("{Escape}");
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+      expect(pageEscape).not.toHaveBeenCalled();
+    } finally {
+      document.removeEventListener("keydown", onKeyDown);
+    }
   });
 
   it("still steps back from a page drilled into from the root", async () => {

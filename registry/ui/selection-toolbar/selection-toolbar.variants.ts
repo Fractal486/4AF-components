@@ -20,7 +20,7 @@ import { cva } from "class-variance-authority";
  */
 export const selectionToolbarButtonVariants = cva(
   [
-    "h-6 px-2.5",
+    "h-6 rounded-[4px] px-2.5",
     // The optical shave the button scale applies at `sm`, rescaled: 2px off whichever side
     // the icon is on, measured from this bar's padding rather than `sm`'s.
     "data-[icon-start]:ps-2 data-[icon-end]:pe-2",
@@ -48,25 +48,22 @@ export const selectionToolbarButtonVariants = cva(
 
 /**
  * The bar itself, and it is deliberately the Tooltip's material rather than the Popover's:
- * the same `bg-surface` fill, the same hairline-plus-drop-shadow, the same fast duration.
+ * the same `material-glass` fill, the same hairline-plus-drop-shadow, the same fast duration.
  * A selection toolbar is a transient annotation on the text you just selected — the thing
  * a tooltip is — not a panel you opened and will dismiss. Reusing the Popover's real
  * border and heavier lift would make it read as a much bigger commitment than it is.
  *
- * The shell uses the shared 8px button radius. The 6px action corners sit inside `p-1`
- * (4px) of padding; the slight difference keeps the transient bar compact without inventing
- * a one-off radius for it.
+ * The shell uses the shared 8px button radius. Its actions are concentric with it: 4px
+ * corners inside the `p-1` (4px) padding, as in Menubar's bar.
  *
  * No `overflow-hidden`: a focus ring is drawn 2px outside its button and the padding is
  * only 4px, so clipping here would shave the ring on the first and last action.
  */
 export const selectionToolbarVariants = cva([
-  "z-50 flex w-fit max-w-[calc(100vw-2rem)] items-center gap-0.5 rounded-[8px] bg-surface p-1",
+  "z-50 flex w-fit max-w-[calc(100vw-2rem)] items-center gap-0.5 rounded-[8px] material-glass p-1",
   "text-foreground outline-none",
-  // A single faint 1px ring plus a soft drop shadow. rgba, not oklch, so the `/` alpha
-  // can't trip Tailwind's arbitrary parser.
-  "shadow-[0_0_0_1px_rgba(0,0,0,0.04),0_10px_24px_-8px_rgba(0,0,0,0.18)]",
-  "dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_14px_30px_-12px_rgba(0,0,0,0.6)]",
+  // A faint ring and soft lift shared by transient floating annotations.
+  "shadow-overlay-subtle",
   // Scale grows from the edge nearest the selection — Base UI hands us
   // `--transform-origin` pointing there. `blur-0` is the resting filter so it interpolates
   // from blur(4px) rather than from `none`, which some browsers won't tween. Only these

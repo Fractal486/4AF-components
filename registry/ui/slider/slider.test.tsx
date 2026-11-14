@@ -13,6 +13,54 @@ import {
 import { Slider } from "./slider";
 
 describe("Slider", () => {
+  it.each(["Enter", "blur"])("commits a typed value once on %s", async (finish) => {
+    const user = userEvent.setup();
+    const change = vi.fn();
+    const commit = vi.fn();
+    render(<Slider label="Volume" defaultValue={40} step={10} onValueChange={change} onValueCommitted={commit} />);
+    await user.click(screen.getByText("40"));
+    const input = screen.getByRole("textbox", { name: "Edit Volume" });
+    await user.clear(input);
+    await user.type(input, "47");
+    if (finish === "Enter") await user.keyboard("{Enter}");
+    else await user.tab();
+    expect(change).toHaveBeenCalledExactlyOnceWith(50, expect.anything());
+    expect(commit).toHaveBeenCalledExactlyOnceWith(50, expect.objectContaining({
+      reason: "none",
+      event: expect.objectContaining({ type: finish === "Enter" ? "keydown" : "focusout" }),
+    }));
+    expect(change.mock.invocationCallOrder[0]).toBeLessThan(commit.mock.invocationCallOrder[0]!);
+  });
+
+  it.each([
+    { readout: "20", typed: "90", expected: [80, 80] },
+    { readout: "80", typed: "10", expected: [20, 20] },
+  ])("commits the clamped range when editing $readout", async ({ readout, typed, expected }) => {
+    const user = userEvent.setup();
+    const commit = vi.fn();
+    render(<Slider label="Price" defaultValue={[20, 80]} onValueCommitted={commit} />);
+    await user.click(screen.getByText(readout));
+    await user.clear(screen.getByRole("textbox"));
+    await user.type(screen.getByRole("textbox"), `${typed}{Enter}`);
+    expect(commit).toHaveBeenCalledExactlyOnceWith(expected, expect.objectContaining({ reason: "none" }));
+  });
+
+  it.each(["cancel", "Escape", "invalid", "unchanged"])("does not commit a typed edit that is %s", async (mode) => {
+    const user = userEvent.setup();
+    const commit = vi.fn();
+    const change = vi.fn((_: number, details: { cancel: () => void }) => {
+      if (mode === "cancel") details.cancel();
+    });
+    render(<Slider label="Volume" defaultValue={40} onValueChange={change} onValueCommitted={commit} />);
+    await user.click(screen.getByText("40"));
+    await user.clear(screen.getByRole("textbox"));
+    const typed = mode === "invalid" ? "abc" : mode === "unchanged" ? "40" : "65";
+    await user.type(screen.getByRole("textbox"), `${typed}{${mode === "Escape" ? "Escape" : "Enter"}}`);
+    expect(change).toHaveBeenCalledTimes(mode === "cancel" ? 1 : 0);
+    expect(commit).not.toHaveBeenCalled();
+    expect(screen.getByRole("slider")).toHaveAttribute("aria-valuenow", "40");
+  });
+
   it("keeps the final tick for an exact range of fractional steps", () => {
     const { container } = render(
       <Slider aria-label="Amount" thumb="circle" min={0} max={0.7} step={0.1} />,
@@ -39,7 +87,7 @@ describe("Slider", () => {
     await user.clear(input);
     await user.type(input, `${typed}{Enter}`);
 
-    expect(onValueChange).toHaveBeenCalledExactlyOnceWith(expected);
+    expect(onValueChange).toHaveBeenCalledExactlyOnceWith(expected, expect.objectContaining({ reason: "none" }));
     expect(screen.getByRole("slider")).toHaveAttribute("aria-valuenow", String(expected));
   });
 
@@ -57,7 +105,7 @@ describe("Slider", () => {
     await user.click(screen.getByText("40"));
     await user.clear(screen.getByRole("textbox", { name: "Edit Amount" }));
     await user.type(screen.getByRole("textbox", { name: "Edit Amount" }), "65{Enter}");
-    expect(onValueChange).toHaveBeenCalledExactlyOnceWith(65);
+    expect(onValueChange).toHaveBeenCalledExactlyOnceWith(65, expect.objectContaining({ reason: "none" }));
     expect(screen.getByRole("slider")).toHaveAttribute("aria-valuenow", "65");
   });
 
@@ -355,7 +403,7 @@ describe("Slider", () => {
     await user.clear(input);
     await user.type(input, "47{Enter}");
     // Snapped to the step of 10.
-    expect(onValueChange).toHaveBeenLastCalledWith(50);
+    expect(onValueChange).toHaveBeenLastCalledWith(50, expect.objectContaining({ reason: "none" }));
     expect(slider).toHaveAttribute("aria-valuenow", "50");
 
     await user.click(screen.getByText("50"));
@@ -566,7 +614,7 @@ describe("Slider", () => {
     const fill = container.querySelector('[data-slot="slider-fill"]')!;
     expect(fill.className).toContain("bg-(color:--slider-fill-rest)");
     expect(fill.className).toContain(
-      "[--slider-fill-rest:var(--slider-fill,color-mix(in_oklab,var(--color-foreground)_15%,transparent))]",
+      "[--slider-fill-rest:var(--slider-fill,color-mix(in_oklab,var(--color-foreground)_var(--slider-fill-strength,15%),transparent))]",
     );
   });
 

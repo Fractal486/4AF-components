@@ -1,4 +1,7 @@
-import { cn } from "@/registry/lib/cn";
+"use client";
+
+import { cn, mergeStateClassName } from "@/registry/lib/cn";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Select as BaseSelect } from "@base-ui/react/select";
 import { ChevronRight } from "lucide-react";
 import {
@@ -18,12 +21,16 @@ import {
   SelectContext,
   SelectSubContext,
   SelectSubItemContext,
+  SelectSubSiblingsContext,
   useSelectSubContext,
   type SelectSubItemContextValue,
+  type SelectSubSibling,
 } from "./select.context";
 import { SelectItem, type SelectItemProps } from "./select.item";
-import { SCROLLBAR } from "./select.shared";
 import { preventBaseUIHandler } from "./select.utils";
+
+/** A sibling closed this recently is still fading out, so opening another counts as a swap. */
+const SWAP_WINDOW_MS = 300;
 
 /**
  * How long the pointer may rest on its way to a nested panel before the panel closes. A
@@ -153,6 +160,20 @@ export function SelectSub({
 }: SelectSubProps) {
   const select = useContext(SelectContext);
   const parentPanelOpen = useContext(SelectSubItemContext);
+  // Moving from an open nested panel to a sibling's row swaps them with a short, slight
+  // animation instead of the full one, as Dropdown Menu's submenus and Menubar's menus do.
+  const siblings = useContext(SelectSubSiblingsContext);
+  const [swapping, setSwapping] = useState(false);
+  const selfRef = useRef<SelectSubSibling | null>(null);
+  useEffect(() => {
+    if (!siblings) return;
+    const entry: SelectSubSibling = { open: false, closedAt: -Infinity, setSwapping };
+    selfRef.current = entry;
+    siblings.add(entry);
+    return () => {
+      siblings.delete(entry);
+    };
+  }, [siblings]);
   const itemValues = useMemo(
     () => collectSelectSubOptions(children).map((option) => option.value),
     [children],
@@ -203,12 +224,27 @@ export function SelectSub({
       cancelOpen();
       cancelClose();
       onOpenChange?.(nextOpen, details);
+      const me = selfRef.current;
+      if (!details?.isCanceled && me && siblings) {
+        const now = performance.now();
+        if (nextOpen) {
+          const others = [...siblings].filter(
+            (other) => other !== me && (other.open || now - other.closedAt < SWAP_WINDOW_MS),
+          );
+          for (const other of others) other.setSwapping(true);
+          setSwapping(others.length > 0);
+        } else {
+          me.closedAt = now;
+          setSwapping(false);
+        }
+        me.open = nextOpen;
+      }
       if (!details?.isCanceled && !isControlled) setUncontrolledOpen(nextOpen);
       if (!nextOpen && !details?.isCanceled) {
         openedByHoverRef.current = false;
       }
     },
-    [cancelClose, cancelOpen, isControlled, onOpenChange],
+    [cancelClose, cancelOpen, isControlled, onOpenChange, siblings],
   );
 
   const setOpen = useCallback(
@@ -371,6 +407,7 @@ export function SelectSub({
         setCloseDelay,
         leaveTowardPanel,
         setPanelNode,
+        swapping,
       }}
     >
       {children}
@@ -381,10 +418,9 @@ export function SelectSub({
 export interface SelectSubTriggerProps
   extends Omit<
     SelectItemProps,
-    "children" | "value" | "className" | "disabled" | "label" | "render" | "end"
+    "children" | "value" | "disabled" | "label" | "render" | "end"
   > {
   children?: ReactNode;
-  className?: string;
   label?: string;
   disabled?: boolean;
   id?: string;
@@ -500,7 +536,7 @@ export function SelectSubTrigger({
       onKeyDown={handleKeyDown}
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
-      className={cn("data-[popup-open]:bg-muted data-[popup-open]:text-foreground", className)}
+      className={mergeStateClassName("data-[popup-open]:bg-muted data-[popup-open]:text-foreground", className)}
       end={
         <span className="flex shrink-0 items-center gap-1.5">
           {select.multiple && (
@@ -525,8 +561,8 @@ export function SelectSubTrigger({
 }
 
 export interface SelectSubContentProps
-  extends Omit<ComponentProps<typeof BaseSelect.Popup>, "className"> {
-  className?: string;
+  extends ComponentProps<typeof BaseSelect.Popup> {
+  portalProps?: Omit<ComponentProps<typeof BaseSelect.Portal>, "children">;
   children?: ReactNode;
   side?: ComponentProps<typeof BaseSelect.Positioner>["side"];
   align?: ComponentProps<typeof BaseSelect.Positioner>["align"];
@@ -543,6 +579,7 @@ type SelectSubContentKeyDownEvent = Parameters<
 /** A nested select panel whose children are ordinary `SelectItem`s. */
 export function SelectSubContent({
   className,
+  portalProps,
   children,
   side = "right",
   align = "start",
@@ -564,6 +601,7 @@ export function SelectSubContent({
     scheduleClose,
     cancelClose,
     setPanelNode,
+    swapping,
   } = useSelectSubContext();
   const nestedSearchOptions = useMemo(
     () => collectSelectSearchOptions(children),
@@ -681,7 +719,7 @@ export function SelectSubContent({
       onOpenChange={handleNestedOpenChange}
       onValueChange={(nextValue, details) => select.setValue(nextValue, details)}
     >
-      <BaseSelect.Portal>
+      <BaseSelect.Portal {...portalProps}>
         <BaseSelect.Positioner
           data-slot="select-sub-positioner"
           ref={setNestedPanelNode}
@@ -698,20 +736,22 @@ export function SelectSubContent({
             {...props}
             ref={setPanelNode}
             data-slot="select-sub-content"
+            data-swap={swapping ? "" : undefined}
             role={roleProp ?? "presentation"}
             onKeyDown={handleKeyDown}
             onPointerEnter={handlePointerEnter}
             onPointerLeave={handlePointerLeave}
-            className={cn(
-              "max-h-[min(var(--available-height),18rem)] w-max min-w-50 overflow-y-auto rounded-md border border-border bg-surface p-1 text-foreground shadow-overlay-drop outline-none",
-              SCROLLBAR,
-              "origin-[var(--transform-origin)] blur-0 transition-[opacity,scale,filter] duration-(--duration-base) ease-out",
-              "data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[starting-style]:blur-[3px]",
+            className={mergeStateClassName(cn(
+              "flex max-h-[min(var(--available-height),18rem)] w-max min-w-50 flex-col overflow-hidden rounded-md border border-border material-glass text-foreground shadow-overlay-drop outline-none",
+              "origin-[var(--transform-origin)] blur-0 transition-[opacity,scale,filter] duration-(--duration-slow) ease-panel data-[ending-style]:duration-(--duration-base) data-[ending-style]:ease-out",
+              "data-[starting-style]:scale-90 data-[starting-style]:opacity-0 data-[starting-style]:blur-[4px]",
               "data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[ending-style]:blur-[2px]",
-              className,
-            )}
+              "data-swap:duration-(--duration-fast) data-swap:data-[ending-style]:duration-(--duration-fast)",
+              "data-swap:data-[starting-style]:scale-[0.98] data-swap:data-[starting-style]:blur-[1px]"), className)}
           >
-            {keepMounted || subOpen ? options : null}
+            <ScrollArea className="min-h-0" viewportClassName="p-1" viewportProps={{ tabIndex: -1 }}>
+              {keepMounted || subOpen ? options : null}
+            </ScrollArea>
           </BaseSelect.Popup>
         </BaseSelect.Positioner>
       </BaseSelect.Portal>

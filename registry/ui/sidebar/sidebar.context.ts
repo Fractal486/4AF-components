@@ -1,14 +1,21 @@
+"use client";
+
 import { createContext, useContext } from "react";
 
 /* -- State ---------------------------------------------------------------------------- */
 
 export interface SidebarContextValue {
+  /** Shared by the layout and its portalled mobile drawer for shortcut ownership. */
+  shortcutScope: string;
+  keyboardShortcut: string | null;
   state: "expanded" | "collapsed";
   open: boolean;
   setOpen: (open: boolean) => void;
   openMobile: boolean;
   setOpenMobile: (open: boolean) => void;
   isMobile: boolean;
+  /** The provider's `mobile` override: undefined follows the viewport. */
+  mobileOverride: boolean | undefined;
   toggleSidebar: () => void;
 }
 

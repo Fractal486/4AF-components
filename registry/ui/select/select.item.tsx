@@ -1,9 +1,11 @@
-import { cn } from "@/registry/lib/cn";
-import { Checkbox } from "@/registry/ui/checkbox/checkbox";
+"use client";
+
+import { cn, mergeStateClassName } from "@/registry/lib/cn";
+import { CheckMark } from "@/registry/lib/check-mark";
 import { Select as BaseSelect } from "@base-ui/react/select";
-import { Check } from "lucide-react";
 import {
   forwardRef,
+  memo,
   useCallback,
   useContext,
   useEffect,
@@ -12,15 +14,28 @@ import {
   type ComponentProps,
   type ReactNode,
 } from "react";
-import { SELECT_CLEAR_ACTION, SelectContext, SelectSubItemContext } from "./select.context";
+import { SELECT_CLEAR_ACTION, SelectActiveItemContext, SelectContext, SelectSearchContext, SelectPanelDormantContext, SelectSubItemContext } from "./select.context";
 import { SIZE, SelectItemIcon } from "./select.shared";
-import { isEquivalentNode, setForwardedRef } from "./select.utils";
+import { setForwardedRef } from "./select.utils";
+
+/** The trailing slot a row's check sits in, reserved whether or not the row is selected. */
+const CHECK_SLOT = "flex size-3.5 shrink-0 items-center justify-center text-foreground";
+
+/** Accessible section; filtering hides its heading when no visible options remain. */
+export function SelectGroup({ className, ...props }: ComponentProps<typeof BaseSelect.Group>) {
+  return <BaseSelect.Group data-slot="select-group"
+    className={mergeStateClassName("flex flex-col [&:not(:has([role=option]:not([hidden])))]:hidden", className)} {...props} />;
+}
+
+export function SelectGroupLabel({ className, ...props }: ComponentProps<typeof BaseSelect.GroupLabel>) {
+  return <BaseSelect.GroupLabel data-slot="select-group-label"
+    className={mergeStateClassName("px-2.5 pt-2 pb-1 text-[10px] font-medium text-subtle-foreground/70", className)} {...props} />;
+}
 
 export type SelectSeparatorProps = Omit<
   ComponentProps<typeof BaseSelect.Separator>,
-  "className" | "orientation" | "ref"
+  "orientation" | "ref"
 > & {
-  className?: string;
   orientation?: ComponentProps<typeof BaseSelect.Separator>["orientation"];
 };
 
@@ -39,7 +54,7 @@ export const SelectSeparator = forwardRef<HTMLDivElement, SelectSeparatorProps>(
         ref={forwardedRef}
         data-slot="select-separator"
         orientation={orientation}
-        className={cn(
+        className={mergeStateClassName(cn(
           // A border rather than a one-pixel filled box, which is how every other rule in
           // the panel is drawn — the search field's included. The two are the same pixel
           // on paper, but a background box lands wherever the box lands: at a fractional
@@ -48,9 +63,7 @@ export const SelectSeparator = forwardRef<HTMLDivElement, SelectSeparatorProps>(
           "shrink-0 border-border",
           orientation === "horizontal"
             ? "-mx-1 my-1 h-0 w-auto border-t"
-            : "mx-1 h-full w-0 border-l",
-          className,
-        )}
+            : "mx-1 h-full w-0 border-l"), className)}
         {...props}
       />
     );
@@ -59,11 +72,10 @@ export const SelectSeparator = forwardRef<HTMLDivElement, SelectSeparatorProps>(
 
 export type SelectItemProps = Omit<
   ComponentProps<typeof BaseSelect.Item>,
-  "className" | "disabled"
+  "disabled"
 > & {
   /** An optional leading icon. It is inert and hidden from assistive technology. */
   icon?: ReactNode;
-  className?: string;
   children?: ReactNode;
   disabled?: boolean;
   /** Optional trailing content in place of the selection indicator. */
@@ -79,8 +91,27 @@ export type SelectItemProps = Omit<
   searchValue?: string;
 };
 
-export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function SelectItem(
+export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function SelectItem(props, ref) {
+  const activeItem = useContext(SelectActiveItemContext);
+  const { matchesQuery, hasMatchingDescendant } = useContext(SelectSearchContext);
+  const optionText = props.searchValue ?? (typeof props.children === "string" ? props.children : String(props.value));
+  return <SelectItemRow {...props} ref={ref}
+    active={Object.is(activeItem, props.value)}
+    clearActionActive={Object.is(activeItem, SELECT_CLEAR_ACTION)}
+    hiddenBySearch={!matchesQuery(optionText) && !hasMatchingDescendant(props.value)} />;
+});
+
+// Context readers still evaluate filtering for each option. The Base UI row, its icons,
+// and registration effects only render when that option's result or own props change.
+const SelectItemRow = memo(forwardRef<HTMLElement, SelectItemProps & {
+  active: boolean;
+  clearActionActive: boolean;
+  hiddenBySearch: boolean;
+}>(function SelectItemRow(
   {
+    active,
+    clearActionActive,
+    hiddenBySearch,
     className,
     icon,
     children,
@@ -108,22 +139,17 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
     registerLabel,
     unregisterLabel,
     open,
-    activeItem,
     panelSearch,
     setActiveItem,
-    matchesQuery,
     registerOptionText,
     unregisterOptionText,
-    hasMatchingDescendant,
   } = useContext(SelectContext);
   const nestedPanelContext = useContext(SelectSubItemContext);
   const nestedPanel = nestedPanelContext !== null;
   const nestedPanelOpen = nestedPanelContext?.open ?? false;
   const parentValue = nestedPanelContext?.parentValue;
   const optionText = searchValue ?? (typeof children === "string" ? children : String(value));
-  const hiddenBySearch = !matchesQuery(optionText) && !hasMatchingDescendant(value);
   const itemDisabled = disabled || hiddenBySearch || (nestedPanel && !nestedPanelOpen);
-  const clearActionActive = Object.is(activeItem, SELECT_CLEAR_ACTION);
   const pointerStartedRef = useRef(false);
   const bridgingPointerDownRef = useRef(false);
   const itemNode = useRef<HTMLElement | null>(null);
@@ -146,17 +172,16 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
     registerOptionText(value, optionText, parentValue, disabled, itemNode.current);
     return () => unregisterOptionText(value);
   }, [disabled, optionText, parentValue, registerOptionText, unregisterOptionText, value]);
-  const panelActive = open && Object.is(activeItem, value);
+  const panelActive = open && active;
+  // Kept for the arrow keys once the pointer has left, but no longer painted; with a footer
+  // button active, no row paints. Nested panels paint by CSS hover and have nothing to keep.
+  const rest = useContext(SelectPanelDormantContext);
+  const panelDormant = ((rest === "pointer" && panelActive) || rest === "footer") && !nestedPanel;
 
-  // The same shape as the label registration below, and for the same reason: an `<Icon />`
-  // written inline is a new object on every render.
-  const registeredIcon = useRef<{ value: unknown; icon: ReactNode } | null>(null);
+  // Always register on effect setup, including StrictMode and Activity replays. The
+  // parent's Map setter skips equivalent nodes, so inline JSX can safely re-register.
+  // Keep removal separate: deleting before each write would defeat that deduplication.
   useEffect(() => {
-    const previous = registeredIcon.current;
-    if (previous && Object.is(previous.value, value) && isEquivalentNode(previous.icon, icon)) {
-      return;
-    }
-    registeredIcon.current = { value, icon };
     registerIcon(value, icon);
   }, [icon, registerIcon, value]);
   useEffect(() => () => { unregisterIcon(value); }, [unregisterIcon, value]);
@@ -229,21 +254,9 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
     pointerStartedRef.current = false;
   };
 
-  // Register the label so a chip trigger can render the selected value(s) by name.
-  //
-  // The node cannot be a dependency that *writes*: JSX rebuilds it every render, so an
-  // effect keyed on its identity re-ran forever — its cleanup deleted the entry, the
-  // registration put it back, and the provider re-rendered into another fresh node. The
-  // effect still runs each render, but it only writes when the label says something
-  // different, and the removal is its own effect so it fires on unmount or a new value
-  // rather than on every pass.
-  const registeredLabel = useRef<{ value: unknown; label: ReactNode } | null>(null);
+  // As with icons, register on every setup and remove only when the value or lifecycle
+  // changes. A retained ref must not skip registration after an effect cleanup.
   useEffect(() => {
-    const previous = registeredLabel.current;
-    if (previous && Object.is(previous.value, value) && isEquivalentNode(previous.label, children)) {
-      return;
-    }
-    registeredLabel.current = { value, label: children };
     registerLabel(value, children);
   }, [children, registerLabel, value]);
   useEffect(() => () => { unregisterLabel(value); }, [unregisterLabel, value]);
@@ -257,6 +270,7 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
         hidden={hiddenBySearch}
         render={renderProp}
         data-panel-active={panelActive || undefined}
+        data-panel-dormant={panelDormant || undefined}
         onClick={handleClick}
         onFocusCapture={(event) => {
           onFocusCapture?.(event);
@@ -266,48 +280,40 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
         onMouseUp={handleMouseUp}
         onPointerCancel={handlePointerCancel}
         onPointerDown={handlePointerDown}
-        className={cn(
-          "flex items-center gap-2.5 rounded-xs px-2.5 py-1.5 outline-none select-none",
+        className={mergeStateClassName(cn(
+          "flex items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
           SIZE[size].row,
           "text-muted-foreground",
           nestedPanel
             ? "hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground"
             : !panelSearch &&
               !clearActionActive &&
-              "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
-          "data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
+              "data-[highlighted]:not-data-[panel-dormant]:bg-muted data-[highlighted]:not-data-[panel-dormant]:text-foreground",
+          "data-[panel-active]:not-data-[panel-dormant]:bg-muted data-[panel-active]:not-data-[panel-dormant]:text-foreground",
           "data-[selected]:text-foreground",
-          "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-          className,
-        )}
+          "data-[disabled]:pointer-events-none data-[disabled]:opacity-50"), className)}
         {...props}
       >
-        {end || !indicator ? (
-          <>
-            <SelectItemIcon icon={icon} size={size} />
-            <BaseSelect.ItemText className="flex-1 truncate">{children}</BaseSelect.ItemText>
-            {end}
-          </>
-        ) : (
-          <>
+        <SelectItemIcon icon={icon} size={size} />
+        <BaseSelect.ItemText className="flex-1 truncate">{children}</BaseSelect.ItemText>
+        {/* Kept mounted so the slot is reserved and the tick draws in and rubs out as rows
+            toggle while the panel stays open. `end` replaces it, as on single rows. */}
+        {end ??
+          (indicator ? (
             <BaseSelect.ItemIndicator
               keepMounted
-              className="shrink-0"
               render={(indicatorProps, state) => (
-                <span {...indicatorProps}>
-                  <Checkbox
-                    checked={state.selected}
-                    aria-hidden
-                    tabIndex={-1}
-                    className="pointer-events-none shrink-0"
-                  />
+                <span
+                  {...indicatorProps}
+                  data-slot="select-item-check"
+                  data-selected={state.selected ? "" : undefined}
+                  className={CHECK_SLOT}
+                >
+                  <CheckMark checked={state.selected} />
                 </span>
               )}
             />
-            <SelectItemIcon icon={icon} size={size} />
-            <BaseSelect.ItemText className="flex-1 truncate">{children}</BaseSelect.ItemText>
-          </>
-        )}
+          ) : null)}
       </BaseSelect.Item>
     );
   }
@@ -320,6 +326,7 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
       hidden={hiddenBySearch}
       render={renderProp}
       data-panel-active={panelActive || undefined}
+      data-panel-dormant={panelDormant || undefined}
       onClick={handleClick}
       onFocusCapture={(event) => {
         onFocusCapture?.(event);
@@ -329,7 +336,7 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
       onMouseUp={handleMouseUp}
       onPointerCancel={handlePointerCancel}
       onPointerDown={handlePointerDown}
-      className={cn(
+      className={mergeStateClassName(cn(
         "flex items-center gap-2 rounded-xs px-2.5 py-1.5 outline-none select-none",
         SIZE[size].row,
         "text-muted-foreground",
@@ -340,12 +347,10 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
           ? "hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground"
           : !panelSearch &&
             !clearActionActive &&
-            "data-[highlighted]:bg-muted data-[highlighted]:text-foreground",
-        "data-[panel-active]:bg-muted data-[panel-active]:text-foreground",
+            "data-[highlighted]:not-data-[panel-dormant]:bg-muted data-[highlighted]:not-data-[panel-dormant]:text-foreground",
+        "data-[panel-active]:not-data-[panel-dormant]:bg-muted data-[panel-active]:not-data-[panel-dormant]:text-foreground",
         "data-[selected]:text-foreground",
-        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-        className,
-      )}
+        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50"), className)}
       {...props}
     >
       <SelectItemIcon icon={icon} size={size} />
@@ -354,12 +359,14 @@ export const SelectItem = forwardRef<HTMLElement, SelectItemProps>(function Sele
           trailing content such as an action's keybind hint. */}
       {end ??
         (indicator ? (
-          <span className="flex size-3.5 shrink-0 items-center justify-center">
-            <BaseSelect.ItemIndicator className="text-foreground">
-              <Check className="size-3.5" />
+          // Picking closes the panel, so a single row's tick is only ever seen drawn: the
+          // indicator mounts with its row's selection, as before.
+          <span className={CHECK_SLOT}>
+            <BaseSelect.ItemIndicator className="flex">
+              <CheckMark checked />
             </BaseSelect.ItemIndicator>
           </span>
         ) : null)}
     </BaseSelect.Item>
   );
-});
+}));

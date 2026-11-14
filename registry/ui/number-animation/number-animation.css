@@ -1,0 +1,150 @@
+/*
+MIT License
+
+Copyright (c) 2026 The San Francisco Interface
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+@layer components {
+  .number-animation,
+  .number-animation-slot,
+  .number-animation-window,
+  .number-animation-strip,
+  .number-animation-cell {
+    font: inherit;
+    color: inherit;
+    letter-spacing: inherit;
+  }
+
+  @property --number-animation-veil {
+    syntax: "<length>";
+    inherits: true;
+    initial-value: 0px;
+  }
+
+  @keyframes number-animation-veil {
+    0% {
+      --number-animation-veil: calc(var(--number-animation-bleed) * var(--number-animation-fade));
+    }
+    32% {
+      --number-animation-veil: var(--number-animation-veil-deep);
+    }
+    100% {
+      --number-animation-veil: calc(var(--number-animation-bleed) * var(--number-animation-fade));
+    }
+  }
+
+  .number-animation-slot[data-turning] {
+    animation: number-animation-veil var(--number-animation-roll) var(--number-animation-ease);
+  }
+
+  .number-animation {
+    display: inline-flex;
+    align-items: baseline;
+    position: relative;
+    white-space: nowrap;
+
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+
+    --number-animation-roll: calc(var(--duration-slower, 450ms) * 1.15555556);
+
+    --number-animation-ease: var(--sfi-ease, cubic-bezier(0.32, 0.72, 0, 1));
+    --number-animation-ease-exit: var(--sfi-ease-exit, cubic-bezier(0.4, 0, 1, 1));
+
+    --number-animation-blur: 0.09em;
+
+    --number-animation-cell: 1.4em;
+
+    --number-animation-bleed: calc((var(--number-animation-cell) - 0.86em) / 2);
+
+    --number-animation-fade: 1;
+    --number-animation-fade-roll: 1.9;
+    --number-animation-softness: 0;
+    --number-animation-gap: 0em;
+    --number-animation-veil: calc(var(--number-animation-bleed) * var(--number-animation-fade));
+    --number-animation-veil-deep: calc(var(--number-animation-bleed) * var(--number-animation-fade) * var(--number-animation-fade-roll));
+
+    --number-animation-exit: calc(var(--duration-base, 200ms) * 1.2);
+  }
+
+  .number-animation-slot {
+    position: relative;
+    display: inline-block;
+  }
+  .number-animation-slot::before {
+    content: attr(data-digit-glyph);
+    visibility: hidden;
+    display: block;
+    height: var(--number-animation-cell);
+    line-height: var(--number-animation-cell);
+  }
+
+  .number-animation-window {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(var(--number-animation-bleed) * -1);
+    bottom: calc(var(--number-animation-bleed) * -1);
+    overflow: hidden;
+
+    mask-image: linear-gradient(
+      to bottom,
+      rgb(0 0 0 / 0) 0,
+      rgb(0 0 0 / clamp(0, calc(0.0343 + var(--number-animation-softness) * 0.0697), 1)) calc(var(--number-animation-veil) * 0.2),
+      rgb(0 0 0 / clamp(0, calc(0.06 + var(--number-animation-softness) * 0.22175), 1)) calc(var(--number-animation-veil) * 0.35),
+      rgb(0 0 0 / clamp(0, calc(0.2145 + var(--number-animation-softness) * 0.2855), 1)) calc(var(--number-animation-veil) * 0.5),
+      rgb(0 0 0 / clamp(0, calc(0.4 + var(--number-animation-softness) * 0.358), 1)) calc(var(--number-animation-veil) * 0.68),
+      rgb(0 0 0 / clamp(0, calc(0.651 + var(--number-animation-softness) * 0.245), 1)) calc(var(--number-animation-veil) * 0.8),
+      rgb(0 0 0 / clamp(0, calc(0.86 + var(--number-animation-softness) * 0.112), 1)) calc(var(--number-animation-veil) * 0.9),
+      rgb(0 0 0 / 1) var(--number-animation-veil),
+      rgb(0 0 0 / 1) calc(100% - var(--number-animation-veil)),
+      rgb(0 0 0 / clamp(0, calc(0.86 + var(--number-animation-softness) * 0.112), 1)) calc(100% - var(--number-animation-veil) * 0.9),
+      rgb(0 0 0 / clamp(0, calc(0.651 + var(--number-animation-softness) * 0.245), 1)) calc(100% - var(--number-animation-veil) * 0.8),
+      rgb(0 0 0 / clamp(0, calc(0.4 + var(--number-animation-softness) * 0.358), 1)) calc(100% - var(--number-animation-veil) * 0.68),
+      rgb(0 0 0 / clamp(0, calc(0.2145 + var(--number-animation-softness) * 0.2855), 1)) calc(100% - var(--number-animation-veil) * 0.5),
+      rgb(0 0 0 / clamp(0, calc(0.06 + var(--number-animation-softness) * 0.22175), 1)) calc(100% - var(--number-animation-veil) * 0.35),
+      rgb(0 0 0 / clamp(0, calc(0.0343 + var(--number-animation-softness) * 0.0697), 1)) calc(100% - var(--number-animation-veil) * 0.2),
+      rgb(0 0 0 / 0) 100%
+    );
+  }
+
+  .number-animation-strip {
+    position: absolute;
+    left: 0;
+
+    top: var(--number-animation-bleed);
+
+    translate: 0 calc(var(--number-animation-at, 10) * -100% / 30);
+  }
+
+  .number-animation-cell {
+    display: block;
+    height: var(--number-animation-cell);
+    line-height: var(--number-animation-cell);
+    text-align: center;
+  }
+
+
+  @media (prefers-reduced-motion: reduce) {
+    .number-animation-slot { animation: none !important; filter: none !important; }
+    .number-animation-window { mask-image: none; }
+  }
+}

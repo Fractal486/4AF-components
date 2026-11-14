@@ -21,12 +21,18 @@ export function CyclingBadge({
   variant,
   size,
   shape,
+  showIcon,
   dot,
+  pulse,
+  neutralText,
 }: {
   variant: BadgeProps["variant"];
   size: BadgeProps["size"];
   shape: BadgeProps["shape"];
+  showIcon?: boolean;
   dot?: boolean;
+  pulse?: boolean;
+  neutralText?: boolean;
 }) {
   const [index, setIndex] = useState(0);
 
@@ -37,7 +43,7 @@ export function CyclingBadge({
 
   const { status, label } = CYCLE[index] ?? CYCLE[0]!;
   return (
-    <Badge variant={variant} status={status} size={size} shape={shape} dot={dot}>
+    <Badge variant={variant} status={status} size={size} shape={shape} showIcon={showIcon} dot={dot} pulse={pulse} neutralText={neutralText}>
       {label}
     </Badge>
   );

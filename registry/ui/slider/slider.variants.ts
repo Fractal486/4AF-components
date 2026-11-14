@@ -15,29 +15,37 @@ const sizes = { md: "", sm: "" };
  * height as its rail thins, so the target does not shrink with it.
  */
 export const sliderControlVariants = cva(
-  "group relative flex w-full touch-none items-center select-none",
+  "group relative flex touch-none items-center select-none",
   {
     variants: {
       thumb: thumbs,
       size: sizes,
+      orientation: { horizontal: "w-full", vertical: "min-h-0 flex-1" },
       // The bar is grabbed; the round thumbs are pushed along, so they point the way they
       // travel, which flips in RTL.
       cursor: {
         grab: "cursor-grab active:cursor-grabbing",
         "resize-ltr": "cursor-e-resize",
         "resize-rtl": "cursor-w-resize",
+        "resize-vertical": "cursor-n-resize",
         disabled: "cursor-not-allowed opacity-50",
       },
     },
     compoundVariants: [
-      { thumb: "circle", size: "md", class: "h-7" },
-      { thumb: "circle", size: "sm", class: "h-6" },
-      { thumb: "knob", size: "md", class: "h-5" },
-      { thumb: "knob", size: "sm", class: "h-4" },
-      { thumb: "bar", size: "md", class: "h-10" },
-      { thumb: "bar", size: "sm", class: "h-8" },
+      { thumb: "circle", size: "md", orientation: "horizontal", class: "h-7" },
+      { thumb: "circle", size: "sm", orientation: "horizontal", class: "h-6" },
+      { thumb: "knob", size: "md", orientation: "horizontal", class: "h-5" },
+      { thumb: "knob", size: "sm", orientation: "horizontal", class: "h-4" },
+      { thumb: "bar", size: "md", orientation: "horizontal", class: "h-10" },
+      { thumb: "bar", size: "sm", orientation: "horizontal", class: "h-8" },
+      { thumb: "circle", size: "md", orientation: "vertical", class: "w-7" },
+      { thumb: "circle", size: "sm", orientation: "vertical", class: "w-6" },
+      { thumb: "knob", size: "md", orientation: "vertical", class: "w-5" },
+      { thumb: "knob", size: "sm", orientation: "vertical", class: "w-4" },
+      { thumb: "bar", size: "md", orientation: "vertical", class: "w-10" },
+      { thumb: "bar", size: "sm", orientation: "vertical", class: "w-8" },
     ],
-    defaultVariants: { thumb: "bar", size: "md", cursor: "grab" },
+    defaultVariants: { thumb: "bar", size: "md", cursor: "grab", orientation: "horizontal" },
   },
 );
 
@@ -45,16 +53,25 @@ export const sliderControlVariants = cva(
  * The rail, clipped to its own shape so the fill rounds with it. `circle` and `bar` fill the
  * control; `knob` is a thin centred line (4px at md, 2px at sm) that its dot overhangs.
  */
-export const sliderRailVariants = cva("absolute overflow-hidden bg-muted", {
+export const sliderRailVariants = cva("absolute overflow-hidden", {
   variants: {
     thumb: { bar: "inset-0 rounded-md", circle: "inset-0 rounded-full", knob: "rounded-full" },
     size: sizes,
+    /**
+     * `default` is a muted rail. `outline-ghost` follows Button's variant of that name: a
+     * shadow-border edge with no fill of its own, so the background shows through around the
+     * fill. The knob's thin rail has no room for an edge and stays muted.
+     */
+    variant: { default: "bg-muted", "outline-ghost": "" },
   },
   compoundVariants: [
+    // A fainter default fill, since nothing behind it sets it off.
+    { variant: "outline-ghost", thumb: ["bar", "circle"], class: "shadow-border [--slider-fill-strength:8%]" },
+    { variant: "outline-ghost", thumb: "knob", class: "bg-muted" },
     { thumb: "knob", size: "md", class: "inset-x-0 top-1/2 h-1 -translate-y-1/2" },
     { thumb: "knob", size: "sm", class: "inset-x-0 top-1/2 h-0.5 -translate-y-1/2" },
   ],
-  defaultVariants: { thumb: "bar", size: "md" },
+  defaultVariants: { thumb: "bar", size: "md", variant: "default" },
 });
 
 /** The thumb's drawn shape, also the size of Base UI's hidden thumb under it. */
@@ -137,3 +154,19 @@ export const sliderInlineVariants = cva(
 );
 
 export type SliderVariants = VariantProps<typeof sliderControlVariants>;
+
+// Paint horizontal geometry in a rotated layer; Base UI's actual inputs remain vertical.
+export const sliderVisualVariants = cva("pointer-events-none absolute", {
+  variants: {
+    orientation: {
+      horizontal: "inset-0",
+      vertical: "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-90",
+    },
+  },
+  defaultVariants: { orientation: "horizontal" },
+});
+
+export const sliderRootVariants = cva("relative", {
+  variants: { orientation: { horizontal: "w-full", vertical: "flex h-full min-h-0 w-fit flex-col items-center" } },
+  defaultVariants: { orientation: "horizontal" },
+});

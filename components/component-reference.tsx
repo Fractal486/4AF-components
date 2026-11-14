@@ -5,29 +5,24 @@ import { componentReferences, type ComponentReferenceName } from "@/lib/componen
 import { publicInstallCommand } from "@/lib/site";
 import { cn } from "@/registry/lib/cn";
 
-function ReferenceCodePre(props: ComponentProps<typeof DocsCodePre>) {
-  return <DocsCodePre {...props} className={cn(props.className, "my-0")} />;
+/** Code-block components whose block carries `title` in its tray's header strip. */
+function titled(title: string) {
+  function ReferenceCodePre(props: ComponentProps<typeof DocsCodePre>) {
+    return <DocsCodePre {...props} title={title} className={cn(props.className, "my-0")} />;
+  }
+  return { pre: ReferenceCodePre };
 }
 
-const codeComponents = { pre: ReferenceCodePre };
+const installComponents = titled("Install");
+const usageComponents = titled("Usage");
 
 export async function ComponentReference({ name }: { name: ComponentReferenceName }) {
   const reference = componentReferences[name];
 
   return (
-    <div className="not-prose my-8 space-y-4">
-      <div>
-        <p className="mb-2 text-[15px] leading-5 font-semibold text-fd-foreground">
-          Install
-        </p>
-        <ServerCodeBlock lang="bash" code={publicInstallCommand(name)} components={codeComponents} />
-      </div>
-      <div>
-        <p className="mb-2 text-[15px] leading-5 font-semibold text-fd-foreground">
-          Usage
-        </p>
-        <ServerCodeBlock lang="tsx" code={reference.usage} components={codeComponents} />
-      </div>
+    <div className="not-prose my-8 flex flex-col gap-4">
+      <ServerCodeBlock lang="bash" code={publicInstallCommand(name)} components={installComponents} />
+      <ServerCodeBlock lang="tsx" code={reference.usage} components={usageComponents} />
     </div>
   );
 }

@@ -65,6 +65,53 @@ describe("Base UI Select", () => {
     await waitFor(() => expect(screen.getByRole("option", { name: /^Alpha/ })).toHaveAttribute("data-panel-active"));
   });
 
+  it("lets a plain panel's row go dormant when the pointer leaves, then resumes from it", async () => {
+    const user = userEvent.setup();
+    render(
+      <Select items={FRUITS}>
+        <SelectTrigger aria-label="Fruit" />
+        <FruitOptions />
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    const banana = await screen.findByRole("option", { name: "Banana" });
+    await user.hover(banana);
+    await waitFor(() => expect(banana).toHaveAttribute("data-panel-active"));
+
+    // Leaving stops the paint, as a hover would, but the row is still the one to resume from.
+    await user.hover(screen.getByRole("combobox", { name: "Fruit" }));
+    await waitFor(() => expect(banana).toHaveAttribute("data-panel-dormant"));
+    expect(banana).toHaveAttribute("data-panel-active");
+
+    await user.keyboard("{ArrowDown}");
+    const mango = screen.getByRole("option", { name: "Mango" });
+    await waitFor(() => expect(mango).toHaveFocus());
+    expect(mango).toHaveAttribute("data-panel-active");
+    expect(mango).not.toHaveAttribute("data-panel-dormant");
+  });
+
+  it("keeps a searchable panel's row lit when the pointer leaves", async () => {
+    const user = userEvent.setup();
+    render(
+      <Select items={FRUITS}>
+        <SelectTrigger aria-label="Fruit" />
+        <SelectContent searchable>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectItem value="banana">Banana</SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    const banana = await screen.findByRole("option", { name: "Banana" });
+    await user.hover(banana);
+    await waitFor(() => expect(banana).toHaveAttribute("data-panel-active"));
+    await user.hover(screen.getByRole("combobox", { name: "Fruit" }));
+    expect(banana).toHaveAttribute("data-panel-active");
+    expect(banana).not.toHaveAttribute("data-panel-dormant");
+  });
+
   it.each([false, true])("lets an uncontrolled selection reject Clear (multiple=%s)", async (multiple) => {
     const user = userEvent.setup();
     const onValueChange = vi.fn((_value, details) => details.cancel());
@@ -279,6 +326,29 @@ describe("Base UI Select", () => {
     expect(label).toHaveClass("text-muted-foreground");
   });
 
+  it("borders the open default trigger in Input's focus tone, without the outer ring", () => {
+    render(
+      <>
+        <Select items={FRUITS}>
+          <SelectTrigger aria-label="Neutral fruit" />
+          <FruitOptions />
+        </Select>
+        <Select items={FRUITS}>
+          <SelectTrigger aria-label="Accent fruit" tone="accent" />
+          <FruitOptions />
+        </Select>
+      </>,
+    );
+
+    const neutral = screen.getByRole("combobox", { name: "Neutral fruit" });
+    const accent = screen.getByRole("combobox", { name: "Accent fruit" });
+    expect(neutral).toHaveAttribute("data-tone", "neutral");
+    expect(neutral.className).toContain("data-[popup-open]:border-[oklch(0.719_0_0)]");
+    expect(neutral.className).not.toContain("data-[popup-open]:shadow-");
+    expect(accent.className).toContain("data-[popup-open]:border-ring");
+    expect(accent.className).not.toContain("data-[popup-open]:ring-");
+  });
+
   it("renders ghost triggers with default geometry and Button ghost colors", () => {
     render(
       <Select items={FRUITS}>
@@ -354,6 +424,27 @@ describe("Base UI Select", () => {
     );
   });
 
+  it("keeps a field panel at least the trigger's width and grows it to the longest row", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <Select items={FRUITS} defaultValue="banana">
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue />
+        </SelectTrigger>
+        <FruitOptions />
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    await screen.findByRole("option", { name: "Mango" });
+
+    expect(container.ownerDocument.querySelector('[data-slot="select-content-positioner"]')).toHaveClass(
+      "w-max",
+      "min-w-(--anchor-width)",
+      "max-w-(--available-width)",
+    );
+  });
+
   it("uses content width for a plain sort panel by default", async () => {
     const user = userEvent.setup();
     const { container } = render(
@@ -369,6 +460,27 @@ describe("Base UI Select", () => {
     expect(container.ownerDocument.querySelector('[data-slot="select-content-positioner"]')).toHaveClass(
       "w-max",
     );
+  });
+
+  it("dashes an unset outline-ghost sort trigger and restores its shadow edge once set", () => {
+    const { rerender } = render(
+      <Select items={FRUITS} value={null}>
+        <SelectSortTrigger variant="outline-ghost" label="Sort" aria-label="Sort fruit" />
+        <FruitOptions />
+      </Select>,
+    );
+    const trigger = screen.getByRole("combobox", { name: "Sort fruit" });
+    expect(trigger).toHaveClass("border-dashed", "border-border-strong", "shadow-none");
+    expect(trigger).not.toHaveClass("shadow-border");
+
+    rerender(
+      <Select items={FRUITS} value="banana">
+        <SelectSortTrigger variant="outline-ghost" label="Sort" aria-label="Sort fruit" />
+        <FruitOptions />
+      </Select>,
+    );
+    expect(trigger).toHaveClass("shadow-border", "border-transparent", "bg-transparent");
+    expect(trigger).not.toHaveClass("border-dashed");
   });
 
   it("renders a presentational separator without adding a selectable option", async () => {
@@ -498,6 +610,66 @@ describe("Base UI Select", () => {
     await waitFor(() => { expect(trigger).toHaveAttribute("aria-expanded", "false"); });
   });
 
+  it.each([false, true])("reaches the footer with the arrow keys (searchable: %s)", async (searchable) => {
+    const user = userEvent.setup();
+    const onArchive = vi.fn();
+
+    render(
+      <Select multiple items={FRUITS} defaultValue={["banana"]}>
+        <SelectTrigger aria-label="Fruits">
+          <SelectValue placeholder="Pick fruits" />
+        </SelectTrigger>
+        <SelectContent
+          searchable={searchable}
+          clearable
+          footerActions={[{ key: "archive", label: "Archive", onSelect: onArchive }]}
+        >
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectItem value="banana">Banana</SelectItem>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruits" }));
+    const banana = await screen.findByRole("option", { name: "Banana" });
+    if (searchable) {
+      await user.keyboard("{ArrowDown}{ArrowDown}");
+    }
+    await waitFor(() => expect(banana).toHaveFocus());
+
+    // ↓ off the last row lands on the first footer button, which takes the active mark.
+    await user.keyboard("{ArrowDown}");
+    const archive = screen.getByRole("button", { name: "Archive" });
+    const clear = screen.getByRole("button", { name: "Clear" });
+    expect(archive).toHaveFocus();
+    expect(archive).toHaveAttribute("data-panel-active");
+    // The fill is the highlight, as on a row; no focus ring.
+    expect(archive).toHaveClass("focus-visible:ring-0");
+    // Base UI keeps its highlight on the row focus left; rows rest so it doesn't paint.
+    for (const option of screen.getAllByRole("option")) {
+      expect(option).not.toHaveAttribute("data-panel-active");
+      expect(option).toHaveAttribute("data-panel-dormant");
+    }
+
+    // ←/→ move along the footer; ↓ stays put there.
+    await user.keyboard("{ArrowRight}");
+    expect(clear).toHaveFocus();
+    expect(clear).toHaveAttribute("data-panel-active");
+    await user.keyboard("{ArrowDown}");
+    expect(clear).toHaveFocus();
+    await user.keyboard("{ArrowLeft}");
+    expect(archive).toHaveFocus();
+
+    // ↑ returns to the last row.
+    await user.keyboard("{ArrowUp}");
+    await waitFor(() => expect(banana).toHaveFocus());
+    expect(banana).toHaveAttribute("data-panel-active");
+
+    // Enter on a footer button runs it rather than toggling an option.
+    await user.keyboard("{ArrowDown}{Enter}");
+    expect(onArchive).toHaveBeenCalledTimes(1);
+  });
+
   it("survives an option whose label and icon are rebuilt on every render", async () => {
     // A row written as `Create {query}`, or with an `<Icon />` inline, hands the item a
     // fresh node every render. Registering those by identity used to re-run forever: the
@@ -562,10 +734,10 @@ describe("Base UI Select", () => {
 
     await user.click(screen.getByRole("combobox", { name: "Fruits" }));
 
-    // A checkbox on a row that never stays ticked is a promise the row cannot keep.
+    // A check on a row that never stays selected is a promise the row cannot keep.
     const action = await screen.findByRole("option", { name: "Create a fruit" });
-    expect(action.querySelector("button")).toBeNull();
-    expect(screen.getByRole("option", { name: "Apple" }).querySelector("button")).not.toBeNull();
+    expect(action.querySelector("[data-slot=select-item-check]")).toBeNull();
+    expect(screen.getByRole("option", { name: "Apple" }).querySelector("[data-slot=select-item-check]")).not.toBeNull();
   });
 
   it("never flashes the empty state while a row tracks what is being typed", async () => {
@@ -837,7 +1009,7 @@ describe("Base UI Select", () => {
     );
     expect(trigger).toHaveAttribute("aria-expanded", "true");
     expect(mango).toHaveAttribute("aria-selected", "true");
-    expect(mango.querySelector('[role="checkbox"]')).toHaveAttribute("aria-checked", "true");
+    expect(mango.querySelector("[data-slot=select-item-check]")).toHaveAttribute("data-selected");
     expect(subTrigger).toHaveAttribute("data-selected-count", "1");
     expect(selectedCount).toHaveTextContent("1");
   });
@@ -1075,6 +1247,78 @@ describe("Base UI Select", () => {
     });
   });
 
+  it("doesn't relight a nested panel's parent row when the pointer leaves through the panel", async () => {
+    const user = userEvent.setup();
+    render(
+      <Select items={FRUITS}>
+        <SelectTrigger aria-label="Fruit" />
+        <SelectContent>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectSub>
+            <SelectSubTrigger>More fruit</SelectSubTrigger>
+            <SelectSubContent>
+              <SelectItem value="banana">Banana</SelectItem>
+            </SelectSubContent>
+          </SelectSub>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    const parentRow = await screen.findByRole("option", { name: "More fruit" });
+    await user.hover(parentRow);
+    await waitFor(() => expect(parentRow).toHaveAttribute("aria-expanded", "true"));
+    await user.hover(await screen.findByRole("option", { name: "Banana" }));
+
+    await user.hover(screen.getByRole("combobox", { name: "Fruit" }));
+    await waitFor(() => expect(parentRow).toHaveAttribute("aria-expanded", "false"));
+    // Wherever Base UI puts focus once the nested panel closes — back on its row, or on another —
+    // a lit row would be a hover the pointer is no longer making.
+    const lit = screen
+      .getAllByRole("option", { hidden: true })
+      .filter((row) => row.hasAttribute("data-highlighted") || row.hasAttribute("data-panel-active"));
+    expect(lit.length).toBeGreaterThan(0);
+    for (const row of lit) expect(row).toHaveAttribute("data-panel-dormant");
+  });
+
+  it("swaps sibling nested panels with the short animation", async () => {
+    const user = userEvent.setup();
+    render(
+      <Select items={FRUITS}>
+        <SelectTrigger aria-label="Fruit" />
+        <SelectContent>
+          <SelectSub>
+            <SelectSubTrigger>Tropical</SelectSubTrigger>
+            <SelectSubContent>
+              <SelectItem value="mango">Mango</SelectItem>
+            </SelectSubContent>
+          </SelectSub>
+          <SelectSub>
+            <SelectSubTrigger>Orchard</SelectSubTrigger>
+            <SelectSubContent>
+              <SelectItem value="apple">Apple</SelectItem>
+            </SelectSubContent>
+          </SelectSub>
+        </SelectContent>
+      </Select>,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Fruit" }));
+    await waitFor(() => expect(screen.getByRole("option", { name: "Tropical" })).toHaveFocus());
+    await user.keyboard("{ArrowRight}");
+    const mango = await screen.findByRole("option", { name: "Mango" });
+    // The first nested panel to open takes the full animation.
+    expect(mango.closest('[data-slot="select-sub-content"]')).not.toHaveAttribute("data-swap");
+
+    await user.keyboard("{ArrowLeft}");
+    await waitFor(() => expect(screen.getByRole("option", { name: "Tropical" })).toHaveFocus());
+    await user.keyboard("{ArrowDown}");
+    await waitFor(() => expect(screen.getByRole("option", { name: "Orchard" })).toHaveFocus());
+    await user.keyboard("{ArrowRight}");
+    const apple = await screen.findByRole("option", { name: "Apple" });
+    expect(apple.closest('[data-slot="select-sub-content"]')).toHaveAttribute("data-swap");
+  });
+
   it("commits a nested option from the keyboard like a regular select item", async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
@@ -1198,11 +1442,10 @@ describe("Base UI Select", () => {
     expect(apple).toHaveAttribute("aria-selected", "true");
     expect(trigger).toHaveTextContent("2 selected");
 
-    const checkbox = apple.querySelector<HTMLElement>("[role=checkbox]");
-    expect(checkbox).toHaveAttribute("aria-hidden", "true");
-    expect(checkbox).toHaveAttribute("tabindex", "-1");
-    expect(checkbox).toHaveAttribute("aria-checked", "true");
-    expect(checkbox).toHaveAttribute("data-checked");
+    // A trailing check, not a checkbox: the option alone carries the selection.
+    const check = apple.querySelector<HTMLElement>("[data-slot=select-item-check]");
+    expect(check).toBe(apple.lastElementChild);
+    expect(check).toHaveAttribute("data-selected");
     expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
   });
 
@@ -1312,8 +1555,9 @@ describe("Base UI Select", () => {
     expect(input).toHaveAttribute("placeholder", "Search fruit");
     expect(input).toHaveClass("h-full");
     expect(input).toHaveClass("p-0");
-    expect(input.parentElement).toHaveClass("h-[38px]", "px-3.5");
-    expect(input.parentElement?.querySelector("svg")).not.toBeInTheDocument();
+    const strip = input.closest('[data-slot="input-wrapper"]')?.parentElement;
+    expect(strip).toHaveClass("h-[38px]", "items-stretch", "px-3.5");
+    expect(strip?.querySelector("svg")).not.toBeInTheDocument();
 
     await user.keyboard("{ArrowDown}");
     expect(screen.getByRole("option", { name: "Apple" })).toHaveFocus();

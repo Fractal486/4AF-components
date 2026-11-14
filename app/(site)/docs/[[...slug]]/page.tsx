@@ -1,14 +1,23 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, ArrowRight, Maximize2 } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { COMPONENT_CATALOG_URL, componentCatalogToc } from "@/components/component-catalog";
+import { AgentsCodePre } from "@/components/agents-code-pre";
 import { getMDXComponents } from "@/components/mdx";
 import { InlineLink } from "@/components/inline-link";
+import { ArticleColumn } from "@/components/site/article-column";
+import { ComponentDrawing } from "@/components/site/component-drawing";
+import { ComponentPlayground } from "@/components/site/component-playground";
+import { componentDrawing } from "@/lib/drawings";
+import { NavIcon, hasNavIcon } from "@/components/site/nav-icons";
 import { PageFrame } from "@/components/site/page-frame";
-import { siblings, siteNav } from "@/lib/site-nav";
+import { componentStats } from "@/lib/component-stats";
+import { siblings } from "@/lib/site-nav";
 import { source } from "@/lib/source";
-import { pageAlternates, SITE_URL } from "@/lib/site";
-import { Button } from "@/registry/ui/button/button";
+import { pageAlternates, publicInstallCommand, SITE_URL } from "@/lib/site";
 import { CopyButton } from "@/registry/ui/copy-button/copy-button";
+import { Link as LinkIcon } from "lucide-react";
+import { playgroundDemos } from "@/stories/demo-names";
 
 interface DocsPageProps {
   params: Promise<{ slug?: string[] }>;
@@ -24,22 +33,50 @@ export default async function Page({ params }: DocsPageProps) {
   if (!page) notFound();
 
   const MdxContent = page.data.body;
-  const group = siteNav().find((g) => g.items.some((item) => item.href === page.url));
   const { previous, next } = siblings(page.url);
-  const toc = page.data.toc.map((entry) => ({
-    id: entry.url.slice(1),
-    title: entry.title,
-    level: entry.depth,
-  }));
+  const toc = [
+    ...page.data.toc.map((entry) => ({
+      id: entry.url.slice(1),
+      title: entry.title,
+      level: entry.depth,
+    })),
+    // The catalog's sections are rendered by a component, out of Fumadocs' sight.
+    ...(page.url === COMPONENT_CATALOG_URL ? componentCatalogToc : []),
+  ];
+
+  const demos = slug.length === 1 ? playgroundDemos(slug[0]!, page.data.title) : [];
+  if (demos.length > 0) {
+    const drawing = componentDrawing(slug[0]!);
+    const link = (item?: { title: string; href: string }) =>
+      item ? { title: item.title, href: item.href } : undefined;
+    return (
+      <ComponentPlayground
+        // Each component starts from its own preview, not the last page's demo or view.
+        key={page.url}
+        title={page.data.title}
+        description={page.data.description}
+        demos={demos}
+        previous={link(previous)}
+        next={link(next)}
+        toc={toc}
+        installCommand={publicInstallCommand(slug[0]!)}
+        markdownUrl={`${SITE_URL}${page.url}.md`}
+        icon={hasNavIcon(page.url) ? <NavIcon href={page.url} className="size-5 text-muted-foreground" /> : undefined}
+        stats={componentStats(slug[0]!)}
+      >
+        {drawing ? <ComponentDrawing title={page.data.title} {...drawing} /> : null}
+        <MdxContent components={getMDXComponents()} />
+      </ComponentPlayground>
+    );
+  }
 
   return (
+    <ArticleColumn>
     <PageFrame toc={toc}>
       <article>
         <header className="mb-8 flex flex-col gap-3">
-          {group?.label ? (
-            <p className="font-mono text-2xs tracking-[0.04em] text-subtle-foreground">{group.label}</p>
-          ) : null}
-          <h1 className="text-[length:clamp(1.75rem,3vw,2.25rem)] leading-[1.15] font-semibold tracking-[-0.03em] text-balance">
+          <h1 className="flex items-center gap-3 text-[length:clamp(1.75rem,3vw,2.25rem)] leading-[1.15] font-semibold tracking-[-0.03em] text-balance">
+            {hasNavIcon(page.url) ? <NavIcon href={page.url} className="size-[0.8em] text-muted-foreground" /> : null}
             {page.data.title}
           </h1>
           {page.data.description ? (
@@ -51,13 +88,14 @@ export default async function Page({ params }: DocsPageProps) {
             <div className="flex items-center gap-3">
               <CopyButton
                 value={`${SITE_URL}${page.url}.md`}
-                variant="outline"
+                icon={<LinkIcon />}
+                variant="outline-ghost"
                 size="sm"
                 iconPosition="start"
                 swapLabel={false}
                 className="cursor-default"
               >
-                Copy Markdown link
+                Copy link
               </CopyButton>
               <InlineLink
                 href={`${page.url}.md`}
@@ -69,24 +107,14 @@ export default async function Page({ params }: DocsPageProps) {
                 View ↗
               </InlineLink>
             </div>
-            {page.url === "/docs/sidebar-layout" ? (
-              <Button asChild variant="outline" size="sm">
-                <a
-                  href="/full/sidebar-layout"
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="Open Sidebar Layout fullscreen in a new tab"
-                >
-                  <Maximize2 aria-hidden />
-                  Open in new tab
-                </a>
-              </Button>
-            ) : null}
           </div>
         </header>
 
         <div className="prose max-w-none">
-          <MdxContent components={getMDXComponents()} />
+          {/* The agent skill page's install block carries the agents' logos. */}
+          <MdxContent
+            components={getMDXComponents(page.url === "/docs/reference/agent-skill" ? { pre: AgentsCodePre } : undefined)}
+          />
         </div>
 
         {previous || next ? (
@@ -121,6 +149,7 @@ export default async function Page({ params }: DocsPageProps) {
         ) : null}
       </article>
     </PageFrame>
+    </ArticleColumn>
   );
 }
 

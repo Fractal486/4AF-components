@@ -40,6 +40,10 @@ Documentation pages under `/docs/` are also available as Markdown by appending `
 
 ## Everyday commands
 
+Use Node 24.19.0 (pinned in `.node-version`) and pnpm 12.11.2 or newer. A version manager
+that reads `.node-version` can select the project version; `engines` also records the
+supported minimums.
+
 ```bash
 pnpm dev                 # Start the Fumadocs development server
 pnpm typecheck           # Check TypeScript
@@ -51,6 +55,8 @@ pnpm build               # Export the complete site to out/ (stop pnpm dev first
 pnpm start               # Preview out/ with Cloudflare Workers at localhost:8787
 pnpm test:export         # Verify exported docs, registry, search, and skill ZIP
 pnpm benchmark:site      # Measure the running production preview in Chrome
+pnpm skills:sync         # Ensure Claude skills link to .agents/skills
+pnpm skills:check        # Verify the skills link target
 ```
 
 > [!WARNING]
@@ -59,6 +65,14 @@ pnpm benchmark:site      # Measure the running production preview in Chrome
 
 See the [benchmark workflow](benchmarks/README.md) for browser setup, repeatable measurements,
 and comparison reports.
+
+## Local agent skills
+
+Edit skills only in `.agents/skills`. `.claude/skills` links directly to it through a
+Windows directory junction (a directory symlink on other platforms). Changes and new
+skills appear immediately. `pnpm install` ensures the link exists through its postinstall
+hook; run `pnpm skills:sync` to repair it if needed. The link is gitignored. When migrating
+old copies, the script preserves them under `build/skill-backups/`.
 
 ## Cloudflare Workers
 

@@ -41,18 +41,82 @@ export function setForwardedRef<T>(ref: ForwardedRef<T>, value: T | null) {
   }
 }
 
+function enabledPanelOptions(list: HTMLElement, optionSelector = '[role="option"]') {
+  return Array.from(list.querySelectorAll<HTMLElement>(optionSelector)).filter(
+    (option) => {
+      // Ignore search-hidden rows/groups inside the list. A hidden positioner outside
+      // the list can be Base UI's temporary anchor-measurement state.
+      const hidden = option.closest("[hidden]");
+      return !(hidden && list.contains(hidden)) &&
+        !option.hasAttribute("data-disabled") &&
+        option.getAttribute("aria-disabled") !== "true" &&
+        !(option instanceof HTMLButtonElement && option.disabled);
+    },
+  );
+}
+
+/**
+ * An arrow key while focus rests on the panel itself — where Base UI leaves it once the pointer
+ * has moved out — resumes from the active row instead of jumping back to the first. Returns
+ * whether it moved focus, so the caller can keep Base UI from moving it again.
+ */
+export function resumeFromActiveRow(list: HTMLElement | null, key: string, optionSelector = '[role="option"]') {
+  if (!list || (key !== "ArrowDown" && key !== "ArrowUp")) return false;
+  const options = enabledPanelOptions(list, optionSelector);
+  const focused = list.ownerDocument.activeElement;
+  if (focused && options.some((option) => option.contains(focused))) return false;
+  const index = options.findIndex((option) => option.hasAttribute("data-panel-active"));
+  if (index < 0) return false;
+  const next = Math.min(Math.max(index + (key === "ArrowDown" ? 1 : -1), 0), options.length - 1);
+  options[next]?.focus();
+  return true;
+}
+
+function enabledFooterButtons(footer: HTMLElement | null) {
+  return footer ? Array.from(footer.querySelectorAll<HTMLButtonElement>("button:not(:disabled)")) : [];
+}
+
+/**
+ * ↓ from the last enabled row — focused, or marked active while the panel holds focus —
+ * moves to the first enabled footer button. Returns whether it moved focus.
+ */
+export function focusFooterFromLastRow(list: HTMLElement | null, footer: HTMLElement | null, target: Node) {
+  const first = enabledFooterButtons(footer)[0];
+  if (!list || !first) return false;
+  const options = enabledPanelOptions(list);
+  const last = options.at(-1);
+  if (!last) return false;
+  const onLast = last.contains(target) || (!options.some((option) => option.contains(target)) &&
+    !(target instanceof HTMLInputElement) && last.hasAttribute("data-panel-active"));
+  if (!onLast) return false;
+  first.focus();
+  return true;
+}
+
+/** ←/→ along the footer row, ↑ back to the last enabled row. Returns whether it handled the key. */
+export function moveFromFooter(list: HTMLElement | null, footer: HTMLElement | null, button: HTMLElement, key: string) {
+  if (key === "ArrowUp") {
+    const last = list ? enabledPanelOptions(list).at(-1) : undefined;
+    last?.focus();
+    return Boolean(last);
+  }
+  if (key === "ArrowDown") return true;
+  if (key !== "ArrowLeft" && key !== "ArrowRight") return false;
+  const buttons = enabledFooterButtons(footer);
+  const index = buttons.indexOf(button as HTMLButtonElement);
+  const rtl = getComputedStyle(button).direction === "rtl";
+  const step = (key === "ArrowRight") !== rtl ? 1 : -1;
+  buttons[Math.min(Math.max(index + step, 0), buttons.length - 1)]?.focus();
+  return true;
+}
+
 export function focusPanelOption(
   list: HTMLElement | null,
   direction: "next" | "previous" | "active",
 ) {
   if (!list) return;
 
-  const options = Array.from(list.querySelectorAll<HTMLElement>('[role="option"]')).filter(
-    (option) =>
-      !option.hidden &&
-      option.getAttribute("aria-disabled") !== "true" &&
-      !(option instanceof HTMLButtonElement && option.disabled),
-  );
+  const options = enabledPanelOptions(list);
   // `active` reads the mark off the DOM rather than recomputing which row it should be, so
   // the row that paints as active is provably the row that takes focus.
   const option =

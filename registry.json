@@ -13,6 +13,7 @@
           "color-background": "var(--background)",
           "color-surface": "var(--surface)",
           "color-surface-raised": "var(--surface-raised)",
+          "color-surface-glass": "var(--surface-glass)",
           "color-muted": "var(--muted)",
           "color-foreground": "var(--foreground)",
           "color-muted-foreground": "var(--muted-foreground)",
@@ -75,6 +76,9 @@
           "ease-out": "cubic-bezier(0.16, 1, 0.3, 1)",
           "ease-in": "cubic-bezier(0.7, 0, 0.84, 0)",
           "ease-in-out": "cubic-bezier(0.65, 0, 0.35, 1)",
+          "ease-panel": "cubic-bezier(0.33, 1, 0.68, 1)",
+          "ease-collapse": "cubic-bezier(0.25, 1, 0.5, 1)",
+          "ease-press": "linear(0, 0.0353, 0.1195, 0.2279, 0.344, 0.4571, 0.561, 0.6527, 0.7309, 0.7959, 0.8485, 0.8904, 0.9229, 0.9476, 0.966, 0.9794, 0.9889, 0.9953, 0.9996, 1.0021, 1.0036, 1.0042, 1.0043, 1.0041, 1.0037, 1.0032, 1.0027, 1.0022, 1.0018, 1.0014, 1)",
           "duration-fast": "150ms",
           "duration-base": "200ms",
           "duration-slow": "300ms",
@@ -90,13 +94,16 @@
           "animate-classic-fade": "classic-fade 1.2s linear infinite",
           "color-warning-400": "oklch(0.774 0.153 60)",
           "color-warning-500": "oklch(0.702 0.176 52)",
-          "color-warning-700": "oklch(0.44 0.126 42)"
+          "color-warning-700": "oklch(0.44 0.126 42)",
+          "shadow-overlay-subtle": "var(--elevation-overlay-subtle)"
         },
         "light": {
           "background": "oklch(0.985 0.002 70)",
           "surface": "oklch(1 0 0)",
           "surface-raised": "oklch(1 0 0)",
+          "surface-glass": "color-mix(in oklab, var(--background) 80%, transparent)",
           "muted": "oklch(0.968 0.004 70)",
+          "muted-glass": "color-mix(in oklab, color-mix(in oklab, var(--muted), black 2%) 92%, transparent)",
           "foreground": "oklch(0.155 0.006 70)",
           "muted-foreground": "oklch(0.472 0.01 70)",
           "subtle-foreground": "oklch(0.582 0.011 70)",
@@ -106,23 +113,25 @@
           "primary": "oklch(0.216 0.007 70)",
           "primary-foreground": "oklch(0.985 0.002 70)",
           "primary-hover": "oklch(0.288 0.008 70)",
-          "destructive": "oklch(0.6 0.225 26)",
+          "destructive": "oklch(0.654 0.232 28.7)",
           "destructive-foreground": "oklch(1 0 0)",
           "destructive-hover": "oklch(0.448 0.164 26)",
           "success": "oklch(0.52 0.13 152)",
           "success-foreground": "oklch(1 0 0)",
-          "text-shimmer-base": "oklch(0.538 0 70)",
-          "text-shimmer-highlight": "oklch(0.946 0 70)",
+          "text-shimmer-highlight": "color-mix(in oklch, currentColor 45%, white)",
           "elevation-border": "0 0 0 1px oklch(0 0 0 / 0.06), 0 1px 2px -1px oklch(0 0 0 / 0.06), 0 2px 4px 0 oklch(0 0 0 / 0.04)",
           "elevation-raised": "0 0 0 1px oklch(0 0 0 / 0.06), 0 2px 4px -2px oklch(0 0 0 / 0.06), 0 6px 12px -3px oklch(0 0 0 / 0.08)",
           "elevation-overlay": "0 0 0 1px oklch(0 0 0 / 0.06), 0 8px 16px -6px oklch(0 0 0 / 0.1), 0 16px 32px -8px oklch(0 0 0 / 0.12)",
-          "elevation-overlay-drop": "0 8px 16px -6px oklch(0 0 0 / 0.1), 0 16px 32px -8px oklch(0 0 0 / 0.12)"
+          "elevation-overlay-drop": "0 8px 16px -6px oklch(0 0 0 / 0.1), 0 16px 32px -8px oklch(0 0 0 / 0.12)",
+          "elevation-overlay-subtle": "0 0 0 1px oklch(0 0 0 / 0.04), 0 10px 24px -8px oklch(0 0 0 / 0.18)"
         },
         "dark": {
-          "background": "oklch(0.120 0 0)",
+          "background": "oklch(0.100 0 0)",
           "surface": "oklch(0.178 0 0)",
-          "surface-raised": "oklch(0.105 0 0)",
+          "surface-raised": "oklch(0.120 0 0)",
+          "surface-glass": "color-mix(in oklab, var(--background) 80%, transparent)",
           "muted": "oklch(0.205 0 0)",
+          "muted-glass": "color-mix(in oklab, color-mix(in oklab, var(--muted), black 12%) 92%, transparent)",
           "foreground": "oklch(0.985 0.002 70)",
           "muted-foreground": "oklch(0.716 0.01 70)",
           "subtle-foreground": "oklch(0.582 0.011 70)",
@@ -132,17 +141,17 @@
           "primary": "oklch(0.968 0.004 70)",
           "primary-foreground": "oklch(0.155 0.006 70)",
           "primary-hover": "oklch(1 0 0)",
-          "destructive": "oklch(0.6 0.225 26)",
+          "destructive": "oklch(0.663 0.224 28.3)",
           "destructive-foreground": "oklch(1 0 0)",
           "destructive-hover": "oklch(0.62 0.208 25)",
           "success": "oklch(0.52 0.13 152)",
           "success-foreground": "oklch(1 0 0)",
-          "text-shimmer-base": "oklch(0.538 0 70)",
-          "text-shimmer-highlight": "oklch(0.946 0 70)",
+          "text-shimmer-highlight": "color-mix(in oklch, currentColor 20%, white)",
           "elevation-border": "0 0 0 1px oklch(1 0 0 / 0.08)",
           "elevation-raised": "0 0 0 1px oklch(1 0 0 / 0.1), 0 8px 16px -8px oklch(0 0 0 / 0.6)",
           "elevation-overlay": "0 0 0 1px oklch(1 0 0 / 0.12), 0 16px 32px -12px oklch(0 0 0 / 0.7)",
-          "elevation-overlay-drop": "0 16px 32px -12px oklch(0 0 0 / 0.7)"
+          "elevation-overlay-drop": "0 16px 32px -12px oklch(0 0 0 / 0.7)",
+          "elevation-overlay-subtle": "0 0 0 1px oklch(1 0 0 / 0.05), 0 14px 30px -12px oklch(0 0 0 / 0.6)"
         }
       },
       "css": {
@@ -203,29 +212,71 @@
             "--duration-chevron": "1ms"
           }
         },
-        ".shimmer-text": {
-          "position": "relative",
-          "color": "var(--text-shimmer-base)"
-        },
         "@supports (-webkit-mask-clip: text)": {
           ".shimmer-text": {
-            "-webkit-mask-image": "linear-gradient(white, white)",
+            "-webkit-mask-image": "var(--text-shimmer-mask)",
             "-webkit-mask-clip": "text"
           },
           ".shimmer-text.animate-text-shimmer::after": {
             "content": "\"\"",
             "position": "absolute",
             "inset": "0",
-            "background": "linear-gradient(90deg, transparent calc(50% - var(--text-shimmer-spread, 4ch)), var(--text-shimmer-highlight) 50%, transparent calc(50% + var(--text-shimmer-spread, 4ch)))",
+            "background": "linear-gradient(90deg, transparent calc(50% - var(--text-shimmer-spread, 4ch)), var(--text-shimmer-highlight, color-mix(in oklch, currentColor 45%, white)) 50%, transparent calc(50% + var(--text-shimmer-spread, 4ch)))",
             "pointer-events": "none",
             "will-change": "translate",
-            "animation": "text-shimmer var(--text-shimmer-duration, 2.5s) linear infinite"
+            "animation": "text-shimmer var(--text-shimmer-duration, 2.5s) linear infinite",
+            "display": "var(--text-shimmer-display)",
+            "translate": "100% 0"
           },
           "@media (prefers-reduced-motion: reduce)": {
             ".shimmer-text.animate-text-shimmer::after": {
               "display": "none"
+            },
+            ".shimmer-text": {
+              "-webkit-mask-image": "none"
             }
+          },
+          ".shimmer-text.animate-text-shimmer[data-once]::after": {
+            "animation-iteration-count": "1"
+          },
+          ".shimmer-text[data-active=\"false\"]": {
+            "-webkit-mask-image": "none"
+          },
+          ".shimmer-text.animate-text-shimmer[data-active=\"false\"]::after": {
+            "display": "none"
           }
+        },
+        "@property --toc-fade-top": {
+          "syntax": "\"<color>\"",
+          "inherits": "false",
+          "initial-value": "black"
+        },
+        "@property --toc-fade-bottom": {
+          "syntax": "\"<color>\"",
+          "inherits": "false",
+          "initial-value": "black"
+        },
+        "@layer components": {
+          ".shimmer-text": {
+            "position": "relative",
+            "color": "var(--text-shimmer-base, inherit)",
+            "--text-shimmer-display": "block",
+            "--text-shimmer-mask": "linear-gradient(white, white)"
+          }
+        },
+        "@utility material-glass": {
+          "--muted": "var(--muted-glass)",
+          "background-color": "var(--surface-glass)",
+          "-webkit-backdrop-filter": "blur(12px)",
+          "backdrop-filter": "blur(12px)"
+        },
+        "@utility shimmer-none": {
+          "--text-shimmer-display": "none",
+          "--text-shimmer-mask": "none"
+        },
+        "@utility shimmer-auto": {
+          "--text-shimmer-display": "block",
+          "--text-shimmer-mask": "linear-gradient(white, white)"
         }
       }
     },
@@ -241,6 +292,45 @@
           "path": "registry/lib/cn.ts",
           "type": "registry:lib",
           "target": "@lib/cn.ts"
+        }
+      ]
+    },
+    {
+      "name": "reduced-motion",
+      "description": "Server-safe reduced-motion preference reads and subscriptions.",
+      "type": "registry:lib",
+      "files": [
+        {
+          "path": "registry/lib/reduced-motion.ts",
+          "type": "registry:lib",
+          "target": "@lib/reduced-motion.ts"
+        }
+      ]
+    },
+    {
+      "name": "numbers",
+      "description": "Shared range clamping and computed CSS length parsing.",
+      "type": "registry:lib",
+      "files": [
+        {
+          "path": "registry/lib/numbers.ts",
+          "type": "registry:lib",
+          "target": "@lib/numbers.ts"
+        }
+      ]
+    },
+    {
+      "name": "move-focus-outside",
+      "description": "Focus handoff when inline content closes, with optional related-control preference.",
+      "dependencies": [
+        "tabbable"
+      ],
+      "type": "registry:lib",
+      "files": [
+        {
+          "path": "registry/lib/move-focus-outside.ts",
+          "type": "registry:lib",
+          "target": "@lib/move-focus-outside.ts"
         }
       ]
     },
@@ -289,9 +379,24 @@
       ]
     },
     {
+      "name": "use-popup-height",
+      "type": "registry:lib",
+      "description": "Shared natural-height measurement for smoothly resizing anchored surfaces.",
+      "files": [
+        {
+          "path": "registry/lib/use-popup-height.ts",
+          "type": "registry:lib",
+          "target": "@lib/use-popup-height.ts"
+        }
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/numbers.json"
+      ]
+    },
+    {
       "name": "use-action",
       "type": "registry:lib",
-      "description": "Shared async action state with a double-submit guard and reset timer. Outcome callbacks still fire after unmount; local feedback and timers stop.",
+      "description": "Shared async action feedback with controlled status, separate outcome reset times, hover/focus error holds, and a manual reset that ignores stale results. Outcome callbacks still fire after ordinary unmount; local feedback and timers stop.",
       "files": [
         {
           "path": "registry/lib/use-action.ts",
@@ -310,6 +415,9 @@
           "type": "registry:lib",
           "target": "@lib/table-of-contents-scroll.ts"
         }
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/reduced-motion.json"
       ]
     },
     {
@@ -322,6 +430,9 @@
           "type": "registry:lib",
           "target": "@lib/table-of-contents-tracking.ts"
         }
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/reduced-motion.json"
       ]
     },
     {
@@ -341,9 +452,27 @@
       ]
     },
     {
+      "name": "check-mark",
+      "type": "registry:lib",
+      "description": "The drawn tick list rows mark their selection with: strokes in when selected, fades out when not.",
+      "dependencies": [
+        "motion"
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/motion.json"
+      ],
+      "files": [
+        {
+          "path": "registry/lib/check-mark.tsx",
+          "type": "registry:lib",
+          "target": "@lib/check-mark.tsx"
+        }
+      ]
+    },
+    {
       "name": "button",
       "type": "registry:ui",
-      "description": "Six variants, eight sizes, optical icon alignment, and a loading state that preserves size and keyboard focus while blocking activation.",
+      "description": "Six variants, eight sizes, optical icon alignment, focus-preserving loading, and popup triggers that automatically stay still and retain their open-state styling.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/button (Markdown: https://4af.selfsimilar.dev/docs/button.md)",
       "dependencies": [
         "@base-ui/react",
@@ -355,7 +484,8 @@
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/motion.json",
         "https://4af.selfsimilar.dev/r/loader.json",
-        "https://4af.selfsimilar.dev/r/slot.json"
+        "https://4af.selfsimilar.dev/r/slot.json",
+        "https://4af.selfsimilar.dev/r/morph.json"
       ],
       "files": [
         {
@@ -373,7 +503,7 @@
     {
       "name": "button-group",
       "type": "registry:ui",
-      "description": "Related Buttons joined horizontally or vertically, with flattened inner corners and variant-specific seams. Each button keeps its own tab stop.",
+      "description": "Related Buttons, optionally with Input, Select, AlignedSelect, SearchSelect, and DatePicker fields, joined horizontally or vertically, with flattened inner corners and variant-specific seams. Each control keeps its own tab stop.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/button-group (Markdown: https://4af.selfsimilar.dev/docs/button-group.md)",
       "dependencies": [
         "class-variance-authority"
@@ -397,9 +527,37 @@
       ]
     },
     {
+      "name": "field",
+      "type": "registry:ui",
+      "description": "A labelled form field on Base UI's Field and Fieldset: the label marks required controls with * or optional ones with \"(optional)\", read from the control's own required attribute; descriptions, animated errors (including server error lists), a validity status mark, horizontal control rows, and fieldsets and groups that set the marker convention for every field inside.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/field (Markdown: https://4af.selfsimilar.dev/docs/field.md)",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/refs.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/field/field.tsx",
+          "type": "registry:ui",
+          "target": "@ui/field.tsx"
+        },
+        {
+          "path": "registry/ui/field/field.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/field.variants.ts"
+        }
+      ]
+    },
+    {
       "name": "input",
       "type": "registry:ui",
-      "description": "A Base UI input with token-based surfaces, focus states, an optional leading icon, custom number steppers, and default, plain, and underline variants.",
+      "description": "A Base UI input with automatic native validation styling, a character counter, optional leading icon and trailing action, accessible descriptions, number steppers, and default, plain, and underline variants.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/input (Markdown: https://4af.selfsimilar.dev/docs/input.md)",
       "dependencies": [
         "@base-ui/react",
@@ -417,6 +575,11 @@
           "target": "@ui/input.tsx"
         },
         {
+          "path": "registry/ui/input/input-count.tsx",
+          "type": "registry:ui",
+          "target": "@ui/input-count.tsx"
+        },
+        {
           "path": "registry/ui/input/input.variants.ts",
           "type": "registry:ui",
           "target": "@ui/input.variants.ts"
@@ -426,10 +589,11 @@
     {
       "name": "separator",
       "type": "registry:ui",
-      "description": "An accessible horizontal or vertical divider built on Base UI Separator.",
+      "description": "An accessible horizontal or vertical hairline with rich labels, alignment, and decorative mode, built on Base UI Separator.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/separator (Markdown: https://4af.selfsimilar.dev/docs/separator.md)",
       "dependencies": [
-        "@base-ui/react"
+        "@base-ui/react",
+        "class-variance-authority"
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
@@ -440,15 +604,48 @@
           "path": "registry/ui/separator/separator.tsx",
           "type": "registry:ui",
           "target": "@ui/separator.tsx"
+        },
+        {
+          "path": "registry/ui/separator/separator.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/separator.variants.ts"
+        }
+      ]
+    },
+    {
+      "name": "scroll-area",
+      "type": "registry:ui",
+      "description": "A scroll container that draws its own thin scrollbar, the same in every browser, shown on hover and scroll or always, with edge fades on by default. Base UI Scroll Area behaviour.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/scroll-area (Markdown: https://4af.selfsimilar.dev/docs/scroll-area.md)",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/refs.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/scroll-area/scroll-area.tsx",
+          "type": "registry:ui",
+          "target": "@ui/scroll-area.tsx"
+        },
+        {
+          "path": "registry/ui/scroll-area/scroll-area.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/scroll-area.variants.ts"
         }
       ]
     },
     {
       "name": "textarea",
       "type": "registry:ui",
-      "description": "A multiline text field with bordered or plain variants, neutral or accent focus styling, and an optional resize handle with pointer cancellation and cleanup.",
+      "description": "A Base UI multiline field with animated auto-growing row limits, automatic validation styling, optional Ctrl/Command+Enter submission, descriptions, and manual resizing when auto-grow is off.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/textarea (Markdown: https://4af.selfsimilar.dev/docs/textarea.md)",
       "dependencies": [
+        "@base-ui/react",
         "class-variance-authority"
       ],
       "registryDependencies": [
@@ -463,6 +660,16 @@
           "target": "@ui/textarea.tsx"
         },
         {
+          "path": "registry/ui/textarea/textarea-autosize.ts",
+          "type": "registry:ui",
+          "target": "@ui/textarea-autosize.ts"
+        },
+        {
+          "path": "registry/ui/textarea/textarea.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/textarea.variants.ts"
+        },
+        {
           "path": "registry/ui/input/input.variants.ts",
           "type": "registry:ui",
           "target": "@ui/input.variants.ts"
@@ -472,16 +679,18 @@
     {
       "name": "alert",
       "type": "registry:ui",
-      "description": "An inline status line — a glyph plus a sentence, no surface. Destructive error (role=alert), amber warning, green success, neutral info, and a muted loading line with ClassicLoader by default.",
+      "description": "An inline status message with optional title, description, custom or hidden icons, and controlled or uncontrolled dismissal. Supports custom rendering and the shared loading indicator.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/alert (Markdown: https://4af.selfsimilar.dev/docs/alert.md)",
       "dependencies": [
         "class-variance-authority",
-        "lucide-react"
+        "lucide-react",
+        "@base-ui/react"
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
-        "https://4af.selfsimilar.dev/r/loader.json"
+        "https://4af.selfsimilar.dev/r/loader.json",
+        "https://4af.selfsimilar.dev/r/move-focus-outside.json"
       ],
       "files": [
         {
@@ -499,7 +708,7 @@
     {
       "name": "toggle",
       "type": "registry:ui",
-      "description": "A button with a persistent pressed state and optional icon fill.",
+      "description": "A button with a persistent pressed state, independent icon and background fills, custom rendering, and state-aware styling.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/toggle (Markdown: https://4af.selfsimilar.dev/docs/toggle.md)",
       "dependencies": [
         "@base-ui/react",
@@ -536,7 +745,8 @@
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/motion.json",
-        "https://4af.selfsimilar.dev/r/loader.json"
+        "https://4af.selfsimilar.dev/r/loader.json",
+        "https://4af.selfsimilar.dev/r/refs.json"
       ],
       "files": [
         {
@@ -590,7 +800,7 @@
     {
       "name": "action-button",
       "type": "registry:ui",
-      "description": "Runs an async action, shows pending/success/error, and resets after feedback. Preserves focus while pending and reserves its widest state; pending can keep its label or show a centered loader only. Loaders mount only while visible, including their exit animation.",
+      "description": "Internal or controlled async feedback with pending/success/error, separate reset times, errors held while hovered or focused, and rejection-based labels. Preserves focus while pending, with stable or animated width and custom loading indicators.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/action-button (Markdown: https://4af.selfsimilar.dev/docs/action-button.md)",
       "dependencies": [
         "lucide-react",
@@ -600,7 +810,8 @@
         "https://4af.selfsimilar.dev/r/button.json",
         "https://4af.selfsimilar.dev/r/morph.json",
         "https://4af.selfsimilar.dev/r/use-action.json",
-        "https://4af.selfsimilar.dev/r/loader.json"
+        "https://4af.selfsimilar.dev/r/loader.json",
+        "https://4af.selfsimilar.dev/r/check-mark.json"
       ],
       "files": [
         {
@@ -613,7 +824,7 @@
     {
       "name": "action-toggle",
       "type": "registry:ui",
-      "description": "A toggle that changes state after its action succeeds, preserves its previous state on failure, and keeps keyboard focus while pending.",
+      "description": "An async toggle with independent controlled feedback, rejection-based labels, errors held while hovered or focused, and a feedback reset that preserves pressed state and ignores late results. Keeps keyboard focus while pending.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/action-toggle (Markdown: https://4af.selfsimilar.dev/docs/action-toggle.md)",
       "dependencies": [
         "lucide-react"
@@ -635,7 +846,7 @@
     {
       "name": "tabs",
       "type": "registry:ui",
-      "description": "Segment, pill, or underline tabs with an animated indicator, optional counts, and horizontal scrolling.",
+      "description": "Horizontal or vertical segment, pill, and underline tabs with automatic scrolling, icons, counts, custom panels, and an indicator visible before hydration.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/tabs (Markdown: https://4af.selfsimilar.dev/docs/tabs.md)",
       "dependencies": [
         "@base-ui/react",
@@ -664,23 +875,37 @@
     {
       "name": "switch",
       "type": "registry:ui",
-      "description": "A switch whose thumb stretches toward the track center on hover and further when pressed, then returns to a circle as it slides. Adaptive or fixed thumb tone; canceled changes preserve the checked state and thumb direction.",
+      "description": "A draggable switch with optimistic async saving, delayed shared loaders, failure rollback, optional on/off marks, invalid styling, custom rendering, and state-aware classes. Retains its stretching thumb and adaptive or fixed tone.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/switch (Markdown: https://4af.selfsimilar.dev/docs/switch.md)",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
+        "lucide-react",
         "motion"
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
-        "https://4af.selfsimilar.dev/r/motion.json"
+        "https://4af.selfsimilar.dev/r/motion.json",
+        "https://4af.selfsimilar.dev/r/refs.json",
+        "https://4af.selfsimilar.dev/r/loader.json",
+        "https://4af.selfsimilar.dev/r/reduced-motion.json"
       ],
       "files": [
         {
           "path": "registry/ui/switch/switch.tsx",
           "type": "registry:ui",
           "target": "@ui/switch.tsx"
+        },
+        {
+          "path": "registry/ui/switch/switch-state.ts",
+          "type": "registry:ui",
+          "target": "@ui/switch-state.ts"
+        },
+        {
+          "path": "registry/ui/switch/switch-drag.ts",
+          "type": "registry:ui",
+          "target": "@ui/switch-drag.ts"
         },
         {
           "path": "registry/ui/switch/switch.variants.ts",
@@ -692,7 +917,7 @@
     {
       "name": "checkbox",
       "type": "registry:ui",
-      "description": "A checkbox whose tick draws itself in. Presses on click, not on hover.",
+      "description": "An animated checkbox with shared group values, select-all parents, nested groups, validation styling, and custom rendering.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/checkbox (Markdown: https://4af.selfsimilar.dev/docs/checkbox.md)",
       "dependencies": [
         "@base-ui/react",
@@ -720,7 +945,7 @@
     {
       "name": "radio",
       "type": "registry:ui",
-      "description": "A radio group — the Checkbox's sibling, a single choice with a dot that scales in.",
+      "description": "A radio group with a white selection ring and open center, custom rendering, state-based classes, and Field validation styling.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/radio (Markdown: https://4af.selfsimilar.dev/docs/radio.md)",
       "dependencies": [
         "@base-ui/react",
@@ -748,7 +973,7 @@
     {
       "name": "slider",
       "type": "registry:ui",
-      "description": "A slider with bar, knob, and circle variants. Tracks the pointer while dragged and glides on track clicks and keyboard steps, with optional range mode, labels, editable values that preserve decimal precision, a live value tooltip, and a custom fill colour. Base UI behaviour.",
+      "description": "A horizontal or vertical slider with bar, knob, and circle variants, optional whole-range dragging, editable values, formatted tooltips, custom spoken values, and a customizable root. Base UI behaviour with spring motion and a custom fill colour.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/slider (Markdown: https://4af.selfsimilar.dev/docs/slider.md)",
       "dependencies": [
         "@base-ui/react",
@@ -759,7 +984,9 @@
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/motion.json",
-        "https://4af.selfsimilar.dev/r/tooltip.json"
+        "https://4af.selfsimilar.dev/r/tooltip.json",
+        "https://4af.selfsimilar.dev/r/number-animation.json",
+        "https://4af.selfsimilar.dev/r/numbers.json"
       ],
       "files": [
         {
@@ -773,6 +1000,11 @@
           "target": "@ui/slider-geometry.ts"
         },
         {
+          "path": "registry/ui/slider/slider-range-drag.ts",
+          "type": "registry:ui",
+          "target": "@ui/slider-range-drag.ts"
+        },
+        {
           "path": "registry/ui/slider/slider.variants.ts",
           "type": "registry:ui",
           "target": "@ui/slider.variants.ts"
@@ -780,41 +1012,94 @@
       ]
     },
     {
-      "name": "progress",
+      "name": "scrub-slider",
       "type": "registry:ui",
-      "description": "A determinate progress bar with composable label and formatted value parts. Base UI Progress behaviour; the fill animates with transform instead of width.",
-      "docs": "Docs: https://4af.selfsimilar.dev/docs/progress (Markdown: https://4af.selfsimilar.dev/docs/progress.md)",
+      "description": "A card-shaped number scrubber: drag along a ruler whose ticks lift around the indicator, with an edge zone that keeps scrolling for long ranges; click to type a value, or nudge it with chevrons. Label and dimmed unit inside, card or outline-ghost style, and Base UI keyboard, ARIA, and form behaviour.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/scrub-slider (Markdown: https://4af.selfsimilar.dev/docs/scrub-slider.md)",
       "dependencies": [
-        "@base-ui/react"
+        "@base-ui/react",
+        "class-variance-authority",
+        "lucide-react"
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
-        "https://4af.selfsimilar.dev/r/cn.json"
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/numbers.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/scrub-slider/scrub-slider.tsx",
+          "type": "registry:ui",
+          "target": "@ui/scrub-slider.tsx"
+        },
+        {
+          "path": "registry/ui/scrub-slider/scrub-slider-geometry.ts",
+          "type": "registry:ui",
+          "target": "@ui/scrub-slider-geometry.ts"
+        },
+        {
+          "path": "registry/ui/scrub-slider/scrub-slider.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/scrub-slider.variants.ts"
+        }
+      ]
+    },
+    {
+      "name": "progress",
+      "type": "registry:ui",
+      "description": "Accessible progress bars, stacked segments, and circular rings with custom colors, indeterminate states, and composable label and value parts.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/progress (Markdown: https://4af.selfsimilar.dev/docs/progress.md)",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/number-animation.json"
       ],
       "files": [
         {
           "path": "registry/ui/progress/progress.tsx",
           "type": "registry:ui",
           "target": "@ui/progress.tsx"
+        },
+        {
+          "path": "registry/ui/progress/progress.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/progress.variants.ts"
         }
-      ]
+      ],
+      "css": {
+        "@keyframes progress-slide": {
+          "from": {
+            "transform": "translateX(calc(-100% * var(--progress-direction, 1)))"
+          },
+          "to": {
+            "transform": "translateX(calc(250% * var(--progress-direction, 1)))"
+          }
+        }
+      }
     },
     {
       "name": "badge",
       "type": "registry:ui",
-      "description": "A status badge with animated content changes, optional icons or dots, and plain, solid, or outline styles.",
+      "description": "A status badge with four appearances, optional neutral text, icons or pulsing dots, animated counts, removable tags, custom rendering, and truncation or wrapping.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/badge (Markdown: https://4af.selfsimilar.dev/docs/badge.md)",
       "dependencies": [
         "class-variance-authority",
         "lucide-react",
-        "motion"
+        "motion",
+        "@base-ui/react"
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/motion.json",
         "https://4af.selfsimilar.dev/r/morph.json",
-        "https://4af.selfsimilar.dev/r/loader.json"
+        "https://4af.selfsimilar.dev/r/loader.json",
+        "https://4af.selfsimilar.dev/r/number-animation.json",
+        "https://4af.selfsimilar.dev/r/move-focus-outside.json"
       ],
       "files": [
         {
@@ -826,15 +1111,66 @@
           "path": "registry/ui/badge/badge.variants.ts",
           "type": "registry:ui",
           "target": "@ui/badge.variants.ts"
+        },
+        {
+          "path": "registry/ui/badge/badge.parts.tsx",
+          "type": "registry:ui",
+          "target": "@ui/badge.parts.tsx"
+        },
+        {
+          "path": "registry/ui/badge/badge.presence.tsx",
+          "type": "registry:ui",
+          "target": "@ui/badge.presence.tsx"
+        },
+        {
+          "path": "registry/ui/badge/badge.motion.ts",
+          "type": "registry:ui",
+          "target": "@ui/badge.motion.ts"
+        }
+      ]
+    },
+    {
+      "name": "number-animation",
+      "title": "Number Animation",
+      "type": "registry:ui",
+      "description": "Rolling numbers with motion blur, locale-aware formatting, and reduced-motion support.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/number-animation (Markdown: https://4af.selfsimilar.dev/docs/number-animation.md)",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/reduced-motion.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/number-animation/number-animation.tsx",
+          "type": "registry:ui",
+          "target": "@ui/number-animation.tsx"
+        },
+        {
+          "path": "registry/ui/number-animation/number-animation.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/number-animation.variants.ts"
+        },
+        {
+          "path": "registry/ui/number-animation/number-animation.css",
+          "type": "registry:ui",
+          "target": "@ui/number-animation.css"
         }
       ]
     },
     {
       "name": "skeleton",
       "type": "registry:ui",
-      "description": "A muted placeholder with square corners by default, shaped by utility classes. Pulses while content loads; reduced motion disables the pulse.",
+      "description": "Pulsing placeholders with content-sized loading wrappers, a ready-state fade, inline rendering, and text lines that follow surrounding typography. Square corners by default; reduced motion disables animations.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/skeleton (Markdown: https://4af.selfsimilar.dev/docs/skeleton.md)",
-      "dependencies": [],
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority"
+      ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json"
@@ -844,13 +1180,28 @@
           "path": "registry/ui/skeleton/skeleton.tsx",
           "type": "registry:ui",
           "target": "@ui/skeleton.tsx"
+        },
+        {
+          "path": "registry/ui/skeleton/skeleton.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/skeleton.variants.ts"
         }
-      ]
+      ],
+      "css": {
+        "@keyframes skeleton-reveal": {
+          "from": {
+            "opacity": "0"
+          },
+          "to": {
+            "opacity": "1"
+          }
+        }
+      }
     },
     {
       "name": "collapsible",
       "type": "registry:ui",
-      "description": "A disclosure row built on Base UI Collapsible: the chevron rotates, the space slides open so the rows below travel rather than jump, and the content fades in out of a blur where it lands.",
+      "description": "A Base UI disclosure with gap-aware height transitions, custom trigger icons, state-based styling, and content clipping during motion.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/collapsible (Markdown: https://4af.selfsimilar.dev/docs/collapsible.md)",
       "dependencies": [
         "@base-ui/react",
@@ -859,7 +1210,9 @@
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
-        "https://4af.selfsimilar.dev/r/cn.json"
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/refs.json",
+        "https://4af.selfsimilar.dev/r/slot.json"
       ],
       "files": [
         {
@@ -877,7 +1230,7 @@
     {
       "name": "table",
       "type": "registry:ui",
-      "description": "A presentational semantic table with a composable caption, two densities, an optional outline and row / column lines, a pinned header, and loading skeletons. Install data-table for selection, sort controls, and row actions.",
+      "description": "A semantic table with pinned columns and headers, wrapping text, cell alignment, automatic surface backgrounds, loading skeletons, and empty states. Install data-table for selection, sorting, and row actions.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/table (Markdown: https://4af.selfsimilar.dev/docs/table.md)",
       "dependencies": [
         "class-variance-authority"
@@ -885,7 +1238,8 @@
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
-        "https://4af.selfsimilar.dev/r/skeleton.json"
+        "https://4af.selfsimilar.dev/r/skeleton.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json"
       ],
       "files": [
         {
@@ -897,18 +1251,24 @@
           "path": "registry/ui/table/table.variants.ts",
           "type": "registry:ui",
           "target": "@ui/table.variants.ts"
+        },
+        {
+          "path": "registry/ui/table/table-scroll-fade.ts",
+          "type": "registry:ui",
+          "target": "@ui/table-scroll-fade.ts"
         }
       ]
     },
     {
       "name": "data-table",
       "type": "registry:ui",
-      "description": "A table with row selection, sort controls, bulk actions, and row menus. The caller orders the data.",
+      "description": "A data table with search, filtering, pagination, column visibility, multi-column sorting, selection, and row actions.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/data-table (Markdown: https://4af.selfsimilar.dev/docs/data-table.md)",
       "dependencies": [
         "class-variance-authority",
         "lucide-react",
-        "motion"
+        "motion",
+        "@tanstack/react-table@^9.2.6"
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
@@ -917,7 +1277,11 @@
         "https://4af.selfsimilar.dev/r/button.json",
         "https://4af.selfsimilar.dev/r/checkbox.json",
         "https://4af.selfsimilar.dev/r/dropdown-menu.json",
-        "https://4af.selfsimilar.dev/r/table.json"
+        "https://4af.selfsimilar.dev/r/table.json",
+        "https://4af.selfsimilar.dev/r/input.json",
+        "https://4af.selfsimilar.dev/r/select.json",
+        "https://4af.selfsimilar.dev/r/refs.json",
+        "https://4af.selfsimilar.dev/r/skeleton.json"
       ],
       "files": [
         {
@@ -929,6 +1293,26 @@
           "path": "registry/ui/data-table/data-table.variants.ts",
           "type": "registry:ui",
           "target": "@ui/data-table.variants.ts"
+        },
+        {
+          "path": "registry/ui/data-table/data-table.parts.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-table.parts.tsx"
+        },
+        {
+          "path": "registry/ui/data-table/data-table.model.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-table.model.tsx"
+        },
+        {
+          "path": "registry/ui/data-table/data-table.content.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-table.content.tsx"
+        },
+        {
+          "path": "registry/ui/data-table/data-table.controls.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-table.controls.tsx"
         }
       ]
     },
@@ -991,14 +1375,16 @@
     {
       "name": "empty",
       "type": "registry:ui",
-      "description": "An empty state — a centred column of media, title, description and an action. Composable parts; borderless by default with an optional dashed placeholder outline.",
+      "description": "A composable empty state with compact sizing, an optional staggered entrance, custom elements, and wrapping rich descriptions. Borderless by default with an optional dashed outline.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/empty (Markdown: https://4af.selfsimilar.dev/docs/empty.md)",
       "dependencies": [
+        "@base-ui/react",
         "class-variance-authority"
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
-        "https://4af.selfsimilar.dev/r/cn.json"
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/slot.json"
       ],
       "files": [
         {
@@ -1011,14 +1397,28 @@
           "type": "registry:ui",
           "target": "@ui/empty.variants.ts"
         }
-      ]
+      ],
+      "css": {
+        "@keyframes empty-enter": {
+          "from": {
+            "opacity": "0",
+            "transform": "translateY(6px)"
+          },
+          "to": {
+            "opacity": "1",
+            "transform": "translateY(0)"
+          }
+        }
+      }
     },
     {
       "name": "text-shimmer",
       "type": "registry:ui",
-      "description": "Text with a highlight sweeping across it — a looping working-in-progress affordance. Gradient clipped to the glyphs, switched off (not sped up) under reduced motion.",
+      "description": "A color-aware highlight across text, looping or once, with an active switch, responsive controls, native props and refs. Static under reduced motion.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/text-shimmer (Markdown: https://4af.selfsimilar.dev/docs/text-shimmer.md)",
-      "dependencies": [],
+      "dependencies": [
+        "class-variance-authority"
+      ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json"
@@ -1028,6 +1428,11 @@
           "path": "registry/ui/text-shimmer/text-shimmer.tsx",
           "type": "registry:ui",
           "target": "@ui/text-shimmer.tsx"
+        },
+        {
+          "path": "registry/ui/text-shimmer/text-shimmer.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/text-shimmer.variants.ts"
         }
       ]
     },
@@ -1039,7 +1444,8 @@
       "dependencies": [],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
-        "https://4af.selfsimilar.dev/r/cn.json"
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/reduced-motion.json"
       ],
       "files": [
         {
@@ -1070,7 +1476,7 @@
     {
       "name": "select",
       "type": "registry:ui",
-      "description": "Single or multiple selection with optional search, nested options, and footer actions. Opening and search highlights follow rendered row order, including dynamically updated options.",
+      "description": "Single or multiple selection with named sections, optional search, nested options, and footer actions. Supports state-based classes, Field error styling, and custom popup containers and alignment offsets.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/select (Markdown: https://4af.selfsimilar.dev/docs/select.md)",
       "dependencies": [
         "@base-ui/react",
@@ -1082,9 +1488,10 @@
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/refs.json",
-        "https://4af.selfsimilar.dev/r/checkbox.json",
         "https://4af.selfsimilar.dev/r/button.json",
-        "https://4af.selfsimilar.dev/r/input.json"
+        "https://4af.selfsimilar.dev/r/input.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json",
+        "https://4af.selfsimilar.dev/r/check-mark.json"
       ],
       "files": [
         {
@@ -1149,12 +1556,14 @@
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/loader.json",
-        "https://4af.selfsimilar.dev/r/checkbox.json",
         "https://4af.selfsimilar.dev/r/morph.json",
         "https://4af.selfsimilar.dev/r/use-action.json",
         "https://4af.selfsimilar.dev/r/select.json",
         "https://4af.selfsimilar.dev/r/motion.json",
-        "https://4af.selfsimilar.dev/r/refs.json"
+        "https://4af.selfsimilar.dev/r/refs.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json",
+        "https://4af.selfsimilar.dev/r/kbd.json",
+        "https://4af.selfsimilar.dev/r/check-mark.json"
       ],
       "files": [
         {
@@ -1210,12 +1619,45 @@
       ]
     },
     {
+      "name": "kbd",
+      "type": "registry:ui",
+      "description": "Keyboard keycaps and groups with automatic platform labels, key sequences, shared sizes, context-aware colors, and custom icon sizing. Shared by Command Palette, Dropdown Menu, and Sidebar.",
+      "title": "Kbd",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/kbd (Markdown: https://4af.selfsimilar.dev/docs/kbd.md)",
+      "dependencies": [
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/slot.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/kbd/kbd.tsx",
+          "type": "registry:ui",
+          "target": "@ui/kbd.tsx"
+        },
+        {
+          "path": "registry/ui/kbd/kbd.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/kbd.variants.ts"
+        },
+        {
+          "path": "registry/ui/kbd/kbd.keys.ts",
+          "type": "registry:ui",
+          "target": "@ui/kbd.keys.ts"
+        }
+      ]
+    },
+    {
       "name": "ascii-loader",
       "type": "registry:ui",
-      "description": "A looping braille spinner for compact async status affordances.",
+      "description": "A looping braille spinner for compact async status affordances, with optional loading visibility that stops its timer while hidden.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/ascii-loader (Markdown: https://4af.selfsimilar.dev/docs/ascii-loader.md)",
       "dependencies": [
-        "motion"
+        "motion",
+        "class-variance-authority"
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
@@ -1226,13 +1668,18 @@
           "path": "registry/ui/ascii-loader/ascii-loader.tsx",
           "type": "registry:ui",
           "target": "@ui/ascii-loader.tsx"
+        },
+        {
+          "path": "registry/ui/ascii-loader/ascii-loader.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/ascii-loader.variants.ts"
         }
       ]
     },
     {
       "name": "matrix-loader",
       "type": "registry:ui",
-      "description": "A 4×4 matrix dot loader with scan, twinkle, and size variants.",
+      "description": "A 4×4 matrix dot loader with scan, twinkle, size variants, and optional loading visibility.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/matrix-loader (Markdown: https://4af.selfsimilar.dev/docs/matrix-loader.md)",
       "dependencies": [
         "class-variance-authority"
@@ -1257,7 +1704,7 @@
     {
       "name": "classic-loader",
       "type": "registry:ui",
-      "description": "Twelve fading radial bars adapted from loading.dev, with CSS-only motion, size variants, and speed control.",
+      "description": "Twelve fading radial bars adapted from loading.dev, with CSS-only motion, size variants, speed control, and optional loading visibility.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/classic-loader (Markdown: https://4af.selfsimilar.dev/docs/classic-loader.md)",
       "dependencies": [
         "class-variance-authority"
@@ -1283,7 +1730,7 @@
     {
       "name": "select-aligned",
       "type": "registry:ui",
-      "description": "A single-select menu that aligns the selected option with its trigger when space and input method allow. Opening and search highlights follow rendered row order, including dynamically updated options.",
+      "description": "A single-select menu aligned with the selected option, with searchable sections, state-based classes, Field error styling, and custom popup containers and positioning.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/select-aligned (Markdown: https://4af.selfsimilar.dev/docs/select-aligned.md)",
       "dependencies": [
         "@base-ui/react",
@@ -1294,7 +1741,9 @@
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/input.json",
-        "https://4af.selfsimilar.dev/r/refs.json"
+        "https://4af.selfsimilar.dev/r/refs.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json",
+        "https://4af.selfsimilar.dev/r/check-mark.json"
       ],
       "files": [
         {
@@ -1306,15 +1755,21 @@
           "path": "registry/ui/select/select-aligned.variants.ts",
           "type": "registry:ui",
           "target": "@ui/select-aligned.variants.ts"
+        },
+        {
+          "path": "registry/ui/select/select.utils.ts",
+          "type": "registry:ui",
+          "target": "@ui/select.utils.ts"
         }
       ]
     },
     {
       "name": "select-search",
       "type": "registry:ui",
-      "description": "A searchable single or multi-select on Base UI's Combobox — type to filter the list, with full keyboard and ARIA support. Multi-select keeps its animated checkbox list open while choices are toggled.",
+      "description": "A searchable single or multi-select with filtered sections, state-based classes, Field error styling, and custom popup containers and positioning. The input fits its placeholder and the panel grows to its longest row.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/select-search (Markdown: https://4af.selfsimilar.dev/docs/select-search.md)",
       "dependencies": [
+        "class-variance-authority",
         "@base-ui/react",
         "lucide-react",
         "motion"
@@ -1323,23 +1778,36 @@
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/refs.json",
-        "https://4af.selfsimilar.dev/r/checkbox.json"
+        "https://4af.selfsimilar.dev/r/motion.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json",
+        "https://4af.selfsimilar.dev/r/check-mark.json"
       ],
       "files": [
         {
           "path": "registry/ui/select/select-search.tsx",
           "type": "registry:ui",
           "target": "@ui/select-search.tsx"
+        },
+        {
+          "path": "registry/ui/select/select-search.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/select-search.variants.ts"
+        },
+        {
+          "path": "registry/ui/select/select.utils.ts",
+          "type": "registry:ui",
+          "target": "@ui/select.utils.ts"
         }
       ]
     },
     {
       "name": "tooltip",
       "type": "registry:ui",
-      "description": "Base UI positioning and timing with a CSS scale-and-blur enter. Opens on hover and focus, flips at the viewport edge, and layers above modal content. Empty content preserves the trigger's focus and state.",
+      "description": "Hover and focus hints with cursor tracking, shared popups, controlled visibility, disabled states, long-content wrapping, composable parts, and state-aware styling.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/tooltip (Markdown: https://4af.selfsimilar.dev/docs/tooltip.md)",
       "dependencies": [
-        "@base-ui/react"
+        "@base-ui/react",
+        "class-variance-authority"
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
@@ -1350,6 +1818,11 @@
           "path": "registry/ui/tooltip/tooltip.tsx",
           "type": "registry:ui",
           "target": "@ui/tooltip.tsx"
+        },
+        {
+          "path": "registry/ui/tooltip/tooltip.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/tooltip.variants.ts"
         }
       ]
     },
@@ -1398,7 +1871,7 @@
     {
       "name": "sheet",
       "type": "registry:ui",
-      "description": "A dialog that slides in from an edge. Base UI Dialog behaviour, Motion enter/exit.",
+      "description": "A viewport-aware edge panel with content-sized top and bottom sheets, customizable panel and backdrop, Base UI Dialog behavior, and Motion enter/exit.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/sheet (Markdown: https://4af.selfsimilar.dev/docs/sheet.md)",
       "dependencies": [
         "@base-ui/react",
@@ -1410,7 +1883,8 @@
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/motion.json",
-        "https://4af.selfsimilar.dev/r/button.json"
+        "https://4af.selfsimilar.dev/r/button.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json"
       ],
       "files": [
         {
@@ -1422,60 +1896,110 @@
           "path": "registry/ui/sheet/sheet.variants.ts",
           "type": "registry:ui",
           "target": "@ui/sheet.variants.ts"
+        },
+        {
+          "path": "registry/ui/sheet/sheet.motion.tsx",
+          "type": "registry:ui",
+          "target": "@ui/sheet.motion.tsx"
         }
       ]
     },
     {
       "name": "dialog",
       "type": "registry:ui",
-      "description": "A modal centred over the page with Base UI Dialog behaviour and Motion transitions. Optional steps keep the dialog open when completion validation fails.",
+      "description": "A centered Base UI modal with a separately scrolling body, nested layers, shared trigger payloads, composable surfaces, and validated multi-step flows.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/dialog (Markdown: https://4af.selfsimilar.dev/docs/dialog.md)",
       "dependencies": [
         "@base-ui/react",
         "lucide-react",
-        "motion"
+        "motion",
+        "class-variance-authority"
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/motion.json",
-        "https://4af.selfsimilar.dev/r/button.json"
+        "https://4af.selfsimilar.dev/r/button.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json",
+        "https://4af.selfsimilar.dev/r/reduced-motion.json",
+        "https://4af.selfsimilar.dev/r/numbers.json"
       ],
       "files": [
         {
           "path": "registry/ui/dialog/dialog.tsx",
           "type": "registry:ui",
           "target": "@ui/dialog.tsx"
+        },
+        {
+          "path": "registry/ui/dialog/dialog.frame.ts",
+          "type": "registry:ui",
+          "target": "@ui/dialog.frame.ts"
+        },
+        {
+          "path": "registry/ui/dialog/dialog.steps.tsx",
+          "type": "registry:ui",
+          "target": "@ui/dialog.steps.tsx"
+        },
+        {
+          "path": "registry/ui/dialog/dialog.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/dialog.variants.ts"
+        },
+        {
+          "path": "registry/ui/dialog/dialog.shared.tsx",
+          "type": "registry:ui",
+          "target": "@ui/dialog.shared.tsx"
         }
       ]
     },
     {
       "name": "alert-dialog",
       "type": "registry:ui",
-      "description": "A confirmation dialog that blocks backdrop dismissal. Escape and close controls dismiss it.",
+      "description": "A confirmation dialog with shared Dialog layout, async actions, automatic Cancel focus, keyboard action navigation, optional media, and configurable outside dismissal.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/alert-dialog (Markdown: https://4af.selfsimilar.dev/docs/alert-dialog.md)",
       "dependencies": [
         "@base-ui/react",
-        "motion"
+        "class-variance-authority"
       ],
       "registryDependencies": [
-        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/dialog.json",
+        "https://4af.selfsimilar.dev/r/button.json",
+        "https://4af.selfsimilar.dev/r/refs.json",
         "https://4af.selfsimilar.dev/r/cn.json",
-        "https://4af.selfsimilar.dev/r/motion.json",
-        "https://4af.selfsimilar.dev/r/button.json"
+        "https://4af.selfsimilar.dev/r/slot.json"
       ],
       "files": [
         {
           "path": "registry/ui/alert-dialog/alert-dialog.tsx",
           "type": "registry:ui",
           "target": "@ui/alert-dialog.tsx"
+        },
+        {
+          "path": "registry/ui/alert-dialog/alert-dialog.root.tsx",
+          "type": "registry:ui",
+          "target": "@ui/alert-dialog.root.tsx"
+        },
+        {
+          "path": "registry/ui/alert-dialog/alert-dialog.actions.tsx",
+          "type": "registry:ui",
+          "target": "@ui/alert-dialog.actions.tsx"
+        },
+        {
+          "path": "registry/ui/alert-dialog/alert-dialog.footer.tsx",
+          "type": "registry:ui",
+          "target": "@ui/alert-dialog.footer.tsx"
+        },
+        {
+          "path": "registry/ui/alert-dialog/alert-dialog.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/alert-dialog.variants.ts"
         }
       ]
     },
     {
       "name": "date-picker",
       "type": "registry:ui",
-      "description": "Date and date-range fields with a popover and consistent sizing on every device, medium or numeric date labels, and a standalone Calendar with a month / year picker.",
+      "description": "Single-date, multiple-date, and date-range fields with a popover and consistent sizing on every device, medium or numeric date labels, and a standalone Calendar with a month / year picker.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/date-picker (Markdown: https://4af.selfsimilar.dev/docs/date-picker.md)",
       "dependencies": [
         "@base-ui/react",
@@ -1487,7 +2011,8 @@
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/button.json",
-        "https://4af.selfsimilar.dev/r/popover.json"
+        "https://4af.selfsimilar.dev/r/popover.json",
+        "https://4af.selfsimilar.dev/r/reduced-motion.json"
       ],
       "files": [
         {
@@ -1515,16 +2040,19 @@
     {
       "name": "breadcrumb",
       "type": "registry:ui",
-      "description": "A breadcrumb trail with links, separators, and expandable middle items.",
+      "description": "A composable breadcrumb trail with separator styles, sibling-page menus, and middle items collapsed into a dropdown or an animated in-place expansion.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/breadcrumb (Markdown: https://4af.selfsimilar.dev/docs/breadcrumb.md)",
       "dependencies": [
+        "@base-ui/react",
         "class-variance-authority",
         "lucide-react"
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
-        "https://4af.selfsimilar.dev/r/slot.json"
+        "https://4af.selfsimilar.dev/r/slot.json",
+        "https://4af.selfsimilar.dev/r/dropdown-menu.json",
+        "https://4af.selfsimilar.dev/r/reduced-motion.json"
       ],
       "files": [
         {
@@ -1542,34 +2070,51 @@
     {
       "name": "popover",
       "type": "registry:ui",
-      "description": "An interactive panel anchored to a trigger. Base UI Popover behaviour with a CSS scale-and-blur enter from the trigger edge.",
+      "description": "An interactive anchored panel with smooth content resizing, Scroll Area overflow, shared trigger payloads, and composable popup parts.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/popover (Markdown: https://4af.selfsimilar.dev/docs/popover.md)",
       "dependencies": [
-        "@base-ui/react"
+        "@base-ui/react",
+        "class-variance-authority"
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
-        "https://4af.selfsimilar.dev/r/cn.json"
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json",
+        "https://4af.selfsimilar.dev/r/use-popup-height.json"
       ],
       "files": [
         {
           "path": "registry/ui/popover/popover.tsx",
           "type": "registry:ui",
           "target": "@ui/popover.tsx"
+        },
+        {
+          "path": "registry/ui/popover/popover.height.ts",
+          "type": "registry:ui",
+          "target": "@ui/popover.height.ts"
+        },
+        {
+          "path": "registry/ui/popover/popover.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/popover.variants.ts"
         }
       ]
     },
     {
       "name": "hover-card",
       "type": "registry:ui",
-      "description": "A rich preview of what is behind a link, on hover and focus. Base UI PreviewCard behaviour with a CSS scale-and-blur enter from the trigger edge, plus a built-in loading skeleton.",
+      "description": "A hover and focus preview with smooth resizing, Scroll Area overflow, stable placement, shared trigger payloads, and loading placeholders.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/hover-card (Markdown: https://4af.selfsimilar.dev/docs/hover-card.md)",
       "dependencies": [
-        "@base-ui/react"
+        "@base-ui/react",
+        "class-variance-authority"
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/refs.json",
+        "https://4af.selfsimilar.dev/r/use-popup-height.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json",
         "https://4af.selfsimilar.dev/r/skeleton.json"
       ],
       "files": [
@@ -1577,28 +2122,40 @@
           "path": "registry/ui/hover-card/hover-card.tsx",
           "type": "registry:ui",
           "target": "@ui/hover-card.tsx"
+        },
+        {
+          "path": "registry/ui/hover-card/hover-card.position.ts",
+          "type": "registry:ui",
+          "target": "@ui/hover-card.position.ts"
+        },
+        {
+          "path": "registry/ui/hover-card/hover-card.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/hover-card.variants.ts"
         }
       ]
     },
     {
       "name": "dropdown-menu",
       "type": "registry:ui",
-      "description": "A dropdown menu on Base UI Menu (keyboard nav, submenus, checkbox/radio items, searchable selection panels with selected-row activation, and immediate disabled-reason tooltips). Instant row highlight; CSS scale-and-blur panel enter.",
+      "description": "A Base UI menu with shared trigger payloads, wrapping rows, state-based styling, portal and positioning options, async actions, and searchable nested selection panels.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/dropdown-menu (Markdown: https://4af.selfsimilar.dev/docs/dropdown-menu.md)",
       "dependencies": [
         "@base-ui/react",
-        "lucide-react"
+        "lucide-react",
+        "class-variance-authority"
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/4af-theme.json",
         "https://4af.selfsimilar.dev/r/cn.json",
         "https://4af.selfsimilar.dev/r/morph.json",
-        "https://4af.selfsimilar.dev/r/checkbox.json",
-        "https://4af.selfsimilar.dev/r/radio.json",
         "https://4af.selfsimilar.dev/r/input.json",
         "https://4af.selfsimilar.dev/r/tooltip.json",
         "https://4af.selfsimilar.dev/r/use-action.json",
-        "https://4af.selfsimilar.dev/r/loader.json"
+        "https://4af.selfsimilar.dev/r/loader.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json",
+        "https://4af.selfsimilar.dev/r/kbd.json",
+        "https://4af.selfsimilar.dev/r/check-mark.json"
       ],
       "files": [
         {
@@ -1625,13 +2182,92 @@
           "path": "registry/ui/dropdown-menu/dropdown-menu.shared.tsx",
           "type": "registry:ui",
           "target": "@ui/dropdown-menu.shared.tsx"
+        },
+        {
+          "path": "registry/ui/dropdown-menu/dropdown-menu.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/dropdown-menu.variants.ts"
+        },
+        {
+          "path": "registry/ui/select/select.utils.ts",
+          "type": "registry:ui",
+          "target": "@ui/select.utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "context-menu",
+      "type": "registry:ui",
+      "description": "A right-click and long-press menu anchored at the pointer, with touch hold feedback, a disabled mode that keeps the browser menu, and every Dropdown Menu row, panel, and composable popup part.",
+      "title": "Context Menu",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/context-menu (Markdown: https://4af.selfsimilar.dev/docs/context-menu.md)",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/loader.json",
+        "https://4af.selfsimilar.dev/r/dropdown-menu.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/context-menu/context-menu.tsx",
+          "type": "registry:ui",
+          "target": "@ui/context-menu.tsx"
+        },
+        {
+          "path": "registry/ui/context-menu/context-menu.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/context-menu.variants.ts"
+        }
+      ]
+    },
+    {
+      "name": "menubar",
+      "type": "registry:ui",
+      "description": "A desktop-style bar of Dropdown Menus with arrow-key and pointer sweeping between menus, a sliding open-menu highlight, instant panel switching, outline or plain bars, two sizes, and vertical layout.",
+      "title": "Menubar",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/menubar (Markdown: https://4af.selfsimilar.dev/docs/menubar.md)",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/refs.json",
+        "https://4af.selfsimilar.dev/r/dropdown-menu.json",
+        "https://4af.selfsimilar.dev/r/reduced-motion.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/menubar/menubar.tsx",
+          "type": "registry:ui",
+          "target": "@ui/menubar.tsx"
+        },
+        {
+          "path": "registry/ui/menubar/menubar.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/menubar.variants.ts"
+        },
+        {
+          "path": "registry/ui/menubar/menubar.highlight.ts",
+          "type": "registry:ui",
+          "target": "@ui/menubar.highlight.ts"
+        },
+        {
+          "path": "registry/ui/menubar/menubar.handoff.ts",
+          "type": "registry:ui",
+          "target": "@ui/menubar.handoff.ts"
         }
       ]
     },
     {
       "name": "sidebar",
       "type": "registry:ui",
-      "description": "A collapsible application sidebar with default, floating, inset, and split layouts, animated split-rail icon tooltips, collapsible rows with built-in chevrons, nested rows, actions, badges, and loading skeletons.",
+      "description": "A responsive sidebar with split layouts, configurable scoped shortcuts, mobile close-on-navigation, count and dot badges, hover-replacement actions, collapsible rows, and loading skeletons.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/sidebar (Markdown: https://4af.selfsimilar.dev/docs/sidebar.md)",
       "dependencies": [
         "@base-ui/react",
@@ -1644,9 +2280,13 @@
         "https://4af.selfsimilar.dev/r/slot.json",
         "https://4af.selfsimilar.dev/r/button.json",
         "https://4af.selfsimilar.dev/r/input.json",
-        "https://4af.selfsimilar.dev/r/sheet.json",
         "https://4af.selfsimilar.dev/r/skeleton.json",
-        "https://4af.selfsimilar.dev/r/tooltip.json"
+        "https://4af.selfsimilar.dev/r/tooltip.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json",
+        "https://4af.selfsimilar.dev/r/tabs.json",
+        "https://4af.selfsimilar.dev/r/badge.json",
+        "https://4af.selfsimilar.dev/r/refs.json",
+        "https://4af.selfsimilar.dev/r/kbd.json"
       ],
       "files": [
         {
@@ -1658,6 +2298,11 @@
           "path": "registry/ui/sidebar/sidebar.context.ts",
           "type": "registry:ui",
           "target": "@ui/sidebar.context.ts"
+        },
+        {
+          "path": "registry/ui/sidebar/sidebar.tabs.tsx",
+          "type": "registry:ui",
+          "target": "@ui/sidebar.tabs.tsx"
         },
         {
           "path": "registry/ui/sidebar/sidebar.provider.tsx",
@@ -1694,7 +2339,8 @@
       "dependencies": [],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/sidebar.json",
-        "https://4af.selfsimilar.dev/r/cn.json"
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/scroll-area.json"
       ],
       "files": [
         {

@@ -69,7 +69,7 @@
          Three columns keep their 24-unit gaps: width 570.6667 -> 432.
          Only geometry changes; header text/icons and block radii do not scale.
          Menu rows move down 64 units as the 32px group heading returns.
-         Geometry settles at 650ms, before all rulers appear at 700..900ms. */
+         Geometry settles at 550ms, before all rulers appear at 700..900ms. */
       @keyframes sbl-clip-width { from { width: 96px; } to { width: 512px; } }
       @keyframes sbl-main-shift { from { transform: translateX(-416px); } to { transform: translateX(0); } }
       @keyframes sbl-header-line { from { transform: scaleX(1.2954545455); } to { transform: scaleX(1); } }
@@ -140,17 +140,17 @@
       }
       @media (prefers-reduced-motion: no-preference) {
         .sidebar-layout-bp-button-press { animation: sidebar-layout-bp-button-press 500ms linear 150ms both; }
-        .sbl-clip-width { animation: sbl-clip-width 400ms ease-out 250ms both; }
-        .sbl-main-shift { animation: sbl-main-shift 400ms ease-out 250ms both; }
-        .sbl-header-line { animation: sbl-header-line 400ms ease-out 250ms both; }
-        .sbl-selection { animation: sbl-selection 400ms ease-out 250ms both; }
-        .sbl-menu { animation: sbl-menu 400ms ease-out 250ms both; }
-        .sbl-heading-in { animation: sbl-heading-in 400ms ease-out 250ms both; }
-        .sbl-content-in { animation: sbl-reveal 250ms ease-out 400ms both; }
-        .sbl-hero-reflow { stroke-dasharray: 1; animation: sbl-hero-reflow 400ms ease-out 250ms both, sbl-draw 200ms ease-out 325ms both; }
-        .sbl-card-one { stroke-dasharray: 1; animation: sbl-card-one 400ms ease-out 250ms both, sbl-draw 200ms ease-out 350ms both; }
-        .sbl-card-two { stroke-dasharray: 1; animation: sbl-card-two 400ms ease-out 250ms both, sbl-draw 200ms ease-out 375ms both; }
-        .sbl-card-three { stroke-dasharray: 1; animation: sbl-card-three 400ms ease-out 250ms both, sbl-draw 200ms ease-out 400ms both; }
+        .sbl-clip-width { animation: sbl-clip-width 300ms cubic-bezier(0.25, 1, 0.5, 1) 250ms both; }
+        .sbl-main-shift { animation: sbl-main-shift 300ms cubic-bezier(0.25, 1, 0.5, 1) 250ms both; }
+        .sbl-header-line { animation: sbl-header-line 300ms cubic-bezier(0.25, 1, 0.5, 1) 250ms both; }
+        .sbl-selection { animation: sbl-selection 300ms cubic-bezier(0.25, 1, 0.5, 1) 250ms both; }
+        .sbl-menu { animation: sbl-menu 300ms cubic-bezier(0.25, 1, 0.5, 1) 250ms both; }
+        .sbl-heading-in { animation: sbl-heading-in 300ms cubic-bezier(0.25, 1, 0.5, 1) 250ms both; }
+        .sbl-content-in { animation: sbl-reveal 300ms cubic-bezier(0.16, 1, 0.3, 1) 250ms both; }
+        .sbl-hero-reflow { stroke-dasharray: 1; animation: sbl-hero-reflow 300ms cubic-bezier(0.25, 1, 0.5, 1) 250ms both, sbl-draw 200ms ease-out 325ms both; }
+        .sbl-card-one { stroke-dasharray: 1; animation: sbl-card-one 300ms cubic-bezier(0.25, 1, 0.5, 1) 250ms both, sbl-draw 200ms ease-out 350ms both; }
+        .sbl-card-two { stroke-dasharray: 1; animation: sbl-card-two 300ms cubic-bezier(0.25, 1, 0.5, 1) 250ms both, sbl-draw 200ms ease-out 375ms both; }
+        .sbl-card-three { stroke-dasharray: 1; animation: sbl-card-three 300ms cubic-bezier(0.25, 1, 0.5, 1) 250ms both, sbl-draw 200ms ease-out 400ms both; }
         .sbl-draw, .sbl-icon > * {
           stroke-dasharray: 1;
           animation: sbl-draw 200ms ease-out var(--sbl-delay, 0ms) both;

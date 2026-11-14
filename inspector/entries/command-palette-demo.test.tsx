@@ -7,7 +7,7 @@ describe("CommandPalette demo shortcuts", () => {
   it.each(["Control", "Meta"])("opens with %s+Shift+P and runs project actions only inside their panel", async (modifier) => {
     const user = userEvent.setup();
     const writeText = vi.spyOn(navigator.clipboard, "writeText").mockResolvedValue();
-    render(<CommandPaletteDemo shortcut grouped search={false} tabs="fill" />);
+    render(<CommandPaletteDemo grouped search={false} />);
 
     await user.keyboard(`{${modifier}>}{Shift>}p{/Shift}{/${modifier}}`);
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
@@ -26,14 +26,17 @@ describe("CommandPalette demo shortcuts", () => {
     expect(fireEvent.keyDown(window, chord)).toBe(true);
   });
 
-  it("hides and disables the demo opening shortcut when turned off", async () => {
+  it("narrows the Projects panel by owner with underline tabs", async () => {
     const user = userEvent.setup();
-    render(<CommandPaletteDemo shortcut={false} grouped search={false} tabs="fill" />);
-    const trigger = screen.getByRole("button", { name: "Open palette" });
-    expect(trigger).not.toHaveAttribute("aria-keyshortcuts");
-    await user.keyboard("{Control>}{Shift>}p{/Shift}{/Control}");
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    await user.click(trigger);
-    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+    render(<CommandPaletteDemo grouped search={false} />);
+
+    await user.click(screen.getByRole("button", { name: /Open palette/ }));
+    await user.click(await screen.findByText("Projects…"));
+    const tabs = await screen.findByRole("tablist", { name: "Project owner" });
+    expect(tabs).toHaveAttribute("data-variant", "underline");
+
+    await user.click(screen.getByRole("tab", { name: "Shared" }));
+    expect(await screen.findByText("Basecamp")).toBeInTheDocument();
+    expect(screen.queryByText("Aurora")).not.toBeInTheDocument();
   });
 });

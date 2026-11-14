@@ -44,10 +44,10 @@ export const SIZE: Record<
 
 
 // The panel blurs and scales in from `--transform-origin`, and every select in the family
-// uses these same numbers: 0.95 and a 3px blur entering, a shorter 0.97 and 2px leaving, over
-// `--duration-base` on the expo curve. Three selects sat in one form that scale by different
+// uses these same numbers: 0.9 and a 4px blur entering over `--duration-slow` on `--ease-panel`,
+// a shorter 0.97 and 2px leaving over `--duration-base` on the expo curve. Three selects sat in one form that scale by different
 // amounts is the kind of difference you feel without being able to name.
-export const FADE_HIDDEN = { opacity: 0, scale: 0.95, filter: "blur(3px)" };
+export const FADE_HIDDEN = { opacity: 0, scale: 0.9, filter: "blur(4px)" };
 
 export const FADE_SHOW = { opacity: 1, scale: 1, filter: "blur(0px)" };
 
@@ -55,10 +55,6 @@ export const FADE_SHOW = { opacity: 1, scale: 1, filter: "blur(0px)" };
 // is gone before it can draw attention to going.
 export const FADE_EXIT = { opacity: 0, scale: 0.97, filter: "blur(2px)" };
 
-// A thin custom scrollbar, shown only when the list overflows. Firefox reads the first
-// two properties; WebKit the pseudo-element rules.
-export const SCROLLBAR =
-  "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground";
 
 /**
  * The icon slot sizes *any* glyph inside it, not just a direct child: a row can hand it a

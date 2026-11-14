@@ -2,15 +2,14 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { gzipSync } from "node:zlib";
 import { chromium } from "playwright-core";
-import { publicInstallCommand } from "../lib/site.ts";
 
 // Build first, then run against `pnpm start`. Use the same browser/viewport for comparisons.
-// CHROME_PATH selects an installed Chrome/Chromium; no browser download is required.
+// Use installed Google Chrome by default; CHROME_PATH selects another Chrome/Chromium.
 const baseURL = process.env.PERF_URL ?? "http://127.0.0.1:8787";
 const runs = Number(process.env.PERF_RUNS ?? 3);
 assert.ok(Number.isSafeInteger(runs) && runs > 0, "PERF_RUNS must be a positive integer.");
 const measurement = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   viewport: "1440x1000",
   observationMs: 8000,
   colorScheme: "light",
@@ -27,14 +26,15 @@ if (before) {
     assert.equal(before[key], value, `Baseline ${key} differs; use the same measurement settings.`);
   }
 }
-const registry = JSON.parse(await readFile(new URL("../registry.json", import.meta.url), "utf8"));
-const installCommands = new Set(registry.items
-  .filter((item) => item.type === "registry:ui")
-  .map((item) => publicInstallCommand(item.name)));
-const browser = await chromium.launch({
-  executablePath: process.env.CHROME_PATH ?? "/usr/bin/google-chrome",
-  headless: true,
-});
+let browser;
+try {
+  browser = await chromium.launch({
+    ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : { channel: "chrome" }),
+    headless: true,
+  });
+} catch (cause) {
+  throw new Error("Could not launch Chrome for the site benchmark. Install Google Chrome or set CHROME_PATH to an existing Chrome/Chromium executable, then rerun pnpm benchmark:site.", { cause });
+}
 const report = { ...measurement, browser: browser.version(), runs, pages: {} };
 try {
   if (before) assert.equal(before.browser, report.browser, "Baseline browser differs; use the same browser version.");
@@ -72,35 +72,26 @@ try {
       const servedHtml = await response.body();
       if (html) assert.deepEqual(servedHtml, html, `${route}: served HTML changed during sampling`);
       html = servedHtml;
-      await page.locator(route === "/" ? '#install [data-slot="install-command-url"]' : 'section[aria-label="Button settings"]').waitFor();
+      await page.locator(route === "/" ? "[data-hero] h1" : 'section[aria-label="Button settings"]:visible').first().waitFor();
       // Fixed observation window includes the existing idle demo preload queue.
       await page.waitForTimeout(measurement.observationMs);
       const metrics = Object.fromEntries((await cdp.send("Performance.getMetrics")).metrics.map(({ name, value }) => [name, value]));
-      const observed = await page.evaluate(() => ({
-        ...window.__perf,
-        scripts: performance.getEntriesByType("resource").filter((r) => r.initiatorType === "script").length,
-        scriptBytes: performance.getEntriesByType("resource").filter((r) => r.initiatorType === "script").reduce((sum, r) => sum + r.decodedBodySize, 0),
-      }));
+      const initialScriptURLs = [...servedHtml.toString().matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)]
+        .map((match) => new URL(match[1], response.url()).href);
+      const observed = await page.evaluate((initialScriptURLs) => {
+        const initialURLs = new Set(initialScriptURLs);
+        const resources = performance.getEntriesByType("resource");
+        const initial = resources.filter((r) => initialURLs.has(r.name));
+        const scripts = resources.filter((r) => r.initiatorType === "script" || initialURLs.has(r.name));
+        return {
+          ...window.__perf,
+          initialScripts: initial.length,
+          initialScriptBytes: initial.reduce((sum, r) => sum + r.decodedBodySize, 0),
+          scripts: scripts.length,
+          scriptBytes: scripts.reduce((sum, r) => sum + r.decodedBodySize, 0),
+        };
+      }, initialScriptURLs);
       samples.push({ ...observed, taskMs: metrics.TaskDuration * 1000, layoutMs: metrics.LayoutDuration * 1000, scriptMs: metrics.ScriptDuration * 1000 });
-      // Exercise the current homepage after sampling so interactions do not affect metrics.
-      if (route === "/") {
-        const command = page.locator('#install pre').filter({ has: page.locator('[data-slot="install-command-url"]') });
-        await command.hover();
-        const held = await command.textContent();
-        assert.ok(installCommands.has(held), `Unexpected install command: ${held}`);
-        // Longer than the 2.4s rotation interval: hovering must hold one copyable command.
-        await page.waitForTimeout(2800);
-        assert.equal(await command.textContent(), held, "Install command changed while hovered");
-        if (installCommands.size > 1) {
-          await page.mouse.move(0, 0);
-          await page.waitForFunction((previous) => {
-            const url = document.querySelector('#install [data-slot="install-command-url"]');
-            return url?.closest('pre')?.textContent !== previous;
-          }, held, { timeout: 6000 });
-          const next = await command.textContent();
-          assert.ok(installCommands.has(next), `Unexpected rotated install command: ${next}`);
-        }
-      }
       assert.deepEqual(errors, [], `${route}: browser errors`);
       await context.close();
     }

@@ -14,6 +14,26 @@ function lazyChild(element: ReactElement) {
 }
 
 describe("Button", () => {
+  it("draws outline-ghost with outline's edge and no fill of its own", () => {
+    render(<Button variant="outline-ghost">Filter</Button>);
+    const button = screen.getByRole("button", { name: "Filter" });
+    expect(button).toHaveAttribute("data-variant", "outline-ghost");
+    expect(button).toHaveClass("shadow-border", "hover:bg-foreground/5");
+    expect(button).not.toHaveClass("bg-surface");
+  });
+
+  it("automatically skips popup-trigger press motion and permits an explicit override", () => {
+    const { rerender } = render(<Button asChild><a href="#" aria-haspopup="menu" aria-expanded="true">Open</a></Button>);
+    const trigger = screen.getByRole("link", { name: "Open" });
+    expect(trigger).toHaveAttribute("data-popup-trigger");
+    expect(trigger).not.toHaveClass("active:scale-[0.95]");
+    rerender(<Button asChild pressScale><a href="#" aria-haspopup="menu">Open</a></Button>);
+    expect(trigger).toHaveClass("active:scale-[0.95]");
+    rerender(<Button asChild aria-haspopup="false"><a href="#">Open</a></Button>);
+    expect(trigger).not.toHaveAttribute("data-popup-trigger");
+    expect(trigger).toHaveClass("active:scale-[0.95]");
+  });
+
   it("keeps keyboard focus while loading and blocks repeat activation", async () => {
     const user = userEvent.setup();
     const onClick = vi.fn();

@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="510" viewBox="0 0 1200 510" fill="none" role="img" aria-labelledby="ss-title ss-desc">
+  <title id="ss-title">Scrub Slider spacing blueprint</title>
+  <desc id="ss-desc">Default medium card slider, showing Width at 307 pixels during a drag. Drawn at three times size: chosen width 280 pixels, fixed height 60 pixels, side insets 16 pixels, ruler height 16 pixels, bottom inset 6 pixels, ticks spaced 6 pixels, and 20 pixel step buttons.</desc>
+  <!-- Sources: registry.json; registry/ui/scrub-slider/scrub-slider.tsx;
+       registry/ui/scrub-slider/scrub-slider.variants.ts;
+       registry/ui/scrub-slider/scrub-slider-geometry.ts;
+       inspector/entries/scrub-slider.tsx; app/globals.css;
+       node_modules/tailwindcss/theme.css; lib/component-catalog.ts.
+       Default layout=card, variant=card, size=md, chevrons=true.
+       Demo quantity Width: min=0, max=2000, step=1, value=307.
+       Active dragging state, not edge-scrolling; indicator chosen at ruler midpoint.
+       Flexible w-full width is chosen as 280 CSS px, not a universal or maximum width.
+       Scale=3. Root (180,180)-(1020,360): 280*3 by 60*3, radius 14*3.
+       Card has no CSS border; the thin illustration contour denotes its boundary.
+       Spacing unit .25rem=4px at 16px root. h-15=60px, px-4=16px.
+       Content center: 60/2 - 9 = 21px; 20px line box starts at 11px.
+       Label and unit: text-sm=13px; numeric value=15px, leading-5=20px.
+       Glyph widths depend on installed sans font; only fixed boxes are dimensioned.
+       Ruler width: 280-2*16=248px. h-4=16px, bottom-1.5=6px.
+       Ruler top: 60-6-16=38px. Ruler baseline y=342, top y=294.
+       Tick spacing 6px, widths 1px, base heights 4/6/8px, cosine lens radius
+       5 ticks and peak 10px. Value 307 is centered; view=307-248/12.
+       Indicator is 2px wide and 16px tall. Edge fade is 32px on each side.
+       Steppers: 20px square, icon viewport 14px, 4px gap to the value.
+       Number-to-unit gap is 2px. Active drag dims steppers to .25.
+       Dark background oklch(.100 0 0) rounds to sRGB #030303.
+       Sidebar category: Fields and selection.
+       Intro: ticks scroll left by 108 SVG units (36 CSS px, six tick intervals)
+       from 250 to 650ms within the fixed edge mask; annotations reveal at 700ms.
+       Extra left ticks cover the entering edge. Reduced motion shows the final state. -->
+  <defs>
+    <style>
+      #ss-blueprint text { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
+      .ss-label { fill: #6889ff; font-size: 18px; }
+      .ss-measure { stroke: #6889ff; stroke-width: 1.5; }
+      .ss-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
+      @keyframes ss-draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+      @keyframes ss-reveal { from { opacity: 0; } }
+      @keyframes ss-scroll-ruler { from { transform: translateX(108px); } to { transform: translateX(0); } }
+      @media (prefers-reduced-motion: no-preference) {
+        .ss-scroll { animation: ss-scroll-ruler 400ms cubic-bezier(.22, 1, .36, 1) 250ms both; }
+        .ss-draw { stroke-dasharray: 1; animation: ss-draw-line 200ms ease-out var(--ss-delay, 0ms) both; }
+        .ss-outline { animation-duration: 400ms; }
+        .ss-measure, .ss-spacing, .ss-label { animation: ss-reveal 200ms ease-out 700ms both; }
+      }
+    </style>
+    <linearGradient id="ss-edge-fade">
+      <stop offset="0" stop-color="white" stop-opacity="0"/>
+      <stop offset="0.129032" stop-color="white"/>
+      <stop offset="0.870968" stop-color="white"/>
+      <stop offset="1" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="ss-tick-mask" maskUnits="userSpaceOnUse" x="228" y="294" width="744" height="48">
+      <rect x="228" y="294" width="744" height="48" fill="url(#ss-edge-fade)"/>
+    </mask>
+  </defs>
+  <g id="ss-blueprint">
+  <rect width="1200" height="510" fill="#030303"/>
+  <rect x="180" y="180" width="840" height="180" rx="42" fill="#353632" fill-opacity=".3"/>
+  <rect x="181.25" y="181.25" width="837.5" height="177.5" rx="40.75" stroke="#a7a8a2" stroke-width="2.5" pathLength="1" class="ss-draw ss-outline"/>
+
+  <!-- Geometry guides stay above the fill and behind the component content. -->
+  <path d="M228 180V376 M972 180V376 M228 213H972 M228 273H972" class="ss-spacing"/>
+  <rect x="228" y="294" width="744" height="48" class="ss-spacing"/>
+  <rect x="912" y="213" width="60" height="60" class="ss-spacing"/>
+
+  <text x="228" y="257" fill="#92948d" font-size="39">Width</text>
+  <text x="780" y="258" fill="#c7c7c2" font-size="45" style="font-variant-numeric:tabular-nums">307</text>
+  <text x="861" y="258" fill="#92948d" font-size="39">px</text>
+  <g stroke="#a7a8a2" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" opacity=".25">
+    <path d="m743.25 232.5-10.5 10.5 10.5 10.5" pathLength="1" class="ss-draw" style="--ss-delay:400ms"/>
+    <path d="m936.75 232.5 10.5 10.5-10.5 10.5" pathLength="1" class="ss-draw" style="--ss-delay:425ms"/>
+  </g>
+  <!-- Tick paths reproduce the source cosine lens, tick levels, opacity and edge mask. -->
+  <g mask="url(#ss-tick-mask)" stroke="#a7a8a2" stroke-width="3">
+    <g class="ss-scroll">
+    <path d="M114 342V318.000" opacity="0.320" pathLength="1" class="ss-draw" style="--ss-delay:250ms"/>
+    <path d="M132 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:275ms"/>
+    <path d="M150 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:300ms"/>
+    <path d="M168 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:325ms"/>
+    <path d="M186 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:350ms"/>
+    <path d="M204 342V324.000" opacity="0.220" pathLength="1" class="ss-draw" style="--ss-delay:250ms"/>
+    <path d="M222 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:275ms"/>
+    <path d="M240 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:250ms"/>
+    <path d="M258 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:275ms"/>
+    <path d="M276 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:300ms"/>
+    <path d="M294 342V318.000" opacity="0.320" pathLength="1" class="ss-draw" style="--ss-delay:325ms"/>
+    <path d="M312 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:350ms"/>
+    <path d="M330 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:375ms"/>
+    <path d="M348 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:400ms"/>
+    <path d="M366 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:250ms"/>
+    <path d="M384 342V324.000" opacity="0.220" pathLength="1" class="ss-draw" style="--ss-delay:275ms"/>
+    <path d="M402 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:300ms"/>
+    <path d="M420 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:325ms"/>
+    <path d="M438 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:350ms"/>
+    <path d="M456 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:375ms"/>
+    <path d="M474 342V318.000" opacity="0.320" pathLength="1" class="ss-draw" style="--ss-delay:400ms"/>
+    <path d="M492 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:250ms"/>
+    <path d="M510 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:275ms"/>
+    <path d="M528 342V328.281" opacity="0.171" pathLength="1" class="ss-draw" style="--ss-delay:300ms"/>
+    <path d="M546 342V323.781" opacity="0.251" pathLength="1" class="ss-draw" style="--ss-delay:325ms"/>
+    <path d="M564 342V316.146" opacity="0.377" pathLength="1" class="ss-draw" style="--ss-delay:350ms"/>
+    <path d="M582 342V313.719" opacity="0.429" pathLength="1" class="ss-draw" style="--ss-delay:375ms"/>
+    <path d="M600 342V312.000" opacity="0.460" pathLength="1" class="ss-draw" style="--ss-delay:400ms"/>
+    <path d="M618 342V313.719" opacity="0.429" pathLength="1" class="ss-draw" style="--ss-delay:250ms"/>
+    <path d="M636 342V318.219" opacity="0.349" pathLength="1" class="ss-draw" style="--ss-delay:275ms"/>
+    <path d="M654 342V315.927" opacity="0.368" pathLength="1" class="ss-draw" style="--ss-delay:300ms"/>
+    <path d="M672 342V328.281" opacity="0.171" pathLength="1" class="ss-draw" style="--ss-delay:325ms"/>
+    <path d="M690 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:350ms"/>
+    <path d="M708 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:375ms"/>
+    <path d="M726 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:400ms"/>
+    <path d="M744 342V324.000" opacity="0.220" pathLength="1" class="ss-draw" style="--ss-delay:250ms"/>
+    <path d="M762 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:275ms"/>
+    <path d="M780 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:300ms"/>
+    <path d="M798 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:325ms"/>
+    <path d="M816 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:350ms"/>
+    <path d="M834 342V318.000" opacity="0.320" pathLength="1" class="ss-draw" style="--ss-delay:375ms"/>
+    <path d="M852 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:400ms"/>
+    <path d="M870 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:250ms"/>
+    <path d="M888 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:275ms"/>
+    <path d="M906 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:300ms"/>
+    <path d="M924 342V324.000" opacity="0.220" pathLength="1" class="ss-draw" style="--ss-delay:325ms"/>
+    <path d="M942 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:350ms"/>
+    <path d="M960 342V330.000" opacity="0.140" pathLength="1" class="ss-draw" style="--ss-delay:375ms"/>
+    </g>
+  </g>
+  <!-- Indicator fill remains visible throughout; its contour draws as a detail. -->
+  <rect x="597" y="294" width="6" height="48" rx="3" fill="#c7c7c2"/>
+  <rect x="598" y="295" width="4" height="46" rx="2" stroke="#c7c7c2" stroke-width="2" pathLength="1" class="ss-draw" style="--ss-delay:450ms"/>
+
+  <!-- Overall dimensions, endpoints at the actual outer boundary. -->
+  <path d="M180 168V101 M1020 168V101" class="ss-spacing"/>
+  <path d="M180 101V123 M1020 101V123 M180 112H1020" class="ss-measure"/>
+  <text x="600" y="96" text-anchor="middle" class="ss-label">280 px</text>
+  <path d="M168 180H109 M168 360H109" class="ss-spacing"/>
+  <path d="M109 180H131 M109 360H131 M120 180V360" class="ss-measure"/>
+  <text x="98" y="276" text-anchor="end" class="ss-label">60 px</text>
+
+  <!-- Right stepper's actual 20px square. -->
+  <path d="M912 202V145 M972 202V145" class="ss-spacing"/>
+  <path d="M912 145V165 M972 145V165 M912 155H972" class="ss-measure"/>
+  <text x="942" y="139" text-anchor="middle" class="ss-label">20 px</text>
+
+  <!-- Ruler and lower inset. -->
+  <path d="M984 294H1081 M984 342H1081 M1032 360H1081" class="ss-spacing"/>
+  <path d="M1059 294H1081 M1059 342H1081 M1070 294V342" class="ss-measure"/>
+  <text x="1092" y="324" class="ss-label">16 px</text>
+  <path d="M1059 360H1081 M1070 342V360 M1081 351H1094L1106 381" class="ss-measure"/>
+  <text x="1114" y="393" class="ss-label">6 px</text>
+
+  <!-- Left content inset and two adjacent tick centers. -->
+  <path d="M180 372V427 M228 376V427 M636 348V427 M654 348V427" class="ss-spacing"/>
+  <path d="M180 407V427 M228 407V427 M180 417H228" class="ss-measure"/>
+  <text x="204" y="453" text-anchor="middle" class="ss-label">16 px</text>
+  <path d="M636 407V427 M654 407V427 M636 417H654 M645 427V439" class="ss-measure"/>
+  <text x="645" y="462" text-anchor="middle" class="ss-label">6 px</text>
+  </g>
+</svg>
+

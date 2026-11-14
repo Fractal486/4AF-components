@@ -1,4 +1,4 @@
-import { defineEntry, select } from "../schema";
+import { bool, defineEntry, select } from "../schema";
 import { TocDemo } from "./toc-demo";
 
 const VARIANTS = ["span", "single"] as const;
@@ -11,9 +11,10 @@ export const tableOfContentsEntry = defineEntry({
     variant: select(VARIANTS, "span"),
     // `hover` leaves the rail and its marker alone on screen until the list is pointed at.
     labels: select(LABELS, "always"),
+    scrollable: bool(false, "Scrollable"),
   },
-  render({ variant, labels }) {
+  render({ variant, labels, scrollable }) {
     // Scroll the article on the left — the active entry and rail marker track along.
-    return <TocDemo variant={variant} labels={labels} />;
+    return <TocDemo variant={variant} labels={labels} scrollable={scrollable} />;
   },
 });

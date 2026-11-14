@@ -1,7 +1,25 @@
 import { render } from "@testing-library/react";
+import { createRef } from "react";
 import { MatrixLoader } from "./matrix-loader";
 
 describe("MatrixLoader", () => {
+  it("removes the grid, status, and ref while hidden and restores them when loading", () => {
+    const ref = createRef<HTMLDivElement>();
+    const { container, queryByRole, rerender } = render(<MatrixLoader ref={ref} loading={false} label="Working" />);
+    expect(container).toBeEmptyDOMElement();
+    expect(ref.current).toBeNull();
+    rerender(<MatrixLoader ref={ref} loading label="Working" />);
+    expect(queryByRole("status", { name: "Working" })).toBe(ref.current);
+    expect(ref.current?.querySelectorAll("i")).toHaveLength(16);
+    expect(ref.current).not.toHaveAttribute("loading");
+    rerender(<MatrixLoader ref={ref} loading={false} label="Working" />);
+    expect(container).toBeEmptyDOMElement();
+    expect(queryByRole("status")).not.toBeInTheDocument();
+    expect(ref.current).toBeNull();
+    rerender(<MatrixLoader label="Working" />);
+    expect(queryByRole("status", { name: "Working" })).toBeInTheDocument();
+  });
+
   it("renders the selected pattern as a 4×4 grid", () => {
     const { container } = render(<MatrixLoader variant="twinkle" size="md" duration={2} />);
     const root = container.querySelector('[data-slot="matrix-loader"]');

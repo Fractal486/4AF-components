@@ -21,14 +21,14 @@ import { cva } from "class-variance-authority";
  */
 export const dataTableSelectionBarVariants = cva(
   [
-    "absolute inset-0 flex items-center justify-between gap-3",
-    "text-left text-xs font-medium text-foreground",
+    "absolute inset-0 z-30 flex items-center justify-between gap-3",
+    "text-start text-xs font-medium text-foreground",
   ],
   {
     variants: {
       size: {
-        sm: "pr-2.5 pl-9",
-        md: "pr-3 pl-10",
+        sm: "pe-2.5 ps-9",
+        md: "pe-3 ps-10",
       },
     },
     defaultVariants: { size: "sm" },
@@ -65,6 +65,9 @@ export const dataTableHeadContentVariants = cva(
  */
 export const dataTableSortButtonVariants = cva([
   "inline-flex cursor-pointer items-center gap-1.5 rounded-[6px] align-middle select-none",
+  // The text keeps the column’s aligned edge; the chevrons sit toward the content.
+  "group-data-[align=end]/sort:flex-row-reverse",
+  "ltr:group-data-[align=right]/sort:flex-row-reverse rtl:group-data-[align=left]/sort:flex-row-reverse",
   "transition-[color] duration-(--duration-fast) ease-out",
   "outline-none focus-visible:ring-2 focus-visible:ring-ring",
   "focus-visible:ring-offset-2 focus-visible:ring-offset-background",
@@ -72,8 +75,8 @@ export const dataTableSortButtonVariants = cva([
   // The header stays muted until it is the one doing the sorting, and then it reads at full
   // strength: a bright chevron beside a muted label looks like a stray glyph rather than
   // like a column that is active.
-  "group-aria-[sort=ascending]/sort:text-foreground",
-  "group-aria-[sort=descending]/sort:text-foreground",
+  "group-data-[sort-direction=asc]/sort:text-foreground",
+  "group-data-[sort-direction=desc]/sort:text-foreground",
 ]);
 
 /**
@@ -85,8 +88,8 @@ export const dataTableSortIconVariants = cva([
   "size-3.5 shrink-0",
   "transition-[color] duration-(--duration-fast) ease-out",
   "text-subtle-foreground group-hover/sort:text-muted-foreground",
-  "group-aria-[sort=ascending]/sort:text-foreground",
-  "group-aria-[sort=descending]/sort:text-foreground",
+  "group-data-[sort-direction=asc]/sort:text-foreground",
+  "group-data-[sort-direction=desc]/sort:text-foreground",
 ]);
 
 /**
@@ -114,3 +117,12 @@ export const dataTableRowActionsTriggerVariants = cva([
   "hover:text-foreground focus-visible:text-foreground",
   "data-[popup-open]:text-foreground",
 ]);
+
+export const dataTableRootVariants = cva("flex w-full min-w-0 flex-col gap-3");
+// Select triggers are full-width field controls by default; in a toolbar they size to their value.
+export const dataTableToolbarVariants = cva("flex flex-wrap items-center gap-2 *:data-[slot=select-trigger]:w-auto");
+export const dataTableSearchVariants = cva("min-w-[min(100%,12rem)] flex-[1_1_12rem] [&_input::-webkit-search-cancel-button]:appearance-none");
+export const dataTablePaginationVariants = cva("flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-xs text-muted-foreground tabular-nums");
+export const dataTablePaginationControlsVariants = cva("flex flex-wrap items-center gap-x-4 gap-y-2");
+
+export const dataTableCheckboxSkeletonVariants = cva("size-4 shrink-0 rounded-[4px]");

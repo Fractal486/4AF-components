@@ -1,53 +1,37 @@
-import { Badge, type BadgeProps } from "@/registry/ui/badge/badge";
-import { bool, defineEntry, select, text } from "../schema";
-import { CyclingBadge } from "./badge-cycling";
-
-const VARIANTS = ["plain", "solid", "outline"] as const;
-const STATUSES = ["neutral", "info", "success", "warning", "danger", "loading"] as const;
-const SIZES = ["sm", "md", "lg"] as const;
-const SHAPES = ["rounded", "pill"] as const;
+import { bool, defineEntry, select, withIcons } from "../schema";
+import { BADGE_STATUS_ICONS } from "../setting-icons";
+import { BadgePreview } from "./badge.demo";
 
 export const badgeEntry = defineEntry({
   slug: "badge",
   name: "Badge",
   controls: {
-    // `plain` drops the box; `solid` uses a translucent status wash; `outline` keeps a gray edge.
-    variant: select(VARIANTS, "solid"),
-    // Changing the status rolls the glyph and label over; changing the label rolls the text.
-    status: select(STATUSES, "success"),
-    size: select(SIZES, "sm"),
-    // The default compact corners or a fully rounded pill; `plain` remains boxless.
-    shape: select(SHAPES, "rounded"),
-    label: text("Approved", "Label"),
-    showIcon: bool(true, "Show icon"),
-    // A status dot in place of the icon — works on every variant.
-    dot: bool(false, "Dot"),
-    // Any CSS colour for the solid fill; empty keeps the status wash.
-    color: text("", "Solid color", "oklch(0.7 0.15 250 / 0.2)"),
+    variant: select(["plain", "solid", "outline", "filled"] as const, "solid"),
+    status: withIcons(select(["neutral", "info", "success", "warning", "danger", "loading"] as const, "success"), BADGE_STATUS_ICONS),
+    size: select(["sm", "md", "lg"] as const, "sm"),
+    shape: select(["rounded", "pill"] as const, "rounded"),
+    icon: select(["icon", "dot", "pulse", "none"] as const, "icon", "Icon"),
+    neutralText: bool(false, "Neutral text", values => values.variant === "filled"),
+    overflow: select(["truncate", "wrap"] as const, "truncate", "Long labels"),
+    // A badge is one of these at a time: static, a button or link, or a removable tag.
+    interactive: select(["none", "button", "link", "removable"] as const, "none", "Interactive"),
+    content: select(["label", "count", "animatedCount"] as const, "label", "Content"),
+    invalid: bool(false, "Invalid"),
   },
-  render({ variant, status, size, shape, label, showIcon, dot, color }) {
+  render({ icon, overflow, interactive, content, ...values }) {
     return (
-      <div className="flex flex-col items-center gap-8">
-        <Badge
-          variant={variant as BadgeProps["variant"]}
-          status={status as BadgeProps["status"]}
-          size={size as BadgeProps["size"]}
-          shape={shape as BadgeProps["shape"]}
-          showIcon={showIcon}
-          dot={dot}
-          color={color || undefined}
-        >
-          {label}
-        </Badge>
-
-        {/* Rolls through every status on a timer, hands-free. */}
-        <CyclingBadge
-          variant={variant as BadgeProps["variant"]}
-          size={size as BadgeProps["size"]}
-          shape={shape as BadgeProps["shape"]}
-          dot={dot}
-        />
-      </div>
+      <BadgePreview
+        {...values}
+        label="Approved"
+        showIcon={icon === "icon"}
+        dot={icon === "dot" || icon === "pulse"}
+        pulse={icon === "pulse"}
+        wrap={overflow === "wrap"}
+        interactive={interactive === "removable" ? "none" : interactive}
+        removable={interactive === "removable"}
+        count={content !== "label"}
+        animateCount={content === "animatedCount"}
+      />
     );
   },
 });

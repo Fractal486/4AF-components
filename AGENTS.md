@@ -7,7 +7,7 @@ contract below, and inspected through a deliberately minimal site.
 registry/     THE LIBRARY. Portable. Must never import from app/, content/, stories/, or inspector/.
   lib/        cn, slot, motion presets — shared by components.
   ui/<name>/  <name>.tsx + <name>.variants.ts
-stories/      Shared Fumadocs demo adapter.
+stories/      Demo loader and the list of playground demos.
 content/docs/ FUMADOCS MDX. One routed page per installable component.
 app/          Next.js shell, Fumadocs routes, and self-hosted search.
 inspector/    Data-driven demo entries, controls, and schemas. Never routed directly.
@@ -15,6 +15,11 @@ _incoming/    Raw downloads, gitignored. Staging only — never imported.
 ```
 
 `pnpm dev` · `pnpm typecheck` · `pnpm lint` · `pnpm test` · `pnpm build`
+
+Node is pinned in `.node-version`. `.agents/skills` is the canonical skill tree; never edit
+`.claude/skills` directly. It links to `.agents/skills` through a Windows junction (a directory
+symlink elsewhere), so edits and new skills appear immediately. `pnpm install` ensures the link
+exists; `pnpm skills:sync` repairs it and `pnpm skills:check` verifies its target.
 
 Run `pnpm registry:validate` and `pnpm registry:build` after changing install metadata or
 portable component source.
@@ -75,17 +80,25 @@ rather than reimplementing installation logic.
 ## Fumadocs documentation
 
 `content/docs/` is the public Fumadocs surface. Every installable `registry:ui` item has a
-`content/docs/<name>.mdx` page with frontmatter, an interactive `<ComponentDemo>`, an
-install/usage `<ComponentReference>`, an `## API` summary, and component-specific notes.
-The site serves that page as plain Markdown at `/docs/<component>.md` for agents, with the
-install and usage blocks expanded.
+`content/docs/<name>.mdx` page with frontmatter, an install/usage `<ComponentReference>`, an
+`## API` summary, and component-specific notes. The route renders the page as a playground: the
+demo on a canvas, the title (with an info hover card for source lines and component dependencies,
+derived from `registry.json`), install actions and settings in a panel, and the MDX one tab away
+(`#docs`, or any heading's hash). Below `lg` the same parts stack as one page: title, demo,
+settings, then the docs. The MDX holds no demo. A dimensional drawing at
+`public/drawings/<name>.html` (with an optional `<name>-motion.mp4` film) appears above the
+docs; run `pnpm drawings:build` after adding or changing one, which renders the themed
+`content/drawings/<name>.svg` the page inlines. The site serves that page as plain
+Markdown at `/docs/<component>.md` for agents, with the install and usage blocks expanded.
 
 When adding a component, update all of the relevant sources together:
 
 1. `registry/ui/<name>/` — portable implementation, variants, and tests.
 2. `registry.json` — install name, description, files, dependencies, and registry dependencies.
-3. `inspector/entries/` — the demo and settings controls, when the component needs a demo.
-4. `content/docs/<name>.mdx` — title/description, demo, install/usage reference, API, and notes;
+3. `inspector/entries/` — the demo and settings controls. Register the demo in
+   `stories/demo-names.ts` and its loader in `stories/component-demo.tsx`; a page whose slug
+   names a demo opens as a playground.
+4. `content/docs/<name>.mdx` — title/description, install/usage reference, API, and notes;
    add the page to `content/docs/meta.json` so Fumadocs includes it.
 5. `lib/component-catalog.ts` — the sidebar family, catalog category, and main API mapping when
    the new item changes those derived views.
@@ -121,8 +134,11 @@ worth reusing; a component that skips a line here is a component we'll rewrite l
   subtly different `data-state` vocabularies — invisible at three components, miserable at
   twenty. (`registry/lib/slot.tsx` is ours only because `asChild` is too small to import a
   primitive for.)
-- **Composable.** `ref` forwarded, props spread, `asChild` wherever an element swap is
-  plausible (use `registry/lib/slot.tsx`).
+- **Composable.** Forward refs and spread props. Where element replacement is supported,
+  Base UI-backed parts use Base UI's `render` prop; standalone parts use `asChild` via
+  `registry/lib/slot.tsx`. Preserve existing parts that support both. Wrappers may intentionally
+  fix their element, so check the component page and agent catalog for the supported swap prop;
+  do not assume every component accepts `asChild`.
 - **Variants in a sibling `.variants.ts`** via CVA. That file holds the variant definitions.
 - **State on the element.** `data-variant`, `data-loading`, `data-state`. Styling and tests
   hook off attributes, not off conditional `className` strings.
@@ -130,7 +146,9 @@ worth reusing; a component that skips a line here is a component we'll rewrite l
   value, checked, pressed, or open API.
 - **List panels open with an active row.** Activate the current selection, the most recent
   selected value for multi-select, or the first enabled row when nothing is selected.
-  A query activates the first match. Keep the active row when the pointer leaves.
+  A query activates the first match. When the pointer leaves, a searchable panel keeps its
+  active row lit (Enter in the field acts on it); a panel without search marks the row
+  `data-panel-dormant`, stops painting it, and resumes the arrow keys from it.
   Use `data-panel-active`, or Base UI's `data-highlighted` when it owns the highlight.
   `autoFocusFirstItem={false}` opts out for menu-like uses. See the
   [Select Search implementation notes](content/docs/select-search.mdx#highlight-implementation)
@@ -141,10 +159,14 @@ worth reusing; a component that skips a line here is a component we'll rewrite l
   and `clip-path`. Discourage animating layout properties such as `width`, `height`, `top`,
   and `left`, since they can trigger layout and paint on every frame. Use them when smoothly
   changing the layout is part of the intended interaction, and document the reason.
-  Existing uses include Collapsible's height transition, Calendar's measured month height
+  Existing uses include Collapsible's height transition, Dialog's measured frame height, Calendar's measured month height
   as week rows change, Sidebar's shell dimensions and offcanvas position, its collapsing
-  menu rows (width, height, padding) and group labels (margin), and Morph's opt-in
-  `sizing="current"` width. Sidebar's row geometry and label spacing transition so the
+  menu rows (width, height, padding), group labels (margin), group padding and gaps, and
+  open sections folding into the rail (height), the header search field and tab row folding
+  away (margin, grid rows), Morph's opt-in
+  `sizing="current"` width, Menubar's open-menu highlight size as it slides between
+  triggers of different widths, and its panel's width and height as it hands over from one
+  menu to the next. Sidebar's row geometry and label spacing transition so the
   navigation reflows smoothly into the icon rail without leaving gaps for hidden labels.
 - **Name the properties you transition.** `transition-[scale,opacity]`, never bare
   `transition` or `transition: all` (which is `transition-property: all` — the browser then
@@ -203,11 +225,11 @@ Plus one-off sources for specific jobs (loaders, charts). Same loop applies.
    existing `cn` utility, so inspect those changes before refinement.
 2. **Rebuild to the contract.** Don't polish the download; rewrite it. Most public
    components fail on `transition: all`, hardcoded durations, hex colours, and missing
-   `asChild`.
+   element-composition support (`render` for Base UI parts, `asChild` for standalone parts).
 3. **Tokens only.** No hex, no `slate-*`/`zinc-*`. Use semantic tokens (`bg-surface`,
    `text-muted-foreground`, `shadow-border`) by default. The ramp exceptions are status
    accents (such as warning ink and fills) and fixed neutral control states (such as
-   Switch's fixed tone and Checkbox/Radio's dark resting fills).
+   Switch's fixed tone, Checkbox/Radio's dark resting fills, and Scroll Area's track/dark thumb).
 4. **Variants + demo controls**, then an entry in `inspector/entries/` and an MDX page.
 5. **Review at 4x**, then in reduced motion, then by keyboard only, then in both themes.
 6. `/review-animations` and `/code-review`.
@@ -222,7 +244,7 @@ Two colour decisions worth not re-litigating:
 
 - **Primary is ink, not colour.** Colour is a signal; the neutral action is the default,
   while blue is reserved for the ring and other focused signals.
-- **Destructive uses `oklch(0.6 0.225 26)` with white text in both themes.** The design
+- **Destructive is Apple's systemRed with white text** — `#FF3B30` light, `#FF453A` dark. The design
   reference records the contrast tradeoff; OKLCH lightness alone does not establish WCAG contrast.
 
 Radii are **concentric**: `outer = inner + padding`. An `rounded-xl` (14px) card with
@@ -240,7 +262,7 @@ table cells, where the job is separation, not elevation.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
-# This is NOT the Next.js you know
+## This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 

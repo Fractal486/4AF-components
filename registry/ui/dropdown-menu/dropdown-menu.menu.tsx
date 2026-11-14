@@ -1,10 +1,15 @@
-import { cn } from "@/registry/lib/cn";
-import { radioVariants } from "@/registry/ui/radio/radio.variants";
+"use client";
+
+import { Kbd, type KbdProps } from "@/registry/ui/kbd/kbd";
+import { cn, mergeStateClassName } from "@/registry/lib/cn";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 import { ChevronRight } from "lucide-react";
-import type { ComponentProps, ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { LoaderProvider } from "@/registry/lib/loader";
-import { DisabledReasonTooltip, INDICATOR_SLOT, itemBase } from "./dropdown-menu.shared";
+import { dropdownMenuPopupVariants, dropdownMenuPositionerVariants } from "./dropdown-menu.variants";
+import { CHECK_SLOT, DisabledReasonTooltip, itemBase } from "./dropdown-menu.shared";
+import { CheckMark } from "@/registry/lib/check-mark";
 
 export interface DropdownMenuProps<Payload = unknown> extends BaseMenu.Root.Props<Payload> {
   loader?: ReactNode;
@@ -19,73 +24,137 @@ export function DropdownMenu<Payload>({ loader, ...props }: DropdownMenuProps<Pa
 }
 
 export const DropdownMenuTrigger = BaseMenu.Trigger;
+export const createDropdownMenuHandle = BaseMenu.createHandle;
+export type DropdownMenuHandle<Payload = unknown> = BaseMenu.Handle<Payload>;
+export type DropdownMenuTriggerProps<Payload = unknown> = BaseMenu.Trigger.Props<Payload>;
 
 export const DropdownMenuGroup = BaseMenu.Group;
 
 export const DropdownMenuRadioGroup = BaseMenu.RadioGroup;
 
+/**
+ * Moving from one open submenu to a sibling swaps the panels quickly — Base UI only marks that
+ * case (`data-instant="group"`) for a menubar. Each panel keeps a registry of its submenus: one
+ * opening while a sibling is open, or still fading out, takes a short, slight entrance and
+ * shortens the sibling's exit. Ordinary opens and closes keep the full animation.
+ */
+const SWAP_WINDOW_MS = 300;
+
+interface SubmenuSibling {
+  open: boolean;
+  closedAt: number;
+  setSwapping: (swapping: boolean) => void;
+}
+
+const SubmenuSiblingsContext = createContext<Set<SubmenuSibling> | null>(null);
+const SubmenuSwapContext = createContext(false);
+
 export function DropdownMenuSub({
   highlightItemOnHover = false,
+  onOpenChange,
   ...props
 }: ComponentProps<typeof BaseMenu.SubmenuRoot>) {
-  return <BaseMenu.SubmenuRoot highlightItemOnHover={highlightItemOnHover} {...props} />;
-}
+  const siblings = useContext(SubmenuSiblingsContext);
+  const [swapping, setSwapping] = useState(false);
+  const self = useRef<SubmenuSibling>(null);
+  useEffect(() => {
+    if (!siblings) return;
+    const entry: SubmenuSibling = { open: false, closedAt: -Infinity, setSwapping };
+    self.current = entry;
+    siblings.add(entry);
+    return () => {
+      siblings.delete(entry);
+    };
+  }, [siblings]);
 
-const popupClassName = cn(
-  // Same floating-panel material as the Select/Popover panels.
-  "z-50 max-h-[var(--available-height)] min-w-50 overflow-y-auto rounded-md border border-border bg-surface p-1 text-foreground shadow-overlay-drop outline-none",
-  "[scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent]",
-  "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent",
-  "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong",
-  // Scale-and-blur enter from the trigger edge; only these properties change, so only
-  // these are named. Base UI unmounts on transitionend, which fires because it's set.
-  //
-  // The Select family's numbers exactly — 0.95 and 3px in, 0.97 and 2px out, over
-  // `--duration-base`. A menu and a select panel are the same object to a user: a list of
-  // choices hanging off a control, often sat next to each other in the same toolbar. Two
-  // lists that open at different speeds is a difference you feel without being able to name.
-  "origin-[var(--transform-origin)] blur-0",
-  "transition-[opacity,scale,filter] duration-(--duration-base) ease-out",
-  "data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[starting-style]:blur-[3px]",
-  "data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[ending-style]:blur-[2px]",
-);
-
-export interface DropdownMenuContentProps
-  extends Omit<ComponentProps<typeof BaseMenu.Popup>, "className"> {
-  className?: string;
-  side?: ComponentProps<typeof BaseMenu.Positioner>["side"];
-  align?: ComponentProps<typeof BaseMenu.Positioner>["align"];
-  sideOffset?: number;
-  alignOffset?: number;
-  /** Keep the popup mounted while closed when its contents need to register state early. */
-  keepMounted?: boolean;
-}
-
-export function DropdownMenuContent({
-  className,
-  children,
-  side = "bottom",
-  align = "start",
-  sideOffset = 6,
-  alignOffset,
-  keepMounted = false,
-  ...props
-}: DropdownMenuContentProps) {
   return (
-    <BaseMenu.Portal keepMounted={keepMounted}>
-      <BaseMenu.Positioner
-        side={side}
-        align={align}
-        sideOffset={sideOffset}
-        alignOffset={alignOffset}
-        className="z-50 outline-none"
-      >
-        <BaseMenu.Popup className={cn(popupClassName, className)} {...props}>
-          {children}
-        </BaseMenu.Popup>
-      </BaseMenu.Positioner>
-    </BaseMenu.Portal>
+    <SubmenuSwapContext.Provider value={swapping}>
+      <BaseMenu.SubmenuRoot
+        highlightItemOnHover={highlightItemOnHover}
+        onOpenChange={(open, details) => {
+          const me = self.current;
+          if (me && siblings) {
+            const now = performance.now();
+            if (open) {
+              const others = [...siblings].filter(
+                (other) => other !== me && (other.open || now - other.closedAt < SWAP_WINDOW_MS),
+              );
+              for (const other of others) other.setSwapping(true);
+              setSwapping(others.length > 0);
+            } else {
+              // An ordinary close fades out; a sibling opening next will cut it short.
+              me.closedAt = now;
+              setSwapping(false);
+            }
+            me.open = open;
+          }
+          onOpenChange?.(open, details);
+        }}
+        {...props}
+      />
+    </SubmenuSwapContext.Provider>
   );
+}
+
+
+/**
+ * The library scrollbar inside a menu panel. The viewport stays out of the tab order: the menu
+ * scrolls its highlighted row into view, and Tab is not how a menu is moved through.
+ */
+function MenuScroll({ children }: { children: ReactNode }) {
+  return (
+    <ScrollArea className="min-h-0" viewportClassName="p-1" viewportProps={{ tabIndex: -1 }}>
+      {children}
+    </ScrollArea>
+  );
+}
+
+export type DropdownMenuPortalProps = ComponentProps<typeof BaseMenu.Portal>;
+export function DropdownMenuPortal(props: DropdownMenuPortalProps) {
+  return <BaseMenu.Portal data-slot="dropdown-menu-portal" {...props} />;
+}
+
+export type DropdownMenuPositionerProps = ComponentProps<typeof BaseMenu.Positioner>;
+export function DropdownMenuPositioner({ className, sideOffset = 6, collisionPadding = 8, ...props }: DropdownMenuPositionerProps) {
+  return <BaseMenu.Positioner data-slot="dropdown-menu-positioner" sideOffset={sideOffset}
+    collisionPadding={collisionPadding} {...props}
+    className={mergeStateClassName(dropdownMenuPositionerVariants(), className)} />;
+}
+
+export type DropdownMenuPopupProps = ComponentProps<typeof BaseMenu.Popup>;
+export function DropdownMenuPopup({ className, children, ...props }: DropdownMenuPopupProps) {
+  const submenus = useMemo(() => new Set<SubmenuSibling>(), []);
+  return <BaseMenu.Popup data-slot="dropdown-menu-content" {...props}
+    className={mergeStateClassName(dropdownMenuPopupVariants(), className)}>
+    <SubmenuSiblingsContext.Provider value={submenus}>
+      <MenuScroll>{children}</MenuScroll>
+    </SubmenuSiblingsContext.Provider>
+  </BaseMenu.Popup>;
+}
+
+export interface DropdownMenuContentProps extends DropdownMenuPopupProps {
+  side?: DropdownMenuPositionerProps["side"];
+  align?: DropdownMenuPositionerProps["align"];
+  sideOffset?: DropdownMenuPositionerProps["sideOffset"];
+  alignOffset?: DropdownMenuPositionerProps["alignOffset"];
+  /** Legacy shorthand; when supplied, overrides portalProps.keepMounted. */
+  keepMounted?: boolean;
+  /** Portal container, mounting behavior, refs, and DOM props. */
+  portalProps?: Omit<DropdownMenuPortalProps, "children">;
+  /** Collision handling, custom anchor, sticky positioning, refs, and state classes. */
+  positionerProps?: Omit<DropdownMenuPositionerProps, "side" | "align" | "sideOffset" | "alignOffset" | "children">;
+}
+
+/** Convenience composition. Its ref, render, classes, and DOM props belong to the popup. */
+export function DropdownMenuContent({
+  side = "bottom", align = "start", sideOffset = 6, alignOffset,
+  keepMounted, portalProps, positionerProps, ...popupProps
+}: DropdownMenuContentProps) {
+  return <DropdownMenuPortal {...portalProps} keepMounted={keepMounted ?? portalProps?.keepMounted}>
+    <DropdownMenuPositioner side={side} align={align} sideOffset={sideOffset} alignOffset={alignOffset} {...positionerProps}>
+      <DropdownMenuPopup {...popupProps} />
+    </DropdownMenuPositioner>
+  </DropdownMenuPortal>;
 }
 
 export interface DropdownMenuItemProps extends ComponentProps<typeof BaseMenu.Item> {
@@ -107,14 +176,14 @@ export function DropdownMenuItem({
   const hasReason = disabled && disabledReason != null && disabledReason !== "";
   const item = (
     <BaseMenu.Item
-      className={cn(
+      data-slot="dropdown-menu-item" data-variant={variant} data-inset={inset ? "" : undefined}
+      className={mergeStateClassName(cn(
         itemBase,
         inset && "pl-8",
         hasReason && "data-[disabled]:pointer-events-auto",
         // Red ink only — the highlight stays the same neutral wash as any other row.
         variant === "destructive" && "text-destructive [&>svg]:text-destructive",
-        className,
-      )}
+      ), className)}
       disabled={disabled}
       {...props}
     >
@@ -144,41 +213,27 @@ export function DropdownMenuRadioItem({
   const hasReason = disabled && disabledReason != null && disabledReason !== "";
   const item = (
     <BaseMenu.RadioItem
-      className={cn(
+      data-slot="dropdown-menu-radio-item"
+      className={mergeStateClassName(cn(
         itemBase,
-        "pr-2 pl-8",
         hasReason && "data-[disabled]:pointer-events-auto",
-        className,
-      )}
+      ), className)}
       disabled={disabled}
       {...props}
     >
-      <span className={INDICATOR_SLOT}>
-        {/* Radio's own circle — the same recessed well — drawn rather than nested, as a real
-            Radio is a button. Sized to the row's 14px slot. Its 1.5px border leaves 11px
-            inside, and the dot is inset 2px on every side, making it 7px. Whole-pixel insets
-            rather than `left-1/2` plus a translate: on an odd-sized dot that translate is
-            half a pixel, which the scale animation draws sub-pixel and the resting dot snaps
-            off, so the two disagreed on its size. */}
-        <span
-          data-slot="dropdown-menu-radio"
-          className={cn(radioVariants({ size: "sm" }), "size-3.5 cursor-default")}
-        >
-          {/* Base UI's own indicator, styled like the standalone Radio's dot. `keepMounted`
-              matters: without it the indicator is
-              transition-status-gated and can miss the group's initial value on first paint,
-              which is why it showed empty. It scales in when selected and out when not. */}
-          <BaseMenu.RadioItemIndicator
-            keepMounted
-            className={cn(
-              "absolute inset-[2px] rounded-full bg-primary",
-              "scale-0 opacity-0 transition-[scale,opacity] duration-(--duration-fast) ease-out",
-              "data-[checked]:scale-100 data-[checked]:opacity-100",
-            )}
-          />
-        </span>
-      </span>
       {children}
+      {/* `keepMounted` so the slot is reserved while unselected and the tick can fade out;
+          without it the indicator is presence-gated and can miss the group's first value. */}
+      <BaseMenu.RadioItemIndicator
+        keepMounted
+        data-slot="dropdown-menu-radio-check"
+        className={CHECK_SLOT}
+        render={(indicatorProps, state) => (
+          <span {...indicatorProps}>
+            <CheckMark checked={state.checked} />
+          </span>
+        )}
+      />
     </BaseMenu.RadioItem>
   );
 
@@ -201,7 +256,7 @@ export function DropdownMenuLabel({
 }: ComponentProps<"div"> & { inset?: boolean }) {
   return (
     <div
-      className={cn("px-2 py-1.5 text-xs font-medium text-muted-foreground", inset && "pl-8", className)}
+      className={cn("min-w-0 px-2 py-1.5 text-xs font-medium wrap-anywhere text-muted-foreground", inset && "pl-8", className)}
       {...props}
     />
   );
@@ -213,25 +268,14 @@ export function DropdownMenuSeparator({ className, ...props }: ComponentProps<ty
   // beside it. `SelectSeparator` is drawn the same way, so the two panels agree.
   return (
     <BaseMenu.Separator
-      className={cn("-mx-1 my-1 h-0 border-t border-border", className)}
+      className={mergeStateClassName("-mx-1 my-1 h-0 border-t border-border", className)}
       {...props}
     />
   );
 }
 
-export function DropdownMenuShortcut({ className, ...props }: ComponentProps<"kbd">) {
-  return (
-    <kbd
-      className={cn(
-        // The same keycap lift the command palette uses — 8% ink over whatever the row's
-        // surface happens to be. Not `bg-muted`: that's the row highlight, so a shortcut
-        // on a highlighted row would have disappeared into it.
-        "ml-auto flex min-w-4 shrink-0 items-center justify-center rounded-xs bg-foreground/8 px-1 py-0.5 font-mono text-2xs text-subtle-foreground",
-        className,
-      )}
-      {...props}
-    />
-  );
+export function DropdownMenuShortcut({ className, ...props }: KbdProps) {
+  return <Kbd className={cn("ml-auto self-start", className)} {...props} />;
 }
 
 export interface DropdownMenuSubTriggerProps
@@ -251,7 +295,8 @@ export function DropdownMenuSubTrigger({
 }: DropdownMenuSubTriggerProps) {
   return (
     <BaseMenu.SubmenuTrigger
-      className={cn(itemBase, inset && "pl-8", className)}
+      data-slot="dropdown-menu-sub-trigger"
+      className={mergeStateClassName(cn(itemBase, inset && "pl-8"), className)}
       delay={delay}
       {...props}
     >
@@ -262,30 +307,15 @@ export function DropdownMenuSubTrigger({
 }
 
 export function DropdownMenuSubContent({
-  className,
-  children,
-  side = "right",
-  align = "start",
-  sideOffset = 8,
-  keepMounted = false,
-  // Pull up by the popup's own top padding (`p-1`) so the first item lines up with the
-  // trigger row rather than sitting a few pixels low.
-  alignOffset = -4,
-  ...props
+  side = "right", align = "start", sideOffset = 8, alignOffset = -4, className, ...props
 }: DropdownMenuContentProps) {
-  return (
-    <BaseMenu.Portal keepMounted={keepMounted}>
-      <BaseMenu.Positioner
-        side={side}
-        align={align}
-        sideOffset={sideOffset}
-        alignOffset={alignOffset}
-        className="z-50 outline-none"
-      >
-        <BaseMenu.Popup className={cn(popupClassName, className)} {...props}>
-          {children}
-        </BaseMenu.Popup>
-      </BaseMenu.Positioner>
-    </BaseMenu.Portal>
-  );
+  // Swapped in from (or out for) a sibling submenu: a quick, slight entrance and exit instead
+  // of the full one, so sweeping across sibling rows doesn't wait on each panel.
+  const swapping = useContext(SubmenuSwapContext);
+  return <DropdownMenuContent data-slot="dropdown-menu-sub-content" side={side} align={align}
+    sideOffset={sideOffset} alignOffset={alignOffset} data-swap={swapping ? "" : undefined}
+    className={mergeStateClassName(cn(
+      "data-swap:duration-(--duration-fast) data-swap:data-[ending-style]:duration-(--duration-fast)",
+      "data-swap:data-[starting-style]:scale-[0.98] data-swap:data-[starting-style]:blur-[1px]",
+    ), className)} {...props} />;
 }

@@ -157,7 +157,7 @@ describe("AlignedSelect", () => {
     expect(label).toHaveClass("text-muted-foreground");
   });
 
-  it("opens over the trigger, at the trigger's width", async () => {
+  it("opens over the trigger, at least the trigger's width", async () => {
     const user = userEvent.setup();
     const { container } = render(<Fruits defaultValue="Banana" />);
 
@@ -166,9 +166,10 @@ describe("AlignedSelect", () => {
     const positioner = container.ownerDocument.querySelector(
       '[data-slot="aligned-select-positioner"]',
     )!;
-    // The panel matches the button rather than its own content, and Base UI is told to
-    // overlap so the selected row lands on the trigger.
-    expect(positioner.className).toContain("w-[var(--anchor-width)]");
+    // The panel is at least the button's width and grows to its longest row, so a trigger
+    // sized to a short value never truncates the rows. Base UI is told to overlap so the
+    // selected row lands on the trigger.
+    expect(positioner).toHaveClass("w-max", "min-w-(--anchor-width)", "max-w-(--available-width)");
     expect(await screen.findByRole("option", { name: "Banana" })).toHaveAttribute(
       "data-selected",
       "",
@@ -188,7 +189,7 @@ describe("AlignedSelect", () => {
     // selected-row alignment inside that content-sized positioner.
     expect(positioner.className).toContain("w-max");
     expect(positioner.className).toContain("min-w-50");
-    expect(positioner.className).not.toContain("w-[var(--anchor-width)]");
+    expect(positioner.className).not.toContain("min-w-(--anchor-width)");
   });
 
   it("grows from the row it opens on, not from its own centre", async () => {
@@ -296,6 +297,24 @@ describe("AlignedSelect", () => {
       expect(focused).toHaveAttribute("role", "option");
       expect(focused).toHaveAttribute("data-panel-active");
     });
+  });
+
+  it("lets a plain panel's row go dormant when the pointer leaves, then resumes from it", async () => {
+    const user = userEvent.setup();
+    render(<Fruits />);
+
+    await user.click(screen.getByRole("combobox"));
+    const banana = await screen.findByRole("option", { name: "Banana" });
+    await user.hover(banana);
+    await waitFor(() => expect(banana).toHaveAttribute("data-panel-active"));
+
+    await user.hover(screen.getByRole("combobox"));
+    await waitFor(() => expect(banana).toHaveAttribute("data-panel-dormant"));
+
+    await user.keyboard("{ArrowDown}");
+    const cherry = screen.getByRole("option", { name: "Cherry" });
+    await waitFor(() => expect(cherry).toHaveFocus());
+    expect(cherry).not.toHaveAttribute("data-panel-dormant");
   });
 
   it("keeps the offer where the pointer left it", async () => {

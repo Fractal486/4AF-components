@@ -23,22 +23,7 @@ describe("SidebarDemo split inbox header actions", () => {
     fireEvent.click(screen.getByRole("button", { name: "Compose" }));
     expect(inboxRow).toHaveAttribute("data-active");
 
-    fireEvent.click(screen.getByRole("button", { name: "Search mail" }));
-    expect(inboxRow).toHaveAttribute("data-active");
-  });
-
-  it("can remove the boxed preview frame for the fullscreen route", () => {
-    const { container } = render(
-      <SidebarDemo
-        variant="sidebar"
-        collapsible="icon"
-        loading={false}
-        fullscreen
-      />,
-    );
-
-    expect(container.firstElementChild).toHaveClass("h-dvh");
-    expect(container.firstElementChild).not.toHaveClass("rounded-lg");
+    expect(screen.queryByRole("button", { name: "Search mail" })).not.toBeInTheDocument();
   });
 
   it("splits the combined variants into layout and surface controls", () => {

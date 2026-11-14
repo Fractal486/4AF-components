@@ -9,10 +9,13 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSelect,
   DropdownMenuSelectContent,
   DropdownMenuSelectItem,
   DropdownMenuSelectTrigger,
+  DropdownMenuShortcut,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -167,37 +170,64 @@ describe("DropdownMenu", () => {
     expect(item.querySelector("[data-slot=morph]")).not.toBeNull();
   });
 
-  it("gives the tick the same box a leading icon gets", async () => {
+  it("marks checked rows with a trailing check and leaves the leading edge to icons", async () => {
     const user = userEvent.setup();
 
     render(
       <DropdownMenu>
         <DropdownMenuTrigger aria-label="More actions" />
         <DropdownMenuContent>
-          <DropdownMenuItem>
-            <svg />
-            Settings
-          </DropdownMenuItem>
           <DropdownMenuCheckboxItem defaultChecked>Show toolbar</DropdownMenuCheckboxItem>
+          <DropdownMenuRadioGroup defaultValue="a">
+            <DropdownMenuRadioItem value="a">A</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="b">B</DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       </DropdownMenu>,
     );
 
     await user.click(screen.getByRole("button", { name: "More actions" }));
     const checkboxRow = await screen.findByRole("menuitemcheckbox");
-    const slot = checkboxRow.querySelector("span");
 
-    // 10px to 24px, the same run a leading icon takes from the row's `px-2.5`. `left-2`
-    // with `size-4` shares only the right edge, which puts the tick a pixel left of every
-    // icon row's glyph.
-    expect(slot?.className).toContain("left-2.5");
-    expect(slot?.className).toContain("size-3.5");
+    // No leading indent: labels line up with plain and icon rows.
+    expect(checkboxRow.className).not.toContain("pl-8");
+    const slot = checkboxRow.querySelector("[data-slot=dropdown-menu-checkbox-item-status]");
+    expect(slot).toBe(checkboxRow.lastElementChild);
+    expect(slot?.className).toContain("ml-auto");
+    const check = slot?.querySelector("[data-slot=dropdown-menu-checkbox-check]:not([aria-hidden=true] *)");
+    expect(check).toHaveAttribute("data-checked");
 
-    // The slot holds a drawn checkbox, checked here. Its tick is sized with an important
-    // class: the row sizes every svg, and `.row svg` would otherwise outrank it.
-    const box = slot?.querySelector('[data-slot="dropdown-menu-checkbox"]');
-    expect(box).toHaveAttribute("data-checked");
-    expect(box?.querySelector("svg")?.getAttribute("class")).toContain("size-[70%]!");
+    const [a, b] = screen.getAllByRole("menuitemradio");
+    expect(a!.className).not.toContain("pl-8");
+    // Kept mounted on both rows, so the slot is reserved and only the selected one shows.
+    expect(a!.lastElementChild).toHaveAttribute("data-slot", "dropdown-menu-radio-check");
+    expect(a!.lastElementChild).toHaveAttribute("data-checked");
+    expect(b!.lastElementChild).toHaveAttribute("data-slot", "dropdown-menu-radio-check");
+    expect(b!.lastElementChild).not.toHaveAttribute("data-checked");
+  });
+
+  it("keeps the check at the edge after a shortcut", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger aria-label="More actions" />
+        <DropdownMenuContent>
+          <DropdownMenuCheckboxItem>
+            Show sidebar
+            <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+          </DropdownMenuCheckboxItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+    const row = await screen.findByRole("menuitemcheckbox");
+    const slot = row.lastElementChild;
+
+    // Two auto margins split the free space; after a shortcut the slot drops its own.
+    expect(slot?.previousElementSibling).toHaveAttribute("data-slot", "kbd");
+    expect(slot?.className).toContain("[[data-slot^=kbd]+&]:ml-0");
   });
 
   it("keeps a glyph Morph centred in an icon slot rather than start-aligned", async () => {
@@ -272,7 +302,7 @@ describe("DropdownMenu", () => {
           <DropdownMenuActionItem
             action={action}
             labels={{ success: "Copied" }}
-            revertAfter={50}
+            revertAfter={400}
           >
             Copy link
           </DropdownMenuActionItem>
@@ -297,9 +327,10 @@ describe("DropdownMenu", () => {
     expect(screen.getByRole("menu")).toBeInTheDocument();
     expect(row).toHaveTextContent("Copied");
 
-    // A real 50ms wait rather than a faked clock: Base UI's menu schedules its own
-    // timers, and parking those on a fake clock leaves the *next* test's menu unable to
-    // open at all. The revert is short enough that waiting for it is cheap.
+    // A real wait rather than a faked clock: Base UI's menu schedules its own timers, and
+    // parking those on a fake clock leaves the *next* test's menu unable to open at all.
+    // 400ms, not less: a busy full-suite run can spend a 50ms window between the outcome
+    // landing and the assertions above, so the row had already reverted.
     await waitFor(() => expect(row).toHaveAttribute("data-status", "idle"));
     expect(row).toHaveTextContent("Copy link");
   });
@@ -396,6 +427,70 @@ describe("DropdownMenu", () => {
     await act(async () => finish());
 
     expect(onCheckedChange).toHaveBeenCalledExactlyOnceWith(true);
+  });
+
+  it("puts a tickless deferred row's loader in its icon slot", async () => {
+    const user = userEvent.setup();
+    let finish!: () => void;
+    const action = vi.fn(() => new Promise<void>((resolve) => { finish = resolve; }));
+
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger aria-label="More actions" />
+        <DropdownMenuContent>
+          <DropdownMenuCheckboxItem
+            indicator={false}
+            action={action}
+            icon={(checked) => <span data-testid={checked ? "muted" : "unmuted"} />}
+          >
+            Mute thread
+          </DropdownMenuCheckboxItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+    const row = await screen.findByRole("menuitemcheckbox");
+    expect(row.querySelector("[data-slot=dropdown-menu-checkbox-check]")).toBeNull();
+    expect(row.querySelector("[data-testid=unmuted]")).not.toBeNull();
+
+    fireEvent.click(row);
+    expect(row.querySelector("[data-slot=loader]")).not.toBeNull();
+
+    await act(async () => finish());
+    expect(row).toHaveAttribute("aria-checked", "true");
+    expect(row.querySelector("[data-testid=muted]")).not.toBeNull();
+  });
+
+  it("shows a deferred row's loader at the trailing edge when it has no tick or icon", async () => {
+    const user = userEvent.setup();
+    let finish!: () => void;
+    const action = vi.fn(() => new Promise<void>((resolve) => { finish = resolve; }));
+
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger aria-label="More actions" />
+        <DropdownMenuContent>
+          <DropdownMenuCheckboxItem indicator={false} action={action}>
+            Word wrap
+          </DropdownMenuCheckboxItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+    const row = await screen.findByRole("menuitemcheckbox");
+    const status = row.querySelector("[data-slot=dropdown-menu-checkbox-item-status]");
+    expect(status).not.toBeNull();
+    // Morph keeps every state as a hidden sizer; only the shown copy is outside them.
+    const shownLoader = () => status!.querySelector("[data-slot=loader]:not([aria-hidden=true] *)");
+    expect(shownLoader()).toBeNull();
+
+    fireEvent.click(row);
+    expect(shownLoader()).not.toBeNull();
+
+    await act(async () => finish());
+    expect(row).toHaveAttribute("aria-checked", "true");
   });
 
   it("stays a plain synchronous checkbox without an action", async () => {

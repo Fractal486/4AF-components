@@ -1,7 +1,10 @@
-import { cn } from "@/registry/lib/cn";
+"use client";
+
+import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { duration, ease } from "@/registry/lib/motion";
 import { Button } from "@/registry/ui/button/button";
 import { Input } from "@/registry/ui/input/input";
+import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
 import { Select as BaseSelect } from "@base-ui/react/select";
 import { Check, X } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
@@ -9,16 +12,17 @@ import {
   useContext,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type ComponentProps,
   type MouseEvent,
   type ReactNode,
 } from "react";
-import { SELECT_CLEAR_ACTION, SelectContext } from "./select.context";
+import { SELECT_CLEAR_ACTION, SelectActiveItemContext, SelectContext, SelectSearchContext, SelectPanelDormantContext, SelectSubSiblingsContext, type SelectSubSibling } from "./select.context";
 import { SelectSeparator } from "./select.item";
-import { FADE_EXIT, FADE_HIDDEN, FADE_SHOW, SCROLLBAR, SIZE } from "./select.shared";
-import { focusPanelOption } from "./select.utils";
+import { FADE_EXIT, FADE_HIDDEN, FADE_SHOW, SIZE } from "./select.shared";
+import { focusFooterFromLastRow, focusPanelOption, moveFromFooter, resumeFromActiveRow } from "./select.utils";
 
 /**
  * The active-item key for one caller-supplied footer button.
@@ -53,6 +57,8 @@ export function SelectContent({
   className,
   children,
   sideOffset = 6,
+  alignOffset = 0,
+  portalProps,
   side = "bottom",
   align: alignProp,
   width: widthProp,
@@ -66,8 +72,11 @@ export function SelectContent({
   clearIcon = <X />,
   footerActions,
   ...props
-}: Omit<ComponentProps<typeof BaseSelect.Popup>, "className"> & {
-  className?: string;
+}: ComponentProps<typeof BaseSelect.Popup> & {
+  /** Shift the panel along the trigger's alignment axis. */
+  alignOffset?: ComponentProps<typeof BaseSelect.Positioner>["alignOffset"];
+  /** Choose the portal container or other Base UI portal options. */
+  portalProps?: Omit<ComponentProps<typeof BaseSelect.Portal>, "children">;
   children?: ReactNode;
   sideOffset?: number;
   /** Which side of the trigger to open on. Base UI still collision-flips from here. */
@@ -124,19 +133,17 @@ export function SelectContent({
     values,
     clear,
     size,
-    hasVisibleItems,
-    getOpeningItem,
-    activeItem,
     setActiveItem,
     setPanelSearch,
-    searchQuery,
-    setSearchQuery,
     triggerSizing,
     panelEdge,
   } = useContext(SelectContext);
+  const { hasVisibleItems, getOpeningItem, searchQuery, setSearchQuery } = useContext(SelectSearchContext);
+  const activeItem = useContext(SelectActiveItemContext);
   const width = widthProp ?? (triggerSizing === "content" ? "content" : "trigger");
   const align = alignProp ?? panelEdge;
   const listRef = useRef<HTMLDivElement>(null);
+  const footerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   // Whether real focus on a row is something the reader asked for. In a searchable panel
   // the caret belongs in the field and the highlight is `data-panel-active`, so focus
@@ -206,7 +213,7 @@ export function SelectContent({
     return () => setPanelSearch(false);
   }, [searchable, setPanelSearch]);
 
-  // Pin a content-width panel to its *unfiltered* width so an in-panel search can't resize
+  // Pin the panel to its *unfiltered* width so an in-panel search can't resize
   // it while typing. `w-max` sizes to the widest visible row, so hiding rows would let the
   // panel narrow toward its longest remaining item; measuring the full set (query empty)
   // and holding it as a `min-width` floor keeps the panel the width it opened at.
@@ -222,7 +229,7 @@ export function SelectContent({
   // close: a stale-but-correct floor avoids a width jump during the exit blur, and the next
   // open re-measures (labels may have changed) as soon as its query resets to empty.
   useEffect(() => {
-    if (!positionerNode || !open || !searchable || width !== "content") return;
+    if (!positionerNode || !open || !searchable) return;
     if (searchQuery.trim() !== "") return;
 
     const measure = () => {
@@ -233,7 +240,19 @@ export function SelectContent({
     const observer = new ResizeObserver(measure);
     observer.observe(positionerNode);
     return () => observer.disconnect();
-  }, [positionerNode, open, searchable, width, searchQuery]);
+  }, [positionerNode, open, searchable, searchQuery]);
+
+  // Without a search field the active row behaves like a hover: it stops painting when the
+  // pointer leaves the panel, and the arrow keys resume from it rather than from the top.
+  // A searchable panel keeps it lit — Enter in the field acts on it. Cleared on each open.
+  const [pointerLeft, setPointerLeft] = useState(false);
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) setPointerLeft(false);
+  }
+  const dormant = pointerLeft && !searchable;
+  const subPanels = useMemo(() => new Set<SelectSubSibling>(), []);
 
   const [openingItem, setOpeningItem] = useState<unknown>(undefined);
   useLayoutEffect(() => {
@@ -279,13 +298,16 @@ export function SelectContent({
         ]
       : []),
   ];
+  const footerActive = footerRow.some((action, index) =>
+    Object.is(activeItem, action.activeKey ?? selectFooterAction(index)));
+  const rowRest = footerActive ? "footer" : dormant ? "pointer" : false;
 
   // Built once and placed at whichever end `searchPosition` names, so the two layouts
   // can't drift apart. The hairline goes on the side facing the options.
   const searchField = searchable ? (
     <div
       className={cn(
-        "relative flex h-[38px] items-center px-3.5",
+        "relative flex h-[38px] items-stretch px-3.5",
         searchPosition === "bottom" ? "border-t border-border" : "border-b border-border",
       )}
     >
@@ -333,7 +355,7 @@ export function SelectContent({
   ) : null;
 
   return (
-    <BaseSelect.Portal>
+    <BaseSelect.Portal {...portalProps}>
       {/* Base UI handles the positioning and collision flip; `--transform-origin` points
           at the trigger's edge, so the unfold grows *from* the trigger whichever side it
           lands on. */}
@@ -341,15 +363,20 @@ export function SelectContent({
         data-slot="select-content-positioner"
         ref={setPositionerNode}
         sideOffset={sideOffset}
+        alignOffset={alignOffset}
         align={align}
         alignItemWithTrigger={false}
         side={side}
         className={cn(
           "z-50 outline-none",
-          // `trigger` keeps the panel the button's width (the default field select);
-          // `content` sizes it to its own rows — the longest label plus the reserved check
-          // slot — for a trigger sized to its own text, and never narrower than 200px.
-          width === "trigger" ? "w-[var(--anchor-width)]" : "w-max min-w-50",
+          // Both modes size the panel to its rows — the longest label plus the reserved check
+          // slot — so a row is never truncated while there is room. `trigger` keeps it at
+          // least the button's width (the default field select), so a full-width field gets
+          // a full-width panel and a trigger sized to a short value ("Day") still shows its
+          // longer rows whole. `content` is for a trigger sized to its own text, and never
+          // narrower than 200px. The available width is the cap in both.
+          "max-w-(--available-width)",
+          width === "trigger" ? "w-max min-w-(--anchor-width)" : "w-max min-w-50",
         )}
       >
         {/* The animation is driven off the `open` state, not Motion's mount: Base UI keeps
@@ -357,22 +384,16 @@ export function SelectContent({
             `initial`/`animate` would only play once (the entrance would vanish on the 2nd
             open, until a reload remounted it). Animating on `open` re-runs it every time. */}
         <BaseSelect.Popup
-          className={cn(
-            // Same `border` as the trigger so the two edges match, plus the ring-less
-            // overlay lift; the full shadow-overlay's hairline stacked on this border
-            // read as a doubled, too-heavy edge.
-            "overflow-hidden rounded-md border border-border bg-surface shadow-overlay-drop",
-            className,
-          )}
+          className={mergeStateClassName("overflow-hidden rounded-md border border-border material-glass shadow-overlay-drop", className)}
           render={
             <motion.div
               // The `min-width` floor lives on the popup — the visible bordered box — not
               // the positioner: the popup shrink-wraps its content, so when a search hides
               // the list (leaving only the empty message) the floor is what stops it
-              // collapsing to that message's width. Content-width searchable panels only.
+              // collapsing to that message's width. Searchable panels only.
               style={{
                 transformOrigin: "var(--transform-origin)",
-                minWidth: width === "content" && lockedWidth ? lockedWidth : undefined,
+                minWidth: lockedWidth || undefined,
               }}
               initial={reduceMotion ? { opacity: 0 } : FADE_HIDDEN}
               animate={
@@ -382,13 +403,54 @@ export function SelectContent({
                     ? FADE_SHOW
                     : FADE_EXIT
               }
-              transition={reduceMotion ? { duration: 0 } : { duration: duration.base, ease: ease.out }}
+              transition={reduceMotion
+                ? { duration: 0 }
+                : open
+                  ? { duration: duration.slow, ease: ease.panel }
+                  : { duration: duration.base, ease: ease.out }}
             />
           }
           // When a panel search filters everything out there's no option left to keep
           // active, so Base UI falls back to focusing the popup itself — which yanks the
           // caret out of the field mid-word. Bounce it straight back. Guarded on the popup
           // being the actual target, so focus landing on a child is left alone.
+          onPointerLeave={(event) => {
+            if (!searchable && event.pointerType !== "touch") setPointerLeft(true);
+          }}
+          onPointerMove={(event) => {
+            if (searchable || event.pointerType === "touch") return;
+            // A footer action that cannot be taken is not a place to rest the highlight:
+            // the last row would stay lit as if it were the thing under the pointer.
+            const target = event.target instanceof Element ? event.target : null;
+            const overInertFooter = Boolean(
+              target && footerRef.current?.contains(target) && !target.closest("button:not(:disabled)"),
+            );
+            if (overInertFooter !== pointerLeft) setPointerLeft(overInertFooter);
+          }}
+          onKeyDownCapture={(event) => {
+            // ↓ off the last row continues into the footer. Only for keys from this panel's
+            // own rows or the panel itself; a nested panel is portaled outside it.
+            if (
+              event.key === "ArrowDown" &&
+              event.target instanceof Node &&
+              event.currentTarget.contains(event.target) &&
+              !footerRef.current?.contains(event.target) &&
+              focusFooterFromLastRow(listRef.current, footerRef.current, event.target)
+            ) {
+              event.preventDefault();
+              event.stopPropagation();
+              if (pointerLeft) setPointerLeft(false);
+              return;
+            }
+            if (searchable) return;
+            if (pointerLeft) setPointerLeft(false);
+            // Only when the panel itself holds focus, where Base UI parks it after the pointer
+            // leaves. Keys from a nested panel bubble through here too, and are not ours.
+            if (event.target === event.currentTarget && resumeFromActiveRow(listRef.current, event.key)) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+          }}
           onFocus={(event) => {
             if (searchable && event.target === event.currentTarget) {
               searchInputRef.current?.focus();
@@ -419,15 +481,19 @@ export function SelectContent({
           {...props}
         >
           {searchable && searchPosition === "top" && searchField}
-          <div
-            className={cn(
-              "max-h-[min(var(--available-height),18rem)] overflow-y-auto p-1",
-              SCROLLBAR,
-              noResults && "hidden",
-            )}
+          {/* Out of the tab order: the panel moves by arrow keys and scrolls its active row
+              into view. */}
+          <ScrollArea
+            className={cn("max-h-[min(var(--available-height),18rem)]", noResults && "hidden")}
+            viewportClassName="p-1"
+            viewportProps={{ tabIndex: -1 }}
           >
-            <BaseSelect.List ref={listRef}>{children}</BaseSelect.List>
-          </div>
+            <SelectPanelDormantContext.Provider value={rowRest}>
+              <SelectSubSiblingsContext.Provider value={subPanels}>
+                <BaseSelect.List ref={listRef}>{children}</BaseSelect.List>
+              </SelectSubSiblingsContext.Provider>
+            </SelectPanelDormantContext.Provider>
+          </ScrollArea>
           {noResults && (
             <div
               // One row tall, exactly: `m-1` mirrors the list's `p-1` and `py-1.5` is the
@@ -450,7 +516,7 @@ export function SelectContent({
               <SelectSeparator className="mx-0 my-0 w-full" />
               {/* One button fills the row, as the clear always has; several share it
                   evenly, so a two-action footer reads as a pair rather than as a list. */}
-              <div className="flex gap-1 p-1">
+              <div ref={footerRef} className="flex gap-1 p-1">
                 {footerRow.map((action, index) => {
                   const key = action.activeKey ?? selectFooterAction(index);
                   return (
@@ -459,10 +525,25 @@ export function SelectContent({
                       variant="ghost"
                       size="xs"
                       data-panel-active={Object.is(activeItem, key) || undefined}
+                      data-panel-dormant={(dormant && Object.is(activeItem, key)) || undefined}
                       disabled={action.disabled}
                       onClick={(event) => {
                         action.onSelect(event);
                         if (!action.keepOpen) setOpen(false);
+                      }}
+                      onFocus={() => setActiveItem(key)}
+                      onKeyDown={(event) => {
+                        // The footer is a row of its own: ←/→ move along it, ↑ returns to
+                        // the last row. Kept from Base UI, whose list keys would otherwise
+                        // treat the button's keys as option navigation or typeahead.
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.stopPropagation();
+                          return;
+                        }
+                        if (moveFromFooter(listRef.current, footerRef.current, event.currentTarget, event.key)) {
+                          event.preventDefault();
+                          event.stopPropagation();
+                        }
                       }}
                       onPointerMove={(event) => {
                         if (event.pointerType !== "mouse" || event.currentTarget.disabled) return;
@@ -474,7 +555,8 @@ export function SelectContent({
                         if (!searchable) event.currentTarget.focus({ preventScroll: true });
                       }}
                       // Flexible while the Button's xs size owns its compact geometry.
-                      className="min-w-0 flex-1 rounded-xs px-2.5 data-[panel-active]:bg-muted data-[panel-active]:text-foreground"
+                      // No focus ring: like a row, the active fill is the highlight.
+                      className="min-w-0 flex-1 rounded-xs px-2.5 focus-visible:ring-0 focus-visible:ring-offset-0 data-[panel-active]:not-data-[panel-dormant]:bg-muted data-[panel-active]:not-data-[panel-dormant]:text-foreground"
                     >
                       {action.icon}
                       {action.label}
