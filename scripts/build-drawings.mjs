@@ -131,8 +131,11 @@ function render(slug, html) {
 }
 
 const files = (await readdir(sourceDir)).filter((f) => f.endsWith(".html") && !f.endsWith("-motion.html"));
-await rm(outDir, { recursive: true, force: true });
+// Only stale SVGs go: the folder also holds films.json from scripts/measure-films.mjs.
 await mkdir(outDir, { recursive: true });
+for (const file of await readdir(outDir)) {
+  if (file.endsWith(".svg")) await rm(path.join(outDir, file), { force: true });
+}
 for (const file of files) {
   const slug = file.replace(/\.html$/, "");
   await writeFile(path.join(outDir, `${slug}.svg`), render(slug, await readFile(path.join(sourceDir, file), "utf8")));
