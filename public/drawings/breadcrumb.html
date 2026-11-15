@@ -109,6 +109,11 @@ function detailRef(cx,cy,r,lbl,lx,ly){mk('circle',{cx:cx,cy:cy,r:r,class:'ph'});
 table=function(x,y,ttl,rows){const ws=[43,125,212],rh=15.5;tx(x,y-9,ttl,'vt');const all=[['Code','Variable','Value / formula']].concat(rows);all.forEach((r,i)=>{let xx=x;r.forEach((c,j)=>{mk('rect',{x:xx,y:y+i*rh,width:ws[j],height:rh,class:'thin'});tx(xx+6,y+i*rh+11.5,c,i?'tc':'th');xx+=ws[j]})});return y+all.length*rh+29};
 function line(x1,y1,x2,y2,c='thin',p){return mk('line',{x1,y1,x2,y2,class:c},p)}
 function cross(x,y,w,h,p){mk('rect',{x,y,width:w,height:h,class:'thin'},p);line(x,y,x+w,y+h,'thin',p);line(x+w,y,x,y+h,'thin',p)}
+// Lucide glyphs on the 24-unit grid, drawn at size s.
+function gly(name,x,y,s,p){const g=mk('g',{transform:'translate('+x+','+y+') scale('+(s/24)+')'},p);const st='fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round';
+ if(name==='dots')for(const cx of [5,12,19])mk('circle',{cx,cy:12,r:1,class:'thin',style:st},g);
+ if(name==='updown')for(const d of ['m7 15 5 5 5-5','m7 9 5-5 5 5'])mk('path',{d,class:'thin',style:st},g);
+ if(name==='check')mk('path',{d:'M20 6 9 17l-5-5',class:'thin',style:st},g);return g}
 function lines(x,y,items,c='dts',step=15){items.forEach((s,i)=>tx(x,y+i*step,s,c))}
 function hatch(x,y,w,h,r=0){return mk('rect',{x,y,width:w,height:h,rx:r,fill:HAT,class:'hs'})}
 
@@ -128,13 +133,13 @@ tx(50,58,'NOTES:','nth');tx(112,58,'(UNLESS OTHERWISE SPECIFIED)','nt');
 // @beat plan
 const PX=540,PY=175;
 function chevron(x,y,s){mk('path',{d:`M${x+s*.38},${y+s*.25} L${x+s*.63},${y+s*.5} L${x+s*.38},${y+s*.75}`,class:'thin'})}
-function ellipsis(x,y,z,i){rr(x,y,z,z,6*(z/24),'hug');cross(x+(z-i)/2,y+(z-i)/2,i,i)}
+function ellipsis(x,y,z,i){rr(x,y,z,z,6*(z/24),'hug');gly('dots',x+(z-i)/2,y+(z-i)/2,i)}
 function trail(x,y,k=1,closed=true){
  const h=20*k,sz=14*k,gap=6*k;
  rr(x,y,125*k,h,0,'slot');slotLabel(x,y,125*k,h,'LINK SLOT · HUG');
  chevron(x+131*k,y+3*k,sz);
  if(closed){ellipsis(x+151*k,y-2*k,24*k,16*k);chevron(x+181*k,y+3*k,sz);rr(x+201*k,y,109*k,h,0,'slot');slotLabel(x+201*k,y,109*k,h,'CURRENT · HUG')}
- else {rr(x+151*k,y,85*k,h,0,'slot');slotLabel(x+151*k,y,85*k,h,'LINK · HUG');rr(x+240*k,y,20*k,h,4*k,'hug');cross(x+243*k,y+3*k,14*k,14*k);chevron(x+266*k,y+3*k,sz);rr(x+286*k,y,105*k,h,0,'slot');slotLabel(x+286*k,y,105*k,h,'CURRENT · HUG')}
+ else {rr(x+151*k,y,85*k,h,0,'slot');slotLabel(x+151*k,y,85*k,h,'LINK · HUG');rr(x+240*k,y,20*k,h,4*k,'hug');gly('dots',x+243*k,y+3*k,14*k);chevron(x+266*k,y+3*k,sz);rr(x+286*k,y,105*k,h,0,'slot');slotLabel(x+286*k,y,105*k,h,'CURRENT · HUG')}
 }
 title(850,58,'PLAN · COLLAPSED TRAIL','FIXED GEOMETRY 2:1 · MD · HUG WIDTHS PROPORTIONAL');
 trail(PX,PY,2,true);line(PX-20,PY+20,PX+640,PY+20,'cl');
@@ -160,7 +165,7 @@ dimH(ex-32,ex+128,ey+155,ey+128,ey+128,'T1');dimV(ey,ey+96,ex+155,ex+96,ex+96,'Z
 callout(ex+16,ey+16,577,438,'I2',-1);rad(ex+96,ey,24,'tr','R2',18);nb(565,557,4);
 lines(540,640,['TOP / BOTTOM MARGIN = −S4.', 'FLOW HEIGHT = Z1 − 2·S4 = H1.', 'HIT OVERHANG = (T1 − Z1) ÷ 2.']);
 title(1025,390,'SIBLING TRIGGER','SCALE 4:1 · MD');
-const bx=978,by=446;hatch(bx,by-40,80,160);rr(bx,by-40,80,160,0,'env');rr(bx,by,80,80,16,'hug');cross(bx+12,by+12,56,56);
+const bx=978,by=446;hatch(bx,by-40,80,160);rr(bx,by-40,80,160,0,'env');rr(bx,by,80,80,16,'hug');gly('updown',bx+12,by+12,56);
 dimH(bx,bx+80,by+151,by+80,by+80,'Z2');dimV(by-40,by+120,bx+115,bx+80,bx+80,'T1');rad(bx,by,16,'tl','R1',18);
 lines(904,640,['HIT WIDTH = Z2; HEIGHT = T1.', 'NO SIDEWAYS EXPANSION OVER THE LINK.', 'ICON INSET = (Z2 − I1) ÷ 2.']);
 // @beat explode
@@ -181,8 +186,8 @@ dimV(846,852,889,868,732,'S1',{side:'r'});nb(505,862,3);
 lines(530,948,['FLEX-WRAP + WRAP-ANYWHERE; NO FIXED BREAKPOINT.', 'DURING EXPANSION: NOWRAP + CLIP, THEN RESTORE.', 'W = AVAILABLE CALLER SPACE; WRAPPED HEIGHT = HUG.']);
 // @beat menu
 title(1090,725,'MENU COMPOSITION','SCALE 0.85:1 · THREE SINGLE-LINE ROWS');
-rr(1001,759,20.4,20.4,5.1,'hug');cross(1004.4,762.4,13.6,13.6);rr(1001,784.5,170,79.9,5.95,'obj');
-for(let j=0;j<3;j++){rr(1005.25,788.75+j*23.8,161.5,23.8,2.55,j===1?'hug':'slot');slotLabel(1014,788.75+j*23.8,120,23.8,'LABEL · FLEX');if(j===1)cross(1146,793.8+j*23.8,11.9,11.9)}
+rr(1001,759,20.4,20.4,5.1,'hug');gly('dots',1004.4,762.4,13.6);rr(1001,784.5,170,79.9,5.95,'obj');
+for(let j=0;j<3;j++){rr(1005.25,788.75+j*23.8,161.5,23.8,2.55,j===1?'hug':'slot');slotLabel(1014,788.75+j*23.8,120,23.8,'LABEL · FLEX');if(j===1)gly('check',1146,793.8+j*23.8,11.9)}
 dimV(779.4,784.5,1200,1021.4,1171,'S5',{side:'r'});dimH(1001,1171,895,864.4,864.4,'WM');
 lines(980,928,['MENU: CHILD ITEMS BECOME ROWS.', 'SEPARATORS + SIBLING MENUS OMITTED.', 'CURRENT SIBLING GETS A TRAILING MARK.', 'BOTTOM / START; MAY FLIP OR SHIFT.']);nb(1192,834,6);
 // @beat separators

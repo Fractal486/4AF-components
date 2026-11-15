@@ -115,11 +115,24 @@ function lines(x,y,a,c='dts',step=15){a.forEach((s,i)=>tx(x,y+i*step,s,c))}
 function hatch(x,y,w,h,r=0){return mk('rect',{x,y,width:w,height:h,rx:r,fill:HAT,class:'hs'})}
 table=function(x,y,ttl,rows){const ws=[40,122,218],rh=17;tx(x,y-9,ttl,'vt');[['Code','Variable','Value / formula']].concat(rows).forEach((r,i)=>{let xx=x;r.forEach((c,j)=>{rr(xx,y+i*rh,ws[j],rh,0,'thin');tx(xx+6,y+i*rh+12,c,i?'tc':'th');xx+=ws[j]})});return y+(rows.length+1)*rh+30};
 function section(id){sv=mk('g',{'data-section':id},rootSvg);return sv}
+// Lucide glyphs (24-unit) at size s; 'loader' is the Classic Loader's bars.
+const GLYPH={check:{p:['M20 6 9 17l-5-5']},right:{p:['m9 18 6-6-6-6']},
+ copy:{p:['M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2'],r:[[8,8,14,14,2]]},
+ bell:{p:['M10.268 21a2 2 0 0 0 3.464 0','M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326']},
+ pencil:{p:['M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z','m15 5 4 4']},
+ folder:{p:['M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z']},
+ trash:{p:['M3 6h18','M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6','M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2']},loader:{bars:true}};
+function gl(name,x,y,s=14){const g=mk('g',{transform:'translate('+x+','+y+') scale('+(s/24)+')'});const d=GLYPH[name];const st='fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round';
+ if(d.bars){for(let i=0;i<12;i++){const a=i*Math.PI/6;mk('line',{x1:12+5*Math.sin(a),y1:12-5*Math.cos(a),x2:12+10*Math.sin(a),y2:12-10*Math.cos(a),class:'thin',style:st+';stroke-opacity:'+(1-i*.07).toFixed(2)},g)}return g}
+ for(const p of d.p||[])mk('path',{d:p,class:'thin',style:st},g);for(const [rx,ry,w,h,rad] of d.r||[])mk('rect',{x:rx,y:ry,width:w,height:h,rx:rad,class:'thin',style:st},g);return g}
+const LEADS={active:'copy',check:'bell',radio:'pencil',sub:'folder',action:'loader',item:'trash'};
 function row(x,y,w,kind='item',labels=true,p){
  const old=sv;if(p)sv=p;rr(x,y,w,28,3,kind==='active'?'hug':'thin');
- cross(x+10,y+7,14,14);rr(x+32,y+6,w-68,16,0,'slot');
+ gl(LEADS[kind]||'copy',x+10,y+7,14);rr(x+32,y+6,w-68,16,0,'slot');
  if(labels)slotLabel(x+32,y+6,w-68,16,'LABEL · FLEX');
- if(kind==='check'||kind==='radio'||kind==='sub'){cross(x+w-24,y+7,14,14)}
+ if(kind==='check')gl('check',x+w-24,y+7,14);
+ else if(kind==='radio')mk('circle',{cx:x+w-17,cy:y+14,r:3,class:'dot'});
+ else if(kind==='sub')gl('right',x+w-24,y+7,14);
  else if(kind==='item'){rr(x+w-32,y+7,22,14,2,'hug')}
  sv=old;
 }
@@ -185,7 +198,7 @@ at(7.12,.015,.45);for(const [label,z] of layers){const yy=835+215*.376-z;line(20
 at(8.7,.03,.4);lines(76,954,['PORTAL → POSITIONER → POPUP → SCROLL VIEWPORT.', 'LAYER ORDER IS STRUCTURAL; NO SCRIM IS INSERTED.']);
 section('row-detail');at(8.25,.006,.4);
 title(879,622,'DETAIL A · ROW ANATOMY','SCALE 2:1 · SINGLE LINE BASELINE · TRAILING SLOT IS OPTIONAL');
-const rx=618,ry=681;rr(rx,ry,548,56,6,'obj');cross(rx+20,ry+14,28,28);rr(rx+64,ry+12,394,32,0,'slot');slotLabel(rx+64,ry+12,394,32,'LABEL SLOT · FLEX · WRAPS');cross(rx+500,ry+14,28,28);
+const rx=618,ry=681;rr(rx,ry,548,56,6,'obj');gl('copy',rx+20,ry+14,28);rr(rx+64,ry+12,394,32,0,'slot');slotLabel(rx+64,ry+12,394,32,'LABEL SLOT · FLEX · WRAPS');gl('check',rx+500,ry+14,28);
 dimH(rx,rx+20,656,ry,ry+14,'S2',{dx:-8});dimH(rx+20,rx+48,656,ry+14,ry+14,'I1',{dy:-13});dimH(rx+48,rx+64,656,ry+14,ry+12,'S4',{dx:9});dimH(rx+500,rx+528,656,ry+14,ry+14,'I1');dimV(ry,ry+56,1196,rx+548,rx+548,'H1');
 lines(618,767,['LEAD GLYPH ↔ LOADER: SAME I1 BOX. TRAIL: CHECK / RADIO / CHEVRON.', 'H1 = 2·S3 + MAX(L1,I1) = 28; WRAPPING ADDS LINE HEIGHT.', 'SHORTCUT HUGS ITS CONTENT AND START-ALIGNS; NO TEXT WIDTH IS SPECIFIED.']);
 section('corner');at(8.45,.006,.4);

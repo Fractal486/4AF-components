@@ -150,7 +150,20 @@ at(1.2,.02,.45);dimH(X(0),X(14),Y(-12),Y(0),Y(9),'S1');dimH(X(14),X(30),Y(-12),Y
 at(2.3,.025,.5);dimH(X(40),X(166),Y(-12),Y(7),Y(7),'LABEL · HUG');dimH(X(166),X(180),Y(-12),Y(7),Y(0),'S1');
 at(2.6,.025,.5);dimH(X(0),X(W),Y(-30),Y(-15),Y(-15),'W = 2·S1 + C');dimV(Y(0),Y(34),X(-13),X(0),X(0),'H1');dimV(Y(0),Y(9),X(W+13),X(W),X(30),'S3',{side:'r'});dimV(Y(9),Y(25),X(W+13),X(30),X(30),'I1',{side:'r'});dimV(Y(25),Y(34),X(W+13),X(30),X(W),'S3',{side:'r'});
 at(3,.025,.5);line(X(-7),Y(17),X(W+7),Y(17),'cl');rad(X(W),Y(34),24,'br','R1',18);detailRef(X(4),Y(3),22,'DETAIL A',X(-20),Y(-4));nb(X(174),Y(17),1);title(X(90),Y(58),'Plan · armed / widest','Scale 3:1 · width schematic · MD');
-at(3.5,.025,.5);rr(650,435,230,56,13,'obj');xbox(674,451,24,24);rr(718,451,130,24,0,'slot');slotLabel(718,451,130,24,'IDLE SLOT · HUG');rr(947,435,230,56,13,'obj');xbox(971,451,24,24);rr(1015,451,138,24,0,'slot');slotLabel(1015,451,138,24,'ARMED SLOT · HUG');line(880,463,938,463,'dl');mk('path',{d:'M929,458 L938,463 L929,468',class:'thin'});tx(908,425,'PRESS','dts',{'text-anchor':'middle'});dimH(650,880,512,491,491,'W');dimH(947,1177,512,491,491,'W');title(913,550,'A stationary confirmation target','Widest = same box · current = opt-in width transition');
+at(3.5,.025,.5);title(955,446,'A · CONFIRMATION FLOW','');
+{const icon=(k,x,y)=>{const g=mk('g',{transform:'translate('+x+','+y+') scale(.8333)'});const p=d=>mk('path',{d,class:'thin',style:'fill:none;stroke-width:1.6'},g);
+  if(k==='trash'){p('M3 6h18');p('M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6');p('M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2');p('M10 11v6');p('M14 11v6');}
+  if(k==='check')p('M20 6 9 17l-5-5');};
+ const arrow=d=>mk('path',{d,class:'dl','marker-end':A});
+ // Idle: Trash2 + resting label. Armed: Check + confirm label, in the same box.
+ rr(650,486,180,40,12,'obj');icon('trash',666,496);rr(698,494,116,24,0,'slot');tx(756,510,'DELETE','sl',{'text-anchor':'middle'});
+ rr(935,486,180,40,12,'obj');icon('check',951,496);rr(983,494,116,24,0,'slot');tx(1041,510,'CONFIRM','sl',{'text-anchor':'middle'});
+ rr(1185,490,92,32,16,'thin');tx(1231,510,'ONDELETE()','sl',{'text-anchor':'middle'});
+ arrow('M830,506 H935');tx(882,524,'PRESS · ARMS','dts',{'text-anchor':'middle'});
+ arrow('M1115,506 H1185');tx(1150,524,'AFTER M1','dts',{'text-anchor':'middle'});
+ arrow('M1231,490 V468 H740 V486');tx(980,462,'DISARMS, THEN CALLS ONDELETE','dts',{'text-anchor':'middle'});
+ nb(1150,492,3);
+ {const _p=sv;sv=mk('g',{opacity:.5},_p);arrow('M1025,526 V550 H740 V526');tx(882,564,'ESCAPE · BLUR · M2 TIMEOUT','dts',{'text-anchor':'middle'});nb(970,560,4);sv=_p;}}
 // Lifting layers preserve the template’s pure-time matrix interpolation.
 const sc=2.1,TX=390,TY=754,ia=.94*sc,ib=.17*sc,ic=-.34*sc,id=.47*sc;
 const P=(x,y,z)=>[TX+ia*x+ic*y,TY+ib*x+id*y-z];

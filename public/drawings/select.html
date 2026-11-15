@@ -113,10 +113,14 @@ function line(x1,y1,x2,y2,c='thin',p){return mk('line',{x1,y1,x2,y2,class:c},p)}
 function cross(x,y,w,h,p){mk('rect',{x,y,width:w,height:h,class:'thin'},p);line(x,y,x+w,y+h,'thin',p);line(x+w,y,x,y+h,'thin',p)}
 function lines(x,y,items,c='dts',step=15){items.forEach((s,i)=>tx(x,y+i*step,s,c))}
 function hatch(x,y,w,h,r=0){return mk('rect',{x,y,width:w,height:h,rx:r,fill:HAT,class:'hs'})}
-function field(x,y,w,h=30,r=6,icon=14,plain=false){rr(x,y,w,h,r,plain?'slot':'obj');const pad=plain?0:15;rr(x+pad,y+(h-14)/2,w-2*pad-icon-8,14,0,'slot');slotLabel(x+pad,y,w-2*pad-icon-8,h,'VALUE SLOT · FLEX');cross(x+w-pad-icon,y+(h-icon)/2,icon,icon)}
-function row(x,y,w,h=30,selected=false,label=true,icons=true,p){rr(x,y,w,h,3,selected?'hug':'slot',p);if(icons)cross(x+10,y+(h-14)/2,14,14,p);rr(x+(icons?32:10),y+(h-12)/2,w-(icons?64:42),12,0,'slot',p);if(label)slotLabel(x+(icons?32:10),y,w-(icons?64:42),h,'LABEL SLOT · FLEX',null,p);cross(x+w-24,y+(h-14)/2,14,14,p)}
-function panel(x,y,{count=7,search=false,footer=false,label=true,timeline=false}={}){const H=10+count*30+(search?38:0)+(footer?33:0);if(timeline)at(.3,0,1.7);rr(x,y,224,H,7,'obj');if(search){rr(x+15,y+10,194,16,0,'slot');line(x+1,y+38,x+223,y+38);if(label)slotLabel(x+15,y,194,38,'FILTER SLOT · FILL')}
-for(let i=0;i<count;i++){if(timeline)at(2.1+i*.13,.012,.5);row(x+5,y+5+(search?38:0)+i*30,214,30,i===1,label)}
+// Lucide glyphs (24-unit paths) drawn at icon size.
+const GLYPH={down:['m6 9 6 6 6-6'],right:['m9 18 6-6-6-6'],check:['M20 6 9 17l-5-5'],filter:['M3 6h18','M7 12h10','M10 18h4'],x:['M18 6 6 18','m6 6 12 12'],search:['m21 21-4.3-4.3']};
+function gl(name,x,y,s=14,p){const g=mk('g',{transform:'translate('+x+','+y+') scale('+(s/24)+')'},p);for(const d of GLYPH[name])mk('path',{d,class:'thin',style:'fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round'},g);if(name==='search')mk('circle',{cx:11,cy:11,r:8,class:'thin',style:'fill:none;stroke-width:2'},g);return g}
+function field(x,y,w,h=30,r=6,icon=14,plain=false){rr(x,y,w,h,r,plain?'slot':'obj');const pad=plain?0:15;rr(x+pad,y+(h-14)/2,w-2*pad-icon-8,14,0,'slot');slotLabel(x+pad,y,w-2*pad-icon-8,h,'VALUE SLOT · FLEX');gl('down',x+w-pad-icon,y+(h-icon)/2,icon)}
+// An option row: optional leading icon slot, flexible label, and the reserved check slot (drawn only when selected).
+function row(x,y,w,h=30,selected=false,label=true,icons=false,p,text='LABEL SLOT · FLEX',checked=selected){if(selected)rr(x,y,w,h,3,'hug',p);if(icons)rr(x+10,y+(h-14)/2,14,14,0,'slot',p);rr(x+(icons?32:10),y+(h-12)/2,w-(icons?64:42),12,0,'slot',p);if(label)slotLabel(x+(icons?32:10),y,w-(icons?64:42),h,text,null,p);if(checked)gl('check',x+w-24,y+(h-14)/2,14,p)}
+function panel(x,y,{count=7,search=false,footer=false,label=true,timeline=false,sub=-1}={}){const H=10+count*30+(search?38:0)+(footer?33:0);if(timeline)at(.3,0,1.7);rr(x,y,224,H,7,'obj');if(search){gl('search',x+15,y+12,14);rr(x+37,y+12,172,14,0,'slot');line(x+1,y+38,x+223,y+38);if(label)slotLabel(x+37,y,172,38,'SEARCH · FILL','l')}
+for(let i=0;i<count;i++){if(timeline)at(2.1+i*.13,.012,.5);const ry=y+5+(search?38:0)+i*30;if(i===sub){rr(x+5,ry,214,30,3,'hug');rr(x+15,ry+9,150,12,0,'slot');if(label)slotLabel(x+15,ry,150,30,'SUB TRIGGER');gl('right',x+195,ry+8,14)}else row(x+5,ry,214,30,i===1,label)}
 if(footer){const fy=y+H-34;line(x+1,fy,x+223,fy);rr(x+5,fy+5,214,24,3,'hug');if(label)slotLabel(x+5,fy+5,214,24,'ACTION SLOT · FILL')}
 return H}
 // Notes and source qualifications.
@@ -127,28 +131,36 @@ at(8.3,.009,.5);title(245,328,'SHADOW ENVELOPE','SCALE 1:1 · LIGHT THEME · HEI
 // Primary plan.
 const planParent=sv;if(MOTION){sv=mk('g',{transform:'translate(80,0)'});SELF.plan=sv}
 at(-.45,0,1.2);field(600,154,224);at(.65,.08,.4);dimH(600,824,115,154,154,'W0 (DEMO)');at(1,.05,.4);dimV(154,184,566,600,600,'H1');
-panel(600,190,{timeline:true});at(3.05,.035,.4);title(712,58,'PLAN · OPEN SELECT','SCALE 1:1 · DEFAULT SM · N = 7 · W0 REFERENCE');
-line(712,141,712,429,'cl');dimV(184,190,860,824,824,'S5',{side:'r'});nb(893,187,5);
-dimV(190,410,536,600,600,'H3 = 2·B + 2·S1 + N·H2');dimV(195,225,860,824,819,'H2',{side:'r'});dimV(225,255,860,819,819,'H2',{side:'r'});
-dimH(600,605,448,410,405,'B+S1',{dx:-25,dy:12});dimH(605,819,448,405,405,'ROW · FILL');dimH(819,824,448,405,410,'S1+B',{dx:25,dy:12});rad(824,190,7,'tr','R1',24);nb(585,240,3);nb(585,167,1);detailRef(808,240,20,'DETAIL A',920,292);detailRef(605,404,15,'DETAIL C',923,460);
-at(8.45,.04,.4);lines(574,481,['W0 = 224 MEASURED; H3 = 220 AT N = 7.','PANEL W MAY EXCEED THE TRIGGER FOR LONG ROWS.','NO SEARCH / FOOTER IN THIS DEFAULT PLAN.'],'dts',16);
+panel(600,190,{timeline:true,count:6,search:true,sub:4});at(3.05,.035,.4);title(712,58,'PLAN · OPEN SELECT','SCALE 1:1 · DEFAULT SM · N = 6 · SEARCH + SUB PANEL');
+rr(832,348,200,100,7,'obj');[[0,true],[1,false],[2,false]].forEach(([i,c])=>row(837,353+i*30,190,30,false,true,false,null,'LABEL SLOT · FLEX',c));callout(828,375,868,330,'S6',1);dimV(190,228,566,600,600,'H4');nb(585,209,4);
+line(712,141,712,437,'cl');dimV(184,190,860,824,824,'S5',{side:'r'});nb(893,187,5);
+dimV(190,418,536,600,600,'H4 + H3 (N = 6)');dimV(233,263,860,824,819,'H2',{side:'r'});dimV(263,293,860,819,819,'H2',{side:'r'});
+dimH(600,605,448,418,413,'B+S1',{dx:-25,dy:12});dimH(605,819,448,413,413,'ROW · FILL');dimH(819,824,448,413,418,'S1+B',{dx:25,dy:12});rad(824,190,7,'tr','R1',24);nb(585,278,3);nb(585,167,1);detailRef(808,278,20,'DETAIL A',900,304);detailRef(605,412,15,'DETAIL C',900,470);
+at(8.45,.04,.4);lines(574,481,['W0 = 224 MEASURED; N = 6 WITH SEARCH (H4).','PANEL W MAY EXCEED THE TRIGGER FOR LONG ROWS.','SUB PANEL: RIGHT / START; S6 GAP, S7 ALIGN OFFSET.'],'dts',16);
 sv=planParent;
 if(MOTION)sv=mk('g',{transform:'translate(160,0)'},svg);
 // Row detail with source gaps and fixed check reservation.
 at(8.5,.007,.45);title(1090,58,'DETAIL A · OPTION ROW','SCALE 1.2:1 · FIXED ICONS, FLEXIBLE LABEL');
-const dx=960,dy=140,k=1.2;rr(dx,dy,256.8,36,3.6,'hug');cross(dx+12,dy+9.6,16.8,16.8);rr(dx+38.4,dy+10.8,180,14.4,0,'slot');slotLabel(dx+38.4,dy,180,36,'LABEL · FLEX');cross(dx+228,dy+9.6,16.8,16.8);
+const dx=960,dy=140,k=1.2;rr(dx,dy,256.8,36,3.6,'hug');rr(dx+12,dy+9.6,16.8,16.8,0,'slot');rr(dx+38.4,dy+10.8,180,14.4,0,'slot');slotLabel(dx+38.4,dy,180,36,'LABEL · FLEX');gl('check',dx+228,dy+9.6,16.8);
 dimH(dx,dx+12,115,140,140,'S2',{dx:-10});dimH(dx+12,dx+28.8,100,140,140,'I1');dimH(dx+28.8,dx+38.4,115,140,140,'S3',{dx:12});dimH(dx+228,dx+244.8,115,140,140,'I2');dimV(dy,dy+36,1240,1217,1217,'H2');
 lines(961,208,['S2 · I1 · S3 · FLEX · S3 · I2 · S2','NO LEADING ICON → OMIT I1 AND ITS S3.','END SLOT CAN REPLACE I2; INDICATOR=FALSE OMITS IT.','SINGLE AND MULTIPLE BOTH USE A TRAILING CHECK.'],'dts',17);
 // Search/footer variant at 1:1, does not imply it is enabled by default.
-at(8.55,.005,.45);title(1090,298,'OPTIONAL REGIONS','SCALE 1:1 · N = 3 · SEARCH + FOOTER');panel(978,333,{count:3,search:true,footer:true});dimV(334,372,944,978,978,'H4');dimV(470,503,1234,1202,1202,'H5');nb(962,434,4);lines(966,536,['H6 = H3 + H4 + H5 = 171 (N=3).','SEARCH MAY MOVE TO BOTTOM.','SEARCH PAD-X S4; FOOTER INSET / GAP S1.']);
+at(8.55,.005,.45);{const _p=sv;sv=mk('g',{transform:'translate(0,330)'},_p);title(1100,298,'SELECT SORT · FOOTER ACTIONS','SCALE 1:1 · MULTIPLE · VALUE SET');
+{// Sort trigger with a value set: filled, solid edge; ListFilter + selected labels + chevron.
+ rr(975,330,150,30,6,'hug');gl('filter',987,338);rr(1007,338,82,14,0,'slot');slotLabel(1007,330,82,30,'LABELS');gl('down',1099,338);
+ // Panel: rows with checks, then the footer actions.
+ rr(975,370,170,164,7,'obj');[[0,true],[1,false],[2,true],[3,false]].forEach(([i,c])=>row(980,375+i*30,160,30,false,true,false,null,'LABEL',c));
+ line(976,500,1144,500);rr(980,505,77,24,3,'slot');rr(1063,505,77,24,3,'slot');rr(987,511,12,12,0,'slot');rr(1004,512,46,10,0,'slot');slotLabel(1004,505,46,24,'ACTION');gl('x',1069,511,12);rr(1086,512,48,10,0,'slot');slotLabel(1086,505,48,24,'CLEAR');
+ dimV(500,534,959,975,975,'H5');nb(1160,515,4);
+ lines(975,580,['FOOTER: H5 = B + 2·S1 + H7; CLEAR IS LAST.','ACTIONS SHARE THE ROW EVENLY.','SORT TRIGGER: DASHED UNSET, FILLED ONCE SET.'],'dts',16);}sv=_p;}
 // Axonometric separated layers, with a pure-time matrix morph in the film.
 sv=planParent;
 const iso=[.658,.119,-.238,.329,320,820];
 function layer(z,a){let g;if(MOTION){g=mk('g',{});SELF.morph.push({g,z,a});g.style.opacity=0}else{g=mk('g',{transform:'matrix('+[iso[0],iso[1],iso[2],iso[3],iso[4],iso[5]-z].join(',')+')'})}return g}
 if(MOTION){SELF.morph=[];SELF.flat=[1,0,0,1,680,190];SELF.iso=iso;noreg=1}
-let g=layer(0,5.0);rr(0,0,224,220,0,'slot',g);g=layer(35,5.05);mk('rect',{x:-24,y:-8,width:272,height:268,rx:7,class:'hs',fill:HAT},g);g=layer(70,5.15);rr(0,0,224,220,7,'obj',g);rr(1,1,222,218,6,'thin',g);g=layer(110,5.25);rr(5,5,214,210,3,'well',g);rr(5,35,214,30,3,'hug',g);g=layer(150,5.35);for(let i=0;i<7;i++)row(5,5+i*30,214,30,false,false,true,g);
+let g=layer(0,5.0);rr(0,0,224,220,0,'slot',g);g=layer(35,5.05);mk('rect',{x:-24,y:-8,width:272,height:268,rx:7,class:'hs',fill:HAT},g);g=layer(70,5.15);rr(0,0,224,220,7,'obj',g);rr(1,1,222,218,6,'thin',g);g=layer(110,5.25);rr(5,5,214,210,3,'well',g);rr(5,35,214,30,3,'hug',g);g=layer(150,5.35);for(let i=0;i<7;i++)row(5,5+i*30,214,30,false,false,false,g);
 if(MOTION)noreg=0;
-at(7.05,.035,.4);for(const [i,label,z] of [[0,'CANVAS',0],[1,'DROP SHADOW',35],[2,'BORDER + GLASS',70],[3,'SCROLL VIEWPORT + ACTIVE ROW',110],[4,'LABEL / ICON / CHECK SLOTS',150]]){const ly=820+220*.329-z;line(220,ly,267.64,ly,'lead');tx(210,ly+3,label,'dts',{'text-anchor':'end'})}
+at(7.05,.035,.4);for(const [i,label,z] of [[0,'CANVAS',0],[1,'DROP SHADOW',35],[2,'BORDER + GLASS',70],[3,'SCROLL VIEWPORT + ACTIVE ROW',110],[4,'LABEL + CHECK SLOTS',150]]){const ly=820+220*.329-z;line(220,ly,267.64,ly,'lead');tx(210,ly+3,label,'dts',{'text-anchor':'end'})}
 title(250,595,'EXPLODED AXONOMETRIC','PROPORTIONAL SCHEMATIC · VERTICAL SEPARATION NOT TO SCALE');at(8.65,.04,.4);lines(65,946,['PORTALED SURFACE; NO SCRIM.','SCROLLBAR OVERLAYS LIST; DOES NOT TAKE ROW WIDTH.']);
 if(MOTION)sv=mk('g',{transform:'translate(80,0)'},svg);
 // Corner detail: actual radius differs from the exact concentric construction.
@@ -158,7 +170,7 @@ const cx=579,cy=670;mk('path',{d:`M${cx},${cy-12} V${cy+28} A28,28 0 0 0 ${cx+28
 at(8.7,.006,.4);title(711,784,'TRIGGER SIZE FAMILY','SCALE 1:1 · ALL WIDTHS SCHEMATIC');for(const [i,name,h,r,ic] of [[0,'XS',24,6,14],[1,'SM',30,6,14],[2,'MD',34,8,16]]){tx(550,830+i*54,name,'dts');field(600,813+i*54,224,h,r,ic);dimV(813+i*54,813+i*54+h,861,824,824,'H1',{side:'r'})}lines(555,999,['BOXED: S4 PAD-X; PLAIN: NO BORDER / PAD, GAP = 6.','SORT ICON-ONLY: SQUARE H1. TEXT SORT: HUG WIDTH.']);
 if(MOTION)sv=mk('g',{transform:'translate(160,0)'},svg);
 // Nested placement and viewport constraints.
-at(8.8,.005,.45);title(1092,623,'PLACEMENT / NESTED PANEL','PROPORTIONAL SCHEMATIC · BOTTOM / START DEFAULT');rr(956,658,275,181,0,'thin');hatch(956,658,8,181);rr(986,675,95,16,3,'slot');rr(986,699,95,118,4,'obj');rr(991,741,85,15,2,'hug');rr(1084,737,122,80,4,'obj');line(986,673,986,821,'cl');callout(985,695,1002,651,'S5',1);callout(1080,747,1112,864,'S6',1);callout(1086,738,1196,707,'S7',1);lines(963,896,['NESTED: RIGHT / START; S6 GAP, S7 ALIGN OFFSET.','PARENT: ALIGN END IF TRIGGER IS ROW-END, ELSE START.','NO ITEM-OVER-TRIGGER ALIGNMENT IN THIS SELECT.','MW / MH ARE AVAILABLE SPACE; COLLISIONS MAY FLIP.','V1 IS NOT EXPLICITLY SET BY THIS WRAPPER.'],'dts',17);
+
 sv=planParent;at(8.9,.01,.4);tx(50,994,'SOURCE AUDIT','vt');lines(50,1013,['Nine registry modules: root, context, shared, utils, trigger, content, sub, item, variants.','Scroll Area / Input / Button / CheckMark + globals; all size and width branches reviewed.'],'source',13);
 // Tables; reserved footer link zone starts at y=990.
 at(8.4,.001,.35);let yy=70;const xx=MOTION?1470:1270;yy=table(xx,yy,'SPACING / BORDERS',[

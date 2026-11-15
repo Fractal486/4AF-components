@@ -109,7 +109,7 @@ function line(x1,y1,x2,y2,c='thin',p){return mk('line',{x1,y1,x2,y2,class:c},p)}
 function cross(x,y,w,h,p){rr(x,y,w,h,0,'thin',p);line(x,y,x+w,y+h,'thin',p);line(x+w,y,x,y+h,'thin',p)}
 function lines(x,y,a,c='dts',step=15){a.forEach((s,i)=>tx(x,y+i*step,s,c))}
 function hatch(x,y,w,h){return mk('rect',{x,y,width:w,height:h,fill:HAT,class:'hs'})}
-const MOTION=false;function layerGroup(z,a,j){return mk('g',{class:'iso',transform:'matrix(.47,.085,-.17,.235,205,'+(830-z)+')'})}const at=()=>{};begin('sheet');const st=mk('title',{id:'drawing-title'});st.textContent='Data table dimensional drawing';const ds=mk('desc',{id:'drawing-desc'});ds.textContent='Variable-width data table anatomy with toolbar, sortable headers, density, selection overlay, pinned edges, scroll viewport, optional corner and exploded layers.';
+const MOTION=false;function layerGroup(z,a,j){return mk('g',{class:'iso',transform:'matrix(.47,.085,-.17,.235,205,'+(750-z)+')'})}const at=()=>{};begin('sheet');const st=mk('title',{id:'drawing-title'});st.textContent='Data table dimensional drawing';const ds=mk('desc',{id:'drawing-desc'});ds.textContent='Variable-width data table anatomy with toolbar, sortable headers, density, selection overlay, pinned edges, scroll viewport, optional corner and exploded layers.';
 // Fixed heights are source geometry; horizontal spans are schematic, never specifications.
 at(8.25,.004,.4);
 tx(50,58,'NOTES:','nth');tx(112,58,'(UNLESS OTHERWISE SPECIFIED)','nt');
@@ -167,11 +167,12 @@ for(let j=0;j<layerSpecs.length;j++){
  if(j===2){rr(0,0,W,36,0,'well',g);rr(0,36,36,H-36,0,'well',g)}
  if(j===3){for(let row=0;row<6;row++){rr(10,10+row*36,16,16,4,'hug',g);for(const [a,w] of [[46,130],[196,200],[416,180]])rr(a,10+row*36,w,16,0,'slot',g)}}
  if(!MOTION)[...g.querySelectorAll('*')].forEach(e=>e.setAttribute('vector-effect','non-scaling-stroke'));
- at(7.05+j*.05,.03,.4);const ly=830-z;line(163,ly,205,ly,'lead');tx(154,ly+4,name,'dts',{'text-anchor':'end'});
+at(7.05+j*.05,.03,.4);const ly=750-z;line(163,ly,205,ly,'lead');tx(154,ly+4,name,'dts',{'text-anchor':'end'});
 }
-at(8.3,.01,.45);lines(65,932,['NO SCRIM OR DROP SHADOW ON THE TABLE.', 'STICKY CELL PAINT IS OPAQUE; CONTENT SCROLLS BELOW.', 'PINNED HEADER SEAM: 1 PX UPWARD FILL SHADOW.']);
+at(8.3,.01,.45);lines(65,872,['NO SCRIM OR DROP SHADOW ON THE TABLE.', 'STICKY CELL PAINT IS OPAQUE; CONTENT SCROLLS BELOW.', 'PINNED HEADER SEAM: 1 PX UPWARD FILL SHADOW.']);
 
 // Cell section / density: native table min heights, never a fixed multiline row.
+const densityGroup=mk('g',{transform:'translate(-430,-250)'});sv=densityGroup;
 at(8.45,.015,.45);title(690,575,'DETAIL A · CELL DENSITY','SCALE 2:1 · SM / MD · HEIGHTS ARE MINIMA');
 for(const [i,h,p] of [[0,36,10],[1,44,12]]){
  const xx=530+i*190,yy=617;rr(xx,yy,160,h*2,0,'obj');rr(xx+p*2,yy+(h*2-40)/2,160-p*4,40,0,'slot');
@@ -180,14 +181,16 @@ for(const [i,h,p] of [[0,36,10],[1,44,12]]){
 }
 lines(520,775,['H2 ≥ MAX(DENSITY MIN, CONTENT + 2·S2 + B).', 'HORIZONTAL RULE B IS ABSENT ON LAST BODY ROW.']);
 
+sv=planRoot;
 // Selection bar retains cells beneath; source does not paint a new surface.
-at(8.7,.012,.45);title(1072,575,'SELECTION OVERLAY','SCALE 1:1 HEIGHT · WIDTH SCHEMATIC');
-rr(928,617,280,36,0,'well');rr(938,627,16,16,4,'hug');
-rr(964,627,100,16,0,'slot');slotLabel(964,627,100,16,'COUNT · HUG');
-rr(1118,623,80,24,6,'hug');slotLabel(1118,623,80,24,'ACTIONS');
-dimH(928,964,594,617,617,'S8');dimV(617,653,1235,1208,1208,'H1',{side:'r'});nb(1220,632,3);
-line(928,673,1208,673,'ph');tx(1068,692,'LABELS RETAIN THEIR CELLS BELOW','dts',{'text-anchor':'middle'});
-lines(930,725,['BAR: TRANSLATE-Y −8 → 0 + OPACITY.', 'LABEL FADE: DURATION-SLOW = 300 MS.', 'REDUCED MOTION: JS 0; CSS 1 MS.', 'GAP S9 BETWEEN COUNT AND ACTIONS.']);
+at(8.7,.012,.45);title(860,575,'SELECTION OVERLAY','SCALE 1:1 HEIGHT · WIDTH SCHEMATIC');
+rr(550,617,620,36,0,'well');rr(560,627,16,16,4,'hug');
+rr(586,627,100,16,0,'slot');slotLabel(586,627,100,16,'COUNT · HUG');
+rr(1048,623,24,24,6,'hug');cross(1053,628,14,14);
+rr(1080,623,80,24,6,'hug');slotLabel(1080,623,80,24,'ACTION');
+dimH(550,586,594,617,617,'S8');dimV(617,653,1197,1170,1170,'H1',{side:'r'});nb(1182,632,3);
+line(550,673,1170,673,'ph');tx(860,692,'LABELS RETAIN THEIR CELLS BELOW','dts',{'text-anchor':'middle'});
+lines(550,725,['BAR: TRANSLATE-Y −8 → 0 + OPACITY.', 'LABEL FADE: DURATION-SLOW = 300 MS.', 'REDUCED MOTION: JS 0; CSS 1 MS.', 'GAP S9 BETWEEN COUNT AND ACTIONS.']);
 
 // Pinning and overflow diagram.
 at(8.95,.015,.45);title(1045,831,'PINNING / SCROLL CONTRACT','PROPORTIONAL · WIDTH AND MAX HEIGHT [TBD]');

@@ -56,7 +56,7 @@ h1{font-size:44px;font-weight:400;letter-spacing:.1em;line-height:1.1;text-trans
 .tbv{font:400 17px var(--f);fill:var(--ink);letter-spacing:.06em}
 
 
-.tc{font-size:10px}.nt{font-size:10.5px;letter-spacing:.035em}.source{font:400 10px var(--f);fill:var(--ink2)}
+.tc{font-size:10px}.nt{font-size:10.5px;letter-spacing:.035em}.formula{fill:var(--ink3)}.source{font:400 10px var(--f);fill:var(--ink2)}
 .accent-free{fill:#555;stroke:var(--ink);stroke-width:1}.faint{fill:#fafafa;stroke:#aaa;stroke-width:.55}
 .rule{stroke:#ccc;stroke-width:.55}.white-label{font:400 9px var(--f);fill:#fff;letter-spacing:.08em}
 @media(max-width:760px){.wrap{padding:12px}.tb{grid-template-columns:1fr 1fr}.tb .big{grid-column:1/-1;grid-row:auto}.tb .notes{grid-template-columns:1fr;gap:0}.tb .figs{grid-template-columns:repeat(2,1fr);gap:16px}.figs>div:nth-child(odd){border-left:0;padding-left:0}h1{font-size:32px}.foot{flex-wrap:wrap}}
@@ -164,27 +164,27 @@ lines(590,493,['COLUMN WIDTHS Cᵢ: AUTO / CALLER-DEFINED; ALL [TBD].', 'WIDTH A
 sv=sheet;
 // Exploded view: lift the frame, body grid, pinned cells, then the sticky header.
 at(7.05,.025,.4);title(296,588,'EXPLODED AXONOMETRIC','PROPORTIONAL · SEPARATION IS DIAGRAMMATIC');
-const IA=.564,IB=.102,IC=-.204,ID=.282,TX=232,TY=850;
+const IA=.564,IB=.102,IC=-.204,ID=.282,TX=232,TY=800;
 const layers=[['SCROLL CLIP / FRAME',0,'frame'],['FLOWING BODY + RULES',46,'body'],['OPAQUE PINNED CELLS',92,'pinned'],['STICKY HEADER',138,'header']];
 if(MOTION){
  noreg=1;this.morph=[];for(const [label,z,kind] of layers){const g=mk('g',{});slab(g,kind);this.morph.push({g,z,a:5.05+z/460});}
  noreg=0;this.flat=[1,0,0,1,PX,PY];this.iso=[IA,IB,IC,ID,TX,TY];
 }else{for(const [label,z,kind]of layers){const g=mk('g',{transform:`matrix(${IA},${IB},${IC},${ID},${TX},${TY-z})`});slab(g,kind);[...g.querySelectorAll('*')].forEach(e=>e.setAttribute('vector-effect','non-scaling-stroke'));}}
 at(6.8,.03,.45);for(const [label,z]of layers){line(215,TY-z,232,TY-z,'lead');line(70,TY-z,215,TY-z,'lead');tx(70,TY-z-7,label,'dts');}
-lines(65,965,['NO SCRIM OR ELEVATION LAYER.', 'HEADER ABOVE BODY PINS; PINNED CELLS SCROLL WITH ROWS.', 'CAPTION REMAINS BELOW THE SCROLLPORT.']);
+lines(65,940,['NO SCRIM OR ELEVATION LAYER.', 'HEADER ABOVE BODY PINS; PINNED CELLS SCROLL WITH ROWS.', 'CAPTION REMAINS BELOW THE SCROLLPORT.']);
 // Detail A: body cell vertical minimum versus content-led height.
 at(8.55,.009,.42);title(858,565,'DETAIL A · CELL DENSITY','SCALE 2:1 · MINIMUM HEIGHTS, CONTENT CAN GROW');
 for(const [i,size,h,pad,py]of [[0,'SM',36,10,6],[1,'MD',44,12,8]]){
  const x=605+i*288,y=602;rr(x,y,210,h*2,0,'obj');rr(x+pad*2,y+(h-20)/2*2,210-pad*4,40,0,'slot');slotLabel(x+pad*2,y+(h-20),210-pad*4,40,'VALUE SLOT');
  dimV(y,y+h*2,x-25,x,x,'H2');dimV(y+(h-20),y+(h+20),x+235,x+210,x+210,'H5');dimH(x,x+pad*2,y+h*2+25,y+h*2,y+h*2,'S1',{dx:-9});tx(x+105,y+h*2+51,size,'dts',{'text-anchor':'middle'});
 }
-lines(596,755,['BODY LINE H5; PADDING S2 IS A MINIMUM.', 'H2 ≥ H5 + 2·S2 + B2; TABLE ROW HEIGHT CAN ADD SPACE.']);
+lines(596,755,['BODY LINE H5; PADDING S2 IS A MINIMUM.', 'H2 ≥ H5 + 2·S2 + B2; TABLE ROW HEIGHT CAN ADD SPACE.'],'dts formula');
 // Detail B: logical edge fade and multiple-pin offsets.
 at(8.7,.008,.42);title(885,790,'DETAIL B · LOGICAL PIN GROUP','PROPORTIONAL · INLINE START SHOWN; END IS MIRRORED');
 rr(615,851,110,62,0,'well');rr(725,851,130,62,0,'well');rr(855,851,305,62,0,'obj');hatch(855,851,56,62);
 slotLabel(615,851,110,62,'PIN C₁');slotLabel(725,851,130,62,'PIN C₂');slotLabel(920,851,235,62,'SCROLLING CONTENT');
 dimH(615,725,832,851,851,'C₁');dimH(725,855,832,851,851,'C₂');dimH(855,911,939,913,913,'F1');
-lines(610,975,['O₂ = C₁; P1 = C₁ + C₂; INNER JOIN STAYS OPAQUE.', 'F1 = MIN(D1, F0); NO HIDDEN CONTENT → NO FADE.', 'EXPLICIT --table-pin-offset OVERRIDES THE AUTO SUM.'],'dt',17);
+lines(610,975,['O₂ = C₁; P1 = C₁ + C₂; INNER JOIN STAYS OPAQUE.', 'F1 = MIN(D1, F0); NO HIDDEN CONTENT → NO FADE.', 'EXPLICIT --table-pin-offset OVERRIDES THE AUTO SUM.'],'dt formula',17);
 // Tables and source audit.
 at(8.35,.0015,.4);let yy=70;const xx=1270;
 yy=table(xx,yy,'SPACING / RULES',[

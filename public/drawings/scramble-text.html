@@ -41,6 +41,7 @@ h1{font-size:44px;font-weight:400;letter-spacing:.1em;line-height:1.1;text-trans
 .dt{font:400 11px var(--f);fill:var(--ink);paint-order:stroke;stroke:var(--sheet);stroke-width:4px;stroke-linejoin:round}
 .dts{font:400 9.5px var(--f);fill:var(--ink2);letter-spacing:.06em;text-transform:uppercase;paint-order:stroke;stroke:var(--sheet);stroke-width:3px}
 .sl{font:400 9px var(--f);fill:var(--ink2);letter-spacing:.08em;text-transform:uppercase}
+.spec{font:500 28px var(--f);fill:var(--ink);letter-spacing:-.01em}.spec-dim{fill:var(--ink3)}
 .nt{font:400 11.5px var(--f);fill:var(--ink);letter-spacing:.06em;text-transform:uppercase}
 .nth{font:700 13px var(--f);fill:var(--ink);letter-spacing:.06em}
 .vt{font:400 12px var(--f);fill:var(--ink);letter-spacing:.1em;text-transform:uppercase}
@@ -160,11 +161,20 @@ at(7.1,.02,.45);layerDefs.forEach(([l,z])=>{line(230,734-z,285,734-z,'lead');lin
 line(300,570,300,753,'ph');
 lines(60,809,['VISIBLE STRING CHANGES; THE LIVE REGION DOES NOT SCRAMBLE.', 'THE UPPER PLANE IS EXPLANATORY: SR-ONLY IS CLIPPED.', 'NO SHADOW ENVELOPE OR SURFACE STACK EXISTS.'],'dts',18);
 
-// Width evidence: state widths are not reserved; strokes are schematic only.
-at(8.2,.007,.4);title(888,487,'DETAIL A · WIDTH IS NOT RESERVED','PROPORTIONAL STATES · NOT A TEXT-WIDTH SPECIFICATION');
-const states=[{y:541,w:540,label:'INITIAL · STABLE HASHED SYMBOLS',fill:'hs'},{y:632,w:574,label:'TICK k · PREFIX + RANDOM SUFFIX',fill:'well'},{y:723,w:512,label:'FINAL · COMPLETE TEXT',fill:'hug'}];
-states.forEach((v,j)=>{tx(565,v.y-12,v.label,'dts');rr(565,v.y,v.w,44,0,'slot');const e=rr(565,v.y+8,v.w,28,0,v.fill);if(j===0)e.setAttribute('fill',HAT);tx(565+v.w/2,v.y+26,j===1?'REVEALED PREFIX  |  UNRESOLVED SUFFIX':'TEXT SLOT · HUG','sl',{'text-anchor':'middle'});line(565+v.w,v.y-4,565+v.w,v.y+55,'ph');});
-line(565,524,565,784,'cl');dimV(541,585,1185,1139,1139,'H1');
+// Width evidence: state widths are not reserved.
+at(8.2,.007,.4);title(888,487,'DETAIL A · WIDTH IS NOT RESERVED','DEMO STRING · 28 PX SPECIMEN · NOMINAL WIDTHS');
+// Real states of the demo string "Deploying changes…", from the component's own algorithm:
+// the stable hash per segment, a tick with 7 segments revealed, and the final text.
+// Widths come from Helvetica advance widths (per 1000 em), so each slot hugs its string.
+const ADV={D:722,e:556,p:556,l:222,o:556,y:500,i:222,n:556,g:556,' ':278,c:500,h:556,a:556,s:500,'…':1000,'=':584,',':278,'^':469,'%':889,'+':584,'?':556,':':278,'{':334,'|':260,'-':333,'.':278,'(':333,'>':584,';':278,'$':556,'[':278,'<':584,')':333,'&':667,']':278,'_':556};
+const SPEC=28,PAD=10,adv=s=>[...s].reduce((w,c)=>w+(ADV[c]??556),0)*SPEC/1000;
+const states=[{y:541,label:'INITIAL · STABLE HASHED SYMBOLS',prefix:'',suffix:'=,^%+?+:{ |-.(%^>.'},{y:632,label:'TICK k · REVEALED PREFIX + RANDOM SUFFIX',prefix:'Deployi',suffix:';$ [<<)-&]_'},{y:723,label:'FINAL · COMPLETE TEXT',prefix:'Deploying changes…',suffix:''}];
+states.forEach(v=>{const pw=adv(v.prefix),w=pw+adv(v.suffix)+2*PAD;tx(565,v.y-12,v.label,'dts');rr(565,v.y,w,44,0,'slot');
+ const t=tx(565+PAD,v.y+32,'','spec');if(v.prefix){const a=document.createElementNS(t.namespaceURI,'tspan');a.textContent=v.prefix;t.appendChild(a);}
+ if(v.suffix){const b=document.createElementNS(t.namespaceURI,'tspan');b.setAttribute('class','spec-dim');b.textContent=v.suffix;t.appendChild(b);}
+ if(v.prefix&&v.suffix)line(565+PAD+pw,v.y+6,565+PAD+pw,v.y+38,'cl');
+ line(565+w,v.y-4,565+w,v.y+55,'ph');tx(565+w+8,v.y+27,'W = '+Math.round(w),'dts');});
+line(565,524,565,784,'cl');dimV(541,585,540,565,565,'H1');
 lines(565,799,['NO HIDDEN FULL-SIZE MEASURER; NO MIN-WIDTH RESERVE.', 'W(t) CAN CHANGE AS SYMBOL ADVANCES CHANGE. WRAPPING IS CALLER-DEFINED.'],'dts',18);
 
 // Timer lattice and prefix progression.

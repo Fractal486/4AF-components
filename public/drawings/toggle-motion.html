@@ -139,7 +139,7 @@ kit.scene('drawing', {
     at(8.3,.001,.35);let yy=table(1340,82,'ICON GEOMETRY',[['Z1','control-square','34'],['I1','icon-box','16'],['S1','icon-inset','(Z1−I1)÷2 = 9'],['R1','corner','8'],['R2','pill / circle','Z1÷2 = 17'],['T1','hit-square','40'],['S2','hit-outset','(T1−Z1)÷2 = 3'],['B','layout-border','0']]);
     yy=table(1340,yy,'INTERACTION',[['P1','tap-scale','0.95'],['F1','focus-ring','2'],['F2','ring-offset','2'],['D1','disabled-alpha','0.5'],['M1','fill-duration','150 ms'],['M2','reduced-css','1 ms']]);
     yy=table(1340,yy,'OUTLINE SHADOW · LIGHT',[['Y','ambient-y','2'],['BL','ambient-blur','4'],['SP','ambient-spread','0'],['E1','top-envelope','BL+SP−Y = 2'],['E2','side-envelope','BL+SP = 4'],['E3','bottom-envelope','BL+SP+Y = 6']]);
-    table(1340,yy,'CALLER / SCHEMATIC',[['W','control-width','HUG · [TBD]'],['Z','layer-lift','[TBD]']]);
+    yy=table(1340,yy,'CALLER / SCHEMATIC',[['W','control-width','HUG · [TBD]'],['Z','layer-lift','[TBD]']]);
     at(8.5,.009,.4);
     [['NONE',false,false],['ICON',true,false],['BACKGROUND',false,true],['BOTH',true,true]].forEach(([n,fi,fb],i)=>{const x=710+i*137,y=602;rr(x,y,102,102,24,fb?'hug':'obj');const el=rr(x+27,y+27,48,48,0,fi?'accent-free':'thin');mk('path',{d:`M${x+27},${y+27} l48,48 M${x+75},${y+27} l-48,48`,class:'thin'});tx(x+51,y+125,n,'dts',{'text-anchor':'middle'});});
     title(965,565,'PRESSED FILL OPTIONS','SCALE 3:1 · ALL FOUR ARE PRESSED');tx(965,753,'FILL CHANGES PAINT ONLY; GEOMETRY IS IDENTICAL.','dts',{'text-anchor':'middle'});nb(1270,621,2);
@@ -147,7 +147,7 @@ kit.scene('drawing', {
     rr(370,269,136,136,32,'obj');rr(354,253,168,168,48,'thin');rr(362,261,152,152,40,'thin');callout(355,272,328,241,'F1 + F2',-1);title(438,455,'FOCUS ENVELOPE','SCALE 4:1 · RING + OFFSET');
     at(8.9,.01,.4);title(986,814,'TEXT COMPOSITION','SCALE 3:1 IN HEIGHT · WIDTH SCHEMATIC');rr(750,851,450,102,24,'obj');xbox(792,878,48,48);rr(870,876,288,52,0,'slot');slotLabel(870,876,288,52,'LABEL SLOT · HUG');dimH(750,792,973,953,926,'S3');dimH(792,840,973,null,926,'I1');dimH(840,870,973,null,926,'S4');dimH(1158,1200,973,928,953,'S3');dimV(851,953,1220,1200,1200,'H1');nb(1260,870,6);tx(975,1014,'W = 2·S3 + I1 + S4 + LABEL HUG','dts',{'text-anchor':'middle'});
     at(9,.01,.45);title(240,918,'A · CORNER / SHAPE');mk('path',{d:'M85,1000 V976 A32,32 0 0 1 117,944 H144',class:'thin'});callout(95,952,155,947,'R1',1);rr(245,940,68,68,34,'obj');callout(306,945,340,935,'R2',1);title(235,1020,'SCALE 4:1 CORNER · 2:1 CIRCLE');
-    at(9.2,.001,.35);table(1010,55,'SIZE MAP · XS / SM / MD / LG',[['Z#','Z2/Z3/Z1/Z4','24 / 30 / 34 / 38'],['I1','icon','14 / 14 / 16 / 16'],['R1','radius','6 / 6 / 8 / 8']]);
+    at(9.2,.001,.35);table(1340,yy,'SIZE MAP · XS / SM / MD / LG',[['Z#','Z2/Z3/Z1/Z4','24 / 30 / 34 / 38'],['I1','icon','14 / 14 / 16 / 16'],['R1','radius','6 / 6 / 8 / 8']]);
     at(9.3,.001,.35);table(400,908,'TEXT SIZE MD',[['H1','text-height','34'],['S3','label-pad-x','14'],['S4','content-gap','10'],['S5','optical-pad','S3−2 = 12']]);
     at(9.4,.01,.4);tx(1130,460,'T1: XS / SM / ICON-XS / ICON-SM / ICON','dts',{'text-anchor':'middle'});tx(1130,478,'ICON-LG USES ITS DRAWN TARGET.','dts',{'text-anchor':'middle'});tx(1340,1003,'SHADOW: RING + LIFT + AMBIENT','dts');tx(1340,1020,'DARK: 1 PX RING ONLY. GRAYSCALE.','dts');
 

@@ -119,17 +119,25 @@ at(8.1);
 notes([[1,'GROUP OWNS ONE OUTER EDGE; CHILD SHADOWS OFF.'],[2,'EACH JOIN OVERLAPS S2. SEAM BELONGS TO NEXT ITEM.'],[3,'ONLY EXPOSED CORNERS RETAIN R1; JOINS USE R2.'],[4,'PRESS SCALES CONTENT; JOINED BOXES STAY STILL.'],[5,'NO EXPANDED HIT AREA INSIDE A GROUP.'],[6,'TEXT FIELDS FLEX; TRIGGERS AND BUTTONS HUG.'],[7,'EACH ACTION REMAINS ITS OWN TAB STOP.']]);
 lines(50,280,['SOURCE HAS ONE DEMO GROUP WITH SEVEN CONTENT MODES.', 'ALL SIZE / SHAPE / ORIENTATION BRANCHES REVIEWED.', 'HUG WIDTHS BELOW ARE PROPORTIONAL SCHEMATICS.']);
 // Primary plan at nominal 1:1. Widths deliberately schematic, never specified.
+function groupContent(ox,oy,p){
+ cross(ox+12,oy+9,16,16,p);mk('rect',{x:ox+38,y:oy+10,width:100,height:14,class:'slot'},p);
+ mk('rect',{x:ox+162,y:oy+10,width:50,height:14,class:'slot'},p);mk('path',{d:'M'+(ox+222)+','+(oy+15)+' l4,4 l4,-4',class:'thin'},p);
+ mk('rect',{x:ox+252,y:oy+10,width:62,height:14,class:'slot'},p);
+ cross(ox+335,oy+9,16,16,p);}
+const SEAMS=[150,240,326];
+
 at(-.3);
 const PX=590,PY=160,W=360,H=34;
 rr(PX,PY,W,H,8,'obj');
-at(.5);line(PX+124,PY,PX+124,PY+H);line(PX+236,PY,PX+236,PY+H);
-at(1);for(const [x,w] of [[0,124],[124,112],[236,124]]){cross(PX+x+12,PY+9,16,16);rr(PX+x+38,PY+10,w-52,14,0,'slot');slotLabel(PX+x+38,PY+10,w-52,14,'LABEL');}
+at(.5);for(const x of SEAMS)line(PX+x,PY,PX+x,PY+H);
+at(1);groupContent(PX,PY);slotLabel(PX+38,PY+10,100,14,'VALUE · FLEX');slotLabel(PX+162,PY+10,50,14,'VALUE');slotLabel(PX+252,PY+10,62,14,'LABEL');
+[['INPUT',0,150],['SELECT',150,240],['BUTTON',240,326],['ICON',326,360]].forEach(([n,a,b])=>tx(PX+(a+b)/2,PY+H+15,n,'sl',{'text-anchor':'middle'}));
 at(1.65);dimV(PY,PY+H,560,PX,PX,'H1');dimH(PX,PX+W,104,PY,PY,'W · HUG');
-at(2.3);dimH(PX,PX+124,226,PY+H,PY+H,'HUG');dimH(PX+124,PX+236,226,null,PY+H,'HUG');dimH(PX+236,PX+360,226,null,PY+H,'HUG');
-line(PX-15,PY+17,PX+W+15,PY+17,'cl');rad(PX+W,PY,8,'tr','R1',22);nb(PX+110,PY-16,2);nb(PX+W+25,PY+H+12,3);
-detailRef(PX+124,PY+20,17,'DETAIL A',PX+170,PY+83);
-title(775,58,'PLAN · JOINED ACTIONS','SCALE 1:1 · MD · THREE HUG WIDTHS SHOWN');
-lines(590,275,['W = Σwᵢ − (N−1)·S2 · S1 = 0', 'LABEL WIDTHS ARE CONTENT-DEPENDENT; NEVER DIMENSIONED.']);
+at(2.3);dimH(PX,PX+150,226,PY+H+20,PY+H+20,'FLEX');dimH(PX+150,PX+240,226,null,PY+H+20,'HUG');dimH(PX+240,PX+326,226,null,PY+H+20,'HUG');dimH(PX+326,PX+360,226,null,PY+H+20,'Z1');
+line(PX-15,PY+17,PX+W+15,PY+17,'cl');rad(PX+W,PY,8,'tr','R1',22);nb(PX+136,PY-16,2);nb(PX+W+25,PY+H+12,3);
+detailRef(PX+240,PY+20,17,'DETAIL A',PX+286,PY+83);
+title(775,58,'PLAN · JOINED CONTROLS','SCALE 1:1 · MD · INPUT + SELECT + BUTTON + ICON BUTTON');
+lines(590,275,['W = Σwᵢ − (N−1)·S2 · S1 = 0', 'THE INPUT TAKES THE FREE WIDTH; TRIGGERS AND BUTTONS HUG.', 'LABEL WIDTHS ARE CONTENT-DEPENDENT; NEVER DIMENSIONED.']);
 // Enlarged seam and content padding.
 at(8.35);title(810,338,'DETAIL A · JOIN + CONTENT','SCALE 3:1 · LEADING ICON · MD');
 rr(580,395,480,102,24,'obj');line(820,395,820,497,'cut');
@@ -142,12 +150,12 @@ lines(590,570,['B = 1 AT THE NEXT ITEM’S LEADING EDGE.', 'S2 = 1 OVERLAP HIDES
 at(8.5);title(1130,58,'VERTICAL','SCALE 1:1 · MD');rr(1080,119,100,100,8,'obj');line(1080,152,1180,152);line(1080,185,1180,185);for(let i=0;i<3;i++)slotLabel(1080,119+33*i,100,34,'LABEL · FILL');dimV(119,219,1210,1180,1180,'H2');
 lines(1050,254,['SHARED WIDTH · HUG', 'H2 = N·H1 − (N−1)·S2', 'TOP / BOTTOM JOIN EDGES']);
 // Exploded ownership stack; z gaps only illustrative.
-at(5.3);const layers=[['CANVAS',0],['GROUP EDGE',45],['ITEM SURFACES + SEAMS',90],['ICONS + LABEL SLOTS',135]];
+at(5.3);const layers=[['CANVAS',0],['GROUP EDGE',45],['ITEM SURFACES + SEAMS',90],['ICONS, VALUES + LABELS',135]];
 for(const [name,z] of layers){const g=mk('g',{transform:'matrix(.85,.15,-.3,.45,235,'+(720-z)+')','data-layer':z});
  if(z===0)mk('rect',{x:-12,y:-12,width:384,height:58,rx:0,class:'slot'},g);
  if(z===45)mk('rect',{x:0,y:0,width:360,height:34,rx:8,class:'obj'},g);
- if(z===90){mk('rect',{x:0,y:0,width:360,height:34,rx:8,class:'well'},g);for(const x of [124,236])line(x,0,x,34,'thin',g);}
- if(z===135)for(const [x,w] of [[0,124],[124,112],[236,124]]){cross(x+12,9,16,16,g);mk('rect',{x:x+38,y:10,width:w-52,height:14,class:'slot'},g);}
+ if(z===90){mk('rect',{x:0,y:0,width:360,height:34,rx:8,class:'well'},g);for(const x of SEAMS)line(x,0,x,34,'thin',g);}
+ if(z===135)groupContent(0,0,g);
  g.querySelectorAll('*').forEach(e=>e.setAttribute('vector-effect','non-scaling-stroke'));
 }
 at(6.6);for(const [name,z] of layers){const y=720-z;line(216,y,235,y,'lead');tx(205,y+4,name,'dts',{'text-anchor':'end'});}

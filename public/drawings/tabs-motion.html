@@ -66,7 +66,7 @@ const DW_NS = 'http://www.w3.org/2000/svg';
 const DW_CAM = [
 {t:0,cx:810,cy:184,z:4.4},{t:2.3,cx:820,cy:189,z:4.2},
 {t:4.2,cx:930,cy:265,z:1.9},{t:4.9,cx:930,cy:268,z:1.85},
-{t:7.1,cx:535,cy:575,z:2.25},{t:7.7,cx:540,cy:578,z:2.2},
+{t:7.1,cx:420,cy:610,z:2.25},{t:7.7,cx:425,cy:613,z:2.2},
 {t:9.4,cx:950,cy:530,z:.998},{t:13,cx:950,cy:530,z:.988}];
 kit.scene('drawing', {
   init(kit) {
@@ -129,7 +129,7 @@ kit.scene('drawing', {
     at(3.6,.04,.5);r(0,48,W,126,0,'slot','PANEL SLOT · FILL · HEIGHT HUG');dimV(Y(32),Y(48),X(-28),X(0),X(0),'S5',{side:'l'});nb(X(430),Y(100),2);title(X(W/2),Y(210),'Horizontal segment · plan','Scale 1.05:1 · md default · all widths schematic');
     sv=sheetGroup;
     // Lift copies from the actual plan origin; physical z separation is schematic.
-    const sc=.85,TX=255,TY=650,gap=43,ia=.94*sc,ib=.17*sc,ic=-.34*sc,id=.47*sc;
+    const sc=.85,TX=90,TY=685,gap=43,ia=.94*sc,ib=.17*sc,ic=-.34*sc,id=.47*sc;
     const P=(x,y,z)=>[TX+ia*x+ic*y,TY+ib*x+id*y-z];
     this.flat=[k,0,0,k,PX,PY];this.iso=[ia,ib,ic,id,TX,TY];this.morph=[];
     noreg=1;const mg=(z,a)=>{let g=mk('g',{});this.morph.push({g,z,a});return g};
@@ -139,7 +139,7 @@ kit.scene('drawing', {
     q=mg(gap*3,5.2);[2,158,314].forEach(x=>rr(x,2,154,28,6,'slot',q));
     q=mg(gap*4,5.3);[12,168,324].forEach(x=>rr(x,6,134,20,0,'slot',q));
     noreg=0;at(6.65,.025,.4);[[0,0],[W,0],[W,H],[0,H]].forEach(([x,y])=>{let a=P(x,y,0),b=P(x,y,gap*4);line(...a,...b,'ph')});
-    at(6.9,.025,.45);[[0,'TRACK · MUTED'],[gap,'SHADOW · DEFAULT ONLY'],[gap*2,'INDICATOR · Z 0'],[gap*3,'TAB HIT BOXES · Z 10'],[gap*4,'LABEL / ICON / COUNT']].forEach(([z,l])=>{let p=P(0,H,z);line(...p,210,p[1],'lead');tx(202,p[1]+3,l,'dts',{'text-anchor':'end'})});title(435,733,'Exploded selection layers','Axonometric · z gaps schematic · labels stay above indicator');
+    at(6.9,.025,.45);[[0,'TRACK · MUTED'],[gap,'SHADOW · DEFAULT ONLY'],[gap*2,'INDICATOR · Z 0'],[gap*3,'TAB HIT BOXES · Z 10'],[gap*4,'LABEL / ICON / COUNT']].forEach(([z,l])=>{let p=P(W,H,z);line(...p,p[0]+18,p[1],'lead');tx(p[0]+26,p[1]+3,l,'dts',{'text-anchor':'start'})});title(253,778,'Exploded selection layers','Axonometric · z gaps schematic · labels stay above indicator');
     // Sheet and notes.
     at(7.65,0,1);rr(20,20,1660,1020,16,'border');
     at(8.1,.008,.4);notes([[1,'Segment / pill tracks hug; underline fills.'],[2,'Panels stay mounted; hidden panels leave flow.'],[3,'Base primitive owns selection and arrow keys.'],[4,'Selected indicator measures actual tab bounds.'],[5,'Vertical list stacks; panel flexes beside it.'],[6,'Only hidden edges fade; scrolling reveals tabs.'],[0,'WIDTHS AND CONTENT HEIGHTS ARE SCHEMATIC.'],[0,'SM / MD TABLE VALUES FOLLOW ROOT 16PX.']]);
@@ -158,7 +158,7 @@ kit.scene('drawing', {
     at(8.5,.009,.4);const vx=70,vy=840;rr(vx,vy,120,126,8,'well');for(let j=0;j<3;j++){rr(vx+2,vy+2+j*42,116,38,6,j===0?'obj':'slot');slotLabel(vx+2,vy+2+j*42,116,38,'LABEL · HUG')};rr(vx+136,vy,230,126,0,'slot');slotLabel(vx+136,vy,230,126,'PANEL SLOT · FLEX');dimH(vx+120,vx+136,vy-20,vy,vy,'S5');title(vx+183,vy+156,'Vertical · orientation','Schematic · rows stretch across track; heights are content-led');
     const ox=650,oy=866;rr(ox,oy,480,40,20,'well');for(let j=0;j<4;j++){rr(ox+4+j*118,oy+4,114,32,16,j===1?'obj':'slot');slotLabel(ox+4+j*118,oy+4,114,32,'LABEL SLOT')};mk('rect',{x:ox,y:oy,width:32,height:40,class:'hs',fill:HAT});mk('rect',{x:ox+448,y:oy,width:32,height:40,class:'hs',fill:HAT});dimH(ox,ox+32,oy-23,oy,oy,'S7');dimH(ox+448,ox+480,oy-23,oy,oy,'S7');nb(ox+240,oy-16,6);title(ox+240,oy+74,'Overflow · constrained list','S7 fades + blur F1 · horizontal x / vertical y · scrollbars hidden');
     // Tiny shadow footprint; hatched geometric envelope is not an opaque shadow.
-    at(8.35,.01,.4);const ex=90,ey=310;rr(ex-12,ey-6,274,108,23,'env');mk('rect',{x:ex-12,y:ey-6,width:274,height:108,rx:23,class:'hs',fill:HAT});rr(ex,ey,250,84,18,'obj');slotLabel(ex,ey,250,84,'SELECTED CHIP');dimV(ey-6,ey,ex+282,ex+262,ex+250,'E1',{side:'r'});dimV(ey+84,ey+102,ex+282,ex+250,ex+262,'E3',{side:'r'});dimH(ex-12,ex,ey+126,ey+102,ey+84,'E2',{dx:-6});title(ex+125,ey+158,'Indicator shadow envelope','Scale 3:1 · nominal blur envelope · default appearance');
+    at(8.35,.01,.4);const ex=90,ey=310;rr(ex-12,ey-6,274,108,23,'env');mk('rect',{x:ex-12,y:ey-6,width:274,height:108,rx:23,class:'hs',fill:HAT});rr(ex,ey,250,84,18,'obj');slotLabel(ex,ey,250,84,'SELECTED CHIP');dimV(ey-6,ey,ex+282,ex+262,ex+250,'E1',{side:'r'});dimV(ey+84,ey+102,ex+282,ex+250,ex+262,'E3',{side:'r'});dimH(ex-12,ex,ey+126,ey+102,ey+84,'E2',{dx:-6});title(253,ey+158,'Indicator shadow envelope','Scale 3:1 · nominal blur envelope · default appearance');
     at(8.6,.001,.3);let yy=table(1240,70,'Spacing · SM / MD',[
       ['S1','segment inset','2 / 2'],['S2','segment gap','2 / 2'],['S3','segment pad-x','8 / 10'],['S4','segment pad-y','4 / 4'],['S5','list → panel','16 / 16'],['S6','icon / count gap','6; count adds 2 = 8'],['S7','hidden edge fade','32'],['F1','edge backdrop blur','1.5'],['S8','outline seg inset/gap','3 / 3'],['S9','pill inset / gap','2 / 4'],['S10','pill pad-x / pad-y','10 / 14; y = 6'],['S11','underline pad-x','6 / 10'],['S12','underline top/bottom','2 + 4 / 4 + 8'],['S13','outline seg pad-x / y','10 / 12; y = 3'],['S14','outline pill pad-y','5 / 5']]);
     at(8.7,.001,.3);yy=table(1240,yy,'Sizes · nominal CSS pixels',[

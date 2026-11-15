@@ -150,7 +150,7 @@ kit.scene('drawing', {
     at(2.8,.02,.5);dimV(Y(0),Y(H),X(-11),X(0),X(0),'H1');dimV(Y(7),Y(27),X(160),X(150),X(150),'H5',{side:'r'});
     at(3.1,.025,.5);dimH(X(0),X(W),Y(-23),Y(-13),Y(-13),'W · HUG / CONTENT DEPENDENT');
     at(3.3,.035,.45);mk('line',{x1:X(-6),y1:Y(17),x2:X(156),y2:Y(17),class:'cl'});rad(X(W),Y(H),32,'br','R1',24);nb(X(3),Y(41),1);nb(X(35),Y(41),2);
-    at(3.6,.02,.45);title(920,421,'PLAN · INDEPENDENT GLYPH + LABEL','HEIGHT SCALE 4:1 · MD · WIDTH SCHEMATIC');tx(920,449,'W = 2·S1 + MAX(GLYPH) + S2 + MAX(LABEL)','dts',{'text-anchor':'middle'});tx(920,467,'WIDEST RESERVES BOTH SLOTS INDEPENDENTLY','dts',{'text-anchor':'middle'});
+    at(3.6,.02,.45);title(915,57,'PLAN · INDEPENDENT GLYPH + LABEL','HEIGHT SCALE 4:1 · MD · WIDTH SCHEMATIC · WIDEST RESERVES BOTH SLOTS');tx(915,90,'W = 2·S1 + MAX(GLYPH) + S2 + MAX(LABEL)','dts',{'text-anchor':'middle'});
     at(3.9,.03,.4);detailRef(X(22),Y(17),46,'DETAIL A',740,395);
 
     sv=planParent;
@@ -175,9 +175,15 @@ kit.scene('drawing', {
     yy=table(1335,yy,'UNSPECIFIED',[['Z','layer-lift','[TBD]'],['C','caller glyph','[TBD]']]);
     table(1335,yy,'SIZE HEIGHTS',[['H2','xs','24'],['H3','sm','30'],['H4','lg','38']]);
 
-    at(8.55,.009,.4);const sx=800,sy=531,sw=180,sh=68;
-    [['IDLE · VALUE OFF',0],['PENDING · VALUE OFF',220],['SUCCESS · VALUE ON',0],['ERROR · VALUE OFF',220]].forEach(([name,dx],i)=>{const y=sy+(i>1?122:0),x=sx+dx;rr(x,y,sw,sh,16,'obj');xbox(x+28,y+18,32,32);rr(x+80,y+14,72,40,0,i===2?'well':'slot');if(i===1){rr(x+24,y+14,40,40,0,'ph');nb(x+sw+12,y+10,3)}tx(x+sw/2,y+87,name,'dts',{'text-anchor':'middle'});});
-    tx(1000,782,'SUCCESS SHOWS RESTING PRESSED CONTENT; NO EXTRA SUCCESS GLYPH.','dts',{'text-anchor':'middle'});title(1000,807,'FEEDBACK IS SEPARATE FROM VALUE','HEIGHT SCALE 2:1 · WIDTHS SCHEMATIC');
+    at(8.55,.009,.4);{const _sv=sv;sv=mk('g',{transform:'translate(0,45)'},_sv);const W=125,H=44,S={idle:[800,620,'OFF'],pending:[960,620,'PENDING'],success:[1125,560,'ON'],error:[1125,680,'ERROR · VALUE KEPT']};
+ for(const [k,[x,y,name]] of Object.entries(S)){const _p=sv;if(k==='error')sv=mk('g',{opacity:.5},_p);rr(x,y,W,H,12,'obj');xbox(x+12,y+12,20,20);if(k==='pending')rr(x+8,y+8,28,28,0,'ph');rr(x+44,y+12,68,20,0,k==='success'?'well':'slot');tx(x+W/2,y+H+15,name,'dts',{'text-anchor':'middle'});sv=_p;}
+ const arrow=d=>mk('path',{d,class:'dl','marker-end':A});
+ arrow('M925,642 H960');tx(942,611,'PRESS','dts',{'text-anchor':'middle'});
+ arrow('M1085,632 L1125,592');tx(1094,598,'RESOLVE','dts',{'text-anchor':'end'});
+ {const _p=sv;sv=mk('g',{opacity:.5},_p);arrow('M1085,652 L1125,692');tx(1094,694,'REJECT','dts',{'text-anchor':'end'});sv=_p;}
+ arrow('M1187,560 V538 H862 V620');tx(1010,532,'PRESS AGAIN → PENDING → OFF','dts',{'text-anchor':'middle'});
+ nb(1022,606,3);{const _p=sv;sv=mk('g',{opacity:.5},_p);nb(1264,700,4);sv=_p;}sv=_sv;}
+    title(1010,522,'FEEDBACK IS SEPARATE FROM VALUE','STATE FLOW · THE VALUE CHANGES ONLY WHEN THE ACTION RESOLVES');
 
     at(8.75,.015,.45);const f=rr(78,296,324,84,20,'hs');f.setAttribute('fill',HAT);rr(86,300,308,68,16,'obj');rr(78,296,324,84,20,'env');dimV(296,300,64,78,86,'E1',{side:'l'});dimH(78,86,390,380,368,'E2',{dx:-7});dimV(368,380,422,394,402,'E3',{side:'r'});title(245,423,'OUTLINE SHADOW ENVELOPE','SCALE 2:1 · NOMINAL AMBIENT EXTENTS');
     rr(455,300,68,68,16,'obj');rr(447,292,84,84,24,'thin');rr(451,296,76,76,20,'thin');callout(447,310,438,275,'F1 + F2',-1);title(490,405,'FOCUS','RING + OFFSET');
@@ -185,12 +191,12 @@ kit.scene('drawing', {
     at(9,.01,.4);title(275,850,'A · TWO SIZING MODES','HEIGHT SCALE 2:1 · WIDTHS SCHEMATIC');
     rr(72,880,390,68,16,'obj');rr(100,894,32,40,0,'ph');xbox(100,898,32,32);rr(152,894,282,40,0,'slot');slotLabel(152,894,282,40,'MAX LABEL SLOT · HUG');tx(267,972,'WIDEST: MAX GLYPH + S2 + MAX LABEL','dts',{'text-anchor':'middle'});
     rr(72,990,205,34,8,'obj');rr(86,997,177,20,0,'slot');tx(295,1009,'CURRENT 1:1 · EMPTY GLYPH → GAP 0','dts');
-    at(9.15,.01,.4);title(903,850,'SIZE FAMILY','HEIGHT SCALE 2:1 · WIDTHS SCHEMATIC');
+    at(9.15,.01,.4);title(903,872,'SIZE FAMILY','HEIGHT SCALE 2:1 · WIDTHS SCHEMATIC');
     [['XS',24,6,'H2'],['SM',30,6,'H3'],['MD',34,8,'H1'],['LG',38,8,'H4']].forEach(([n,h,r,c],i)=>{const x=620+i*166,y=980-h*2;rr(x,y,124,h*2,r*2,'obj');rr(x+22,y+h-10,80,20,0,'slot');dimV(y,980,x-13,x,x,c);tx(x+62,1001,n,'dts',{'text-anchor':'middle'})});
     tx(929,1022,'H2 / H3 / H1 / H4 = 24 / 30 / 34 / 38','dts',{'text-anchor':'middle'});
-    at(9.25,.01,.4);title(915,57,'ACTION TOGGLE · PERSISTENT VALUE + ASYNC FEEDBACK','SOURCE DIMENSIONS · MONOCHROME ARCHITECTURE');
-    tx(735,87,'XS / SM / MD / LG: S1 = 10 / 12 / 14 / 20; S2 = 8 / 8 / 10 / 12','dts');
-    tx(735,104,'I1 = 14 / 14 / 16 / 16; R1 = 6 / 6 / 8 / 8. PILL USES R2.','dts');
+    at(9.25,.01,.4);
+    tx(920,446,'XS / SM / MD / LG: S1 = 10 / 12 / 14 / 20; S2 = 8 / 8 / 10 / 12','dts',{'text-anchor':'middle'});
+    tx(920,463,'I1 = 14 / 14 / 16 / 16; R1 = 6 / 6 / 8 / 8. PILL USES R2.','dts',{'text-anchor':'middle'});
   },
   render(t) {
     t = t / 0.85;

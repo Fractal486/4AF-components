@@ -134,23 +134,23 @@ lines(50,257,['SOURCE: CHECKBOX.TSX + CHECKBOX.VARIANTS.TS','TOKENS: GLOBALS.CSS
 // Focus envelope: no ambient shadow is configured.
 at(8.2,.02,.45);{const x=135,y=380,q=7;rr(x-28,y-28,168,168,56,'env');rr(x-14,y-14,140,140,42,'ph');rr(x,y,112,112,28,'obj');dimH(x-28,x,y+145,y+140,y+112,'E1');dimV(y-28,y,x+145,x+140,x+112,'E1',{side:'r'});callout(x+168,y+20,x+190,y-5,'RING / OFFSET',1,'dts');title(225,570,'Focus envelope','Scale 7:1 · ring-2 + offset-2 · no blur');nb(375,350,5);}
 // Exploded schematic layers lift from the enlarged plan.
-const I=[11.28,2.04,-4.08,5.64,775,855],F=[16,0,0,16,PX,PY];
+const I=[11.28,2.04,-4.08,5.64,690,855],F=[16,0,0,16,PX,PY];
 const project=(x,y,z)=>[I[4]+I[0]*x+I[2]*y,I[5]+I[1]*x+I[3]*y-z];
 at(6,.03,.65);{const g=mk('g',{transform:'matrix('+I.join(',')+')',class:'iso'});rr(-2,-2,20,20,0,'thin',g)}
 let g=lift(55,5.2,I,F);rr(0,0,16,16,4,'obj',g);
 g=lift(110,5.35,I,F);rr(1.5,1.5,13,13,2.5,'well',g);
 g=lift(165,5.5,I,F);rr(3.45,3.45,9.1,9.1,0,'slot',g);tick(3.45,3.45,9.1/24,g);
 at(6.5,.025,.5);[[0,0],[16,0],[16,16],[0,16]].forEach(([x,y])=>{const a=project(x,y,0),b=project(x,y,165);line(...a,...b,'ph')});
-at(6.8,.035,.5);[[0,'L0 · LAYOUT PLANE'],[55,'L1 · ROOT / BORDER'],[110,'L2 · STATE FILL'],[165,'L3 · INDICATOR / MARK']].forEach(([z,s])=>{const a=project(0,16,z);line(525,a[1],a[0],a[1],'lead');tx(515,a[1]+4,s,'dts',{'text-anchor':'end'})});title(800,1020,'Exploded construction','Axonometric · layer separation schematic');
+at(6.8,.035,.5);[[0,'L0 · LAYOUT PLANE'],[55,'L1 · ROOT / BORDER'],[110,'L2 · STATE FILL'],[165,'L3 · INDICATOR / MARK']].forEach(([z,s])=>{const a=project(0,16,z);line(555,a[1],a[0],a[1],'lead');tx(545,a[1]+4,s,'dts',{'text-anchor':'end'})});title(715,1020,'Exploded construction','Axonometric · layer separation schematic');
 // Border nested corner with a shared center.
 at(8.35,.018,.45);{const x=1030,y=175,q=10;mk('path',{d:`M${x},${y+90} V${y+40} A40 40 0 0 1 ${x+40} ${y} H${x+100}`,class:'thin'});mk('path',{d:`M${x+15},${y+90} V${y+40} A25 25 0 0 1 ${x+40} ${y+15} H${x+100}`,class:'thin'});line(x+34,y+40,x+46,y+40);line(x+40,y+34,x+40,y+46);line(x+40,y+40,x+11.72,y+11.72,'dl');tx(x+50,y+47,'R1','dt');tx(x+51,y+68,'R2','dt');dimH(x,x+15,y+110,y+90,y+90,'B');title(x+50,y+145,'Detail A · corner','Scale 10:1 · R2 = R1 − B');}
 // Mark path geometry in SVG user coordinates; diagram at 4:1.
 at(8.55,.02,.4);{const x=1025,y=385,q=4;rr(x,y,96,96,0,'slot');tick(x,y,q);line(x,y+48,x+96,y+48,'cl');dimH(x,x+96,y-18,y,y,'V1');dimV(y,y+96,x-18,x,x,'V1');title(x+48,y+126,'Detail B · mark','Scale 4:1 · 24 × 24 user units');lines(975,546,['P0 (4.5, 12.75) → P1 (10.5, 18.75)','P2 (20.1, 4.35) · ROUND CAPS / JOINS','DASH: (5, 12) → (19, 12) · K1 STROKE'],'dts',16);}
 // Label and group layout represented by slots only.
 at(8.75,.012,.4);{const x=65,y=675,q=2;rr(x,y,380,40,0,'ph');rr(x,y+4,32,32,8,'obj');rr(x+48,y,332,40,0,'slot');slotLabel(x+48,y,332,40,'LABEL SLOT · HUG');dimH(x+32,x+48,y-18,y+4,y,'S1');dimV(y,y+40,x-16,x,x,'H1',{side:'l'});title(250,y+72,'Optional label row','Scale 2:1 · width HUG · centered box');
-[0,64,128].forEach((v,i)=>{rr(x,y+130+v,32,32,8,i===0?'well':'obj');rr(x+48,y+126+v,210,40,0,'slot');slotLabel(x+48,y+126+v,210,40,'LABEL SLOT · HUG')});dimV(y+166,y+190,x+285,x+258,x+258,'S2',{side:'r'});title(245,1002,'Group · shared values','Scale 2:1 · parent may show mixed state');}
+[0,64,128].forEach((v,i)=>{rr(x,y+130+v,32,32,8,i===0?'well':'obj');rr(x+48,y+126+v,210,40,0,'slot');slotLabel(x+48,y+126+v,210,40,'LABEL SLOT · HUG')});dimV(y+166,y+190,x+285,x+258,x+258,'S2',{side:'r'});title(245,1002,'Group · shared values','Scale 2:1 · parent may show indeterminate state');}
 // State strip, styling schematic. No content width dimensions.
-at(8.9,.02,.4);[['UNCHECKED',false],['CHECKED',true],['MIXED',true],['DISABLED',true]].forEach(([name,on],i)=>{const x=990+(i%2)*115,y=670+Math.floor(i/2)*130;const box=rr(x,y,48,48,12,on?'hug':'obj');if(i===3)box.setAttribute('opacity','.5');if(i===1||i===3)tick(x+10.35,y+10.35,27.3/24);if(i===2)line(x+16,y+24,x+32,y+24,'mark');tx(x+24,y+68,name,'dts',{'text-anchor':'middle'})});title(1070,940,'State silhouettes','Scale 3:1 · invalid changes ring / border');
+at(8.9,.02,.4);[['UNCHECKED',false],['CHECKED',true],['INDETERMINATE',true],['DISABLED',true]].forEach(([name,on],i)=>{const x=990+(i%2)*115,y=670+Math.floor(i/2)*130;const box=rr(x,y,48,48,12,on?'hug':'obj');if(i===3)box.setAttribute('opacity','.5');if(i===1||i===3)tick(x+10.35,y+10.35,27.3/24);if(i===2)line(x+16,y+24,x+32,y+24,'mark');tx(x+24,y+68,name,'dts',{'text-anchor':'middle'})});title(1070,940,'State silhouettes','Scale 3:1 · invalid changes ring / border');
 // Wider value column preserves formulas.
 at(8.1,.001,.3);let yy=table(1250,85,'Size / spacing',[
 ['Z1','box size','16'],['B','source border','1.5'],['Bm','measured border','1 (Chromium, DPR 1 + 2)'],['I1','indicator size','0.7·(Z1−2·B) = 9.1'],['Im','measured indicator','0.7·(16−2·Bm) ≈ 9.797'],['S1','label gap','8'],['S2','group gap','12'],['S3','indicator inset','(Z1−I1) ÷ 2 = 3.45'],['H1','label line box','20 (font 13)'],['W','row width','HUG; caller content'],['T1','minimum hit area','[TBD]; box alone = Z1']]);

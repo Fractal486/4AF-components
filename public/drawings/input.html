@@ -131,7 +131,7 @@ line(px-18,py+34,px+588,py+34,'cl');
 dimH(px,px+570,114,py,py,'W · FILL');dimV(py,py+68,px-32,px,px,'H1');
 dimH(px,px+24,145,py,py+18,'S1',{dx:-8});dimH(px+24,px+56,145,py+18,py+18,'I1');dimH(px+56,px+74,145,py+18,py+14,'S2+B',{dx:8});
 dimH(px+74,px+494,318,py+68,py+68,'FLEX');dimH(px+494,px+512,318,py+68,py+58,'S2+B',{dx:-6,dy:15});dimH(px+512,px+560,318,py+58,py+58,'WA');dimH(px+560,px+570,318,py+58,py+68,'S3',{dx:12,dy:15});
-rad(px+570,py,16,'tr','R1',25);nb(px+590,py+45,2);detailRef(px+553,py+17,22,'DETAIL A',1170,343);
+rad(px+570,py,16,'tr','R1',25);nb(px+590,py+45,2);
 rr(px,py+80,570,39,0,'slot');slotLabel(px,py+80,570,39,'DESCRIPTION SLOT · FILL · WRAPS');dimV(py+68,py+80,px-32,px,px,'S4',{side:'l'});nb(px-15,py+99,3);
 at(2,.02,.5);lines(600,346,['PS = S1 + I1 + S2 = 36; TEXT EDGE ADDS B.', 'PE = WA + S2 + S3 = WA + 13; TEXT EDGE ADDS B.', 'ACTION WIDTH IS MEASURED; WA = 24 IS THE INITIAL FALLBACK.'],'dt',18);
 // Notes and exact uniform ring envelope.
@@ -153,22 +153,22 @@ for(const [label,z] of layerData){const g=mk('g',{transform:'matrix(.9,.19,-.38,
 }
 at(7.9,.02,.45);lines(74,980,['SOURCE AUDIT · INPUT.TSX / INPUT.VARIANTS.TS / INPUT-COUNT.TSX', 'GLOBALS.CSS: ROOT 16; TEXT-SM 13 / 20; DURATION-SLOW 300MS.', '11 JSX USES ACROSS 7 INSPECTOR FILES; ALL THREE VARIANTS REVIEWED.'],'source',16);
 // Corner construction A, concentric outer edge and action.
-at(8,.01,.5);title(875,430,'DETAIL A · CONCENTRIC ACTION','SCALE 4:1 · TOP / END INSET S3');
-const cx=760,cy=478;
-mk('path',{d:`M${cx-60},${cy} H${cx+68} A32,32 0 0 1 ${cx+100},${cy+32} V${cy+100}`,class:'thin'});
-mk('path',{d:`M${cx-60},${cy+4} H${cx+68} A28,28 0 0 1 ${cx+96},${cy+32} V${cy+100}`,class:'thin'});
-mk('path',{d:`M${cx-20},${cy+20} H${cx+68} A12,12 0 0 1 ${cx+80},${cy+32} V${cy+80}`,class:'obj',style:'fill:none'});
-line(cx+46,cy+32,cx+90,cy+32,'cl');line(cx+68,cy+10,cx+68,cy+55,'cl');mk('circle',{cx:cx+68,cy:cy+32,r:2,class:'dot'});
-dimV(cy,cy+20,cx-45,cx-20,cx-20,'S3',{side:'l'});dimH(cx+96,cx+100,cy+124,cy+100,cy+100,'B',{dx:14});
-callout(cx+91,cy+9,cx+141,cy-8,'R1',1);callout(cx+77,cy+24,cx+138,cy+56,'R2',1);
-lines(974,512,['R2 = R1 − S3 = 3', 'S3 MEASURES FROM', 'THE OUTER EDGE.', 'INNER BORDER R3 = 7.'],'dt',18);
+at(8,.01,.5);{const X=730,W=380;title(X+W/2,436,'INPUT COMPOSITIONS · ICONS + BUTTONS','SCALE 1:1 · MD · H1 = 34');
+ const glyph=(x,y,s,paths,circles=[])=>{const g=mk('g',{transform:'translate('+x+','+y+') scale('+s+')'});for(const d of paths)mk('path',{d,class:'thin',style:'fill:none;stroke-width:1.8'},g);for(const [ccx,ccy,r] of circles)mk('circle',{cx:ccx,cy:ccy,r,class:'thin',style:'fill:none;stroke-width:1.8'},g);};
+ const box=(y,tag)=>{rr(X,y,W,34,8,'obj');tx(X-12,y+21,tag,'dts',{'text-anchor':'end'});};
+ // Start icon: Search inside the leading edge.
+ let y=470;box(y,'START ICON');glyph(X+12,y+9,.6667,['m21 21-4.3-4.3'],[[11,11,8]]);rr(X+38,y+10,W-50,14,0,'slot');slotLabel(X+38,y+10,W-50,14,'VALUE · FLEX','l');
+ // End action: an icon button inside the trailing edge.
+ y=522;box(y,'END ACTION');rr(X+12,y+10,W-60,14,0,'slot');slotLabel(X+12,y+10,W-60,14,'VALUE · FLEX','l');rr(X+W-34,y+5,26,24,6,'thin');glyph(X+W-27,y+11,.5,['M18 6 6 18','m6 6 12 12']);
+ // Joined button: input and button in one Button Group frame.
+ y=574;box(y,'JOINED BUTTON');line(X+W-96,y,X+W-96,y+34);rr(X+12,y+10,W-130,14,0,'slot');slotLabel(X+12,y+10,W-130,14,'VALUE · FLEX','l');rr(X+W-84,y+10,72,14,0,'slot');slotLabel(X+W-84,y+10,72,14,'LABEL');}
 // Three structural variants and states, source dimensions only.
 title(870,682,'VARIANTS / STATE FOOTPRINT','SCALE 1:1 · W SCHEMATIC');
 for(const [i,v] of ['default','plain','underline'].entries()){const y=716+i*62;field(670,y,350,1,{icon:true,action:false,variant:v});tx(640,y+21,v,'dts',{'text-anchor':'end'});dimV(y,y+34,1050,1020,1020,'H1',{side:'r'});}
 lines(634,921,['PLAIN: B = 0; UNDERLINE: BOTTOM B = 1, R = 0.', 'UNDERLINE ICON INSET = 0; PS = I1 + S2 = 24.', 'INVALID / DISABLED / READONLY KEEP THE SAME FIELD SIZE.'],'dts',17);
 // Number stepper detail under tables.
-at(8.2,.015,.45);title(1438,839,'NUMBER STEPPER','SCALE 3:1 · END ACTION REPLACEMENT');
-const nx=1335,ny=890;rr(nx-40,ny,206,102,24,'obj');rr(nx+70,ny+9,84,42,18,'slot');rr(nx+70,ny+51,84,42,18,'slot');cross(nx+94,ny+12,36,36);cross(nx+94,ny+54,36,36);dimH(nx+70,nx+154,ny-18,ny+9,ny+9,'Z1');dimV(ny+9,ny+51,nx+190,nx+154,nx+154,'H3',{side:'r'});dimH(nx+70,nx+166,ny+126,ny+102,ny+102,'S6');
+at(8.2,.015,.45);title(1438,764,'NUMBER STEPPER','SCALE 3:1 · END ACTION REPLACEMENT');
+const nx=1335,ny=815;rr(nx-40,ny,206,102,24,'obj');rr(nx+70,ny+9,84,42,18,'slot');rr(nx+70,ny+51,84,42,18,'slot');cross(nx+94,ny+12,36,36);cross(nx+94,ny+54,36,36);dimH(nx+70,nx+154,ny-18,ny+9,ny+9,'Z1');dimV(ny+9,ny+51,nx+190,nx+154,nx+154,'H3',{side:'r'});dimH(nx+70,nx+166,ny+126,ny+102,ny+102,'S6');
 // Tables.
 at(8.1,.001,.35);let yy=70,xx=1258;
 yy=table(xx,yy,'SIZE / SPACING',[

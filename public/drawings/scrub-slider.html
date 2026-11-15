@@ -157,7 +157,7 @@ line(centre,ly-100,centre,ly+17,'cl');
 dimH(centre-150,centre,540,ly,ly,'S8 = 5·S7');dimH(centre,centre+150,540,ly,ly,'S8');
 dimH(centre+150,centre+180,570,ly,ly,'S7');dimV(ly-80,ly,1115,centre+5,centre+5,'H3');
 callout(centre-2.5,ly-40,740,445,'B2',-1);callout(centre-150,ly-30,680,434,'H4 / H5 / H6',-1);
-lines(590,602,['L(d) = ½·(1 + cos(π·|d| / S8)) WHEN |d| < S8; ELSE 0.', 'TICK HEIGHT = REST + L·(H7 − REST). POSITION = (TICK − OFFSET)·S7.'],'dt',18);nb(1160,461,3);
+{const _p=sv;sv=mk('g',{opacity:.5},_p);lines(590,602,['L(d) = ½·(1 + cos(π·|d| / S8)) WHEN |d| < S8; ELSE 0.', 'TICK HEIGHT = REST + L·(H7 − REST). POSITION = (TICK − OFFSET)·S7.'],'dt',18);sv=_p;}nb(1160,461,3);
 section('shadow');
 title(256,327,'SHADOW ENVELOPE','LIGHT / OUTLINE-GHOST · NOMINAL EXTENTS');
 hatch(150,355,220,41);rr(150,355,220,41,9,'env');rr(154,357,212,33,8,'obj');slotLabel(154,357,212,33,'ROOT FOOTPRINT · SHORTENED');

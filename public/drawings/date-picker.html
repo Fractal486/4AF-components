@@ -129,7 +129,7 @@ function panel(x,y,k=1,{alternate=false,footer=true,labels=true}={}){
    for(let col=0;col<7;col++){rect(7+col*34,53,34,16,0,'slot');if(labels)txt(24+col*34,64,'WD')}
    for(let row=0;row<6;row++)for(let col=0;col<7;col++){
      const a=7+col*34,b=72+row*37;rect(a,b,34,34,0,'faint');
-     rect(a+2,b+2,30,30,5,row===2&&col===3?'hug':'slot');
+     {const st=row===2&&col===3?'sel':row===4&&col===4?'today':(row===5&&col>=5)||(row===0&&col<=1)?'off':'';if(st==='sel'){const _p=sv;sv=mk('g',{opacity:.9},_p);rect(a+2,b+2,30,30,5,'dot');sv=_p;}else if(st==='today')rect(a+2,b+2,30,30,5,'thin');else{rect(a+2,b+2,30,30,5,'slot');if(st==='off')line(X(a+9),Y(b+17),X(a+25),Y(b+17),'thin');}}
    }
  }
  if(footer){line(X(1),Y(303),X(251),Y(303),'thin');rect(5,308,75,24,3,'hug');rect(166,308,81,24,3,'slot');if(labels){txt(42.5,323,'NAV · HUG');txt(206.5,323,'ACTION · HUG')}}
@@ -166,7 +166,7 @@ lines(75,508,['E1 / E2 / E3 USE MAXIMUM OF BOTH LAYERS.', 'BLUR HAS NO HARD EDGE
 // Primary plan — all true fixed geometry at 1:1; HUG widths schematic.
 title(710,58,'PLAN · OPEN DATE PICKER','SCALE 1:1 · SM TRIGGER · N = 6 · OPTIONAL ACTION SHOWN');
 const px=580,py=180;field(px,144,252,30,12,6,14);nb(846,159,1);
-const {X,Y}=panel(px,py);nb(846,487,5);nb(565,316,2);
+const {X,Y}=panel(px,py);callout(px+141,py+160,px+300,py+172,'SELECTED',1);callout(px+175,py+237,px+300,py+245,'TODAY · INSET RING',1);callout(px+209,py+274,px+300,py+285,'DISABLED · STRUCK',1);nb(846,487,5);nb(565,316,2);
 line(X(126),Y(-50),X(126),Y(352),'cl');
 dimH(X(0),X(252),110,144,144,'W');
 dimV(174,180,877,832,832,'S7',{side:'r'});nb(917,177,6);

@@ -127,7 +127,9 @@ noteRows.forEach((ls,i)=>{nb(56,84+i*34,i+1);lines(74,88+i*34,ls,'nt',13)});
 const sheetRoot=sv;sv=mk('g',{},sheetRoot);this.plan=sv;
 at(3.4,.012,.4);title(868,65,'PLAN · SINGLE TEXT ELEMENT','PROPORTIONAL SCHEMATIC · HUG WIDTH AND GLYPHS ARE NOT DIMENSIONS');
 at(-.45,.07,1.1);rr(555,185,610,110,0,'slot');
-at(.35,.08,.65);for(let i=0;i<8;i++){rr(572+i*71,207,49,65,0,'thin');line(572+i*71,207,621+i*71,272);line(621+i*71,207,572+i*71,272)}
+// The shimmer at rest: each glyph under the band is lit by the highlight profile at its centre,
+// peaking at W/2 = 860 and falling to nothing at W/2 ± S1 (Detail A). The rest are empty.
+at(.35,.08,.65);for(let i=0;i<8;i++){const r=rr(572+i*71,207,49,65,0,'thin');const lit=Math.max(0,1-Math.abs(596.5+i*71-860)/153);if(lit>0)r.setAttribute('style','fill:color-mix(in srgb,var(--ink3) '+Math.round(45*lit)+'%,transparent)');line(572+i*71,207,621+i*71,272);line(621+i*71,207,572+i*71,272)}
 at(1.35,.025,.5);line(540,272,1180,272,'cl');at(2.7,0,.4);tx(860,242,'GLYPH SLOTS · INHERITED TYPOGRAPHY','dt',{'text-anchor':'middle'});
 at(3.55,.03,.5);dimH(555,1165,140,185,185,'W · HUG ≤ P');dimV(185,295,1200,1165,1165,'H · LH');nb(540,184,2);nb(1183,294,3);
 callout(1165,295,1120,340,'OVERFLOW CLIP',-1);callout(555,185,594,108,'RELATIVE ROOT',1);

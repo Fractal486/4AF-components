@@ -65,7 +65,7 @@ const DW_NS = 'http://www.w3.org/2000/svg';
 const DW_CAM = [
  {t:0,cx:745,cy:222,z:4.4},{t:2.3,cx:750,cy:225,z:4.2},
  {t:4.2,cx:960,cy:285,z:1.75},{t:5,cx:960,cy:285,z:1.73},
- {t:7.15,cx:375,cy:660,z:2.2},{t:7.7,cx:375,cy:660,z:2.17},
+ {t:7.15,cx:375,cy:560,z:2.2},{t:7.7,cx:375,cy:560,z:2.17},
  {t:10.6,cx:950,cy:530,z:.998},{t:13,cx:950,cy:530,z:.988}];
 kit.scene('blur-text', {
   init(kit) {
@@ -75,7 +75,7 @@ kit.scene('blur-text', {
       '.dw-svg .nt{font-size:11.5px;fill:var(--main);letter-spacing:.06em}.dw-svg .nth{font-size:13px;font-weight:700;fill:var(--main);letter-spacing:.06em}' +
       '.dw-svg .vt{font-size:12px;fill:var(--main);letter-spacing:.1em}.dw-svg .nbt{font-size:9.5px;fill:var(--main)}' +
       '.dw-svg .th{font-size:10.5px;fill:var(--main);letter-spacing:.05em}.dw-svg .tc{font-size:10.5px;fill:var(--main);text-transform:none}');
-    kit.css('.dw-svg{--sheet:#fff;--ink:#111;--ink2:#444;--ink3:#7a7a7a;--fill:#f3f3f3;--fill2:#e6e6e6;--f:Helvetica,Arial,sans-serif}.dw-svg .tc{font-size:10px}.dw-svg .nt{font-size:10.5px;letter-spacing:.035em}.dw-svg .source{font-size:10px;fill:#444;text-transform:none}.dw-svg .accent-free{fill:#555;stroke:#111;stroke-width:1}.dw-svg .faint{fill:#fafafa;stroke:#aaa;stroke-width:.55}');
+    kit.css('.dw-svg .formula{fill:var(--ink3)}.dw-svg{--sheet:#fff;--ink:#111;--ink2:#444;--ink3:#7a7a7a;--fill:#f3f3f3;--fill2:#e6e6e6;--f:Helvetica,Arial,sans-serif}.dw-svg .tc{font-size:10px}.dw-svg .nt{font-size:10.5px;letter-spacing:.035em}.dw-svg .source{font-size:10px;fill:#444;text-transform:none}.dw-svg .accent-free{fill:#555;stroke:#111;stroke-width:1}.dw-svg .faint{fill:#fafafa;stroke:#aaa;stroke-width:.55}');
     const root = kit.h('<div class="ground"><div class="dw-cam"></div></div>');
     kit.stage.append(root);
     const camEl = root.querySelector('.dw-cam');
@@ -147,21 +147,21 @@ function layerBody(g,z){
  if(z>=140){const sx=470/610,sy=125/210;wordSlots.forEach(([px,py,n])=>{const x=(px-555)*sx,y=(py-170)*sy;rr(x-6*sx,y-8*sy,(n*37+6)*sx,48*sy,0,'ph',g);if(z===210){for(let i=0;i<n;i++)cross(x+i*37*sx,y,27*sx,31*sy,g)}})}
  [...g.querySelectorAll('*')].forEach(e=>e.setAttribute('vector-effect','non-scaling-stroke'));
 }
-noreg=1;this.morph=[];this.flat=[610/470,0,0,210/125,555,170];this.iso=[.8,.145,-.29,.4,150,765];for(const [name,z] of layers){const g=mk('g',{});this.morph.push({g,z,a:5.05+z/900});layerBody(g,z)}noreg=0;
-at(7.1,.015,.4);for(const [name,z] of layers){const y=765-z;line(126,y,150,y);const label=name.split(' / ');label.forEach((v,i)=>tx(120,y-8+i*15,v,'dts',{'text-anchor':'end'}))}
-line(150,555,150,816,'ph');
-at(8.15,.005,.4);lines(52,856,['SR-ONLY IS A SIBLING OF THE VISUAL RUN.', 'IT RETAINS THE COMPLETE STRING ONCE.', 'WORD MODE SKIPS THE INNER CHARACTER WRAPPERS.', 'NO PANEL, BORDER, RADIUS OR SHADOW IS ADDED.'],'dts',18);
+noreg=1;this.morph=[];this.flat=[610/470,0,0,210/125,555,170];this.iso=[.8,.145,-.29,.4,150,665];for(const [name,z] of layers){const g=mk('g',{});this.morph.push({g,z,a:5.05+z/900});layerBody(g,z)}noreg=0;
+at(7.1,.015,.4);for(const [name,z] of layers){const y=665-z;line(126,y,150,y);const label=name.split(' / ');label.forEach((v,i)=>tx(120,y-8+i*15,v,'dts',{'text-anchor':'end'}))}
+line(150,455,150,716,'ph');
+at(8.15,.005,.4);lines(52,756,['SR-ONLY IS A SIBLING OF THE VISUAL RUN.', 'IT RETAINS THE COMPLETE STRING ONCE.', 'WORD MODE SKIPS THE INNER CHARACTER WRAPPERS.', 'NO PANEL, BORDER, RADIUS OR SHADOW IS ADDED.'],'dts',18);
 // EXPLODED_END
 at(8.1,.003,.45);title(862,500,'DETAIL A · SEGMENT ENTRANCE','EM-BASED BLUR AND RISE · TRANSFORM DOES NOT CHANGE LINE FLOW');
 const samples=[[596,'INITIAL / DELAY'],[820,'IN FLIGHT'],[1044,'REST']];
 samples.forEach(([x,label],i)=>{line(x-24,628,x+104,628,'cl');rr(x-4,554,80,74,0,'ph');const dy=[38,13,0][i];rr(x+8,568+dy,54,42,0,i===0?'env':'thin');cross(x+13,573+dy,44,32);tx(x+35,666,label,'dts',{'text-anchor':'middle'});tx(x+35,687,['A0 = 0','0 < A < 1','A1 = 1'][i],'dt',{'text-anchor':'middle'})});
 dimV(610,648,704,650,650,'Y0');callout(604,620,571,710,'BL0',-1);
-lines(555,728,['INITIAL: BL0 = 0.22·F; Y0 = 0.45·F; A0 = 0.', 'REST: FILTER NONE; TRANSLATE NONE; NO PERSISTENT BLUR.'],'dt',19);
+lines(555,728,['INITIAL: BL0 = 0.22·F; Y0 = 0.45·F; A0 = 0.', 'REST: FILTER NONE; TRANSLATE NONE; NO PERSISTENT BLUR.'],'dt formula',19);
 at(8.3,.003,.4);title(862,792,'DETAIL B · STAGGERED STARTS','DEFAULT N > 1 · D = 0 · TIMELINE IS NORMALIZED');
 const tx0=605,tx1=1155,ty=837;line(tx0,ty,tx1,ty,'thin');
 [[0,'0'],[.5,'P'],[1,'P + T']].forEach(([p,l])=>{const x=tx0+(tx1-tx0)*p;line(x,ty-5,x,ty+7);tx(x,ty-12,l,'dt',{'text-anchor':'middle'})});
 [['i = 0',0],['i',.25],['i = N−1',.5]].forEach(([l,p],j)=>{const y=ty+28+j*29,x=tx0+p*(tx1-tx0);tx(tx0-15,y+5,l,'dt',{'text-anchor':'end'});rr(x,y-5,(tx1-tx0)/2,15,0,'hug');line(x,y-9,x,y+13,'thin')});
-lines(555,968,['dᵢ = D + i·S; S = P/(N−1); E = D + (N−1)·S + T', 'DEFAULT LAST FINISH: E = 0 + 300 + 300 = 600ms.'],'dt',21);
+lines(555,968,['dᵢ = D + i·S; S = P/(N−1); E = D + (N−1)·S + T', 'DEFAULT LAST FINISH: E = 0 + 300 + 300 = 600ms.'],'dt formula',21);
 at(8.55,.002,.4);tx(50,960,'SOURCE / BROWSER AUDIT','vt');lines(50,981,['blur-text.tsx; cn.ts; globals.css; registry + demo + tests.', '1 demo, 3 shared usage examples, 6 behavior tests surveyed.', 'Live demo: F = 36px; LH ≈ 40px; W = 448px; 3 lines.', 'Observed values are caller choices, not component constraints.'],'source',14);
 at(8.4,.001,.35);let yy=70;const xx=1260;
 yy=table(xx,yy,'LAYOUT / TYPOGRAPHY',[

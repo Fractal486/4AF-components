@@ -157,12 +157,22 @@ kit.scene('drawing', {
     tx(1345,yy,'RING + LIFT + AMBIENT; NO BORDER.','dts');tx(1345,yy+18,'DARK: 1 PX SHADOW RING ONLY.','dts');
 
     // Default square action: target, glyph, focus and radii are all source-grounded.
-    at(8.45,.012,.4);const ax=810,ay=535,ak=4;
-    rr(ax-12,ay-12,160,160,0,'env');rr(ax,ay,136,136,32,'obj');xbox(ax+36,ay+36,64,64);
-    mk('line',{x1:ax-22,y1:ay+68,x2:ax+158,y2:ay+68,class:'cl'});
-    dimV(ay-12,ay+148,ax-30,ax-12,ax-12,'T1');dimH(ax,ax+36,ay-28,ay,ay+36,'S3');dimH(ax+36,ax+100,ay-28,null,ay+36,'I1');
-    dimV(ay,ay+136,ax+166,ax+136,ax+136,'H1');nb(ax+149,ay+162,1);title(ax+68,731,'A · DEFAULT ICON TARGET','SCALE 4:1 · NO TEXT SLOT');
-    rr(1080,535,136,136,68,'obj');xbox(1116,571,64,64);callout(1212,566,1250,533,'R2',1);title(1148,731,'PILL SHAPE','SCALE 4:1 · CIRCULAR');
+    at(8.45,.012,.4);title(1065,482,'COPY FLOW · ICON ONLY','SCALE 2:1 · D1 PENDING DELAY · D2 OUTCOME HOLD');
+    {const B=70,S={idle:[800,612,'IDLE · COPY'],pending:[960,612,'PENDING · LOADER'],success:[1120,540,'SUCCESS · CHECK'],error:[1120,690,'ERROR · ALERT']};
+     // 24-unit icon paths, drawn at 32px in the 70px icon button (lucide Copy, check mark, lucide TriangleAlert; Classic Loader bars).
+     const icon=(k,x,y)=>{const g=mk('g',{transform:'translate('+(x+19)+','+(y+19)+') scale(1.3333)'});const p=d=>mk('path',{d,class:'thin',style:'fill:none;stroke-width:1.4'},g);
+      if(k==='idle'){mk('rect',{x:8,y:8,width:14,height:14,rx:2,class:'thin',style:'fill:none;stroke-width:1.4'},g);p('M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2');}
+      if(k==='pending')for(let i=0;i<12;i++){const a=i*Math.PI/6;mk('line',{x1:12+5*Math.sin(a),y1:12-5*Math.cos(a),x2:12+10*Math.sin(a),y2:12-10*Math.cos(a),class:'thin',style:'stroke-width:1.6;stroke-linecap:round;stroke-opacity:'+(1-i*.07).toFixed(2)},g);}
+      if(k==='success')p('M20 6 9 17l-5-5');
+      if(k==='error'){p('m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3');p('M12 9v4');p('M12 17h.01');}};
+     for(const [k,[x,y,name]] of Object.entries(S)){const _p=sv;if(k==='error')sv=mk('g',{opacity:.5},_p);rr(x,y,B,B,16,'obj');icon(k,x,y);tx(x+B/2,y+B+18,name,'dts',{'text-anchor':'middle'});sv=_p;}
+     const arrow=d=>mk('path',{d,class:'dl','marker-end':A});
+     arrow('M870,647 H960');tx(915,639,'PRESS','dts',{'text-anchor':'middle'});
+     arrow('M1030,635 L1120,590');tx(1064,603,'COPIED','dts',{'text-anchor':'end'});
+     arrow('M1155,540 V520 H835 V612');tx(995,514,'REVERT AFTER D2','dts',{'text-anchor':'middle'});
+     {const _p=sv;sv=mk('g',{opacity:.5},_p);arrow('M1030,660 L1120,705');tx(1112,724,'FAILED','dts',{'text-anchor':'end'});
+      arrow('M1135,760 V790 H780 V647 H800');tx(960,804,'REVERT AFTER D2','dts',{'text-anchor':'middle'});sv=_p;}
+     nb(788,600,1);nb(1005,598,4);nb(1068,509,5);}
 
     at(8.7,.01,.4);const foot=rr(73,296,324,84,20,'hs');foot.setAttribute('fill',HAT);rr(81,300,308,68,16,'obj');rr(73,296,324,84,20,'env');dimV(296,300,58,73,81,'E1',{side:'l'});dimH(73,81,390,380,368,'E2',{dx:-7});dimV(368,380,419,389,397,'E3',{side:'r'});title(242,420,'SHADOW ENVELOPE','SCALE 2:1 · GEOMETRIC BLUR REFERENCE');
     rr(455,300,68,68,16,'obj');rr(447,292,84,84,24,'thin');rr(451,296,76,76,20,'thin');callout(447,310,440,270,'F1 + F2',-1);title(489,403,'FOCUS','RING + OFFSET');

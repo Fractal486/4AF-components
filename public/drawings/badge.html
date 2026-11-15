@@ -153,7 +153,7 @@ kit.scene('drawing', {
     at(2.4,.035,.5);r(84,2,12,12,2,'hug');xbox(X(85.5),Y(3.5),54,54);
     at(2.8,.02,.45);dimH(X(18),X(80),Y(-7),null,Y(2),'HUG / FLEX');dimH(X(80),X(84),Y(-7),null,Y(2),'S2',{dx:-5});dimH(X(84),X(96),Y(-7),null,Y(2),'Z1');dimH(X(96),X(100),Y(-7),null,Y(0),'S1',{dx:7});
     at(3.1,.02,.45);dimH(X(0),X(100),Y(-16),Y(-10),Y(-10),'W · CONTENT / CONTAINER DEPENDENT');dimV(Y(0),Y(16),X(-9),X(0),X(0),'H1');dimV(Y(2),Y(14),X(108),X(100),X(100),'L1',{side:'r'});
-    at(3.4,.03,.5);line(X(-4),Y(8),X(104),Y(8),'cl');rad(X(100),Y(16),24,'br','R1',20);detailRef(X(90),Y(8),52,'DETAIL A',1150,415);nb(540,370,1);nb(1190,370,2);
+    at(3.4,.03,.5);line(X(-4),Y(8),X(104),Y(8),'cl');rad(X(100),Y(16),24,'br','R1',20);nb(540,370,1);nb(1190,370,2);
     at(3.9,.025,.4);title(870,90,'PLAN · REMOVABLE BADGE','SCALE 6:1 IN HEIGHT · SM / SOLID / ROUNDED · WIDTH SCHEMATIC');
     lines(610,400,['W = 2·S1 + I1 + 2·S2 + LABEL + Z1   (B = 0)', 'WITHOUT CLOSE: OMIT Z1 AND ONE S2. WITHOUT GLYPH: OMIT I1 AND ONE S2.']);
     sv=svg;
@@ -183,17 +183,29 @@ kit.scene('drawing', {
     at(8.7,.002,.4);yy=table(1290,yy,'PRESENCE / CONSTRAINTS',[
       ['M1','enter / fade / close','200 / 150 / 300 ms'],['M2','enter / exit scale','0.90 ↔ 1'],['W','intrinsic width','HUG; max 100% parent'],['V1','external clearance','[TBD] caller-owned'],['T2','root target policy','[TBD] caller-owned'],['Z3','exploded layer lift','[TBD] schematic']]);
     // Close target: actual source geometry, no generic 40px target implied.
-    at(8.45,.015,.45);title(825,485,'A · CLOSE TARGET','SCALE 5:1 · SM · EXPANDED PSEUDO-ELEMENT');
-    const ax=770,ay=550;hatch(ax-20,ay-20,100,100);rr(ax-20,ay-20,100,100,0,'env');rr(ax,ay,60,60,10,'obj');xbox(ax+7.5,ay+7.5,45,45);line(ax-30,ay+30,ax+90,ay+30,'cl');line(ax+30,ay-30,ax+30,ay+90,'cl');
-    dimV(ay-20,ay+80,ax-40,ax-20,ax-20,'T1');dimH(ax,ax+60,ay+105,ay+60,ay+60,'Z1');callout(ax+64,ay+6,905,540,'S3',1);callout(ax+55,ay+57,900,616,'R3',1);nb(938,645,2);
-    at(8.55,.015,.4);title(1120,485,'B · DOT / ICON','SCALE 5:1 · SM ALTERNATIVES');
-    rr(1024,540,50,60,0,'slot');mk('circle',{cx:1049,cy:570,r:15,class:'hug'});xbox(1124,545,50,50);line(1008,570,1190,570,'cl');dimH(1034,1064,625,585,585,'Z2');dimH(1124,1174,625,595,595,'I1');
-    lines(1010,662,['DOT REPLACES GLYPH; NOT AN EXTRA SLOT.', 'OPTIONAL PULSE IS DECORATIVE.'], 'dts',15);
-    // Wrap uses full line rows, including nominal line-height; no fictitious fixed width.
-    at(8.65,.012,.4);title(960,724,'C · WRAPPING LABEL','SCALE 4:1 IN HEIGHT · N = 2 · SM / B = 0');
-    const wx=735,wy=770;rr(wx,wy,450,128,16,'obj');xbox(wx+16,wy+20,40,40);rr(wx+72,wy+16,362,48,0,'slot');rr(wx+72,wy+64,362,48,0,'slot');slotLabel(wx+72,wy+16,362,96,'LABEL SLOT · FLEX · WRAPS');line(wx+6,wy+40,wx+440,wy+40,'cl');
-    dimV(wy,wy+128,wx-25,wx,wx,'H2');dimV(wy+16,wy+64,wx+475,wx+450,wx+450,'L1',{side:'r'});dimV(wy,wy+16,wx+475,wx+450,wx+450,'S4',{side:'r'});nb(1208,897,4);
-    lines(735,935,['H2 = 2·S4 + N·L1 = 32 AT N = 2 (SM / B = 0)', 'WRAP BYPASSES LABEL MORPH; ICON STILL MORPHS.', 'OUTLINE ADDS 2·B TO AUTO HEIGHT. WIDTH REMAINS PARENT-CAPPED.']);
+    at(8.45,.006,.4);{
+ // Lucide glyphs (24-unit) at 2.5:1 of the SM 10 px glyph; loading uses the loader's bars.
+ const LIGHT='var(--sheet,var(--ground))';
+ const G={circle:{c:[[12,12,10]]},info:{p:['M12 16v-4','M12 8h.01'],c:[[12,12,10]]},check:{p:['M20 6 9 17l-5-5']},
+  warning:{p:['m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3','M12 9v4','M12 17h.01']},
+  danger:{p:['M12 16h.01','M12 8v4','M15.312 2a2 2 0 0 1 1.414.586l4.688 4.688A2 2 0 0 1 22 8.688v6.624a2 2 0 0 1-.586 1.414l-4.688 4.688a2 2 0 0 1-1.414.586H8.688a2 2 0 0 1-1.414-.586l-4.688-4.688A2 2 0 0 1 2 15.312V8.688a2 2 0 0 1 .586-1.414l4.688-4.688A2 2 0 0 1 8.688 2z']},loading:{bars:true}};
+ const glyph=(k,x,y,light)=>{const g=mk('g',{transform:'translate('+x+','+y+') scale('+(25/24)+')'});const d=G[k];const st=(extra)=>'fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round'+(light?';stroke:'+LIGHT:'')+(extra||'');
+  if(d.bars){for(let i=0;i<12;i++){const a=i*Math.PI/6;mk('line',{x1:12+5*Math.sin(a),y1:12-5*Math.cos(a),x2:12+10*Math.sin(a),y2:12-10*Math.cos(a),class:'thin',style:st(';stroke-opacity:'+(1-i*.07).toFixed(2))},g)}return}
+  for(const p of d.p||[])mk('path',{d:p,class:'thin',style:st()},g);for(const [cx,cy,r] of d.c||[])mk('circle',{cx,cy,r,class:'thin',style:st()},g);};
+ // One badge at 2.5:1 (SM: 16 high, 4 radius, 4 pad, 4 gap, 10 glyph).
+ const badge=(x,y,{variant='solid',lead='circle',name})=>{const W=150,H=40;const light=variant==='filled';
+  if(variant==='solid')rr(x,y,W,H,10,'hug');if(variant==='pill')rr(x,y,W,H,20,'hug');if(variant==='outline')rr(x,y,W,H,10,'thin');
+  if(variant==='filled'){const _p=sv;sv=mk('g',{opacity:.9},_p);rr(x,y,W,H,10,'dot');sv=_p;}
+  if(lead==='dot'||lead==='pulse'){mk('circle',{cx:x+22.5,cy:y+20,r:7.5,class:'dot'});if(lead==='pulse')mk('circle',{cx:x+22.5,cy:y+20,r:12.5,class:'ph'});}
+  else if(lead==='icon'){rr(x+10,y+7.5,25,25,0,'slot');}else glyph(lead,x+10,y+7.5,light);
+  const ls=rr(x+45,y+12,95,16,0,'slot');if(light)ls.setAttribute('style','stroke:'+LIGHT);
+  tx(x+W/2,y+H+16,name,'dts',{'text-anchor':'middle'});};
+ title(990,485,'STATUSES + MARKS','SCALE 2.5:1 · SM · SOLID · GLYPH FOLLOWS STATUS');
+ [['circle','NEUTRAL'],['info','INFO'],['check','SUCCESS'],['warning','WARNING'],['danger','DANGER'],['loading','LOADING']].forEach(([g,n],i)=>badge(720+(i%3)*190,515+Math.floor(i/3)*75,{lead:g,name:n}));
+ [['dot','DOT'],['pulse','DOT + PULSE'],['icon','CUSTOM ICON']].forEach(([g,n],i)=>badge(720+i*190,665,{lead:g,name:n}));
+ title(990,770,'VARIANTS + SHAPE','SCALE 2.5:1 · SM · SUCCESS STATUS');
+ [['solid','SOLID'],['outline','OUTLINE'],['plain','PLAIN'],['filled','FILLED'],['pill','SOLID · PILL']].forEach(([v,n],i)=>badge(720+(i%3)*190,800+Math.floor(i/3)*75,{variant:v,lead:'check',name:n}));
+ lines(720,972,['STATUS SETS THE INK FOR TEXT AND GLYPH IN EVERY VARIANT.','A DOT REPLACES THE GLYPH; PULSE IS DECORATIVE. PLAIN HAS NO BOX.'],'dts',15);}
     // Size and shape strip, fitted to left lower corner.
     at(8.85,.01,.4);title(365,900,'SIZE / SHAPE FAMILY','SCALE 2:1 IN HEIGHT · ALL WIDTHS SCHEMATIC');
     [['SM',16,4],['MD',20,4],['LG',24,6]].forEach(([n,h,rad],i)=>{const x=82+i*185,y=965-h*2;rr(x,y,142,h*2,rad*2,'obj');rr(x+16,y+h-8,110,16,0,'slot');dimV(y,965,x-13,x,x,'H1');tx(x+71,990,n,'dts',{'text-anchor':'middle'})});

@@ -32,7 +32,7 @@ export function ComponentDrawing({ title, svg, sheetUrl, filmUrl }: ComponentDra
     setFrom({
       "--from-x": `${image.left + image.width / 2 - window.innerWidth / 2}px`,
       // A little below the image, to line up with the sheet as the film frames it.
-      "--from-y": `${image.top + image.height / 2 - window.innerHeight / 2 + 12}px`,
+      "--from-y": `${image.top + image.height / 2 - window.innerHeight / 2 + 24}px`,
       "--from-scale": image.width / width,
     } as CSSProperties);
   };
@@ -60,15 +60,14 @@ export function ComponentDrawing({ title, svg, sheetUrl, filmUrl }: ComponentDra
             "fixed inset-0 z-50 m-auto h-fit w-(--w)",
             "overflow-hidden rounded-[calc(var(--w)*36/1700)] bg-background shadow-overlay-drop outline-none",
             // The image on the page enlarges into the dialog on the panel curve, whose movement
-            // stays visible (the expo ease-out spends it in two frames). It fades in linearly
-            // over the image, still visible under the backdrop, so the film's dimmed lines
-            // cross-fade into the drawing's. The exit fades and blurs in place.
-            "translate-0 scale-100 opacity-100 blur-none transition-[opacity,scale,translate,filter]",
-            "[transition-duration:var(--duration-slow),var(--duration-slower),var(--duration-slower),var(--duration-slower)]",
-            "[transition-timing-function:linear,var(--ease-panel),var(--ease-panel),var(--ease-panel)]",
-            "data-starting-style:translate-x-(--from-x) data-starting-style:translate-y-(--from-y) data-starting-style:scale-(--from-scale) data-starting-style:opacity-0",
+            // stays visible (the expo ease-out spends it in two frames). It starts dimmed as
+            // the backdrop dims the film beneath it (black at 50%), and brightens as it grows.
+            // The exit fades and blurs in place.
+            "translate-0 scale-100 opacity-100 blur-none brightness-100 transition-[opacity,scale,translate,filter]",
+            "duration-(--duration-slower) ease-(--ease-panel)",
+            "data-starting-style:translate-x-(--from-x) data-starting-style:translate-y-(--from-y) data-starting-style:scale-(--from-scale) data-starting-style:brightness-50",
             "data-ending-style:opacity-0 data-ending-style:blur-[8px] data-ending-style:duration-(--duration-base) data-ending-style:ease-out",
-            "motion-reduce:transition-[opacity] motion-reduce:data-starting-style:translate-0 motion-reduce:data-starting-style:scale-100 motion-reduce:data-ending-style:blur-none",
+            "motion-reduce:transition-[opacity] motion-reduce:data-starting-style:translate-0 motion-reduce:data-starting-style:scale-100 motion-reduce:data-starting-style:brightness-100 motion-reduce:data-starting-style:opacity-0 motion-reduce:data-ending-style:blur-none",
           )}
         >
           <DialogTitle className="sr-only">{title} · dimensional drawing</DialogTitle>

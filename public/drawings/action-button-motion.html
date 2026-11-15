@@ -134,17 +134,29 @@ at(3.55,.045,.45);title(840,58,'PLAN · TWO INDEPENDENT MORPH BOXES','SCALE 3:1 
 sv=rootSvg;
 at(8.4,.015,.45);title(255,365,'SHADOW / FOCUS ENVELOPE','SCALE 2:1 · OUTLINE VARIANT · LIGHT THEME');
 rr(100,399,292,84,20,'env');rr(100,403,292,84,20,'ph');rr(108,407,276,68,16,'obj');label(246,445,'SURFACE · NO LAYOUT BORDER');dimH(100,108,512,483,475,'S3 + S4',{dx:17});callout(387,487,414,501,'E3',1);lines(70,541,['SHADOW BLUR HAS NO HARD EDGE; EXTENTS ARE NOMINAL.','FOCUS RING: OFFSET S3, STROKE S4.'],'dts');
-sv=mk('g',{},rootSvg);this.states=sv;at(3.8,.008,.45);title(850,390,'STATE / WIDTH ARCHITECTURE','PROPORTIONAL SCHEMATIC · CONTENT SLOTS ONLY');
-for(let j=0;j<4;j++){const xx=558+(j%2)*316,yy=426+Math.floor(j/2)*91;button(xx,yy,265,48,10,22,14,20,['IDLE SLOT','PENDING SLOT','SUCCESS SLOT','ERROR SLOT'][j]);label(xx+132,yy+68,['IDLE → RUN','PENDING → SETTLE','SUCCESS → IDLE','ERROR → IDLE / HOLD'][j],'dts');}
-nb(1190,443,4);nb(1190,534,5);
-sv=rootSvg;at(8.6,.015,.45);title(880,650,'DETAIL A · WIDEST / CURRENT','PROPORTIONAL SCHEMATIC · SAME TWO-BOX STRUCTURE');
+sv=mk('g',{transform:'translate(-25,-12)'},rootSvg);this.states=sv;at(3.8,.008,.45);title(850,390,'STATE FLOW','ALL STATES SHARE W (WIDEST) · D4 PENDING DELAY · D5 OUTCOME HOLD');
+{const W=160,H=40,S={idle:[575,500],pending:[820,500],success:[1060,445],error:[1060,555]};
+ const glyph={
+  idle:(x,y)=>cross(x,y,16,16),
+  pending:(x,y)=>{mk('circle',{cx:x+8,cy:y+8,r:7,class:'ph'});mk('path',{d:'M'+(x+8)+','+(y+1)+' A7,7 0 0 1 '+(x+15)+','+(y+8),class:'thin'})},
+  success:(x,y)=>mk('path',{d:'M'+(x+2)+','+(y+8)+' l4,4 l8,-9',class:'thin'}),
+  error:(x,y)=>{mk('circle',{cx:x+8,cy:y+8,r:7,class:'thin'});line(x+8,y+4,x+8,y+9);mk('circle',{cx:x+8,cy:y+12,r:.9,class:'dot'})}};
+ for(const [k,[x,y]] of Object.entries(S)){const _p=sv;if(k==='error')sv=mk('g',{opacity:.5},_p);rr(x,y,W,H,10,'obj');glyph[k](x+14,y+12);rr(x+40,y+13,106,14,0,'slot');label(x+93,y+23.5,k.toUpperCase()+' LABEL');label(x+W/2,y+H+16,k.toUpperCase(),'dts');sv=_p;}
+ const arrow=(d)=>mk('path',{d,class:'dl','marker-end':A});
+ arrow('M735,520 H820');label(777,513,'PRESS','dts');
+ arrow('M980,510 L1060,470');label(1012,478,'RESOLVE','dts');
+ {const _p=sv;sv=mk('g',{opacity:.5},_p);arrow('M980,530 L1060,570');label(1012,570,'REJECT','dts');sv=_p;}
+ arrow('M1140,445 V425 H655 V500');label(900,420,'REVERT AFTER D5','dts');
+ {const _p=sv;sv=mk('g',{opacity:.5},_p);arrow('M1080,595 V619 H600 V540');label(840,633,'REVERT AFTER D5 · HELD WHILE HOVERED OR KEYBOARD-FOCUSED','dts');sv=_p;}
+ nb(900,488,4);{const _p=sv;sv=mk('g',{opacity:.5},_p);nb(1236,575,5);sv=_p;}}
+sv=mk('g',{transform:'translate(30,0)'},rootSvg);at(8.6,.015,.45);title(880,650,'DETAIL A · WIDEST / CURRENT','PROPORTIONAL SCHEMATIC · SAME TWO-BOX STRUCTURE');
 rr(595,682,100,42,0,'well');rr(715,682,394,42,0,'well');cross(629,690,26,26);label(912,708,'VISIBLE LABEL SLOT');
 for(let j=0;j<3;j++){rr(595+6*j,737+6*j,88,26,0,'slot');rr(715+6*j,737+6*j,370-42*j,26,0,'slot');}
 label(645,800,'GLYPH SIZERS','dts');label(905,800,'LABEL SIZERS · INVISIBLE / INERT','dts');
 lines(593,831,['WIDEST: GRID OVERLAYS ALL SIZERS → WG + WL.', 'CURRENT: ABSOLUTE SIZERS; MEASURE THE SHOWING WIDTH.', 'CURRENT WIDTH + GAP TRANSITION ON D2; REDUCED: 1 ms.', 'UNCHANGED LABEL KEY DOES NOT PLAY A REDUNDANT SWAP.'],'dts',17);
-nb(1128,751,2);
-at(8.75,.02,.45);title(878,932,'DETAIL B · CENTERED PENDING OVERLAY','SCALE 2:1 · HIDDEN GROUP RETAINS ITS INTRINSIC BOX');
-rr(670,960,346,68,16,'obj');rr(698,982,290,24,0,'slot');cross(827,978,32,32);line(843,950,843,1036,'cl');callout(980,992,1083,983,'SLOT HELD',1);nb(650,994,3);
+nb(1128,751,2);sv=rootSvg;
+at(8.75,.02,.45);title(878,917,'DETAIL B · CENTERED PENDING OVERLAY','SCALE 1.6:1 · HIDDEN GROUP RETAINS ITS INTRINSIC BOX');
+rr(704.5,952,277,54,13,'obj');rr(727,969.5,232,19,0,'slot');cross(830,966,26,26);line(843,943,843,1015,'cl');callout(953,979,1040,970,'SLOT HELD',1);nb(684,979,3);
 at(8.65,.01,.45);title(255,934,'SOURCE / SCOPE','AUDITED LOCAL IMPLEMENTATION + LIVE GEOMETRY');
 lines(50,965,['action-button.tsx · button.tsx / button.variants.ts', 'morph.tsx · use-action.ts · loader.tsx · motion.ts', 'globals.css · /docs/action-button after fonts / hydration', '5 production JSX uses in 5 files; tests excluded.', 'Measured md: 34 high · 14 pad · 10 gap · 8 radius.'],'source',14);
 at(8.55,.002,.4);let yy=70;const xx=1260;
@@ -156,9 +168,7 @@ yy=table(xx,yy,'MOTION / FEEDBACK',[
  ['D1','translate / colors','--duration-fast = 150 ms'],['D2','width / gap','--duration-base = 200 ms'],['D3','swap spring','visualDuration 180 ms; bounce 0'],['D4','pending delay','0 ms default'],['D5','outcome hold','2000 ms default; configurable'],['D6','check delay','50 ms'],['K1','press scale','0.95; spring 500 / 30 / 0.6'],['K2','swap scale / blur','0.25 → 1 / 4 px → 0'],['K3','reduced JS motion','duration 0; CSS D1 / D2 = 1 ms']]);
 yy=table(xx,yy,'OUTLINE SHADOW · RING / LIFT / AMBIENT',[
  ['Y','offset-y','0 / 1 / 2'],['BL','blur radius','0 / 2 / 4'],['SP','spread','1 / −1 / 0'],['E1','nominal top','max(BL + SP − Y) = 2'],['E2','nominal side','max(BL + SP) = 4'],['E3','nominal bottom','max(BL + SP + Y) = 6']]);
-at(8.85,.018,.4);title(1453,925,'DETAIL C · IDLE LABEL COMPENSATION','SCALE 2:1 · NO IDLE GLYPH · WIDEST / MD');
-rr(1290,955,310,68,16,'obj');rr(1294,973,32,32,0,'slot');rr(1346,979,202,20,0,'slot');label(1447,992,'LABEL SLOT · HUG');line(1445,948,1445,1032,'cl');
-dimH(1346,1370,1032,999,999,'S5',{dx:4});tx(1588,1016,'START: −S5 · END: +S5','dts',{'text-anchor':'end'});
+
 
 sv=rootSvg;
 const ia=2.05,ib=.38,ic=-.72,id=1.02,TX=211,TY=821;
@@ -174,7 +184,7 @@ for(const [idx,name,z] of [[0,'CANVAS / HIT',0],[1,'FOCUS / SHADOW',30],[2,'BUTT
 at(7.12,.06,.45);title(278,609,'EXPLODED ARCHITECTURE','PROPORTIONAL · LAYER SEPARATION NOT TO SCALE');
 at(8.3,.025,.4);lines(70,901,['SIZERS OVERLAY IN ONE GRID CELL; NO STACK HEIGHT.'],'dts');
 at(8.1,0,1.1);rr(20,20,1660,1020,16,'border');
-at(8.6,.04,.4);tx(50,1054,'UI-ACTION-001 · ACTION BUTTON · ARCHITECTURE','dts');tx(1650,1054,'2026-11-14 · SHEET 1 OF 1','dts',{'text-anchor':'end'});
+at(8.6,.04,.4);
   },
   render(t) {
     t = t / 0.85;

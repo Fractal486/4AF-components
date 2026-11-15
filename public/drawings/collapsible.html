@@ -105,7 +105,7 @@ kit.scene('drawing', {
     function rr(x, y, w, h, r, c, p) { return mk('rect', { x: x, y: y, width: w, height: h, rx: r, class: c }, p); }
     function slotLabel(x, y, w, h, l, al, p) { tx(al === 'l' ? x + 6 : x + w / 2, y + h / 2 + 3.2, l, 'sl', { 'text-anchor': al === 'l' ? 'start' : 'middle' }, p); }
     function title(x, y, t, s) { tx(x, y, t, 'vt', { 'text-anchor': 'middle' }); if (s) tx(x, y + 14, s, 'dts', { 'text-anchor': 'middle' }); }
-    function xbox(x, y, w, h, p) { mk('rect', { x: x, y: y, width: w, height: h, class: 'thin' }, p); mk('path', { d: 'M' + x + ',' + y + ' l' + w + ',' + h + ' M' + (x + w) + ',' + y + ' l' + (-w) + ',' + h, class: 'thin' }, p); }
+    function chevron(x,y,w,h,p,open=true) { const points=open?[[6,9],[12,15],[18,9]]:[[9,6],[15,12],[9,18]];mk('polyline',{points:points.map(([px,py])=>(x+px*w/24)+','+(y+py*h/24)).join(' '),fill:'none',stroke:'var(--ink)','stroke-width':2*w/24,'stroke-linecap':'round','stroke-linejoin':'round'},p); }
     function detailRef(cx, cy, r, lbl, lx, ly) { mk('circle', { cx: cx, cy: cy, r: r, class: 'ph' }); const a = Math.atan2(ly - cy, lx - cx); mk('line', { x1: cx + r * Math.cos(a), y1: cy + r * Math.sin(a), x2: lx, y2: ly, class: 'lead' }); tx(lx + (lx < cx ? -4 : 4), ly + 4, lbl, 'dts', { 'text-anchor': lx < cx ? 'end' : 'start' }); }
     function table(x, y, ttl, rows) { const ws = [38, 128, 246], rh = 17; tx(x, y - 8, ttl, 'vt'); [['Code', 'Variable', 'Value']].concat(rows).forEach((r, i) => { let c2 = x; r.forEach((c, j) => { mk('rect', { x: c2, y: y + i * rh, width: ws[j], height: rh, class: 'thin' }); tx(c2 + 6, y + i * rh + 12, c, i ? 'tc' : 'th', { 'text-anchor': 'start' }); c2 += ws[j]; }); }); return y + (rows.length + 1) * rh + 36; }
     function notes(list) { tx(50, 58, 'Notes:', 'nth'); tx(112, 58, '(unless otherwise specified)', 'nt'); list.forEach(([n, t], i) => { const y = 88 + i * 23; nb(56, y - 4, n); tx(72, y, t, 'nt'); }); }
@@ -116,7 +116,7 @@ kit.scene('drawing', {
     at(-.5,0,1.8);r(0,0,W,H,14,'obj');
     at(.1,.08,.7);r(4,4,440,36,10,'well');
     at(.6,.08,.6);r(16,12,392,20,0,'slot','LABEL SLOT · FLEX');
-    at(1.1,.1,.5);xbox(X(416),Y(14),16,16);
+    at(1.1,.1,.5);chevron(X(416),Y(14),16,16);
     at(1.6,.05,.45);dimH(X(16),X(408),Y(-24),Y(12),Y(12),'FLEX');dimH(X(408),X(416),Y(-24),Y(12),Y(14),'S4',{dx:-3,dy:-14});dimH(X(416),X(432),Y(-24),Y(14),Y(14),'I1',{dx:12});
     at(2,.02,.4);dimV(Y(4),Y(40),X(-22),X(4),X(4),'H1',{side:'l'});
     at(2.5,.05,.55);r(4,40,440,104,0,'ph');r(16,44,416,90,0,'slot','CONTENT SLOT · FILL / HUG HEIGHT');
@@ -126,7 +126,7 @@ kit.scene('drawing', {
     at(3.6,.04,.4);rad(X(0),Y(0),14,'tl','R1',18);rad(X(444),Y(4),10,'tr','R2',20);nb(X(28),Y(29),1);nb(X(28),Y(63),2);detailRef(X(6),Y(6),18,'DETAIL A',X(70),Y(-5));
     ln(X(-8),Y(22),X(456),Y(22),'cl');title(874,405,'Plan · card / open','Scale 1:1 · base defaults · C proportional');
     // Template morph groups: the two physical wrappers remain separate in the exploded view.
-    const sc=.8,TX=320,TY=710,ia=.94*sc,ib=.17*sc,ic=-.34*sc,id=.47*sc;
+    const sc=.8,TX=100,TY=710,ia=.94*sc,ib=.17*sc,ic=-.34*sc,id=.47*sc;
     const P=(x,y,z)=>[TX+ia*x+ic*y,TY+ib*x+id*y-z];
     const G=z=>mk('g',{transform:`matrix(${ia},${ib},${ic},${id},${TX},${TY-z})`});
     at(5.9,.07,.6);let g=G(0);rr(-12,-12,W+24,H+24,0,'thin',g);
@@ -134,22 +134,22 @@ kit.scene('drawing', {
     noreg=1;const MG=this.morph=[];const mg=(z,a)=>{const g=mk('g',{});MG.push({g,z,a});return g};
     let q=mg(72,5.05);rr(0,0,W,H,14,'obj',q);
     q=mg(120,5.15);rr(4,4,440,36,10,'well',q);rr(4,40,440,104,0,'ph',q);
-    q=mg(172,5.25);rr(16,44,416,90,0,'slot',q);rr(16,12,392,20,0,'slot',q);xbox(416,14,16,16,q);
+    q=mg(172,5.25);rr(16,44,416,90,0,'slot',q);rr(16,12,392,20,0,'slot',q);chevron(416,14,16,16,q);
     noreg=0;this.flat=[1,0,0,1,PX,PY];this.iso=[ia,ib,ic,id,TX,TY];
     at(6.4,.03,.4);[[0,0],[W,0],[0,H],[W,H]].forEach(([x,y])=>{const a=P(x,y,34),b=P(x,y,172);ln(...a,...b,'ph')});
-    at(6.7,.05,.4);[[0,'CANVAS','Normal document flow'],[34,'SHADOW','Card only · light envelope'],[72,'ROOT','Surface + S1 padding'],[120,'PANEL / TRIGGER','Height wrapper · padding 0'],[172,'CONTENT / SLOTS','Inner padding + fade / blur']].forEach(([z,l,s])=>{const a=P(0,H,z);ln(a[0],a[1],248,a[1],'lead');tx(238,a[1]-2,l,'vt',{'text-anchor':'end'});tx(238,a[1]+12,s,'dts',{'text-anchor':'end'})});
-    title(430,830,'Exploded anatomy','Axonometric · vertical separation schematic');
+    at(6.7,.05,.4);[[0,'CANVAS','Normal document flow'],[34,'SHADOW','Card only · light envelope'],[72,'ROOT','Surface + S1 padding'],[120,'PANEL / TRIGGER','Height wrapper · padding 0'],[172,'CONTENT / SLOTS','Inner padding + fade / blur']].forEach(([z,l,s])=>{const a=P(W,H,z);ln(a[0],a[1],a[0]+18,a[1],'lead');tx(a[0]+26,a[1]-2,l,'vt',{'text-anchor':'start'});tx(a[0]+26,a[1]+12,s,'dts',{'text-anchor':'start'})});
+    title(265,850,'Exploded anatomy','Axonometric · vertical separation schematic');
     // Remaining sheet resolves during the final camera pullback.
     at(7.7,0,1.2);rr(20,20,1660,1020,16,'border');
     at(8,.016,.35);notes([[1,'Label flexes; icon stays I1. Start / end / none.'],[2,'Panel is padding-free; inner box owns spacing.'],[3,'Height + margins reflow neighboring content.'],[4,'Closed panel unmounts unless keepMounted.'],[5,'Plain has no surface. Card adds shadow, no border.'],[6,'Custom icon slot does not rotate automatically.'],[7,'W, content height and parent gap are caller-owned.'],[8,'Demo adds G and overrides content top to zero.']]);
     // Shadow envelope, a geometrical bound rather than a blur cutoff.
     at(8.25,.015,.35);{const sx=90,sy=350,sw=350,sh=100;rr(sx-4,sy-2,sw+8,sh+8,14,'hs').setAttribute('fill',HAT);rr(sx-4,sy-2,sw+8,sh+8,14,'env');rr(sx,sy,sw,sh,14,'obj');dimH(sx-4,sx,sy+sh+25,sy+sh,sy+sh,'E2',{dx:-10});dimV(sy-2,sy,sx+sw+24,sx+sw,sx+sw,'E1',{side:'r'});dimV(sy+sh,sy+sh+6,sx+sw+24,sx+sw,sx+sw,'E3',{side:'r'});slotLabel(sx,sy,sw,sh,'CARD · SHADOW-BORDER');title(265,508,'Shadow envelope','Schematic footprint · light token · see table');}
     // Plain counterpart; baseline aligns with prose because padding is cancelled by margin.
-    at(8.4,.013,.35);{const x=660,y=480;rr(x-8,y,448,32,6,'ph');rr(x,y+6,408,20,0,'slot');slotLabel(x,y+6,408,20,'LABEL SLOT · FLEX');xbox(x+416,y+8,16,16);rr(x,y+40,448,68,0,'slot');slotLabel(x,y+40,448,68,'CONTENT SLOT · FILL');ln(x,y-18,x,y+122,'cl');dimH(x-8,x,y-24,y,y,'S7',{dx:-10});dimV(y,y+32,x-36,x-8,x-8,'H4',{side:'l'});dimV(y+32,y+40,x+474,x+448,x+448,'S9',{side:'r'});title(874,625,'Plain · no surface','Scale 1:1 · inset padding cancels at start edge');nb(x+425,y+55,5);}
+    at(8.4,.013,.35);{const x=660,y=480;rr(x-8,y,448,32,6,'ph');rr(x,y+6,408,20,0,'slot');slotLabel(x,y+6,408,20,'LABEL SLOT · FLEX');chevron(x+416,y+8,16,16);rr(x,y+40,448,68,0,'slot');slotLabel(x,y+40,448,68,'CONTENT SLOT · FILL');ln(x,y-18,x,y+122,'cl');dimH(x-8,x,y-24,y,y,'S7',{dx:-10});dimV(y,y+32,x-36,x-8,x-8,'H4',{side:'l'});dimV(y+32,y+40,x+474,x+448,x+448,'S9',{side:'r'});title(874,625,'Plain · no surface','Scale 1:1 · inset padding cancels at start edge');nb(x+425,y+55,5);}
     // Concentric corner detail.
     at(8.6,.02,.35);{const cx=710,cy=875,sc=5;mk('path',{d:`M${cx},${cy-150} V${cy-70} A70,70 0 0 0 ${cx+70},${cy} H${cx+180}`,class:'thin'});mk('path',{d:`M${cx+20},${cy-150} V${cy-70} A50,50 0 0 0 ${cx+70},${cy-20} H${cx+180}`,class:'thin'});ln(cx+62,cy-70,cx+78,cy-70,'cl');ln(cx+70,cy-78,cx+70,cy-62,'cl');dimH(cx,cx+20,cy-165,cy-150,cy-150,'S1');ln(cx+70,cy-70,cx+20.5,cy-20.5,'dl');tx(cx+20,cy-45,'R1','dt');ln(cx+70,cy-70,cx+34.6,cy-34.6,'dl');tx(cx+80,cy-40,'R2','dt');tx(cx,cy+26,'R2 = R1 − S1 = 10','dt');title(cx+90,cy+58,'Detail A · concentric corner','Scale 5:1 · B = 0 · shadow is not a border');}
     // Trigger icon alternatives and measured padding.
-    at(8.65,.015,.35);{const x=940,y=710;rr(x,y,208,72,20,'well');xbox(x+152,y+20,32,32);rr(x+24,y+16,112,40,0,'slot');slotLabel(x+24,y+16,112,40,'LABEL · FLEX');dimV(y,y+72,x-18,x,x,'H1',{side:'l'});dimH(x,x+24,y+90,y+72,y+56,'S2',{dx:-7});dimH(x+152,x+184,y+90,y+52,y+52,'I1');title(x+104,y+126,'Detail B · trigger','Scale 2:1 · 90° default chevron rotation');tx(x,870,'START / END: I1 + S4 + FLEX','dts');tx(x,889,'NONE: CHILDREN OWN THE ROW','dts');tx(x,908,'CUSTOM ICON: NO AUTO ROTATION','dts');nb(x+208,y-14,6);}
+    at(8.65,.015,.35);{const x=940,y=710;rr(x,y,208,72,20,'well');chevron(x+152,y+20,32,32,undefined,false);rr(x+24,y+16,112,40,0,'slot');slotLabel(x+24,y+16,112,40,'LABEL · FLEX');dimV(y,y+72,x-18,x,x,'H1',{side:'l'});dimH(x,x+24,y+90,y+72,y+56,'S2',{dx:-7});dimH(x+152,x+184,y+90,y+52,y+52,'I1');title(x+104,y+126,'Detail B · trigger','Scale 2:1 · 90° default chevron rotation');tx(x,870,'START / END: I1 + S4 + FLEX','dts');tx(x,889,'NONE: CHILDREN OWN THE ROW','dts');tx(x,908,'CUSTOM ICON: NO AUTO ROTATION','dts');nb(x+208,y-14,6);}
     // Tables use separate default and sample quantities; no content width assertions.
     at(8.35,.001,.25);let yy=table(1220,72,'Spacing · card defaults',[
       ['S1','root pad','4'],['S2','trigger / body x','12'],['S3','trigger y','8'],['S4','label ↔ icon','8'],['S5','body top','4'],['S6','body bottom','10'],['S7','plain x / −margin','8 / −8'],['S8','plain trigger y','6'],['S9','plain body top','8'],['G','parent row gap','[TBD] · demo 4 / 8']]);
@@ -161,7 +161,7 @@ kit.scene('drawing', {
       ['D1','hover duration','fast = 150ms'],['D2','panel / icon / fade','base = 200ms'],['F1','enter / exit blur','3 / 2 → 0 px'],['A1','chevron angle','closed 0° / open 90°']]);
     at(8.7,.015,.35);tx(60,888,'HEIGHT / GAP CONTRACT','vt');tx(60,914,'OPEN: h = measured → auto; overflow visible once settled.','dts');tx(60,934,'CLOSE: h → 0; margin start OR end → −G in a flex column.','dts');tx(60,954,'Inner opacity → 0; blur → F1. Grid gap is not compensated.','dts');tx(60,974,'Reduced motion: D1 and D2 → 1ms; layout still reaches zero.','dts');nb(570,934,3);
     at(8.9,.005,.3);tx(60,1010,'SOURCE: COLLAPSIBLE.TSX + VARIANTS · GLOBAL TOKENS · LIVE DEMO MEASURED','dts');tx(1040,1010,'UI-COLLAPSE-001 · REV A','dts');
-    at(8.7,.02,.35);{const x=1280,y=878;rr(x,y,300,44,14,'obj');rr(x+4,y+4,292,36,10,'well');rr(x+16,y+12,244,20,0,'slot');slotLabel(x+16,y+12,244,20,'LABEL SLOT · FLEX');xbox(x+268,y+14,16,16);dimV(y,y+44,x-24,x,x,'2·S1+H1',{side:'l'});nb(x+312,y+20,4);title(x+150,y+74,'Closed · card','Scale 1:1 · panel absent from layout');}
+    at(8.7,.02,.35);{const x=1280,y=878;rr(x,y,300,44,14,'obj');rr(x+4,y+4,292,36,10,'well');rr(x+16,y+12,244,20,0,'slot');slotLabel(x+16,y+12,244,20,'LABEL SLOT · FLEX');chevron(x+268,y+14,16,16,undefined,false);dimV(y,y+44,x-24,x,x,'2·S1+H1',{side:'l'});nb(x+312,y+20,4);title(x+150,y+74,'Closed · card','Scale 1:1 · panel absent from layout');}
   },
   render(t) {
     t = t / 0.85;

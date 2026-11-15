@@ -121,7 +121,7 @@ const sd=mk('desc',{id:'drawing-desc'});sd.textContent='Source-grounded multilin
 at(-.25,.035,.75);
 const px=602,py=180,W=384,H=78;
 title(794,72,'PLAN · AUTO-GROW BASELINE','SCALE 1:1 · N = 3 · W IS CALLER-CONTROLLED');
-rr(px,py,W,H,8,'obj');
+rr(px,py,W,H,8,'obj');mk('path',{d:'M'+(px+W-15+11)+','+(py+H-15+4)+' L'+(px+W-15+4)+','+(py+H-15+11)+' M'+(px+W-15+11)+','+(py+H-15+8)+' L'+(px+W-15+8)+','+(py+H-15+11),class:'thin',style:'fill:none;stroke-width:1.5;stroke-linecap:round'});
 at(.65,.1,.65);
 for(let i=0;i<3;i++){rr(px+13,py+9+20*i,358,20,0,'slot');if(i===0)slotLabel(px+13,py+9,358,20,'VALUE SLOT · FILL · WRAPS')}
 at(1.4,.025,.55);
@@ -137,7 +137,7 @@ lines(602,348,['H1 = N·L + 2·S2 + 2·B = 78 AT N = 3', 'OPTIONAL DESCRIPTION D
 
 at(2.65,.025,.5);
 title(795,407,'GROWTH / CLAMP SECTION','SCALE 1:1 · DEFAULT BOUNDS · EMPTY OR SHORT VALUE');
-rr(602,460,384,218,8,'ph');rr(602,460,384,78,8,'obj');
+rr(602,460,384,218,8,'ph');rr(602,460,384,78,8,'obj');mk('path',{d:'M'+(986-15+11)+','+(538-15+4)+' L'+(986-15+4)+','+(538-15+11)+' M'+(986-15+11)+','+(538-15+8)+' L'+(986-15+8)+','+(538-15+11),class:'thin',style:'fill:none;stroke-width:1.5;stroke-linecap:round'});
 for(let i=0;i<3;i++)rr(615,469+i*20,358,20,0,'slot');
 for(let i=3;i<10;i++)line(615,469+i*20,973,469+i*20,'ph');
 dimV(460,538,561,602,602,'H1');dimV(460,678,1034,986,986,'H2');
@@ -146,12 +146,12 @@ lines(610,713,['NATURAL HEIGHT IS MEASURED IN A HIDDEN MIRROR.', 'H = CLAMP(H1, 
 
 at(8.0,.015,.45);
 tx(50,58,'NOTES:','nth');tx(112,58,'(UNLESS OTHERWISE SPECIFIED)','nt');
-const nd=[['DEFAULT IS AUTO-GROW: NO MANUAL GRIP.', 'WIDTH FOLLOWS PARENT; DEMO CAPS AT W0.'],['ROW LIMITS CLAMP TO 1–100; M ≥ N.', 'RESIZE / INPUT / FONT CHANGES REMEASURE.'],['MANUAL GRIP REQUIRES AUTORESIZE = FALSE.', 'POINTER DRAG ONLY; TABINDEX = −1.'],['SUPPORTING SLOT IS OPTIONAL AND WRAPS.', 'LABEL / ERROR PLACEMENT BELONGS TO CALLER.'],['PLAIN HAS NO BORDER OR FOCUS SHADOW.', 'PADDING AND CORNER RADIUS ARE RETAINED.'],['HEIGHT TRANSITION INTENTIONALLY REFLOWS.', 'DURATION TOKEN RESPECTS REDUCED MOTION.']];
+const nd=[['GRIP SITS BOTTOM-RIGHT; AUTO-GROW HIDES IT.', 'WIDTH FOLLOWS PARENT; DEMO CAPS AT W0.'],['ROW LIMITS CLAMP TO 1–100; M ≥ N.', 'RESIZE / INPUT / FONT CHANGES REMEASURE.'],['MANUAL GRIP REQUIRES AUTORESIZE = FALSE.', 'POINTER DRAG ONLY; TABINDEX = −1.'],['SUPPORTING SLOT IS OPTIONAL AND WRAPS.', 'LABEL / ERROR PLACEMENT BELONGS TO CALLER.'],['PLAIN HAS NO BORDER OR FOCUS SHADOW.', 'PADDING AND CORNER RADIUS ARE RETAINED.'],['HEIGHT TRANSITION INTENTIONALLY REFLOWS.', 'DURATION TOKEN RESPECTS REDUCED MOTION.']];
 nd.forEach((ls,i)=>{nb(56,84+i*43,i+1);lines(72,88+i*43,ls,'nt',14)});
 
 at(8.1,.025,.5);
 title(252,397,'FOCUS ENVELOPE','SCALE 1:1 · NEUTRAL FOCUS · NO BLUR');
-hatch(91,433,326,84,11);rr(91,433,326,84,11,'env');rr(94,436,320,78,8,'obj');slotLabel(94,436,320,78,'FIELD FOOTPRINT · WIDTH SHORTENED');rad(91,433,11,'tl','R4',20);
+hatch(91,433,326,84,11);rr(91,433,326,84,11,'env');rr(94,436,320,78,8,'obj');mk('path',{d:'M'+(414-15+11)+','+(514-15+4)+' L'+(414-15+4)+','+(514-15+11)+' M'+(414-15+11)+','+(514-15+8)+' L'+(414-15+8)+','+(514-15+11),class:'thin',style:'fill:none;stroke-width:1.5;stroke-linecap:round'});slotLabel(94,436,320,78,'FIELD FOOTPRINT · WIDTH SHORTENED');rad(91,433,11,'tl','R4',20);
 dimH(414,417,540,514,517,'E2',{dx:22});dimV(433,436,442,417,414,'E1',{side:'r'});dimV(514,517,442,414,417,'E3',{side:'r'});
 lines(74,571,['REST: NO SHADOW. FOCUS: SOLID SPREAD.', 'ACCENT / INVALID USE THE SAME 3 PX ENVELOPE.'],'dts',16);
 
@@ -197,7 +197,7 @@ for(let i=0;i<3;i++){
  const fy=430+i*105,fw=166.4,fh=(i===1?86:i===2?76:78)*.65;
  rr(1034,fy,fw,fh,5.2,i===2?'slot':'obj');
  for(let j=0;j<3;j++)line(1042.45,fy+5.85+j*13,1192,fy+5.85+j*13,'slot');
- if(i===1){rr(1187.6,fy+fh-13,10.4,10.4,3.9,'hug');nb(1223,fy+fh/2,3)}
+ if(i===1){const gx=1188.9,gy=fy+fh-11.7,k=.65;mk('path',{d:'M'+(gx+11*k)+','+(gy+4*k)+' L'+(gx+4*k)+','+(gy+11*k)+' M'+(gx+11*k)+','+(gy+8*k)+' L'+(gx+8*k)+','+(gy+11*k),class:'thin',style:'fill:none;stroke-width:1.2;stroke-linecap:round'});nb(1223,fy+fh/2,3)}
  tx(1034,fy+fh+19,['AUTO · H1','MANUAL · H4','PLAIN AUTO · H5'][i],'dts');
 }
 lines(1034,768,['MANUAL: S5 = 16 BOTTOM PAD.', 'FIXED: AUTO OFF + RESIZABLE FALSE.', 'DISABLED HIDES GRIP; FIELD OPACITY 0.5.'],'dts',15);
