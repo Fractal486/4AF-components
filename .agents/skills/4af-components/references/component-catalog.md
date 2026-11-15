@@ -67,7 +67,7 @@ component keeps its own element. Content slots and render callbacks for data are
 | [`scramble-text`](https://4af.selfsimilar.dev/docs/scramble-text.md) | A brief random-character text reveal. Native span props and refs reach the root. | None; fixed span. |
 | [`blur-text`](https://4af.selfsimilar.dev/docs/blur-text.md) | Text that blurs and rises in, letter by letter or word by word. | None. |
 | [`ascii-loader`](https://4af.selfsimilar.dev/docs/ascii-loader.md) | A compact text spinner. Native span props and refs reach the root. | None; fixed span. |
-| [`matrix-loader`](https://4af.selfsimilar.dev/docs/matrix-loader.md) | A grid of animated dots. | None. |
+| [`matrix-loader`](https://4af.selfsimilar.dev/docs/matrix-loader.md) | A 4×4 or 5×5 grid of animated squares or dots, with ten patterns. | None. |
 | [`classic-loader`](https://4af.selfsimilar.dev/docs/classic-loader.md) | The default radial spinner, installed automatically with loading components. | `asChild`. |
 
 ### Navigation and layout

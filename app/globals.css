@@ -207,6 +207,45 @@
   }
 }
 
+/* Matrix Loader's patterns beyond scan and hash; each dot sets its own delay and easing.
+   Outside @theme: Tailwind drops theme keyframes no used --animate-* token names, and these
+   are named only in inline styles. */
+@keyframes matrix-attention {
+  0%, 30%, 100% { opacity: 0.16; }
+  12% { opacity: 1; }
+}
+@keyframes matrix-backprop {
+  0%, 22%, 100% { opacity: 0; }
+  10% { opacity: 0.84; }
+}
+@keyframes matrix-beacon {
+  0%, 18%, 100% { opacity: 0.04; }
+  6% { opacity: 1; }
+}
+@keyframes matrix-compile {
+  0%, 16%, 100% { opacity: 0.16; }
+  6% { opacity: 1; }
+}
+@keyframes matrix-drift {
+  0%, 80%, 100% { opacity: 0.06; }
+  20%, 60% { opacity: 0.3; }
+  40% { opacity: 0.95; }
+}
+@keyframes matrix-gradient-descent {
+  0%, 48%, 100% { opacity: 0.16; }
+  16% { opacity: 1; }
+  32% { opacity: 0.45; }
+}
+@keyframes matrix-helix {
+  0%, 100% { opacity: 0.1; }
+  30%, 80% { opacity: 0.95; }
+  50% { opacity: 0.3; }
+}
+@keyframes matrix-vector-index {
+  0%, 20%, 100% { opacity: 0.16; }
+  8% { opacity: 1; }
+}
+
 /* Contents lists fade the edge with more beyond it (TABLE_OF_CONTENTS_EDGE_FADE). Typed so the
    mask's colour stops interpolate; untyped, the fade snaps on at the scroll threshold. */
 @property --toc-fade-top {

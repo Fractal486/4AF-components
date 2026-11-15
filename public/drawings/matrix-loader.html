@@ -62,23 +62,23 @@ h1{font-size:44px;font-weight:400;letter-spacing:.1em;line-height:1.1;text-trans
 @media(max-width:760px){.wrap{padding:12px}.tb{grid-template-columns:1fr 1fr}.tb .big{grid-column:1/-1;grid-row:auto}.tb .notes{grid-template-columns:1fr;gap:0}.tb .figs{grid-template-columns:repeat(2,1fr);gap:16px}.figs>div:nth-child(odd){border-left:0;padding-left:0}h1{font-size:32px}.foot{flex-wrap:wrap}}
 @media print{@page{size:A3 landscape;margin:8mm}body{background:#fff}.wrap{max-width:none;padding:0}.tb{margin-bottom:8px}.scroll{overflow:visible}svg{min-width:0}.foot{padding-top:6px}.tb>div{padding:8px 12px}.tb .figs{padding:8px 12px}.tb .notes{line-height:1.6}h1{font-size:32px}}
 
-.ringtrack{fill:none;stroke:#ddd;stroke-width:2.5}.ringfill{fill:none;stroke:#111;stroke-width:2.5;stroke-linecap:round}.source{font-size:10px;fill:#444;text-transform:none}
+.ringtrack{fill:none;stroke:#ddd;stroke-width:2.5}.ringfill{fill:none;stroke:#111;stroke-width:2.5;stroke-linecap:round}.source{font-size:10px;fill:#444;text-transform:none}.mapc{fill:var(--ink);stroke:none}
 </style>
 </head>
 <body><main class="wrap">
 <header class="tb">
- <div class="big"><div><div class="lbl">UI component · dimensional drawing</div><h1>Matrix loader</h1></div><div class="v scope">Four-by-four square-cell grid, sizes and delay patterns.<br>Compact envelope, pulse phases and accessible ownership.</div></div>
+ <div class="big"><div><div class="lbl">UI component · dimensional drawing</div><h1>Matrix loader</h1></div><div class="v scope">4 × 4 or 5 × 5 grid of square cells or round dots.<br>Sizes, ten delay patterns, pulse phases and ownership.</div></div>
  <div><div class="lbl">Dwg no.</div><div class="v">UI-MATRIX-001</div></div>
- <div><div class="lbl">Rev</div><div class="v">A · 2026-11-14</div></div>
+ <div><div class="lbl">Rev</div><div class="v">B · 2026-11-15</div></div>
  <div><div class="lbl">Sheets</div><div class="v">1 of 1</div></div>
  <div><div class="lbl">Units</div><div class="v">CSS px · root 16 px</div></div>
  <div><div class="lbl">Scale</div><div class="v">As noted · do not scale</div></div>
  <div><div class="lbl">Source</div><div class="v">Local component source<br>+ measured browser layout</div></div>
  <div class="notes"><div><strong>Notes: <span>(unless otherwise specified)</span></strong><ol><li>Use variable tables; screen and printed sizes are not authoritative.</li><li>Dimensions use border-box geometry. Slots replace all real content.</li><li>HUG widths are schematic; FLEX takes remaining space; FILL spans its parent.</li></ol></div><div><strong aria-hidden="true">&nbsp;</strong><ol start="4"><li>Baseline: light theme, root 16 px, default size and settled motion.</li><li>Nominal dimensions round browser subpixels. Formulas describe the source.</li><li>[TBD] means unspecified. Grayscale distinguishes structure, not color tokens.</li></ol></div></div>
- <div class="figs"><div><div class="lbl">N · cells</div><div class="v">4 × 4 = 16</div></div><div><div class="lbl">Z1 · cell side</div><div class="v">2 / 3 / 4</div></div><div><div class="lbl">S1 · gap</div><div class="v">2 / 2 / 3</div></div><div><div class="lbl">W0 · compact width</div><div class="v">4·z1 + 3·s1</div></div><div><div class="lbl">H1 · compact height</div><div class="v">4·z1 + 3·s1</div></div><div><div class="lbl">D1 · cycle</div><div class="v">1.2 s</div></div><div><div class="lbl">R1 · cell corner</div><div class="v">0</div></div></div>
+ <div class="figs"><div><div class="lbl">N · cells</div><div class="v">g × g · 16 / 25</div></div><div><div class="lbl">Z1 · cell side</div><div class="v">2 / 3 / 4</div></div><div><div class="lbl">S1 · gap</div><div class="v">2 / 2 / 3</div></div><div><div class="lbl">W0 · compact width</div><div class="v">g·z1 + (g−1)·s1</div></div><div><div class="lbl">H1 · compact height</div><div class="v">= w0</div></div><div><div class="lbl">D1 · cycle</div><div class="v">1.2–3.2 s</div></div><div><div class="lbl">R1 / R2 · corner</div><div class="v">0 / z1 ÷ 2</div></div></div>
 </header>
 <div class="scroll"><svg id="sheet" viewBox="0 0 1700 1060" role="img" aria-labelledby="drawing-title drawing-desc"></svg></div>
-<footer class="foot"><span>2026-11-14 &nbsp;|&nbsp; UI component reference</span><span>Matrix loader, architecture &nbsp;|&nbsp; 1</span></footer>
+<footer class="foot"><span>2026-11-15 &nbsp;|&nbsp; UI component reference</span><span>Matrix loader, architecture &nbsp;|&nbsp; 1</span></footer>
 </main>
 <script>
 (()=>{
@@ -116,40 +116,51 @@ function hatch(x,y,w,h,r=0){return mk('rect',{x,y,width:w,height:h,rx:r,fill:HAT
 
 const at=()=>{};
 begin("sheet");
-mk("title",{id:"drawing-title"}).textContent="Matrix loader dimensional drawing";mk("desc",{id:"drawing-desc"}).textContent="Square cell grid, spacing, scan and twinkle delays, opacity waveform and exploded conceptual layers.";
-// Source-grounded geometry. Compact sm instance enlarged 20:1.
-const PX=600,PY=150,k=20,D=2,GAP=2,W=14;
+mk("title",{id:"drawing-title"}).textContent="Matrix loader dimensional drawing";mk("desc",{id:"drawing-desc"}).textContent="Four-by-four and five-by-five grids of square cells or round dots, spacing, ten delay patterns, the scan and hash pulse, and exploded conceptual layers.";
 function line(x1,y1,x2,y2,c='thin',p){return mk('line',{x1,y1,x2,y2,class:c},p)}
 function lines(x,y,items,c='dts',step=16){items.forEach((s,i)=>tx(x,y+i*step,s,c))}
-function grid(x,y,d,g,cls='hug',p){for(let i=0;i<16;i++)rr(x+(i%4)*(d+g),y+Math.floor(i/4)*(d+g),d,d,0,cls,p)}
-table=function(x,y,ttl,rows){const ws=[42,111,216],rh=20;tx(x,y-10,ttl,'vt');[['Code','Variable','Value / formula'],...rows].forEach((r,i)=>{let xx=x;r.forEach((c,j)=>{rr(xx,y+i*rh,ws[j],rh,0,'thin');tx(xx+6,y+i*rh+13,c,i?'tc':'th');xx+=ws[j]})});return y+(rows.length+1)*rh+34};
+function grid(x,y,d,g,cls='hug',p,n=4,dot=false){for(let i=0;i<n*n;i++){const cx=x+(i%n)*(d+g),cy=y+Math.floor(i/n)*(d+g);dot?mk('circle',{cx:cx+d/2,cy:cy+d/2,r:d/2,class:cls},p):rr(cx,cy,d,d,0,cls,p)}}
+table=function(x,y,ttl,rows){const ws=[42,111,216],rh=18;tx(x,y-10,ttl,'vt');[['Code','Variable','Value / formula'],...rows].forEach((r,i)=>{let xx=x;r.forEach((c,j)=>{rr(xx,y+i*rh,ws[j],rh,0,'thin');tx(xx+6,y+i*rh+12,c,i?'tc':'th');xx+=ws[j]})});return y+(rows.length+1)*rh+30};
+
+// PLAN · G = 4, SQUARE. Compact sm instance enlarged 20:1.
+const PX=600,PY=150;
 at(.05,.065,.7);rr(PX,PY,280,280,0,'slot');
 for(let i=0;i<16;i++){at(.12+i*.105,0,.65);rr(PX+(i%4)*80,PY+Math.floor(i/4)*80,40,40,0,'hug')}
 at(1.25,.025,.45);dimH(600,640,110,150,150,'Z1');dimH(640,680,110,150,150,'S1');dimH(680,720,110,150,150,'Z1');
 at(2.7,.016,.45);dimH(600,880,70,110,150,'W0');dimV(150,430,935,880,880,'H1',{side:'r'});dimH(600,680,475,430,430,'P1');line(580,290,900,290,'cl');line(740,130,740,450,'cl');
 for(let r=0;r<4;r++)for(let c=0;c<4;c++)tx(620+c*80,175+r*80,String(4*r+c),'sl',{'text-anchor':'middle'});
-callout(880,430,918,460,'R1',1);nb(574,150,1);nb(908,398,2);detailRef(640,190,33,'DETAIL A',735,211);
-at(3.2,.02,.4);title(740,510,'PLAN · COMPACT GRID','SCALE 20:1 · SM · INDEX LABELS ARE ANNOTATIONS');
-lines(598,548,['SQUARE CELLS; NO ROUNDING, BORDER OR SHADOW.', 'GRID IS A BLOCK. PARENT MAY STRETCH ITS TRACKS.', 'W0 IS THE COMPACT ENVELOPE, NOT A FIXED ROOT WIDTH.']);
-// Notes
+callout(880,430,918,460,'R1',1);nb(574,150,1);detailRef(640,190,33,'DETAIL A',735,211);
+at(3.2,.02,.4);title(740,510,'PLAN · G = 4 · SQUARE','SCALE 20:1 · SM · INDEX LABELS ARE ANNOTATIONS');
+lines(598,548,['INDEX = G·ROW + COLUMN; ZERO-BASED.', 'GRID IS A BLOCK. PARENT MAY STRETCH ITS TRACKS.', 'W0 IS THE COMPACT ENVELOPE, NOT A FIXED ROOT WIDTH.']);
+
+// NOTES
 at(8.1,.005,.4);tx(50,58,'NOTES:','nth');tx(112,58,'(UNLESS OTHERWISE SPECIFIED)','nt');
 [
-['SIXTEEN I ELEMENTS IN ROW-MAJOR ORDER.', 'FIXED FOUR COLUMNS AND FOUR ROWS.'],
-['SIZE CHANGES CELL AND GAP TOGETHER.', 'NO PADDING OR PAINTED ROOT SURFACE.'],
-['SCAN SYNCHRONIZES EACH COLUMN.', 'TWINKLE USES A FIXED PERMUTATION.'],
-['LOADING FALSE RETURNS NULL IMMEDIATELY.', 'NO RESERVED BOX OR ACCESSIBLE STATUS.'],
-['LABEL ADDS ROLE STATUS AND A NAME.', 'WITHOUT LABEL THE ROOT IS ARIA-HIDDEN.'],
+['N = G × G I ELEMENTS IN ROW-MAJOR ORDER.', 'GRID SIDE G IS 4 OR 5 (GRID PROP).'],
+['SIZE CHANGES CELL AND GAP TOGETHER.', 'SHAPE: SQUARE CELLS OR ROUND DOTS.'],
+['TEN PATTERNS. DELAYS ARE RULES OF ROW,', 'COLUMN AND G, SO EACH FITS BOTH GRIDS.'],
+['HASH: RANDOM PER-DOT PHASE AND CYCLE,', 'SET ON THE CLIENT AFTER MOUNT.'],
+['LOADING FALSE RETURNS NULL IMMEDIATELY.', 'LABEL ADDS ROLE STATUS AND A NAME.'],
 ['REDUCED MOTION PRESERVES THE LOOP.', 'LAYER LIFT BELOW IS EXPLANATORY ONLY.']
 ].forEach((v,i)=>{nb(56,84+i*40,i+1);lines(72,88+i*40,v,'nt',14)});
-// CELL CORNER / GAP
-at(8.25,.012,.45);title(1100,58,'DETAIL A · CELL + GAP','SCALE 40:1 · SM');rr(1010,135,80,80,0,'hug');rr(1170,135,40,80,0,'hug');line(1210,130,1210,221,'ph');
-dimH(1010,1090,105,135,135,'Z1');dimH(1090,1170,105,135,135,'S1');dimV(135,215,984,1010,1010,'Z1');callout(1010,215,1036,251,'R1 = 0',1);
-lines(997,286,['CELL FILL: --MATRIX-ACTIVE.', 'DEFAULT: FOREGROUND TOKEN.', 'ONLY OPACITY ANIMATES.', 'NO SCALE OR POSITION MOTION.']);
-// SIZE FAMILY
-at(8.45,.006,.4);title(1100,387,'SIZE FAMILY','SCALE 4:1 · COMPACT ENVELOPES');
-[['SM',2,2],['MD',3,2],['LG',4,3]].forEach(([n,d,g],i)=>{const x=980+i*88;grid(x,428,d*4,g*4);tx(x+(4*d+3*g)*2,553,n,'dts',{'text-anchor':'middle'})});
+
+// DETAIL A · CELL SHAPES, 30:1
+at(8.25,.012,.45);title(1100,58,'DETAIL A · CELL SHAPES','SCALE 30:1 · SM');
+rr(1000,140,60,60,0,'hug');mk('circle',{cx:1150,cy:170,r:30,class:'hug'});line(1150,128,1150,212,'cl');line(1108,170,1192,170,'cl');
+dimH(1000,1060,112,140,140,'Z1');dimH(1060,1120,112,140,140,'S1');dimV(140,200,976,1000,1000,'Z1');
+callout(1000,200,1020,238,'SQUARE · R1',1);callout(1171,191,1190,238,'DOT · R2',1);
+lines(990,280,['CELL FILL: --MATRIX-ACTIVE (FOREGROUND).', 'ONLY OPACITY ANIMATES.', 'SHAPE DOES NOT CHANGE Z1, S1 OR W0.']);
+
+// PLAN · G = 5, DOT, 10:1
+at(8.3,.01,.45);title(1100,352,'PLAN · G = 5 · DOT','SCALE 10:1 · SM');
+rr(1010,402,180,180,0,'slot');grid(1010,402,20,20,'hug',null,5,true);
+dimH(1010,1190,390,402,402,'W0');dimV(402,582,1215,1190,1190,'H1',{side:'r'});
+dimH(1010,1030,606,582,582,'Z1',{below:true});dimH(1030,1050,606,582,582,'S1',{below:true,dx:14});
+nb(990,402,2);
+
+// EXPLODED AXONOMETRIC
 at(5.05,.01,.65);title(264,393,'EXPLODED AXONOMETRIC','PROPORTIONAL · NO PHYSICAL DEPTH OR Z DIMENSION');
-const layers=[['ROOT · GRID TRACKS',0],['CELLS · SQUARE FILLS',72],['PHASE · PER-CELL DELAYS',144]];
+const layers=[['ROOT · GRID TRACKS',0],['CELLS · FILLS',72],['PHASE · PER-CELL DELAYS',144]];
 for(const [label,z] of layers){const g=mk('g',{transform:'matrix(13.16,2.38,-4.76,6.58,240,'+(650-z)+')'});
 if(z===0){rr(0,0,14,14,0,'slot',g);for(let i=1;i<4;i++){line(i*4-1,0,i*4-1,14,'ph',g);line(0,i*4-1,14,i*4-1,'ph',g)}}
 if(z===72)grid(0,0,2,2,'hug',g);
@@ -158,32 +169,50 @@ if(z===144)grid(0,0,2,2,'slot',g);
 line(68,650-z,240,650-z,'lead');tx(68,642-z,label,'dts');}
 lines(65,777,['TRACKS → CELL FILL → CSS OPACITY PHASE.']);
 
-// PATTERN MAPS
-at(8.55,.007,.4);title(250,812,'PATTERN · SCAN','SCHEMATIC · DELAY FACTOR PER COLUMN');
-for(let i=0;i<16;i++){let x=126+(i%4)*64,y=853+Math.floor(i/4)*32;rr(x,y,48,23,0,'well');tx(x+24,y+15,['0','.1','.2','.3'][i%4],'tc',{'text-anchor':'middle'})}
-lines(65,1006,['DELAY = D1·(INDEX MOD 4) / 10.']);
-at(8.6,.007,.4);title(610,812,'PATTERN · TWINKLE','SCHEMATIC · DELAY RANK IN EACH CELL');
-const order=[7,2,11,5,14,9,0,12,3,15,6,10,13,1,8,4];
-for(let i=0;i<16;i++){let x=491+(i%4)*64,y=853+Math.floor(i/4)*32;rr(x,y,48,23,0,'well');tx(x+24,y+15,String(order.indexOf(i)),'tc',{'text-anchor':'middle'})}
-lines(474,1006,['DELAY = D1·RANK / N.']);
-// OPACITY PHASES
-at(8.7,.008,.45);title(1005,650,'PULSE · LOCAL CYCLE','SCHEMATIC · EASING APPLIES BETWEEN KEYFRAMES');
-line(825,856,1205,856);line(825,856,825,698);line(825,786,1205,786,'ph');
-mk('path',{d:'M825,786 C852,786 856,711 882,711 C928,711 945,786 996,786 H1205',class:'thin'});
-[[825,'0'],[882,'.15·D1'],[996,'.45·D1'],[1205,'D1']].forEach(([x,label])=>{line(x,854,x,862);tx(x,880,label,'dt',{'text-anchor':'middle'})});
-tx(808,715,'A2','dt',{'text-anchor':'end'});tx(808,790,'A1','dt',{'text-anchor':'end'});tx(828,908,'LOCAL TIME = GLOBAL TIME − CELL DELAY','dts');
-lines(826,944,['A1 → A2 → A1; REST UNTIL THE CYCLE ENDS.', 'POSITIVE DELAY: BEFORE FIRST START, OPACITY IS 1.', 'NO BACKWARDS FILL MODE; DELAY DOES NOT HIDE DOTS.']);
+// PULSE · SCAN + HASH
+at(8.7,.008,.45);title(780,628,'PULSE · SCAN + HASH','SCHEMATIC · OTHER PATTERNS USE THEIR OWN KEYFRAMES');
+line(620,760,940,760);line(620,760,620,664);line(620,720,940,720,'ph');
+mk('path',{d:'M620,720 C643,720 646,676 668,676 C707,676 721,720 764,720 H940',class:'thin'});
+[[620,'0'],[668,'.15·D1'],[764,'.45·D1'],[940,'D1']].forEach(([x,label])=>{line(x,758,x,766);tx(x,782,label,'dt',{'text-anchor':'middle'})});
+tx(604,680,'A2','dt',{'text-anchor':'end'});tx(604,724,'A1','dt',{'text-anchor':'end'});
+
+// PATTERN MAPS · G = 5. Fill darkness = delay order: darkest wakes first.
+at(8.55,.007,.4);title(640,822,'PATTERN MAPS · G = 5','WAKE ORDER · DARKEST FIRST · HATCHED = NOT YET LIT · LIT SHARE FOLLOWS PULSE WIDTH');
+const turn=(r,c,n)=>{const ce=(n-1)/2,dx=c-ce,dy=r-ce;if(!dx&&!dy)return .25;const a=Math.atan2(dx,-dy)/(2*Math.PI);return a<0?a+1:a};
+const MAPS=[
+ ['SCAN','c ÷ 10',(r,c)=>c/10],
+ ['HASH','RANDOM',(r,c)=>[3,0,4,1,2,2,4,0,3,1,0,1,3,4,2,4,2,1,0,3,1,3,2,4,0][r*5+c]/5],
+ ['ATTENTION','r · .156',r=>r*.28/1.8],
+ ['BACKPROP','c · .086 ⇄',(r,c)=>c*.24/2.8],
+ ['BEACON','−TURN',(r,c,n)=>-turn(r,c,n)],
+ ['COMPILE','(G−1−R) · .1',(r,c,n)=>(n-1-r)*.1],
+ ['DRIFT','(r+c) · .075',(r,c)=>(r+c)*.075,.85],
+ ['GRAD. DESCENT','r · .133',r=>r*.32/2.4],
+ ['HELIX','−2 · TURN',(r,c,n)=>-2*turn(r,c,n),.4],
+ ['VECTOR INDEX','(r+c) · .092',(r,c)=>r+c===4?0:r+c===3?.5:.9,.5]];
+MAPS.forEach(([name,rule,f,lit=.6],m)=>{const x0=62+m*117,y0=852;
+ const vals=[];for(let i=0;i<25;i++)vals.push(f?((f(Math.floor(i/5),i%5,5)%1)+1)%1:0);
+ const sorted=[...new Set(vals.map(v=>v.toFixed(4)))].sort();
+ for(let i=0;i<25;i++){const x=x0+(i%5)*21,y=y0+Math.floor(i/5)*21;
+  if(!f){hatch(x,y,18,18);continue}
+  const rank=sorted.indexOf(vals[i].toFixed(4))/Math.max(1,sorted.length-1);
+  rr(x,y,18,18,0,'thin');
+  if(rank>lit+1e-9)hatch(x,y,18,18)
+  else mk('rect',{x,y,width:18,height:18,class:'mapc','fill-opacity':(0.75-0.5*rank/lit).toFixed(2)});}
+ tx(x0+51,y0+118,name,'dts',{'text-anchor':'middle'});tx(x0+51,y0+132,rule,'sl',{'text-anchor':'middle'});});
+lines(62,1010,['TURN = CLOCKWISE ANGLE FROM UP AROUND THE GRID CENTRE ÷ 360°. BACKPROP ⇄: A SECOND, ADDED PASS RETURNS FROM THE LAST COLUMN. HASH: ONE RANDOM SAMPLE; ITS ORDER NEVER REPEATS.']);
+
 // TABLES
 at(8.2,.001,.4);let yy=70,xx=1262;
-yy=table(xx,yy,'GEOMETRY / COMPACT INSTANCE',[
-['N','cell count','4 × 4 = 16'],['Z1','cell side','2 / 3 / 4 · sm / md / lg'],['S1','grid gap','2 / 2 / 3 · sm / md / lg'],['P1','compact pitch','Z1 + S1 = 4 / 5 / 7'],['W0','compact width','4·Z1 + 3·S1 = 14 / 18 / 25'],['H1','compact height','4·Z1 + 3·S1 = 14 / 18 / 25'],['W','root width','layout-dependent [TBD]'],['R1','cell radius','0'],['B','border / root pad','0 / 0'],['SH','shadow','none']]);
-yy=table(xx,yy,'TIMING / PHASE',[
-['D1','cycle','1.2 s default; positive finite'],['D2','scan delay step','D1 / 10 = 0.12 s'],['D3','twinkle step','D1 / N = 0.075 s'],['A1','rest opacity','0.45 at 0 / 45 / 100%'],['A2','peak opacity','1 at 15%'],['E','per-segment ease','cubic-bezier(.65,0,.35,1)'],['F','animation fill mode','none'],['RM','reduced motion','cycle remains D1']]);
-yy=table(xx,yy,'PATTERN / SOURCE ORDER',[
-['SCAN','delay factors','0 / .1 / .2 / .3 per column'],['TW','ranks 0…7','7, 2, 11, 5, 14, 9, 0, 12'],['TW','ranks 8…15','3, 15, 6, 10, 13, 1, 8, 4'],['INDEX','row-major index','4·row + column; zero-based']]);
-yy=table(xx,yy,'OWNERSHIP / CONSTRAINTS',[
-['T1','hit target','none; noninteractive display'],['V1','viewport clearance','caller [TBD]'],['S2','external spacing','caller [TBD]'],['INK','active fill','--matrix-active; foreground']]);
-tx(1262,878,'SOURCE AUDIT','vt');lines(1262,899,['matrix-loader.tsx + matrix-loader.variants.ts', 'globals.css · cn utility · no behavior primitive', '2 production JSX uses / 2 consumer files.', 'Measured default: 14 × 14; square cells 2 × 2.'],'source',15);
+yy=table(xx,yy,'GEOMETRY',[
+['G','grid side','4 / 5 · grid prop'],['N','cell count','G × G = 16 / 25'],['Z1','cell side','2 / 3 / 4 · sm / md / lg'],['S1','grid gap','2 / 2 / 3 · sm / md / lg'],['P1','pitch','Z1 + S1 = 4 / 5 / 7'],['W0','compact width','G·Z1 + (G−1)·S1'],['W4','W0 at G = 4','14 / 18 / 25 · sm / md / lg'],['W5','W0 at G = 5','18 / 23 / 32 · sm / md / lg'],['H1','compact height','= W0'],['R1 / R2','square / dot','0 / Z1 ÷ 2']]);
+yy=table(xx,yy,'TIMING',[
+['D1','cycle','pattern default; positive finite'],['A1 / A2','pulse rest / peak','0.45 / 1 at 15%'],['E','pulse ease','cubic-bezier(.65,0,.35,1)'],['F','fill mode','none: scan, hash · both: others'],['HJ','hash jitter','phase 0–1 · cycle 0.7–1.3 · D1'],['RM','reduced motion','cycle remains D1']]);
+yy=table(xx,yy,'PATTERNS · D1 DEFAULT',[
+['SCAN','1.2 s','columns, left to right'],['HASH','1.2 s','random, never repeats'],['ATTN','1.8 s','rows, top to bottom'],['BKPR','2.8 s','columns, forward then back'],['BCN','2.4 s','rotates around the centre'],['CMPL','2.0 s','rows, bottom to top'],['DRFT','3.2 s','soft diagonal wave'],['GRAD','2.4 s','rows descend, fading'],['HLX','2.6 s','two arcs wind round'],['VIDX','2.4 s','crisp diagonals']]);
+yy=table(xx,yy,'OWNERSHIP',[
+['T1','hit target','none; noninteractive display'],['S2','external spacing','caller [TBD]'],['INK','active fill','--matrix-active; foreground']]);
+tx(1262,yy+2,'SOURCE AUDIT','vt');lines(1262,yy+22,['matrix-loader.tsx + matrix-loader.variants.ts', 'globals.css keyframes · no behavior primitive', 'Measured default: G = 4, 14 × 14, square 2 × 2.'],'source',15);
 
 })();
 </script></body></html>

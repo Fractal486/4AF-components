@@ -83,7 +83,7 @@ import {
     usage: [
       'import { MatrixLoader } from "@/components/ui/matrix-loader";',
       "",
-      '<MatrixLoader loading={isLoading} variant="twinkle" label="Loading" />',
+      '<MatrixLoader loading={isLoading} variant="helix" grid={5} shape="dot" label="Loading" />',
     ].join("\n"),
   },
   "classic-loader": {

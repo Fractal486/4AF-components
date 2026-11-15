@@ -1,25 +1,45 @@
 ---
 title: Matrix Loader
-description: A compact 4×4 dot loader with several delay patterns.
+description: A compact 4×4 or 5×5 loader of squares or dots, with ten delay patterns.
 ---
 
 <ComponentReference name="matrix-loader" />
 
 ## API
 
-**Main export:** `MatrixLoader`
-
-A 4×4 grid of dots. `variant="scan"` (default) pulses columns together from left to right;
-`variant="twinkle"` staggers individual dots in a fixed order.
+**Main export:** `MatrixLoader`, types `MatrixLoaderVariant`, `MatrixLoaderGrid`, `MatrixLoaderShape`, `MatrixLoaderSize`
 
 | Prop | Default | Description |
 | --- | --- | --- |
+| `variant` | `"scan"` | The delay pattern. See [Patterns](#patterns). |
+| `grid` | `4` | Dots per side: `4` (4×4) or `5` (5×5). Every pattern works on both. |
+| `shape` | `"square"` | `"square"` cells or round `"dot"`s. |
 | `size` | `"sm"` | Dot size and gap: `"sm"` uses 2px / 2px, `"md"` uses 3px / 2px, and `"lg"` uses 4px / 3px. |
-| `duration` | `1.2` | Seconds per cycle. Non-positive or non-finite values fall back to `1.2`. |
+| `duration` | pattern's cycle | Seconds per cycle; delays scale with it. Non-positive or non-finite values fall back to the pattern's cycle. |
 | `loading` | `true` | Whether to show the spinner. `false` renders nothing, including no accessible status or reserved space. Visibility changes immediately. |
 | `label` | — | An accessible status name; omit it for a decorative loader. |
 
-Native `div` props, `className`, `style`, and an element `ref` are supported.
+Native `div` props, `className`, `style`, and an element `ref` are supported. The root exposes
+`data-slot="matrix-loader"`, `data-variant`, `data-grid`, `data-shape`, and `data-size`.
+
+## Patterns
+
+| `variant` | Cycle | Motion |
+| --- | --- | --- |
+| `scan` | 1.2s | Columns pulse together from left to right. |
+| `hash` | 1.2s | Each dot pulses on its own randomised cycle, so the order never repeats. |
+| `attention` | 1.8s | Rows light from top to bottom in a steady sweep. |
+| `backprop` | 2.8s | A pulse crosses the columns forward, then back. |
+| `beacon` | 2.4s | A bright pulse rotates around the grid. |
+| `compile` | 2s | Rows resolve from the bottom up. |
+| `drift` | 3.2s | A soft wave drifts along the diagonal. |
+| `gradient-descent` | 2.4s | Rows descend, fading as they settle. |
+| `helix` | 2.6s | Brightness winds around the centre like a strand. |
+| `vector-index` | 2.4s | Diagonals index across the grid. |
+
+The keyframes are in the 4AF theme alongside `matrix-pulse`.
+
+## Notes
 
 Pass `label` when the loader itself should announce a busy status. Leave it out when nearby text
 already says what is loading.

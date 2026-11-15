@@ -203,6 +203,130 @@
             "opacity": "0.45"
           }
         },
+        "@keyframes matrix-attention": {
+          "0%": {
+            "opacity": "0.16"
+          },
+          "12%": {
+            "opacity": "1"
+          },
+          "30%": {
+            "opacity": "0.16"
+          },
+          "100%": {
+            "opacity": "0.16"
+          }
+        },
+        "@keyframes matrix-backprop": {
+          "0%": {
+            "opacity": "0"
+          },
+          "10%": {
+            "opacity": "0.84"
+          },
+          "22%": {
+            "opacity": "0"
+          },
+          "100%": {
+            "opacity": "0"
+          }
+        },
+        "@keyframes matrix-beacon": {
+          "0%": {
+            "opacity": "0.04"
+          },
+          "6%": {
+            "opacity": "1"
+          },
+          "18%": {
+            "opacity": "0.04"
+          },
+          "100%": {
+            "opacity": "0.04"
+          }
+        },
+        "@keyframes matrix-compile": {
+          "0%": {
+            "opacity": "0.16"
+          },
+          "6%": {
+            "opacity": "1"
+          },
+          "16%": {
+            "opacity": "0.16"
+          },
+          "100%": {
+            "opacity": "0.16"
+          }
+        },
+        "@keyframes matrix-drift": {
+          "0%": {
+            "opacity": "0.06"
+          },
+          "20%": {
+            "opacity": "0.3"
+          },
+          "40%": {
+            "opacity": "0.95"
+          },
+          "60%": {
+            "opacity": "0.3"
+          },
+          "80%": {
+            "opacity": "0.06"
+          },
+          "100%": {
+            "opacity": "0.06"
+          }
+        },
+        "@keyframes matrix-gradient-descent": {
+          "0%": {
+            "opacity": "0.16"
+          },
+          "16%": {
+            "opacity": "1"
+          },
+          "32%": {
+            "opacity": "0.45"
+          },
+          "48%": {
+            "opacity": "0.16"
+          },
+          "100%": {
+            "opacity": "0.16"
+          }
+        },
+        "@keyframes matrix-helix": {
+          "0%": {
+            "opacity": "0.1"
+          },
+          "30%": {
+            "opacity": "0.95"
+          },
+          "50%": {
+            "opacity": "0.3"
+          },
+          "80%": {
+            "opacity": "0.95"
+          },
+          "100%": {
+            "opacity": "0.1"
+          }
+        },
+        "@keyframes matrix-vector-index": {
+          "0%": {
+            "opacity": "0.16"
+          },
+          "8%": {
+            "opacity": "1"
+          },
+          "20%": {
+            "opacity": "0.16"
+          },
+          "100%": {
+            "opacity": "0.16"
+          }
+        },
         "@media (prefers-reduced-motion: reduce)": {
           ":root": {
             "--duration-fast": "1ms",
@@ -1679,7 +1803,7 @@
     {
       "name": "matrix-loader",
       "type": "registry:ui",
-      "description": "A 4×4 matrix dot loader with scan, twinkle, size variants, and optional loading visibility.",
+      "description": "A 4×4 or 5×5 matrix loader of squares or dots, with ten delay patterns, size variants, and optional loading visibility.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/matrix-loader (Markdown: https://4af.selfsimilar.dev/docs/matrix-loader.md)",
       "dependencies": [
         "class-variance-authority"
