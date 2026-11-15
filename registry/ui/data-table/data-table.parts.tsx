@@ -53,6 +53,7 @@ import {
   dataTableRowActionsTriggerVariants,
   dataTableRowActionsVariants,
   dataTableSelectionBarVariants,
+  dataTableSelectionActionsVariants,
   dataTableSortButtonVariants,
   dataTableSortIconVariants,
 } from "./data-table.variants";
@@ -678,7 +679,7 @@ export function DataTableRow({
                   rather than cutting across it. */}
               <span aria-live="polite">{selectedCount} selected</span>
               {selectionActions ? (
-                <span data-slot="data-table-selection-actions" className="flex items-center gap-1">
+                <span data-slot="data-table-selection-actions" className={dataTableSelectionActionsVariants({ size })}>
                   {selectionActions}
                 </span>
               ) : null}

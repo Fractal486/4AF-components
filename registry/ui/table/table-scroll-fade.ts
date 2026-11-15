@@ -1,4 +1,4 @@
-const VARIABLES = ["--table-pinned-start", "--table-pinned-end", "--table-hidden-start", "--table-hidden-end"] as const;
+const VARIABLES = ["--table-pinned-start", "--table-pinned-end", "--table-hidden-start", "--table-hidden-end", "--table-actions-top", "--table-actions-bottom"] as const;
 
 /** Keep the Scroll Area's horizontal fade immediately inside the pinned columns. */
 export function observePinnedColumnFades(viewport: HTMLDivElement, table: HTMLTableElement) {
@@ -27,6 +27,19 @@ export function observePinnedColumnFades(viewport: HTMLDivElement, table: HTMLTa
   });
 
   function measure() {
+    // Add an opaque band to the viewport mask for the selection toolbar. Measure its
+    // row rather than the animated overlay so entering/exiting controls stay unfaded.
+    const actionRow = table.querySelector('[data-slot="data-table-selection-bar"]')?.closest("tr");
+    if (actionRow) {
+      const bounds = viewport.getBoundingClientRect();
+      const scale = bounds.width / (parseFloat(getComputedStyle(viewport).width) || viewport.clientWidth || 1) || 1;
+      const rowBounds = actionRow.getBoundingClientRect();
+      write("--table-actions-top", Math.max(0, (rowBounds.top - bounds.top) / scale));
+      write("--table-actions-bottom", Math.max(0, (rowBounds.bottom - bounds.top) / scale));
+    } else {
+      write("--table-actions-top", undefined);
+      write("--table-actions-bottom", undefined);
+    }
     // Group headings may pin only a selection/actions gutter. Prefer a complete leaf
     // row, starting at the bottom of the header so empty/loading tables work too.
     // HTMLTableElement.rows excludes nested tables; absolute selection bars aren't columns.

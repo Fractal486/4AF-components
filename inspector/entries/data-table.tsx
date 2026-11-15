@@ -100,7 +100,11 @@ function DataTableDemo({ size, wrap, pinned, search, filters, visibility, pagina
       selectable={selectable} selectionBar={selectionBar} actionColumn={actionColumn}
       outline={lines.includes("outline")} horizontalLines={lines.includes("horizontal")} verticalLines={lines.includes("vertical")}
       loading={loading}
-      selectionActions={<><CopyButton size="xs" variant="outline-ghost" value={() => table.getSelectedRowModel().rows.map((row) => row.original.version).join("\n")}>Copy</CopyButton><Button size="xs" variant="outline-ghost" onClick={() => table.resetRowSelection(true)}>Clear</Button></>}>
+      selectionActions={<>
+        <CopyButton size="xs" variant="outline-ghost" aria-label="Copy selected versions"
+          value={() => table.getSelectedRowModel().rows.map((row) => row.original.version).join("\n")} />
+        <Button size="xs" variant="outline-ghost" onClick={() => table.resetRowSelection(true)}>Clear</Button>
+      </>}>
       {(search || filters || visibility) && <DataTableToolbar>
         {search && <DataTableSearch placeholder="Search releases…" />}
         {filters && <DataTableFilter column="channel" options={CHANNELS} />}

@@ -5,6 +5,31 @@ function rect(left: number, width: number, scale = 1) {
   return { x: left * scale, left: left * scale, right: (left + width) * scale, width: width * scale, y: 0, top: 0, bottom: 36 * scale, height: 36 * scale, toJSON() {} } as DOMRect;
 }
 
+it("keeps the selection row opaque across scrolling and removes the band after exit", async () => {
+  const viewport = document.createElement("div");
+  viewport.style.width = "500px";
+  viewport.innerHTML = '<table><thead><tr><th data-pinned="start">Select</th><th>Name</th><th data-slot="data-table-selection-bar" style="position:absolute">Actions</th></tr></thead></table>';
+  document.body.append(viewport);
+  const table = viewport.querySelector("table")!;
+  const row = table.rows[0]!;
+  let top = 20;
+  viewport.getBoundingClientRect = () => rect(0, 500, 2);
+  row.getBoundingClientRect = () => ({ ...rect(0, 700, 2), top: top * 2, bottom: (top + 36) * 2 });
+  row.cells[0]!.getBoundingClientRect = () => rect(0, 36, 2);
+  row.cells[1]!.getBoundingClientRect = () => rect(36, 664, 2);
+  const cleanup = observePinnedColumnFades(viewport, table);
+  try {
+    expect(viewport.style.getPropertyValue("--table-actions-top")).toBe("20.000px");
+    expect(viewport.style.getPropertyValue("--table-actions-bottom")).toBe("56.000px");
+    top = -10;
+    fireEvent.scroll(viewport);
+    await waitFor(() => expect(viewport.style.getPropertyValue("--table-actions-top")).toBe("0.000px"));
+    expect(viewport.style.getPropertyValue("--table-actions-bottom")).toBe("26.000px");
+    row.cells[2]!.remove();
+    await waitFor(() => expect(viewport.style.getPropertyValue("--table-actions-bottom")).toBe(""));
+  } finally { cleanup(); viewport.remove(); }
+});
+
 it.each([false, true])('measures leaf columns below grouped headings with pinned gutters in RTL=%s', async (rtl) => {
   const viewport = document.createElement('div');
   viewport.style.width = '500px';

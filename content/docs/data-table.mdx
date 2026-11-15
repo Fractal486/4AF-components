@@ -246,7 +246,7 @@ values in `rows`. The header checkbox is indeterminate while some, but not all, 
 Rows expose `data-selected` for styling; their checkboxes expose selection to assistive technology.
 
 `selectionBar` turns the header into an action row while anything is selected: the labels give way
-to a count and `selectionActions` sits at the right end, with the select-all still in place.
+to a count and `selectionActions` stays at the visible right edge while the table scrolls horizontally, with the select-all still in place. The selection row stays opaque; scrolling fades apply to the table content beneath it.
 The count covers the whole selection, not only the part `rows` covers. To clear selections
 across pages, control `value` and supply an action that resets it to `[]`.
 Use `size="xs"` for the actions.

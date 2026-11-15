@@ -19,6 +19,11 @@ import { cva } from "class-variance-authority";
  * showing through — and is why the labels fade by their *content* rather than as whole cells:
  * a cell at `opacity: 0` takes its background and its borders with it.
  */
+export const dataTableSelectionActionsVariants = cva(
+  "sticky flex shrink-0 items-center gap-1",
+  { variants: { size: { sm: "end-2.5", md: "end-3" } }, defaultVariants: { size: "sm" } },
+);
+
 export const dataTableSelectionBarVariants = cva(
   [
     "absolute inset-0 z-30 flex items-center justify-between gap-3",
