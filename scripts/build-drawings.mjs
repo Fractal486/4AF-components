@@ -26,6 +26,47 @@ function themedColor(hex) {
 
 const themeColors = (css) => css.replace(/#[0-9a-f]{6}\b|#[0-9a-f]{3}\b/gi, themedColor);
 
+/** Area scale of one SVG `transform` attribute: √|det| of its matrix. */
+function transformScale(value) {
+  let scale = 1;
+  for (const [, fn, args] of (value ?? "").matchAll(/(matrix|scale)\(([^)]*)\)/g)) {
+    const n = args.split(/[\s,]+/).filter(Boolean).map(Number);
+    if (fn === "matrix") scale *= Math.sqrt(Math.abs(n[0] * n[3] - n[1] * n[2]));
+    else scale *= Math.sqrt(Math.abs(n[0] * (n[1] ?? n[0])));
+  }
+  return scale;
+}
+
+/**
+ * Sheets keep exploded and enlarged strokes at a fixed screen width with `non-scaling-stroke`.
+ * Inlined in the docs the drawing is scaled down — to a quarter on a phone — so those strokes
+ * stayed full width while the rest shrank. Bake the intended width instead: the class's width
+ * divided by the scale of every transform above the element, so it scales with the drawing.
+ */
+function bakeStrokes(svg, strokeWidths, nonScalingClasses) {
+  for (const el of svg.querySelectorAll("*")) {
+    const byAttribute = el.getAttribute("vector-effect") === "non-scaling-stroke";
+    const byStyle = /vector-effect:\s*non-scaling-stroke/.test(el.getAttribute("style") ?? "");
+    const byClass = [...el.classList].some((c) => nonScalingClasses.has(c));
+    if (!byAttribute && !byStyle && !byClass) continue;
+    el.removeAttribute("vector-effect");
+    let style = (el.getAttribute("style") ?? "").replace(/vector-effect:\s*non-scaling-stroke\s*;?/g, "");
+    let scale = 1;
+    for (let node = el; node && node !== svg; node = node.parentElement) scale *= transformScale(node.getAttribute("transform"));
+    if (Math.abs(scale - 1) > 1e-3) {
+      const own = style.match(/stroke-width:\s*([\d.]+)/)?.[1] ?? el.getAttribute("stroke-width");
+      const fromClass = [...el.classList].map((c) => strokeWidths.get(c)).find((w) => w !== undefined);
+      const width = Number(own ?? fromClass ?? 1);
+      style = style.replace(/stroke-width:\s*[\d.]+(px)?\s*;?/g, "");
+      el.removeAttribute("stroke-width");
+      style = `${style};stroke-width:${+(width / scale).toFixed(4)}`;
+    }
+    style = style.replace(/^;+|;+$/g, "").replace(/;;+/g, ";");
+    if (style) el.setAttribute("style", style);
+    else el.removeAttribute("style");
+  }
+}
+
 function render(slug, html) {
   const dom = new JSDOM(html, { runScripts: "dangerously" });
   const { document } = dom.window;
@@ -36,6 +77,8 @@ function render(slug, html) {
   const scope = `svg[data-drawing="${slug}"]`;
   const rules = [];
   const vars = [];
+  const strokeWidths = new Map();
+  const nonScalingClasses = new Set();
   // The raw text, not the CSSOM: jsdom drops shorthands such as `font: 400 11px var(--f)`.
   for (const style of document.querySelectorAll("style")) {
     const css = style.textContent.replace(/\/\*[\s\S]*?\*\//g, "").replace(/@media[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/g, "");
@@ -50,9 +93,17 @@ function render(slug, html) {
       }
       // Only rules for the drawing's own classes; print and narrow-screen rules belong to the page.
       if (!selectors.every((s) => /^\.[\w-]+$/.test(s) && used.has(s.slice(1)))) continue;
-      rules.push(`${selectors.map((s) => `${scope} ${s}`).join(",")}{${themeColors(body.trim())}}`);
+      const width = body.match(/stroke-width:\s*([\d.]+)(?:px)?\s*(?:;|$)/);
+      const nonScaling = /vector-effect:\s*non-scaling-stroke/.test(body);
+      for (const s of selectors) {
+        if (width) strokeWidths.set(s.slice(1), Number(width[1]));
+        if (nonScaling) nonScalingClasses.add(s.slice(1));
+      }
+      const kept = body.replace(/vector-effect:\s*non-scaling-stroke\s*;?/g, "").trim();
+      rules.push(`${selectors.map((s) => `${scope} ${s}`).join(",")}{${themeColors(kept)}}`);
     }
   }
+  bakeStrokes(svg, strokeWidths, nonScalingClasses);
 
   // Ids are unique within a page, and each docs page shows one drawing.
   for (const el of svg.querySelectorAll("[id]")) el.id = `${slug}-${el.id}`;
