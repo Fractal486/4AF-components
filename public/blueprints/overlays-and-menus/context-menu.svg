@@ -13,7 +13,7 @@
        Panel height = 2 * 1px border + 2 * 4px inset + 5 * 28px = 150px.
        Panel radius 7px; row radius 3px. Border outer bounds: (264,170) to (936,620).
        Row bounds: x279..921, y185..605. Icon slot x309..351; text begins x375.
-       Background: current dark background token oklch(0.100 0 0), rounded to sRGB #030303.
+       Background: current dark background token oklch(0.120 0 0), rendered here as #060606.
        ContextMenuContent anchors at the pointer with sideOffset=0; trigger has no intrinsic size.
        The trigger is omitted because its geometry is supplied by the caller.
        Cursor tip (264,170) marks the panel's pointer anchor. -->
@@ -37,7 +37,7 @@
     </style>
   </defs>
   <g id="cm-bp-root">
-    <rect width="1200" height="800" fill="#030303"/>
+    <rect width="1200" height="800" fill="#060606"/>
     <rect x="265.5" y="171.5" width="669" height="447" rx="19.5" stroke="#a7a8a2" stroke-width="3" pathLength="1" class="draw outline"/>
     <rect x="279" y="185" width="642" height="84" rx="9" fill="#353632"/>
 
@@ -76,7 +76,7 @@
     </g>
 
     <!-- Cursor at the opening point, with the same background knockout as the canvas. -->
-    <path d="m264 170 9 30 6-10 11 11 5-5-11-11 11-5Z" fill="#030303" stroke="#a7a8a2" stroke-width="2.5" stroke-linejoin="round" pathLength="1" class="draw" style="--line-delay:400ms"/>
+    <path d="m264 170 9 30 6-10 11 11 5-5-11-11 11-5Z" fill="#060606" stroke="#a7a8a2" stroke-width="2.5" stroke-linejoin="round" pathLength="1" class="draw" style="--line-delay:400ms"/>
 
     <!-- Six measurements retain the useful dimensions and horizontal spacing. -->
     <path d="M264 96V118 M936 96V118 M264 107H936" class="measure"/>

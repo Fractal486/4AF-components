@@ -19,7 +19,7 @@
        rounded-xs=3px, drawn as 15 units; illustrative outlines are inset.
        Text uses the required sans-serif illustration face at 55 units.
        Dashed lines mark CSS content boxes, not glyph ink bounds.
-       Background oklch(.100 0 0) rounds to sRGB #030303.
+       Background oklch(0.120 0 0), rendered here as #060606.
   -->
   <defs>
     <style>
@@ -40,7 +40,7 @@
     </style>
   </defs>
   <g id="kbd-bp-root">
-    <rect width="900" height="440" fill="#030303"/>
+    <rect width="900" height="440" fill="#060606"/>
     <rect x="240" y="182.5" width="95" height="75" rx="15" fill="#353632"/>
     <rect x="355" y="180" width="210.5" height="80" rx="15" fill="#353632"/>
     <rect x="585.5" y="180" width="80" height="80" rx="15" fill="#353632"/>

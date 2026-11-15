@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type MouseEvent } from "react";
 import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import { InlineLink } from "@/components/inline-link";
-import type { ComponentDrawing as Drawing } from "@/lib/drawings";
+import type { ComponentDrawing as Drawing, FilmCrop } from "@/lib/drawings";
 import { cn } from "@/registry/lib/cn";
 import { prefersReducedMotion, subscribeReducedMotion } from "@/registry/lib/reduced-motion";
 import { Dialog, DialogBackdrop, DialogPortal, DialogTitle, DialogTrigger } from "@/registry/ui/dialog/dialog";
@@ -16,11 +16,18 @@ interface ComponentDrawingProps extends Drawing {
  * The dimensional drawing above a component's docs. With a film, the film plays there once the
  * docs come into view; either way, opening it shows the vector drawing at full size.
  */
-export function ComponentDrawing({ title, svg, sheetUrl, filmUrl }: ComponentDrawingProps) {
+/** Where the film frames the sheet when no measurement exists: border ~138–1782 of 1920. */
+const DEFAULT_CROP: FilmCrop = [132, 28, 1656, 1024];
+/** The sheet's drawn border spans 1660 of its 1700 units. */
+const SHEET_BORDER = 1660 / 1700;
+
+export function ComponentDrawing({ title, svg, sheetUrl, filmUrl, filmCrop }: ComponentDrawingProps) {
+  const crop = filmCrop ?? DEFAULT_CROP;
   // Keep the server and hydration markup identical, then follow the device preference.
   // This also swaps the film for its sheet when reduced motion changes while open.
   const reduceMotion = useSyncExternalStore(subscribeReducedMotion, prefersReducedMotion, () => false);
   const [from, setFrom] = useState<CSSProperties>();
+  const showsFilm = Boolean(filmUrl) && !reduceMotion;
 
   // Measured on the click, before the popup renders: its starting style places it over the
   // image on the page, so the transition enlarges it from there. The popup's width is the
@@ -33,7 +40,9 @@ export function ComponentDrawing({ title, svg, sheetUrl, filmUrl }: ComponentDra
       "--from-x": `${image.left + image.width / 2 - window.innerWidth / 2}px`,
       // A little below the image, to line up with the sheet as the film frames it.
       "--from-y": `${image.top + image.height / 2 - window.innerHeight / 2 + 24}px`,
-      "--from-scale": image.width / width,
+      // Scaled so the border on the page and the dialog's border coincide. The film's crop keeps
+      // 6 film pixels of paper each side (scripts/measure-films.mjs); the sheet keeps 3 of 1666 units.
+      "--from-scale": (image.width * (showsFilm ? (crop[2] - 12) / crop[2] : 1660 / 1666)) / (width * SHEET_BORDER),
     } as CSSProperties);
   };
 
@@ -42,9 +51,28 @@ export function ComponentDrawing({ title, svg, sheetUrl, filmUrl }: ComponentDra
       <DialogTrigger
         onClick={measure}
         aria-label={`Open the ${title} drawing`}
-        className="not-prose mb-10 block w-full cursor-pointer rounded-[16px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        // Crops the empty paper around the sheet so its drawn border meets the docs column's
+        // edges. Each film ends with the sheet framed differently, so it is cropped to the box
+        // measured from its own last frame; the SVG has a fixed 20-unit inset.
+        className="not-prose mb-10 block w-full cursor-pointer overflow-hidden rounded-[3px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        {filmUrl && !reduceMotion ? <Film src={filmUrl} /> : <Sheet svg={svg} />}
+        {filmUrl && showsFilm ? (
+          <span className="block overflow-hidden" style={{ aspectRatio: `${crop[2]} / ${crop[3]}` }}>
+            <span
+              className="block"
+              style={{
+                width: `${(1920 / crop[2]) * 100}%`,
+                // Percentage margins resolve against the container's width, vertical ones included.
+                marginLeft: `${(-crop[0] / crop[2]) * 100}%`,
+                marginTop: `${(-crop[1] / crop[2]) * 100}%`,
+              }}
+            >
+              <Film src={filmUrl} />
+            </span>
+          </span>
+        ) : (
+          <span className="-m-[1%] block w-[102%]"><Sheet svg={svg} /></span>
+        )}
       </DialogTrigger>
       <DialogPortal>
         <DialogBackdrop />

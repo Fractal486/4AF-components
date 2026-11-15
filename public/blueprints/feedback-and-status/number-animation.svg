@@ -30,7 +30,7 @@
        Segoe UI em=2048, ascent=2210, descent=514; baseline within the cell:
        (50.4 + (2210 - 514) * 36 / 2048) / 2 = 40.10625px.
        Drawing baseline = 144.4 + 3 * 40.10625 = 264.71875.
-       Dark background oklch(.100 0 0): sRGB .01292, rounded to #030303.
+       Dark background oklch(0.120 0 0), rendered here as #060606.
 
        This text-only component has no solid outline, icon, or divider strokes.
        Do not invent a frame for phase one. Instead show the defining digit roll:
@@ -130,7 +130,7 @@
       }
     </style>
   </defs>
-  <rect width="740" height="440" fill="#030303"/>
+  <rect width="740" height="440" fill="#060606"/>
 
   <!-- Absolute rolling window, with cell boundaries inside it. -->
   <rect x="282.671875" y="115.24" width="174.65625" height="209.52" class="na-guide"/>

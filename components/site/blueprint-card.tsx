@@ -117,8 +117,12 @@ function BlueprintPlayer({ url, play }: { url: string; play: number }) {
             : undefined
         }
         // The drawings vary in aspect; each is fitted inside the fixed card at its own
-        // proportions, on the card's matching ground.
-        className={cn("absolute inset-0 size-full object-contain", src === pending && "opacity-0")}
+        // proportions, on the card's matching ground. They are drawn light on dark; the light
+        // theme inverts them, and the hue turn keeps any tint the inversion would flip.
+        className={cn(
+          "absolute inset-0 size-full object-contain invert hue-rotate-180 dark:invert-0 dark:hue-rotate-0",
+          src === pending && "opacity-0",
+        )}
       />
     ) : null,
   );
@@ -161,13 +165,13 @@ export function BlueprintCard({
             className="pointer-events-none z-50"
           >
             <BaseTooltip.Popup
-              data-theme="dark"
               className={cn(
                 // One fixed size for every drawing. The ground is the blueprints' own baked-in
-                // `#060606`, not a theme token, so letterboxing stays invisible when the
-                // theme's background changes.
-                "relative h-40 w-64 overflow-hidden rounded-md bg-[oklch(0.120_0_0)]",
-                "shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_14px_30px_-12px_rgba(0,0,0,0.6)]",
+                // `#060606`, or its inversion `#f9f9f9` in the light theme, not a theme token,
+                // so letterboxing stays invisible when the theme's background changes.
+                "relative h-40 w-64 overflow-hidden rounded-md bg-[oklch(0.982_0_0)] dark:bg-[oklch(0.120_0_0)]",
+                "shadow-[0_0_0_1px_rgba(0,0,0,0.08),0_14px_30px_-12px_rgba(0,0,0,0.25)]",
+                "dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_14px_30px_-12px_rgba(0,0,0,0.6)]",
                 // Fades in from the cursor; leaves with a fade and blur rather than retracing
                 // the entrance.
                 "origin-[var(--transform-origin)] blur-0",

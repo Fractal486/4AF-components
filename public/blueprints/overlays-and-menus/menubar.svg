@@ -32,8 +32,7 @@
     Bar bottom y302, therefore visible gap = (314 - 302) / 3 = 4px.
     Popup left x264 = first trigger left x279 + (-5px alignOffset * 3).
     Trigger text and menu text share x309: 279 + 30 = 264 + 3 + 12 + 30.
-    Dark background oklch(0.100 0 0): linear sRGB .001, encoded .01292,
-    round(255 * .01292) = 3, so #030303.
+    Dark background token oklch(0.120 0 0), rendered here as #060606
     Requested Edit-to-File slide: trigger starts differ by 411 - 279 = 132 SVG units
     (44 CSS px). Panel begins at x396 under Edit and finishes at x264 under File.
     Active highlight begins 129 units wide under Edit, finishing 123 units wide under File.
@@ -106,7 +105,7 @@
     </clipPath>
   </defs>
   <g id="mb-blueprint">
-    <rect width="1200" height="960" fill="#030303"/>
+    <rect width="1200" height="960" fill="#060606"/>
 
     <!-- Visible fills are separate from animated strokes. -->
     <rect x="279" y="212" width="123" height="78" rx="12" fill="#353632" class="mb-highlight"/>

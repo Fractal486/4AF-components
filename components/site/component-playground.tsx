@@ -33,17 +33,19 @@ const hashListeners = new Set<() => void>();
 
 function subscribeToHash(listener: () => void) {
   // Next navigates with `pushState`, which fires neither window event; the Navigation API
-  // reports those entries too.
+  // reports those entries too. It reports them synchronously, and Next pushes from inside an
+  // insertion effect, where React forbids updates, so that notice waits for a microtask.
   const navigation = (window as Window & { navigation?: EventTarget }).navigation;
+  const onEntryChange = () => queueMicrotask(listener);
   hashListeners.add(listener);
   window.addEventListener("hashchange", listener);
   window.addEventListener("popstate", listener);
-  navigation?.addEventListener("currententrychange", listener);
+  navigation?.addEventListener("currententrychange", onEntryChange);
   return () => {
     hashListeners.delete(listener);
     window.removeEventListener("hashchange", listener);
     window.removeEventListener("popstate", listener);
-    navigation?.removeEventListener("currententrychange", listener);
+    navigation?.removeEventListener("currententrychange", onEntryChange);
   };
 }
 

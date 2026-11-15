@@ -87,7 +87,7 @@ derived from `registry.json`), install actions and settings in a panel, and the 
 (`#docs`, or any heading's hash). Below `lg` the same parts stack as one page: title, demo,
 settings, then the docs. The MDX holds no demo. A dimensional drawing at
 `public/drawings/<name>.html` (with an optional `<name>-motion.mp4` film) appears above the
-docs; run `pnpm drawings:build` after adding or changing one, which renders the themed
+docs; run `pnpm drawings:build` after adding or changing one (and `node scripts/measure-films.mjs` after rendering a film, which records where its sheet ends up), which renders the themed
 `content/drawings/<name>.svg` the page inlines. The site serves that page as plain
 Markdown at `/docs/<component>.md` for agents, with the install and usage blocks expanded.
 

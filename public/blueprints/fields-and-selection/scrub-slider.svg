@@ -23,7 +23,7 @@
        Indicator is 2px wide and 16px tall. Edge fade is 32px on each side.
        Steppers: 20px square, icon viewport 14px, 4px gap to the value.
        Number-to-unit gap is 2px. Active drag dims steppers to .25.
-       Dark background oklch(.100 0 0) rounds to sRGB #030303.
+       Dark background oklch(0.120 0 0), rendered here as #060606.
        Sidebar category: Fields and selection.
        Intro: ticks scroll left by 108 SVG units (36 CSS px, six tick intervals)
        from 250 to 650ms within the fixed edge mask; annotations reveal at 700ms.
@@ -55,7 +55,7 @@
     </mask>
   </defs>
   <g id="ss-blueprint">
-  <rect width="1200" height="510" fill="#030303"/>
+  <rect width="1200" height="510" fill="#060606"/>
   <rect x="180" y="180" width="840" height="180" rx="42" fill="#353632" fill-opacity=".3"/>
   <rect x="181.25" y="181.25" width="837.5" height="177.5" rx="40.75" stroke="#a7a8a2" stroke-width="2.5" pathLength="1" class="ss-draw ss-outline"/>
 

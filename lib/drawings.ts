@@ -11,7 +11,14 @@ export interface ComponentDrawing {
   svg: string;
   sheetUrl: string;
   filmUrl?: string;
+  /** Where the sheet sits in the film's last frame: x, y, width, height in film pixels. */
+  filmCrop?: FilmCrop;
 }
+
+export type FilmCrop = [x: number, y: number, width: number, height: number];
+
+/** Written by scripts/measure-films.mjs after a film is rendered. */
+let filmCrops: Record<string, FilmCrop> | undefined;
 
 export function componentDrawing(slug: string): ComponentDrawing | undefined {
   const root = process.cwd();
@@ -24,7 +31,14 @@ export function componentDrawing(slug: string): ComponentDrawing | undefined {
     sheetUrl: `/drawings/${slug}.html`,
     // A re-rendered film keeps its file name; the content hash makes browsers fetch it anew.
     filmUrl: existsSync(filmPath) ? `/drawings/${film}?v=${contentHash(filmPath)}` : undefined,
+    filmCrop: existsSync(filmPath) ? readFilmCrops(root)[slug] : undefined,
   };
+}
+
+function readFilmCrops(root: string) {
+  const manifest = path.join(root, "content/drawings/films.json");
+  filmCrops ??= existsSync(manifest) ? (JSON.parse(readFileSync(manifest, "utf8")) as Record<string, FilmCrop>) : {};
+  return filmCrops;
 }
 
 function contentHash(file: string) {
