@@ -17,7 +17,7 @@ notes, and install/usage examples. The links below open the same owning document
 
 ## Installable catalog
 
-The catalog contains 55 installable UI items.
+The catalog contains 56 installable UI items.
 
 Swap props apply only to the named parts, not automatically to every export in an install.
 `render` uses Base UI composition; `asChild` uses the local Slot helper. "None" means the
@@ -106,6 +106,12 @@ for row summaries and accepts `pageCount: -1` while the page count is unknown.
 | [`dropdown-menu`](https://4af.selfsimilar.dev/docs/dropdown-menu.md) | Action menus, checkable rows, submenus, or nested searchable selection panels. Shared payload handles, wrapping labels, state classes, and configurable portal/positioner parts. | `render` on Base UI-backed popup, trigger, group, item, separator, and select-panel parts; `asChild` on Shortcut. CheckboxItem and SelectItem fix their elements. |
 | [`context-menu`](https://4af.selfsimilar.dev/docs/context-menu.md) | Right-click and long-press actions on an area or row, anchored at the pointer, with touch hold feedback and a disabled mode that keeps the browser menu. Every Dropdown Menu row and popup part is available as a `ContextMenu*` part; installs Dropdown Menu. | `render` on Trigger, Positioner, Content, and the matching Dropdown Menu parts; `asChild` on Shortcut. |
 | [`menubar`](https://4af.selfsimilar.dev/docs/menubar.md) | A desktop-style bar of menus with pointer and arrow-key sweeping, a sliding open-menu highlight, outline or plain bars, two sizes, and vertical layout. Every Dropdown Menu row is available as a `Menubar*` part; installs Dropdown Menu. | `render` on Menubar, Trigger, Content, and the matching Dropdown Menu parts; `asChild` on Shortcut. |
+
+### Backgrounds
+
+| Install name and docs | Choose it for | Swap prop |
+| --- | --- | --- |
+| [`halftone-horizon`](https://4af.selfsimilar.dev/docs/halftone-horizon.md) | An animated hero or card background: an arched halftone horizon whose dots fuse into a paper-grained glow. One color or a 2–6 stop ramp (theme tokens follow theme switches), four directions, an intro sweep, and a CSS gradient fallback. | None; fixed `div`. |
 
 ## Bundled composition choices
 

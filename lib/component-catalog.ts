@@ -2,6 +2,7 @@ import registry from "../registry.json";
 
 export const COMPONENT_FAMILIES = [
   { name: "Alert", slugs: ["alert"] },
+  { name: "Backgrounds", slugs: ["halftone-horizon"] },
   { name: "Badge", slugs: ["badge"] },
   { name: "Breadcrumb", slugs: ["breadcrumb"] },
   {
@@ -141,6 +142,10 @@ export const COMPONENT_CATEGORIES = [
       "menubar",
     ],
   },
+  {
+    name: "Backgrounds",
+    slugs: ["halftone-horizon"],
+  },
 ] as const;
 
 const COMPONENT_MAIN_APIS: Record<string, string> = {
@@ -166,6 +171,7 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   dialog: "Dialog, DialogBody, composable surfaces, createDialogHandle, DialogSteps, DialogStep",
   "dropdown-menu": "DropdownMenu, createDropdownMenuHandle, composable popup parts, and action/selection/submenu rows",
   empty: "Empty and composition parts",
+  "halftone-horizon": "HalftoneHorizon, HALFTONE_HORIZON_COLOR, HALFTONE_HORIZON_DUSK",
   "hover-card": "HoverCard, createHoverCardHandle, HoverCardSkeleton, and composable popup parts",
   input: "Input, InputCount",
   kbd: "Kbd, KbdGroup",

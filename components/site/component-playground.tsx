@@ -330,7 +330,7 @@ function PlaygroundFrame({
               {stats ? <ComponentInfo title={title} stats={stats} edgeRef={tabsRowRef} /> : null}
             </div>
             <div className="flex items-center gap-1">
-              {view === "preview" && demo.replayable ? (
+              {view === "preview" && demo.replayable && !demo.fullBleed ? (
                 <Tooltip content="Replay animation" delay={0}>
                   <Button
                     type="button"
@@ -436,13 +436,21 @@ function PlaygroundFrame({
                 />
               </div>
             ) : null}
+            {/* Below `lg` the replay control sits on the canvas; a full-bleed demo keeps it there
+                at every size, as translucent glass over the demo. */}
             {demo.replayable ? (
               <Button
                 type="button"
                 variant="ghost"
                 size="icon-sm"
                 aria-label={`Replay ${title} animation`}
-                className={cn("absolute right-2 lg:hidden", variantRow ? "top-[7px]" : "top-2")}
+                className={cn(
+                  "absolute right-2",
+                  variantRow ? "top-[7px]" : "top-2",
+                  demo.fullBleed
+                    ? "z-10 bg-background/75 text-foreground shadow-border backdrop-blur-md hover:bg-background/90"
+                    : "lg:hidden",
+                )}
                 onClick={demo.replay}
               >
                 <RotateCcw />

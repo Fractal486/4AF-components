@@ -89,6 +89,7 @@ For single dates, multiple separate dates, or a continuous range, see [Date Pick
 For custom breadcrumb elements, separator styles, sibling-page menus, and middle crumbs collapsed into a menu or an animated expansion with focus transfer, see [Breadcrumb](content/docs/breadcrumb.mdx#api).
 For disclosures with custom icons, state-based styling, and gap-aware collapsing, see [Collapsible](content/docs/collapsible.mdx#api).
 For horizontal or vertical tabs, automatic overflow scrolling, icons, and custom panels, see [Tabs](content/docs/tabs.mdx#api).
+For an animated halftone background behind hero or card content, with one color or a theme-token ramp and a CSS fallback, see [Halftone Horizon](content/docs/halftone-horizon.mdx#api).
 
 When API or behavior changes, update its owning component page and canonical usage reference.
 Keep this file as an index and the agent chooser focused on selecting components; link to the

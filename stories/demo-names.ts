@@ -28,6 +28,7 @@ export const DEMO_NAMES = [
   "dropdown-menu",
   "empty",
   "field",
+  "halftone-horizon",
   "hover-card",
   "input",
   "kbd",

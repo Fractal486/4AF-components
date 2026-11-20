@@ -2473,6 +2473,33 @@
           "target": "@ui/sidebar-layout.tsx"
         }
       ]
+    },
+    {
+      "name": "halftone-horizon",
+      "type": "registry:ui",
+      "description": "An animated WebGL background: an arched horizon printed in halftone, with dots that grow with the light until they fuse into a smooth, paper-grained glow. One color or a 2–6 stop ramp, four directions, and a CSS gradient fallback.",
+      "docs": "Docs: https://4af.selfsimilar.dev/docs/halftone-horizon (Markdown: https://4af.selfsimilar.dev/docs/halftone-horizon.md)",
+      "dependencies": [
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "https://4af.selfsimilar.dev/r/4af-theme.json",
+        "https://4af.selfsimilar.dev/r/cn.json",
+        "https://4af.selfsimilar.dev/r/refs.json",
+        "https://4af.selfsimilar.dev/r/reduced-motion.json"
+      ],
+      "files": [
+        {
+          "path": "registry/ui/halftone-horizon/halftone-horizon.tsx",
+          "type": "registry:ui",
+          "target": "@ui/halftone-horizon.tsx"
+        },
+        {
+          "path": "registry/ui/halftone-horizon/halftone-horizon.variants.ts",
+          "type": "registry:ui",
+          "target": "@ui/halftone-horizon.variants.ts"
+        }
+      ]
     }
   ]
 }

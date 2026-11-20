@@ -108,6 +108,8 @@ export interface ComponentDemoState {
   setLoader: (loader: LoaderChoice) => void;
   /** Whether the demo is a one-shot entrance worth replaying from the toolbar. */
   replayable: boolean;
+  /** Whether the demo fills the canvas edge to edge, with its replay control floating over it. */
+  fullBleed: boolean;
   /** Bumped by `replay` to remount the demo. */
   replayKey: number;
   replay: () => void;
@@ -170,11 +172,15 @@ export function useComponentDemo(name: DemoName): ComponentDemoState {
     hasLoaderSetting: LOADER_DEMOS.has(name),
     loader,
     setLoader,
-    replayable: name === "scramble-text" || name === "blur-text",
+    replayable: name === "scramble-text" || name === "blur-text" || name === "halftone-horizon",
+    fullBleed: FULL_BLEED_DEMOS.has(name),
     replayKey,
     replay: () => setReplayKey((current) => current + 1),
   };
 }
+
+/** Backgrounds fill the whole canvas rather than sitting centred in it. */
+const FULL_BLEED_DEMOS = new Set<DemoName>(["halftone-horizon"]);
 
 function isPhoneWidth() {
   return typeof window !== "undefined" && window.matchMedia?.("(max-width: 767px)").matches === true;
@@ -183,7 +189,8 @@ function isPhoneWidth() {
 /**
  * The demo itself, centred in whatever box the caller gives it. Changing a setting remounts
  * the demo, so every state is seen from its entrance. Progress values and Breadcrumb's
- * collapse setting update in place so their transitions remain visible.
+ * collapse setting update in place so their transitions remain visible. Halftone Horizon
+ * updates every setting in place; its intro replays only from the Replay button.
  */
 export function DemoCanvas({ demo }: { demo: ComponentDemoState }) {
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -208,9 +215,12 @@ export function DemoCanvas({ demo }: { demo: ComponentDemoState }) {
 
   const { entry, values, loader, replayKey } = demo;
   const isAppShell = entry.slug === "sidebar" || entry.slug === "sidebar-layout";
-  const demoWidth = DEMO_WIDTHS[entry.slug as ComponentDemoName];
+  // App shells and full-bleed backgrounds stretch to the canvas instead of centring in it.
+  const fills = isAppShell || demo.fullBleed;
+  const demoWidth = demo.fullBleed ? "max-w-full" : DEMO_WIDTHS[entry.slug as ComponentDemoName];
   const remountSettings = entry.slug === "progress" ? { ...values, value: undefined }
     : entry.slug === "breadcrumb" ? { ...values, collapse: undefined, siblings: undefined }
+    : entry.slug === "halftone-horizon" ? {}
     : values;
   const settingsKey = JSON.stringify([
     remountSettings,
@@ -224,7 +234,9 @@ export function DemoCanvas({ demo }: { demo: ComponentDemoState }) {
         // Safe centring: a demo taller than the canvas starts at the top and scrolls, rather
         // than overflowing above it where it can't be reached.
         "relative isolate flex min-h-full w-full min-w-0 items-center-safe justify-center-safe p-6",
-        isAppShell && "h-full items-stretch p-3",
+        fills && "h-full items-stretch",
+        isAppShell && "p-3",
+        demo.fullBleed && "p-0",
       )}
     >
       <LoaderProvider loader={loader === "ascii" ? <AsciiLoader /> : undefined}>
@@ -233,7 +245,7 @@ export function DemoCanvas({ demo }: { demo: ComponentDemoState }) {
             "flex min-w-0 max-w-full flex-col items-center",
             demoWidth && "w-full",
             demoWidth,
-            isAppShell && "h-full min-h-0 items-stretch",
+            fills && "h-full min-h-0 items-stretch",
           )}
         >
           <div
@@ -241,7 +253,7 @@ export function DemoCanvas({ demo }: { demo: ComponentDemoState }) {
             className={cn(
               "flex min-w-0 w-fit max-w-full items-center justify-center",
               demoWidth && "w-full",
-              isAppShell && "h-full min-h-0 items-stretch",
+              fills && "h-full min-h-0 items-stretch",
             )}
           >
             <Fragment key={`${entry.slug}-${settingsKey}-${replayKey}`}>{entry.render(values)}</Fragment>
@@ -308,6 +320,7 @@ const demos: Record<DemoName, () => Promise<AnyEntry>> = {
   "dropdown-menu": async () => (await import("@/inspector/entries/dropdown-menu")).dropdownMenuEntry,
   empty: async () => (await import("@/inspector/entries/empty")).emptyEntry,
   field: async () => (await import("@/inspector/entries/field")).fieldEntry,
+  "halftone-horizon": async () => (await import("@/inspector/entries/halftone-horizon")).halftoneHorizonEntry,
   "hover-card": async () => (await import("@/inspector/entries/hover-card")).hoverCardEntry,
   input: async () => (await import("@/inspector/entries/input")).inputEntry,
   kbd: async () => (await import("@/inspector/entries/kbd")).kbdEntry,

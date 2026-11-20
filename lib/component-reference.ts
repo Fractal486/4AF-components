@@ -291,6 +291,15 @@ import { Button } from "@/components/ui/button";
   </EmptyHeader>
 </Empty>`,
   },
+  "halftone-horizon": {
+    usage: `import { HalftoneHorizon } from "@/components/ui/halftone-horizon";
+
+<HalftoneHorizon className="flex min-h-[32rem] flex-col items-center justify-center p-8">
+  <h1 className="text-4xl font-medium text-white">Launch week</h1>
+</HalftoneHorizon>
+
+<HalftoneHorizon color="var(--ring)" direction="bottom" curve={0.6} spacing={9} className="h-64 rounded-2xl" />`,
+  },
   "hover-card": {
     usage: `import {
   HoverCard,

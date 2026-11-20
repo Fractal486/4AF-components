@@ -1,0 +1,71 @@
+---
+title: Halftone Horizon
+description: An animated background where an arched horizon is printed in halftone, and the dots grow with the light until they fuse into a smooth glow.
+---
+
+<ComponentReference name="halftone-horizon" />
+
+## API
+
+**Main export:** `HalftoneHorizon`
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `color` | `HALFTONE_HORIZON_COLOR` | One sky color. The ramp runs from near-black ink through it to a near-white glow. |
+| `colors` | — | 2–6 CSS colors from the dark edge to the light edge. Overrides `color`; fewer than two stops fall back to `color`. |
+| `direction` | `"top"` | The edge the dark comes from: `"top"`, `"right"`, `"bottom"`, or `"left"`. The light gathers at the opposite edge. |
+| `curve` | `1` | How strongly the bands arch toward the dark edge, from `-4` to `4`. `0` is level; negative values bow them toward the light instead. |
+| `reach` | `1` | How far the dark reaches toward the light edge. |
+| `softness` | `1.1` | How gradual the bands are. |
+| `spacing` | `7` | Distance between dot centers, in CSS pixels. |
+| `dotSize` | `1` | Dot size as a share of its cell. |
+| `minDot` | `0.25` | The smallest dot, in the dark, as a share of a full dot. |
+| `dots` | `0.7` | How far along the ramp (0–1) the halftone reaches. Past it the gradient is smooth. |
+| `grain` | `0.04` | Paper grain strength. `0` turns it off. |
+| `speed` | `1` | Drift speed multiplier. |
+| `seed` | `0` | Shifts the drift and the grain pattern. |
+| `animate` | `true` | Lets the bands drift. Off, one still frame is drawn. |
+| `intro` | `2.4` | Seconds for the dark to sweep in on first show. `0` skips it. |
+| `introFrom` | `0` | Where the intro starts: `0` is a blank sky, `1` is at rest, and up to `2` starts further in and draws back. |
+| `children`, `className`, `style`, native props, `ref` | — | Forwarded to the root `div`. Children render above the background. |
+
+`HALFTONE_HORIZON_COLOR` is the default orange, and `HALFTONE_HORIZON_DUSK` is a six-stop
+night-to-dawn ramp to pass as `colors`.
+
+The root exposes `data-slot="halftone-horizon"`, `data-direction`, `data-animate`,
+`data-renderer` (`"webgl"` or `"fallback"`), and `data-state` (`"playing"` or `"paused"`). The
+canvas is `data-slot="halftone-horizon-canvas"` and gains `data-ready` once its first frame
+is drawn.
+
+## Layout
+
+The root is a fixed `div` that fills whatever size you give it; it has no intrinsic height.
+Size it with classes such as `min-h-[32rem]`, `aspect-video`, or `h-full`, and lay out its
+children on it directly: the canvas sits behind them in the root's own stacking context, so
+`flex` and `grid` on the root arrange only the content.
+
+## Color
+
+Colors accept any CSS color, including `var(--token)`, `color-mix()`, and relative colors.
+They are resolved to sRGB when the component mounts and again when the document's `class`,
+`style`, or `data-theme` changes, so token-based ramps follow theme switches. With a single
+`color`, darker shades keep their chroma and turn slightly redder, like ink, and the light end
+warms into a near-white glow.
+
+The default palette is dark at the dark edge in both themes. Pick text colors for contrast
+against the part of the ramp the text sits on, not against the page theme.
+
+## Rendering and motion
+
+One WebGL fragment shader draws the dots, the gradient, and a static paper grain that stays
+fixed to the surface. Device pixel ratio is capped at 2. Before the first frame, without WebGL,
+and while a lost context is being restored, the root shows a CSS gradient of the same colors,
+and the canvas fades in over it.
+
+The drift pauses when the background is offscreen, when the tab is hidden, and when `animate`
+is off. Under reduced motion, the intro is skipped and one still frame is drawn at rest.
+Prop changes update the running renderer without rebuilding it. The intro plays once per
+mount; change the component's React `key` to replay it.
+
+The canvas is `aria-hidden` and ignores pointer events. The background is decorative; give the
+root a role or label only when it carries meaning of its own.
