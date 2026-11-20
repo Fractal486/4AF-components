@@ -111,7 +111,7 @@ for row summaries and accepts `pageCount: -1` while the page count is unknown.
 
 | Install name and docs | Choose it for | Swap prop |
 | --- | --- | --- |
-| [`halftone-horizon`](https://4af.selfsimilar.dev/docs/halftone-horizon.md) | An animated hero or card background: an arched halftone horizon whose dots fuse into a paper-grained glow. One color or a 2–6 stop ramp (theme tokens follow theme switches), four directions, an intro sweep, and a CSS gradient fallback. | None; fixed `div`. |
+| [`halftone-horizon`](https://4af.selfsimilar.dev/docs/halftone-horizon.md) | An animated hero or card background: an arched halftone horizon whose dots fuse into a paper-grained glow. Built-in palettes (`ember`, `night`, `ring`, `ink`), or one color or a 2–6 stop ramp (theme tokens follow theme switches), four directions, an intro sweep, and a CSS gradient fallback. | None; fixed `div`. |
 
 ## Bundled composition choices
 

@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { createRef } from "react";
-import { HALFTONE_HORIZON_DUSK, HalftoneHorizon } from "./halftone-horizon";
+import { HALFTONE_HORIZON_PALETTES, HalftoneHorizon } from "./halftone-horizon";
 
 // jsdom has no WebGL (or 2D) canvas, so every render here takes the CSS gradient fallback.
 beforeEach(() => {
@@ -56,18 +56,18 @@ describe("HalftoneHorizon", () => {
   });
 
   it("draws the fallback gradient from the dark edge toward the light", () => {
-    const { rerender } = render(<HalftoneHorizon colors={HALFTONE_HORIZON_DUSK} />);
+    const { rerender } = render(<HalftoneHorizon palette="night" />);
     const gradient = () => root().style.backgroundImage;
 
     // `to bottom` is the default direction, which CSS serialization omits.
     expect(gradient()).toMatch(/^linear-gradient\((to bottom, )?oklch\(/);
-    expect(gradient().match(/oklch\(/g)).toHaveLength(HALFTONE_HORIZON_DUSK.length);
+    expect(gradient().match(/oklch\(/g)).toHaveLength(HALFTONE_HORIZON_PALETTES.night.length);
 
-    rerender(<HalftoneHorizon colors={HALFTONE_HORIZON_DUSK} direction="right" />);
+    rerender(<HalftoneHorizon palette="night" direction="right" />);
     expect(gradient()).toContain("linear-gradient(to left,");
-    rerender(<HalftoneHorizon colors={HALFTONE_HORIZON_DUSK} direction="bottom" />);
+    rerender(<HalftoneHorizon palette="night" direction="bottom" />);
     expect(gradient()).toContain("linear-gradient(to top,");
-    rerender(<HalftoneHorizon colors={HALFTONE_HORIZON_DUSK} direction="left" />);
+    rerender(<HalftoneHorizon palette="night" direction="left" />);
     expect(gradient()).toContain("linear-gradient(to right,");
   });
 
@@ -81,6 +81,22 @@ describe("HalftoneHorizon", () => {
     rerender(<HalftoneHorizon color="var(--ring)" colors={["var(--background)", "var(--foreground)"]} />);
     expect(root().style.backgroundImage).not.toContain("var(--ring)");
     expect(root().style.backgroundImage).toContain("var(--background), var(--foreground)");
+  });
+
+  it("draws a built-in palette until color or colors overrides it", () => {
+    const { rerender } = render(<HalftoneHorizon />);
+    expect(root()).toHaveAttribute("data-palette", "ember");
+
+    rerender(<HalftoneHorizon palette="ink" />);
+    expect(root()).toHaveAttribute("data-palette", "ink");
+    expect(root().style.backgroundImage).toContain("var(--background), var(--muted)");
+
+    rerender(<HalftoneHorizon palette="ring" />);
+    expect(root().style.backgroundImage).toContain("oklch(from var(--ring)");
+
+    rerender(<HalftoneHorizon palette="ink" color="var(--ring)" />);
+    expect(root()).toHaveAttribute("data-palette", "custom");
+    expect(root().style.backgroundImage).not.toContain("var(--muted)");
   });
 
   it("lets caller styles override the fallback background", () => {

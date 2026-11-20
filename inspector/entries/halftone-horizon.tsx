@@ -1,8 +1,9 @@
 "use client";
 
 import { useSyncExternalStore, type ComponentProps } from "react";
-import { HALFTONE_HORIZON_DUSK, HalftoneHorizon } from "@/registry/ui/halftone-horizon/halftone-horizon";
-import { bool, defineEntry, num, select } from "../schema";
+import { HalftoneHorizon, type HalftoneHorizonPalette } from "@/registry/ui/halftone-horizon/halftone-horizon";
+import { bool, defineEntry, num, select, withIcons } from "../schema";
+import { EDGE_SIDE_ICONS, HALFTONE_PALETTE_ICONS } from "../setting-icons";
 
 // The bands scale with the box, but dots are a fixed pixel size, so a phone-sized box looks
 // zoomed in. Below the playground's 768px breakpoint the demo draws finer dots to match.
@@ -20,28 +21,14 @@ function HalftoneDemo({ spacing = 7, ...props }: ComponentProps<typeof HalftoneH
   return <HalftoneHorizon {...props} spacing={phone ? spacing * PHONE_SCALE : spacing} />;
 }
 
-const PALETTES = ["ember", "dusk", "ring", "ink"] as const;
-const INK = ["var(--background)", "var(--muted)", "var(--muted-foreground)", "var(--foreground)"];
-
-function palette(name: (typeof PALETTES)[number]) {
-  switch (name) {
-    case "ember":
-      return {};
-    case "dusk":
-      return { colors: HALFTONE_HORIZON_DUSK };
-    case "ring":
-      return { color: "var(--ring)" };
-    case "ink":
-      return { colors: INK };
-  }
-}
+const PALETTES = ["ember", "night", "ring", "ink"] as const satisfies readonly HalftoneHorizonPalette[];
 
 export const halftoneHorizonEntry = defineEntry({
   slug: "halftone-horizon",
   name: "Halftone Horizon",
   controls: {
-    palette: select(PALETTES, "ember", "Palette"),
-    direction: select(["top", "right", "bottom", "left"], "top", "Dark edge"),
+    palette: withIcons(select(PALETTES, "ember", "Palette"), HALFTONE_PALETTE_ICONS),
+    direction: withIcons(select(["top", "right", "bottom", "left"], "top", "Dark edge"), EDGE_SIDE_ICONS),
     curve: num(1, { min: -3, max: 3, step: 0.1, label: "Curve" }),
     reach: num(1, { min: 0.4, max: 1.8, step: 0.05, label: "Reach" }),
     softness: num(1.1, { min: 0.4, max: 2.5, step: 0.05, label: "Softness" }),
@@ -51,18 +38,20 @@ export const halftoneHorizonEntry = defineEntry({
     grain: num(0.04, { min: 0, max: 0.15, step: 0.01, label: "Grain" }),
     speed: num(1, { min: 0, max: 4, step: 0.25, label: "Speed" }),
     seed: num(0, { min: 0, max: 20, step: 1, label: "Seed" }),
+    hover: bool(true, "Hover"),
+    ripple: bool(true, "Ripple on click"),
     animate: bool(true, "Animate"),
     introFrom: num(0, { min: 0, max: 2, step: 0.25, label: "Intro from" }),
   },
-  render({ palette: name, introFrom, ...settings }) {
+  render({ palette, introFrom, ...settings }) {
     // The ink ramp starts from the page background, so its text follows the theme.
-    const ink = name === "ink" ? "text-foreground" : "text-white";
+    const ink = palette === "ink" ? "text-foreground" : "text-white";
     return (
       // Settings update the running renderer in place; the playground's Replay button
       // remounts the demo to play the intro again.
       <HalftoneDemo
         {...settings}
-        {...palette(name)}
+        palette={palette}
         introFrom={introFrom}
         // The horizon fills the canvas, so a drag across it starts a measurement.
         data-measure-backdrop=""

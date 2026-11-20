@@ -298,7 +298,7 @@ import { Button } from "@/components/ui/button";
   <h1 className="text-4xl font-medium text-white">Launch week</h1>
 </HalftoneHorizon>
 
-<HalftoneHorizon color="var(--ring)" direction="bottom" curve={0.6} spacing={9} className="h-64 rounded-2xl" />`,
+<HalftoneHorizon palette="night" direction="bottom" curve={0.6} spacing={9} className="h-64 rounded-2xl" />`,
   },
   "hover-card": {
     usage: `import {

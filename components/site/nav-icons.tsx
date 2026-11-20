@@ -324,6 +324,20 @@ const ICONS: Record<string, ReactNode> = {
     </>
   ),
 
+  // Backgrounds
+  // Halftone dots growing row by row toward the light; the largest row is the subject.
+  "halftone-horizon": (
+    <>
+      {[3, 8, 13].map((x) => (
+        <g key={x}>
+          <circle cx={x} cy="3" r="0.75" {...TONE} />
+          <circle cx={x} cy="8" r="1.25" {...TONE} />
+          <circle cx={x} cy="13" r="1.9" {...SOLID} />
+        </g>
+      ))}
+    </>
+  ),
+
   // Layout and navigation
   // A keycap: its face, the deeper lip along the bottom, and a ⌘ legend. The legend's
   // loops close up at 1.25px, so it is drawn at 1px.

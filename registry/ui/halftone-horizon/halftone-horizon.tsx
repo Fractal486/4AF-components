@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, type ComponentProps, type CSSProperties } from "react";
 import { cn } from "@/registry/lib/cn";
+import { duration } from "@/registry/lib/motion";
 import { useMergedRefs } from "@/registry/lib/refs";
 import { prefersReducedMotion, subscribeReducedMotion } from "@/registry/lib/reduced-motion";
 import {
@@ -11,23 +12,38 @@ import {
 
 export type HalftoneHorizonDirection = "top" | "right" | "bottom" | "left";
 
-/** The default sky color; the ramp runs from near-black through it to near-white. */
+/** The ember sky color; the ramp runs from near-black through it to near-white. */
 export const HALFTONE_HORIZON_COLOR = "oklch(0.667 0.189 39.2)";
 
-/** A night-to-dawn preset: near-black indigo, violet, pink, peach, and an off-white glow. */
-export const HALFTONE_HORIZON_DUSK = [
-  "oklch(0.130 0.021 289.2)",
-  "oklch(0.276 0.112 282.4)",
-  "oklch(0.496 0.195 293.1)",
-  "oklch(0.668 0.172 354.9)",
-  "oklch(0.875 0.080 56.6)",
-  "oklch(0.982 0.014 74.4)",
-] as const;
+export type HalftoneHorizonPalette = "ember" | "night" | "ring" | "ink";
+
+/**
+ * The built-in palettes. A string is one sky color drawn in shades of itself; an array is the
+ * ramp's stops from the dark edge to the light edge.
+ */
+export const HALFTONE_HORIZON_PALETTES: Record<HalftoneHorizonPalette, string | readonly string[]> = {
+  // Near-black ink through orange to a near-white glow.
+  ember: HALFTONE_HORIZON_COLOR,
+  // Dark at both edges: the ember glow peaks mid-frame and sinks back to near-black.
+  night: [
+    "oklch(0.070 0.012 25)",
+    "oklch(0.180 0.065 30)",
+    "oklch(0.460 0.150 37)",
+    "oklch(0.190 0.070 32)",
+    "oklch(0.080 0.014 28)",
+  ],
+  // The theme's focus blue, in shades of itself.
+  ring: "var(--ring)",
+  // The page background through to the foreground, so it follows the theme.
+  ink: ["var(--background)", "var(--muted)", "var(--muted-foreground)", "var(--foreground)"],
+};
 
 export interface HalftoneHorizonProps extends ComponentProps<"div"> {
-  /** One sky color; the ramp is drawn in shades of it, from near-black to near-white. */
+  /** A built-in palette. `color` and `colors` override it. */
+  palette?: HalftoneHorizonPalette;
+  /** One sky color; the ramp is drawn in shades of it, from near-black to near-white. Overrides `palette`. */
   color?: string;
-  /** 2–6 CSS colors from the dark edge to the light edge. Overrides `color`. `var()` resolves. */
+  /** 2–6 CSS colors from the dark edge to the light edge. Overrides `color` and `palette`. `var()` resolves. */
   colors?: readonly string[];
   /** The edge the dark comes from; the light gathers at the opposite edge. */
   direction?: HalftoneHorizonDirection;
@@ -51,6 +67,10 @@ export interface HalftoneHorizonProps extends ComponentProps<"div"> {
   grain?: number;
   /** Shifts the composition. */
   seed?: number;
+  /** Dots under the pointer grow and square off, small dots growing most. Mouse and pen only. */
+  hover?: boolean;
+  /** A press sends a ring outward that grows and squares off the dots it passes. */
+  ripple?: boolean;
   /** Let the bands drift. Off, or under reduced motion, one still frame is drawn. */
   animate?: boolean;
   /** Seconds for the dark to come in on first show. 0 skips the intro. */
@@ -71,6 +91,10 @@ interface Settings {
   dots: number;
   grain: number;
   seed: number;
+  /** Pointer x and y in canvas pixels (WebGL's bottom-left origin), and its 0–1 strength. */
+  hover: [number, number, number];
+  /** Up to MAX_RIPPLES rings: x and y and radius in canvas pixels, then 0–1 strength. */
+  ripples: Float32Array;
 }
 
 const DIRECTIONS: Record<HalftoneHorizonDirection, number> = { top: 0, right: 1, bottom: 2, left: 3 };
@@ -82,6 +106,20 @@ const GRADIENT_TO: Record<HalftoneHorizonDirection, string> = {
 };
 const MAX_COLORS = 6;
 const MAX_DPR = 2;
+/**
+ * The hover lens: how far it reaches, in CSS pixels, and how much the smallest dot's radius
+ * grows at its center, as a share of the cell. Larger dots grow less, down to none.
+ */
+const HOVER_RADIUS = 110;
+const HOVER_GROWTH = 0.18;
+/**
+ * Click ripples: how many can overlap, how fast the ring travels and how wide its band is (in
+ * CSS pixels), and how long it lasts before it has faded out, in seconds.
+ */
+const MAX_RIPPLES = 4;
+const RIPPLE_SPEED = 650;
+const RIPPLE_WIDTH = 34;
+const RIPPLE_LIFE = 1.1;
 /** How far the intro pushes the bands: enough to clear the frame at either extreme. */
 const INTRO_SHIFT = 1.3;
 
@@ -118,6 +156,8 @@ uniform float uSeed;
 uniform float uDpr;
 uniform float uIntro;
 uniform float uDir;
+uniform vec4 uHover;
+uniform vec4 uRipples[${MAX_RIPPLES}];
 uniform vec3 uColors[${MAX_COLORS}];
 uniform float uCount;
 
@@ -131,6 +171,20 @@ float noise(vec2 p) {
   vec2 i = floor(p);
   vec2 f = fract(p);
   f = f * f * (3.0 - 2.0 * f);
+  return mix(
+    mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
+    mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
+    f.y
+  );
+}
+
+// The drift's noise blends with a quintic: a cubic leaves the tone's slope kinked along
+// every lattice line, and as the drift sweeps the lattice through the smooth glow those
+// kinks read as faint moving stripes (mirrored in pairs, since the drift reads y squared).
+float smoothNoise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  f = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
   return mix(
     mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
     mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
@@ -174,7 +228,7 @@ float level(vec2 p) {
   // breathe evenly about the center instead of tilting to one side.
   float y2 = f.y * f.y;
   v += 0.03 * sin(t * 0.5) * cos(y2 * 1.6) + 0.012 * sin(t * 0.31 + y2 * 3.0 + 1.7);
-  v += 0.05 * (noise(vec2(y2 * 2.0 + t * 0.06, f.x * 1.3 - t * 0.04) + drift) - 0.5);
+  v += 0.05 * (smoothNoise(vec2(y2 * 2.0 + t * 0.06, f.x * 1.3 - t * 0.04) + drift) - 0.5);
   v += uIntro;
   return v;
 }
@@ -205,7 +259,25 @@ void main() {
   // Dots grow from minDot past touching; the shrinking gaps read as soft holes, and once
   // the radius clears the cell's corners (plus the soft edge) the ink is solid.
   float radius = mix(uMinDot * 0.5, 0.84, pow(grow, 2.0)) * uDotSize * S;
-  float cover = 1.0 - smoothstep(radius - aa, radius + aa, length(p - center));
+  // The hover lens and click ripples work on whole dots about their center, so each keeps its
+  // shape rather than bulging. They grow them and square them off (the corner radius shrinks from the full
+  // radius, a circle, toward zero, a square of the same half-width). Both fade out as the
+  // dots grow toward the glow: the small dots in the dark change most, and the large dots,
+  // already close to fusing, barely change, so they never square off into a solid fill.
+  vec2 fromPointer = (center - uHover.xy) / uHover.w;
+  float lens = uHover.z * exp(-dot(fromPointer, fromPointer));
+  // Each ripple is a Gaussian band around its ring.
+  for (int i = 0; i < ${MAX_RIPPLES}; i++) {
+    vec4 ring = uRipples[i];
+    float offRing = (length(center - ring.xy) - ring.z) / (float(${RIPPLE_WIDTH}) * uDpr);
+    lens += ring.w * exp(-offRing * offRing);
+  }
+  lens = min(lens, 1.0) * (1.0 - grow);
+  radius += ${HOVER_GROWTH} * uDotSize * S * lens;
+  float corner = radius * (1.0 - lens);
+  vec2 box = abs(p - center) - (radius - corner);
+  float edge = length(max(box, 0.0)) + min(max(box.x, box.y), 0.0) - corner;
+  float cover = 1.0 - smoothstep(-aa, aa, edge);
 
   // Ink runs ahead of the average tone: small bright dots on dark paper, like print.
   float lead = 0.1 * (1.0 - grow * grow);
@@ -281,6 +353,8 @@ function createRenderer(canvas: HTMLCanvasElement): Renderer | null {
     seed: u("uSeed"),
     intro: u("uIntro"),
     dir: u("uDir"),
+    hover: u("uHover"),
+    ripples: u("uRipples"),
     colors: u("uColors"),
     count: u("uCount"),
   };
@@ -310,6 +384,8 @@ function createRenderer(canvas: HTMLCanvasElement): Renderer | null {
       gl.uniform1f(uniforms.seed, settings.seed);
       gl.uniform1f(uniforms.intro, intro);
       gl.uniform1f(uniforms.dir, settings.direction);
+      gl.uniform4f(uniforms.hover, settings.hover[0], settings.hover[1], settings.hover[2], HOVER_RADIUS * dpr);
+      gl.uniform4fv(uniforms.ripples, settings.ripples);
       gl.uniform3fv(uniforms.colors, colors);
       gl.uniform1f(uniforms.count, settings.colors.length);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -351,7 +427,8 @@ function finite(value: number, fallback: number, min: number, max: number) {
  * motion, where a single still frame at rest is drawn instead and the intro is skipped.
  */
 export function HalftoneHorizon({
-  color = HALFTONE_HORIZON_COLOR,
+  palette = "ember",
+  color,
   colors,
   direction = "top",
   curve = 1,
@@ -364,6 +441,8 @@ export function HalftoneHorizon({
   speed = 1,
   grain = 0.04,
   seed = 0,
+  hover = true,
+  ripple = true,
   animate = true,
   intro = 2.4,
   introFrom = 0,
@@ -381,18 +460,20 @@ export function HalftoneHorizon({
   const stops = useMemo(() => {
     const list = colors?.slice(0, MAX_COLORS);
     if (list && list.length >= 2) return list;
-    return shadesOf(color);
-  }, [color, colors]);
+    if (color) return shadesOf(color);
+    const preset = HALFTONE_HORIZON_PALETTES[palette] ?? HALFTONE_HORIZON_COLOR;
+    return typeof preset === "string" ? shadesOf(preset) : [...preset];
+  }, [palette, color, colors]);
   const stopsKey = stops.join("|");
 
   // The loop reads the latest props from here, so prop changes never rebuild the renderer.
-  const optionsRef = useRef({ stops, direction, curve, reach, softness, spacing, dotSize, minDot, dots, speed, grain, seed, animate, intro, introFrom });
+  const optionsRef = useRef({ stops, direction, curve, reach, softness, spacing, dotSize, minDot, dots, speed, grain, seed, hover, ripple, animate, intro, introFrom });
   const controlRef = useRef<{ update(): void; recolor(): void } | null>(null);
 
   useEffect(() => {
-    optionsRef.current = { stops, direction, curve, reach, softness, spacing, dotSize, minDot, dots, speed, grain, seed, animate, intro, introFrom };
+    optionsRef.current = { stops, direction, curve, reach, softness, spacing, dotSize, minDot, dots, speed, grain, seed, hover, ripple, animate, intro, introFrom };
     controlRef.current?.update();
-  }, [stops, direction, curve, reach, softness, spacing, dotSize, minDot, dots, speed, grain, seed, animate, intro, introFrom]);
+  }, [stops, direction, curve, reach, softness, spacing, dotSize, minDot, dots, speed, grain, seed, hover, ripple, animate, intro, introFrom]);
 
   useEffect(() => {
     controlRef.current?.recolor();
@@ -416,6 +497,29 @@ export function HalftoneHorizon({
     let visible = true;
     let pageVisible = document.visibilityState !== "hidden";
     let reduced = prefersReducedMotion();
+
+    // The pointer's lens fades in and out over the slow duration token; under reduced motion
+    // it switches without easing.
+    let pointerX = 0;
+    let pointerY = 0;
+    let pointerInside = false;
+    let hoverLevel = 0;
+    const hoverTarget = () => (pointerInside && optionsRef.current.hover ? 1 : 0);
+
+    // Each press starts a ring at its point. Ages advance with the frame clock, so a hidden
+    // tab holds them where they were.
+    let ripples: { x: number; y: number; age: number }[] = [];
+    const rippleData = new Float32Array(MAX_RIPPLES * 4);
+    const rippleUniforms = () => {
+      rippleData.fill(0);
+      const width = canvas.getBoundingClientRect().width;
+      const scale = width > 0 ? canvas.width / width : 1;
+      ripples.forEach((ring, index) => {
+        const progress = ring.age / RIPPLE_LIFE;
+        rippleData.set([ring.x, ring.y, ring.age * RIPPLE_SPEED * scale, (1 - progress) ** 2], index * 4);
+      });
+      return rippleData;
+    };
 
     // The intro runs once, on real seconds, from `introFrom` to rest. A still frame skips it.
     const introLength = finite(optionsRef.current.intro, 2.4, 0, 30);
@@ -446,11 +550,15 @@ export function HalftoneHorizon({
         dots: finite(o.dots, 0.7, 0.05, 1),
         grain: finite(o.grain, 0.04, 0, 0.5),
         seed: finite(o.seed, 0, -1e4, 1e4),
+        hover: [pointerX, pointerY, hoverLevel],
+        ripples: rippleUniforms(),
       };
     };
 
     const playing = () =>
       renderer !== null && (optionsRef.current.animate || !introDone) && !reduced && visible && pageVisible;
+    const easingHover = () => renderer !== null && visible && pageVisible && hoverLevel !== hoverTarget();
+    const rippling = () => renderer !== null && visible && pageVisible && ripples.length > 0;
 
     const paint = () => {
       if (!renderer || resolved.length < 2) return;
@@ -464,11 +572,15 @@ export function HalftoneHorizon({
         const seconds = Math.min(now - last, 100) / 1000;
         if (optionsRef.current.animate) time += seconds * finite(optionsRef.current.speed, 1, 0, 10);
         introElapsed += seconds;
+        const target = hoverTarget();
+        hoverLevel = reduced ? target : hoverLevel + (target - hoverLevel) * (1 - Math.exp((-3 * seconds) / duration.slow));
+        if (Math.abs(target - hoverLevel) < 0.002) hoverLevel = target;
+        ripples = ripples.filter((ring) => (ring.age += seconds) < RIPPLE_LIFE);
       }
       last = now;
       paint();
       root.dataset.state = playing() ? "playing" : "paused";
-      if (playing()) frame = requestAnimationFrame(tick);
+      if (playing() || easingHover() || rippling()) frame = requestAnimationFrame(tick);
     };
 
     const update = () => {
@@ -504,6 +616,33 @@ export function HalftoneHorizon({
       root.dataset.renderer = renderer ? "webgl" : "fallback";
       resize();
     };
+    /** A pointer event's position in canvas pixels, with WebGL's bottom-left origin. */
+    const toCanvas = (event: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      const scale = rect.width > 0 ? canvas.width / rect.width : 1;
+      return [(event.clientX - rect.left) * scale, canvas.height - (event.clientY - rect.top) * scale] as const;
+    };
+    // Touch has no hover; a finger would leave the lens behind wherever it lifted.
+    const onPointerMove = (event: PointerEvent) => {
+      if (event.pointerType === "touch") return;
+      [pointerX, pointerY] = toCanvas(event);
+      pointerInside = true;
+      update();
+    };
+    // Ripples answer any primary press, touch included. Reduced motion skips them.
+    const onPointerDown = (event: PointerEvent) => {
+      if (!event.isPrimary || event.button !== 0 || !optionsRef.current.ripple || reduced) return;
+      const [x, y] = toCanvas(event);
+      ripples = [...ripples, { x, y, age: 0 }].slice(-MAX_RIPPLES);
+      update();
+    };
+    const onPointerLeave = () => {
+      pointerInside = false;
+      update();
+    };
+    root.addEventListener("pointermove", onPointerMove);
+    root.addEventListener("pointerleave", onPointerLeave);
+    root.addEventListener("pointerdown", onPointerDown);
     canvas.addEventListener("webglcontextlost", onContextLost);
     canvas.addEventListener("webglcontextrestored", onContextRestored);
 
@@ -544,6 +683,9 @@ export function HalftoneHorizon({
       themeObserver.disconnect();
       document.removeEventListener("visibilitychange", onVisibility);
       unsubscribeMotion();
+      root.removeEventListener("pointermove", onPointerMove);
+      root.removeEventListener("pointerleave", onPointerLeave);
+      root.removeEventListener("pointerdown", onPointerDown);
       canvas.removeEventListener("webglcontextlost", onContextLost);
       canvas.removeEventListener("webglcontextrestored", onContextRestored);
       renderer?.dispose();
@@ -556,6 +698,7 @@ export function HalftoneHorizon({
       {...props}
       ref={mergedRef}
       data-slot="halftone-horizon"
+      data-palette={(colors && colors.length >= 2) || color ? "custom" : palette}
       data-direction={direction}
       data-animate={animate ? "true" : "false"}
       className={cn(halftoneHorizonVariants(), className)}

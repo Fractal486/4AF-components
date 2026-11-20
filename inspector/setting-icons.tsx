@@ -119,6 +119,14 @@ export const EDGE_SIDE_ICONS = {
   left: <Icon><path d="M6 2.5H3.5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2H6Z" {...TONE} /><rect x="1.5" y="2.5" width="13" height="11" rx="2" /><path d="M6 2.5v11" /></Icon>,
 } satisfies Record<string, ReactNode>;
 
+/** Halftone Horizon's palettes: a rising sun, a moon, the focus ring, and theme contrast. */
+export const HALFTONE_PALETTE_ICONS = {
+  ember: <Icon><path d="M3.5 11.5a4.5 4.5 0 0 1 9 0Z" {...FILLED} /><path d="M1.5 11.5h13" /><path d="M8 2.5V4M3.25 4.75l1 1M12.75 4.75l-1 1" {...FAINT} /></Icon>,
+  night: <Icon><path d="M13 9.5A5.5 5.5 0 0 1 6.5 3a5.5 5.5 0 1 0 6.5 6.5Z" {...FILLED} /><circle cx="12" cy="4" r="1" {...SOLID} /></Icon>,
+  ring: <Icon><circle cx="8" cy="8" r="6.25" {...FAINT} /><circle cx="8" cy="8" r="3.75" {...FILLED} /></Icon>,
+  ink: <Icon><circle cx="8" cy="8" r="6" /><path d="M8 2a6 6 0 0 1 0 12Z" {...SOLID} /></Icon>,
+} satisfies Record<string, ReactNode>;
+
 /* Orientation: each component drawn laid out both ways, from its sidebar icon. */
 
 export const BUTTON_GROUP_ORIENTATION_ICONS = {

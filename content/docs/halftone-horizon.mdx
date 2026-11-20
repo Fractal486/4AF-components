@@ -11,8 +11,9 @@ description: An animated background where an arched horizon is printed in halfto
 
 | Prop | Default | Description |
 | --- | --- | --- |
-| `color` | `HALFTONE_HORIZON_COLOR` | One sky color. The ramp runs from near-black ink through it to a near-white glow. |
-| `colors` | — | 2–6 CSS colors from the dark edge to the light edge. Overrides `color`; fewer than two stops fall back to `color`. |
+| `palette` | `"ember"` | A built-in palette: `"ember"`, `"night"`, `"ring"`, or `"ink"`. `color` and `colors` override it. |
+| `color` | — | One sky color. The ramp runs from near-black ink through it to a near-white glow. Overrides `palette`. |
+| `colors` | — | 2–6 CSS colors from the dark edge to the light edge. Overrides `color` and `palette`; fewer than two stops are ignored. |
 | `direction` | `"top"` | The edge the dark comes from: `"top"`, `"right"`, `"bottom"`, or `"left"`. The light gathers at the opposite edge. |
 | `curve` | `1` | How strongly the bands arch toward the dark edge, from `-4` to `4`. `0` is level; negative values bow them toward the light instead. |
 | `reach` | `1` | How far the dark reaches toward the light edge. |
@@ -24,15 +25,25 @@ description: An animated background where an arched horizon is printed in halfto
 | `grain` | `0.04` | Paper grain strength. `0` turns it off. |
 | `speed` | `1` | Drift speed multiplier. |
 | `seed` | `0` | Shifts the drift and the grain pattern. |
+| `hover` | `true` | Dots under a mouse or pen pointer grow and square off, most at the pointer. Small dots change most; large dots near the glow barely change. The effect fades in and out with the pointer. |
+| `ripple` | `true` | A press sends a ring outward from its point that grows and squares off the dots it passes, fading over 1.1 s. Up to four overlap. |
 | `animate` | `true` | Lets the bands drift. Off, one still frame is drawn. |
 | `intro` | `2.4` | Seconds for the dark to sweep in on first show. `0` skips it. |
 | `introFrom` | `0` | Where the intro starts: `0` is a blank sky, `1` is at rest, and up to `2` starts further in and draws back. |
 | `children`, `className`, `style`, native props, `ref` | — | Forwarded to the root `div`. Children render above the background. |
 
-`HALFTONE_HORIZON_COLOR` is the default orange, and `HALFTONE_HORIZON_DUSK` is a six-stop
-night-to-dawn ramp to pass as `colors`.
+| Palette | Ramp |
+| --- | --- |
+| `ember` | `HALFTONE_HORIZON_COLOR` (orange) in shades: near-black ink to a near-white glow. |
+| `night` | Five stops, dark at both edges: near-black, an ember glow mid-frame, and back to near-black. |
+| `ring` | `var(--ring)` in shades. |
+| `ink` | `var(--background)`, `var(--muted)`, `var(--muted-foreground)`, `var(--foreground)`. Follows the theme. |
 
-The root exposes `data-slot="halftone-horizon"`, `data-direction`, `data-animate`,
+`HALFTONE_HORIZON_PALETTES` exports each palette's value: a string is passed through the
+single-color shading, an array is used as stops.
+
+The root exposes `data-slot="halftone-horizon"`, `data-palette` (the palette name, or
+`"custom"` when `color` or `colors` applies), `data-direction`, `data-animate`,
 `data-renderer` (`"webgl"` or `"fallback"`), and `data-state` (`"playing"` or `"paused"`). The
 canvas is `data-slot="halftone-horizon-canvas"` and gains `data-ready` once its first frame
 is drawn.
@@ -52,7 +63,8 @@ They are resolved to sRGB when the component mounts and again when the document'
 `color`, darker shades keep their chroma and turn slightly redder, like ink, and the light end
 warms into a near-white glow.
 
-The default palette is dark at the dark edge in both themes. Pick text colors for contrast
+`ember`, `night`, and `ring` are dark at the dark edge in both themes; `ink` starts from the
+page background. Pick text colors for contrast
 against the part of the ramp the text sits on, not against the page theme.
 
 ## Rendering and motion
@@ -66,6 +78,12 @@ The drift pauses when the background is offscreen, when the tab is hidden, and w
 is off. Under reduced motion, the intro is skipped and one still frame is drawn at rest.
 Prop changes update the running renderer without rebuilding it. The intro plays once per
 mount; change the component's React `key` to replay it.
+
+The hover effect follows `pointermove` on the root, so it works over children too, and
+ignores touch. It eases over `duration.slow` from the motion presets and switches instantly
+under reduced motion. Ripples follow `pointerdown` on the root for any primary press, touch
+included, and are off under reduced motion. Both redraw only while the pointer moves or an
+effect fades, even when `animate` is off.
 
 The canvas is `aria-hidden` and ignores pointer events. The background is decorative; give the
 root a role or label only when it carries meaning of its own.

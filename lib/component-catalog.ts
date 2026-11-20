@@ -171,7 +171,7 @@ const COMPONENT_MAIN_APIS: Record<string, string> = {
   dialog: "Dialog, DialogBody, composable surfaces, createDialogHandle, DialogSteps, DialogStep",
   "dropdown-menu": "DropdownMenu, createDropdownMenuHandle, composable popup parts, and action/selection/submenu rows",
   empty: "Empty and composition parts",
-  "halftone-horizon": "HalftoneHorizon, HALFTONE_HORIZON_COLOR, HALFTONE_HORIZON_DUSK",
+  "halftone-horizon": "HalftoneHorizon, HALFTONE_HORIZON_PALETTES, HALFTONE_HORIZON_COLOR",
   "hover-card": "HoverCard, createHoverCardHandle, HoverCardSkeleton, and composable popup parts",
   input: "Input, InputCount",
   kbd: "Kbd, KbdGroup",
