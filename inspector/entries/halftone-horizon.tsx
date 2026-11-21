@@ -64,6 +64,8 @@ export const halftoneHorizonEntry = defineEntry({
         {...settings}
         {...palette(name)}
         introFrom={introFrom}
+        // The horizon fills the canvas, so a drag across it starts a measurement.
+        data-measure-backdrop=""
         className="flex size-full flex-col items-center justify-start px-6 pt-[12%] text-center"
       >
         <p className={`text-xs font-medium uppercase tracking-[0.18em] opacity-60 ${ink}`}>Halftone Horizon</p>

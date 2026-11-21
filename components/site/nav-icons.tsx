@@ -17,6 +17,8 @@ const TONE: Paint = { fill: "currentColor", fillOpacity: 0.3, stroke: "none" };
 const SOLID: Paint = { fill: "currentColor", stroke: "none" };
 /** A secondary line: placeholder text, a track, a muted row. */
 const FAINT: Paint = { strokeOpacity: 0.4 };
+/** One band of a fading fill: three stacked read as 15%, 28%, then 39%. */
+const GLOW: Paint = { fill: "currentColor", fillOpacity: 0.15, stroke: "none" };
 
 const ICONS: Record<string, ReactNode> = {
   // The overview, at "/".
@@ -239,7 +241,7 @@ const ICONS: Record<string, ReactNode> = {
     <>
       <circle cx="4.5" cy="5" r="2.5" {...TONE} />
       <rect x="8.5" y="3" width="6" height="1.75" rx="0.875" {...TONE} />
-      <rect x="8.5" y="5.75" width="4" height="1.75" rx="0.875" {...TONE} />
+      <rect x="8.5" y="5.75" width="6" height="1.75" rx="0.875" {...TONE} />
       <rect x="1.5" y="9.5" width="13" height="1.75" rx="0.875" {...TONE} />
       <rect x="1.5" y="12.25" width="9" height="1.75" rx="0.875" {...TONE} />
     </>
@@ -490,6 +492,31 @@ const ICONS: Record<string, ReactNode> = {
     <>
       <rect x="1.5" y="2.5" width="13" height="11" rx="2" {...FAINT} />
       <rect x="4" y="5" width="8" height="6" rx="1.5" {...FILLED} />
+    </>
+  ),
+  // Backgrounds
+  // The component itself: halftone dots growing and crowding as they near an arched glow, on an
+  // even staggered grid (2.5 apart, each row offset by half), each row arched like the glow's
+  // edge. The glow fades in through stacked
+  // bands (a gradient would need an id per icon), in a thin frame.
+  "halftone-horizon": (
+    <>
+      <path d="M1.5 9Q8 5.5 14.5 9v3.5a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2Z" {...GLOW} />
+      <path d="M1.5 10.5Q8 7 14.5 10.5v2a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2Z" {...GLOW} />
+      <path d="M1.5 12Q8 8.5 14.5 12v.5a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2Z" {...GLOW} />
+      <rect x="1.5" y="1.5" width="13" height="13" rx="2" strokeWidth={0.75} />
+      <circle cx="5.5" cy="3" r="0.375" {...SOLID} />
+      <circle cx="8" cy="2.75" r="0.375" {...SOLID} />
+      <circle cx="10.5" cy="3" r="0.375" {...SOLID} />
+      <circle cx="4.25" cy="5.125" r="0.5" {...SOLID} />
+      <circle cx="6.75" cy="4.625" r="0.5" {...SOLID} />
+      <circle cx="9.25" cy="4.625" r="0.5" {...SOLID} />
+      <circle cx="11.75" cy="5.125" r="0.5" {...SOLID} />
+      <circle cx="3" cy="7.25" r="0.7" {...SOLID} />
+      <circle cx="5.5" cy="6.5" r="0.7" {...SOLID} />
+      <circle cx="8" cy="6.25" r="0.7" {...SOLID} />
+      <circle cx="10.5" cy="6.5" r="0.7" {...SOLID} />
+      <circle cx="13" cy="7.25" r="0.7" {...SOLID} />
     </>
   ),
   "alert-dialog": (

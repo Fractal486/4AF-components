@@ -342,14 +342,23 @@ function pressBounds(target: Element, event: PointerEvent, canvasEl: HTMLElement
 const INTERACTIVE = "a[href], button, input, select, textarea, label, summary, [role], [tabindex], [contenteditable]";
 
 /**
+ * Marks a demo element whose paint is a backdrop rather than content, such as a full-bleed
+ * background that covers the whole canvas. A press on it still starts a selection; text and
+ * interactive elements on top of it still belong to the demo.
+ */
+const MEASURE_BACKDROP = "data-measure-backdrop";
+
+/**
  * Whether a press lands on nothing visible: the canvas itself, or a demo's layout wrapper
  * around its component, such as the space around the app-shell demos' fitted window. Anything
- * painted, holding text, or interactive between the press and the canvas belongs to the demo.
+ * painted, holding text, or interactive between the press and the canvas belongs to the demo,
+ * except paint on an element marked as a backdrop.
  */
 function isEmptySpace(target: Element, content: HTMLElement) {
   if (!content.contains(target)) return true;
   for (let el: Element | null = target; el && el !== content.parentElement; el = el.parentElement) {
-    if (el.matches(INTERACTIVE) || hasPaint(getComputedStyle(el))) return false;
+    if (el.matches(INTERACTIVE)) return false;
+    if (!el.hasAttribute(MEASURE_BACKDROP) && hasPaint(getComputedStyle(el))) return false;
     for (const node of el.childNodes) {
       if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) return false;
     }

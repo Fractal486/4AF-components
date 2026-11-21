@@ -97,7 +97,8 @@ describe("component documentation", () => {
   it("provides a demo mapping for every installable component", () => {
     const demoNames = objectEntries("stories/component-demo.tsx", "demos").map(([name]) => name);
     // Rail demos are extra demos of one page, with no install of their own.
-    const RAIL_DEMOS = ["select-sort", "select-filter", "checkbox-group", "checkbox-nested", "skeleton-text", "skeleton-wrap", "skeleton-inline", "slider-circle", "slider-knob"];
+    const RAIL_DEMOS = ["select-sort", "select-filter", "checkbox-group", "checkbox-nested", "skeleton-text", "skeleton-wrap", "skeleton-inline", "slider-circle", "slider-knob", "progress-circle",
+      "dropdown-menu-checkboxes", "dropdown-menu-toggles", "dropdown-menu-radio", "dropdown-menu-actions", "dropdown-menu-panels"];
     expect(demoNames.sort()).toEqual([...installableNames, ...RAIL_DEMOS].sort());
   });
 

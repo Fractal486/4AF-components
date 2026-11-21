@@ -22,7 +22,8 @@ export type { ComponentDemoName } from "./demo-names";
 
 const LOADER_DEMOS = new Set([
   "button", "action-button", "action-toggle", "copy-button", "delete-button",
-  "alert", "badge", "dropdown-menu", "menubar", "context-menu", "command-palette", "selection-toolbar",
+  "alert", "badge", "dropdown-menu", "dropdown-menu-checkboxes", "dropdown-menu-toggles",
+  "dropdown-menu-radio", "dropdown-menu-actions", "dropdown-menu-panels", "menubar", "context-menu", "command-palette", "selection-toolbar",
 ]);
 // Sizing belongs to the demo shell.
 const DEMO_WIDTHS: Partial<Record<ComponentDemoName, string>> = {
@@ -218,7 +219,7 @@ export function DemoCanvas({ demo }: { demo: ComponentDemoState }) {
   // App shells and full-bleed backgrounds stretch to the canvas instead of centring in it.
   const fills = isAppShell || demo.fullBleed;
   const demoWidth = demo.fullBleed ? "max-w-full" : DEMO_WIDTHS[entry.slug as ComponentDemoName];
-  const remountSettings = entry.slug === "progress" ? { ...values, value: undefined }
+  const remountSettings = entry.slug === "progress" || entry.slug === "progress-circle" ? { ...values, value: undefined }
     : entry.slug === "breadcrumb" ? { ...values, collapse: undefined, siblings: undefined }
     : entry.slug === "halftone-horizon" ? {}
     : values;
@@ -318,6 +319,11 @@ const demos: Record<DemoName, () => Promise<AnyEntry>> = {
   "delete-button": async () => (await import("@/inspector/entries/delete-button")).deleteButtonEntry,
   dialog: async () => (await import("@/inspector/entries/dialog")).dialogEntry,
   "dropdown-menu": async () => (await import("@/inspector/entries/dropdown-menu")).dropdownMenuEntry,
+  "dropdown-menu-checkboxes": async () => (await import("@/inspector/entries/dropdown-menu")).dropdownMenuCheckboxesEntry,
+  "dropdown-menu-toggles": async () => (await import("@/inspector/entries/dropdown-menu")).dropdownMenuTogglesEntry,
+  "dropdown-menu-radio": async () => (await import("@/inspector/entries/dropdown-menu")).dropdownMenuRadioEntry,
+  "dropdown-menu-actions": async () => (await import("@/inspector/entries/dropdown-menu")).dropdownMenuActionsEntry,
+  "dropdown-menu-panels": async () => (await import("@/inspector/entries/dropdown-menu")).dropdownMenuPanelsEntry,
   empty: async () => (await import("@/inspector/entries/empty")).emptyEntry,
   field: async () => (await import("@/inspector/entries/field")).fieldEntry,
   "halftone-horizon": async () => (await import("@/inspector/entries/halftone-horizon")).halftoneHorizonEntry,
@@ -330,6 +336,7 @@ const demos: Record<DemoName, () => Promise<AnyEntry>> = {
   morph: async () => (await import("@/inspector/entries/morph")).morphEntry,
   popover: async () => (await import("@/inspector/entries/popover")).popoverEntry,
   progress: async () => (await import("@/inspector/entries/progress")).progressEntry,
+  "progress-circle": async () => (await import("@/inspector/entries/progress")).progressCircleEntry,
   radio: async () => (await import("@/inspector/entries/radio")).radioEntry,
   select: async () => (await import("@/inspector/entries/select")).selectEntry,
   "select-sort": async () => (await import("@/inspector/entries/select-sort")).selectSortEntry,

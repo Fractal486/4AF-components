@@ -6,6 +6,7 @@ import { Fragment, useEffect, useRef, useState, useSyncExternalStore, type React
 import type { ComponentStats } from "@/lib/component-stats";
 import { InlineLink } from "@/components/inline-link";
 import { Popover, PopoverContent, PopoverTrigger } from "@/registry/ui/popover/popover";
+import { DEMO_ICONS } from "@/components/site/demo-icons";
 import { MobileToc } from "@/components/site/mobile-toc";
 import { cn } from "@/registry/lib/cn";
 import { Button } from "@/registry/ui/button/button";
@@ -390,7 +391,13 @@ function PlaygroundFrame({
                   </SelectTrigger>
                   <SelectContent align="center">
                     {demos.map((option) => (
-                      <SelectItem key={option.name} value={option.name}>
+                      <SelectItem
+                        key={option.name}
+                        value={option.name}
+                        icon={DEMO_ICONS[option.name]}
+                        // A wide icon (Slider's thumbs on their rails) gets a slot twice as wide.
+                        className="[&_span:has(>svg[data-wide-icon])]:w-7 [&_svg[data-wide-icon]]:w-7"
+                      >
                         {option.label}
                       </SelectItem>
                     ))}

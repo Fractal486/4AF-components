@@ -5,7 +5,6 @@ import {
   Bell,
   BellOff,
   Bookmark,
-  ChevronRight,
   CreditCard,
   Download,
   Ellipsis,
@@ -20,7 +19,6 @@ import {
 import { useState, type ReactNode } from "react";
 import { Button } from "@/registry/ui/button/button";
 import { Morph } from "@/registry/ui/morph/morph";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/registry/ui/select/select";
 import {
   DropdownMenu,
   createDropdownMenuHandle,
@@ -50,16 +48,8 @@ import { SafeTriangleOverlay } from "./dropdown-menu.safe-triangle";
 const SIDES = ["bottom", "top", "right", "left"] as const;
 const ALIGNS = ["start", "center", "end"] as const;
 // One menu per row type, matching the docs sections, so no single menu runs to twenty rows.
-const ROWS = ["items", "checkboxes", "toggles", "radio", "actions", "panels"] as const;
-type RowKind = (typeof ROWS)[number];
-const ROW_LABELS: Record<RowKind, string> = {
-  items: "Items",
-  checkboxes: "Checkboxes",
-  toggles: "Toggles",
-  radio: "Radio",
-  actions: "Actions",
-  panels: "Panels",
-};
+// Each is its own demo, switched from the playground's variants.
+type RowKind = "items" | "checkboxes" | "toggles" | "radio" | "actions" | "panels";
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -230,102 +220,53 @@ const ROWS_BY_KIND: Record<RowKind, () => ReactNode> = {
   ),
 };
 
-export const dropdownMenuEntry = defineEntry({
-  slug: "dropdown-menu",
-  name: "Dropdown Menu",
-  controls: {
-    side: withIcons(select(SIDES, "bottom"), ANCHORED_SIDE_ICONS),
-    align: withIcons(select(ALIGNS, "start"), ANCHORED_ALIGN_ICONS),
-    longLabels: bool(false, "Long labels"),
-    shared: bool(false, "Shared menu"),
-    safeTriangle: bool(false, "Show safe triangle"),
-  },
-  render: ({ side, align, safeTriangle, longLabels, shared }) => (
-    <>
-      <DropdownMenuDemo side={side} align={align} longLabels={longLabels} shared={shared} />
-      {safeTriangle && <SafeTriangleOverlay />}
-    </>
-  ),
+// Settings every row type shares.
+const controls = () => ({
+  side: withIcons(select(SIDES, "bottom"), ANCHORED_SIDE_ICONS),
+  align: withIcons(select(ALIGNS, "start"), ANCHORED_ALIGN_ICONS),
+  longLabels: bool(false, "Long labels"),
+  shared: bool(false, "Shared menu"),
+  safeTriangle: bool(false, "Show safe triangle"),
 });
 
+function rowEntry(slug: string, name: string, rows: RowKind) {
+  return defineEntry({
+    slug,
+    name,
+    controls: controls(),
+    render: ({ side, align, safeTriangle, longLabels, shared }) => (
+      <>
+        <DropdownMenuDemo rows={rows} side={side} align={align} longLabels={longLabels} shared={shared} />
+        {safeTriangle && <SafeTriangleOverlay />}
+      </>
+    ),
+  });
+}
+
+export const dropdownMenuEntry = rowEntry("dropdown-menu", "Dropdown Menu", "items");
+export const dropdownMenuCheckboxesEntry = rowEntry("dropdown-menu-checkboxes", "Checkboxes", "checkboxes");
+export const dropdownMenuTogglesEntry = rowEntry("dropdown-menu-toggles", "Toggles", "toggles");
+export const dropdownMenuRadioEntry = rowEntry("dropdown-menu-radio", "Radio", "radio");
+export const dropdownMenuActionsEntry = rowEntry("dropdown-menu-actions", "Actions", "actions");
+export const dropdownMenuPanelsEntry = rowEntry("dropdown-menu-panels", "Panels", "panels");
+
 function DropdownMenuDemo({
+  rows,
   side,
   align,
   longLabels,
   shared,
 }: {
+  rows: RowKind;
   side: (typeof SIDES)[number];
   align: (typeof ALIGNS)[number];
   longLabels: boolean;
   shared: boolean;
 }) {
-  const [rows, setRows] = useState<RowKind>("items");
   const [handle] = useState(() => createDropdownMenuHandle<string>());
 
   return (
     <>
-      {/* Below `lg` the row type is a select across the top of the canvas, as the playground's
-          own variants are: the rail would sit under the open menu. */}
-      <div className="absolute inset-x-0 top-0 z-10 flex h-11 items-center justify-center px-2 lg:hidden">
-        <Select<RowKind>
-          value={rows}
-          onValueChange={(next) => {
-            if (next !== null) setRows(next);
-          }}
-        >
-          <SelectTrigger aria-label="Variant" variant="plain" className="max-w-full">
-            <SelectValue render={<span />}>{() => ROW_LABELS[rows]}</SelectValue>
-          </SelectTrigger>
-          <SelectContent align="center">
-            {ROWS.map((kind) => (
-              <SelectItem key={kind} value={kind}>
-                {ROW_LABELS[kind]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      {/* The row type picks which menu the trigger opens; the current one reads at full
-          strength, the rest muted. Pinned to the middle of the canvas's left edge, at the
-          compact inset, so the trigger stays centred. */}
-      <div
-        role="group"
-        aria-labelledby="dropdown-menu-variants"
-        className="absolute top-1/2 left-2 z-10 flex w-28 -translate-y-1/2 flex-col items-stretch max-lg:hidden"
-      >
-        <p
-          id="dropdown-menu-variants"
-          className="mb-2.5 pr-2 text-2xs text-subtle-foreground"
-        >
-          Variants
-        </p>
-        <div className="relative flex flex-col items-stretch">
-          {/* One chevron for the column, moved a whole row per step: the box is a row tall
-              (Button `sm`, 30px), so a percentage translate lands it on the picked row. */}
-          <span
-            aria-hidden
-            className="pointer-events-none absolute top-0 left-0 flex h-[30px] items-center text-foreground transition-[translate] duration-(--duration-slow) ease-out"
-            style={{ translate: `0 ${ROWS.indexOf(rows) * 100}%` }}
-          >
-            <ChevronRight className="size-3" />
-          </span>
-          {ROWS.map((kind) => (
-            <Button
-              key={kind}
-              type="button"
-              variant="plain"
-              size="sm"
-              aria-pressed={rows === kind}
-              // The rail's pace for the same muted-to-full change; the button's own fast hover
-              // reads as a snap on text alone.
-              className="cursor-default justify-start pr-2 pl-4 text-muted-foreground duration-(--duration-slow) hover:text-foreground aria-pressed:text-foreground"
-              onClick={() => setRows(kind)}
-            >
-              {ROW_LABELS[kind]}
-            </Button>
-          ))}
-        </div>
-      </div>
       <div className="flex gap-2">
         {(shared ? ["Alex", "Taylor"] : ["Options"]).map(name => (
           <DropdownMenuTrigger key={name} handle={handle} payload={name}

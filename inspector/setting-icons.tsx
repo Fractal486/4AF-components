@@ -238,12 +238,6 @@ export const ALERT_VARIANT_ICONS = {
   loading: BADGE_STATUS_ICONS.loading,
 } satisfies Record<string, ReactNode>;
 
-/** Progress's shapes: a bar part-filled (on the wide grid, so it reads as a line), and a ring. */
-export const PROGRESS_SHAPE_ICONS = {
-  bar: <Icon wide><rect x="1.5" y="6" width="29" height="4" rx="2" {...TONE} /><rect x="1.5" y="6" width="18" height="4" rx="2" {...SOLID} /></Icon>,
-  circle: <Icon><circle cx="8" cy="8" r="6" strokeWidth={2} {...FAINT} /><path d="M8 2a6 6 0 1 1-3.53 10.85" strokeWidth={2} /></Icon>,
-} satisfies Record<string, ReactNode>;
-
 /**
  * Matrix Loader's settings: each icon is a frozen frame of the real loader, its dots at the
  * opacities that pattern has at one moment of its cycle, computed from its keyframes and delays.

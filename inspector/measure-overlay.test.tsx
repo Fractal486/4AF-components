@@ -231,3 +231,25 @@ describe("touch", () => {
     expect(live()).toBe(false);
   });
 });
+
+it("starts a selection on a painted backdrop, but not on the text over it", () => {
+  render(
+    <Harness>
+      <div data-testid="backdrop" data-measure-backdrop="" style={{ backgroundImage: "linear-gradient(red, blue)" }}>
+        <p>Printed in light</p>
+      </div>
+    </Harness>,
+  );
+  vi.spyOn(canvas(), "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 200, 200));
+
+  fireEvent.pointerDown(screen.getByText("Printed in light"), { button: 0, clientX: 10, clientY: 10 });
+  fireEvent.pointerMove(canvas(), { clientX: 80, clientY: 60 });
+  expect(overlay()).not.toBeInTheDocument();
+  fireEvent.pointerUp(canvas(), { clientX: 80, clientY: 60 });
+
+  const backdrop = screen.getByTestId("backdrop");
+  fireEvent.pointerDown(backdrop, { button: 0, clientX: 10, clientY: 10 });
+  fireEvent.pointerMove(backdrop, { clientX: 80, clientY: 60 });
+  expect(overlay()).toBeInTheDocument();
+  fireEvent.pointerUp(backdrop, { clientX: 80, clientY: 60 });
+});
