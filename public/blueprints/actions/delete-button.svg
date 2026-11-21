@@ -172,12 +172,12 @@
            Delete width=40.58*3=121.74; total=48+30+121.74=199.74.
            Start=380-199.74/2=280.13. Trash2 source: lucide-react/dist/esm/icons/trash-2.js. -->
       <g class="db-swap-out" aria-hidden="true">
-        <g transform="translate(280.13 196) scale(2)" stroke="#c7c7c2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 6h18" vector-effect="non-scaling-stroke" pathLength="1" class="db-idle-stroke"/>
-          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" vector-effect="non-scaling-stroke" pathLength="1" class="db-idle-stroke" style="--db-idle-delay:100ms"/>
-          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" vector-effect="non-scaling-stroke" pathLength="1" class="db-idle-stroke" style="--db-idle-delay:125ms"/>
-          <path d="M10 11v6" vector-effect="non-scaling-stroke" pathLength="1" class="db-idle-stroke" style="--db-idle-delay:150ms"/>
-          <path d="M14 11v6" vector-effect="non-scaling-stroke" pathLength="1" class="db-idle-stroke" style="--db-idle-delay:175ms"/>
+        <g transform="translate(280.13 196) scale(2)" stroke="#c7c7c2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18" pathLength="1" class="db-idle-stroke"/>
+          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" pathLength="1" class="db-idle-stroke" style="--db-idle-delay:100ms"/>
+          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" pathLength="1" class="db-idle-stroke" style="--db-idle-delay:125ms"/>
+          <path d="M10 11v6" pathLength="1" class="db-idle-stroke" style="--db-idle-delay:150ms"/>
+          <path d="M14 11v6" pathLength="1" class="db-idle-stroke" style="--db-idle-delay:175ms"/>
         </g>
         <text x="358.13" y="233.5" textLength="121.74" lengthAdjust="spacingAndGlyphs" class="db-content">Delete</text>
       </g>

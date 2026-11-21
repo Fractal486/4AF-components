@@ -153,9 +153,9 @@
 
     <!-- Lucide Copy exits and Check enters using Morph poses; no clipboard action occurs. -->
     <g class="copybp-swap-out" aria-hidden="true">
-    <g transform="translate(252 202) scale(4)" class="copybp-icon">
-      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" vector-effect="non-scaling-stroke" pathLength="1" class="copybp-draw" style="--copybp-line-delay:100ms"/>
-      <rect x="8" y="8" width="14" height="14" rx="2" ry="2" vector-effect="non-scaling-stroke" pathLength="1" class="copybp-draw" style="--copybp-line-delay:125ms"/>
+    <g transform="translate(252 202)" class="copybp-icon">
+      <path d="M16 64c-4.4 0-8-3.6-8-8V16c0-4.4 3.6-8 8-8h40c4.4 0 8 3.6 8 8" pathLength="1" class="copybp-draw" style="--copybp-line-delay:100ms"/>
+      <rect x="32" y="32" width="56" height="56" rx="8" ry="8" pathLength="1" class="copybp-draw" style="--copybp-line-delay:125ms"/>
     </g>
 
     </g>

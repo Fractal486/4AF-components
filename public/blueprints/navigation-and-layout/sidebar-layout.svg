@@ -198,7 +198,7 @@
   <path d="M671 176V1072" class="sbl-line sbl-draw" style="--sbl-delay:250ms" pathLength="1"/>
   </g>
   <g class="sbl-header-line">
-  <path vector-effect="non-scaling-stroke" d="M672 271H2080" class="sbl-line sbl-draw" style="--sbl-delay:275ms" pathLength="1"/>
+  <path d="M672 271H2080" class="sbl-line sbl-draw" style="--sbl-delay:275ms" pathLength="1"/>
 
   </g>
 
