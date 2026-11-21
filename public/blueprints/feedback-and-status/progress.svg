@@ -12,7 +12,7 @@
        Track x=156..924, y=206..222. Label line box y=150..190.
        Indicator is full width, translated -40% and clipped by the track:
        visible width = 384*.6 = 230.4px (460.8 drawing units).
-       Reveal: 0 to 60% in 700ms with cubic ease-out, then guides complete at 900ms.
+       Reveal: 0 to 60% in 700ms with cubic ease-out, then guides complete at 1000ms.
        Fill and leading edge share translateX(-460.8px) to zero.
        Percentage frames use inverse cubic times: t=700*(1-cbrt(1-value/60)).
        Static exports and reduced motion show only the completed 60% state.
@@ -38,7 +38,7 @@
         .progress-bp-count-final { animation: progress-bp-final 700ms steps(1, end) both; }
         .progress-bp-draw { stroke-dasharray: 1; animation: progress-bp-draw 400ms ease-out both; }
         .progress-bp-detail { animation-duration: 200ms; animation-delay: 400ms; }
-        .progress-bp-measure, .progress-bp-spacing, .progress-bp-label { animation: progress-bp-reveal 200ms ease-out 700ms both; }
+        .progress-bp-measure, .progress-bp-spacing, .progress-bp-label { animation: progress-bp-reveal 200ms ease-out 800ms both; }
       }
     </style>
   </defs>

@@ -32,7 +32,7 @@
        the exact outer/inner border edges rather than adding the illustration stroke twice.
        App dark base: oklch(0.120 0 0) resolves to #060606.
        Animation: outer 0-400ms; inputs 250-450 / 275-475ms; X 300-500 / 325-525ms;
-       Entrance 50-600ms; all blue annotations 700-900ms. Static/reduced-motion view is fully visible.
+       Entrance 50-600ms; all blue annotations 800-1000ms. Static/reduced-motion view is fully visible.
        Source entrance pose: opacity 0, scale .96, blur 4 CSS px (8 units at 2x).
        Center=(800,520). The normalized installed motion.spring(spring.smooth) response
        is sampled every 10ms and mapped to scale/opacity/blur; opacity/blur clamp at rest.
@@ -115,7 +115,7 @@
       }
       /* One press/release during reveal, matching Button's .95 press scale.
          spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
-         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         Runs 150..650ms, before measurements appear at 800ms. Separate groups
          compose with content/panel motion; static and reduced motion stay at 1. */
       @keyframes dialog-bp-button-press {
         0% { transform: scale(1.000000); }
@@ -179,7 +179,7 @@
         }
         #dialog-bp .outline { animation-duration: 400ms; }
         #dialog-bp .spacing, #dialog-bp .measure, #dialog-bp .extension, #dialog-bp .label {
-          animation: dialog-bp-reveal 200ms ease-out 700ms both;
+          animation: dialog-bp-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

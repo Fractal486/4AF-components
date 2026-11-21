@@ -40,7 +40,7 @@
     The artwork font stack intentionally follows the blueprint style.
 
     The first structural chevron draws for 400ms; other icon strokes finish
-    by 650ms. All annotations fade together from 700ms to 900ms. CSS only.
+    by 650ms. All annotations fade together from 800ms to 1000ms. CSS only.
   -->
   <defs>
     <style>
@@ -61,7 +61,7 @@
         }
         .breadcrumb-bp-outline { animation-duration: 400ms; }
         .breadcrumb-bp-measure, .breadcrumb-bp-spacing, .breadcrumb-bp-label {
-          animation: breadcrumb-bp-reveal 200ms ease-out 700ms both;
+          animation: breadcrumb-bp-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

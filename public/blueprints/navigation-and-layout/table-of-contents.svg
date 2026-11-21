@@ -53,7 +53,7 @@
       /* One dash travels along a 450-unit path, with unscaled round caps.
          Introduction: start=12, length=66. Usage+Configuration: start=192, length=156.
          pathLength=1 normalizes both lengths and offsets (divide by 450).
-         Move/extend 250..650ms; annotations remain at 700..900ms. */
+         Move/extend 250..650ms; annotations remain at 800..1000ms. */
       /* Sharp does not normalize dash metrics with pathLength; preserve an exact
          short static path for PNG/reduced-motion, and use the normalized moving
          path only when CSS animation is enabled. Both finish at y388..544. */
@@ -72,12 +72,12 @@
         }
         #toc-bp .toc-bp-outline { animation-duration: 400ms; }
         #toc-bp .toc-bp-spacing, #toc-bp .toc-bp-measure, #toc-bp .toc-bp-label {
-          animation: toc-bp-reveal 200ms ease-out 700ms both;
+          animation: toc-bp-reveal 200ms ease-out 800ms both;
         }
       }
     </style>
     <!-- Reveal the dashed rail with a normalized solid mask, preserving its final dashes.
-         Rail 0..400ms; marker moves/extends 250..650ms; every annotation 700..900ms. -->
+         Rail 0..400ms; marker moves/extends 250..650ms; every annotation 800..1000ms. -->
     <mask id="toc-bp-rail-reveal" maskUnits="userSpaceOnUse" x="330" y="190" width="18" height="456">
       <path d="M339 208V634" stroke="white" stroke-width="9" stroke-linecap="round" pathLength="1" class="toc-bp-draw toc-bp-outline"/>
     </mask>

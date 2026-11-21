@@ -35,7 +35,7 @@
     165.77 and 255.77. Illustration uses the approved sans-serif stack.
 
     The single structural divider draws from 0 to 400ms. There are no smaller
-    component strokes. All annotations fade together from 700 to 900ms.
+    component strokes. All annotations fade together from 800 to 1000ms.
     Reduced-motion and static renderers show the complete drawing immediately.
   -->
   <defs>
@@ -54,7 +54,7 @@
           animation: separator-bp-draw 400ms ease-out both;
         }
         .separator-bp-measure, .separator-bp-spacing, .separator-bp-label {
-          animation: separator-bp-reveal 200ms ease-out 700ms both;
+          animation: separator-bp-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

@@ -37,7 +37,7 @@
       #swbp .swbp-measure { stroke: #6889ff; stroke-width: 1.5; }
       #swbp .swbp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
       /* Static exports and reduced-motion viewers show the completed drawing. */
-      #swbp { --swbp-outline-duration: 400ms; --swbp-detail-duration: 200ms; --swbp-annotation-delay: 700ms; --swbp-annotation-duration: 200ms; }
+      #swbp { --swbp-outline-duration: 400ms; --swbp-detail-duration: 200ms; --swbp-annotation-delay: 800ms; --swbp-annotation-duration: 200ms; }
       @keyframes swbp-draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes swbp-reveal { from { opacity: 0; } }
       /* Checked thumb moves 16 CSS px * 3 = 48 units from its unchecked position. */

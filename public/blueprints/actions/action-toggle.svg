@@ -49,7 +49,7 @@
       outward by 1.5 units, with a 3-unit stroke. It consumes no padding or height.
     Illustration inks simplify the surface; the spinner conveys pending work.
 
-    Animation: outline 0-400ms; annotations 700-900ms. Spinner fills stay visible.
+    Animation: outline 0-400ms; annotations 800-1000ms. Spinner fills stay visible.
       Spinner fades slow smoothly from 0-900ms, settling with the top bar bright.
       Static / reduced-motion rendering is fully visible with a stationary spinner.
   -->
@@ -128,7 +128,7 @@
       }
       /* One press/release during reveal, matching Button's .95 press scale.
          spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
-         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         Runs 150..650ms, before measurements appear at 800ms. Separate groups
          compose with content/panel motion; static and reduced motion stay at 1. */
       @keyframes action-toggle-bp-button-press {
         0% { transform: scale(1.000000); }
@@ -266,7 +266,7 @@
         .action-toggle-bp-measure,
         .action-toggle-bp-spacing,
         .action-toggle-bp-label {
-          animation: action-toggle-bp-reveal 200ms ease-out 700ms both;
+          animation: action-toggle-bp-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

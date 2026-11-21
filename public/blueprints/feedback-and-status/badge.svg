@@ -93,7 +93,7 @@
         }
         .badge-draw { stroke-dasharray: 1; animation: badge-draw 200ms ease-out 400ms both; }
         .badge-outline { animation-duration: 400ms; animation-delay: 0ms; }
-        .badge-measure, .badge-spacing, .badge-dimension { animation: badge-reveal 200ms ease-out 700ms both; }
+        .badge-measure, .badge-spacing, .badge-dimension { animation: badge-reveal 200ms ease-out 800ms both; }
       }
     </style>
   </defs>

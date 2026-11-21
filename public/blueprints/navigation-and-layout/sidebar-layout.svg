@@ -47,7 +47,7 @@
     Origin=(160,176). Shell bounds=(160,176)-(2080,1072).
     Filled demo blocks are rendered as wireframe outlines only. Their 2-unit strokes
     are inset 1 unit so the visible bounds match the measured box edges exactly.
-    Animation ends at 900ms: outline 0-400; details 250-650; annotations 700-900.
+    Animation ends at 1000ms: outline 0-400; details 250-650; annotations 800-1000.
   -->
   <defs>
     <clipPath id="sbl-expansion-clip"><rect x="160" y="176" width="512" height="896" class="sbl-clip-width"/></clipPath>
@@ -69,7 +69,7 @@
          Three columns keep their 24-unit gaps: width 570.6667 -> 432.
          Only geometry changes; header text/icons and block radii do not scale.
          Menu rows move down 64 units as the 32px group heading returns.
-         Geometry settles at 550ms, before all rulers appear at 700..900ms. */
+         Geometry settles at 550ms, before all rulers appear at 800..1000ms. */
       @keyframes sbl-clip-width { from { width: 96px; } to { width: 512px; } }
       @keyframes sbl-main-shift { from { transform: translateX(-416px); } to { transform: translateX(0); } }
       @keyframes sbl-header-line { from { transform: scaleX(1.2954545455); } to { transform: scaleX(1); } }
@@ -83,7 +83,7 @@
       .sbl-header-line { transform-origin: 2080px 271px; }
       /* One press/release during reveal, matching Button's .95 press scale.
          spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
-         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         Runs 150..650ms, before measurements appear at 800ms. Separate groups
          compose with content/panel motion; static and reduced motion stay at 1. */
       @keyframes sidebar-layout-bp-button-press {
         0% { transform: scale(1.000000); }
@@ -157,7 +157,7 @@
         }
         .sbl-outline { animation-duration: 400ms; }
         .sbl-guide, .sbl-ruler, .sbl-label {
-          animation: sbl-reveal 200ms ease-out 700ms both;
+          animation: sbl-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

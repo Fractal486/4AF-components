@@ -4,7 +4,7 @@
   <!-- Sources: registry/ui/skeleton/skeleton.tsx (no variants file),
        inspector/entries/skeleton.tsx, registry.json, lib/component-catalog.ts,
        app/globals.css, node_modules/tailwindcss/theme.css.
-       State: ordinary loading demo. Fills pulse once during the 900ms blueprint
+       State: ordinary loading demo. Fills pulse once for 900ms during the blueprint
        reveal, then settle at full opacity. Tailwind pulse's 50% opacity midpoint
        and cubic-bezier(.4,0,.6,1) easing are retained; its cycle is shortened to
        the blueprint duration. Reduced motion leaves all fills static.
@@ -32,7 +32,7 @@
         #sk-blueprint .loading-fill { animation: sk-pulse 900ms cubic-bezier(.4,0,.6,1) both; }
         #sk-blueprint .draw { stroke-dasharray: 1; animation: sk-draw 200ms ease-out var(--sk-delay, 0ms) both; }
         #sk-blueprint .outline { animation-duration: 400ms; }
-        #sk-blueprint .measure, #sk-blueprint .spacing, #sk-blueprint .label { animation: sk-reveal 200ms ease-out 700ms both; }
+        #sk-blueprint .measure, #sk-blueprint .spacing, #sk-blueprint .label { animation: sk-reveal 200ms ease-out 800ms both; }
       }
     </style>
   </defs>

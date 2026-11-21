@@ -62,7 +62,7 @@
         }
         #tabs-blueprint .outline { animation-duration: 400ms; }
         #tabs-blueprint .measure, #tabs-blueprint .spacing, #tabs-blueprint .label {
-          animation: tabs-blueprint-reveal 200ms ease-out 700ms both;
+          animation: tabs-blueprint-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

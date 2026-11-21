@@ -39,7 +39,7 @@
        One CSS-only demonstration of the source glyph swaps; no rotation or morph.
        Frames occupy contiguous 60ms windows, then the first pose returns at 600ms.
        Component text is always present. There are no solid outlines to trace.
-       Blue guides and labels appear at 700..900ms. No loop or replay control.
+       Blue guides and labels appear at 800..1000ms. No loop or replay control.
        Unlike the live loader's slower reduced-motion cycle, this blueprint follows
        the static reduced-motion convention of the illustration collection.
   -->
@@ -76,7 +76,7 @@
         #ascii-loader-bp .ascii-loader-bp-ruler,
         #ascii-loader-bp .ascii-loader-bp-guide,
         #ascii-loader-bp .ascii-loader-bp-label {
-          animation: ascii-loader-bp-annotate 200ms ease-out 700ms both;
+          animation: ascii-loader-bp-annotate 200ms ease-out 800ms both;
         }
       }
     </style>

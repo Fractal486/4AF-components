@@ -47,7 +47,7 @@
 
       /* Fully visible by default, including static exports and reduced motion.
          Outline: 0..400ms. Icon circle: 400..600ms; handle: 425..625ms.
-         All annotations: 700..900ms. One iteration. */
+         All annotations: 800..1000ms. One iteration. */
       @keyframes input-blueprint-draw {
         from { stroke-dashoffset: 1; }
         to { stroke-dashoffset: 0; }
@@ -67,7 +67,7 @@
         #input-blueprint .input-measure,
         #input-blueprint .input-spacing,
         #input-blueprint .input-label {
-          animation: input-blueprint-reveal 200ms ease-out 700ms both;
+          animation: input-blueprint-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

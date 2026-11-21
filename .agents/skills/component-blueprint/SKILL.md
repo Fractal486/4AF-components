@@ -39,11 +39,11 @@ Add an accessible SVG `title` and `desc` (not visible headings). Keep source pat
 
 Use embedded CSS only. Keep component text and fills visible throughout. Draw the component's solid outline and icon/divider strokes first; then fade in all blue guides, rulers, and measurement labels together. Never animate the dashes travelling indefinitely.
 
-The approved complete sequence is **900ms**:
+Each blueprint finishes at **1000ms**.
 
 - Outer outline: 400ms, starting immediately.
 - Smaller component strokes: 200ms each, staggered by 25ms where useful, with the last finishing by 650ms. Select Aligned's check starts at 400ms; the larger palette's details run from 250–450ms.
-- Guides, rulers, and measurement labels: fade from 0 opacity for 200ms, starting at 700ms. Preserve each element's final opacity, including `.55` guides and `.7` trigger outlines.
+- Guides, rulers, and measurement labels: fade from 0 opacity for 200ms, starting at 800ms. Preserve each element's final opacity, including `.55` guides and `.7` trigger outlines.
 
 Normalize each drawn SVG geometry with `pathLength="1"`. Animate `stroke-dashoffset` from `1` to `0` with `stroke-dasharray: 1` and `ease-out`. Split disconnected paths when they should draw separately. For reusable icons, put `pathLength` on each stroked child and inherit the delay from its `use` instance.
 

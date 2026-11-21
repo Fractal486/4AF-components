@@ -20,14 +20,14 @@
       .icon { stroke: #a7a8a2; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
       .key { fill: #373833; }
       /* Static is the default for exports and reduced-motion viewers. */
-      svg { --outline-duration: 400ms; --detail-duration: 200ms; --annotation-delay: 700ms; --annotation-duration: 200ms; }
+      svg { --outline-duration: 400ms; --detail-duration: 200ms; --annotation-delay: 800ms; --annotation-duration: 200ms; }
       @keyframes draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes reveal { from { opacity: 0; } }
       /* Native CommandPalette popup: .96 scale, opacity 0, 4 CSS px blur.
          At 2x drawing scale the blur starts at 8 SVG units. spring.smooth uses
          visualDuration .3s / bounce .1, sampled every 10ms until settled.
          Center = (800,513), from outer bounds (128,210)..(1472,816).
-         Entrance 50..600ms; strokes finish by 650ms, guides appear 700..900ms.
+         Entrance 50..600ms; strokes finish by 650ms, guides appear 800..1000ms.
          Static and reduced-motion views retain the complete drawing. */
       .cpbp-enter { transform-origin: 800px 513px; }
       @keyframes cpbp-enter {

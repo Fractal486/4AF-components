@@ -27,7 +27,7 @@
     Gap: (312 - 288) / 3 = 8px, measured between layout edges, not shadows.
     Outline ink is inset by half its stroke width so its outside edge matches
       each box; it adds no fictitious CSS border to either component.
-    Animation: outline 0..400ms, trigger 400..600ms; all annotations 700..900ms.
+    Animation: outline 0..400ms, trigger 400..600ms; all annotations 800..1000ms.
       Native entrance from tooltip.tsx: opacity 0, scale .9, blur 5px, and
       translateY 16px for top placement. At 3x: blur 15 units, translateY 48.
       app/globals.css: duration-fast=150ms, ease-out=cubic-bezier(.16,1,.3,1).
@@ -43,7 +43,7 @@
       #tooltip-bp-root .tooltip-bp-label { fill: #a1a29c; font-size: 18px; }
       #tooltip-bp-root .tooltip-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
       #tooltip-bp-root .tooltip-bp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
-      #tooltip-bp-root { --tooltip-bp-detail-duration: 200ms; --tooltip-bp-annotation-delay: 700ms; }
+      #tooltip-bp-root { --tooltip-bp-detail-duration: 200ms; --tooltip-bp-annotation-delay: 800ms; }
       @keyframes tooltip-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes tooltip-bp-reveal { from { opacity: 0; } }
       #tooltip-bp-root .tooltip-bp-enter { transform-origin: 500px 312px; }

@@ -70,7 +70,7 @@
          Collapsed header hides search+gap (40px); group label removes 32px.
          First four rows therefore move down (40+32)*2=144 units on expansion.
          Header brand and footer stay fixed. Real geometry changes, no scaled text.
-         Expansion 250..550ms; rulers/spacing 700..900ms. */
+         Expansion 250..550ms; rulers/spacing 800..1000ms. */
       @keyframes sidebar-bp-width { from { width: 94px; } to { width: 510px; } }
       @keyframes sidebar-bp-clip-width { from { width: 96px; } to { width: 512px; } }
       @keyframes sidebar-bp-selection { from { width: 64px; y: 264px; } to { width: 478px; y: 408px; } }
@@ -78,7 +78,7 @@
       @keyframes sidebar-bp-heading-in { from { opacity: 0; transform: translateY(-144px); } to { opacity: 1; transform: translateY(0); } }
       /* One press/release during reveal, matching Button's .95 press scale.
          spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
-         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         Runs 150..650ms, before measurements appear at 800ms. Separate groups
          compose with content/panel motion; static and reduced motion stay at 1. */
       @keyframes sidebar-bp-button-press {
         0% { transform: scale(1.000000); }
@@ -151,7 +151,7 @@
         #sidebar-bp-root .sidebar-bp-measure,
         #sidebar-bp-root .sidebar-bp-spacing,
         #sidebar-bp-root .sidebar-bp-label {
-          animation: sidebar-bp-reveal 200ms ease-out 700ms both;
+          animation: sidebar-bp-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

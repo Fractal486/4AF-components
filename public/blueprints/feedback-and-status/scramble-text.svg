@@ -34,7 +34,7 @@
        frames without fading or sliding, so the unresolved suffix keeps scrambling.
        Frames 0..17 each occupy exactly 32ms; the final label appears at 576ms.
        No solid outlines, icons, or dividers exist to draw in the first phase.
-       All blue guides, rulers, and labels fade in together from 700 to 900ms.
+       All blue guides, rulers, and labels fade in together from 800 to 1000ms.
        CSS-only, once, no scripts or loop. Each transient frame has no fill mode:
        it is visible only during its own interval, never during its delay.
        Static exports and reduced-motion viewers show only the final label.
@@ -72,7 +72,7 @@
         #scramble-text-bp .scramble-text-bp-ruler,
         #scramble-text-bp .scramble-text-bp-guide,
         #scramble-text-bp .scramble-text-bp-label {
-          animation: scramble-text-bp-annotate 200ms ease-out 700ms both;
+          animation: scramble-text-bp-annotate 200ms ease-out 800ms both;
         }
       }
     </style>

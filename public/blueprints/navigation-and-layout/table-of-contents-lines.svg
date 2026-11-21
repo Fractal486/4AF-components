@@ -44,7 +44,7 @@
 
     Animation: no outer border exists, so the first main rule is the initial
     structural stroke (0..400ms). Other rules draw for 200ms at 250..450ms delays,
-    finishing by 650ms. All annotations reveal together at 700..900ms.
+    finishing by 650ms. All annotations reveal together at 800..1000ms.
     Text remains visible. Reduced motion and static rendering show the final state.
   -->
   <defs>
@@ -82,7 +82,7 @@
         #toc-lines-bp-root .toc-lines-bp-spacing,
         #toc-lines-bp-root .toc-lines-bp-measure,
         #toc-lines-bp-root .toc-lines-bp-label {
-          animation: toc-lines-bp-reveal 200ms ease-out 700ms both;
+          animation: toc-lines-bp-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

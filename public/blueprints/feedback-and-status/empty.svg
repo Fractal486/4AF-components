@@ -26,7 +26,7 @@
     @keyframes empty-reveal { from { opacity: 0; } }
       /* One press/release during reveal, matching Button's .95 press scale.
          spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
-         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         Runs 150..650ms, before measurements appear at 800ms. Separate groups
          compose with content/panel motion; static and reduced motion stay at 1. */
       @keyframes empty-bp-button-press {
         0% { transform: scale(1.000000); }
@@ -85,7 +85,7 @@
         .empty-bp-button-press { animation: empty-bp-button-press 500ms linear 150ms both; }
       .draw { stroke-dasharray: 1; animation: empty-draw 200ms ease-out var(--delay, 250ms) both; }
       .outline { animation-duration: 400ms; --delay: 0ms; }
-      .spacing, .measure, .label { animation: empty-reveal 200ms ease-out 700ms both; }
+      .spacing, .measure, .label { animation: empty-reveal 200ms ease-out 800ms both; }
     }
   </style></defs>
   <rect width="1296" height="810" fill="#060606"/>

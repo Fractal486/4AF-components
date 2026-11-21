@@ -27,7 +27,7 @@
       @media (prefers-reduced-motion: no-preference) {
         .alert-draw { stroke-dasharray: 1; animation: alert-draw 200ms ease-out var(--delay, 0ms) both; }
         .alert-outline { animation-duration: 400ms; }
-        .alert-measure, .alert-guide, .alert-label { animation: alert-reveal 200ms ease-out 700ms both; }
+        .alert-measure, .alert-guide, .alert-label { animation: alert-reveal 200ms ease-out 800ms both; }
       }
     </style>
   </defs>

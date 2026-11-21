@@ -29,14 +29,14 @@
     The illustration outline tracks the button's layout boundary; its stroke weight
     is illustration ink, not a measured border or the exterior 1px shadow spread.
     Animation: outline 0-400ms; Copy strokes 100-325ms; Copy to Check 350-650ms;
-    every blue annotation 700-900ms. Both glyphs share the same 16px viewport. Reduced motion shows the completed drawing.
+    every blue annotation 800-1000ms. Both glyphs share the same 16px viewport. Reduced motion shows the completed drawing.
   -->
   <defs>
     <style>
       .copybp-svg {
         --copybp-outline-duration: 400ms;
         --copybp-detail-duration: 200ms;
-        --copybp-annotation-delay: 700ms;
+        --copybp-annotation-delay: 800ms;
         --copybp-annotation-duration: 200ms;
       }
       .copybp-label {
@@ -69,7 +69,7 @@
       @keyframes copybp-swap-in { from { opacity: 0; transform: scale(.25); filter: blur(24px); } to { opacity: 1; transform: scale(1); filter: blur(0px); } }
       /* One press/release during reveal, matching Button's .95 press scale.
          spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
-         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         Runs 150..650ms, before measurements appear at 800ms. Separate groups
          compose with content/panel motion; static and reduced motion stay at 1. */
       @keyframes copy-button-bp-button-press {
         0% { transform: scale(1.000000); }

@@ -38,7 +38,7 @@
 
       /* Static and reduced-motion viewers see the complete drawing.
          First outline 0..400ms, subsequent outlines 100..300ms and 125..325ms.
-         Every annotation fades together at 700..900ms. Text and fills stay visible. */
+         Every annotation fades together at 800..1000ms. Text and fills stay visible. */
       @keyframes radio-bp-draw-line {
         from { stroke-dashoffset: 1; }
         to { stroke-dashoffset: 0; }
@@ -67,7 +67,7 @@
         }
         .radio-bp-outline { animation-duration: 400ms; }
         .radio-bp-measure, .radio-bp-spacing, .radio-bp-label {
-          animation: radio-bp-reveal 200ms ease-out 700ms both;
+          animation: radio-bp-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

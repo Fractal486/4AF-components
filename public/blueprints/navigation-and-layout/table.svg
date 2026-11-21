@@ -36,7 +36,7 @@
     First body line box: y=265..305 (20px); first body border: y=320..322 (1px).
 
     Animation: first separator 0..400ms; other separators 250..525ms;
-    all blue annotations 700..900ms. Text remains visible. No repetition.
+    all blue annotations 800..1000ms. Text remains visible. No repetition.
     Reduced motion and static renderers show the completed drawing immediately.
   -->
   <defs>
@@ -62,7 +62,7 @@
         #table-bp-root .table-bp-guide,
         #table-bp-root .table-bp-ruler,
         #table-bp-root .table-bp-label {
-          animation: table-bp-reveal 200ms ease-out 700ms both;
+          animation: table-bp-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

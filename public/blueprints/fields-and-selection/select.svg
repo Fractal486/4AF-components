@@ -60,7 +60,7 @@
          Panel: 250..450ms, .95 -> 1, 3 CSS px blur -> 0, expo ease-out.
          Chevron: 250..650ms, spring duration .4s / bounce 0 sampled every 10ms.
          The authored arrow points up; -180deg starts it down and 0deg finishes up.
-         Trigger dimensions stay fixed. Guides follow at 700..900ms. */
+         Trigger dimensions stay fixed. Guides follow at 800..1000ms. */
       .fouraf-select-bp-panel { transform-origin: 640px 276px; }
       .fouraf-select-bp-chevron { transform-origin: 910px 231px; }
       @keyframes fouraf-select-bp-open {
@@ -124,7 +124,7 @@
         }
         .fouraf-select-bp-outline { animation-duration: 400ms; }
         .fouraf-select-bp-measure, .fouraf-select-bp-spacing, .fouraf-select-bp-label {
-          animation: fouraf-select-bp-reveal 200ms ease-out 700ms both;
+          animation: fouraf-select-bp-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

@@ -30,7 +30,7 @@
        Its 900ms animation starts immediately: peak at 20%, dim at 60%,
        and final rise from 80% to 100%, completing at 900ms overall.
        Dots are visible at rest through every delay, using both fill mode.
-       Blue guides, rulers, and labels fade together at 700..900ms.
+       Blue guides, rulers, and labels fade together at 800..1000ms.
        No outlines are invented around the filled squares; no strokes need tracing.
        CSS-only and one pass. Static/reduced-motion output highlights column one,
        following the blueprint convention rather than the live loader's ongoing loop.
@@ -63,7 +63,7 @@
         #matrix-loader-bp .matrix-loader-bp-ruler,
         #matrix-loader-bp .matrix-loader-bp-guide,
         #matrix-loader-bp .matrix-loader-bp-label {
-          animation: matrix-loader-bp-annotate 200ms ease-out 700ms both;
+          animation: matrix-loader-bp-annotate 200ms ease-out 800ms both;
         }
       }
     </style>

@@ -12,14 +12,14 @@
       .sap-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
       .sap-bp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
       /* Static is the default for exports and reduced-motion viewers. */
-      #sap-bp { --outline-duration: 400ms; --detail-duration: 200ms; --annotation-delay: 700ms; --annotation-duration: 200ms; }
+      #sap-bp { --outline-duration: 400ms; --detail-duration: 200ms; --annotation-delay: 800ms; --annotation-duration: 200ms; }
       @keyframes sap-bp-draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes sap-bp-reveal { from { opacity: 0; } }
       /* Source: registry/ui/select/select-aligned.tsx. Scale .95 -> 1 with
          3 CSS px blur; transform origin is selected row center (588,300).
          Trigger and its fixed ChevronsUpDown glyph fade at 250..450ms as the panel
          covers them. Source --duration-base=200ms; panel settles at 450ms.
-         Guides appear at 700..900ms. No geometry is resized to another row. */
+         Guides appear at 800..1000ms. No geometry is resized to another row. */
       .sap-bp-panel { transform-origin: 588px 300px; }
       .sap-bp-trigger { opacity: 0; }
       @keyframes sap-bp-open { from { opacity: 0; transform: scale(.95); filter: blur(9px); } to { opacity: 1; transform: scale(1); filter: blur(0px); } }

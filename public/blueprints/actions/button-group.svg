@@ -61,7 +61,7 @@
       #button-group-blueprint .bg-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
 
       /* Static exports and reduced motion show the completed drawing.
-         Outline: 0..400ms. Details: 250..650ms. Annotations: 700..900ms.
+         Outline: 0..400ms. Details: 250..650ms. Annotations: 800..1000ms.
          Each button presses its icon and label together; joined surfaces stay fixed,
          matching ButtonGroup pressTarget="content". */
       @keyframes button-group-blueprint-draw {
@@ -73,7 +73,7 @@
       }
       /* One press/release during reveal, matching Button's .95 press scale.
          spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
-         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         Runs 150..650ms, before measurements appear at 800ms. Separate groups
          compose with content/panel motion; static and reduced motion stay at 1. */
       @keyframes button-group-bp-button-press {
         0% { transform: scale(1.000000); }
@@ -141,7 +141,7 @@
         #button-group-blueprint .bg-spacing,
         #button-group-blueprint .bg-measure,
         #button-group-blueprint .bg-label {
-          animation: button-group-blueprint-reveal 200ms ease-out 700ms both;
+          animation: button-group-blueprint-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

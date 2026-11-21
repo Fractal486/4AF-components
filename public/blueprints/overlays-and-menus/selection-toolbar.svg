@@ -39,7 +39,7 @@
     Copy icon box x=241..283; label line box x=307..391, y=292..340.
     Illustrative solid outline is inset 1.5 units, so its outside matches the box.
     Solid stroke timing: shell 0..400ms; details 250..650ms;
-      annotations 700..900ms. Static and reduced-motion states are fully visible.
+      annotations 800..1000ms. Static and reduced-motion states are fully visible.
   -->
   <defs>
     <style>
@@ -54,13 +54,13 @@
       /* Selection sweeps across the existing range at 0..250ms.
          Source entry pose: scale .95, translateY 6 CSS px, blur 4 CSS px.
          At 3x those are 18 and 12 units; origin is the popup's bottom center.
-         Popup 250..650ms, guides 700..900ms; reduced motion shows the final state. */
+         Popup 250..650ms, guides 800..1000ms; reduced motion shows the final state. */
       #stb-drawing .stb-popup { transform-origin: 700px 364px; }
       @keyframes stb-select { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
       @keyframes stb-popup { from { opacity: 0; transform: translateY(18px) scale(.95); filter: blur(12px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); } }
       /* One press/release during reveal, matching Button's .95 press scale.
          spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
-         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         Runs 150..650ms, before measurements appear at 800ms. Separate groups
          compose with content/panel motion; static and reduced motion stay at 1. */
       @keyframes selection-toolbar-bp-button-press {
         0% { transform: scale(1.000000); }
@@ -126,7 +126,7 @@
         #stb-drawing .stb-outline { animation-duration: 400ms; animation-delay: 0ms; }
         #stb-drawing .stb-measure,
         #stb-drawing .stb-spacing,
-        #stb-drawing .stb-label { animation: stb-reveal 200ms ease-out 700ms both; }
+        #stb-drawing .stb-label { animation: stb-reveal 200ms ease-out 800ms both; }
       }
     </style>
   </defs>

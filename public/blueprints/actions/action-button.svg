@@ -56,7 +56,7 @@
        Its opacity trail advances clockwise and slows smoothly to rest over 900ms.
        Base: dark background token = oklch(0.120 0 0), approximately #060606.
 
-       Animation: outline 0..400ms, spinner 0..900ms, all annotations 700..900ms.
+       Animation: outline 0..400ms, spinner 0..900ms, all annotations 800..1000ms.
        Text, component fill, and spinner bars remain visible. No loops. Reduced motion
        and static renderers receive the finished drawing without animation.
   -->
@@ -136,7 +136,7 @@
       }
       /* One press/release during reveal, matching Button's .95 press scale.
          spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
-         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         Runs 150..650ms, before measurements appear at 800ms. Separate groups
          compose with content/panel motion; static and reduced motion stay at 1. */
       @keyframes action-button-bp-button-press {
         0% { transform: scale(1.000000); }
@@ -274,7 +274,7 @@
         #action-button-blueprint .ab-measure,
         #action-button-blueprint .ab-spacing,
         #action-button-blueprint .ab-label {
-          animation: action-button-blueprint-reveal 200ms ease-out 700ms both;
+          animation: action-button-blueprint-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

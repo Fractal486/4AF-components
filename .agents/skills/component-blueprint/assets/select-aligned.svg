@@ -12,7 +12,7 @@
       .measure { stroke: #6889ff; stroke-width: 1.5; }
       .spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
       /* Static is the default for exports and reduced-motion viewers. */
-      svg { --outline-duration: 400ms; --detail-duration: 200ms; --annotation-delay: 700ms; --annotation-duration: 200ms; }
+      svg { --outline-duration: 400ms; --detail-duration: 200ms; --annotation-delay: 800ms; --annotation-duration: 200ms; }
       @keyframes draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes reveal { from { opacity: 0; } }
       @media (prefers-reduced-motion: no-preference) {

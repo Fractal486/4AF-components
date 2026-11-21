@@ -13,7 +13,7 @@
 
        Chosen state: enabled, default widest sizing; Following is the final state.
        A CSS illustration of the source Morph opacity/scale/blur poses swaps labels
-       at 350..650ms; annotations appear at 700..900ms. No loops.
+       at 350..650ms; annotations appear at 800..1000ms. No loops.
        Static and reduced-motion output shows Following only.
        This is one text-toggle example, not a fixed width contract for Morph.
        Drawing scale: 3x. Root size: 16px; Tailwind spacing: 0.25rem = 4px.
@@ -48,7 +48,7 @@
       #morph-bp .morph-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
       #morph-bp .morph-bp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
       /* Static exports and reduced-motion viewers show every final mark. */
-      #morph-bp { --morph-bp-outline-duration: 400ms; --morph-bp-detail-duration: 200ms; --morph-bp-annotation-delay: 700ms; --morph-bp-annotation-duration: 200ms; }
+      #morph-bp { --morph-bp-outline-duration: 400ms; --morph-bp-detail-duration: 200ms; --morph-bp-annotation-delay: 800ms; --morph-bp-annotation-duration: 200ms; }
       @keyframes morph-bp-draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes morph-bp-reveal { from { opacity: 0; } }
       #morph-bp .morph-bp-swap-out { opacity: 0; }
@@ -57,7 +57,7 @@
       @keyframes morph-bp-swap-in { from { opacity: 0; transform: scale(.25); filter: blur(12px); } to { opacity: 1; transform: scale(1); filter: blur(0px); } }
       /* One press/release during reveal, matching Button's .95 press scale.
          spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
-         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         Runs 150..650ms, before measurements appear at 800ms. Separate groups
          compose with content/panel motion; static and reduced motion stay at 1. */
       @keyframes morph-bp-button-press {
         0% { transform: scale(1.000000); }

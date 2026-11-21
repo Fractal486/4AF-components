@@ -51,7 +51,7 @@
     All feedback settles by 650ms. Icons are inline paths for reliable stroke animation.
     No enclosing component outline exists in the default variant. The main header
       separator draws for the initial 400ms; smaller borders and icons finish by 650ms.
-      All blue annotations reveal together at 700ms and finish at 900ms.
+      All blue annotations reveal together at 800ms and finish at 1000ms.
   -->
   <defs>
     <style>
@@ -70,7 +70,7 @@
       @keyframes dtbp-reveal { from { opacity: 0; } }
       /* One press/release during reveal, matching Button's .95 press scale.
          spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
-         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         Runs 150..650ms, before measurements appear at 800ms. Separate groups
          compose with content/panel motion; static and reduced motion stay at 1. */
       @keyframes data-table-bp-button-press {
         0% { transform: scale(1.000000); }
@@ -180,7 +180,7 @@
         }
         #dtbp .outline { animation-duration: 400ms; }
         #dtbp .measure, #dtbp .spacing, #dtbp .label {
-          animation: dtbp-reveal 200ms ease-out 700ms both;
+          animation: dtbp-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

@@ -41,7 +41,7 @@
     Blue dashed overlays extend the rail, handle, and tick edges to their rulers.
       Label dimensions are intentionally omitted.
     Animation: outline 0..400ms; handle draw 250..450ms; travel/count 200..650ms;
-      tick strokes 275..650ms, tick group reveal 650..700ms; annotations 700..900ms.
+      tick strokes 275..650ms, tick group reveal 650..700ms; annotations 800..1000ms.
       Static/reduced-motion: fully visible at value 40.
   -->
   <defs>
@@ -58,7 +58,7 @@
       .slbp {
         --slbp-outline-duration: 400ms;
         --slbp-detail-duration: 200ms;
-        --slbp-annotation-delay: 700ms;
+        --slbp-annotation-delay: 800ms;
         --slbp-annotation-duration: 200ms;
       }
       @keyframes slbp-draw-line {

@@ -63,7 +63,7 @@
       #af-ddm-blueprint .af-ddm-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
       #af-ddm-blueprint .af-ddm-icon { stroke: #a7a8a2; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
       /* Static final state is the default, including reduced-motion and PNG exports.
-         Outlines: 0-400ms. Details: 250-625ms. Spinner: 0-900ms. Annotations: 700-900ms, once.
+         Outlines: 0-400ms. Details: 250-625ms. Spinner: 0-900ms. Annotations: 800-1000ms, once.
          All menu contents enter together; final fills and indicators remain visible. */
       @keyframes af-ddm-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes af-ddm-reveal { from { opacity: 0; } }
@@ -128,7 +128,7 @@
       }
       /* One press/release during reveal, matching Button's .95 press scale.
          spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
-         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         Runs 150..650ms, before measurements appear at 800ms. Separate groups
          compose with content/panel motion; static and reduced motion stay at 1. */
       @keyframes dropdown-menu-bp-button-press {
         0% { transform: scale(1.000000); }
@@ -202,7 +202,7 @@
         #af-ddm-blueprint .af-ddm-measure,
         #af-ddm-blueprint .af-ddm-spacing,
         #af-ddm-blueprint .af-ddm-label {
-          animation: af-ddm-reveal 200ms ease-out 700ms both;
+          animation: af-ddm-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

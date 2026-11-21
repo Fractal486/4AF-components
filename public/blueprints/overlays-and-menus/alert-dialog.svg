@@ -49,7 +49,7 @@
     sampled every 10ms, freezing at rest; the entrance runs 50..600ms.
     Animation: outer 0..400ms; warning strokes 250..450ms, 275..475ms, 300..500ms;
     button strokes 400..600ms and 425..625ms;
-    every blue annotation 700..900ms. Static and reduced-motion states are complete.
+    every blue annotation 800..1000ms. Static and reduced-motion states are complete.
   -->
   <defs>
     <style>
@@ -67,7 +67,7 @@
       @keyframes adbp-reveal { from { opacity: 0; } }
       /* One press/release during reveal, matching Button's .95 press scale.
          spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
-         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         Runs 150..650ms, before measurements appear at 800ms. Separate groups
          compose with content/panel motion; static and reduced motion stay at 1. */
       @keyframes alert-dialog-bp-button-press {
         0% { transform: scale(1.000000); }
@@ -192,7 +192,7 @@
         #adbp-root .adbp-measure,
         #adbp-root .adbp-spacing,
         #adbp-root .adbp-label {
-          animation: adbp-reveal 200ms ease-out 700ms both;
+          animation: adbp-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

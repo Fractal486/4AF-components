@@ -22,7 +22,7 @@
        description y=388..448. Text inset x=219..1101; border interior x=183..1137.
        Dark app background oklch(0.120 0 0), rendered here as #060606.
        No smaller component strokes in this state: outline 0..400ms;
-       all annotations 700..900ms. Text stays visible; reduced motion is static. -->
+       all annotations 800..1000ms. Text stays visible; reduced motion is static. -->
   <defs>
     <style>
       .field-bp-text, .field-bp-label { font-family: Inter, 'Segoe UI', Arial, sans-serif; }
@@ -34,7 +34,7 @@
       @keyframes field-bp-reveal { from { opacity: 0; } }
       @media (prefers-reduced-motion: no-preference) {
         .field-bp-outline { stroke-dasharray: 1; animation: field-bp-draw 400ms ease-out both; }
-        .field-bp-measure, .field-bp-spacing, .field-bp-label { animation: field-bp-reveal 200ms ease-out 700ms both; }
+        .field-bp-measure, .field-bp-spacing, .field-bp-label { animation: field-bp-reveal 200ms ease-out 800ms both; }
       }
     </style>
   </defs>

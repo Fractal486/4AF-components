@@ -51,7 +51,7 @@
 
       /* Static and reduced-motion views are fully visible.
          Outline: 0..400ms. No icon or divider strokes in this default state.
-         Press/release: 150..650ms. All blue annotations: 700..900ms, once.
+         Press/release: 150..650ms. All blue annotations: 800..1000ms, once.
          Fill, label and contour scale together around the control center (320,200).
          Keyframes sample installed motion.spring at 10ms intervals, with a 250ms
          press followed by a 250ms release; linear interpolation preserves the samples.
@@ -126,7 +126,7 @@
         #button-blueprint .button-measure,
         #button-blueprint .button-spacing,
         #button-blueprint .button-label {
-          animation: button-blueprint-reveal 200ms ease-out 700ms both;
+          animation: button-blueprint-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

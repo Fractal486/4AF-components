@@ -47,7 +47,7 @@
     Embedded Switch: off-to-on thumb travel 16 CSS px (32 units), using switch.tsx
     spring.snappy (visualDuration .2, bounce .05), 350..650ms. Track fill takes
     duration-base=200ms. Existing simplified guides and final checked pose are retained.
-    Animation: outline 0-400ms; details 250-650ms; annotations 700-900ms.
+    Animation: outline 0-400ms; details 250-650ms; annotations 800-1000ms.
   -->
   <defs>
     <style>
@@ -64,7 +64,7 @@
       @keyframes popover-bp-reveal { from { opacity: 0; } }
       /* One press/release during reveal, matching Button's .95 press scale.
          spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
-         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         Runs 150..650ms, before measurements appear at 800ms. Separate groups
          compose with content/panel motion; static and reduced motion stay at 1. */
       @keyframes popover-bp-button-press {
         0% { transform: scale(1.000000); }
@@ -171,7 +171,7 @@
         #popover-bp-root .popover-bp-measure,
         #popover-bp-root .popover-bp-spacing,
         #popover-bp-root .popover-bp-label {
-          animation: popover-bp-reveal 200ms ease-out 700ms both;
+          animation: popover-bp-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

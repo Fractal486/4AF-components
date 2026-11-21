@@ -28,11 +28,11 @@
       @keyframes cm-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes cm-bp-reveal { from { opacity: 0; } }
       /* Static and reduced-motion states retain all intended final opacities and dashes.
-         Outline 0..400ms, details 250..600ms, annotations 700..900ms, each once. */
+         Outline 0..400ms, details 250..600ms, annotations 800..1000ms, each once. */
       @media (prefers-reduced-motion: no-preference) {
         #cm-bp-root .draw { stroke-dasharray: 1; animation: cm-bp-draw 200ms ease-out var(--line-delay, 0ms) both; }
         #cm-bp-root .outline { animation-duration: 400ms; }
-        #cm-bp-root .measure, #cm-bp-root .spacing, #cm-bp-root .label { animation: cm-bp-reveal 200ms ease-out 700ms both; }
+        #cm-bp-root .measure, #cm-bp-root .spacing, #cm-bp-root .label { animation: cm-bp-reveal 200ms ease-out 800ms both; }
       }
     </style>
   </defs>

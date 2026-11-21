@@ -49,7 +49,7 @@
        over 397.7895ms, keeping the tens carry synchronized with the units.
        The number recenters as the hundreds digit fades into place.
        No loop. The static state is sharp and fully opaque.
-       All annotations reveal together at 700ms and finish at 900ms.
+       All annotations reveal together at 800ms and finish at 1000ms.
        Reduced motion and static renderers show the completed drawing.
   -->
   <defs>
@@ -125,7 +125,7 @@
         #number-animation-bp .na-guide,
         #number-animation-bp .na-ruler,
         #number-animation-bp .na-label {
-          animation: number-animation-bp-reveal 200ms ease-out 700ms both;
+          animation: number-animation-bp-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

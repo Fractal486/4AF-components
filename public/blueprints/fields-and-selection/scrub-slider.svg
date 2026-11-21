@@ -26,7 +26,7 @@
        Dark background oklch(0.120 0 0), rendered here as #060606.
        Sidebar category: Fields and selection.
        Intro: ticks scroll left by 108 SVG units (36 CSS px, six tick intervals)
-       from 250 to 650ms within the fixed edge mask; annotations reveal at 700ms.
+       from 250 to 650ms within the fixed edge mask; annotations reveal at 800ms.
        Extra left ticks cover the entering edge. Reduced motion shows the final state. -->
   <defs>
     <style>
@@ -41,7 +41,7 @@
         .ss-scroll { animation: ss-scroll-ruler 400ms cubic-bezier(.22, 1, .36, 1) 250ms both; }
         .ss-draw { stroke-dasharray: 1; animation: ss-draw-line 200ms ease-out var(--ss-delay, 0ms) both; }
         .ss-outline { animation-duration: 400ms; }
-        .ss-measure, .ss-spacing, .ss-label { animation: ss-reveal 200ms ease-out 700ms both; }
+        .ss-measure, .ss-spacing, .ss-label { animation: ss-reveal 200ms ease-out 800ms both; }
       }
     </style>
     <linearGradient id="ss-edge-fade">

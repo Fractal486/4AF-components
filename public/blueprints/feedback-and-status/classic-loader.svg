@@ -45,7 +45,7 @@
        Only opacity animates; the bar geometry never rotates.
        Resting opacity is also an SVG attribute so local PNG renderers do not need
        CSS custom-property support to reproduce the complete fading trail.
-       Guides, rulers, and labels fade in at 700..900ms.
+       Guides, rulers, and labels fade in at 800..1000ms.
        CSS-only, no loop. Reduced motion shows the final trail immediately,
        following the blueprint convention rather than the live spinner's loop.
   -->
@@ -120,7 +120,7 @@
         #classic-loader-bp .classic-loader-bp-ruler,
         #classic-loader-bp .classic-loader-bp-guide,
         #classic-loader-bp .classic-loader-bp-label {
-          animation: classic-loader-bp-annotate 200ms ease-out 700ms both;
+          animation: classic-loader-bp-annotate 200ms ease-out 800ms both;
         }
       }
     </style>

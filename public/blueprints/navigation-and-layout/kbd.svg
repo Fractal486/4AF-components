@@ -31,11 +31,11 @@
       @keyframes kbd-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes kbd-bp-reveal { from { opacity: 0; } }
       /* Static and reduced-motion viewers see the completed drawing.
-         Outlines and Command 0–400ms, annotations 700–900ms.
+         Outlines and Command 0–400ms, annotations 800–1000ms.
          Command shares the outline timing so it does not start late and rush. */
       @media (prefers-reduced-motion: no-preference) {
         .kbd-bp-outline, .kbd-bp-icon { stroke-dasharray: 1; animation: kbd-bp-draw 400ms ease-out both; }
-        .kbd-bp-measure, .kbd-bp-spacing, .kbd-bp-label { animation: kbd-bp-reveal 200ms ease-out 700ms both; }
+        .kbd-bp-measure, .kbd-bp-spacing, .kbd-bp-label { animation: kbd-bp-reveal 200ms ease-out 800ms both; }
       }
     </style>
   </defs>

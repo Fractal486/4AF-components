@@ -53,7 +53,7 @@
         #textarea-bp .textarea-bp-measure,
         #textarea-bp .textarea-bp-spacing,
         #textarea-bp .textarea-bp-label {
-          animation: textarea-bp-reveal 200ms ease-out 700ms both;
+          animation: textarea-bp-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

@@ -31,7 +31,7 @@
        Source blur 0.22em = 7.92px, rise 0.45em = 16.2px; at 2x, 15.84 and 32.4.
        The blueprint retains 25% initial opacity to keep text visible throughout.
        Blur and rise otherwise follow the source's CSS ease-out entrance.
-       All letters settle by 600ms; guides and labels fade together at 700..900ms.
+       All letters settle by 600ms; guides and labels fade together at 800..1000ms.
        CSS-only, one pass. Backwards fill holds each starting pose through its
        delay, then drops the filter at rest. Static/reduced-motion is fully visible.
   -->
@@ -54,7 +54,7 @@
         #blur-text-bp .blur-text-bp-ruler,
         #blur-text-bp .blur-text-bp-guide,
         #blur-text-bp .blur-text-bp-label {
-          animation: blur-text-bp-annotate 200ms ease-out 700ms both;
+          animation: blur-text-bp-annotate 200ms ease-out 800ms both;
         }
       }
     </style>

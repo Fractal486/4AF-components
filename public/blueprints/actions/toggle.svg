@@ -112,7 +112,7 @@
         #toggle-bp-root .toggle-bp-ruler,
         #toggle-bp-root .toggle-bp-guide,
         #toggle-bp-root .toggle-bp-label {
-          animation: toggle-bp-reveal 200ms ease-out 700ms both;
+          animation: toggle-bp-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

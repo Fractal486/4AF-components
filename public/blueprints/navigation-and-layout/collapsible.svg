@@ -30,7 +30,7 @@
     Text baselines use a 41-unit offset inside each 60-unit line box.
 
     Timing: outline 0..400ms, chevron draw 100..300ms; opening 300..650ms;
-    annotations 700..900ms.
+    annotations 800..1000ms.
     Static and reduced-motion viewers receive the completed drawing by default.
   -->
   <defs>
@@ -45,7 +45,7 @@
       #collapsible-bp .cbp-chevron { stroke: #a7a8a2; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
       /* Source content fades/blurs at its final position: no text wipe or vertical slide.
          Chevron pivots around the center of its full 16px viewport, (1212,258).
-         Opening finishes at 650ms; final geometry is measured at 700..900ms. */
+         Opening finishes at 650ms; final geometry is measured at 800..1000ms. */
       #collapsible-bp .cbp-turn { transform-origin: 1212px 258px; }
       @keyframes cbp-turn { from { transform: rotate(-90deg); } to { transform: rotate(0deg); } }
       @keyframes cbp-open { from { opacity: 0; filter: blur(9px); } to { opacity: 1; filter: blur(0px); } }
@@ -65,7 +65,7 @@
         #collapsible-bp .cbp-measure,
         #collapsible-bp .cbp-spacing,
         #collapsible-bp .cbp-label {
-          animation: collapsible-bp-reveal 200ms ease-out 700ms both;
+          animation: collapsible-bp-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

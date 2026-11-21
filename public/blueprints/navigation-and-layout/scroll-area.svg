@@ -49,7 +49,7 @@
     The root outline draws from 0 to 400ms. The unoutlined scrollbar fades in
     from 250 to 400ms, using the app's 150ms fast hover duration and ease-out curve.
     Annotations
-    fade together from 700 to 900ms. Content stays visible under its edge mask.
+    fade together from 800 to 1000ms. Content stays visible under its edge mask.
     Reduced motion and PNG export show the completed drawing without animation.
   -->
   <defs>
@@ -70,7 +70,7 @@
         .sa-bp-outline { animation-duration: 400ms; }
         .sa-bp-scrollbar { animation: sa-bp-reveal 150ms cubic-bezier(0.16, 1, 0.3, 1) 250ms both; }
         .sa-bp-guide, .sa-bp-measure, .sa-bp-label {
-          animation: sa-bp-reveal 200ms ease-out 700ms both;
+          animation: sa-bp-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

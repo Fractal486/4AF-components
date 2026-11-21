@@ -60,7 +60,7 @@
       #delete-button-blueprint .db-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
 
       /* Static exports and reduced motion show the completed drawing.
-         Outline: 0..400ms. Check: 400..600ms. Annotations: 700..900ms.
+         Outline: 0..400ms. Check: 400..600ms. Annotations: 800..1000ms.
          Delete swaps to Confirm at 350..650ms; the surface and reserved width stay fixed. No animation repeats. */
       @keyframes delete-button-blueprint-draw {
         from { stroke-dashoffset: 1; }
@@ -75,7 +75,7 @@
       @keyframes db-swap-in { from { opacity: 0; transform: scale(.25); filter: blur(12px); } to { opacity: 1; transform: scale(1); filter: blur(0px); } }
       /* One press/release during reveal, matching Button's .95 press scale.
          spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
-         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         Runs 150..650ms, before measurements appear at 800ms. Separate groups
          compose with content/panel motion; static and reduced motion stay at 1. */
       @keyframes delete-button-bp-button-press {
         0% { transform: scale(1.000000); }
@@ -149,7 +149,7 @@
         #delete-button-blueprint .db-measure,
         #delete-button-blueprint .db-spacing,
         #delete-button-blueprint .db-label {
-          animation: delete-button-blueprint-reveal 200ms ease-out 700ms both;
+          animation: delete-button-blueprint-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

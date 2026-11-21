@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1280" height="720" viewBox="0 0 1280 720" role="img" class="hh-blueprint" aria-labelledby="hh-title hh-desc">
   <title id="hh-title">Halftone Horizon spacing</title>
-  <desc id="hh-desc">A representative 336 by 168 pixel canvas. The sky opens light and the dark horizon enters from the top over 2.4 seconds. Dots on a centered 4 pixel lattice grow down the frame and merge into an arched band of light.</desc>
+  <desc id="hh-desc">A representative 336 by 168 pixel canvas. The sky opens light and the dark horizon enters from the top over one second. Dots on a centered 4 pixel lattice grow down the frame and merge into an arched band of light.</desc>
   <!-- Geometry: registry/ui/halftone-horizon/halftone-horizon.tsx and halftone-horizon.variants.ts.
        Bare component, top direction at rest. The caller sets the size. At 336 × 168 CSS px
        the inset-0 canvas covers the root with 84 × 42 cells. Scale: 3 SVG units per CSS px.
@@ -15,19 +15,19 @@
       .hh-label { fill: #a7a8a2; font: 19px Inter, 'Segoe UI', Arial, sans-serif }
       @property --hh-shift { syntax: "<number>"; inherits: true; initial-value: 0; }
       @media (prefers-reduced-motion: no-preference) {
-        /* Default introShift = 1.3 × (1 − progress)³. Vary the sampled
-           level at fixed dot centers while moving the light ramp with the horizon. */
+        /* Sweep the pattern for the full second. Round each radius to the
+           precision of its static SVG circle so both poses land on the same pixels. */
         @keyframes hh-enter { from { --hh-shift: 1.3 } to { --hh-shift: 0 } }
-        .hh-blueprint { animation: hh-enter 2400ms cubic-bezier(.333333,1,.666667,1) both }
+        .hh-blueprint { animation: hh-enter 1000ms cubic-bezier(.2,.65,.6,.85) both }
         #hh-half circle {
           --hh-growth: clamp(0, calc((var(--hh-level) + var(--hh-shift)) / .556), 1);
-          r: calc(.5px + 2.86px * var(--hh-growth) * var(--hh-growth));
+          r: round(nearest, .5px + 2.86px * var(--hh-growth) * var(--hh-growth), .001px);
         }
         .hh-ramp { transform: translateY(calc(-168px * var(--hh-shift))) }
         @keyframes hh-draw { from { stroke-dashoffset: 1 } to { stroke-dashoffset: 0 } }
         @keyframes hh-reveal { from { opacity: 0 } }
         .hh-outline { stroke-dasharray: 1; animation: hh-draw 400ms ease-out both }
-        .hh-annotations { animation: hh-reveal 200ms ease-out 700ms both }
+        .hh-annotations { animation: hh-reveal 200ms ease-out 800ms both }
       }
     ]]></style>
     <radialGradient id="hh-ink" gradientUnits="userSpaceOnUse" cx="168" cy="1176" r="1176">

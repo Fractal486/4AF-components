@@ -39,7 +39,7 @@
       #cbbp .cbbp-measure { stroke: #6889ff; stroke-width: 1.5; }
       #cbbp .cbbp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
       /* The complete static drawing is also the reduced-motion presentation. */
-      #cbbp { --cbbp-outline-duration: 400ms; --cbbp-detail-duration: 200ms; --cbbp-annotation-delay: 700ms; --cbbp-annotation-duration: 200ms; }
+      #cbbp { --cbbp-outline-duration: 400ms; --cbbp-detail-duration: 200ms; --cbbp-annotation-delay: 800ms; --cbbp-annotation-duration: 200ms; }
       @keyframes cbbp-draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes cbbp-reveal { from { opacity: 0; } }
       #cbbp .cbbp-press { transform-origin: 206px 190px; }

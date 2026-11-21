@@ -35,7 +35,7 @@
        Close: top/right = 16px, box = 30px; 14px icon centered with 8px box inset.
        A 1px border and inherited line-height arithmetic are rounded for vector geometry.
        No extra solid header/footer dividers are invented: their boundaries are guides.
-       Animation: outline 0..400ms; details 250..650ms; annotations 700..900ms, once.
+       Animation: outline 0..400ms; details 250..650ms; annotations 800..1000ms, once.
   -->
 
   <defs>
@@ -56,11 +56,11 @@
       @keyframes sheet-bp-reveal { from { opacity: 0; } }
       /* Default right-side sheet enters from beyond the viewport edge.
          770-unit travel includes the outline allowance; final panel stays 768 units wide.
-         Slide 0..650ms, all annotations 700..900ms, static open under reduced motion. */
+         Slide 0..650ms, all annotations 800..1000ms, static open under reduced motion. */
       @keyframes sheet-bp-enter { from { transform: translateX(770px); } to { transform: translateX(0); } }
       /* One press/release during reveal, matching Button's .95 press scale.
          spring.press: stiffness 500, damping 30, mass .6; sampled every 10ms.
-         Runs 150..650ms, before measurements appear at 700ms. Separate groups
+         Runs 150..650ms, before measurements appear at 800ms. Separate groups
          compose with content/panel motion; static and reduced motion stay at 1. */
       @keyframes sheet-bp-button-press {
         0% { transform: scale(1.000000); }
@@ -124,7 +124,7 @@
         }
         .sheet-bp-outline { animation-duration: 400ms; }
         .sheet-bp-measure, .sheet-bp-spacing, .sheet-bp-label {
-          animation: sheet-bp-reveal 200ms ease-out 700ms both;
+          animation: sheet-bp-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

@@ -15,7 +15,7 @@
        Dark background: oklch(0.120 0 0), approximately #060606.
        No solid frame, icons, or dividers exist, so the first animation phase
        intentionally has no strokes to draw. Text remains visible; annotations
-       reveal from 700 to 900ms. The shimmer sweeps once over 900ms alongside the annotation reveal, then stays outside the glyph clip.
+       reveal from 800 to 1000ms. The shimmer sweeps once over 900ms alongside the annotation reveal, then stays outside the glyph clip.
        All guides measure the line box, not the glyph ink bounds. -->
   <defs>
     <clipPath id="text-shimmer-glyphs">
@@ -44,7 +44,7 @@
           animation: text-shimmer-blueprint-sweep 900ms linear both;
         }
         .text-shimmer-label, .text-shimmer-ruler, .text-shimmer-guide {
-          animation: text-shimmer-blueprint-reveal 200ms ease-out 700ms both;
+          animation: text-shimmer-blueprint-reveal 200ms ease-out 800ms both;
         }
       }
     </style>

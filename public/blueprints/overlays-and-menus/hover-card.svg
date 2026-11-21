@@ -32,7 +32,7 @@
     Panel outline occupies its real 1px border; the avatar perimeter is illustration
       ink inset into its filled box and does not add a CSS border to the avatar.
     Animation: panel stroke 0..400ms; avatar 250..450ms; underline 400..600ms;
-      annotations 700..900ms. Native popup enter runs 250..400ms, matching
+      annotations 800..1000ms. Native popup enter runs 250..400ms, matching
       hover-card.tsx's bottom-side starting pose: opacity 0, scale .95,
       blur 4px, translateY -8px; at 3x these become blur 12 and translateY -24.
       Origin is the top edge nearest the centered trigger, (660, 290).
@@ -48,7 +48,7 @@
       #hover-card-bp-root .hover-card-bp-label { fill: #a1a29c; font-size: 18px; }
       #hover-card-bp-root .hover-card-bp-measure { stroke: #6889ff; stroke-width: 1.5; }
       #hover-card-bp-root .hover-card-bp-spacing { stroke: #6889ff; stroke-width: 1.5; stroke-dasharray: 6 7; opacity: .55; }
-      #hover-card-bp-root { --hover-card-bp-detail-duration: 200ms; --hover-card-bp-annotation-delay: 700ms; }
+      #hover-card-bp-root { --hover-card-bp-detail-duration: 200ms; --hover-card-bp-annotation-delay: 800ms; }
       @keyframes hover-card-bp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
       @keyframes hover-card-bp-reveal { from { opacity: 0; } }
       #hover-card-bp-root .hover-card-bp-enter { transform-origin: 660px 290px; }
