@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Halftone Horizon · Dimensional Drawing</title>
+<style>
+/* Standalone drawing sheet. */
+:root{--paper:#ececec;--sheet:#ffffff;--ink:#111;--ink2:#444;--ink3:#7a7a7a;--fill:#f3f3f3;--fill2:#e6e6e6;--f:'Arimo','Helvetica Neue',Helvetica,Arial,sans-serif;color-scheme:light}
+body{background:var(--paper);color:var(--ink);font-family:var(--f)}
+.wrap{max-width:1760px;margin:0 auto;padding-block:24px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.scroll{overflow-x:auto;background:var(--sheet);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+svg{display:block;width:100%;min-width:1100px;height:auto}
+.tb{background:var(--sheet);border:1.5px solid var(--ink);display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr;margin-bottom:24px}
+.tb>div{border-right:1px solid #d0d0d0;border-bottom:1px solid #d0d0d0;padding:10px 12px;min-width:0}
+.tb .big{grid-row:span 2;display:flex;flex-direction:column;justify-content:space-between;gap:12px}
+.tb h1{font-size:clamp(26px,4vw,40px);line-height:1;margin:0;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.lbl{text-transform:uppercase;letter-spacing:.08em;font-size:12px;color:var(--ink3);font-weight:600}
+.tb .v{font-size:13px;margin-top:2px;font-variant-numeric:tabular-nums}
+.tb .notes{grid-column:1/-1;border-right:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:6px 24px;font-size:13px;color:var(--ink2)}
+.tb .notes ol{margin:4px 0 0;padding-left:18px}
+.tb .figs{grid-column:1/-1;border-right:0;border-bottom:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px 18px}
+.tb .figs .v{font-size:17px}
+@media (max-width:640px){.tb{grid-template-columns:1fr 1fr}.tb .big{grid-column:1/-1;grid-row:auto}}
+.sheetwrap{margin-bottom:28px}
+.foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--ink2);padding:10px 2px 0}
+.foot b{font-weight:600;color:var(--ink)}
+/* drawing */
+.u{font-family:var(--f);text-transform:uppercase;letter-spacing:.07em}
+.border{fill:none;stroke:var(--ink);stroke-width:1.2}
+.obj{fill:var(--sheet);stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round}
+.well{fill:var(--fill);stroke:var(--ink);stroke-width:1}
+.slot{fill:none;stroke:var(--ink2);stroke-width:.8;stroke-dasharray:4 3}
+.hug{fill:var(--fill2);stroke:var(--ink);stroke-width:1}
+.thin{fill:none;stroke:var(--ink);stroke-width:.8}
+.ph{fill:none;stroke:var(--ink3);stroke-width:.8;stroke-dasharray:14 3 3 3}
+.cl{fill:none;stroke:var(--ink3);stroke-width:.7;stroke-dasharray:16 3 2 3}
+.cut{stroke:var(--ink);stroke-width:2}
+.dl{stroke:var(--ink);stroke-width:.7;fill:none}
+.ext{stroke:var(--ink);stroke-width:.55;fill:none}
+.arrow{fill:var(--ink)}
+.hl{stroke:var(--ink2);stroke-width:.7}
+.hs{stroke:var(--ink);stroke-width:.8}
+.env{fill:none;stroke:var(--ink);stroke-width:.8;stroke-dasharray:10 3 2 3}
+.dt{font:400 11px var(--f);fill:var(--ink);paint-order:stroke;stroke:var(--sheet);stroke-width:4px;stroke-linejoin:round}
+.dts{font:400 9.5px var(--f);fill:var(--ink2);letter-spacing:.06em;text-transform:uppercase;paint-order:stroke;stroke:var(--sheet);stroke-width:3px}
+.sl{font:400 9px var(--f);fill:var(--ink2);letter-spacing:.08em;text-transform:uppercase}
+.nt{font:400 11.5px var(--f);fill:var(--ink);letter-spacing:.06em;text-transform:uppercase}
+.nth{font:700 13px var(--f);fill:var(--ink);letter-spacing:.06em}
+.vt{font:400 12px var(--f);fill:var(--ink);letter-spacing:.1em;text-transform:uppercase}
+.vtb{font:400 20px var(--f);fill:var(--ink);letter-spacing:.06em}
+.nb{fill:var(--sheet);stroke:var(--ink);stroke-width:.9}
+.nbt{font:400 9.5px var(--f);fill:var(--ink)}
+.lead{stroke:var(--ink);stroke-width:.7;fill:none}
+.dot{fill:var(--ink)}
+.th{font:400 10.5px var(--f);fill:var(--ink);letter-spacing:.05em;text-transform:uppercase}
+.tc{font:400 10.5px var(--f);fill:var(--ink)}
+.tbk{font:400 7px var(--f);fill:var(--ink2);letter-spacing:.04em;text-transform:uppercase}
+.tbt{font:700 15px var(--f);fill:var(--ink)}
+.tbv{font:400 17px var(--f);fill:var(--ink);letter-spacing:.06em}
+
+/* title block restyled to match the drawing sheet: thin black rules, plain caps lettering */
+.tb{border:1.2px solid var(--ink);border-radius:16px;overflow:hidden}
+.tb>div{border-right:.8px solid var(--ink);border-bottom:.8px solid var(--ink);padding:10px 14px}
+.tb>div:nth-child(4),.tb>div:nth-child(7){border-right:0}
+.tb .lbl{font-size:9.5px;font-weight:400;letter-spacing:.06em;color:var(--ink2)}
+.tb h1{font-weight:400;letter-spacing:.1em;font-size:clamp(28px,4vw,44px);margin-top:4px}
+.tb .v{font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink)}
+.tb .big .v{font-size:11px;color:var(--ink2);line-height:1.6}
+.tb .notes{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink);line-height:1.9}
+.tb .notes ol{padding-left:20px}
+.tb .nh{font-weight:700;font-size:13px;letter-spacing:.06em}
+.tb .nh span{font-weight:400;font-size:11.5px;margin-left:6px}
+.tb .figs>div{border-left:.8px solid var(--ink);padding-left:14px}
+.tb .figs>div:first-child{border-left:0;padding-left:0}
+.tb .figs .v{font-size:18px;letter-spacing:.06em;text-transform:none;margin-top:4px}
+.foot{font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.foot b{font-weight:700}
+</style>
+
+<style>body{margin:0}</style>
+</head>
+<body>
+<div class="wrap">
+<header class="tb"><div class="big"><div><div class="lbl">UI component · dimensional drawing</div><h1>Halftone Horizon</h1></div><div class="v">Field geometry, dot growth and canvas registration</div></div>
+<div><div class="lbl">Dwg no.</div><div class="v">UI-HH-001</div></div>
+<div><div class="lbl">Rev</div><div class="v">A</div></div>
+<div><div class="lbl">Sheets</div><div class="v">1 of 1</div></div>
+<div><div class="lbl">Units</div><div class="v">CSS px unless noted</div></div>
+<div><div class="lbl">Scale</div><div class="v">Schematic</div></div>
+<div><div class="lbl">Source</div><div class="v">halftone-horizon.tsx · variants.ts</div></div>
+<div class="notes"><div><span class="nh">NOTES <span>(UNLESS OTHERWISE SPECIFIED)</span></span><ol><li>Read dimensions from the tables. Do not scale the views.</li><li>The field uses normalized depth from the dark edge to the light edge.</li></ol></div>
+<div><ol start="3"><li>Grays distinguish paper, ink and coverage. Grain and drift are omitted.</li><li>FILL follows the host. The dashed content slot represents optional children.</li><li>[TBD] dimensions are set by the caller.</li></ol></div></div>
+<div class="figs"><div><div class="lbl">W × H · host</div><div class="v">[TBD]</div></div>
+<div><div class="lbl">S1 · dot pitch</div><div class="v">7 px</div></div>
+<div><div class="lbl">R1 · initial radius</div><div class="v">0.875 px</div></div>
+<div><div class="lbl">R2 · final radius</div><div class="v">5.88 px</div></div>
+<div><div class="lbl">C · curvature</div><div class="v">1</div></div>
+<div><div class="lbl">L3 · full growth</div><div class="v">0.556</div></div>
+</div></header><div class="scroll"><svg id="sheet" viewBox="0 0 1700 1060" role="img" aria-labelledby="drawing-title"></svg></div>
+<div class="foot"><span>2026-11-21 | UI component reference</span><span><b>Halftone Horizon, architecture</b> | 1</span></div></div>
+<script>
+(function(){
+const NS='http://www.w3.org/2000/svg';let sv,A,HAT,uid=0;
+function mk(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)if(a[k]!=null)e.setAttribute(k,a[k]);(p||sv).appendChild(e);return e}
+function tx(x,y,s,c,a,p){const t=mk('text',Object.assign({x:x,y:y,class:c||'dt'},a||{}),p);t.textContent=s;return t}
+function begin(id){sv=document.getElementById(id);sv.innerHTML='';const n=uid++;const d=mk('defs',{});const m=mk('marker',{id:'ar'+n,viewBox:'0 0 10 10',refX:10,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse',markerUnits:'userSpaceOnUse'},d);mk('path',{d:'M0,1.7 L10,5 L0,8.3 z',class:'arrow'},m);
+ const pt=mk('pattern',{id:'hat'+n,width:5,height:5,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},d);mk('line',{x1:0,y1:0,x2:0,y2:5,class:'hl'},pt);A='url(#ar'+n+')';HAT='url(#hat'+n+')';rr(20,20,1660,1020,16,'border')}
+
+/* ---- kit ---- */
+function dimH(x1,x2,y,e1,e2,l,o){o=o||{};[[x1,e1],[x2,e2]].forEach(([x,e])=>{if(e==null)return;const s=Math.sign(y-e)||1;mk('line',{x1:x,y1:e+s*3,x2:x,y2:y+s*5,class:'ext'})});
+ if(x2-x1>=28)mk('line',{x1:x1,y1:y,x2:x2,y2:y,class:'dl','marker-start':A,'marker-end':A});else{mk('line',{x1:x1-13,y1:y,x2:x1,y2:y,class:'dl','marker-end':A});mk('line',{x1:x2+13,y1:y,x2:x2,y2:y,class:'dl','marker-end':A});mk('line',{x1:x1,y1:y,x2:x2,y2:y,class:'dl'})}
+ tx((x1+x2)/2+(o.dx||0),(o.below?y+13:y-4)+(o.dy||0),l,o.c||'dt',{'text-anchor':'middle'})}
+function dimV(y1,y2,x,e1,e2,l,o){o=o||{};[[y1,e1],[y2,e2]].forEach(([y,e])=>{if(e==null)return;const s=Math.sign(x-e)||1;mk('line',{x1:e+s*3,y1:y,x2:x+s*5,y2:y,class:'ext'})});
+ if(y2-y1>=28)mk('line',{x1:x,y1:y1,x2:x,y2:y2,class:'dl','marker-start':A,'marker-end':A});else{mk('line',{x1:x,y1:y1-13,x2:x,y2:y1,class:'dl','marker-end':A});mk('line',{x1:x,y1:y2+13,x2:x,y2:y2,class:'dl','marker-end':A});mk('line',{x1:x,y1:y1,x2:x,y2:y2,class:'dl'})}
+ const c=(y1+y2)/2;if(o.side){const r=o.side==='r';tx(r?x+6:x-6,c+4,l,o.c||'dt',{'text-anchor':r?'start':'end'})}else tx(x-5,c,l,o.c||'dt',{'text-anchor':'middle',transform:'rotate(-90 '+(x-5)+' '+c+')'})}
+function callout(px,py,ex,ey,l,dir,c){const s=dir||(ex>=px?1:-1);mk('circle',{cx:px,cy:py,r:1.8,class:'dot'});mk('polyline',{points:px+','+py+' '+ex+','+ey+' '+(ex+s*10)+','+ey,class:'lead'});tx(ex+s*14,ey+4,l,c||'dt',{'text-anchor':s>0?'start':'end'})}
+function rad(cx,cy,r,c,l,L){const sx=c.includes('l')?-1:1,sy=c.includes('t')?-1:1;const ox=cx-sx*r,oy=cy-sy*r;const px=ox+sx*r*Math.SQRT1_2,py=oy+sy*r*Math.SQRT1_2;callout(px,py,px+sx*L,py+sy*L,l,sx)}
+function nb(x,y,n){mk('rect',{x:x-6,y:y-6,width:12,height:12,class:'nb'});tx(x,y+3.5,String(n),'nbt',{'text-anchor':'middle'})}
+function rr(x,y,w,h,r,c){return mk('rect',{x:x,y:y,width:w,height:h,rx:r,class:c})}
+function slotLabel(x,y,w,h,l,al){tx(al==='l'?x+6:x+w/2,y+h/2+3.2,l,'sl',{'text-anchor':al==='l'?'start':'middle'})}
+function title(x,y,t,s){tx(x,y,t,'vt',{'text-anchor':'middle'});if(s)tx(x,y+14,s,'dts',{'text-anchor':'middle'})}
+function notes(list,extra){const NX=50,NY=58;tx(NX,NY,'NOTES:','nth');tx(NX+62,NY,'(UNLESS OTHERWISE SPECIFIED)','nt');
+ list.forEach(([n,t],i)=>{const y=NY+30+i*24;if(n){nb(NX+6,y-4,n);tx(NX+22,y,t,'nt')}else tx(NX,y,t,'nt')})}
+function table(x,y,ttl,rows){const ws=[42,113,225],rh=23;tx(x,y-8,ttl,'vt');
+ const all=[['Code','Variable','Value']].concat(rows);all.forEach((r,i)=>{let cx2=x;r.forEach((c,j)=>{mk('rect',{x:cx2,y:y+i*rh,width:ws[j],height:rh,class:'thin'});tx(cx2+(j?ws[j]/2:6),y+i*rh+15,c,i?'tc':'th',{'text-anchor':j?'middle':'start'});cx2+=ws[j]})});return y+all.length*rh+36}
+function detailRef(cx,cy,r,lbl,lx,ly){mk('circle',{cx:cx,cy:cy,r:r,class:'ph'});const a=Math.atan2(ly-cy,lx-cx);mk('line',{x1:cx+r*Math.cos(a),y1:cy+r*Math.sin(a),x2:lx,y2:ly,class:'lead'});tx(lx+(lx<cx?-4:4),ly+4,lbl,'dts',{'text-anchor':lx<cx?'end':'start'})}
+begin('sheet');
+mk('title',{id:'drawing-title'}).textContent='Halftone Horizon — field, cell geometry and layer registration';
+const defs=sv.querySelector('defs');
+const mid={'text-anchor':'middle'};
+function line(x1,y1,x2,y2,c='thin'){mk('line',{x1,y1,x2,y2,class:c})}
+function label(x,y,s){tx(x,y,s,'dt',mid)}
+function heading(x,y,s,sub){tx(x,y,s,'vt');tx(x,y+19,sub,'tc')}
+function gradient(id,stops) {
+  const g=mk('linearGradient',{id,x2:'0%',y2:'100%'},defs);
+  stops.forEach(([offset,tone])=>mk('stop',{offset,style:'stop-color:'+tone},g));
+}
+gradient('tone',[[0,'var(--ink)'],[.46,'var(--ink2)'],[.72,'var(--fill2)'],[1,'var(--sheet)']]);
+notes([[1,'The host clips the canvas at its edges.'],[2,'The cell grid stays square as the host resizes.'],[3,'Positive curvature lifts the central bands.'],[4,'Children paint above the canvas.']]);
+line(50,199,421,199);
+heading(50,230,'Layer registration','Exploded view · separation for clarity');
+const plane=(y,fill,cls='thin')=>mk('path',{d:'M148 '+y+' l254 34 -69 54 -254 -34 Z',class:cls,style:'fill:'+fill});
+plane(419,'url(#tone)');
+plane(352,'var(--fill2)');
+plane(285,'var(--sheet)','slot');
+line(148,285,148,419,'cl');line(333,373,333,507,'cl');
+label(236,328,'CONTENT SLOT');nb(319,336,4);
+label(234,397,'CANVAS · FILL');label(235,466,'ROOT GRADIENT');
+tx(50,541,'The ready canvas fades in over the CSS gradient.','tc');
+tx(50,560,'Before first paint or on context loss, the gradient is visible.','tc');
+
+const x=490,y=145,w=710,h=335,pitch=7;
+heading(x,61,'Field plan','Dark edge at top · grayscale reference · caller-sized frame');
+dimH(x,x+w,116,y,y,'W');dimV(y,y+h,x-22,x,x,'H');
+mk('clipPath',{id:'frame'},defs).appendChild(document.createElementNS(NS,'rect'));
+const clip=defs.querySelector('#frame rect');
+Object.entries({x,y,width:w,height:h}).forEach(([k,v])=>clip.setAttribute(k,v));
+const field=mk('g',{'clip-path':'url(#frame)'});
+mk('rect',{x,y,width:w,height:h,style:'fill:var(--sheet)'},field);
+// Each contour is a section of the same disc. Sample the undrifted shader
+// level in strips; SVG patterns keep the grid aligned across contours.
+function contour(depth){
+  const radius=6, across=w/h/2;
+  return Array.from({length:65},(_,i)=>{
+    const lateral=(2*i/64-1)*across;
+    return (x+w*i/64).toFixed(2)+','+(y+h*(1+radius-Math.sqrt((1+radius-depth)**2-lateral**2))).toFixed(2);
+  }).join(' ');
+}
+const palette=document.createElement('style');
+document.head.appendChild(palette);
+for(let i=39;i>=0;i--){
+  const depth=i/40, grow=Math.min(1,depth/.556);
+  const t=(depth-.15)/.58;
+  const tone=Math.min(1,Math.max(0,t<.5?t:.5+(t-.5)/1.2));
+  const gray=n=>'#'+Math.round(n).toString(16).padStart(2,'0').repeat(3);
+  const ink=60+193*tone,paper=ink*(.15+.2*grow),id='band'+i;
+  const pat=mk('pattern',{id,width:pitch,height:pitch,x:x+(w%pitch)/2,y:y+(h%pitch)/2,patternUnits:'userSpaceOnUse'},defs);
+  palette.append('.paper'+i+'{fill:'+gray(paper)+'}\n.ink'+i+'{fill:'+gray(ink)+'}\n');
+  mk('rect',{width:pitch,height:pitch,class:'paper'+i},pat);
+  mk('circle',{cx:pitch/2,cy:pitch/2,r:(.125+.715*grow*grow)*pitch,class:'ink'+i},pat);
+  mk('polygon',{points:x+','+(y-1)+' '+(x+w)+','+(y-1)+' '+contour((i+1)/40).split(' ').reverse().join(' '),fill:'url(#'+id+')'},field);
+}
+rr(x,y,w,h,0,'border');line(x+w/2,y-11,x+w/2,y+h+13,'cl');
+nb(x+12,y+12,1);nb(x+w/2+18,y+h*.56,3);
+detailRef(x+105,y+85,22,'Detail A',x+160,y+36);
+label(x+w/2,517,'LIGHT EDGE');title(x+w/2,554,'Top direction · mirrored about the centerline','Band curvature follows the frame aspect ratio. Cell pitch is in CSS pixels.');
+
+let ty=table(1250,87,'Frame and raster',[
+ ['W','host width','[TBD] · caller'],['H','host height','[TBD] · caller'],
+ ['P','pixel ratio','min(device pixel ratio, 2)'],
+ ['BW','buffer width','max(1, round(W × P))'],['BH','buffer height','max(1, round(H × P))']]);
+ty=table(1250,ty,'Cell geometry · CSS px',[
+ ['S1','spacing','7 · range 2–64'],['D','dotSize','1 · range 0.1–2'],['M','minDot','0.25 · range 0–1'],
+ ['R1','initial radius','0.5 × M × D × S1 = 0.875'],['R2','final radius','0.84 × D × S1 = 5.88'],
+ ['A','edge softness','max(1/P, 0.12 × S1)']]);
+ty=table(1250,ty,'Field geometry · normalized',[
+ ['C','curve','1 · range −4 to 4'],['R3','disc radius','6 / max(|C|, 0.01) = 6'],
+ ['K','reach','1 · range 0–3'],['F','softness','1.1 · range 0.05–4'],['J','dots','0.7 · range 0.05–1'],
+ ['L1','ramp span','0.58 × F / 1.1 = 0.58'],['L2','ramp start','0.44 + 0.3(K − 1) − L1/2 = 0.15'],
+ ['L3','full growth level','L2 + J × L1 = 0.556']]);
+heading(1250,ty+4,'Coverage law','At the cell center, sample the curved field level ℓ.');
+tx(1250,ty+56,'g = clamp(ℓ / max(L3, 0.02), 0, 1)','dt');
+tx(1250,ty+81,'r = R1 + (R2 − R1) × g²','dt');
+tx(1250,ty+113,'The edge feathers from r − A to r + A.','tc');
+
+line(50,596,1200,596);
+heading(50,635,'Detail A   /   dot growth','Three samples of one square cell · nominal ink boundary enlarged');
+const size=98;
+[[80,0,'Dark edge'],[280,.5,'Mid-growth'],[480,1,'Full growth']].forEach(([cx,g,caption])=>{
+ const cy=759, radius=(.125+.715*g*g)*size,id='sample'+cx;
+ const crop=mk('clipPath',{id},defs);
+ mk('rect',{x:cx,y:cy,width:size,height:size},crop);
+ rr(cx,cy,size,size,0,'hug');
+ mk('circle',{cx:cx+size/2,cy:cy+size/2,r:radius,class:'obj','clip-path':'url(#'+id+')'});
+ rr(cx,cy,size,size,0,'border');
+ line(cx-8,cy+size/2,cx+size+8,cy+size/2,'cl');
+ line(cx+size/2,cy-8,cx+size/2,cy+size+8,'cl');
+ label(cx+size/2,890,caption);label(cx+size/2,911,'g = '+g);
+ if(g===0){dimH(cx,cx+size,712,cy,cy,'S1');nb(cx+size+13,cy+12,2)}
+ if(g!==.5){
+ const v=radius/Math.sqrt(2);
+ mk('line',{x1:cx+size/2,y1:cy+size/2,x2:cx+size/2+v,y2:cy+size/2-v,class:'dl','marker-end':A});
+ label(cx+size/2+v+12,cy+size/2-v-5,g===0?'R1':'R2');
+ }
+});
+tx(50,968,'At full growth the nominal radius exceeds the center-to-corner distance.','tc');
+tx(50,987,'Adjacent cells read as a continuous field as the gaps close.','tc');
+heading(675,635,'Curvature sections','Equal field level · transverse section · dark edge above');
+[1,0,-1].forEach((sign,i)=>{
+ const top=694+i*98;
+ rr(675,top,310,73,0,'well');
+ const baseline=top+37;
+ line(675,baseline,985,baseline,'cl');
+ mk('path',{d:'M675 '+(baseline+15*sign)+' Q830 '+(baseline-15*sign)+' 985 '+(baseline+15*sign),class:'thin'});
+ tx(1010,baseline,'C '+['> 0','= 0','< 0'][i],'dt');
+ tx(1010,baseline+19,['Bows toward dark','Nearly level','Bows toward light'][i],'tc');
+});
+})();
+</script></body></html>
