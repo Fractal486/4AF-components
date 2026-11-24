@@ -36,6 +36,9 @@ For a known icon or control slot, [Morph's fixed sizing](content/docs/morph.mdx#
 skips the hidden copies entirely.
 Morph, ScrambleText, and AsciiLoader forward native span props and refs to their fixed outer
 span. Morph's measured `current` width takes precedence over a caller's `style.width`.
+[Morph's `effect="characters"`](content/docs/morph.mdx#api) morphs text letter by letter and
+falls back to the whole-item swap for JSX. Components with changing labels expose it as
+`labelEffect`; Action Button and Copy Button default to `"characters"`, the rest to `"swap"`.
 Shared `reduced-motion`, `numbers`, and `move-focus-outside` helpers install transitively;
 their roles are listed in the [shared foundation](content/docs/reference/engineering.mdx#shared-foundation).
 

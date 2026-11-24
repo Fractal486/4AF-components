@@ -2,7 +2,7 @@
 
 import { Check, Plus } from "lucide-react";
 import { ActionToggle } from "@/registry/ui/action-toggle/action-toggle";
-import type { ControlVariant, TextSize } from "../button-options";
+import type { ControlVariant, LabelEffect, TextSize } from "../button-options";
 
 export function ActionToggleDemo({
   variant,
@@ -11,6 +11,7 @@ export function ActionToggleDemo({
   status,
   fail,
   sizing,
+  labelEffect,
 }: {
   variant: ControlVariant;
   size: TextSize;
@@ -18,6 +19,7 @@ export function ActionToggleDemo({
   status: "automatic" | "pending" | "error";
   fail: boolean;
   sizing: "widest" | "current";
+  labelEffect: LabelEffect;
 }) {
   async function follow() {
     await new Promise((resolve, reject) =>
@@ -36,6 +38,7 @@ export function ActionToggleDemo({
       size={size}
       shape={shape}
       sizing={sizing}
+      labelEffect={labelEffect}
       icon={<Plus />}
       icons={{ pressed: <Check /> }}
       labels={{ pressed: "Following", error: error => error instanceof Error ? error.message : "Try again" }}

@@ -5,7 +5,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "re
 import { cn } from "@/registry/lib/cn";
 import { Button, type ButtonProps } from "@/registry/ui/button/button";
 import { buttonContentGap } from "@/registry/ui/ui/button.variants";
-import { Morph } from "@/registry/ui/morph/morph";
+import { Morph, type MorphEffect } from "@/registry/ui/morph/morph";
 
 /**
  * A destructive button that asks first, in place.
@@ -15,7 +15,8 @@ import { Morph } from "@/registry/ui/morph/morph";
  * reversible-ish (remove a row, drop a tag); reach for AlertDialog when the consequence
  * needs a sentence to explain.
  *
- * Morph does the swap, and it's handed both states at once so the button reserves the
+ * Two Morphs do the swap — glyph and label apart, so a label effect can morph the words
+ * while the icon swaps — and each is handed both states at once so the button reserves the
  * width of the wider one and never resizes. That matters more here than anywhere else:
  * the cursor is already on the button, waiting to press again, and a button that grows
  * under a resting cursor moves the target out from under it. `sizing="current"` trades
@@ -61,6 +62,13 @@ export interface DeleteButtonProps
    * fits it to the showing state and animates the width when it arms and disarms.
    */
   sizing?: "widest" | "current";
+  /**
+   * How the label animates when the button arms and disarms. `"characters"` morphs the
+   * letters the two labels share into place; `"swap"` replaces the whole label. A JSX
+   * label always swaps.
+   * @default "swap"
+   */
+  labelEffect?: MorphEffect;
   /** How long an armed button waits before disarming itself, in ms. `0` never does. */
   resetAfter?: number;
   /** Announced when the button arms. A state change nobody can see is one they don't know about. */
@@ -79,6 +87,7 @@ export function DeleteButton({
   onArmedChange,
   resetAfter = 3000,
   sizing = "widest",
+  labelEffect = "swap",
   announce = "Press again to confirm",
   size,
   className,
@@ -90,6 +99,7 @@ export function DeleteButton({
   const isControlled = armed !== undefined;
   const isArmed = isControlled ? armed : uncontrolled;
   const contentGap = buttonContentGap({ size: size ?? "md" });
+  const stateKey = isArmed ? "armed" : "idle";
   const armedAt = useRef(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -155,14 +165,29 @@ export function DeleteButton({
         data-sizing={sizing}
         {...props}
       >
-        <Morph
-          activeKey={isArmed ? "armed" : "idle"}
-          sizing={sizing}
-          items={{
-            idle: <Content gap={contentGap} icon={icon}>{children}</Content>,
-            armed: <Content gap={contentGap} icon={confirmIcon}>{confirmLabel}</Content>,
-          }}
-        />
+        {/* One box, so the button still sees a single child. Under `"current"` the gap
+            closes with a state that has no glyph, so the label doesn't sit off-centre. */}
+        <span
+          data-slot="delete-button-content"
+          className={cn(
+            "inline-flex items-center",
+            contentGap,
+            sizing === "current" && "transition-[gap] duration-(--duration-base) ease-out",
+            sizing === "current" && (isArmed ? confirmIcon : icon) == null && "gap-0",
+          )}
+        >
+          {(icon != null || confirmIcon != null) && (
+            <Morph activeKey={stateKey} sizing={sizing} items={{ idle: icon, armed: confirmIcon }} />
+          )}
+          {(children != null || confirmLabel != null) && (
+            <Morph
+              activeKey={stateKey}
+              sizing={sizing}
+              effect={labelEffect}
+              items={{ idle: children, armed: confirmLabel }}
+            />
+          )}
+        </span>
       </Button>
 
       {/* The visible change is a swapped word inside a button that already had focus,
@@ -171,14 +196,5 @@ export function DeleteButton({
         {isArmed && announce}
       </span>
     </>
-  );
-}
-
-function Content({ gap, icon, children }: { gap: string; icon?: ReactNode; children?: ReactNode }) {
-  return (
-    <span data-slot="delete-button-content" className={cn("inline-flex items-center", gap)}>
-      {icon}
-      {children}
-    </span>
   );
 }

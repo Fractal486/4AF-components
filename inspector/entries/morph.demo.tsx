@@ -3,7 +3,7 @@
 import { Check, FilePen, RefreshCw } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
-import { Morph } from "@/registry/ui/morph/morph";
+import { Morph, type MorphEffect } from "@/registry/ui/morph/morph";
 
 const STATES = ["draft", "saving", "saved"] as const;
 type State = (typeof STATES)[number];
@@ -25,7 +25,11 @@ const LABELS: Record<State, string> = {
  * dashed outline wraps the icon and the label's box, so `widest` and `current` sizing show
  * as what they are — a box held at the longest label, or one that follows the showing label.
  */
-export function MorphDemo({ sizing, outline }: { sizing: "widest" | "current"; outline: boolean }) {
+export function MorphDemo({ sizing, effect, outline }: {
+  sizing: "widest" | "current";
+  effect: MorphEffect;
+  outline: boolean;
+}) {
   const [index, setIndex] = useState(0);
   const state = STATES[index]!;
 
@@ -44,7 +48,7 @@ export function MorphDemo({ sizing, outline }: { sizing: "widest" | "current"; o
     >
       {/* Icons share a known box, so they swap with `fixed` sizing and no hidden copies. */}
       <Morph aria-hidden="true" sizing="fixed" className="size-5 text-muted-foreground [&_svg]:size-5" activeKey={state} items={ICONS} />
-      <Morph role="status" sizing={sizing} activeKey={state} items={LABELS} />
+      <Morph role="status" sizing={sizing} effect={effect} activeKey={state} items={LABELS} />
     </p>
   );
 }

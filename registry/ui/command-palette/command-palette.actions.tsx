@@ -390,6 +390,7 @@ function CommandActionRow({ item, end }: { item: CommandItem; end?: ReactNode })
     () => (
       <Morph
         activeKey={key}
+        effect={item.labelEffect}
         className="place-items-start"
         items={{
           off: item.label,

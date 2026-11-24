@@ -23,6 +23,7 @@ or Subscribe/Subscribed. Its appearance defaults to `variant="outline"` and `siz
 | `labels.error` | Resting label | A React node or `(error) => ReactNode`, evaluated when showing an error. |
 | `revertAfter` | `2000` | Error reset countdown in milliseconds. It pauses while hovered or keyboard-focused (`:focus-visible`) and resumes with the remaining time when neither holds it. Mouse focus alone does not pause it. Resetting feedback never changes `pressed`. |
 | `actionsRef` | — | A React ref receiving `{ reset() }`. The ordinary element `ref` still points to the toggle button. |
+| `labelEffect` | `"swap"` | How the label animates between states. `"characters"` morphs the letters two text labels share ("Follow" → "Following"); JSX labels always swap. See [Morph's effects](/docs/morph#api). |
 
 When another part of the application owns the asynchronous work, omit `action` and control
 `pressed` and `status` externally. In that mode, `onPressedChange` requests the next on/off value

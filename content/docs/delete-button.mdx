@@ -16,6 +16,7 @@ description: A destructive action button with deliberate confirmation feedback.
 | `icon` | `Trash2` | Resting glyph; accepts a React node. |
 | `confirmIcon` | `Check` | Glyph while armed; accepts a React node. |
 | `announce` | `"Press again to confirm"` | Screen-reader announcement when the button arms. |
+| `labelEffect` | `"swap"` | How the label animates when the button arms and disarms. `"characters"` morphs shared letters between text labels; JSX labels always swap. The glyph swaps either way. |
 
 A destructive confirmation button: the first press arms it and a later press calls `onDelete`.
 Presses within 350ms of arming are ignored so a double-click cannot confirm. Escape, blur, and
@@ -30,6 +31,7 @@ or show pending, success, or error states.
 
 By default the button keeps the width of its wider state. `sizing="current"` fits it to the
 showing state and animates the width when it arms and disarms. The button carries
-`data-sizing`.
+`data-sizing`. The glyph and the label morph in separate boxes, so the label effect applies only
+to the words. Under `sizing="current"`, the gap closes for a state without a glyph.
 
 `size` uses the Button scale: `xs` is 24px, `sm` is 30px, `md` is 34px, and `lg` is 38px.

@@ -17,6 +17,7 @@ describe("CopyButton inspector", () => {
         shape: "rectangular",
         withLabel: true,
         lazy: false,
+        labelEffect: "characters",
       }),
     );
 
@@ -33,6 +34,7 @@ describe("CopyButton inspector", () => {
         shape: "rectangular",
         withLabel: false,
         lazy: false,
+        labelEffect: "characters",
       }),
     );
 

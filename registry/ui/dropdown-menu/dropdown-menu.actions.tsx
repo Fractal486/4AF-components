@@ -3,7 +3,7 @@
 import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { useAction, type ActionStatus } from "@/registry/lib/use-action";
 import { LoadingIndicator } from "@/registry/lib/loader";
-import { Morph } from "@/registry/ui/morph/morph";
+import { Morph, type MorphEffect } from "@/registry/ui/morph/morph";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 import { TriangleAlert } from "lucide-react";
 import { useState, type ComponentProps, type ReactNode } from "react";
@@ -29,6 +29,12 @@ export interface DropdownMenuActionItemProps
   icon?: ReactNode;
   /** Labels per state. Each falls back to the resting label. */
   labels?: { pending?: ReactNode; success?: ReactNode; error?: ReactNode };
+  /**
+   * How the label animates between states. `"characters"` morphs the letters two text
+   * labels share into place; `"swap"` replaces the whole label. A JSX label always swaps.
+   * @default "swap"
+   */
+  labelEffect?: MorphEffect;
   /** Glyphs per state. Default to the spinner, a check, and the warning triangle. */
   icons?: { pending?: ReactNode; success?: ReactNode; error?: ReactNode };
   loader?: ReactNode;
@@ -62,6 +68,7 @@ export function DropdownMenuActionItem({
   children,
   icon,
   labels,
+  labelEffect = "swap",
   icons,
   loader,
   revertAfter,
@@ -111,6 +118,7 @@ export function DropdownMenuActionItem({
         </span>
         <Morph
           activeKey={status}
+          effect={labelEffect}
           items={{
             idle: children,
             pending: label(labels?.pending),

@@ -5,7 +5,7 @@ import { useImperativeHandle, useState, type ReactNode, type Ref } from "react";
 import { cn } from "@/registry/lib/cn";
 import { useAction, type ActionStatus } from "@/registry/lib/use-action";
 import { LoadingIndicator } from "@/registry/lib/loader";
-import { Morph } from "@/registry/ui/morph/morph";
+import { Morph, type MorphEffect } from "@/registry/ui/morph/morph";
 import { Toggle, type ToggleProps } from "@/registry/ui/toggle/toggle";
 
 export type { ActionStatus };
@@ -50,6 +50,12 @@ export interface ActionToggleProps
    * `"current"` fits it to the showing state and animates the width as the state changes.
    */
   sizing?: "widest" | "current";
+  /**
+   * How the label animates between states. `"characters"` morphs the letters two text
+   * labels share into place; `"swap"` replaces the whole label. A JSX label always swaps.
+   * @default "swap"
+   */
+  labelEffect?: MorphEffect;
   /** How long a failure is shown before the control goes quiet again, in ms.
       @default 2000 */
   revertAfter?: number;
@@ -93,6 +99,7 @@ export function ActionToggle({
   loader,
   icons,
   sizing = "widest",
+  labelEffect = "swap",
   revertAfter,
   pendingDelay,
   announce,
@@ -232,6 +239,7 @@ export function ActionToggle({
             <Morph
               activeKey={labelKey}
               sizing={sizing}
+              effect={labelEffect}
               items={{
                 off: children,
                 on: labels?.pressed,

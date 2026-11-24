@@ -34,7 +34,7 @@ component keeps its own element. Content slots and render callbacks for data are
 | [`action-toggle`](https://4af.selfsimilar.dev/docs/action-toggle.md) | A persistent pressed state with async commits, independent controlled feedback, readable errors, and reset controls. | `render`. |
 | [`copy-button`](https://4af.selfsimilar.dev/docs/copy-button.md) | Clipboard actions with confirmation. | None. |
 | [`delete-button`](https://4af.selfsimilar.dev/docs/delete-button.md) | A destructive action confirmed by a second press. | None. |
-| [`morph`](https://4af.selfsimilar.dev/docs/morph.md) | Animated replacement of text or icons with a fixed box, reserved space, or measured current width for changing labels; Badge uses this sizing for smooth text-width changes. Native span props and refs reach the root; measured current width overrides style.width. | None; fixed span. |
+| [`morph`](https://4af.selfsimilar.dev/docs/morph.md) | Animated replacement of text or icons with a fixed box, reserved space, or measured current width for changing labels; Badge uses this sizing for smooth text-width changes. `effect="characters"` morphs text letter by letter (Torph) and falls back to the swap for JSX; label-changing components expose it as `labelEffect`. Native span props and refs reach the root; measured current width overrides style.width. | None; fixed span. |
 
 ### Fields and selection
 

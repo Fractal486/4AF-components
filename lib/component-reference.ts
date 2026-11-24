@@ -11,7 +11,7 @@ export const componentReferences = {
 // Errors pause on hover or keyboard focus; mouse focus alone does not hold them.
 <ActionButton
   action={() => saveChanges()}
-  labels={{ success: "Saved", error: (error) => error instanceof Error ? error.message : "Failed" }}
+  labels={{ pending: "Saving", success: "Saved", error: (error) => error instanceof Error ? error.message : "Failed" }}
   revertAfter={{ success: 2000, error: 4000 }}
 >
   Save changes
@@ -383,6 +383,13 @@ import { Morph } from "@/components/ui/morph";
   className="size-4"
   activeKey={copied ? "done" : "idle"}
   items={{ idle: <Copy />, done: <Check /> }}
+/>
+
+// Text items can morph letter by letter; shared letters slide into place.
+<Morph
+  effect="characters"
+  activeKey={saving ? "saving" : "idle"}
+  items={{ idle: "Save", saving: "Saving" }}
 />`,
   },
   "date-picker": {

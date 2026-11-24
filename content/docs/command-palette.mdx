@@ -234,7 +234,9 @@ callback still fires after success if the row has unmounted. Use controlled `che
 in the parent to preserve the result across reopening.
 
 `labels` carries checked, pending, success, and error text, each falling back to the row's own
-label. `icons.checked` falls back to the resting icon; pending, success, and error default to
+label. `labelEffect: "characters"` morphs the letters two text labels share as the row changes
+state ("Star" → "Starred"); the default `"swap"` replaces the label, and JSX labels always swap.
+`icons.checked` falls back to the resting icon; pending, success, and error default to
 the shared loader, checkmark, and warning triangle. `revertAfter` and `pendingDelay` behave as
 on Action Button. The two toggle shapes show
 no success tick; the changed label is the confirmation. An item with none of these fields closes

@@ -1,3 +1,4 @@
+import { LABEL_EFFECTS } from "../button-options";
 import { bool, defineEntry, select, withIcons } from "../schema";
 import { BADGE_STATUS_ICONS } from "../setting-icons";
 import { BadgePreview } from "./badge.demo";
@@ -17,6 +18,8 @@ export const badgeEntry = defineEntry({
     interactive: select(["none", "button", "link", "removable"] as const, "none", "Interactive"),
     content: select(["label", "count", "animatedCount"] as const, "label", "Content"),
     invalid: bool(false, "Invalid"),
+    // Only the cycling badge changes its words; the others hold one label.
+    labelEffect: select(LABEL_EFFECTS, "swap", "Label effect", values => values.content !== "label" || values.overflow === "wrap" || values.interactive === "removable"),
   },
   render({ icon, overflow, interactive, content, ...values }) {
     return (

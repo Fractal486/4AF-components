@@ -1,4 +1,4 @@
-import { CONTROL_VARIANTS, TEXT_SIZES } from "../button-options";
+import { CONTROL_VARIANTS, LABEL_EFFECTS, TEXT_SIZES } from "../button-options";
 import { bool, defineEntry, select, withIcons } from "../schema";
 import { ACTION_STATUS_ICONS } from "../setting-icons";
 import { ActionButtonDemo } from "./action-button.demo";
@@ -16,8 +16,9 @@ export const actionButtonEntry = defineEntry({
     withIcon: bool(true, "Show leading icon"),
     pendingMode: select(["label", "icon"], "label", "Pending content"),
     sizing: select(["widest", "current"], "widest", "Width"),
+    labelEffect: select(LABEL_EFFECTS, "characters", "Label effect"),
   },
-  render({ variant, size, shape, status, fail, withIcon, pendingMode, sizing }) {
+  render({ variant, size, shape, status, fail, withIcon, pendingMode, sizing, labelEffect }) {
     return (
       <ActionButtonDemo
         variant={variant}
@@ -28,6 +29,7 @@ export const actionButtonEntry = defineEntry({
         withIcon={withIcon}
         pendingMode={pendingMode}
         sizing={sizing}
+        labelEffect={labelEffect}
       />
     );
   },

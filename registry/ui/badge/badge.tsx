@@ -22,7 +22,7 @@ import {
 } from "react";
 import { cn } from "@/registry/lib/cn";
 import { spring } from "@/registry/lib/motion";
-import { Morph } from "@/registry/ui/morph/morph";
+import { Morph, type MorphEffect } from "@/registry/ui/morph/morph";
 import { LoadingIndicator } from "@/registry/lib/loader";
 import { badgeVariants, type BadgeVariants } from "./badge.variants";
 
@@ -91,6 +91,14 @@ export interface BadgeProps
   /** Forces a label roll when the text stays the same object but should re-animate. */
   contentKey?: string | number;
   /**
+   * How a text label animates when it changes. `"characters"` morphs the letters the old
+   * and new text share into place; `"swap"` rolls the whole label. JSX labels always swap,
+   * and an unchanged string does not re-animate under `"characters"`, even with a new
+   * `contentKey`.
+   * @default "swap"
+   */
+  labelEffect?: MorphEffect;
+  /**
    * Animate text width with Morph and other size changes with layout projection. Only the
    * badge's own changes animate; a list reordering around it moves it without a slide.
    * @default true
@@ -125,6 +133,7 @@ export function Badge({
   loader,
   dot = false,
   contentKey,
+  labelEffect = "swap",
   animateLayout = true,
   wrap = false,
   color,
@@ -241,7 +250,7 @@ export function Badge({
           {wrap ? (
             <span data-slot="badge-text" className="block min-w-0 break-words">{label}</span>
           ) : !hasCount ? (
-            <Morph activeKey={labelKey} sizing={fitLabel ? "current" : "widest"} items={{ [labelKey]: simpleLabel ? textLabel : label }} className="max-w-full [&>span]:block [&>span]:max-w-full [&>span]:truncate [&[data-resizing]>span]:max-w-none [&[data-resizing]>span]:text-clip" />
+            <Morph activeKey={labelKey} sizing={fitLabel ? "current" : "widest"} effect={labelEffect} items={{ [labelKey]: simpleLabel ? textLabel : label }} className="max-w-full [&>span]:block [&>span]:max-w-full [&>span]:truncate [&[data-resizing]>span]:max-w-none [&[data-resizing]>span]:text-clip" />
           ) : label}
         </span>
       )}

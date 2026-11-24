@@ -2,7 +2,7 @@
 
 import { Rocket } from "lucide-react";
 import { ActionButton } from "@/registry/ui/action-button/action-button";
-import type { ControlVariant, TextSize } from "../button-options";
+import type { ControlVariant, LabelEffect, TextSize } from "../button-options";
 
 export function ActionButtonDemo({
   variant,
@@ -13,6 +13,7 @@ export function ActionButtonDemo({
   withIcon,
   pendingMode,
   sizing,
+  labelEffect,
 }: {
   variant: ControlVariant;
   size: TextSize;
@@ -22,6 +23,7 @@ export function ActionButtonDemo({
   withIcon: boolean;
   pendingMode: "label" | "icon";
   sizing: "widest" | "current";
+  labelEffect: LabelEffect;
 }) {
   async function deploy() {
     await new Promise((resolve, reject) =>
@@ -32,7 +34,7 @@ export function ActionButtonDemo({
   return (
     <ActionButton
       // Changing a simulation setting starts a fresh demo action.
-      key={`${variant}-${size}-${fail}-${withIcon}-${pendingMode}-${status}`}
+      key={`${variant}-${size}-${fail}-${withIcon}-${pendingMode}`}
       action={deploy}
       status={status === "automatic" ? undefined : status}
       error={status === "error" ? new Error("Deploy failed") : undefined}
@@ -42,6 +44,7 @@ export function ActionButtonDemo({
       revertAfter={{ success: 2000, error: 4000 }}
       pendingMode={pendingMode}
       sizing={sizing}
+      labelEffect={labelEffect}
       icon={withIcon ? <Rocket /> : undefined}
       labels={{ pending: "Deploying", success: "Deployed", error: error => error instanceof Error ? error.message : "Failed" }}
       announce={{

@@ -19,5 +19,9 @@ export const TEXT_SIZES = ["xs", "sm", "md", "lg"] as const;
 /** The square icon-button sizes, matching the text sizes' heights. */
 export const ICON_SIZES = ["icon-xs", "icon-sm", "icon", "icon-lg"] as const;
 
+/** Morph's label effects, for every demo whose label changes between states. */
+export const LABEL_EFFECTS = ["swap", "characters"] as const;
+
+export type LabelEffect = (typeof LABEL_EFFECTS)[number];
 export type ControlVariant = (typeof CONTROL_VARIANTS)[number];
 export type TextSize = (typeof TEXT_SIZES)[number];

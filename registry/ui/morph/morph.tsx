@@ -2,8 +2,9 @@
 
 import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion/react";
 import { useLayoutEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
+import { TextMorph } from "torph/react";
 import { cn } from "@/registry/lib/cn";
-import { spring } from "@/registry/lib/motion";
+import { duration, ease, spring } from "@/registry/lib/motion";
 import { LoaderSizerContext } from "@/registry/lib/loader";
 import { useMergedRefs } from "@/registry/lib/refs";
 
@@ -19,6 +20,11 @@ import { useMergedRefs } from "@/registry/lib/refs";
  *   <Morph activeKey={copied ? "done" : "idle"}
  *          items={{ idle: <CopyIcon />, done: <CheckIcon /> }} />
  *
+ * `effect="characters"` morphs text letter by letter instead, through Torph: characters the
+ * two strings share slide into their new positions, and the rest fade. "Save" → "Saving"
+ * keeps its first four letters. It only applies when every item is text, so a JSX item
+ * falls back to the whole-item swap rather than losing its markup.
+ *
  * The poses are exported for content that cannot change key because it must stay mounted —
  * a hidden label that still names its button — so it can leave and return in the same
  * motion as a swap, by animating between `animate` and `exit`.
@@ -28,6 +34,12 @@ export const morphVariants: Variants = {
   animate: { opacity: 1, scale: 1, filter: "blur(0px)" },
   exit: { opacity: 0, scale: 0.25, filter: "blur(4px)" },
 };
+
+/**
+ * How an item change animates. `"swap"` blurs and scales the whole item out and the next
+ * one in. `"characters"` morphs shared letters into place, for text items only.
+ */
+export type MorphEffect = "swap" | "characters";
 
 export interface MorphProps<K extends string> extends Omit<ComponentProps<"span">, "children"> {
   /** Which item is showing. Changing it is what triggers the swap. */
@@ -53,12 +65,42 @@ export interface MorphProps<K extends string> extends Omit<ComponentProps<"span"
    * controls, effects and DOM nodes without contributing any measurements.
    */
   sizing?: "widest" | "current" | "fixed";
+  /**
+   * `"swap"` (the default) replaces the whole item. `"characters"` morphs matching letters
+   * between text items and applies only when every item is a string, number, or empty;
+   * otherwise it swaps. The box sizes the same way under either effect, and both stop
+   * animating under reduced motion. The resolved effect is on `data-effect`.
+   */
+  effect?: MorphEffect;
 }
+
+type TextItem = string | number | boolean | null | undefined | readonly TextItem[];
+
+/** Torph serialises its children to a string and throws on elements, so check first. */
+function isText(node: ReactNode): node is TextItem {
+  if (node == null || typeof node === "string" || typeof node === "number" || typeof node === "boolean") return true;
+  return Array.isArray(node) && node.every(isText);
+}
+
+function textOf(node: TextItem): string {
+  if (node == null || typeof node === "boolean") return "";
+  if (Array.isArray(node)) return node.map(textOf).join("");
+  return String(node);
+}
+
+/** Torph animates with the Web Animations API; without it (jsdom, old engines) it sets text. */
+function canAnimateText() {
+  return typeof Element !== "undefined" && typeof Element.prototype.animate === "function";
+}
+
+/** The `--ease-out` token as a CSS timing function, since Torph takes CSS easing. */
+const CHARACTER_EASE = `cubic-bezier(${ease.out.join(", ")})`;
 
 export function Morph<K extends string>({
   activeKey,
   items,
   sizing = "widest",
+  effect = "swap",
   className,
   ref,
   style,
@@ -73,6 +115,21 @@ export function Morph<K extends string>({
   const transition = reduceMotion ? { duration: 0 } : spring.clean;
   const keys = Object.keys(items) as K[];
   const current = sizing === "current";
+  const characters = effect === "characters" && keys.every((key) => isText(items[key]));
+
+  // Under `"characters"` one element stays mounted and Torph rewrites its letters, so
+  // there is no outgoing item to retain and AnimatePresence has nothing to do.
+  const characterMorph = (inCell: boolean) => (
+    <TextMorph
+      className={cn("inline-block whitespace-nowrap", inCell && "[grid-area:1/1]")}
+      duration={duration.slower * 1000}
+      ease={CHARACTER_EASE}
+      // Motion's reduced-motion read, so both effects follow the same preference.
+      disabled={!!reduceMotion || !canAnimateText()}
+    >
+      {textOf(items[activeKey] as TextItem)}
+    </TextMorph>
+  );
   const { box, width } = useItemWidths(keys, activeKey, current);
   const mergedRef = useMergedRefs(box, ref);
 
@@ -99,9 +156,10 @@ export function Morph<K extends string>({
         onTransitionEnd={onTransitionEnd}
         data-slot="morph"
         data-sizing={sizing}
+        data-effect={characters ? "characters" : "swap"}
         className={cn("relative inline-grid place-items-center", className)}
       >
-        <AnimatePresence mode="popLayout" initial={false}>
+        {characters ? characterMorph(false) : <AnimatePresence mode="popLayout" initial={false}>
           <motion.span
             key={activeKey}
             className="inline-grid place-items-center whitespace-nowrap"
@@ -113,7 +171,7 @@ export function Morph<K extends string>({
           >
             {items[activeKey]}
           </motion.span>
-        </AnimatePresence>
+        </AnimatePresence>}
       </span>
     );
   }
@@ -132,6 +190,7 @@ export function Morph<K extends string>({
       ref={mergedRef}
       data-slot="morph"
       data-sizing={sizing}
+      data-effect={characters ? "characters" : "swap"}
       className={cn(
         "relative inline-grid place-items-center",
         current && "place-content-center transition-[width] duration-(--duration-base) ease-out",
@@ -173,7 +232,7 @@ export function Morph<K extends string>({
           popLayout pin it out of flow at the offset it left from. Pinned, it stays put
           while the box resizes around it and drifts off-centre from the incoming item;
           in the cell, both stay centred on the same moving box. */}
-      <AnimatePresence mode={current ? "sync" : "popLayout"} initial={false}>
+      {characters ? characterMorph(true) : <AnimatePresence mode={current ? "sync" : "popLayout"} initial={false}>
         <motion.span
           key={activeKey}
           className="inline-grid place-items-center [grid-area:1/1] whitespace-nowrap"
@@ -185,7 +244,7 @@ export function Morph<K extends string>({
         >
           {items[activeKey]}
         </motion.span>
-      </AnimatePresence>
+      </AnimatePresence>}
     </span>
   );
 }

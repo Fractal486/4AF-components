@@ -41,6 +41,28 @@ Hidden sizing copies keep each `LoadingIndicator`'s fixed-size wrapper but leave
 unmounted. This preserves the measured size without running hidden timers or spinner animations,
 for both sizing modes. Other custom content still mounts in each sizing copy.
 
+`effect` sets how an item change animates:
+
+| `effect` | Animation |
+| --- | --- |
+| `"swap"` (default) | The outgoing item blurs and scales out while the next one blurs and scales in. Works for any content. |
+| `"characters"` | Letters shared by the old and new text slide into their new positions; the rest fade out or in. "Save" → "Saving" keeps its first four letters. |
+
+`"characters"` uses [Torph](https://github.com/lochie/torph) and applies only when every item
+is text: a string, a number, an array of those, or empty (`null`, `undefined`, `false`). If any
+item is JSX, Morph uses `"swap"` instead, so markup is never flattened into text. The box carries
+`data-effect` with the effect that actually applied. Sizing works the same under both effects:
+`widest` still reserves the largest item, `current` still animates the box width and sets
+`data-resizing`, and `fixed` still mounts only the showing text. The letters take
+`--duration-slower` (450ms) on the `--ease-out` curve, mirrored from the JavaScript motion
+presets. Under reduced motion, or without the Web Animations API, the text changes instantly.
+
+Under `"characters"` one element stays mounted and its letters are rewritten, so a change of text
+under an unchanged `activeKey` also animates. A changed `activeKey` whose text is the same does
+not animate. Components that expose this choice call it `labelEffect`: Action Button
+(`"characters"` by default), Copy Button, Action Toggle, Delete Button, Badge, the Dropdown and
+Context Menu action rows, and Command Palette action items (`"swap"` by default).
+
 `morphVariants` exports the `initial` / `animate` / `exit` poses for content that has to stay
 mounted while hidden, such as Action Button's icon-only pending label, which still names the
 button. It then leaves and returns with the same motion as a keyed swap.

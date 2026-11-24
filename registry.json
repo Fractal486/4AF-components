@@ -861,10 +861,11 @@
     {
       "name": "morph",
       "type": "registry:ui",
-      "description": "Animated content swap — icons or text. Reserve the widest item, animate the current width, or use a fixed box without hidden sizing copies.",
+      "description": "Animated content swap — icons or text, as a whole-item swap or a letter-by-letter text morph. Reserve the widest item, animate the current width, or use a fixed box without hidden sizing copies.",
       "docs": "Docs: https://4af.selfsimilar.dev/docs/morph (Markdown: https://4af.selfsimilar.dev/docs/morph.md)",
       "dependencies": [
-        "motion"
+        "motion",
+        "torph@^0.1.4"
       ],
       "registryDependencies": [
         "https://4af.selfsimilar.dev/r/cn.json",

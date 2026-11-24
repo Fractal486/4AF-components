@@ -1,4 +1,4 @@
-import { CONTROL_VARIANTS, TEXT_SIZES } from "../button-options";
+import { CONTROL_VARIANTS, LABEL_EFFECTS, TEXT_SIZES } from "../button-options";
 import { bool, defineEntry, select, withIcons } from "../schema";
 import { ACTION_STATUS_ICONS } from "../setting-icons";
 import { ActionToggleDemo } from "./action-toggle.demo";
@@ -14,8 +14,9 @@ export const actionToggleEntry = defineEntry({
     status: withIcons(select(["automatic", "pending", "error"], "automatic", "Status"), ACTION_STATUS_ICONS),
     fail: bool(false, "Fail on click", (values) => values.status !== "automatic"),
     sizing: select(["widest", "current"], "widest", "Width"),
+    labelEffect: select(LABEL_EFFECTS, "swap", "Label effect"),
   },
-  render({ variant, size, shape, status, fail, sizing }) {
+  render({ variant, size, shape, status, fail, sizing, labelEffect }) {
     return (
       <ActionToggleDemo
         variant={variant}
@@ -24,6 +25,7 @@ export const actionToggleEntry = defineEntry({
         status={status}
         fail={fail}
         sizing={sizing}
+        labelEffect={labelEffect}
       />
     );
   },

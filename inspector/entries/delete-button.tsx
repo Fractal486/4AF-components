@@ -1,5 +1,5 @@
 import { DeleteButton } from "@/registry/ui/delete-button/delete-button";
-import { TEXT_SIZES } from "../button-options";
+import { LABEL_EFFECTS, TEXT_SIZES } from "../button-options";
 import { defineEntry, select } from "../schema";
 
 // Delete Button accepts only the quiet variants: red text on a solid fill has nowhere to
@@ -14,8 +14,9 @@ export const deleteButtonEntry = defineEntry({
     size: select(TEXT_SIZES, "md"),
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     sizing: select(["widest", "current"], "widest", "Width"),
+    labelEffect: select(LABEL_EFFECTS, "swap", "Label effect"),
   },
-  render({ variant, size, shape, sizing }) {
+  render({ variant, size, shape, sizing, labelEffect }) {
     return (
       <DeleteButton
         // Remounted per size so the Morph re-measures its reserved width from scratch.
@@ -24,6 +25,7 @@ export const deleteButtonEntry = defineEntry({
         size={size}
         shape={shape}
         sizing={sizing}
+        labelEffect={labelEffect}
       >
         Delete
       </DeleteButton>

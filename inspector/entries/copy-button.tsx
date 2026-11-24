@@ -1,5 +1,5 @@
 import { CopyButton } from "@/registry/ui/copy-button/copy-button";
-import { CONTROL_VARIANTS, TEXT_SIZES } from "../button-options";
+import { CONTROL_VARIANTS, LABEL_EFFECTS, TEXT_SIZES } from "../button-options";
 import { bool, defineEntry, select } from "../schema";
 
 const VALUE = "npx shadcn@latest add https://4af.selfsimilar.dev/r/copy-button.json";
@@ -13,8 +13,9 @@ export const copyButtonEntry = defineEntry({
     shape: select(["rectangular", "pill"], "rectangular", "Shape"),
     withLabel: bool(false, "Show a label"),
     lazy: bool(false, "Async value"),
+    labelEffect: select(LABEL_EFFECTS, "characters", "Label effect", (values) => !values.withLabel),
   },
-  render({ variant, size, shape, withLabel, lazy }) {
+  render({ variant, size, shape, withLabel, lazy, labelEffect }) {
     return (
       <CopyButton
         key={withLabel ? "labelled" : "icon"}
@@ -32,6 +33,7 @@ export const copyButtonEntry = defineEntry({
         variant={variant}
         size={size}
         shape={shape}
+        labelEffect={labelEffect}
       >
         {withLabel ? "Copy command" : undefined}
       </CopyButton>

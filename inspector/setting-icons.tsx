@@ -97,6 +97,7 @@ export const SIZE_ICONS: Readonly<Record<string, ReactNode>> = {
   sm: <Icon><rect x="3" y="4.5" width="10" height="7" rx="1.75" {...FILLED} /><path d="M6 8h4" /></Icon>,
   md: <Icon><rect x="2" y="3.5" width="12" height="9" rx="2" {...FILLED} /><path d="M5.5 8h5" /></Icon>,
   lg: <Icon><rect x="1.5" y="2.5" width="13" height="11" rx="2" {...FILLED} /><path d="M5 8h6" /></Icon>,
+  xl: <Icon><rect x="0.75" y="1.5" width="14.5" height="13" rx="2.5" {...FILLED} /><path d="M4.5 8h7" /></Icon>,
   "icon-xs": <Icon><rect x="5" y="5" width="6" height="6" rx="1.5" {...FILLED} /><circle cx="8" cy="8" r="1" {...SOLID} /></Icon>,
   "icon-sm": <Icon><rect x="4" y="4" width="8" height="8" rx="1.75" {...FILLED} /><circle cx="8" cy="8" r="1.25" {...SOLID} /></Icon>,
   icon: <Icon><rect x="3" y="3" width="10" height="10" rx="2" {...FILLED} /><circle cx="8" cy="8" r="1.5" {...SOLID} /></Icon>,

@@ -25,7 +25,9 @@ without one they are the matching square `icon-xs`, `icon-sm`, `icon`, or `icon-
 icon-only button defaults to `icon`. With a label, the icon gap matches Button (8, 10, or 12px).
 
 A labelled button swaps its label to "Copied" on success. `swapLabel={false}` keeps the label and
-changes only the glyph; the copy is still announced. `iconPosition="end"` (from Action Button)
+changes only the glyph; the copy is still announced. `labelEffect` (from Action Button,
+`"characters"` by default) sets how "Copy" becomes "Copied": shared letters morph into place, or
+`"swap"` replaces the word. `iconPosition="end"` (from Action Button)
 puts the glyph after the label.
 
 ## Resolve values on press

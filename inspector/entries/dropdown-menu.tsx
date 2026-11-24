@@ -42,6 +42,7 @@ import {
   DropdownMenuTrigger,
 } from "@/registry/ui/dropdown-menu/dropdown-menu";
 import { bool, defineEntry, select, withIcons } from "../schema";
+import { LABEL_EFFECTS, type LabelEffect } from "../button-options";
 import { ANCHORED_ALIGN_ICONS, ANCHORED_SIDE_ICONS } from "../setting-icons";
 import { SafeTriangleOverlay } from "./dropdown-menu.safe-triangle";
 
@@ -51,9 +52,14 @@ const ALIGNS = ["start", "center", "end"] as const;
 // Each is its own demo, switched from the playground's variants.
 type RowKind = "items" | "checkboxes" | "toggles" | "radio" | "actions" | "panels";
 
+/** Settings that only some row kinds read. */
+interface RowOptions {
+  labelEffect: LabelEffect;
+}
+
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const ROWS_BY_KIND: Record<RowKind, () => ReactNode> = {
+const ROWS_BY_KIND: Record<RowKind, (options: RowOptions) => ReactNode> = {
   items: () => (
     <>
       <DropdownMenuLabel>My account</DropdownMenuLabel>
@@ -148,7 +154,7 @@ const ROWS_BY_KIND: Record<RowKind, () => ReactNode> = {
       </DropdownMenuRadioGroup>
     </>
   ),
-  actions: () => (
+  actions: ({ labelEffect }) => (
     <>
       {/* Transient rows: they run, confirm, and put themselves back. They keep the menu
           open while they do, since an outcome on a row the user can no longer see is no
@@ -157,6 +163,7 @@ const ROWS_BY_KIND: Record<RowKind, () => ReactNode> = {
         icon={<Link2 />}
         action={() => navigator.clipboard?.writeText("https://example.com/i/4af")}
         labels={{ success: "Copied" }}
+        labelEffect={labelEffect}
         announce={{ success: "Link copied" }}
       >
         Copy link
@@ -165,6 +172,7 @@ const ROWS_BY_KIND: Record<RowKind, () => ReactNode> = {
         icon={<Archive />}
         action={() => wait(1200)}
         labels={{ pending: "Archiving…", success: "Archived" }}
+        labelEffect={labelEffect}
         announce={{ pending: "Archiving thread", success: "Thread archived" }}
       >
         Archive thread
@@ -173,6 +181,7 @@ const ROWS_BY_KIND: Record<RowKind, () => ReactNode> = {
         icon={<RefreshCw />}
         action={() => wait(1200).then(() => Promise.reject(new Error("offline")))}
         labels={{ pending: "Syncing…", error: "Sync failed" }}
+        labelEffect={labelEffect}
         announce={{ pending: "Syncing", error: "Sync failed" }}
       >
         Sync now
@@ -220,23 +229,24 @@ const ROWS_BY_KIND: Record<RowKind, () => ReactNode> = {
   ),
 };
 
-// Settings every row type shares.
-const controls = () => ({
+// Settings every row type shares; action rows add their label effect.
+const controls = (rows: RowKind) => ({
   side: withIcons(select(SIDES, "bottom"), ANCHORED_SIDE_ICONS),
   align: withIcons(select(ALIGNS, "start"), ANCHORED_ALIGN_ICONS),
   longLabels: bool(false, "Long labels"),
   shared: bool(false, "Shared menu"),
   safeTriangle: bool(false, "Show safe triangle"),
+  labelEffect: select(LABEL_EFFECTS, "swap", "Label effect", () => rows !== "actions"),
 });
 
 function rowEntry(slug: string, name: string, rows: RowKind) {
   return defineEntry({
     slug,
     name,
-    controls: controls(),
-    render: ({ side, align, safeTriangle, longLabels, shared }) => (
+    controls: controls(rows),
+    render: ({ side, align, safeTriangle, longLabels, shared, labelEffect }) => (
       <>
-        <DropdownMenuDemo rows={rows} side={side} align={align} longLabels={longLabels} shared={shared} />
+        <DropdownMenuDemo rows={rows} side={side} align={align} longLabels={longLabels} shared={shared} labelEffect={labelEffect} />
         {safeTriangle && <SafeTriangleOverlay />}
       </>
     ),
@@ -256,12 +266,14 @@ function DropdownMenuDemo({
   align,
   longLabels,
   shared,
+  labelEffect,
 }: {
   rows: RowKind;
   side: (typeof SIDES)[number];
   align: (typeof ALIGNS)[number];
   longLabels: boolean;
   shared: boolean;
+  labelEffect: LabelEffect;
 }) {
   const [handle] = useState(() => createDropdownMenuHandle<string>());
 
@@ -282,7 +294,7 @@ function DropdownMenuDemo({
         {({payload}) => (
           <DropdownMenuContent side={side} align={align} className={longLabels ? undefined : "w-56"}>
             {shared && <DropdownMenuLabel>Actions for {payload}</DropdownMenuLabel>}
-            {longLabels ? <LongLabelRows kind={rows} /> : ROWS_BY_KIND[rows]()}
+            {longLabels ? <LongLabelRows kind={rows} labelEffect={labelEffect} /> : ROWS_BY_KIND[rows]({ labelEffect })}
           </DropdownMenuContent>
         )}
       </DropdownMenu>
@@ -293,7 +305,7 @@ function DropdownMenuDemo({
 const longLabel = "Review the accessibility improvements across all shared workspace components";
 const longUrl = "https://example.com/projects/design-system/accessible-component-library/release-notes";
 
-function LongLabelRows({kind}: {kind:RowKind}) {
+function LongLabelRows({kind, labelEffect}: {kind:RowKind} & RowOptions) {
   if (kind === "checkboxes" || kind === "toggles") return <>
     <DropdownMenuCheckboxItem defaultChecked indicator={kind === "checkboxes"} icon={kind === "toggles" ? <Bell /> : undefined}>
       {longLabel}
@@ -305,6 +317,7 @@ function LongLabelRows({kind}: {kind:RowKind}) {
     <DropdownMenuRadioItem value="notes">{longUrl}</DropdownMenuRadioItem>
   </DropdownMenuRadioGroup>;
   if (kind === "actions") return <DropdownMenuActionItem icon={<RefreshCw />} action={() => wait(1200)}
+    labelEffect={labelEffect}
     labels={{pending:"Updating every shared workspace component",success:"All shared workspace components are now up to date"}}>
     {longLabel}
   </DropdownMenuActionItem>;

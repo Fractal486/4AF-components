@@ -206,4 +206,50 @@ describe("Morph", () => {
     });
     expect(box).not.toHaveAttribute("data-resizing");
   });
+
+  describe('effect="characters"', () => {
+    it("keeps one text element mounted and rewrites its letters", () => {
+      const items = { idle: "Save", pending: "Saving" };
+      const { container, rerender } = render(<Morph activeKey="idle" items={items} effect="characters" />);
+      const box = container.querySelector('[data-slot="morph"]')!;
+      expect(box).toHaveAttribute("data-effect", "characters");
+      const text = box.querySelector(":scope > :not([aria-hidden])")!;
+      expect(text).toHaveTextContent("Save");
+
+      rerender(<Morph activeKey="pending" items={items} effect="characters" />);
+      // The same element, not a new keyed one swapped in beside it.
+      expect(box.querySelector(":scope > :not([aria-hidden])")).toBe(text);
+      expect(text).toHaveTextContent("Saving");
+    });
+
+    it("reserves the widest item under both effects", () => {
+      const items = { off: "Follow", on: "Following" };
+      const { container } = render(<Morph activeKey="off" items={items} effect="characters" />);
+      const sizers = [...container.querySelectorAll('[data-slot="morph"] > [aria-hidden="true"]')];
+      expect(sizers.map((sizer) => sizer.textContent)).toEqual(["Follow", "Following"]);
+    });
+
+    it("joins text arrays and leaves empty items blank", () => {
+      const items = { a: ["Step ", 2], b: null };
+      const { container, rerender } = render(<Morph activeKey="a" items={items} effect="characters" sizing="fixed" />);
+      const box = container.querySelector('[data-slot="morph"]')!;
+      expect(box).toHaveAttribute("data-effect", "characters");
+      expect(box).toHaveTextContent("Step 2");
+      rerender(<Morph activeKey="b" items={items} effect="characters" sizing="fixed" />);
+      expect(box.textContent).toBe("");
+    });
+
+    it("falls back to the whole-item swap when any item is JSX", () => {
+      const items = { idle: "Copy", done: <strong>Copied</strong> };
+      const { container } = render(<Morph activeKey="idle" items={items} effect="characters" />);
+      expect(container.querySelector('[data-slot="morph"]')).toHaveAttribute("data-effect", "swap");
+      expect(screen.getAllByText("Copied")).toHaveLength(1);
+    });
+
+    it("defaults to the swap", () => {
+      const items = { a: "A", b: "B" };
+      const { container } = render(<Morph activeKey="a" items={items} />);
+      expect(container.querySelector('[data-slot="morph"]')).toHaveAttribute("data-effect", "swap");
+    });
+  });
 });

@@ -21,6 +21,7 @@ another run. By default the button keeps the width of its widest state throughou
 | `revertAfter` | `2000` | One duration for both outcomes, or `{ success, error }` for separate durations in milliseconds. An omitted outcome uses 2000ms. |
 | `labels.error` | Resting label | A React node or `(error) => ReactNode`, evaluated when showing an error. Receives the action's rejection reason. |
 | `error` | Last rejection | Supplies the rejection reason for an externally controlled error state. |
+| `labelEffect` | `"characters"` | How the label animates between states: `"characters"` morphs shared letters, `"swap"` replaces the label. JSX labels always swap. |
 
 `action` is optional when external code owns the work. Controlled `status` remains authoritative;
 the component requests transitions through `onStatusChange` rather than overriding it. Pending
@@ -97,6 +98,9 @@ accepts a `loader` for its pending state.
 Hidden sizing copies reserve the indicator's space without mounting it, so an idle button does
 not run the supplied loader's timers or animations.
 
-A label only animates when it changes. Pass `labels={{ pending: "Saving" }}` when the word should
+`labelEffect` defaults to `"characters"`: text labels carry their shared letters into place as
+the wording changes, so "Deploy" → "Deploying" adds four letters rather than replacing the word.
+`labelEffect="swap"` replaces the whole label instead. If any label is JSX, the button swaps the
+complete label either way. See [Morph's effects](/docs/morph#api). Pass `labels={{ pending: "Saving" }}` when the word should
 change, and leave it out when only the glyph should move. With `pendingMode="icon"`,
 `labels.pending` is not shown.

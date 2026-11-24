@@ -77,6 +77,12 @@ export interface CommandItem {
   onCheckedChange?: (checked: boolean) => void;
   /** Labels for the row's other states. Each falls back to `label`. */
   labels?: { checked?: ReactNode; pending?: ReactNode; success?: ReactNode; error?: ReactNode };
+  /**
+   * How the row's label animates between states. `"characters"` morphs the letters two
+   * text labels share into place; `"swap"` replaces the whole label. JSX always swaps.
+   * @default "swap"
+   */
+  labelEffect?: "swap" | "characters";
   /** Glyphs for the row's other states. Pending and error default to the loader and the
       warning triangle. */
   icons?: { checked?: ReactNode; pending?: ReactNode; success?: ReactNode; error?: ReactNode };

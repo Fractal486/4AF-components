@@ -9,7 +9,7 @@ import { useAction, type ActionStatus, type ActionRevertAfter } from "@/registry
 import { CheckMark } from "@/registry/lib/check-mark";
 import { LoadingIndicator } from "@/registry/lib/loader";
 import { Button, type ButtonProps } from "@/registry/ui/button/button";
-import { Morph, morphVariants } from "@/registry/ui/morph/morph";
+import { Morph, morphVariants, type MorphEffect } from "@/registry/ui/morph/morph";
 
 export type { ActionStatus, ActionRevertAfter };
 
@@ -43,6 +43,12 @@ export interface ActionButtonProps
    * fits it to the showing state and animates the width as the state changes.
    */
   sizing?: "widest" | "current";
+  /**
+   * How the label animates between states. `"characters"` morphs the letters two text
+   * labels share into place; `"swap"` replaces the whole label. A JSX label always swaps.
+   * @default "characters"
+   */
+  labelEffect?: MorphEffect;
   /** Whether pending keeps its label beside the loader or shows only a centered loader. */
   pendingMode?: "label" | "icon";
   /** How long the outcome holds before returning to idle, in ms. */
@@ -84,6 +90,7 @@ export function ActionButton({
   labels,
   loader,
   sizing = "widest",
+  labelEffect = "characters",
   pendingMode = "label",
   revertAfter = 2000,
   pendingDelay = 0,
@@ -238,6 +245,7 @@ export function ActionButton({
               <Morph
                 activeKey={labelKey}
                 sizing={sizing}
+                effect={labelEffect}
                 items={{
                   idle: children,
                   pending: labels?.pending,

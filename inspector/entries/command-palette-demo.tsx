@@ -56,6 +56,7 @@ import {
   SelectValue,
 } from "@/registry/ui/select/select";
 import { Switch } from "@/registry/ui/switch/switch";
+import type { LabelEffect } from "../button-options";
 
 const DEMO_SHORTCUT_KEY = "p";
 
@@ -263,9 +264,11 @@ function PeopleSearchPanel({
 export function CommandPaletteDemo({
   grouped,
   search,
+  labelEffect = "swap",
 }: {
   grouped: boolean;
   search: boolean;
+  labelEffect?: LabelEffect;
 }) {
   const [open, setOpen] = useState(false);
   const [lastRun, setLastRun] = useState<string | null>(null);
@@ -339,7 +342,7 @@ export function CommandPaletteDemo({
       keywords: ["switch", "workspace"],
       headerActions: <PaletteHeaderActions />,
       panel: (helpers) => (
-        <ProjectsPanel helpers={helpers} onDone={(summary) => setLastRun(summary)} />
+        <ProjectsPanel helpers={helpers} labelEffect={labelEffect} onDone={(summary) => setLastRun(summary)} />
       ),
       panelInput: {
         type: "search",
@@ -532,9 +535,11 @@ type ProjectTab = keyof typeof PROJECT_TABS;
 
 function ProjectsPanel({
   helpers,
+  labelEffect,
   onDone,
 }: {
   helpers: CommandPanelHelpers;
+  labelEffect: LabelEffect;
   onDone: (summary: string) => void;
 }) {
   const [projects, setProjects] = useState<string[]>([...PROJECTS]);
@@ -743,7 +748,12 @@ function ProjectsPanel({
             helpers.close();
           },
         }}
-        actions={{ groups: actionGroups }}
+        actions={{
+          groups: actionGroups.map((group) => ({
+            ...group,
+            items: group.items.map((item) => ({ ...item, labelEffect })),
+          })),
+        }}
       />
     </CommandPanelTabs>
   );

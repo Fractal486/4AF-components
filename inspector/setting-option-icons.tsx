@@ -58,6 +58,11 @@ export const SETTING_OPTION_ICONS: Readonly<Record<string, Readonly<Record<strin
   "Pending content": { label: TEXT, icon: BADGE_STATUS_ICONS.loading },
   Width: WIDTH_ICONS,
   "Label sizing": WIDTH_ICONS,
+  // Morph's label effects: the whole word replaced, or its letters moving one by one.
+  "Label effect": {
+    swap: <Icon><rect x="1.5" y="1.5" width="13" height="5" rx="1.5" {...FAINT} /><path d="M8 7.5v2M6.5 8.5 8 10l1.5-1.5" {...FAINT} /><rect x="1.5" y="10" width="13" height="4.5" rx="1.5" {...FILLED} /><path d="M4.5 12.25h7" /></Icon>,
+    characters: <Icon><rect x="1.5" y="9" width="3.5" height="5" rx="1" {...FILLED} /><rect x="6.25" y="9" width="3.5" height="5" rx="1" {...FILLED} /><rect x="11" y="2" width="3.5" height="5" rx="1" {...FAINT} /><path d="M12.75 8v4.5M11.25 11 12.75 12.5 14.25 11" /></Icon>,
+  },
   Action: {
     instant: <Icon><path d="m9 1.5-6.5 7H7l-1 6 7.5-8H9Z" {...FILLED} /></Icon>,
     async: BADGE_STATUS_ICONS.loading,
