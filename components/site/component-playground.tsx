@@ -60,6 +60,9 @@ function useHash() {
   return useSyncExternalStore(subscribeToHash, () => window.location.hash, () => "");
 }
 
+/** The demo's box, listed first in the stacked layout's contents so the page can return to it. */
+const DEMO_SECTION_ID = "demo";
+
 const LABEL = "font-mono text-2xs tracking-[0.04em] text-subtle-foreground";
 
 interface PageLink {
@@ -250,11 +253,9 @@ function PlaygroundFrame({
             demo, its settings, the docs, then the neighbouring pages. The playground's grid and
             tabs only start at `lg`; until then the stage section dissolves (`contents`) so its
             parts can take their places in that order. */}
-        {toc.length > 0 ? (
-          <div className="contents lg:hidden">
-            <MobileToc items={toc} />
-          </div>
-        ) : null}
+        <div className="contents lg:hidden">
+          <MobileToc items={[{ id: DEMO_SECTION_ID, title: "Demo" }, ...toc]} />
+        </div>
 
         <header className="flex flex-col gap-3 px-5 pt-7 pb-5 max-lg:order-1 sm:px-10 lg:col-start-2 lg:row-start-1 lg:border-l lg:px-5 lg:pt-5">
           <div ref={titleRowRef} className="flex items-center gap-2">
@@ -370,8 +371,10 @@ function PlaygroundFrame({
               Below `lg` it always shows, above the docs, boxed together with its settings, and
               with the replay control on the canvas since the toolbar is desktop-only. */}
           <div
+            id={DEMO_SECTION_ID}
             className={cn(
-              "relative flex min-h-0 flex-col max-lg:order-2 max-lg:mx-5 max-lg:mb-4 max-lg:overflow-hidden max-lg:rounded-xl max-lg:shadow-border sm:max-lg:mx-10 lg:flex-1",
+              // Clears the 56px top bar when the contents scroll to it.
+              "relative flex min-h-0 flex-col max-lg:scroll-mt-18 max-lg:order-2 max-lg:mx-5 max-lg:mb-4 max-lg:overflow-hidden max-lg:rounded-xl max-lg:shadow-border sm:max-lg:mx-10 lg:flex-1",
               view === "docs" && "lg:hidden",
             )}
           >
