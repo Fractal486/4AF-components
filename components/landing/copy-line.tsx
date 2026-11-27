@@ -1,55 +1,47 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { cn } from "@/registry/lib/cn";
+import { useAction } from "@/registry/lib/use-action";
+import { writeToClipboard } from "@/registry/ui/copy-button/copy-button";
 import { Tooltip } from "@/registry/ui/tooltip/tooltip";
 
-/** How long "Copied!" stays up after a click, in ms. */
-const SHOWN = 1200;
-
 /**
- * A command on the landing page that copies itself: plain monospace text, highlighted on hover
- * like a selection, and a "Copied!" tooltip above it after a click. No box and no copy button;
- * the line is the control. The highlight is on an inline span, so it covers the glyphs alone:
- * no padding, no rounding, and no taller than the font.
+ * A landing-page command that copies itself and reports the result in a tooltip.
+ * The inline highlight follows the glyphs when the command wraps.
  */
 export function CopyLine({ value, className, children }: { value: string; className?: string; children?: ReactNode }) {
-  const [copied, setCopied] = useState(false);
-  const timer = useRef<number | undefined>(undefined);
-
-  useEffect(() => () => window.clearTimeout(timer.current), []);
+  const { status, run, buttonProps } = useAction({ action: () => writeToClipboard(value), revertAfter: 1200 });
+  const feedback = status === "success" ? "Copied!" : status === "error" ? "Couldn't copy" : "";
 
   return (
-    // Controlled, so the tooltip opens only on a copy, never on hover.
-    <Tooltip content="Copied!" open={copied} className="data-instant:transition-[opacity,scale,translate,filter]">
-      <button
-        type="button"
-        aria-label={`Copy: ${value}`}
-        onClick={() => {
-          void navigator.clipboard?.writeText(value).then(() => {
-            setCopied(true);
-            window.clearTimeout(timer.current);
-            timer.current = window.setTimeout(() => setCopied(false), SHOWN);
-          });
-        }}
-        className={cn(
-          // Wraps between words when the screen is narrower than the command, and anywhere
-          // as a last resort, so a long command never widens the page.
-          "group w-fit cursor-default text-left font-mono text-xs leading-6 wrap-anywhere text-muted-foreground",
-          "outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          className,
-        )}
-      >
-        <span
+    <>
+      <Tooltip content={feedback} open={Boolean(feedback)} className="data-instant:transition-[opacity,scale,translate,filter]">
+        <button
+          {...buttonProps}
+          type="button"
+          aria-label={`Copy: ${value}`}
+          onClick={run}
           className={cn(
-            // `box-decoration-clone`: a wrapped line keeps the highlight on each of its lines.
-            "box-decoration-clone transition-[background-color,color] duration-(--duration-fast) ease-out",
-            "group-hover:bg-muted group-hover:text-foreground group-focus-visible:bg-muted group-focus-visible:text-foreground",
+            // Wraps between words when the screen is narrower than the command, and anywhere
+            // as a last resort, so a long command never widens the page.
+            "group w-fit cursor-default text-left font-mono text-xs leading-6 wrap-anywhere text-muted-foreground",
+            "outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            className,
           )}
         >
-          {children ?? value}
-        </span>
-      </button>
-    </Tooltip>
+          <span
+            className={cn(
+              // `box-decoration-clone`: a wrapped line keeps the highlight on each of its lines.
+              "box-decoration-clone transition-[background-color,color] duration-(--duration-fast) ease-out",
+              "group-hover:bg-muted group-hover:text-foreground group-focus-visible:bg-muted group-focus-visible:text-foreground",
+            )}
+          >
+            {children ?? value}
+          </span>
+        </button>
+      </Tooltip>
+      <span role="status" className="sr-only">{feedback}</span>
+    </>
   );
 }

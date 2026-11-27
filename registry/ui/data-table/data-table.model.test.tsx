@@ -71,6 +71,19 @@ function GroupedPeople({ loading }: { loading: boolean }) {
 }
 
 describe("Data Table model and controls", () => {
+  it("keeps a large off-page selection in order when checking and clearing the current page", () => {
+    const retained = Array.from({ length: 10_000 }, (_, index) => `archived-${index}`);
+    const rowSelection = Object.fromEntries(retained.map((id) => [id, true] as const));
+    render(<People options={{ initialState: { rowSelection, pagination: { pageIndex: 0, pageSize: 2 } } }} />);
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "Select Ada" }));
+    expect(Object.keys(model.state.rowSelection)).toEqual([...retained, "a"]);
+    fireEvent.click(screen.getByRole("checkbox", { name: "Select all rows" }));
+    expect(Object.keys(model.state.rowSelection)).toEqual([...retained, "a", "b"]);
+    fireEvent.click(screen.getByRole("checkbox", { name: "Select all rows" }));
+    expect(Object.keys(model.state.rowSelection)).toEqual(retained);
+  });
+
   it.each([false, true])("honors single selection for checkboxes, shift ranges, drag ranges, and select-all (controlled=%s)", (controlled) => {
     const { container } = render(<People controlled={controlled} options={{ enableMultiRowSelection: false }} />);
     fireEvent.click(screen.getByRole("checkbox", { name: "Select Bea" }));

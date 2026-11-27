@@ -16,12 +16,8 @@ import argparse
 import base64
 import json
 import mimetypes
-import os
 import re
-import signal
-import subprocess
 import sys
-import time
 import webbrowser
 from functools import partial
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -285,26 +281,6 @@ def generate_html(
 # HTTP server (stdlib only, zero dependencies)
 # ---------------------------------------------------------------------------
 
-def _kill_port(port: int) -> None:
-    """Kill any process listening on the given port."""
-    try:
-        result = subprocess.run(
-            ["lsof", "-ti", f":{port}"],
-            capture_output=True, text=True, timeout=5,
-        )
-        for pid_str in result.stdout.strip().split("\n"):
-            if pid_str.strip():
-                try:
-                    os.kill(int(pid_str.strip()), signal.SIGTERM)
-                except (ProcessLookupError, ValueError):
-                    pass
-        if result.stdout.strip():
-            time.sleep(0.5)
-    except subprocess.TimeoutExpired:
-        pass
-    except FileNotFoundError:
-        print("Note: lsof not found, cannot check if port is in use", file=sys.stderr)
-
 class ReviewHandler(BaseHTTPRequestHandler):
     """Serves the review HTML and handles feedback saves.
 
@@ -387,7 +363,10 @@ class ReviewHandler(BaseHTTPRequestHandler):
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate and serve eval review")
     parser.add_argument("workspace", type=Path, help="Path to workspace directory")
-    parser.add_argument("--port", "-p", type=int, default=3117, help="Server port (default: 3117)")
+    parser.add_argument(
+        "--port", "-p", type=int, default=3117,
+        help="Preferred server port (default: 3117); chooses a free port if unavailable",
+    )
     parser.add_argument("--skill-name", "-n", type=str, default=None, help="Skill name for header")
     parser.add_argument(
         "--previous-workspace", type=Path, default=None,
@@ -435,18 +414,13 @@ def main() -> None:
         print(f"\n  Static viewer written to: {args.static}\n")
         sys.exit(0)
 
-    # Kill any existing process on the target port
-    port = args.port
-    _kill_port(port)
     handler = partial(ReviewHandler, workspace, skill_name, feedback_path, previous, benchmark_path)
     try:
-        server = HTTPServer(("127.0.0.1", port), handler)
+        server = HTTPServer(("127.0.0.1", args.port), handler)
     except OSError:
-        # Port still in use after kill attempt — find a free one
         server = HTTPServer(("127.0.0.1", 0), handler)
-        port = server.server_address[1]
 
-    url = f"http://localhost:{port}"
+    url = f"http://localhost:{server.server_port}"
     print(f"\n  Eval Viewer")
     print(f"  ─────────────────────────────────")
     print(f"  URL:       {url}")

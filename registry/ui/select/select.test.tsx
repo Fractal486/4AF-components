@@ -34,6 +34,68 @@ function FruitOptions() {
 }
 
 describe("Base UI Select", () => {
+  it("preserves a single value's label, placeholder and custom children on a replacement element", () => {
+    const example = (value: string | null, children?: React.ReactNode) => (
+      <Select value={value} items={FRUITS}>
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue render={<em data-testid="value" />} placeholder="Pick fruit">{children}</SelectValue>
+        </SelectTrigger>
+      </Select>
+    );
+    const { rerender } = render(example("banana"));
+    expect(screen.getByTestId("value")).toHaveTextContent("Banana");
+    rerender(example(null));
+    expect(screen.getByTestId("value")).toHaveTextContent("Pick fruit");
+    rerender(example("banana", "My label"));
+    expect(screen.getByTestId("value")).toHaveTextContent("My label");
+  });
+
+  it("uses ID equality for the opening row and the closed trigger's icon", async () => {
+    const options = [{ id: 1 }, { id: 2 }];
+    const user = userEvent.setup();
+    render(<Select value={{ id: 2 }} isItemEqualToValue={(item, value) => item.id === value.id}
+      itemToStringLabel={(item) => String(item.id)}
+      items={options.map((value) => ({ value, label: String(value.id), icon: <span data-testid={`icon-${value.id}`} /> }))}>
+      <SelectTrigger aria-label="Choice"><SelectValue /></SelectTrigger>
+      <SelectContent>
+        {options.map((item) => <SelectItem key={item.id} value={item}>{String(item.id)}</SelectItem>)}
+      </SelectContent>
+    </Select>);
+    const trigger = screen.getByRole("combobox", { name: "Choice" });
+    expect(trigger).toContainElement(screen.getByTestId("icon-2"));
+    await user.click(trigger);
+    const second = await screen.findByRole("option", { name: "2" });
+    await waitFor(() => expect(second).toHaveAttribute("data-panel-active"));
+    expect(second).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("matches refreshed nested values for chip labels, counts, focus and deselection", async () => {
+    const options = [{ id: "one" }, { id: "two" }];
+    const user = userEvent.setup();
+    const changed = vi.fn();
+    render(<Select multiple defaultValue={[{ id: "two" }]} onValueChange={changed}
+      isItemEqualToValue={(item, value) => item.id.toLowerCase() === value.id.toLowerCase()}
+      items={options.map((value) => ({ value, label: `Choice ${value.id}` }))}>
+      <SelectSortTrigger aria-label="Choices" />
+      <SelectContent><SelectSub><SelectSubTrigger>More</SelectSubTrigger>
+        <SelectSubContent>
+          {options.map((item) => <SelectItem key={item.id} value={item}>Choice {item.id}</SelectItem>)}
+        </SelectSubContent>
+      </SelectSub></SelectContent>
+    </Select>);
+    const trigger = screen.getByRole("combobox", { name: "Choices" });
+    expect(trigger).toHaveTextContent("Choice two");
+    await user.click(trigger);
+    const sub = await screen.findByRole("option", { name: "More" });
+    expect(sub).toHaveAttribute("data-selected-count", "1");
+    await user.click(sub);
+    const second = await screen.findByRole("option", { name: "Choice two" });
+    await waitFor(() => expect(second).toHaveFocus());
+    expect(second).toHaveAttribute("aria-selected", "true");
+    await user.click(second);
+    expect(changed).toHaveBeenCalledWith([], expect.anything());
+  });
+
   it.each(["enable", "label", "insert", "reorder"])("offers the first DOM row after an option %s", async (change) => {
     const user = userEvent.setup();
     function Example({ updated = false, open = true }: { updated?: boolean; open?: boolean }) {
@@ -939,7 +1001,7 @@ describe("Base UI Select", () => {
 
     const trigger = screen.getByRole("combobox", { name: "Fruit" });
     await user.click(trigger);
-    const subTrigger = screen.getByRole("option", { name: "More fruit" });
+    const subTrigger = await screen.findByRole("option", { name: "More fruit" });
     await user.click(subTrigger);
 
     const subContent = await waitFor(() => {
@@ -1188,7 +1250,8 @@ describe("Base UI Select", () => {
   });
 
   describe("safe triangle", () => {
-    beforeEach(() => vi.useFakeTimers({ shouldAdvanceTime: true }));
+    // The hover grace period uses timeouts. The popup still opens on a browser animation frame.
+    beforeEach(() => vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"], shouldAdvanceTime: true }));
     afterEach(() => vi.useRealTimers());
     const advance = (ms: number) => act(() => vi.advanceTimersByTimeAsync(ms));
 

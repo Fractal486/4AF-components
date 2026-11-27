@@ -75,7 +75,8 @@ and while a lost context is being restored, the root shows a CSS gradient of the
 and the canvas fades in over it.
 
 The drift pauses when the background is offscreen, when the tab is hidden, and when `animate`
-is off. Under reduced motion, the intro is skipped and one still frame is drawn at rest.
+is off. Switching `animate` off during the intro draws the settled horizon immediately.
+Switching it back on resumes the drift. Under reduced motion, the intro is skipped and one still frame is drawn at rest.
 Prop changes update the running renderer without rebuilding it. The intro plays once per
 mount; change the component's React `key` to replay it.
 

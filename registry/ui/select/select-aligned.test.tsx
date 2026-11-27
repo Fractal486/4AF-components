@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
   AlignedSelect,
@@ -36,6 +36,20 @@ function Fruits({
 }
 
 describe("AlignedSelect", () => {
+  it("opens the searchable panel on the row equal to a refreshed object value", async () => {
+    const options = [{ id: 1 }, { id: 2 }];
+    render(<AlignedSelect defaultOpen value={{ id: 2 }} isItemEqualToValue={(item, value) => item.id === value.id}
+      itemToStringLabel={(value) => String(value.id)}>
+      <AlignedSelectTrigger aria-label="Choice" />
+      <AlignedSelectContent searchable>
+        {options.map((item) => <AlignedSelectItem key={item.id} value={item}>{String(item.id)}</AlignedSelectItem>)}
+      </AlignedSelectContent>
+    </AlignedSelect>);
+    const second = await screen.findByRole("option", { name: "2" });
+    await waitFor(() => expect(second).toHaveAttribute("data-panel-active"));
+    expect(second).toHaveAttribute("aria-selected", "true");
+  });
+
   it.each(["enable", "label", "insert", "reorder"])("offers the first DOM row after an option %s", async (change) => {
     const user = userEvent.setup();
     function Example({ updated = false, open = true }: { updated?: boolean; open?: boolean }) {
@@ -292,11 +306,29 @@ describe("AlignedSelect", () => {
     // This Select is roving-focus rather than `aria-activedescendant`, so the mark rides on
     // focus and one rule covers both modalities: whichever row has focus is the marked row.
     await user.keyboard("{ArrowDown}");
+    await act(() => new Promise<void>((done) => requestAnimationFrame(() => done())));
     await waitFor(() => {
       const focused = document.activeElement as HTMLElement;
       expect(focused).toHaveAttribute("role", "option");
       expect(focused).toHaveAttribute("data-panel-active");
     });
+    const cherry = screen.getByRole("option", { name: "Cherry" });
+    await user.hover(cherry);
+    await waitFor(() => expect(cherry).toHaveAttribute("data-panel-active"));
+  });
+
+  it("keeps the search field focused when the selected row is positioned on open and reopen", async () => {
+    const user = userEvent.setup();
+    render(<Fruits searchable defaultValue="Banana" />);
+    const trigger = screen.getByRole("combobox");
+    for (let visit = 0; visit < 2; visit++) {
+      await user.click(trigger);
+      const field = await screen.findByRole("textbox", { name: "Search options" });
+      await act(() => new Promise<void>((done) => requestAnimationFrame(() => done())));
+      expect(field).toHaveFocus();
+      expect(screen.getByRole("option", { name: "Banana" })).toHaveAttribute("data-panel-active");
+      await user.keyboard("{Escape}");
+    }
   });
 
   it("lets a plain panel's row go dormant when the pointer leaves, then resumes from it", async () => {

@@ -110,7 +110,7 @@ describe("Textarea", () => {
 
     expect(releasePointerCapture).toHaveBeenCalledWith(7);
     fireEvent.pointerMove(grip, { pointerId: 7, clientY: 190 });
-    expect(textarea).toHaveStyle({ height: "150px" });
+    expect(textarea.style.height).toBe("150px");
   });
 
   it("switches to a plain field while preserving native input behavior and its ref", () => {

@@ -5,7 +5,7 @@ import { createChangeEventDetails } from "@base-ui/react/internals/createBaseUIE
 import { useCallback, useMemo, useRef, useState, type ComponentProps, type MouseEvent, type ReactNode } from "react";
 import { SelectContext, SelectActiveItemContext, SelectSearchContext } from "./select.context";
 import type { SelectSize } from "./select.shared";
-import { isEquivalentNode, stillEdge } from "./select.utils";
+import { getRegisteredItem, isEquivalentNode, selectItemEquality, stillEdge } from "./select.utils";
 
 // Keep the installable component's public API at this entry point.
 export { SelectContent, type SelectFooterAction } from "./select.content";
@@ -53,33 +53,7 @@ interface SelectOptionRegistration extends SelectOptionInfo {
   count: number;
 }
 
-/**
- * Resolve a label before the popup mounts from an `items` record (`{ value: label }`)
- * or array (`{ value, label }[]`). Mounted items register their labels separately.
- */
-function labelFromItems(items: unknown, value: unknown): ReactNode | undefined {
-  if (!items) return undefined;
-  if (Array.isArray(items)) {
-    return (items as { value: unknown; label?: ReactNode }[]).find((item) =>
-      Object.is(item.value, value),
-    )?.label;
-  }
-  if (typeof items === "object" && value != null) {
-    return (items as Record<string, ReactNode>)[value as string];
-  }
-  return undefined;
-}
-
-/**
- * Read an icon from array-form item data before the popup mounts.
- * The record form (`{ value: label }`) carries labels only.
- */
-function iconFromItems(items: unknown, value: unknown): ReactNode | undefined {
-  if (!Array.isArray(items)) return undefined;
-  return (items as { value: unknown; icon?: ReactNode }[]).find((item) =>
-    Object.is(item.value, value),
-  )?.icon;
-}
+type DisplayItem = { value: unknown; label?: ReactNode; icon?: ReactNode };
 
 export interface SelectProps<Value, Multiple extends boolean | undefined = false>
   extends Omit<ComponentProps<typeof BaseSelect.Root<Value, Multiple>>, "children" | "items"> {
@@ -118,10 +92,17 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   onValueChange,
   children,
   multiple,
+  isItemEqualToValue,
   iconForValue,
   size = "sm",
   ...props
 }: SelectProps<Value, Multiple>) {
+  const equals = useMemo(() => selectItemEquality(isItemEqualToValue), [isItemEqualToValue]);
+  const displayItems = useMemo<readonly DisplayItem[]>(() => {
+    if (!Array.isArray(props.items)) return [];
+    if (Array.isArray(props.items[0]?.items)) return props.items.flatMap((group) => group.items);
+    return props.items;
+  }, [props.items]);
   const [uncontrolled, setUncontrolled] = useState(defaultOpen ?? false);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : uncontrolled;
@@ -203,8 +184,15 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   // A registered label (from a mounted `SelectItem`) wins; otherwise fall back to the
   // `items` mapping, so a preselected value shows its label before the panel is ever opened.
   const labelFor = useCallback(
-    (v: unknown) => labels.get(v) ?? labelFromItems(props.items, v),
-    [labels, props.items],
+    (v: unknown) => {
+      const registered = getRegisteredItem(labels, v, equals);
+      if (registered != null) return registered;
+      if (Array.isArray(props.items)) return displayItems.find((item) => equals(item.value, v))?.label;
+      if (props.items && v != null && Object.hasOwn(props.items, String(v))) {
+        return (props.items as Record<string, ReactNode>)[String(v)];
+      }
+    },
+    [displayItems, equals, labels, props.items],
   );
   const firstItem = useMemo(() => labels.keys().next().value, [labels]);
 
@@ -335,13 +323,12 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
         (matchesQuery(option.text) || hasMatchingDescendant(option.value)));
     if (searchQuery.trim() === "") {
       for (let index = openingValues.length - 1; index >= 0; index -= 1) {
-        if (candidates.some((option) => Object.is(option?.value, openingValues[index]))) {
-          return openingValues[index];
-        }
+        const chosen = candidates.find((option) => option && equals(option.value, openingValues[index]));
+        if (chosen) return chosen.value;
       }
     }
     return candidates[0]?.value;
-  }, [hasMatchingDescendant, matchesQuery, openingValues, optionTexts, searchQuery]);
+  }, [equals, hasMatchingDescendant, matchesQuery, openingValues, optionTexts, searchQuery]);
   const [activeItem, setActiveItem] = useState<unknown>(undefined);
   const [panelSearch, setPanelSearch] = useState(false);
 
@@ -407,11 +394,11 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
   // ever been opened.
   const iconFor = useCallback(
     (value: unknown) =>
-      icons.get(value) ??
+      getRegisteredItem(icons, value, equals) ??
       (value == null
         ? undefined
-        : (iconForValue?.(value as Value) ?? iconFromItems(props.items, value))),
-    [iconForValue, icons, props.items],
+        : (iconForValue?.(value as Value) ?? displayItems.find((item) => equals(item.value, value))?.icon)),
+    [displayItems, equals, iconForValue, icons],
   );
 
   const handleOpenChange = useCallback<
@@ -466,6 +453,7 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
     setTriggerNode,
     panelEdge,
     values,
+    equals,
     registerIcon,
     unregisterIcon,
     iconFor,
@@ -480,7 +468,7 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
     setPanelSearch,
     clear,
   }), [isOpen, multiple, props.disabled, props.readOnly, setOpen, setValue,
-    registerNestedPanel, isNestedPanelTarget, size, triggerSizing, panelEdge, values,
+    registerNestedPanel, isNestedPanelTarget, size, triggerSizing, panelEdge, values, equals,
     registerIcon, unregisterIcon, iconFor, registerLabel, unregisterLabel, labelFor,
     firstItem, registerOptionText, unregisterOptionText, panelSearch, clear]);
   const searchContext = useMemo(() => ({
@@ -501,6 +489,7 @@ export function Select<Value, Multiple extends boolean | undefined = false>({
             onOpenChange={handleOpenChange}
             defaultOpen={defaultOpen}
             multiple={multiple}
+            isItemEqualToValue={isItemEqualToValue ? equals : undefined}
             value={currentValue as never}
             onValueChange={handleValueChange as never}
             {...props}

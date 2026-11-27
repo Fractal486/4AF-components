@@ -44,7 +44,7 @@ describe("ActionToggle feedback controls", () => {
     const toggle = screen.getByRole("button", { name: "Offline" });
     // jsdom has no keyboard modality; headless Chrome checks the real selector.
     const matches = toggle.matches.bind(toggle);
-    toggle.matches = selector => selector === ":focus-visible" || matches(selector);
+    vi.spyOn(toggle, "matches").mockImplementation(selector => selector === ":focus-visible" || matches(selector));
     act(() => vi.advanceTimersByTime(100));
     fireEvent.pointerEnter(toggle, { pointerType: "mouse" });
     fireEvent.focus(toggle);

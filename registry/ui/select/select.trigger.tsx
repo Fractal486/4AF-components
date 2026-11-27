@@ -25,12 +25,12 @@ export function SelectValue({
 }: ComponentProps<typeof BaseSelect.Value>) {
   const { multiple, iconFor, size } = useContext(SelectContext);
 
-  if (!multiple && render == null) {
+  if (!multiple) {
     return (
       <BaseSelect.Value
         className={mergeStateClassName("truncate", className)}
         placeholder={placeholder}
-        render={(valueProps, state) => (
+        render={render ?? ((valueProps, state) => (
           <span
             {...valueProps}
             className={cn("flex min-w-0 items-center gap-2 truncate", valueProps.className)}
@@ -38,7 +38,7 @@ export function SelectValue({
             <SelectItemIcon icon={iconFor(state.value)} size={size} />
             <span className="truncate">{valueProps.children}</span>
           </span>
-        )}
+        ))}
         {...props}
       >
         {children}

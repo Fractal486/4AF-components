@@ -67,7 +67,7 @@ describe("TableOfContentsLines", () => {
       screen.getByRole("link", { name: "First section" }).querySelector(":scope > span:last-child"),
     ).toHaveClass("group-data-[active=true]:translate-x-1");
     expect(screen.getByRole("link", { name: "First section" })).toHaveAttribute("data-active", "true");
-    expect(firstRules?.children[1]).toHaveStyle({ transform: "translateX(-0.75rem)" });
+    expect(firstRules?.querySelector<HTMLElement>(":scope > :nth-child(2)")?.style.transform).toBe("translateX(-0.75rem)");
     const lastRules = screen
       .getByRole("link", { name: "Last section" })
       .querySelector("[aria-hidden]");

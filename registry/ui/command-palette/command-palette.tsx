@@ -1,6 +1,6 @@
 "use client";
 
-import { Kbd } from "@/registry/ui/kbd/kbd";
+import { Kbd, type KbdProps } from "@/registry/ui/kbd/kbd";
 import { cn } from "@/registry/lib/cn";
 import { duration, ease, overlayEnter, overlayExit, overlayVisible, spring } from "@/registry/lib/motion";
 import { LoadingIndicator, LoaderProvider } from "@/registry/lib/loader";
@@ -41,7 +41,7 @@ import type {
 
 // Keep the installable component's public API at this entry point.
 export { CommandIcon } from "./command-palette.chrome";
-export { Kbd, type KbdProps } from "@/registry/ui/kbd/kbd";
+export { Kbd, type KbdProps };
 export { useCommandPanelHighlight } from "./command-palette.context";
 export {
   CommandPanelBody,
@@ -338,6 +338,7 @@ export function CommandPalette({
   // Only ever the last *real* highlight. Opening the menu blurs the list, which reports
   // `undefined` — so reading the live value at that moment would always come up empty.
   const lastHighlightedRef = useRef<unknown>(undefined);
+  const actionsOpenRef = useRef(false);
   const panelHighlightRef = useRef<PanelHighlightHandler | null>(null);
   // Closing does *not* release the frozen row. Base UI restores its own highlight a frame
   // or two after focus returns to the list, and dropping ours the instant the menu closes
@@ -347,6 +348,7 @@ export function CommandPalette({
   // highlight while focus is inside it. Base UI still drives the keyboard highlight, so the
   // arrows and Enter within the menu are unaffected.
   const reportActionsOpen = useCallback((open: boolean) => {
+    actionsOpenRef.current = open;
     if (open) setFrozenRow(lastHighlightedRef.current);
   }, []);
 
@@ -537,14 +539,14 @@ export function CommandPalette({
               data-slot="command-palette-content"
               onKeyDown={(event) => {
                 if (
-                  !panelNode || event.defaultPrevented || event.key !== "Tab" ||
+                  !panelNode || actionsOpenRef.current || event.defaultPrevented || event.key !== "Tab" ||
                   event.altKey || event.ctrlKey || event.metaKey ||
                   !event.currentTarget.contains(event.target as Node)
                 ) return;
 
                 // The header lives outside the tabs root. Cycle from anywhere in the
-                // panel without moving focus away from its search field. Portalled
-                // menus keep their own keyboard handling (the containment check above).
+                // panel without moving focus away from its search field. An open
+                // actions menu owns Tab even before focus reaches its portal.
                 const list = event.currentTarget.querySelector<HTMLElement>(
                   '[data-slot="command-panel-tab-list"]',
                 );

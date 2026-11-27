@@ -212,6 +212,18 @@ export function CommandPanelActions({
         <KbdGroup keys={`mod+${ACTIONS_HOTKEY}`} className="gap-0.5" />
       </SelectTrigger>
       <SelectContent
+        portalProps={{
+          onKeyDownCapture(event) {
+            // Both the search field and focused options can activate a row. Keep
+            // ordinary typing (including spaces in the search field) working.
+            const spaceOnRow = event.key === " " && event.target instanceof Element &&
+              event.target.closest('[role="option"]') !== null;
+            if (event.repeat && (event.key === "Enter" || spaceOnRow)) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+          },
+        }}
         // Opens upward off the footer and hangs from its right edge, so the panel grows
         // into the palette from the bottom-right corner. The search field sits at the
         // bottom, landing right next to the trigger it was opened from.

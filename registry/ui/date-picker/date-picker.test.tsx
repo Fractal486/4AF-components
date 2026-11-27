@@ -337,6 +337,49 @@ describe("Calendar month / year picker", () => {
     expect(toggle()).toHaveAttribute("aria-expanded", "false");
   });
 
+  it.each([
+    { reverse: false, opening: "May", sibling: "June", first: "Mar", last: "Aug", before: "Feb", after: "Sep" },
+    { reverse: true, opening: "Jun", sibling: "May", first: "Apr", last: "Sep", before: "Mar", after: "Oct" },
+  ])("keeps one chooser in the first displayed month and bounds the whole window (reverse=$reverse)", async ({
+    reverse, opening, sibling, first, last, before, after,
+  }) => {
+    const user = userEvent.setup();
+    const changed = vi.fn();
+    render(<Calendar numberOfMonths={2} reverseMonths={reverse} defaultMonth={may14}
+      startMonth={new Date(2026, 2, 1)} endMonth={new Date(2026, 8, 1)} onMonthChange={changed} />);
+
+    const opener = toggle();
+    await user.click(opener);
+    expect(screen.getAllByRole("radiogroup")).toHaveLength(2);
+    expect(opener.closest('[data-slot="calendar-month"]')).toContainElement(screen.getByRole("radiogroup", { name: "Month" }));
+    expect(screen.getByRole("radio", { name: opening })).toHaveFocus();
+    expect(screen.getByRole("grid")).toHaveAccessibleName(`${sibling} 2026`);
+    await user.keyboard("{Escape}");
+    expect(opener).toHaveFocus();
+    await user.click(opener);
+    for (const name of [before, after]) expect(screen.getByRole("radio", { name })).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByRole("radio", { name: first })).not.toHaveAttribute("aria-disabled", "true");
+    await user.click(screen.getByRole("radio", { name: last }));
+
+    expect(changed).toHaveBeenLastCalledWith(new Date(2026, 7, 1));
+    expect(screen.getByRole("grid", { name: "August 2026" })).toBeInTheDocument();
+    expect(screen.getByRole("grid", { name: "September 2026" })).toBeInTheDocument();
+    expect(toggle()).toHaveAccessibleName(new RegExp(reverse ? "September" : "August"));
+    expect(toggle()).toHaveFocus();
+  });
+
+  it("uses the rendered window when a reversed controlled calendar spans a short range across years", async () => {
+    const user = userEvent.setup();
+    render(<Calendar numberOfMonths={3} reverseMonths month={new Date(2027, 0, 1)}
+      startMonth={new Date(2026, 11, 1)} endMonth={new Date(2027, 0, 1)} />);
+    expect(screen.getAllByRole("grid")).toHaveLength(2);
+    await user.click(toggle());
+    expect(screen.getByRole("radio", { name: "Jan" })).toHaveFocus();
+    expect(screen.getByRole("radio", { name: "2027" })).toHaveAttribute("aria-checked", "true");
+    expect(screen.queryByRole("radio", { name: "2026" })).not.toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "Feb" })).toHaveAttribute("aria-disabled", "true");
+  });
+
   it("holds the grid's height while the picker is open, whatever month it moves to", async () => {
     const user = userEvent.setup();
     // A fractional height, held exactly: rounding it up grew the panel as the picker opened.

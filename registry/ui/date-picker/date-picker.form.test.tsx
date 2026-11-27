@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DatePicker, DateRangePicker } from "./date-picker";
 
@@ -61,4 +61,55 @@ describe.each(cases)("DatePicker $mode form submission", ({ mode, expected }) =>
     await user.click(await screen.findByRole("button", { name: "Clear" }));
     expect(new FormData(form).has("due")).toBe(false);
   });
+
+  it("restores the label and submission when its external form resets", async () => {
+    const user = userEvent.setup();
+    render(<><form id="dates" aria-label="Dates" /><Picker mode={mode} form="dates" /></>);
+    const form = screen.getByRole("form") as HTMLFormElement;
+    const trigger = screen.getByRole("button");
+    const initialLabel = trigger.textContent;
+    await user.click(trigger);
+    await user.click(await screen.findByRole("button", { name: "Clear" }));
+    expect(new FormData(form).has("due")).toBe(false);
+
+    form.addEventListener("reset", event => event.preventDefault(), { once: true });
+    await act(async () => form.reset());
+    expect(new FormData(form).has("due")).toBe(false);
+    await act(async () => form.reset());
+    expect(new FormData(form).get("due")).toBe(expected);
+    expect(trigger.textContent).toBe(initialLabel);
+  });
+});
+
+it("resets an initially empty unnamed picker and preserves a controlled value", async () => {
+  const user = userEvent.setup();
+  render(
+    <form aria-label="Dates">
+      <DatePicker calendarProps={{ defaultMonth: start }} />
+      <DatePicker value={end} defaultValue={start} name="controlled" />
+    </form>,
+  );
+  const form = screen.getByRole("form") as HTMLFormElement;
+  const trigger = screen.getByRole("button", { name: "Pick a date" });
+  await user.click(trigger);
+  await user.click(document.querySelector<HTMLButtonElement>('[data-slot="calendar-day-button"][data-day="2026-05-14"]')!);
+  expect(trigger).not.toHaveAttribute("data-empty");
+  await act(async () => form.reset());
+  expect(trigger).toHaveAttribute("data-empty");
+  expect(new FormData(form).get("controlled")).toBe("2026-05-20");
+});
+
+it("discards a half-picked range even when the committed default is unchanged", async () => {
+  const user = userEvent.setup();
+  render(<form aria-label="Dates"><DateRangePicker name="range" defaultOpen calendarProps={{ defaultMonth: start }} /></form>);
+  const form = screen.getByRole("form") as HTMLFormElement;
+  const pick = (day: number) => user.click(document.querySelector<HTMLButtonElement>(
+    `[data-slot="calendar-day-button"][data-day="2026-05-${day}"]`,
+  )!);
+  await pick(14);
+  await act(async () => form.reset());
+  await pick(18);
+  expect(new FormData(form).has("range")).toBe(false);
+  await pick(20);
+  expect(new FormData(form).get("range")).toBe("2026-05-18/2026-05-20");
 });

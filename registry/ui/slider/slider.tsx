@@ -280,7 +280,7 @@ function EditableValue({
         // Sized to the text where `field-sizing` is supported; `size` covers the rest.
         style={{ fieldSizing: "content" } as CSSProperties}
         className={cn(
-          "pointer-events-auto m-0 min-w-[1ch] border-0 bg-transparent p-0 text-right tabular text-foreground outline-none",
+          "pointer-events-auto m-0 min-w-[1ch] border-0 bg-transparent p-0 text-right tabular-nums slashed-zero text-foreground outline-none",
           className,
         )}
       />
@@ -294,7 +294,7 @@ function EditableValue({
         cancelledRef.current = false;
         setDraft(String(value));
       }}
-      className={cn("pointer-events-auto cursor-text tabular", className)}
+      className={cn("pointer-events-auto cursor-text tabular-nums slashed-zero", className)}
     >
       {(formatted, values) => animateValue ? <NumberAnimation value={values[index]!} locales={locale} format={format} /> : formatted[index]}
     </BaseSlider.Value>
@@ -861,9 +861,9 @@ export function Slider({
     }
   };
   const renderValue = (className: string) => {
-    if (!editableValue && !animateValue) return <BaseSlider.Value className={cn("tabular", className)} />;
+    if (!editableValue && !animateValue) return <BaseSlider.Value className={cn("tabular-nums slashed-zero", className)} />;
     if (!editableValue) return (
-      <BaseSlider.Value className={cn("inline-flex items-baseline gap-1 tabular", className)}>
+      <BaseSlider.Value className={cn("inline-flex items-baseline gap-1 tabular-nums slashed-zero", className)}>
         {(_, values) => values.map((number, index) => (
           <span key={index} className="inline-flex items-baseline gap-1">
             {index > 0 && <span aria-hidden>–</span>}
@@ -1031,10 +1031,7 @@ export function Slider({
           )}
         >
           {label != null && <span id={labelId} className="text-muted-foreground">{label}</span>}
-          {showValue &&
-            // `tabular` so the number doesn't reflow the row as its digits change. No
-            // `font-mono` — it inherits Geist Sans from the body.
-            renderValue("text-foreground")}
+          {showValue && renderValue("text-foreground")}
         </div>
       )}
 

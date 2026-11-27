@@ -1,5 +1,30 @@
 import { isValidElement, type ForwardedRef, type ReactNode } from "react";
 
+// Submenu triggers participate in the composite list, but are never selectable consumer values.
+export const subTriggerMarker = Symbol("select-sub-trigger");
+
+export type SelectItemEquality = (item: unknown, selected: unknown) => boolean;
+
+export function selectItemEquality<Value>(compare?: (item: Value, selected: Value) => boolean): SelectItemEquality {
+  if (!compare) return Object.is;
+  return (item, selected) => {
+    if (item == null || selected == null ||
+        (typeof item === "object" && subTriggerMarker in item) ||
+        (typeof selected === "object" && subTriggerMarker in selected)) {
+      return Object.is(item, selected);
+    }
+    return compare(item as Value, selected as Value);
+  };
+}
+
+export function getRegisteredItem<T>(items: Map<unknown, T>, value: unknown, equals: SelectItemEquality) {
+  if (equals === Object.is) return items.get(value);
+  for (const [item, registered] of items) {
+    if (equals(item, value)) return registered;
+  }
+  return undefined;
+}
+
 /**
  * Whether two labels or icons say the same thing.
  *

@@ -5,13 +5,11 @@
 // jsdom captures the finished drawing; every grey is then rewritten as a mix of the site's
 // foreground and background, so the drawing inverts with the theme. The sheet's title block and
 // page chrome are left out: the docs page already carries the title.
-import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { JSDOM } from "jsdom";
+import { JSDOM, VirtualConsole } from "jsdom";
 
 const root = path.resolve(import.meta.dirname, "..");
-const sourceDir = path.join(root, "public/drawings");
-const outDir = path.join(root, "content/drawings");
 
 /** `#rgb` / `#rrggbb` → an ink/paper mix with the same lightness against #111 ink. */
 function themedColor(hex) {
@@ -24,7 +22,9 @@ function themedColor(hex) {
   return `color-mix(in oklab, var(--dw-ink) ${ink}%, var(--dw-paper))`;
 }
 
-const themeColors = (css) => css.replace(/#[0-9a-f]{6}\b|#[0-9a-f]{3}\b/gi, themedColor);
+// A paint server can have a hex-looking id, e.g. url(#abc). Only theme actual colors.
+const themeColors = (css) => css.replace(/url\([^)]*\)|#[0-9a-f]{6}\b|#[0-9a-f]{3}\b/gi,
+  (value) => value.startsWith("#") ? themedColor(value) : value);
 
 /** Area scale of one SVG `transform` attribute: √|det| of its matrix. */
 function transformScale(value) {
@@ -68,8 +68,22 @@ function bakeStrokes(svg, strokeWidths, nonScalingClasses) {
 }
 
 function render(slug, html) {
-  const dom = new JSDOM(html, { runScripts: "dangerously" });
-  const { document } = dom.window;
+  const virtualConsole = new VirtualConsole().forwardTo(console, { jsdomErrors: "none" });
+  let scriptError;
+  virtualConsole.on("jsdomError", (error) => {
+    if (error.type === "unhandled-exception") scriptError ??= error;
+    else console.error(error);
+  });
+  const dom = new JSDOM(html, { runScripts: "dangerously", virtualConsole });
+  try {
+    if (scriptError) throw new Error(`${slug}: drawing script failed`, { cause: scriptError.cause });
+    return renderSheet(slug, dom.window.document);
+  } finally {
+    dom.window.close();
+  }
+}
+
+function renderSheet(slug, document) {
   const svg = document.querySelector("svg#sheet");
   if (!svg || !svg.childElementCount) throw new Error(`${slug}: no drawn svg#sheet`);
 
@@ -105,13 +119,6 @@ function render(slug, html) {
   }
   bakeStrokes(svg, strokeWidths, nonScalingClasses);
 
-  // Ids are unique within a page, and each docs page shows one drawing.
-  for (const el of svg.querySelectorAll("[id]")) el.id = `${slug}-${el.id}`;
-  for (const el of svg.querySelectorAll("*")) {
-    for (const attr of [...el.attributes]) {
-      if (attr.value.includes("url(#")) el.setAttribute(attr.name, attr.value.replaceAll("url(#", `url(#${slug}-`));
-    }
-  }
   const label = svg.querySelector("title")?.textContent;
   svg.removeAttribute("id");
   svg.removeAttribute("aria-labelledby");
@@ -127,17 +134,60 @@ function render(slug, html) {
     ...rules,
   ].join("\n");
   svg.prepend(style);
+  prefixReferences(svg, slug);
   return `${svg.outerHTML}\n`;
 }
 
-const files = (await readdir(sourceDir)).filter((f) => f.endsWith(".html") && !f.endsWith("-motion.html"));
-// Only stale SVGs go: the folder also holds films.json from scripts/measure-films.mjs.
-await mkdir(outDir, { recursive: true });
-for (const file of await readdir(outDir)) {
-  if (file.endsWith(".svg")) await rm(path.join(outDir, file), { force: true });
+function prefixReferences(svg, slug) {
+  const ids = new Set();
+  for (const el of svg.querySelectorAll("[id]")) {
+    if (ids.has(el.id)) throw new Error(`${slug}: duplicate SVG id #${el.id}`);
+    ids.add(el.id);
+    el.id = `${slug}-${el.id}`;
+  }
+  function target(id) {
+    if (!ids.has(id)) throw new Error(`${slug}: missing SVG target #${id}`);
+    return `#${slug}-${id}`;
+  }
+  function paintUrls(value) {
+    return value.replace(/url\(\s*(["']?)#([^\s'")]+)\1\s*\)/gi,
+      (_url, _quote, id) => `url(${target(id)})`);
+  }
+  for (const el of [svg, ...svg.querySelectorAll("*")]) {
+    if (el.localName === "style") el.textContent = paintUrls(el.textContent);
+    for (const attr of el.attributes) {
+      if (attr.localName === "href" && attr.value.startsWith("#")) attr.value = target(attr.value.slice(1));
+      else if (/url\(/i.test(attr.value)) attr.value = paintUrls(attr.value);
+    }
+  }
 }
-for (const file of files) {
-  const slug = file.replace(/\.html$/, "");
-  await writeFile(path.join(outDir, `${slug}.svg`), render(slug, await readFile(path.join(sourceDir, file), "utf8")));
-  console.log(`drawing: ${slug}`);
+
+export async function buildDrawings(sourceDir, outDir) {
+  const sheets = (await readdir(sourceDir)).filter((name) => name.endsWith(".html") && !name.endsWith("-motion.html"));
+  await mkdir(outDir, { recursive: true });
+  const staging = await mkdtemp(path.join(outDir, ".drawings-"));
+  const generated = new Set();
+  try {
+    // Finish rendering and writing every replacement before publishing any of them.
+    for (const file of sheets) {
+      const slug = path.basename(file, ".html");
+      const name = `${slug}.svg`;
+      const html = await readFile(path.join(sourceDir, file), "utf8");
+      await writeFile(path.join(staging, name), render(slug, html));
+      generated.add(name);
+    }
+    for (const name of generated) await rename(path.join(staging, name), path.join(outDir, name));
+    // films.json and other non-SVG assets belong to other generators.
+    for (const name of await readdir(outDir)) {
+      if (name.endsWith(".svg") && !generated.has(name)) await rm(path.join(outDir, name));
+    }
+  } finally {
+    await rm(staging, { recursive: true, force: true });
+  }
+  return generated.size;
+}
+
+if (import.meta.main) {
+  const count = await buildDrawings(path.join(root, "public/drawings"), path.join(root, "content/drawings"));
+  console.log(`Built ${count} drawings.`);
 }

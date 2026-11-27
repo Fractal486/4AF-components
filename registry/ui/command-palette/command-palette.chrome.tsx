@@ -6,7 +6,7 @@ import { useContext, type ComponentProps, type ReactNode } from "react";
 import { PaletteControlsContext } from "./command-palette.context";
 
 // Preserve the existing internal import path while sharing the standalone component.
-export { Kbd } from "@/registry/ui/kbd/kbd";
+export { Kbd };
 
 /**
  * Reaching the top row scrolls the list all the way up.

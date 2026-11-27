@@ -4,13 +4,13 @@ Playwright opens `player.html`, calls the scene's `render(t)` for every frame, s
 
 ## Needs
 
-- Node 18+
+- Node 20+
 - ffmpeg on your `PATH` (`brew install ffmpeg`, `apt install ffmpeg`, `winget install ffmpeg`)
 
 ## Run
 
 ```bash
-cd skills/dimensional-drawing-motion/adapters/headless
+cd .agents/skills/dimensional-drawing-motion/adapters/headless
 npm install            # installs playwright + its chromium
 
 # the reference dialog film
@@ -39,6 +39,4 @@ node render.mjs --scene ../../templates/scene-dialog.js --css ../../templates/ba
 
 Set `CHROMIUM_PATH` to use an existing Chrome/Chromium instead of the downloaded one.
 
-Tested: Playwright 1.4x + Chromium, ffmpeg 6.1. An 11 s film at 30 fps renders in about 45 s on a laptop-class CPU.
-
-Not tested: Remotion, Motion Canvas, GSAP, Lottie or other animation libraries.
+The reference scene was verified with Playwright 1.65.1, Chromium 159 and ffmpeg 9.0.2.

@@ -6,7 +6,7 @@ afterEach(() => vi.useRealTimers());
 
 function focusEvent(visible = true) {
   const target = document.createElement("button");
-  target.matches = selector => selector === ":focus-visible" && visible;
+  vi.spyOn(target, "matches").mockImplementation(selector => selector === ":focus-visible" && visible);
   return { target, currentTarget: target } as unknown as FocusEvent<HTMLElement>;
 }
 

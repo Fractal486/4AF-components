@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { vi } from "vitest";
@@ -903,7 +903,15 @@ describe("CommandPanelTabs", () => {
   it("keeps Tab inside a portalled actions menu from switching panel tabs", async () => {
     const user = userEvent.setup();
     renderTabbed();
-    await user.click(screen.getByText("Actions"));
+    const trigger = screen.getByText("Actions").closest("button")!;
+    await user.click(trigger);
+    // Select can mount its rows on trigger focus before the pointer-open frame.
+    await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "true"));
+    const menuSearch = screen.getByPlaceholderText("Search actions…");
+    // Before Base UI's focus frame, a quick Tab can still land on the trigger.
+    fireEvent.keyDown(trigger, { key: "Tab" });
+    expect(screen.getByRole("tab", { name: "One" })).toHaveAttribute("aria-selected", "true");
+    await waitFor(() => expect(menuSearch).toHaveFocus());
     await user.tab();
     expect(screen.getByRole("tab", { name: "One" })).toHaveAttribute("aria-selected", "true");
   });

@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, relative, resolve } from "node:path";
@@ -89,8 +89,59 @@ const usesClientOnlyReact = (source: ts.SourceFile) =>
       ),
   );
 
+interface BuiltFile {
+  path: string;
+  target: string;
+  type: string;
+  content: string;
+}
+
+function checkInstalledImports(consumer: string, files: BuiltFile[], cli: string) {
+  mkdirSync(consumer);
+  writeFileSync(resolve(consumer, "package.json"), JSON.stringify({ name: "registry-test", private: true }));
+  const aliases = { components: "@/components", ui: "@/components/ui", lib: "@/lib", utils: "@/lib/utils", hooks: "@/hooks" };
+  const paths = { "@/*": ["./*"] };
+  writeFileSync(resolve(consumer, "tsconfig.json"), JSON.stringify({ compilerOptions: { paths } }));
+  writeFileSync(resolve(consumer, "components.json"), JSON.stringify({
+    style: "new-york", rsc: true, tsx: true, aliases,
+    tailwind: { config: "", css: "globals.css", baseColor: "neutral", cssVariables: true },
+  }));
+  writeFileSync(resolve(consumer, "globals.css"), '@import "tailwindcss";\n');
+  writeFileSync(resolve(consumer, "THIRD_PARTY_NOTICES.md"), "Consumer notices\n");
+  // Install the built file payloads together so the CLI can resolve their targets offline.
+  // Registry dependency declarations are verified independently for each item below.
+  const fixture = resolve(consumer, "registry-fixture.json");
+  writeFileSync(fixture, JSON.stringify({ name: "registry-fixture", type: "registry:block", files }));
+  execFileSync(process.execPath, [cli, "add", fixture, "--yes"], { cwd: consumer, stdio: "pipe", timeout: 30_000 });
+  expect(readFileSync(resolve(consumer, "licenses/4af/THIRD_PARTY_NOTICES.md"))).toEqual(
+    readFileSync(resolve("THIRD_PARTY_NOTICES.md")),
+  );
+  expect(readFileSync(resolve(consumer, "THIRD_PARTY_NOTICES.md"), "utf8")).toBe("Consumer notices\n");
+
+  const options = { ...compilerOptions, baseUrl: consumer, paths };
+  const unresolved: string[] = [];
+  for (const file of files) {
+    const installed = resolve(consumer, file.target.replace(/^@ui\//, "components/ui/").replace(/^@lib\//, "lib/"));
+    const content = readFileSync(installed, "utf8");
+    if (!/\.tsx?$/.test(installed)) continue;
+    const source = ts.createSourceFile(installed, content, ts.ScriptTarget.Latest);
+    for (const statement of source.statements) {
+      if (!ts.isImportDeclaration(statement) && !ts.isExportDeclaration(statement)) continue;
+      const specifier = statement.moduleSpecifier;
+      if (!specifier || !ts.isStringLiteral(specifier)) continue;
+      const name = specifier.text;
+      if (!name.startsWith("@/") && !name.startsWith(".")) continue;
+      if (name.endsWith(".css") && existsSync(resolve(dirname(installed), name))) continue;
+      if (!ts.resolveModuleName(name, installed, options, ts.sys).resolvedModule) {
+        unresolved.push(`${file.target}: ${name}`);
+      }
+    }
+  }
+  expect(unresolved).toEqual([]);
+}
+
 describe("registry", () => {
-  it("builds registry payloads with LF-only source content", () => {
+  it("builds LF-only payloads whose imports and re-exports resolve after shadcn installs them", () => {
     // Build fresh payloads so this also works before public/r exists, without reading
     // stale output or overwriting a dev server's registry during the test.
     const output = mkdtempSync(resolve(tmpdir(), "4af-registry-lf-"));
@@ -100,19 +151,22 @@ describe("registry", () => {
         stdio: "pipe",
         timeout: 30_000,
       });
+      const files = new Map<string, BuiltFile>();
       for (const item of registry.items) {
         const built = JSON.parse(readFileSync(resolve(output, `${item.name}.json`), "utf8")) as {
-          files?: { path: string; content: string }[];
+          files?: BuiltFile[];
         };
         for (const file of built.files ?? []) {
           expect(file.content, `${item.name}: ${file.path}`).toBeTypeOf("string");
           expect(file.content, `${item.name}: ${file.path}`).not.toContain("\r");
+          files.set(file.target, file);
         }
       }
+      checkInstalledImports(resolve(output, "consumer"), [...files.values()], cli);
     } finally {
       rmSync(output, { recursive: true, force: true });
     }
-  }, 35_000);
+  }, 65_000);
 
   it("links every component to its docs page, which shadcn prints after installing it", () => {
     for (const item of registry.items.filter((entry) => entry.type === "registry:ui")) {
@@ -164,10 +218,7 @@ describe("registry", () => {
         [...closure].flatMap((name) => items.get(name)?.files?.map((file) => file.path) ?? []),
       );
       const availablePackages = new Set(
-        [...closure].flatMap((name) => items.get(name)?.dependencies ?? []).map((dependency) => {
-          const version = dependency.lastIndexOf("@");
-          return version > 0 ? dependency.slice(0, version) : dependency;
-        }),
+        [...closure].flatMap((name) => items.get(name)?.dependencies ?? []),
       );
 
       for (const file of item.files ?? []) {
@@ -234,9 +285,7 @@ describe("registry", () => {
         }
       }
       for (const dependency of item.dependencies ?? []) {
-        const version = dependency.lastIndexOf("@");
-        const name = version > 0 ? dependency.slice(0, version) : dependency;
-        if (!importedPackages.has(name)) unused.push(`${item.name}: unused package ${dependency}`);
+        if (!importedPackages.has(dependency)) unused.push(`${item.name}: unused package ${dependency}`);
       }
       for (const url of item.registryDependencies ?? []) {
         const name = url.split("/").at(-1)!.replace(/\.json$/, "");

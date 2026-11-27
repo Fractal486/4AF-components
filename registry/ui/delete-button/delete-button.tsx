@@ -146,6 +146,8 @@ export function DeleteButton({
         className={cn("text-destructive hover:text-destructive", className)}
         onClick={handleClick}
         onKeyDown={(event) => {
+          // Enter activates a native button on keydown, including OS repeats.
+          if (event.key === "Enter" && event.repeat) event.preventDefault();
           // Escape is what people already reach for to back out, and the button has
           // focus at this point, so it's the cheapest exit available.
           if (event.key === "Escape" && isArmed) {

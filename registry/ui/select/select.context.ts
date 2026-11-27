@@ -10,6 +10,7 @@ import { createContext, useContext, type MouseEvent, type ReactNode } from "reac
  */
 export const SelectPanelDormantContext = createContext<"pointer" | "footer" | false>(false);
 import type { SelectSize } from "./select.shared";
+import type { SelectItemEquality, subTriggerMarker } from "./select.utils";
 
 interface SelectContextValue {
   open: boolean;
@@ -39,6 +40,7 @@ interface SelectContextValue {
 
   /** The current selection, always as an array (one entry for single-select). */
   values: unknown[];
+  equals: SelectItemEquality;
   registerIcon: (value: unknown, icon: ReactNode | undefined) => void;
   unregisterIcon: (value: unknown) => void;
   iconFor: (value: unknown) => ReactNode | undefined;
@@ -95,6 +97,7 @@ export const SelectContext = createContext<SelectContextValue>({
   panelEdge: "start",
 
   values: [],
+  equals: Object.is,
   registerIcon: () => {},
   unregisterIcon: () => {},
   iconFor: () => undefined,
@@ -122,7 +125,7 @@ interface SelectSubContextValue {
   open: boolean;
   disabled: boolean;
   anchor: HTMLElement | null;
-  triggerValue: symbol;
+  triggerValue: { [subTriggerMarker]: boolean };
   itemValues: readonly unknown[];
   focusTrigger: () => void;
   setTriggerNode: (node: HTMLElement | null) => void;

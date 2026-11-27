@@ -2,13 +2,14 @@ import { render, screen } from "@testing-library/react";
 import { createRef } from "react";
 import { HALFTONE_HORIZON_PALETTES, HalftoneHorizon } from "./halftone-horizon";
 
-// jsdom has no WebGL (or 2D) canvas, so every render here takes the CSS gradient fallback.
+// The default jsdom path exercises the CSS gradient. The lifecycle test supplies a drawing context.
 beforeEach(() => {
   vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
 });
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.useRealTimers();
 });
 
 function root() {
@@ -53,6 +54,44 @@ describe("HalftoneHorizon", () => {
     expect(root()).toHaveAttribute("data-renderer", "fallback");
     expect(root()).toHaveAttribute("data-state", "paused");
     expect(root().querySelector("canvas")).not.toHaveAttribute("data-ready");
+  });
+
+  it("settles an in-progress intro on pause and resumes drift without replaying it", () => {
+    vi.useFakeTimers();
+    const noop = () => {};
+    const gl = {
+      createShader: () => ({}), createProgram: () => ({}), createBuffer: () => ({}),
+      getShaderParameter: () => true, getProgramParameter: () => true,
+      getAttribLocation: () => 0, getUniformLocation: (_program: unknown, name: string) => name,
+      shaderSource: noop, compileShader: noop, attachShader: noop, linkProgram: noop, useProgram: noop,
+      bindBuffer: noop, bufferData: noop, enableVertexAttribArray: noop, vertexAttribPointer: noop, viewport: noop,
+      uniform1f: vi.fn(), uniform2f: noop, uniform4f: noop, uniform3fv: noop, uniform4fv: noop,
+      drawArrays: vi.fn(), deleteBuffer: noop, deleteProgram: noop, deleteShader: noop,
+    };
+    const pixels = { clearRect: noop, fillRect: noop, getImageData: () => ({ data: [0, 0, 0, 255] }) };
+    vi.mocked(HTMLCanvasElement.prototype.getContext).mockImplementation(kind => (
+      kind === "webgl" ? gl as unknown as WebGLRenderingContext : pixels as unknown as CanvasRenderingContext2D
+    ));
+    const view = (animate: boolean) => <HalftoneHorizon animate={animate} intro={10} hover={false} ripple={false} />;
+    const { rerender } = render(view(true));
+    const latestIntro = () => gl.uniform1f.mock.calls.filter(([name]) => name === "uIntro").at(-1)?.[1];
+    vi.advanceTimersByTime(80);
+    expect(root()).toHaveAttribute("data-renderer", "webgl");
+    expect(latestIntro()).toBeGreaterThan(0);
+
+    rerender(view(false));
+    vi.advanceTimersToNextFrame();
+    expect(root()).toHaveAttribute("data-state", "paused");
+    expect(latestIntro()).toBe(0);
+    const stillFrameCount = gl.drawArrays.mock.calls.length;
+    vi.advanceTimersByTime(200);
+    expect(gl.drawArrays).toHaveBeenCalledTimes(stillFrameCount);
+
+    rerender(view(true));
+    vi.advanceTimersByTime(80);
+    expect(root()).toHaveAttribute("data-state", "playing");
+    expect(gl.drawArrays.mock.calls.length).toBeGreaterThan(stillFrameCount);
+    expect(latestIntro()).toBe(0);
   });
 
   it("draws the fallback gradient from the dark edge toward the light", () => {

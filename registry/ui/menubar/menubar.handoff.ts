@@ -6,7 +6,7 @@ import { duration, ease } from "@/registry/lib/motion";
 
 /**
  * Moving between open menus hands one popup over to the next instead of closing one and
- * opening another, after Animate UI's Base UI Menubar.
+ * opening another.
  *
  * The incoming menu's popup skips its entrance. It starts where the outgoing popup is, at its
  * size, and moves and resizes to its own place on a spring, so the box slides along the bar.

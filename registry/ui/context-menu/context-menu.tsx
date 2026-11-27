@@ -22,11 +22,38 @@ import {
 import { mergeStateClassName } from "@/registry/lib/cn";
 import { LoaderProvider } from "@/registry/lib/loader";
 import {
+  DropdownMenuActionItem,
+  DropdownMenuCheckboxItem,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuPopup,
   DropdownMenuPortal,
   DropdownMenuPositioner,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSelect,
+  DropdownMenuSelectContent,
+  DropdownMenuSelectItem,
+  DropdownMenuSelectTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  type DropdownMenuActionItemProps,
+  type DropdownMenuCheckboxItemProps,
   type DropdownMenuContentProps,
+  type DropdownMenuItemProps,
+  type DropdownMenuPopupProps,
+  type DropdownMenuPortalProps,
   type DropdownMenuPositionerProps,
+  type DropdownMenuRadioItemProps,
+  type DropdownMenuSelectContentProps,
+  type DropdownMenuSelectItemProps,
+  type DropdownMenuSelectProps,
+  type DropdownMenuSelectTriggerProps,
+  type DropdownMenuSubTriggerProps,
 } from "@/registry/ui/dropdown-menu/dropdown-menu";
 import { contextMenuTriggerVariants } from "./context-menu.variants";
 
@@ -176,4 +203,4 @@ export {
   type DropdownMenuSelectProps as ContextMenuSelectProps,
   type DropdownMenuSelectTriggerProps as ContextMenuSelectTriggerProps,
   type DropdownMenuSubTriggerProps as ContextMenuSubTriggerProps,
-} from "@/registry/ui/dropdown-menu/dropdown-menu";
+};

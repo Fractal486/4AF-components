@@ -546,12 +546,6 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Numbers that update in place must not reflow the text around them. */
-  .tabular {
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: "kern", "calt", "tnum", "zero";
-  }
-
   img {
     outline: 1px solid var(--image-outline);
     outline-offset: -1px;

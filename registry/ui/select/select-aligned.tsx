@@ -19,7 +19,7 @@ import { useMergedRefs } from "@/registry/lib/refs";
 import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { Input } from "@/registry/ui/input/input";
 import { ScrollArea } from "@/registry/ui/scroll-area/scroll-area";
-import { resumeFromActiveRow } from "./select.utils";
+import { resumeFromActiveRow, selectItemEquality } from "./select.utils";
 import {
   alignedSelectTriggerVariants,
   type AlignedSelectTriggerVariant,
@@ -176,8 +176,10 @@ export function AlignedSelect<Value>({
   value,
   defaultValue,
   onValueChange,
+  isItemEqualToValue,
   ...props
 }: AlignedSelectProps<Value>) {
+  const equals = useMemo(() => selectItemEquality(isItemEqualToValue), [isItemEqualToValue]);
   const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
   const open = openProp ?? uncontrolledOpen;
   const [query, setQuery] = useState("");
@@ -225,10 +227,10 @@ export function AlignedSelect<Value>({
     const candidates = Array.from(list.querySelectorAll<HTMLElement>('[role="option"]'))
       .map((node) => byNode.get(node))
       .filter((option) => option && !option.disabled && matches(option.text));
-    const chosen = query.trim() === "" ? candidates.find((option) => Object.is(option?.value, selected)) : undefined;
+    const chosen = query.trim() === "" ? candidates.find((option) => option && equals(option.value, selected)) : undefined;
     const first = chosen ?? candidates[0];
     return first ? { value: first.value } : null;
-  }, [matches, options, query, selected]);
+  }, [equals, matches, options, query, selected]);
 
   const context = useMemo<AlignedSelectContextValue>(
     () => ({
@@ -266,6 +268,7 @@ export function AlignedSelect<Value>({
           if (openProp === undefined && !details.isCanceled) setUncontrolledOpen(next);
         }}
         value={value}
+        isItemEqualToValue={isItemEqualToValue}
         defaultValue={defaultValue}
         onValueChange={(next, details) => {
           onValueChange?.(next, details);
@@ -400,6 +403,8 @@ export function AlignedSelectContent({
   positionerProps,
   portalProps,
   alignOffset,
+  onFocusCapture,
+  onPointerOverCapture,
   children,
   ...props
 }: AlignedSelectContentProps) {
@@ -408,6 +413,7 @@ export function AlignedSelectContent({
   const width = widthProp ?? (triggerVariant === "plain" ? "content" : "trigger");
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const openingSearchFocus = useRef(true);
   const noResults = searchable && query.trim() !== "" && !hasMatches;
 
   // The panel owns its active row rather than reading Base UI's highlight, which is the same
@@ -457,12 +463,22 @@ export function AlignedSelectContent({
   }
   const dormant = pointerLeft && !searchable;
 
-  // Base UI opens by focusing the selected row, which is right without a search field and
-  // wrong with one — the caret has to be where the typing is going to go.
-  useEffect(() => {
+  // Newly mounted fields autofocus. A kept-mounted field also needs focus on reopen.
+  useLayoutEffect(() => {
     if (!open || !searchable) return;
-    const frame = requestAnimationFrame(() => inputRef.current?.focus());
-    return () => cancelAnimationFrame(frame);
+    // A fast first arrow may arrive on the trigger before focus reaches the portaled panel.
+    const doc = inputRef.current?.ownerDocument ?? document;
+    const recordNavigation = (event: KeyboardEvent) => {
+      if (event.key === "ArrowDown" || event.key === "ArrowUp" || event.key === "Tab") {
+        openingSearchFocus.current = false;
+      }
+    };
+    doc.addEventListener("keydown", recordNavigation, true);
+    inputRef.current?.focus();
+    return () => {
+      doc.removeEventListener("keydown", recordNavigation, true);
+      openingSearchFocus.current = true;
+    };
   }, [open, searchable]);
 
   return (
@@ -507,6 +523,20 @@ export function AlignedSelectContent({
           onFocus={(event) => {
             if (searchable && event.target === event.currentTarget) inputRef.current?.focus();
           }}
+          onFocusCapture={(event) => {
+            onFocusCapture?.(event);
+            // Positioning may focus the selected row after mount. Keep the opening caret
+            // until a real pointer or keyboard navigation requests the list.
+            if (!event.defaultPrevented && searchable && openingSearchFocus.current && listRef.current?.contains(event.target)) {
+              inputRef.current?.focus();
+            }
+          }}
+          onPointerOverCapture={(event) => {
+            onPointerOverCapture?.(event);
+            if (!event.defaultPrevented && event.target instanceof Node && listRef.current?.contains(event.target)) {
+              openingSearchFocus.current = false;
+            }
+          }}
           onPointerLeave={(event) => {
             if (!searchable && event.pointerType !== "touch") setPointerLeft(true);
           }}
@@ -529,6 +559,7 @@ export function AlignedSelectContent({
             <div className="flex h-[38px] items-stretch border-b border-border px-3.5">
               <Input
                 ref={inputRef}
+                autoFocus={open}
                 aria-label={searchLabel}
                 variant="plain"
                 value={query}
@@ -539,6 +570,7 @@ export function AlignedSelectContent({
                   // that merely looks highlighted.
                   if (event.key === "ArrowDown" || event.key === "ArrowUp") {
                     event.preventDefault();
+                    event.stopPropagation();
                     focusEdgeOption(listRef.current, event.key === "ArrowDown" ? "first" : "last");
                     return;
                   }

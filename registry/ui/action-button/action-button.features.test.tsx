@@ -37,7 +37,7 @@ describe("ActionButton feedback controls", () => {
     const button = screen.getByRole("button", { name: "Offline" });
     // jsdom has no keyboard modality; headless Chrome checks the real selector.
     const matches = button.matches.bind(button);
-    button.matches = selector => selector === ":focus-visible" || matches(selector);
+    vi.spyOn(button, "matches").mockImplementation(selector => selector === ":focus-visible" || matches(selector));
     fireEvent.pointerEnter(button, { pointerType: "mouse" });
     fireEvent.focus(button);
     fireEvent.keyDown(button, { key: "ArrowRight" });

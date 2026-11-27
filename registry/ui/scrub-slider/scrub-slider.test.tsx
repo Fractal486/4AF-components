@@ -238,7 +238,7 @@ describe("ScrubSlider", () => {
     expect(change).toHaveBeenLastCalledWith(0, expect.anything());
     const indicator = container.querySelector<HTMLElement>('[data-slot="scrub-slider-indicator"]')!;
     // Tick 0 sits two ticks left of where the press landed.
-    expect(indicator.style.translate).toBe(`${150 - SPACING * 2 - 1}px 0`);
+    expect(indicator).toHaveStyle({ translate: `${150 - SPACING * 2 - 1}px 0` });
   });
 
   it("scrolls the ruler and keeps changing the value while held at an edge", () => {
@@ -456,6 +456,8 @@ describe("ScrubSlider editing", () => {
     fireEvent.pointerDown(root, { ...pointer, clientX: 150 });
     fireEvent.pointerUp(root, { ...pointer, clientX: 151 });
     const input = screen.getByRole("textbox", { name: "Edit Width" });
+    expect(root.querySelector('[data-slot="scrub-slider-value"]')).toHaveClass("tabular-nums", "slashed-zero");
+    expect(input).toHaveClass("tabular-nums", "slashed-zero");
     expect(input).toHaveFocus();
     expect(root).toHaveAttribute("data-editing");
     expect(root).not.toHaveAttribute("data-active");
@@ -645,14 +647,14 @@ describe("ScrubSlider fixed indicator", () => {
     const indicator = container.querySelector<HTMLElement>('[data-slot="scrub-slider-indicator"]')!;
     expect(root).toHaveAttribute("data-indicator", "fixed");
     expect(indicator).toHaveClass("opacity-100");
-    expect(indicator.style.translate).toBe(`${RULER_WIDTH / 2 - 1}px 0`);
+    expect(indicator).toHaveStyle({ translate: `${RULER_WIDTH / 2 - 1}px 0` });
 
     // A press off-centre sets nothing; dragging toward the end pulls lower values under the line.
     fireEvent.pointerDown(root, { ...pointer, clientX: 40 });
     expect(change).not.toHaveBeenCalled();
     fireEvent.pointerMove(root, { ...pointer, clientX: 40 + SPACING * 3 });
     expect(change).toHaveBeenLastCalledWith(47, expect.objectContaining({ reason: "drag" }));
-    expect(indicator.style.translate).toBe(`${RULER_WIDTH / 2 - 1}px 0`);
+    expect(indicator).toHaveStyle({ translate: `${RULER_WIDTH / 2 - 1}px 0` });
     // Past min the ruler stops with min under the line.
     fireEvent.pointerMove(root, { ...pointer, clientX: 40 + SPACING * 80 });
     expect(change).toHaveBeenLastCalledWith(0, expect.anything());

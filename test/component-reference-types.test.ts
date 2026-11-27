@@ -36,7 +36,7 @@ const applicationContext: Partial<Record<ComponentReferenceName, string>> = {
   "command-palette": "declare function deleteProject(): Promise<void>;",
   "delete-button": "declare const id: string; declare function removeItem(id: string): void;",
   input: "declare const name: string; declare function setName(next: string): void;",
-  morph: "declare const copied: boolean;",
+  morph: "declare const copied: boolean; declare const saving: boolean;",
   "date-picker": `
     declare const date: Date | null;
     declare function setDate(next: Date | null): void;

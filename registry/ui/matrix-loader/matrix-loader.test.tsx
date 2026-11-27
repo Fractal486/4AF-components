@@ -49,13 +49,13 @@ describe("MatrixLoader", () => {
 
   it("runs the newer patterns on their own keyframes and default cycle", () => {
     const { container } = render(<MatrixLoader variant="attention" grid={5} />);
-    const root = container.querySelector('[data-slot="matrix-loader"]');
-    const dots = root?.querySelectorAll<HTMLElement>(":scope > i");
+    const root = container.querySelector('[data-slot="matrix-loader"]')!;
+    const dots = root.querySelectorAll<HTMLElement>(":scope > i");
 
-    expect(root?.getAttribute("style") ?? "").toContain("--matrix-cycle: 1.8s");
-    expect(dots?.[0]?.style.animation).toContain("matrix-attention");
+    expect(root.getAttribute("style")).toContain("--matrix-cycle: 1.8s");
+    expect(getComputedStyle(dots[0]!).animationName).toBe("matrix-attention");
     // Rows sweep down: the second row starts 0.28s into the 1.8s cycle.
-    expect(dots?.[5]?.style.animationDelay).toBe(`calc(${0.28 / 1.8} * var(--matrix-cycle))`);
+    expect(dots[5]?.style.animationDelay).toBe(`calc(${0.28 / 1.8} * var(--matrix-cycle))`);
   });
 
   it("composes backprop's forward and backward passes", () => {
@@ -63,7 +63,7 @@ describe("MatrixLoader", () => {
     const dot = container.querySelector<HTMLElement>('[data-slot="matrix-loader"] > i');
 
     expect(container.firstElementChild?.getAttribute("style") ?? "").toContain("--matrix-cycle: 2s");
-    expect(dot?.style.animation.split(", ")).toHaveLength(2);
+    expect(getComputedStyle(dot!).animationName.split(", ")).toEqual(["matrix-backprop", "matrix-backprop"]);
     expect(dot?.style.animationDelay.split(", ")).toHaveLength(2);
   });
 

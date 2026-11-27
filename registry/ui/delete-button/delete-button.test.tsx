@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, vi } from "vitest";
 import { DeleteButton } from "./delete-button";
 
@@ -49,6 +50,27 @@ describe("DeleteButton", () => {
     fireEvent.click(button);
     expect(onDelete).toHaveBeenCalledOnce();
     expect(button).not.toHaveAttribute("data-armed");
+  });
+
+  it("requires releasing and pressing Enter again to confirm", async () => {
+    const user = userEvent.setup();
+    const onDelete = vi.fn();
+    const now = vi.spyOn(Date, "now");
+    try {
+      now.mockReturnValue(1000);
+      render(<DeleteButton onDelete={onDelete} />);
+      const button = screen.getByRole("button");
+      button.focus();
+      await user.keyboard("{Enter>}");
+      expect(button).toHaveAttribute("data-armed");
+      now.mockReturnValue(1600);
+      expect(fireEvent.keyDown(button, { key: "Enter", repeat: true })).toBe(false);
+      expect(onDelete).not.toHaveBeenCalled();
+      await user.keyboard("{/Enter}{Enter}");
+      expect(onDelete).toHaveBeenCalledOnce();
+    } finally {
+      now.mockRestore();
+    }
   });
 
   it("disarms when its reset timer expires", () => {

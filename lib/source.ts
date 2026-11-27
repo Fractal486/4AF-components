@@ -7,7 +7,10 @@ const docs = defineDocs({
   dir: "content/docs",
   docs: {
     postprocess: {
-      includeProcessedMarkdown: true,
+      includeProcessedMarkdown: {
+        headingIds: false,
+        mdxAsPlaceholder: ["Cards", "Card"],
+      },
     },
   },
 });

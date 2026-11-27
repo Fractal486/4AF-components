@@ -3,13 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "description": "Render dimensional-drawing motion scenes to MP4 with Playwright + ffmpeg.",
   "scripts": {
     "postinstall": "playwright install chromium",
     "example": "node render.mjs --scene ../../templates/scene-dialog.js --css ../../templates/base.css --out ../../../../assets/dialog-headless.mp4"
   },
   "dependencies": {
-    "playwright": "^1.47.0"
+    "playwright": "^1.65.1"
   },
   "license": "MIT"
 }

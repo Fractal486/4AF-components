@@ -4,6 +4,7 @@ import { CalendarIcon, Undo2 } from "lucide-react";
 import { DateLib } from "react-day-picker";
 import {
   Fragment,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -12,6 +13,7 @@ import {
   type Ref,
 } from "react";
 import { cn } from "@/registry/lib/cn";
+import { useMergedRefs } from "@/registry/lib/refs";
 import { Button } from "@/registry/ui/button/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/registry/ui/popover/popover";
 import { Calendar, type CalendarProps, type DateRange } from "./calendar";
@@ -129,6 +131,7 @@ interface DatePickerShellProps
   label: ReactNode | undefined;
   hiddenValue: string | undefined;
   onClear: () => void;
+  resetValue?: () => void;
   focusDate?: Date;
   calendarProps?: CalendarPassthrough;
   children: (close: () => void, navigation: Pick<CalendarProps, "month" | "onMonthChange">) => ReactNode;
@@ -149,6 +152,8 @@ function DatePickerShell({
   calendarProps,
   name,
   form,
+  ref,
+  resetValue,
   onClear,
   focusDate,
   children,
@@ -160,10 +165,30 @@ function DatePickerShell({
   ...props
 }: DatePickerShellProps) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const triggerNode = useRef<HTMLButtonElement>(null);
+  const triggerRef = useMergedRefs(triggerNode, ref);
   const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
   const [month, setMonth] = useState<Date>();
   const open = openProp ?? uncontrolledOpen;
   const hasValue = label !== undefined;
+
+  useEffect(() => {
+    const trigger = triggerNode.current;
+    if (!trigger || !resetValue) return;
+    // Resolve the owner at event time: a form linked by id can be mounted or replaced later.
+    const root = trigger.getRootNode();
+    const handleReset = (event: Event) => {
+      if (event.target !== trigger.form) return;
+      queueMicrotask(() => {
+        if (!event.defaultPrevented && triggerNode.current === trigger) {
+          resetValue();
+          setMonth(undefined);
+        }
+      });
+    };
+    root.addEventListener("reset", handleReset, true);
+    return () => root.removeEventListener("reset", handleReset, true);
+  }, [resetValue]);
 
   const setOpen = (next: boolean) => {
     if (!next) setMonth(undefined);
@@ -181,6 +206,7 @@ function DatePickerShell({
 
   const triggerProps = {
     ...props,
+    ref: triggerRef,
     disabled,
     form,
     className: cn(datePickerTriggerVariants({ variant, size, tone }), className),
@@ -335,6 +361,7 @@ function SingleDatePicker({
       label={value ? format(value) : undefined}
       hiddenValue={value ? toIsoDate(value, timeZone) : undefined}
       onClear={() => setValue(null)}
+      resetValue={valueProp === undefined ? () => setUncontrolledValue(defaultValue) : undefined}
       calendarProps={calendarProps}
     >
       {(close, navigation) => (
@@ -394,6 +421,7 @@ function MultipleDatePicker({
       ))}
       hiddenValue={value.map((date) => toIsoDate(date, timeZone)).join(",")}
       onClear={() => setValue([])}
+      resetValue={valueProp === undefined ? () => setUncontrolledValue(defaultValue) : undefined}
       focusDate={lastSelected}
       calendarProps={calendarProps}
     >
@@ -484,6 +512,7 @@ export function DateRangePicker({
   ...props
 }: DateRangePickerProps) {
   const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue);
+  const [resetKey, setResetKey] = useState(0);
   const value = valueProp !== undefined ? valueProp : uncontrolledValue;
   const timeZone = calendarProps?.timeZone;
   const formatter = useMemo(() => new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone }), [locale, timeZone]);
@@ -517,10 +546,15 @@ export function DateRangePicker({
       label={label}
       hiddenValue={from && to ? `${toIsoDate(from, timeZone)}/${toIsoDate(to, timeZone)}` : undefined}
       onClear={() => setValue(null)}
+      resetValue={valueProp === undefined ? () => {
+        setUncontrolledValue(defaultValue);
+        setResetKey(previous => previous + 1);
+      } : undefined}
       calendarProps={calendarProps}
     >
       {(close, navigation) => (
         <DateRangeCalendar
+          key={resetKey}
           value={value}
           calendarProps={{ ...calendarProps, ...navigation }}
           onComplete={(range) => {

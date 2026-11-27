@@ -25,8 +25,8 @@ import {
 import type { PlaygroundDemo } from "@/stories/demo-names";
 
 /**
- * The view lives in the URL hash: none is the preview, `#docs` the documentation, and any
- * other hash a heading inside it. A search result or shared link to a section therefore opens
+ * The empty hash and `#demo` open the preview. `#docs` opens the documentation, and any
+ * other hash points to a heading inside it. A search result or shared link to a section opens
  * the docs at that section, and Back returns to the preview.
  */
 const DOCS_HASH = "docs";
@@ -56,8 +56,14 @@ function setHash(hash: string) {
   for (const listener of hashListeners) listener();
 }
 
-function useHash() {
-  return useSyncExternalStore(subscribeToHash, () => window.location.hash, () => "");
+function readFragment() {
+  const raw = window.location.hash.slice(1);
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    // An incomplete percent escape still goes through the ordinary unknown-heading fallback.
+    return raw;
+  }
 }
 
 /** The demo's box, listed first in the stacked layout's contents so the page can return to it. */
@@ -214,22 +220,21 @@ function PlaygroundFrame({
   expanded: boolean;
   onExpandedChange: (expanded: boolean) => void;
 }) {
-  const hash = useHash();
-  const view = hash ? "docs" : "preview";
+  const id = useSyncExternalStore(subscribeToHash, readFragment, () => "");
+  const view = id && id !== DEMO_SECTION_ID ? "docs" : "preview";
   const demo = useComponentDemo(demoName);
-  const fullView = expanded && view === "preview";
   // From `lg` the docs scroll inside the frame, so the window never does; below it, the page.
   const docsRef = useRef<HTMLDivElement>(null);
   // The left edges the info card is pinned to: the title row below `lg`, the tabs from it.
   const titleRowRef = useRef<HTMLDivElement>(null);
   const tabsRowRef = useRef<HTMLDivElement>(null);
   const desktop = useDesktop();
+  const fullView = desktop && expanded && view === "preview";
   const variantRow = demos.length > 1 && !desktop;
 
   // Opening the docs at a heading: the docs were hidden when the browser or router tried to
   // scroll, so scroll once they are shown.
   useEffect(() => {
-    const id = decodeURIComponent(hash.slice(1));
     if (!id) return;
     const target = id === DOCS_HASH ? null : document.getElementById(id);
     if (target) target.scrollIntoView();
@@ -237,7 +242,7 @@ function PlaygroundFrame({
       docsRef.current?.scrollTo({ top: 0 });
       window.scrollTo({ top: 0 });
     }
-  }, [hash]);
+  }, [id]);
 
   return (
     <div data-view={view} data-expanded={fullView || undefined} className="lg:p-2">

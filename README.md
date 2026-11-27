@@ -40,9 +40,12 @@ Documentation pages under `/docs/` are also available as Markdown by appending `
 
 ## Everyday commands
 
-Use Node 24.19.0 (pinned in `.node-version`) and pnpm 12.11.2 or newer. A version manager
+Use Node 26.13.1 (pinned in `.node-version`) and pnpm 12.11.2 or newer. A version manager
 that reads `.node-version` can select the project version; `engines` also records the
 supported minimums.
+
+`pnpm typecheck` runs the native TypeScript 7 compiler. Next.js, ESLint, and the registry
+tests also use the TypeScript 6 JavaScript API, installed under the `typescript` package name.
 
 ```bash
 pnpm dev                 # Start the Fumadocs development server
@@ -122,6 +125,4 @@ installable names.
 ## License
 
 Original contributions are licensed under [MIT No Attribution (MIT-0)](LICENSE).
-Third-party portions remain subject to their respective licenses, including Animate UI's
-additional restriction. See [third-party notices](THIRD_PARTY_NOTICES.md) for upstream
-credits and full license texts.
+[Third-party licenses](THIRD_PARTY_NOTICES.md) lists upstream credits and license texts.

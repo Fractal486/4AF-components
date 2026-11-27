@@ -183,9 +183,8 @@ export function Button({
           // Base UI correctly guards the Button's own handler. The child's handler is
           // composed later, so suppress it here as well while disabled/loading.
           onClick: isDisabled ? (event) => event.preventDefault() : childElement.props.onClick,
-          // `asChild` is visual composition: an anchor must remain a link, not be
-          // announced as a button merely because it wears Button's styles.
-          role: undefined,
+          // Use the caller's role or leave the child's native semantics in place.
+          role: childElement.props.role ?? props.role,
         },
         content,
       )

@@ -109,9 +109,10 @@ function rangeBetween(table: HTMLTableElement, from: string, to: string) {
 }
 
 function applyRange(base: readonly string[], range: readonly string[], next: boolean) {
+  const membership = new Set(next ? base : range);
   return next
-    ? [...base, ...range.filter((row) => !base.includes(row))]
-    : base.filter((item) => !range.includes(item));
+    ? [...base, ...range.filter((row) => !membership.has(row))]
+    : base.filter((item) => !membership.has(item));
 }
 
 /**
@@ -131,7 +132,7 @@ function swallowNextClick() {
 
 interface DataTableContextValue {
   selectable: boolean;
-  selected: readonly string[];
+  selectedIds: ReadonlySet<string>;
   allSelected: boolean;
   someSelected: boolean;
   selectAllLabel: string;
@@ -153,7 +154,7 @@ interface DataTableContextValue {
 
 const DataTableContext = createContext<DataTableContextValue>({
   selectable: false,
-  selected: [],
+  selectedIds: new Set(),
   allSelected: false,
   someSelected: false,
   selectAllLabel: "Select all rows",
@@ -253,8 +254,12 @@ export function DataTable({
   const disabledValues = useMemo(() => {
     const values = new Set(disabledRows);
     const visit = (nodes: ReactNode) => Children.forEach(nodes, (node) => {
-      if (!isValidElement<{ value?: string; disabled?: boolean; children?: ReactNode }>(node)) return;
-      if (node.props.disabled && node.props.value !== undefined) values.add(node.props.value);
+      if (!isValidElement<DataTableRowProps>(node)) return;
+      if (node.type === DataTableRow) {
+        if (node.props.disabled && node.props.value !== undefined) values.add(node.props.value);
+        return;
+      }
+      if (node.type === TableHeader || node.type === TableFooter || node.type === TableCaption) return;
       visit(node.props.children);
     });
     visit(children);
@@ -263,6 +268,7 @@ export function DataTable({
   const [uncontrolled, setUncontrolled] = useState<readonly string[]>(defaultValue ?? []);
   const isControlled = value !== undefined;
   const selected = isControlled ? value : uncontrolled;
+  const selectedIds = useMemo(() => new Set(selected), [selected]);
 
   const commit = useCallback(
     (next: string[]) => {
@@ -297,12 +303,12 @@ export function DataTable({
     (table: HTMLTableElement, rowValue: string) => {
       // The clicked row decides the direction, as it would on its own: a shift-click on an
       // unchecked row checks the range, on a checked one clears it.
-      const next = !selected.includes(rowValue);
+      const next = !selectedIds.has(rowValue);
       const range = anchor.current === null ? null : rangeBetween(table, anchor.current, rowValue);
       anchor.current = rowValue;
       commit(applyRange(selected, range ?? [rowValue], next));
     },
-    [commit, selected],
+    [commit, selected, selectedIds],
   );
 
   const beginDrag = useCallback(
@@ -312,7 +318,7 @@ export function DataTable({
         start: rowValue,
         current: rowValue,
         baseline: selected,
-        next: !selected.includes(rowValue),
+        next: !selectedIds.has(rowValue),
         moved: false,
         cancelled: false,
       };
@@ -340,7 +346,7 @@ export function DataTable({
       document.addEventListener("keydown", cancel);
       document.addEventListener("selectstart", preventTextSelection);
     },
-    [selected],
+    [selected, selectedIds],
   );
 
   const dragOver = useCallback(
@@ -379,19 +385,14 @@ export function DataTable({
   // `toggleAll` a new identity every render, which would give the context a new one — and
   // re-render every cell in the table on every keystroke happening anywhere above it.
   const coverage = useMemo(() => (rows ?? []).filter((row) => !disabledValues.has(row)), [rows, disabledValues]);
-  const selectedCount = coverage.filter((row) => selected.includes(row)).length;
+  const selectedCount = coverage.filter((row) => selectedIds.has(row)).length;
   const allSelected = coverage.length > 0 && selectedCount === coverage.length;
   const someSelected = selectedCount > 0;
 
   const toggleAll = useCallback(
     (next: boolean) => {
-      if (next) {
-        // A union, not a replacement: a selected row that is not on this page — the previous
-        // page of a paginated table — is not the select-all's to throw away.
-        commit([...selected, ...coverage.filter((row) => !selected.includes(row))]);
-      } else {
-        commit(selected.filter((item) => !coverage.includes(item)));
-      }
+      // Apply the change only to this page and preserve previously selected rows in order.
+      commit(applyRange(selected, coverage, next));
     },
     [commit, coverage, selected],
   );
@@ -399,7 +400,7 @@ export function DataTable({
   const context = useMemo<DataTableContextValue>(
     () => ({
       selectable,
-      selected,
+      selectedIds,
       allSelected,
       someSelected,
       selectAllLabel,
@@ -422,7 +423,8 @@ export function DataTable({
     }),
     [
       selectable,
-      selected,
+      selectedIds,
+      selected.length,
       allSelected,
       someSelected,
       selectAllLabel,
@@ -499,7 +501,7 @@ export function DataTableRow({
     selectable,
     disabledRows,
     selectionEmpty,
-    selected,
+    selectedIds,
     allSelected,
     someSelected,
     selectAllLabel,
@@ -515,7 +517,7 @@ export function DataTableRow({
     toggleAll,
   } = useContext(DataTableContext);
   const reduceMotion = useReducedMotion();
-  const isSelected = value !== undefined && selected.includes(value);
+  const isSelected = value !== undefined && selectedIds.has(value);
   const isActionRow = section === "header" && selectionBar;
   const selectionDisabled = disabled || loading || (value !== undefined && disabledRows.has(value));
   const rangeValue = selectable && !selectionDisabled && section === "body" ? value : undefined;

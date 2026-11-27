@@ -30,7 +30,7 @@ description: A single-date, multiple-date, or date-range field that opens a cale
 | `todayLabel` | `"Today"` | Current-month navigation action text. Shown on the left with an Undo2 icon; Clear stays on the right. |
 | `showToday` | `true` | Shows the Today action. Set `false` to hide it; the footer disappears when neither Today nor Clear is visible. |
 | `name` | — | Renders a hidden input: `YYYY-MM-DD` for single, comma-separated ISO dates in selection order for multiple, or `YYYY-MM-DD/YYYY-MM-DD` for a range. Empty selections are omitted from form submission, including after Clear. |
-| `form` | — | Associates the trigger and hidden input with a form by its `id`, including when the picker is outside that form. |
+| `form` | — | Associates the trigger and hidden input with a form by its `id`, including when the picker is outside that form. Resetting the owning form restores the uncontrolled picker’s `defaultValue` and clears a pending range draft. A controlled picker follows its `value` prop. |
 | `disabled` | `false` | Disables the trigger and omits the selection from form submission. Re-enabling restores submission of the retained value. |
 | `calendarProps.min` / `calendarProps.max` | — | In multiple mode, minimum selected count when deselecting and maximum count when adding. At maximum, further additions are ignored and existing selections remain. In range mode these constrain nights. |
 | `calendarProps.disabled` | — | Days that cannot be selected. Accepts react-day-picker's `Matcher \| Matcher[]`: dates, date ranges, before/after bounds, weekdays, predicates, or booleans. For ranges, set `calendarProps.excludeDisabled` to also reject spans containing disabled days. |
@@ -70,15 +70,21 @@ its selection while keeping the picker open. Escape returns to the days without 
 panel; a second Escape closes it.
 The toggle carries `aria-expanded`.
 
-Months entirely outside `startMonth` / `endMonth` are disabled. Years run from `startMonth`, or
-100 years back, to `endMonth`, or 20 years ahead, extending as needed to include the displayed
+With `numberOfMonths` greater than one, the first displayed caption opens the chooser in
+its own grid. The other months keep showing their days. Escape or a month pick returns focus
+to that first caption. With `reverseMonths`, the chooser follows the latest displayed month,
+and `onMonthChange` still reports the earliest month in the displayed window.
+
+Month choices keep the displayed window within `startMonth` and `endMonth`. A range shorter
+than `numberOfMonths` shows only the available months. Years run from the first available caption year, or
+100 years back, to the last available caption year, or 20 years ahead, extending as needed to include the displayed
 year. The picker is part of the default `label` caption; the `dropdown` caption layouts keep
 their own selects, and `disableNavigation` renders a plain caption.
 
 Parts: `data-slot="calendar-picker-toggle"` (the caption button), `calendar-picker` (the two
 columns), and `calendar-month-grid` (the wrapper that holds the grid's height while the picker
-is open). The calendar root, grid wrapper, and day table carry `data-picker-open` while
-this picker is open; the table is also `aria-hidden`. An empty date trigger and its
+is open). The calendar root and the owning grid wrapper and day table carry `data-picker-open`
+while the chooser is open. That day table is also `aria-hidden`. An empty date trigger and its
 `date-picker-value` span carry `data-empty`, which dims the placeholder.
 
 ## Behavior
@@ -118,8 +124,3 @@ this picker is open; the table is also `aria-hidden`. An empty date trigger and 
 ## Dependencies
 
 Installs `react-day-picker` and the `popover` and `button` components.
-
-## Source
-
-Adapted from [HextaUI's date picker](https://hextaui.com/r/date-picker.json) (MIT, Preet Suthar).
-The license notice is retained in the portable source files.

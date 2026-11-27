@@ -130,7 +130,7 @@ import {
     usage: `import { NumberAnimation } from "@/components/ui/number-animation";
 
 // Reduced motion cancels active rolls and exits; the latest value stays readable.
-<NumberAnimation value={total} locales="en-US" format={{ style: "currency", currency: "USD" }} />`,
+<NumberAnimation value={total} locales="fr-FR" format={{ style: "currency", currency: "EUR", notation: "compact" }} />`,
   },
   badge: {
     usage: `import { CircleX } from "lucide-react";
@@ -150,6 +150,7 @@ import { Badge, BadgeClose, BadgeCount } from "@/components/ui/badge";
 
 <Button variant="primary">Deploy</Button>
 <Button loading loadingLabel="Deploying">Deploy</Button>
+<Button asChild variant="link"><a href="/deployments">Deployments</a></Button>
 <Button variant="ghost" aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>Actions</Button>`,
   },
   "button-group": {
@@ -196,7 +197,7 @@ import { Button } from "@/components/ui/button";
       id: "delete",
       label: "Delete project",
       keybind: "mod+shift+d", // Fresh presses only; held-key repeats and composition are ignored.
-      confirm: { label: "Confirm deletion?" },
+      confirm: { label: "Confirm deletion?" }, // Release and press again to confirm.
       onSelect: deleteProject,
     }] }} />
   </>,
@@ -211,6 +212,7 @@ import { Button } from "@/components/ui/button";
   "delete-button": {
     usage: `import { DeleteButton } from "@/components/ui/delete-button";
 
+// The first press arms the button. Release Enter and press it again to confirm.
 <DeleteButton onDelete={() => removeItem(id)}>Delete</DeleteButton>`,
   },
   dialog: {
@@ -298,7 +300,7 @@ import { Button } from "@/components/ui/button";
   <h1 className="text-4xl font-medium text-white">Launch week</h1>
 </HalftoneHorizon>
 
-<HalftoneHorizon palette="night" direction="bottom" curve={0.6} spacing={9} className="h-64 rounded-2xl" />`,
+<HalftoneHorizon palette="night" animate={false} direction="bottom" curve={0.6} spacing={9} className="h-64 rounded-2xl" />`,
   },
   "hover-card": {
     usage: `import {
@@ -397,9 +399,9 @@ import { Morph } from "@/components/ui/morph";
 
 <DatePicker value={date} onValueChange={setDate} name="due" clearable />
 
-// A picker outside its form; empty and disabled selections are omitted.
-<form id="schedule" />
-<DatePicker name="scheduledDate" form="schedule" clearable />
+// Reset restores this external picker's default date.
+<form id="schedule"><button type="reset">Reset date</button></form>
+<DatePicker name="scheduledDate" form="schedule" defaultValue={new Date(2026, 4, 14)} clearable />
 
 <DateRangePicker
   value={range}
@@ -459,9 +461,10 @@ import { Morph } from "@/components/ui/morph";
 
 // Mounted item labels and icons survive StrictMode and Activity effect replays.
 // For long lists, stable item props let unchanged rows skip highlight/search rendering.
+// For refreshed object values, match stable IDs with isItemEqualToValue={(item, value) => item.id === value.id}.
 <Select size="xs" defaultValue="apple">
   <SelectTrigger variant="ghost" label="Fruit">
-    <SelectValue />
+    <SelectValue render={<span />} placeholder="Pick a fruit" />
   </SelectTrigger>
   <SelectContent clearable>
     <SelectGroup>

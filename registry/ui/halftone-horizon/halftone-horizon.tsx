@@ -556,7 +556,7 @@ export function HalftoneHorizon({
     };
 
     const playing = () =>
-      renderer !== null && (optionsRef.current.animate || !introDone) && !reduced && visible && pageVisible;
+      renderer !== null && optionsRef.current.animate && !reduced && visible && pageVisible;
     const easingHover = () => renderer !== null && visible && pageVisible && hoverLevel !== hoverTarget();
     const rippling = () => renderer !== null && visible && pageVisible && ripples.length > 0;
 
@@ -584,7 +584,7 @@ export function HalftoneHorizon({
     };
 
     const update = () => {
-      if (reduced || (!optionsRef.current.animate && introElapsed === 0)) introDone = true;
+      if (reduced || !optionsRef.current.animate) introDone = true;
       root.dataset.state = playing() ? "playing" : "paused";
       if (frame || !renderer) return;
       last = 0;

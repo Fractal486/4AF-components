@@ -74,7 +74,7 @@ export const scrubSliderLabelVariants = cva("min-w-0 truncate text-muted-foregro
  * takes the pointer with a text cursor, since only a click on it opens the editor.
  */
 export const scrubSliderValueVariants = cva(
-  "tabular flex shrink-0 items-baseline gap-0.5 text-foreground",
+  "tabular-nums slashed-zero flex shrink-0 items-baseline gap-0.5 text-foreground",
   {
     variants: {
       layout: { card: "", inline: "pointer-events-auto min-w-8 cursor-text justify-end" },
@@ -211,7 +211,7 @@ export const scrubSliderStepperVariants = cva(
 
 /** The number while it is being typed: the value's own text, taking input. */
 export const scrubSliderInputVariants = cva(
-  "pointer-events-auto m-0 min-w-[1ch] cursor-text border-0 bg-transparent p-0 text-right tabular text-foreground outline-none",
+  "pointer-events-auto m-0 min-w-[1ch] cursor-text border-0 bg-transparent p-0 text-right tabular-nums slashed-zero text-foreground outline-none",
 );
 
 export type ScrubSliderVariants = VariantProps<typeof scrubSliderVariants>;

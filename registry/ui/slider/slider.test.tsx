@@ -18,8 +18,11 @@ describe("Slider", () => {
     const change = vi.fn();
     const commit = vi.fn();
     render(<Slider label="Volume" defaultValue={40} step={10} onValueChange={change} onValueCommitted={commit} />);
-    await user.click(screen.getByText("40"));
+    const value = screen.getByText("40");
+    expect(value).toHaveClass("tabular-nums", "slashed-zero");
+    await user.click(value);
     const input = screen.getByRole("textbox", { name: "Edit Volume" });
+    expect(input).toHaveClass("tabular-nums", "slashed-zero");
     await user.clear(input);
     await user.type(input, "47");
     if (finish === "Enter") await user.keyboard("{Enter}");

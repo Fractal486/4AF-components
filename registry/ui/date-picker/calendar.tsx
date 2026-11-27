@@ -75,18 +75,18 @@ interface CalendarContextValue {
   /** The grid's height when the picker opened, held while it is open. */
   pickerHeight: number | undefined;
   setPickerOpen: (open: boolean, options?: { returnFocus?: boolean }) => void;
-  /** The month shown, for the picker to mark and change. */
-  month: Date;
   goToMonth: (month: Date) => void;
   monthNames: string[];
-  years: number[];
-  startMonth: Date | undefined;
-  endMonth: Date | undefined;
+  thisYear: number;
+  firstAnchor: Date | undefined;
+  lastAnchor: Date | undefined;
+  Month: NonNullable<CalendarProps["components"]>["Month"];
   toggleRef: (node: HTMLButtonElement | null) => void;
 }
 
 const CalendarContext = createContext<CalendarContextValue | null>(null);
 const CalendarPreviewContext = createContext<DateRange | undefined>(undefined);
+const MonthIndexContext = createContext(0);
 const MonthMotionContext = createContext<{ key: number; enter: MonthEnter | undefined }>({
   key: 0,
   enter: undefined,
@@ -226,26 +226,27 @@ export function Calendar({
   // The shown month is held here (or by the caller, through `month`) so the month / year
   // picker can move it; react-day-picker's own navigation reports through `onMonthChange`.
   const { numberOfMonths = 1 } = props;
-  const [innerMonth, setInnerMonth] = useState(() => {
-    // Where react-day-picker would open: inside `startMonth` / `endMonth`, with every month of
-    // a multi-month view in range.
-    let initial = dateLib.startOfMonth(monthProp ?? defaultMonth ?? today ?? dateLib.today());
-    const lastFirst =
-      endMonth && dateLib.addMonths(dateLib.startOfMonth(endMonth), -(numberOfMonths - 1));
-    if (lastFirst && initial > lastFirst) initial = lastFirst;
-    if (startMonth && initial < dateLib.startOfMonth(startMonth)) initial = dateLib.startOfMonth(startMonth);
-    return initial;
-  });
-  const shownMonth = inTimeZone(monthProp ?? innerMonth, timeZone);
+  const [firstAnchor, lastAnchor] = useMemo(() => {
+    const first = startMonth && dateLib.startOfMonth(startMonth);
+    const last = endMonth && dateLib.addMonths(dateLib.startOfMonth(endMonth), 1 - numberOfMonths);
+    // A range shorter than the requested window has one possible starting month.
+    return [first, first && last && last < first ? first : last] as const;
+  }, [startMonth, endMonth, numberOfMonths, dateLib]);
+  const clampMonth = useCallback((date: Date) => {
+    const month = dateLib.startOfMonth(inTimeZone(date, timeZone));
+    if (firstAnchor && month < firstAnchor) return firstAnchor;
+    if (lastAnchor && month > lastAnchor) return lastAnchor;
+    return month;
+  }, [dateLib, firstAnchor, lastAnchor, timeZone]);
+  const [innerMonth, setInnerMonth] = useState(() => clampMonth(monthProp ?? defaultMonth ?? today ?? dateLib.today()));
+  const shownMonth = useMemo(() => clampMonth(monthProp ?? innerMonth), [clampMonth, monthProp, innerMonth]);
   const goToMonth = useCallback(
     (next: Date) => {
-      let target = dateLib.startOfMonth(inTimeZone(next, timeZone));
-      if (startMonth && target < dateLib.startOfMonth(startMonth)) target = dateLib.startOfMonth(startMonth);
-      if (endMonth && target > dateLib.startOfMonth(endMonth)) target = dateLib.startOfMonth(endMonth);
+      const target = clampMonth(next);
       setInnerMonth(target);
       onMonthChange?.(target);
     },
-    [startMonth, endMonth, onMonthChange, dateLib, timeZone],
+    [clampMonth, onMonthChange],
   );
 
   const [picker, setPicker] = useState<{ open: boolean; height: number | undefined }>({
@@ -284,13 +285,8 @@ export function Calendar({
     const format = new Intl.DateTimeFormat(localeCode, { month: "short", timeZone });
     return Array.from({ length: 12 }, (_, index) => format.format(dateLib.newDate(2000, index, 1)));
   }, [localeCode, timeZone, dateLib]);
-  const shownYear = shownMonth.getFullYear();
   const thisYear = (today ?? dateLib.today()).getFullYear();
-  const years = useMemo(() => {
-    const first = Math.min(startMonth?.getFullYear() ?? thisYear - 100, shownYear);
-    const last = Math.max(endMonth?.getFullYear() ?? thisYear + 20, shownYear);
-    return Array.from({ length: last - first + 1 }, (_, index) => first + index);
-  }, [startMonth, endMonth, shownYear, thisYear]);
+  const Month = components?.Month;
 
   const context = useMemo<CalendarContextValue>(
     () => ({
@@ -303,12 +299,12 @@ export function Calendar({
       pickerOpen,
       pickerHeight: picker.height,
       setPickerOpen,
-      month: shownMonth,
       goToMonth,
       monthNames,
-      years,
-      startMonth,
-      endMonth,
+      thisYear,
+      firstAnchor,
+      lastAnchor,
+      Month,
       toggleRef,
     }),
     [
@@ -321,12 +317,12 @@ export function Calendar({
       pickerOpen,
       picker.height,
       setPickerOpen,
-      shownMonth,
       goToMonth,
       monthNames,
-      years,
-      startMonth,
-      endMonth,
+      thisYear,
+      firstAnchor,
+      lastAnchor,
+      Month,
       toggleRef,
     ],
   );
@@ -422,7 +418,6 @@ export function Calendar({
           PreviousMonthButton: CalendarNavButton,
           NextMonthButton: CalendarNavButton,
           Months: CalendarMonths,
-          Month: CalendarMonth,
           MonthCaption: CalendarMonthCaption,
           MonthGrid: CalendarMonthGrid,
           Weeks: CalendarWeeks,
@@ -430,6 +425,7 @@ export function Calendar({
           DayButton: CalendarDayButton,
           WeekNumber: CalendarWeekNumber,
           ...components,
+          Month: DisplayedMonth,
         }}
         {...props}
         data-picker-open={pickerOpen ? "" : undefined}
@@ -527,6 +523,12 @@ function CalendarMonths({ className, ...props }: MonthsProps) {
       <div className={className} {...props} data-slot="calendar-months" />
     </CalendarPreviewContext.Provider>
   );
+}
+
+/** DayPicker gives the index to Month and MonthCaption, but not to MonthGrid. */
+function DisplayedMonth(props: MonthProps) {
+  const { Month = CalendarMonth } = useCalendarContext("DisplayedMonth");
+  return <MonthIndexContext.Provider value={props.displayIndex}><Month {...props} /></MonthIndexContext.Provider>;
 }
 
 function CalendarMonth({ calendarMonth, className, ...rest }: MonthProps) {
@@ -647,7 +649,9 @@ function CalendarMonthCaption({ className, children, displayIndex, ...rest }: Mo
  * grid stays rendered underneath, hidden, so it holds the panel at the same size.
  */
 function CalendarMonthGrid({ className, ...props }: MonthGridProps) {
-  const { pickerOpen, pickerHeight } = useCalendarContext("CalendarMonthGrid");
+  const { pickerOpen: open, pickerHeight } = useCalendarContext("CalendarMonthGrid");
+  const displayIndex = useContext(MonthIndexContext);
+  const pickerOpen = open && displayIndex === 0;
 
   return (
     <div
@@ -724,11 +728,19 @@ function centerChecked(column: HTMLElement | null, behavior: ScrollBehavior) {
  * outside `startMonth` / `endMonth` are disabled.
  */
 function MonthYearPicker() {
-  const { month, goToMonth, setPickerOpen, monthNames, years, startMonth, endMonth, dateLib } =
+  const { goToMonth, setPickerOpen, monthNames, thisYear, firstAnchor, lastAnchor, dateLib } =
     useCalendarContext("MonthYearPicker");
+  const { months, dayPickerProps } = useDayPicker();
+  const month = months[0]!.date;
+  // Navigation takes the earliest month in time. A reversed first caption shows the latest.
+  const offset = dayPickerProps.reverseMonths ? months.length - 1 : 0;
+  const anchorFor = (year: number, index: number) => dateLib.addMonths(dateLib.newDate(year, index, 1), -offset);
   const monthsRef = useRef<HTMLDivElement>(null);
   const yearsRef = useRef<HTMLDivElement>(null);
   const year = month.getFullYear();
+  const firstYear = firstAnchor ? dateLib.addMonths(firstAnchor, offset).getFullYear() : Math.min(thisYear - 100, year);
+  const lastYear = lastAnchor ? dateLib.addMonths(lastAnchor, offset).getFullYear() : Math.max(thisYear + 20, year);
+  const years = Array.from({ length: lastYear - firstYear + 1 }, (_, index) => firstYear + index);
 
   // Open on the shown month and year: centred in their columns, with focus on the month.
   useLayoutEffect(() => {
@@ -754,12 +766,8 @@ function MonthYearPicker() {
   }, [monthIndex, year]);
 
   const unavailable = (index: number) => {
-    const first = dateLib.newDate(year, index, 1);
-    const last = dateLib.endOfMonth(first);
-    return (
-      (startMonth !== undefined && last < dateLib.startOfMonth(startMonth)) ||
-      (endMonth !== undefined && first > dateLib.startOfMonth(endMonth))
-    );
+    const anchor = anchorFor(year, index);
+    return (firstAnchor !== undefined && anchor < firstAnchor) || (lastAnchor !== undefined && anchor > lastAnchor);
   };
 
   return (
@@ -782,7 +790,7 @@ function MonthYearPicker() {
           ref={monthsRef}
           aria-label="Month"
           value={month.getMonth()}
-          onValueChange={(value) => goToMonth(dateLib.newDate(year, value as number, 1))}
+          onValueChange={(value) => goToMonth(anchorFor(year, value as number))}
           className={pickerColumnClassName}
         >
           {monthNames.map((name, index) => (
@@ -803,7 +811,7 @@ function MonthYearPicker() {
           ref={yearsRef}
           aria-label="Year"
           value={year}
-          onValueChange={(value) => goToMonth(dateLib.newDate(value as number, month.getMonth(), 1))}
+          onValueChange={(value) => goToMonth(anchorFor(value as number, month.getMonth()))}
           className={pickerColumnClassName}
         >
           {years.map((option) => (

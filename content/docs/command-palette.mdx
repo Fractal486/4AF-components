@@ -245,7 +245,8 @@ the menu and calls `onSelect`.
 `confirm` requires two presses: the first arms the row and shows `confirm.label`, “Confirm?”
 by default; the second runs `onSelect` and closes the menu. It disarms on Escape, when the
 menu closes, and after `confirm.resetAfter`—three seconds by default, while `0` means never. A press within 350ms of arming is ignored, so one
-double-click cannot confirm what it just armed. Delete Button follows the same rules.
+double-click cannot confirm what it just armed. From the search field or a focused row,
+release the activation key and press it again to confirm. Delete Button follows the same rules.
 
 An action's `keybind` works while its custom panel is mounted, even before the actions menu has
 opened. For async, toggle, and confirmation rows, the shortcut opens the menu and uses the same

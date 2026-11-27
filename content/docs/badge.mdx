@@ -52,7 +52,7 @@ next available sibling close button, then the previous one, then another nearby 
 Focus elsewhere is preserved. Use a noninteractive badge root when it contains `BadgeClose`;
 buttons cannot be nested inside a button or link.
 
-Removal keeps HextaUI's easing: the badge shrinks horizontally over `--duration-slow` (300ms by
+On removal, the badge shrinks horizontally over `--duration-slow` (300ms by
 default) while fading and scaling to 0.9 over `--duration-fast` (150ms). Its neighbors move into
 the gap. New client-mounted and restored badges fade and scale in over `--duration-base` (200ms);
 server-rendered initial badges stay still. Durations read the current CSS tokens on each open or
@@ -63,9 +63,7 @@ border, and margin changes are deliberate layout-animation exceptions to close t
 
 `BadgeCount` accepts `value`, `max` (default `99`, or `Infinity` for no cap), `animated` (default
 `false`), `duration` (default `520` milliseconds), `trend` (`auto`, `up`, `down`, or `shortest`),
-`locales`, and `format` (`Intl.NumberFormatOptions`). It uses the shared [Number Animation](/docs/number-animation) component. Set `animated` to opt in; otherwise counts update immediately. When enabled, only changing digits roll, using
-[SF Interface Numbers](https://github.com/wheresryan22/sfinterface-numbers)' basic roll with motion
-blur and soft window edges. Added or removed digits animate their width so the count fits naturally.
+`locales`, and `format` (`Intl.NumberFormatOptions`). It uses the shared [Number Animation](/docs/number-animation) component. Set `animated` to opt in; otherwise counts update immediately. When enabled, only changing digits roll, with motion blur and soft window edges. Added or removed digits animate their width so the count fits naturally.
 The default timing follows the shared motion scale; an explicit `duration` overrides the roll time.
 Negative and non-finite values display zero; values are whole counts. Values above the cap show
 the cap with a plus sign, while assistive technology receives the full formatted count.

@@ -227,6 +227,11 @@ With `selectable` on the root, a row gets a selection checkbox when it has a `va
 without still gets an empty cell, so a "no results" row keeps its columns aligned. Clicking the
 row itself does not toggle selection; selection is handled by the checkbox.
 
+In a hand-composed table, set `disabled` on a `DataTableRow` or include its ID in
+`disabledRows` to exclude the row from selection. Disabled controls inside its cells
+affect only those controls. Use `disabledRows` for rows rendered inside a custom
+component whose row declarations are hidden from the table.
+
 Two range gestures work in the checkbox column. Both follow the rows' display order, not `rows`,
 and both set the whole range to the state the clicked or pressed row is toggled to:
 

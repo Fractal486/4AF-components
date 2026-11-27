@@ -74,10 +74,10 @@ describe("Progress", () => {
     </ProgressCircle>);
     expect(ref.current).toBe(screen.getByRole("progressbar", { name: "Upload" }));
     expect(screen.getByTestId("value")).toHaveTextContent("50%");
-    const indicator = () => container.querySelector('[data-slot="progress-circle-indicator"]')!;
+    const indicator = () => container.querySelector<SVGCircleElement>('[data-slot="progress-circle-indicator"]')!;
     expect(indicator()).toHaveAttribute("stroke-dashoffset", "50");
     expect(indicator()).toHaveAttribute("transform", "rotate(-90 12 12)");
-    expect(indicator()).toHaveStyle({ color: "var(--success)" });
+    expect(indicator().style.color).toBe("var(--success)");
     rerender(<ProgressCircle value={0} />);
     expect(indicator()).toHaveAttribute("data-empty");
     rerender(<ProgressCircle value={null} />);

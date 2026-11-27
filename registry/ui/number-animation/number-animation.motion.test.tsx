@@ -15,6 +15,19 @@ beforeEach(() => {
 afterEach(() => { cleanup(); waapi.restore(); vi.restoreAllMocks(); });
 const preference = (value: boolean) => act(() => { reduced = value; media.dispatchEvent(new Event("change")); });
 
+it("keeps compact currency symbols and their spaces in locale order during updates", () => {
+  const format = { style: "currency", currency: "EUR", notation: "compact" } as const;
+  const formatter = new Intl.NumberFormat("fr-FR", format);
+  const view = (value: number) => <NumberAnimation value={value} locales="fr-FR" format={format} />;
+  const { container, rerender } = render(view(1_500_000));
+  rerender(view(2_500_000));
+
+  const symbols = Array.from(container.querySelectorAll('[data-slot="number-animation-symbol"]'), el => el.textContent);
+  expect(symbols).toEqual(formatter.formatToParts(2_500_000)
+    .filter(part => part.type !== "integer" && part.type !== "fraction").map(part => part.value));
+  expect(container.querySelector('[data-slot="number-animation-text"]')?.textContent).toBe(formatter.format(2_500_000));
+});
+
 it("updates both the accessible value and visible digits immediately under reduced motion", () => {
   reduced = true;
   const start = vi.fn(), finish = vi.fn();

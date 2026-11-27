@@ -1,31 +1,5 @@
 "use client";
 
-/*
-Adapted from HextaUI (https://github.com/preetsuthar17/hextaui).
-MIT License
-
-Copyright (c) 2026 Preet Suthar
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
-
 import { Collapsible } from "@base-ui/react/collapsible";
 import { useRender } from "@base-ui/react/use-render";
 import { motion, useReducedMotion } from "motion/react";
@@ -42,7 +16,7 @@ function durationMs(style: CSSStyleDeclaration, token: "fast" | "base" | "slow")
   return Number.isFinite(ms) ? Math.max(0, ms) : duration[token] * 1000;
 }
 
-/** Base UI owns state/presence; this surface supplies HextaUI's width collapse and fade. */
+/** Base UI owns presence. This surface animates the width and opacity. */
 export function BadgeSurface({ state, render, ref, panelRef, motionProps, onOpenChangeComplete, ...props }: Record<string, unknown> & {
   ref?: Ref<HTMLSpanElement>;
   panelRef?: Ref<HTMLSpanElement>;

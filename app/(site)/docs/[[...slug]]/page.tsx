@@ -14,7 +14,7 @@ import { PageFrame } from "@/components/site/page-frame";
 import { componentStats } from "@/lib/component-stats";
 import { siblings } from "@/lib/site-nav";
 import { source } from "@/lib/source";
-import { pageAlternates, publicInstallCommand, SITE_URL } from "@/lib/site";
+import { ARCHIVED_SKILL_CATALOG, HOSTED_SKILL_CATALOG, HOSTED_SKILL_PATH, pageAlternates, publicInstallCommand, SITE_URL } from "@/lib/site";
 import { CopyButton } from "@/registry/ui/copy-button/copy-button";
 import { Link as LinkIcon } from "lucide-react";
 import { playgroundDemos } from "@/stories/demo-names";
@@ -113,7 +113,14 @@ export default async function Page({ params }: DocsPageProps) {
         <div className="prose max-w-none">
           {/* The agent skill page's install block carries the agents' logos. */}
           <MdxContent
-            components={getMDXComponents(page.url === "/docs/reference/agent-skill" ? { pre: AgentsCodePre } : undefined)}
+            components={getMDXComponents({
+              ...(page.url === "/docs/reference/agent-skill" && { pre: AgentsCodePre }),
+              ...(page.url === HOSTED_SKILL_PATH && {
+                a: ({ href, ...props }) => (
+                  <InlineLink {...props} href={href === ARCHIVED_SKILL_CATALOG ? HOSTED_SKILL_CATALOG : href} />
+                ),
+              }),
+            })}
           />
         </div>
 

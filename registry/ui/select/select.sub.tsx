@@ -27,7 +27,7 @@ import {
   type SelectSubSibling,
 } from "./select.context";
 import { SelectItem, type SelectItemProps } from "./select.item";
-import { preventBaseUIHandler } from "./select.utils";
+import { getRegisteredItem, preventBaseUIHandler, subTriggerMarker, type SelectItemEquality } from "./select.utils";
 
 /** A sibling closed this recently is still fading out, so opening another counts as a swap. */
 const SWAP_WINDOW_MS = 300;
@@ -122,6 +122,7 @@ function focusNestedOption(
   items: Map<unknown, HTMLElement>,
   values: unknown[],
   multiple: boolean,
+  equals: SelectItemEquality,
 ) {
   const isEnabled = (node: HTMLElement | undefined) =>
     Boolean(
@@ -133,8 +134,8 @@ function focusNestedOption(
     );
   const options = Array.from(items.values()).filter(isEnabled);
   const selected = multiple
-    ? [...values].reverse().map((value) => items.get(value)).find(isEnabled)
-    : items.get(values[0]);
+    ? [...values].reverse().map((value) => getRegisteredItem(items, value, equals)).find(isEnabled)
+    : getRegisteredItem(items, values[0], equals);
   (isEnabled(selected) ? selected : options[0])?.focus();
 }
 
@@ -180,7 +181,7 @@ export function SelectSub({
   );
   const isControlled = open !== undefined;
   const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
-  const [triggerValue] = useState<symbol>(() => Symbol("select-sub-trigger"));
+  const [triggerValue] = useState(() => ({ [subTriggerMarker]: true }));
   const triggerRef = useRef<HTMLElement>(null);
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const openTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -475,7 +476,7 @@ export function SelectSubTrigger({
   const triggerLabel =
     typeof label === "string" ? label : typeof children === "string" ? children : undefined;
   const selectedItemCount = itemValues.filter((itemValue) =>
-    select.values.some((selectedValue) => Object.is(itemValue, selectedValue)),
+    select.values.some((selectedValue) => select.equals(itemValue, selectedValue)),
   ).length;
 
   useEffect(() => {
@@ -651,10 +652,10 @@ export function SelectSubContent({
     // non-tabbable until the composite gives one the active index. Choose the same row a
     // regular panel would open on, then Base UI owns all subsequent arrow-key navigation.
     const frame = requestAnimationFrame(() => {
-      focusNestedOption(nestedItemsRef.current, openingNestedValues, select.multiple);
+      focusNestedOption(nestedItemsRef.current, openingNestedValues, select.multiple, select.equals);
     });
     return () => cancelAnimationFrame(frame);
-  }, [nestedItemsVersion, openingNestedValues, select.multiple, subOpen]);
+  }, [nestedItemsVersion, openingNestedValues, select.multiple, select.equals, subOpen]);
 
   const handleNestedOpenChange: NonNullable<
     ComponentProps<typeof BaseSelect.Root>["onOpenChange"]
@@ -677,7 +678,8 @@ export function SelectSubContent({
       event.preventDefault();
       event.stopPropagation();
       setSubOpen(false);
-      requestAnimationFrame(focusTrigger);
+      // Return after the close commits and before the next key can navigate to a sibling.
+      queueMicrotask(focusTrigger);
     }
   };
 
@@ -712,6 +714,7 @@ export function SelectSubContent({
     <BaseSelect.Root
       open={subOpen}
       value={nestedValue as never}
+      isItemEqualToValue={select.equals === Object.is ? undefined : select.equals}
       multiple={select.multiple}
       highlightItemOnHover={false}
       modal={false}

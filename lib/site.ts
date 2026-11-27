@@ -8,6 +8,11 @@
  */
 export const SITE_URL = "https://4af.selfsimilar.dev";
 
+// The included SKILL.md lives beside its references/ directory only inside the downloaded skill.
+export const HOSTED_SKILL_PATH = "/docs/reference/agent-skill/skill";
+export const HOSTED_SKILL_CATALOG = "/docs/reference/agent-skill/component-catalog";
+export const ARCHIVED_SKILL_CATALOG = "references/component-catalog.md";
+
 /** Next replaces nested metadata fields, so keep the agent link alongside each canonical. */
 export function pageAlternates(pathname: string) {
   return {

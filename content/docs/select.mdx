@@ -40,7 +40,7 @@ It shifts the popup along the alignment axis. `SelectSubContent` retains its exi
 `alignOffset` default of `-4`.
 
 Both content parts accept `portalProps`, forwarded to Base UI's Portal. Use its `container`
-to mount the panel inside a particular element or ref, or `keepMounted` to retain the portal.
+to mount the panel inside a particular element or ref.
 Nested panels take their own `portalProps`; they do not inherit the parent panel's container.
 
 ### Trigger variants
@@ -297,3 +297,11 @@ Resolution order is the mounted item, then `iconForValue`, then `items`.
 Mounted item labels (used by `SelectSortTrigger`) and icons (used by `SelectValue`) are
 restored when React replays effects in StrictMode or reveals an `Activity` subtree. Inline
 JSX labels and icons are supported without repeatedly updating the Select's display state.
+
+Pass `isItemEqualToValue={(item, value) => item.id === value.id}` when an option and its
+selected value can be different objects for the same record. The opening highlight, chip
+labels, icons and submenu selection counts use that comparison. Set `itemToStringLabel`
+for a single-value text label when your objects have no `label` property.
+
+`SelectValue render={<em />}` puts the selected label or empty placeholder in the replacement
+element. Supply children to override the displayed content.

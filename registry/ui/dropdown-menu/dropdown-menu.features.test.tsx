@@ -179,7 +179,10 @@ it.each([false, true])("lets a nested select's row go dormant when the pointer l
   </DropdownMenuContent></DropdownMenu>);
   await user.click(screen.getByRole("button", { name: "Open" }));
   const trigger = await screen.findByRole("menuitem", { name: /Choose/ });
-  await user.hover(trigger);
+  // Open from the keyboard so the pointer can enter the panel directly. A
+  // pointer crossing between two zero-sized jsdom boxes cannot follow a safe polygon.
+  act(() => trigger.focus());
+  await user.keyboard("{ArrowRight}");
   const beta = await screen.findByRole("menuitemradio", { name: "Beta" });
   // The panel opens on its selected row a frame later; let that land first.
   await waitFor(() => expect(screen.getByRole("menuitemradio", { name: "Alpha" })).toHaveAttribute("data-panel-active"));

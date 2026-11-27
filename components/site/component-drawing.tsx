@@ -67,7 +67,7 @@ export function ComponentDrawing({ title, svg, sheetUrl, filmUrl, filmCrop }: Co
                 marginTop: `${(-crop[1] / crop[2]) * 100}%`,
               }}
             >
-              <Film src={filmUrl} />
+              <Film key={filmUrl} src={filmUrl} />
             </span>
           </span>
         ) : (
@@ -100,7 +100,7 @@ export function ComponentDrawing({ title, svg, sheetUrl, filmUrl, filmCrop }: Co
         >
           <DialogTitle className="sr-only">{title} · dimensional drawing</DialogTitle>
           {/* A second copy on the page: its marker and pattern ids get their own prefix. */}
-          <Sheet svg={svg.replace(/(id="|url\(#)/g, "$1dialog-")} />
+          <Sheet svg={svg.replace(/(\sid="|\s(?:xlink:)?href="#|url\(#)/g, "$1dialog-")} />
           <span className="absolute end-[3%] bottom-[2.5%] rounded-full bg-background/75 px-2.5 py-0.5 backdrop-blur-md">
             <InlineLink href={sheetUrl} target="_blank" rel="noopener noreferrer" className="text-xs">
               Open sheet ↗
@@ -130,13 +130,14 @@ function Film({ src }: { src: string }) {
     const video = ref.current;
     if (!video) return;
     const observer = new IntersectionObserver(([entry]) => {
-      if (!entry?.isIntersecting) return;
+      if (!entry?.isIntersecting || !video.isConnected || prefersReducedMotion()) return;
       observer.disconnect();
+      video.src = src;
       void video.play().catch(() => {});
     }, { threshold: 0.5 });
     observer.observe(video);
     return () => observer.disconnect();
-  }, []);
+  }, [src]);
 
   // The film is monochrome on white. Blended onto its own isolated page-coloured ground,
   // multiply turns the white into the app background; in dark mode, inverting first makes the
@@ -146,11 +147,10 @@ function Film({ src }: { src: string }) {
     <span className="isolate block bg-background">
       <video
         ref={ref}
-        src={src}
         aria-hidden
         muted
         playsInline
-        preload="auto"
+        preload="none"
         className="block aspect-video w-full mix-blend-multiply dark:mix-blend-screen dark:invert"
       />
     </span>

@@ -16,8 +16,8 @@ popup includes open/side/alignment state. Groups and their labels support callba
 styling remains visible while focused, hovered, or open. Default triggers show a destructive
 border and ring; ghost and plain triggers show the ring.
 
-`AlignedSelectContent` accepts `portalProps` for Base UI Portal options, including `container`
-and `keepMounted`. Its `alignOffset` shorthand defaults to Base UI's `0` and applies to normal
+`AlignedSelectContent` accepts `portalProps.container` to mount the popup in a specific element.
+Its `alignOffset` shorthand defaults to Base UI's `0` and applies to normal
 dropdown placement; selected-row overlap keeps the row aligned with the trigger. Existing
 `positionerProps` remains available for full positioning control and takes precedence over
 the shorthand when both specify an offset.
@@ -32,6 +32,8 @@ list can extend in both directions.
 Both `value` / `defaultValue` and `open` / `defaultOpen` support controlled and uncontrolled use.
 Calling `details.cancel()` in `onValueChange` retains the accepted selection, including the
 row offered when reopening. Calling it in `onOpenChange` retains the previous open state.
+For object values, pass `isItemEqualToValue={(item, value) => item.id === value.id}`
+to match refreshed option objects to the selection and the opening highlight.
 
 ## Trigger variants
 

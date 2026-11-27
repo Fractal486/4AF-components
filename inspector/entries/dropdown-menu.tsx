@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Button } from "@/registry/ui/button/button";
+import { writeToClipboard } from "@/registry/ui/copy-button/copy-button";
 import { Morph } from "@/registry/ui/morph/morph";
 import {
   DropdownMenu,
@@ -161,10 +162,10 @@ const ROWS_BY_KIND: Record<RowKind, (options: RowOptions) => ReactNode> = {
           outcome at all. */}
       <DropdownMenuActionItem
         icon={<Link2 />}
-        action={() => navigator.clipboard?.writeText("https://example.com/i/4af")}
-        labels={{ success: "Copied" }}
+        action={() => writeToClipboard("https://example.com/i/4af")}
+        labels={{ success: "Copied", error: "Copy failed" }}
         labelEffect={labelEffect}
-        announce={{ success: "Link copied" }}
+        announce={{ success: "Link copied", error: "Couldn't copy the link" }}
       >
         Copy link
       </DropdownMenuActionItem>

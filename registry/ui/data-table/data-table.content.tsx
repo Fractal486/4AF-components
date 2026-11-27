@@ -28,7 +28,8 @@ function ContentRows<TData extends RowData>({ children, getRowLabel, rowActions 
   }, [table, pageIndex, pageCount]);
   const extras = Children.toArray(children);
   const isCaption = (node: ReactNode) => isValidElement(node) && node.type === TableCaption;
-  const selected = Object.keys(table.state.rowSelection).filter((id) => table.state.rowSelection[id]);
+  const selection = table.state.rowSelection;
+  const selected = Object.keys(selection).filter((id) => selection[id]);
   return (
     <ComposedDataTable
       {...options}
@@ -42,9 +43,9 @@ function ContentRows<TData extends RowData>({ children, getRowLabel, rowActions 
       onValueChange={(ids) => {
         // Preserve retained/off-page selections, then apply additions with the model's
         // per-row rule. This also covers shift ranges, drag ranges, and select-all.
-        let next = ids.filter((id) => selected.includes(id));
+        let next = ids.filter((id) => selection[id] === true);
         for (const id of ids) {
-          if (selected.includes(id)) continue;
+          if (selection[id] === true) continue;
           const row = table.getRow(id);
           if (!row.getCanSelect()) continue;
           if (!row.getCanMultiSelect()) next = [];

@@ -4,6 +4,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { inflateRawSync } from "node:zlib";
 import { staticClient } from "fumadocs-core/search/client/orama-static";
+import { componentReferences } from "../lib/component-reference.ts";
+import { publicInstallCommand } from "../lib/site.ts";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const output = path.join(root, "out");
@@ -32,6 +34,23 @@ for (const file of documents) {
 }
 await read("404.html");
 
+// Follow links in the published agent docs, where the archive's references/ folder
+// and the site's MDX components aren't available to a Markdown reader.
+const hostedSkill = "docs/reference/agent-skill/skill";
+const hostedCatalog = "/docs/reference/agent-skill/component-catalog";
+assert.ok((await read(`${hostedSkill}.html`)).toString().includes(`href="${hostedCatalog}"`));
+assert.ok((await read(`${hostedSkill}.md`)).toString().includes(`[references/component-catalog.md](${hostedCatalog}.md)`));
+for (const [page, firstCard] of [
+  ["docs.md", "/docs/button.md"],
+  ["docs/reference/agent-skill.md", "/docs/reference/agent-skill/skill.md"],
+]) {
+  const markdown = (await read(page)).toString();
+  assert.doesNotMatch(markdown, /<\/?Cards?\b|\0/u, `${page}: unexpanded navigation cards`);
+  const links = [...markdown.matchAll(/^- \[[^\]]+\]\((\/docs\/[^)]+\.md)\)/gmu)].map((match) => match[1]);
+  assert.ok(links.includes(firstCard), `${page}: missing navigation link to ${firstCard}`);
+  for (const href of links) await read(href.slice(1));
+}
+
 // Check the agent index's links and every published install item, including utilities.
 const llms = (await read("llms.txt")).toString();
 for (const match of llms.matchAll(/\]\((https:\/\/[^)]+\.md)\)/g)) {
@@ -49,6 +68,13 @@ assert.deepEqual(
 for (const item of registry.items) {
   const installed = JSON.parse(await read(`r/${item.name}.json`));
   assert.equal(installed.name, item.name);
+  if (item.type === "registry:ui") {
+    const markdown = (await read(`docs/${item.name}.md`)).toString();
+    const install = `## Install\n\n\`\`\`bash\n${publicInstallCommand(item.name)}\n\`\`\``;
+    const usage = `## Usage\n\n\`\`\`tsx\n${componentReferences[item.name].usage}\n\`\`\``;
+    assert.ok(markdown.includes(install), `${item.name}: missing published install command`);
+    assert.ok(markdown.includes(usage), `${item.name}: missing published usage example`);
+  }
   for (const file of installed.files ?? []) {
     assert.ok(file.content, `${item.name}: missing ${file.path}`);
     assert.doesNotMatch(file.content, /\r/, `${item.name}: ${file.path} contains carriage returns`);
@@ -88,6 +114,7 @@ const referenceNames = (await filesIn(path.join(skillRoot, "references")))
   .filter((file) => file.endsWith(".md") && !file.split("/").some((part) => part.startsWith(".")));
 const skillNames = ["SKILL.md", ...referenceNames];
 assert.deepEqual([...archived.keys()].sort(), skillNames.map((name) => `4af-components/${name}`).sort());
+assert.match(archived.get("4af-components/SKILL.md").toString(), /\]\(references\/component-catalog\.md\)/u);
 for (const name of skillNames) {
   assert.deepEqual(archived.get(`4af-components/${name}`), await readFile(path.join(skillRoot, name)), `Archive differs: ${name}`);
 }

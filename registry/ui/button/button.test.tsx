@@ -155,6 +155,16 @@ describe("Button", () => {
     expect(onClick).toHaveBeenCalledOnce();
   });
 
+  it("preserves explicit roles when composing onto a child", () => {
+    const { rerender } = render(
+      <Button asChild role="button"><a role="tab" href="#overview">Overview</a></Button>,
+    );
+    expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("href", "#overview");
+
+    rerender(<Button asChild role="tab"><a href="#overview">Overview</a></Button>);
+    expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("href", "#overview");
+  });
+
   it("can disable press scaling for an asChild trigger", () => {
     render(
       <Button asChild pressScale={false}>

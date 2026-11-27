@@ -19,4 +19,4 @@ next-env.d.ts
 .DS_Store
 
 # Linked to .agents/skills by pnpm skills:sync (also runs after install).
-.claude/skills/
+.claude/skills

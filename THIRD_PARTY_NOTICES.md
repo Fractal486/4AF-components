@@ -1,23 +1,12 @@
-# Third-party notices
+# Third-party licenses
 
-4AF Components acknowledges the following upstream component libraries and preserves
-their copyright and license notices below. These notices apply to the respective
-upstream material retained in this repository and its adaptations. Component examples
-and source records below are not an exhaustive attribution map.
-
-Preserve the applicable notices when copying or distributing adapted components,
-including when installing individual files into another project. These notices are collected
-here; the component source files and generated registry bundles do not currently include this
-file or per-file copyright headers. Package dependencies retain their own licenses, distributed
-with those packages.
-
-License texts checked against the linked upstream sources on 2026-10-11.
+Copyright and license texts for upstream material used in 4AF Components.
 
 ## Animate UI
 
 [Website](https://animate-ui.com) · [Repository](https://github.com/imskyleen/animate-ui) · [Upstream license](https://github.com/imskyleen/animate-ui/blob/main/LICENSE.md)
 
-Recorded component source in [AGENTS.md](AGENTS.md#sources). Source material includes the Base UI checkbox and sidebar.
+Sources include the Base UI Checkbox and Sidebar, and the popup handoff in Menubar.
 
 ```text
 MIT + Commons Clause License Condition
@@ -112,7 +101,7 @@ SOFTWARE.
 
 [Website](https://hextaui.com) · [Repository](https://github.com/preetsuthar17/hextaui) · [Upstream license](https://github.com/preetsuthar17/hextaui/blob/main/LICENSE)
 
-Adapted components: [Breadcrumb](registry/ui/breadcrumb/breadcrumb.tsx), [DatePicker](registry/ui/date-picker/date-picker.tsx), and [Calendar](registry/ui/date-picker/calendar.tsx).
+Adaptations include [Breadcrumb](registry/ui/breadcrumb/breadcrumb.tsx), [Date Picker and Calendar](registry/ui/date-picker/date-picker.tsx), [Badge removal](registry/ui/badge/badge.presence.tsx), and [Number Animation](registry/ui/number-animation/number-animation.tsx) formatting and column presence. HextaUI also informed the feature structure of [Progress](registry/ui/progress/progress.tsx).
 
 ```text
 MIT License
@@ -148,6 +137,34 @@ Adapted component: [ClassicLoader](registry/ui/classic-loader/classic-loader.tsx
 MIT License
 
 Copyright (c) 2026 Jakub Krehel
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+## SF Interface Numbers
+
+The digit roll, motion blur, and soft window edges in [Number Animation](registry/ui/number-animation/number-animation.tsx) are adapted from [SF Interface Numbers](https://github.com/wheresryan22/sfinterface-numbers).
+
+```text
+MIT License
+
+Copyright (c) 2026 The San Francisco Interface
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

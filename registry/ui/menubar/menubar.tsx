@@ -34,9 +34,35 @@ import { cn, mergeStateClassName } from "@/registry/lib/cn";
 import { useMergedRefs } from "@/registry/lib/refs";
 import {
   DropdownMenu,
+  DropdownMenuActionItem,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSelect,
+  DropdownMenuSelectContent,
+  DropdownMenuSelectItem,
+  DropdownMenuSelectTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  type DropdownMenuActionItemProps,
+  type DropdownMenuCheckboxItemProps,
   type DropdownMenuContentProps,
+  type DropdownMenuItemProps,
   type DropdownMenuProps,
+  type DropdownMenuRadioItemProps,
+  type DropdownMenuSelectContentProps,
+  type DropdownMenuSelectItemProps,
+  type DropdownMenuSelectProps,
+  type DropdownMenuSelectTriggerProps,
+  type DropdownMenuSubTriggerProps,
 } from "@/registry/ui/dropdown-menu/dropdown-menu";
 import { createMenubarHandoffGroup, useMenubarHandoff, type MenubarHandoffGroup } from "./menubar.handoff";
 import { useMenubarHighlight } from "./menubar.highlight";
@@ -199,7 +225,7 @@ export {
   type DropdownMenuSelectProps as MenubarSelectProps,
   type DropdownMenuSelectTriggerProps as MenubarSelectTriggerProps,
   type DropdownMenuSubTriggerProps as MenubarSubTriggerProps,
-} from "@/registry/ui/dropdown-menu/dropdown-menu";
+};
 
 /**
  * `data-icon-start` shaves the leading padding for a leading glyph, as Button does;

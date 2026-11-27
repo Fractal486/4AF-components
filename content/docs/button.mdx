@@ -42,8 +42,8 @@ fallback. The slot is a square the size of the button's icons (14px at `xs`/`sm`
 The deprecated `Spinner` export has been removed. Use the `loader` prop or `LoaderProvider`
 to supply a custom indicator.
 
-`asChild` renders the button's styles onto its child, such as a link, which keeps its own
-semantics.
+`asChild` renders the button's styles onto its child. An anchor with `href` keeps its native
+link role. An explicit `role` on the child takes precedence over one supplied on Button.
 
 The default root exposes `data-slot="button"`; composed triggers can supply their own slot.
 Nested [Kbd](/docs/kbd) shortcuts adapt to the button's text and background colors.

@@ -21,7 +21,7 @@ const EDGE_SPEED = 30;
 const EDGE_RAMP_PER_SECOND = 1.5;
 const EDGE_RAMP_MAX = 8;
 
-export { clamp } from "@/registry/lib/numbers";
+export { clamp };
 
 /** Decimal precision, including numbers printed in exponent notation. */
 export function decimalPlaces(value: number): number {

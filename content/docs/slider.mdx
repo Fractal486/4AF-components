@@ -45,7 +45,8 @@ is in use, the fill mixes in 8% foreground.
 
 Value readouts and thumb tooltips update immediately by default. Set `animateValue` to use
 [Number Animation](/docs/number-animation) for rolling digits with motion blur. They keep the root's `locale` and `format`, and reduced motion shows updates immediately.
-The editor remains a normal input while typing.
+The editor remains a normal input while typing. The plain readout and its editor use the
+current font's tabular figures and slashed zero when the font supports them.
 
 With `showValue`, the number is editable: it shows a text cursor on hover,
 and a click turns it into an input. Enter or leaving the field commits the typed value, clamped

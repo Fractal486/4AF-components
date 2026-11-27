@@ -5,7 +5,9 @@ allowBuilds:
   workerd: true
 
 overrides:
-  postcss: ^8.5.31
+  # shadcn uses the glob matcher through ts-morph. Keep its matching API on a patched version.
+  "@ts-morph/common@0.27.0>minimatch": ^11.0.9
+  postcss: ^8.5.33
   fumadocs-mdx>zod: ^4.6.7
 
 # Keep Core's optional Zod 4 peer on a patched runtime copy even when other
@@ -14,3 +16,10 @@ packageExtensions:
   fumadocs-core@16:
     dependencies:
       zod: ^4.6.7
+
+# Next 16.4 supports ESLint 10. These plugin releases still declare peers through v9.
+peerDependencyRules:
+  allowedVersions:
+    "eslint-plugin-import@2.32.0>eslint": ^10.15.0
+    "eslint-plugin-jsx-a11y@6.10.2>eslint": ^10.15.0
+    "eslint-plugin-react@7.37.5>eslint": ^10.15.0

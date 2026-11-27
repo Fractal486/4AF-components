@@ -149,6 +149,33 @@ describe("DataTable", () => {
     expect(onValueChange).toHaveBeenLastCalledWith(["offscreen"]);
   });
 
+  it("collects disabled row declarations and ignores disabled controls inside cells", () => {
+    const onValueChange = vi.fn();
+    render(
+      <DataTable selectable rows={["a", "b", "c", "d"]} disabledRows={["d"]} onValueChange={onValueChange}>
+        <TableHeader><DataTableRow><DataTableHead>Name</DataTableHead></DataTableRow></TableHeader>
+        <TableBody>
+          <DataTableRow value="a" selectLabel="Select A">
+            <TableCell><input disabled value="b" readOnly /></TableCell>
+          </DataTableRow>
+          <>
+            <DataTableRow value="b" selectLabel="Select B"><TableCell>B</TableCell></DataTableRow>
+            <DataTableRow disabled value="c" selectLabel="Select C"><TableCell>C</TableCell></DataTableRow>
+          </>
+          <DataTableRow value="d" selectLabel="Select D"><TableCell>D</TableCell></DataTableRow>
+        </TableBody>
+      </DataTable>,
+    );
+
+    expect(rowBox("B")).toBeEnabled();
+    expect(rowBox("C")).toBeDisabled();
+    expect(rowBox("D")).toBeDisabled();
+    fireEvent.click(rowBox("B"));
+    expect(onValueChange).toHaveBeenLastCalledWith(["b"]);
+    fireEvent.click(selectAll());
+    expect(onValueChange).toHaveBeenLastCalledWith(["b", "a"]);
+  });
+
   it("does not bubble selection or action interactions to a clickable row", () => {
     const onRowClick = vi.fn();
     const onRowKeyDown = vi.fn();

@@ -7,6 +7,31 @@ const shortcut = () => fireEvent.keyDown(window, { key: "s", ctrlKey: true });
 const toggleMenu = () => fireEvent.keyDown(window, { key: "j", ctrlKey: true });
 
 describe("Command action shortcuts", () => {
+  it("requires a fresh Enter to confirm the action highlighted in the search field", async () => {
+    const onSelect = vi.fn();
+    const now = vi.spyOn(Date, "now");
+    try {
+      now.mockReturnValue(1000);
+      render(<CommandPanelActions items={[
+        { id: "delete", label: "Delete", confirm: { resetAfter: 0 }, onSelect },
+      ]} />);
+      toggleMenu();
+      const field = await screen.findByRole("textbox", { name: "Search options" });
+      await waitFor(() => expect(screen.getByRole("option")).toHaveAttribute("data-panel-active"));
+      fireEvent.keyDown(field, { key: "Enter" });
+      expect(screen.getByRole("option")).toHaveAttribute("data-armed");
+      now.mockReturnValue(1600);
+      fireEvent.keyDown(field, { key: "Enter", repeat: true });
+      expect(onSelect).not.toHaveBeenCalled();
+      expect(screen.getByRole("option")).toHaveAttribute("data-armed");
+      fireEvent.keyUp(field, { key: "Enter" });
+      fireEvent.keyDown(field, { key: "Enter" });
+      expect(onSelect).toHaveBeenCalledOnce();
+    } finally {
+      now.mockRestore();
+    }
+  });
+
   it("arms confirmation before the first open, guards repeats, and disarms on close", async () => {
     const onSelect = vi.fn();
     const now = vi.spyOn(Date, "now").mockReturnValue(1000);
